@@ -4,7 +4,7 @@ This document contains the comprehensive end-of-session workflow extracted from 
 
 ## Overview
 
-At the end of our work sessions, perform the following wrapup ritual with **[PLAN]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:
+At the end of our work sessions, perform the following wrapup ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:
 
 ## 0) Use Notification System Throughout
 
@@ -14,7 +14,7 @@ At the end of our work sessions, perform the following wrapup ritual with **[PLA
 
 **Command Format**:
 ```bash
-notify-claude "[PLAN] MESSAGE" --type=TYPE --priority=PRIORITY
+notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 ```
 
 **When to Send Notifications**:
@@ -33,9 +33,9 @@ notify-claude "[PLAN] MESSAGE" --type=TYPE --priority=PRIORITY
 
 **Example Notifications**:
 ```bash
-notify-claude "[PLAN] ✅ Session history updated" --type=progress --priority=low
-notify-claude "[PLAN] Ready for commit approval" --type=task --priority=medium
-notify-claude "[PLAN] 🎉 Session wrap-up complete" --type=task --priority=low
+notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session history updated" --type=progress --priority=low
+notify-claude "[SHORT_PROJECT_PREFIX] Ready for commit approval" --type=task --priority=medium
+notify-claude "[SHORT_PROJECT_PREFIX] 🎉 Session wrap-up complete" --type=task --priority=low
 ```
 
 ## 0.5) History Health Check (Automated)
@@ -84,17 +84,17 @@ notify-claude "[PLAN] 🎉 Session wrap-up complete" --type=task --priority=low
    - **If [1] selected**:
      * Invoke `/history-management mode=archive`
      * Wait for completion
-     * Send notification: `notify-claude "[PLAN] ✅ History archived" --type=progress --priority=low`
+     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] ✅ History archived" --type=progress --priority=low`
      * Resume session-end workflow (continue to Step 1)
 
    - **If [2] selected**:
-     * Add "[PLAN] Archive history.md" to TODO list
-     * Send notification: `notify-claude "[PLAN] History archive deferred to next session" --type=task --priority=medium`
+     * Add "[SHORT_PROJECT_PREFIX] Archive history.md" to TODO list
+     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] History archive deferred to next session" --type=task --priority=medium`
      * Resume session-end workflow (continue to Step 1)
 
    - **If [3] selected**:
      * Log decision
-     * Send notification: `notify-claude "[PLAN] ⚠️ Continuing with large history.md (manual handling)" --type=alert --priority=medium`
+     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] ⚠️ Continuing with large history.md (manual handling)" --type=alert --priority=medium`
      * Resume session-end workflow (continue to Step 1)
 
    **If 🚨 CRITICAL** (≥22k tokens OR breach <3 days):
@@ -109,7 +109,7 @@ notify-claude "[PLAN] 🎉 Session wrap-up complete" --type=task --priority=low
      Invoking /history-management mode=archive...
      ```
    - Execute archive workflow automatically
-   - Send urgent notification: `notify-claude "[PLAN] 🚨 Critical: History archived to prevent limit breach" --type=alert --priority=urgent`
+   - Send urgent notification: `notify-claude "[SHORT_PROJECT_PREFIX] 🚨 Critical: History archived to prevent limit breach" --type=alert --priority=urgent`
    - After completion, resume session-end workflow (continue to Step 1)
 
 **Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit.
@@ -189,9 +189,9 @@ At the end of every session when user says goodbye, verify completion of the man
 
 ## Project-Specific Context
 
-**Project**: Planning is Prompting
-**Prefix**: [PLAN]
-**History Location**: `/mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md`
+**Project**: Planning is Prompting (example)
+**Prefix**: [PLAN] (replace with your project's [SHORT_PROJECT_PREFIX])
+**History Location**: `/path/to/project/history.md` (replace with your project path)
 **Current Implementation Document**: Referenced at top of history.md
 
 **Key Archived Periods**:
@@ -201,6 +201,6 @@ At the end of every session when user says goodbye, verify completion of the man
 
 ## Special Considerations
 
-- When working with multiple repos, always use `[PLAN]` prefix for clarity
+- When working with multiple repos, always use `[SHORT_PROJECT_PREFIX]` for clarity
 - Maintain organization across all steps to demonstrate thoroughness
 - Always wait for explicit approval before committing changes

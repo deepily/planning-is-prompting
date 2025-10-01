@@ -1,7 +1,41 @@
 # Planning is Prompting - Session History
 
-**Current Status**: Initial repository setup complete. Workflow templates created and organized.
-**Next Steps**: Populate remaining workflow files from existing repos, test end-of-session workflow, commit initial structure.
+**Current Status**: CLAUDE.md created, INSTALLATION-GUIDE.md completed with reference wrapper pattern, slash commands implemented for self-management.
+**Next Steps**: Test slash commands in practice, populate remaining workflow content templates, demonstrate workflows in other repos.
+
+---
+
+## October 2025
+
+### 2025.10.01 - Session 2: CLAUDE.md, Installation Guide & Self-Management
+
+**Accomplishments**:
+- Created `CLAUDE.md` for this repository with portable path references
+- Updated `~/.claude/CLAUDE.md` to use portable format (planning-is-prompting → workflow/...)
+- Replaced hardcoded `[PLAN]` with `[SHORT_PROJECT_PREFIX]` in workflow/session-end.md (13 occurrences)
+- Created comprehensive `workflow/INSTALLATION-GUIDE.md` (436 lines) with:
+  - Slash command naming convention (`/<lowercase-prefix>-<workflow-name>`)
+  - Installation prompts for all workflows
+  - Session-End, History Management, Session-Start, Work Planning, Notifications, Commit Management sections
+- Simplified History Management section using reference wrapper pattern (reduced ~90 lines)
+- Created `.claude/commands/` directory with three slash commands:
+  - `plan-history-management.md` - 4 modes (check/archive/analyze/dry-run)
+  - `plan-session-end.md` - Complete session-end ritual
+  - `plan-session-start.md` - Session initialization
+- All slash commands follow reference wrapper pattern (read canonical doc on every invocation)
+
+**Key Design Decisions**:
+- Use `[SHORT_PROJECT_PREFIX]` placeholder for reusability across projects
+- Slash command naming: `/<lowercase-prefix>-<workflow-name>` prevents multi-repo conflicts
+- **Reference wrapper pattern**: Slash commands read canonical docs on each invocation (true reuse, not duplication)
+- Self-management: This repo uses its own workflows (dogfooding)
+- Installation guide eliminates duplication - all implementation details stay in canonical docs
+
+**TODO for Next Session**:
+- [ ] Test `/plan-session-end`, `/plan-history-management`, `/plan-session-start` slash commands
+- [ ] Populate content in remaining workflow stub files (work-planning.md, commit-management.md, notification-system.md, session-start.md)
+- [ ] Add example inputs/outputs to README.md
+- [ ] Demonstrate workflow installation in another repo
 
 ---
 

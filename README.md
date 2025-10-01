@@ -5,6 +5,12 @@ When it comes to driving agentic coding assistants like Claude Code, Gemini CLI,
 
 This repository is a centralized knowledge base for meta-prompting strategies and workflow configurations for agentic coding assistants. It contains reusable templates, prompts, and configurations to help you efficiently bootstrap new projects and maintain consistent workflows across your development sessions.
 
+## Getting Started
+
+- **[INSTALLATION-GUIDE.md](workflow/INSTALLATION-GUIDE.md)** - Centralized installation instructions for integrating workflows into your projects
+- **[CLAUDE.md](CLAUDE.md)** - Project-specific configuration for this repository (example for other projects)
+- **[.claude/commands/](.claude/commands/)** - Working examples of slash commands using reference wrapper pattern
+
 ## Workflow Templates
 
 ### Configuration
