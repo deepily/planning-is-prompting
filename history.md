@@ -12,6 +12,7 @@
 **Accomplishments**:
 - Created `CLAUDE.md` for this repository with portable path references
 - Updated `~/.claude/CLAUDE.md` to use portable format (planning-is-prompting → workflow/...)
+- **Modernized global config for Plan Mode**: Removed obsolete "consult first" instruction, streamlined session workflows
 - Replaced hardcoded `[PLAN]` with `[SHORT_PROJECT_PREFIX]` in workflow/session-end.md (13 occurrences)
 - Created comprehensive `workflow/INSTALLATION-GUIDE.md` (436 lines) with:
   - Slash command naming convention (`/<lowercase-prefix>-<workflow-name>`)
@@ -23,6 +24,8 @@
   - `plan-session-end.md` - Complete session-end ritual
   - `plan-session-start.md` - Session initialization
 - All slash commands follow reference wrapper pattern (read canonical doc on every invocation)
+- **Synchronized template**: Updated `workflow/claude-config-global.md` to match modernized global config
+- Successfully tested session-end workflow execution from slash command
 
 **Key Design Decisions**:
 - Use `[SHORT_PROJECT_PREFIX]` placeholder for reusability across projects

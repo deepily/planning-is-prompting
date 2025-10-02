@@ -8,30 +8,23 @@
 
 ---
 
-## Session Initialization & Workflow
+## Session Workflows
 
-- Every time we start a new session, I want you to: 1) read the history.md document contained in the root directory of the repo, and 2) Read the implementation document mentioned at the head of the history document
-- Always consult me first before making changes, if I show you a stack trace, I want you to help me understand it before you propose a solution. Even then I want to approve the solution before you make changes.
-- With the debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
-- I'm going to be working with multiple repos At a time, Whenever you create a to do list, or you Need to ask my permission or guidance on any issue please use the `[SHORT_PROJECT_PREFIX]` Mentioned below. That would mean for every to do list item you would insert this short prefix at the beginning of each item.
+**Session Start**: Read history.md and implementation document at start of each session
 
-## End of Session Wrapup Ritual
+**Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
 
-- At the end of our work sessions I want you to perform the following wrapup ritual: 0) Create a to do list Containing 1) Update our session history document, 2) Update the planning and tracking documents Relevant to the work performing the session, 3 ) Summarize all uncommitted changes based on the `git status` command, 4) Propose a commit message 5) Commit our changes and 6) Use the notification script to keep me apprised of your progress after you complete each step
-- **0) Create a to do list**: Show me how organized you are by tracking your progress across these items
-- **1) Update session history**: Record in main history.md under current month section. If history.md approaches 25k tokens, archive older months to `history/YYYY-MM-history.md` first. Maintain 30-day window in main file. I want the date using my convention of yyyy.mm.dd Sorted with the newest changes at the top of the stack so that the document reads from the latest changes to the oldest changes. With each of these multiple daily session summaries, I want you to also keep track of where we are and write a quick to do list, or ask me for one so that tomorrow we can restart quickly and be focused.
-- **2) Update planning and tracking documents**: These documents are usually found in the repo's `rnd` directory.
-- **3) Summarize all uncommitted changes**: Use `git status` To track file changes, creations, and deletions.
-- **4) Propose commit message**: Use a summary + listed items format for commit messages
-- **5) Commit all changes**: After I approve your commit message You should commit an offer to push also. Not all repos Can be pushed, but you should at least ask me. You MUST ALWAYS stop and wait For me to respond for both commits and push confirmations. DO NOT continue on to the next steps until I respond.
-- **6) Notify me after each step**: Use the notification system explained below, keep me up-to-date as you finish each step in the process
-- At the end of every session when I say goodbye to you, I want you to verify that you have completed the mandatory end of session summarization documentation.
+**For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
-## General Workflow Preferences
+## General Preferences
 
+- With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
+- I like white space inside of my parentheses and square brackets
+- When delimiting strings I prefer double quotes, not single. Except in the case of print statements when it's handy to use a single quote and not have to escape a double quote
+- I'm going to be working with multiple repos at a time. Whenever you create a to do list, or you need to ask my permission or guidance on any issue please use the `[SHORT_PROJECT_PREFIX]` mentioned below. That would mean for every to do list item you would insert this short prefix at the beginning of each item
 - When running quick smoke tests always pipe the output to the console and summarize the results in tabular form when the run is finished
-- All research and planning documents should be stored in the `src\rnd` directory. They should always begin with the date in the format of yyyy.mm.dd. Anytime you add a new research document you should add a link to it in the readme file.
-- When I asked you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
+- All research and planning documents should be stored in the `src/rnd` directory. They should always begin with the date in the format of yyyy.mm.dd. Anytime you add a new research document you should add a link to it in the readme file
+- When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 **Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
