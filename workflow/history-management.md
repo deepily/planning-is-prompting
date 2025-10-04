@@ -465,12 +465,22 @@ When implementing this workflow in a specific project, provide:
 
 ### Check Token Count
 ```bash
-# Quick estimate
+# Recommended: Pre-approved script with health indicators
+~/.claude/scripts/get-token-count.sh history.md
+# Output: Words, tokens, percentage, and health status (HEALTHY/WARNING/CRITICAL)
+
+# Alternative: Quick manual estimate
 wc -w history.md | awk '{print $1 * 1.33}'
 
-# More accurate (if available)
-token-counter history.md
+# Full health check with velocity forecasting
+/history-management mode=check
 ```
+
+**Script Details**:
+- Pre-approved for automatic execution (no permission prompts)
+- Shows word count, estimated tokens, and percentage of 25k limit
+- Color-coded health indicators (✅/⚠️/🚨)
+- Fast, lightweight alternative to full health check
 
 ### Manual Archive Creation
 ```bash

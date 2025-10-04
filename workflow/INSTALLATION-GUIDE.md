@@ -52,6 +52,115 @@ Where:
 
 ---
 
+## Planning is Prompting Core Workflows
+
+### What It Does
+
+**The heart of this repository** - a two-step process for planning and documenting work:
+
+**Step 0: Entry Point**
+- Explains "Planning is Prompting" philosophy (structure IS the prompt)
+- Presents decision matrix to determine workflow path
+- Guides you to Step 1 (always) and Step 2 (conditional)
+
+**Step 1: Plan the Work** (always required)
+- Classifies work type through discovery questions
+- Selects optimal pattern (1-5) for your work
+- Breaks down work into manageable tasks
+- Creates TodoWrite list for progress tracking
+
+**Step 2: Document Implementation** (conditional - only for large/complex work)
+- Creates structured documentation (multiple markdown files)
+- Manages token budgets to stay under 25k limits
+- Establishes archival strategies for completed phases
+- Maintains cross-references for navigation
+
+**Canonical Workflows**:
+- planning-is-prompting → workflow/p-is-p-00-start-here.md
+- planning-is-prompting → workflow/p-is-p-01-planning-the-work.md
+- planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md
+
+### Decision Matrix: Which Workflows Do You Need?
+
+| Work Type | Duration | Pattern (Step 1) | Need Step 2? | Workflow Path |
+|-----------|----------|------------------|--------------|---------------|
+| Small feature | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **Step 1** only → history.md |
+| Bug investigation | 3-5 days | Pattern 4: Investigation | ✗ No | → **Step 1** only → history.md |
+| Architecture design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **Step 1** → **Step 2** (Pattern B) |
+| Technology research | 2-3 weeks | Pattern 2: Research | ✓ Yes | → **Step 1** → **Step 2** (Pattern C) |
+| Large implementation | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **Step 1** → **Step 2** (Pattern A) |
+
+**Quick Rule**: Use **Step 1** only for small/simple work (< 2 weeks). Use **Step 1 + Step 2** for large/complex work (8+ weeks, multiple phases).
+
+### Install as Slash Commands
+
+**Method 1: Copy all three commands**
+```bash
+cp planning-is-prompting/.claude/commands/p-is-p-*.md \
+   /path/to/your/project/.claude/commands/
+```
+
+**Method 2: Copy individually** (if you only need specific workflows)
+```bash
+# Entry point (always useful)
+cp planning-is-prompting/.claude/commands/p-is-p-00-start-here.md \
+   /path/to/your/project/.claude/commands/
+
+# Work planning (always required)
+cp planning-is-prompting/.claude/commands/p-is-p-01-planning.md \
+   /path/to/your/project/.claude/commands/
+
+# Implementation docs (conditional)
+cp planning-is-prompting/.claude/commands/p-is-p-02-documentation.md \
+   /path/to/your/project/.claude/commands/
+```
+
+### Usage
+
+**Starting new work** (recommended flow):
+```bash
+# 1. Start with entry point to see decision matrix
+/p-is-p-00-start-here
+
+# 2. Plan the work (always required)
+/p-is-p-01-planning
+
+# 3. Create implementation docs (only if Pattern 1, 2, or 5)
+/p-is-p-02-documentation --project-name=my-project
+```
+
+**Quick start** (if you already know your approach):
+```bash
+# Skip entry point, jump to planning
+/p-is-p-01-planning --pattern=3
+# Uses Pattern 3 (Feature Development), skips discovery questions
+```
+
+**When to use**:
+- `/p-is-p-00-start-here` - When unsure which workflow to use
+- `/p-is-p-01-planning` - For any new work (feature, bug, research, architecture)
+- `/p-is-p-02-documentation` - Only after Step 1 recommends it (Pattern 1, 2, or 5)
+
+### Install as Direct Reference
+
+**Add to your project's `.claude/CLAUDE.md`**:
+
+```markdown
+## Planning is Prompting
+
+**Entry Point**: planning-is-prompting → workflow/p-is-p-00-start-here.md
+
+**Two-Step Process**:
+1. **Plan the Work** (planning-is-prompting → workflow/p-is-p-01-planning-the-work.md) - Always required
+2. **Document Implementation** (planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md) - Only for Pattern 1, 2, 5
+
+**Project Configuration**:
+- [SHORT_PROJECT_PREFIX]: [YOUR_PREFIX]
+- Use decision matrix to determine if you need Step 2
+```
+
+---
+
 ## Session-End Workflow
 
 ### What It Does
@@ -231,7 +340,7 @@ Task planning and TODO management strategies:
 - Tracking progress with task states
 - Maintaining one in_progress task at a time
 
-**Canonical Workflow**: planning-is-prompting → workflow/work-planning.md
+**Canonical Workflow**: planning-is-prompting → workflow/p-is-p-01-planning-the-work.md
 
 ### Install as Direct Reference
 
@@ -240,7 +349,7 @@ Task planning and TODO management strategies:
 ```markdown
 ## Work Planning
 
-See planning-is-prompting → workflow/work-planning.md for task breakdown strategies.
+See planning-is-prompting → workflow/p-is-p-01-planning-the-work.md for task breakdown strategies.
 
 **Project preferences:**
 - [SHORT_PROJECT_PREFIX]: [YOUR_PREFIX]

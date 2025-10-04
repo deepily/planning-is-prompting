@@ -38,6 +38,50 @@ notify-claude "[SHORT_PROJECT_PREFIX] Ready for commit approval" --type=task --p
 notify-claude "[SHORT_PROJECT_PREFIX] 🎉 Session wrap-up complete" --type=task --priority=low
 ```
 
+## 0.4) Quick Token Count Check (Manual)
+
+**Purpose**: Quick spot-check of history.md token count using pre-approved script
+
+**When**: Optional quick check before adding session content, or anytime during work
+
+**Script**: `~/.claude/scripts/get-token-count.sh`
+
+**Usage**:
+```bash
+~/.claude/scripts/get-token-count.sh /path/to/history.md
+```
+
+**Example Output**:
+```
+Words: 4,597
+Tokens: 6,115 (estimated)
+Status: 24.5% of 25,000 token limit
+Health: ✅ HEALTHY
+```
+
+**Status Indicators**:
+- ✅ HEALTHY: <20k tokens
+- ⚠️  WARNING: 20-22k tokens - Consider archiving soon
+- 🚨 CRITICAL: >22k tokens - Archive immediately
+
+**Advantages**:
+- Fast, lightweight check
+- Pre-approved (no permission prompt needed)
+- Automatic execution during session-end workflows
+- Shows word count, token estimate, and health status
+
+**When to use instead of full health check**:
+- Quick status check during work
+- Part of automated session-end flow
+- Don't need velocity forecasting or detailed analysis
+
+**When to use full health check (Step 0.5)**:
+- Need velocity analysis and forecast
+- Want detailed archival recommendations
+- Approaching token limits
+
+---
+
 ## 0.5) History Health Check (Automated)
 
 **Purpose**: Check history.md health BEFORE adding new session content that might push over token limit

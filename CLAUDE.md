@@ -13,16 +13,27 @@ This is a meta-repository for Claude Code workflow templates and configuration s
 ```
 planning-is-prompting/
 ├── workflow/              # Workflow templates and canonical documents
-│   ├── claude-config-global.md      # Global config template (~/.claude/CLAUDE.md)
-│   ├── claude-config-local.md       # Project config template (<project>/.claude/CLAUDE.md)
-│   ├── session-start.md             # Session initialization workflows
-│   ├── session-end.md               # Session wrap-up workflows
-│   ├── work-planning.md             # Task breakdown and TODO management
-│   ├── history-management.md        # History archival workflows (canonical)
-│   ├── commit-management.md         # Git operation workflows
-│   └── notification-system.md       # Notification usage patterns
-├── history.md             # Active session history (30-day window)
-└── README.md              # Repository overview
+│   ├── p-is-p-00-start-here.md           # Entry point, philosophy, decision matrix
+│   ├── p-is-p-01-planning-the-work.md    # Work planning (classify→pattern→breakdown)
+│   ├── p-is-p-02-documenting-the-implementation.md  # Implementation docs (conditional)
+│   ├── claude-config-global.md           # Global config template (~/.claude/CLAUDE.md)
+│   ├── claude-config-local.md            # Project config template (<project>/.claude/CLAUDE.md)
+│   ├── session-start.md                  # Session initialization workflows
+│   ├── session-end.md                    # Session wrap-up workflows
+│   ├── history-management.md             # History archival workflows (canonical)
+│   ├── commit-management.md              # Git operation workflows
+│   └── notification-system.md            # Notification usage patterns
+├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
+│   ├── p-is-p-00-start-here.md
+│   ├── p-is-p-01-planning.md
+│   ├── p-is-p-02-documentation.md
+│   ├── plan-session-start.md
+│   ├── plan-session-end.md
+│   └── plan-history-management.md
+├── global/                # Global config snapshot (reference template)
+│   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
+├── history.md            # Active session history (30-day window)
+└── README.md             # Repository overview
 ```
 
 ## Core Architectural Patterns
@@ -69,6 +80,44 @@ Priority levels:
 - `high`: Approval requests, important status
 - `medium`: Progress milestones
 - `low`: Task completions, informational
+
+## Planning is Prompting Workflows
+
+**This repository uses its own workflows for self-management** (dogfooding).
+
+**Entry Point**: planning-is-prompting → workflow/p-is-p-00-start-here.md
+
+**Slash Commands** (available in this repo):
+- `/p-is-p-00-start-here` - Entry point with decision matrix and philosophy
+- `/p-is-p-01-planning` - Work planning workflow (classify → pattern → breakdown)
+- `/p-is-p-02-documentation` - Implementation documentation (for meta-repo work)
+
+**Project Prefix**: `[PLAN]`
+
+### When to Use Which Workflow
+
+**Small changes** (updating templates, fixing typos, adding examples):
+- Skip Planning is Prompting workflows
+- Use `/plan-session-start` and `/plan-session-end` only
+- Track in history.md
+
+**Medium work** (creating new workflow document, major template updates):
+- Use `/p-is-p-01-planning`
+- Pattern 3 (Feature Development) or Pattern 2 (Research)
+- Track in history.md
+- No need for `/p-is-p-02-documentation`
+
+**Large work** (major repository restructuring, multiple workflow creation):
+- Use `/p-is-p-01-planning` → Likely Pattern 1 (Multi-Phase)
+- Then `/p-is-p-02-documentation` to create structure
+- Track in dedicated implementation docs (src/rnd/)
+- Archive completed phases
+
+**Example: This session**:
+- Work type: Create p-is-p workflows and naming system
+- Pattern: Pattern 3 (Feature Development - well-scoped, 1-2 hours)
+- Workflow used: History.md only (no dedicated docs needed)
+- Todo tracking: TodoWrite with [PLAN] prefix
 
 ## Common Workflows
 

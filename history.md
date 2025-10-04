@@ -1,11 +1,91 @@
 # Planning is Prompting - Session History
 
-**Current Status**: CLAUDE.md created, INSTALLATION-GUIDE.md completed with reference wrapper pattern, slash commands implemented for self-management.
-**Next Steps**: Test slash commands in practice, populate remaining workflow content templates, demonstrate workflows in other repos.
+**Current Status**: "Planning is Prompting" core workflows complete with p-is-p-* naming, thin wrapper slash commands, and comprehensive documentation.
+**Next Steps**: Test p-is-p workflows in practice, demonstrate in other repos, create additional workflow content.
 
 ---
 
 ## October 2025
+
+### 2025.10.04 - Session 4: Planning is Prompting Core Workflows & Naming System
+
+**Accomplishments**:
+- **Created comprehensive "Planning is Prompting" workflow system** (the heart of this repository):
+  - `p-is-p-00-start-here.md` (400 lines) - Entry point with philosophy, decision matrix, quick start guide
+  - `p-is-p-01-planning-the-work.md` (930 lines) - Work planning workflow (discovery → pattern → breakdown → TodoWrite)
+  - `p-is-p-02-documenting-the-implementation.md` (650 lines) - Implementation documentation for large projects
+- **Renamed core workflows** with p-is-p-* prefix for logical grouping:
+  - `work-planning.md` → `p-is-p-01-planning-the-work.md`
+  - `implementation-documentation.md` → `p-is-p-02-documenting-the-implementation.md`
+- **Created global config snapshot**: Copied `~/.claude/CLAUDE.md` → `global/CLAUDE.md` as reference template
+- **Created three thin wrapper slash commands** (~40-50 lines each):
+  - `.claude/commands/p-is-p-00-start-here.md` - Entry point wrapper
+  - `.claude/commands/p-is-p-01-planning.md` - Work planning wrapper
+  - `.claude/commands/p-is-p-02-documentation.md` - Implementation docs wrapper
+  - All follow reference wrapper pattern (read canonical, don't duplicate content)
+- **Updated INSTALLATION-GUIDE.md**: Added "Planning is Prompting Core Workflows" section with decision matrix
+- **Updated README.md**: Featured decision matrix and p-is-p workflows prominently at top
+- **Updated repo CLAUDE.md**: Added dogfooding examples showing how this repo uses its own workflows
+
+**Key Design Decisions**:
+- **"Planning is Prompting" philosophy**: Structure IS the prompt - organized plans create shared mental models
+- **Two-step process**: Step 1 (planning) always required, Step 2 (implementation docs) conditional based on pattern
+- **Five planning patterns**: Multi-Phase Implementation, Research & Exploration, Feature Development, Problem Investigation, Architecture & Design
+- **Decision matrix**: Clear rules for when to use each workflow (duration, complexity, phases)
+- **p-is-p-* naming convention**: Groups core workflows together in file system, scalable (00, 01, 02...)
+- **Thin wrapper slash commands**: Avoid content duplication - just read and execute canonical workflows
+- **Pattern-driven approach**: Let work characteristics determine structure, not intuition
+
+**Pattern Used This Session**:
+- Work type: Feature Development (creating new workflow system)
+- Scale: Medium (2 hours)
+- Pattern: Pattern 3 (Feature Development)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**TODO for Next Session**:
+- [ ] Test `/p-is-p-00-start-here` workflow in practice
+- [ ] Test `/p-is-p-01-planning` with different patterns
+- [ ] Demonstrate p-is-p workflows in another repo
+- [ ] Populate remaining workflow stub files (commit-management.md, notification-system.md, session-start.md)
+- [ ] Add example inputs/outputs to README.md
+
+---
+
+### 2025.10.03 - Session 3: Token Counter Script & Auto-Approval Integration
+
+**Accomplishments**:
+- Created `/home/rruiz/.claude/scripts/get-token-count.sh` - unified word count + token calculation script
+- Script features:
+  - Combines word counting and token estimation (words × 1.33) in single command
+  - Displays word count, estimated tokens, percentage of 25k limit
+  - Color-coded health indicators (✅ HEALTHY / ⚠️ WARNING / 🚨 CRITICAL)
+  - Made executable and tested successfully (756 tokens, 3.0% of limit)
+- Added script to auto-approved commands in `~/.claude/settings.local.json`
+  - Pattern: `Bash(/home/rruiz/.claude/scripts/get-token-count.sh:*)`
+  - Enables automatic execution during workflows without permission prompts
+- Updated `workflow/session-end.md`:
+  - Added new "0.4) Quick Token Count Check (Manual)" section
+  - Documented usage, output format, status indicators, and when to use vs. full health check
+  - Positioned before automated health check section (0.5)
+- Updated `workflow/history-management.md`:
+  - Revised "Maintenance Commands → Check Token Count" section
+  - Listed new script as recommended method with full details
+  - Positioned as lightweight alternative to full `/history-management mode=check`
+- Executed `/plan-session-end` slash command - first test of reference wrapper pattern
+
+**Key Design Decisions**:
+- Single unified script better than two separate scripts (count-words.sh + calculate-tokens.sh)
+- Pre-approval in settings.local.json enables seamless workflow automation
+- Quick script check vs. full health check: offer both options for different use cases
+- Script shows health status to guide decision-making without full velocity analysis
+
+**TODO for Next Session**:
+- [ ] Populate remaining workflow stub files (work-planning.md, commit-management.md, notification-system.md, session-start.md)
+- [ ] Add example inputs/outputs to README.md
+- [ ] Demonstrate workflow installation in another repo
+- [ ] Test all three slash commands across multiple sessions
+
+---
 
 ### 2025.10.01 - Session 2: CLAUDE.md, Installation Guide & Self-Management
 
