@@ -229,9 +229,71 @@ def get_api_key( key_name: str, project_root: str = None ):
 
 - Always import: `import cosa.utils.util as du`
 - Always use: `du.get_project_root()` for base paths
-- Never use: `Path(__file__).parent` chains, `os.path.dirname()` chains
+- Never use: `Path(__file__).parent` chains, `os.path.dirname()` chains, `sys.path.append()`
 - Store relative paths (starting with `/src/`) in config files
 - Combine paths: `du.get_project_root() + relative_path`
+- **Exception**: Bootstrap files only (see below)
+
+### Bootstrap Files - The Exception
+
+**Problem**: Some files run BEFORE cosa is importable and cannot use `du.get_project_root()`.
+
+**Bootstrap Files** (Manual path setup required):
+1. Entry points: `src/fastapi_app/main.py`
+2. Standalone scripts: `src/scripts/*.py`
+3. Test bootstrap: `src/tests/conftest.py`
+
+**Bootstrap Pattern** (ONLY for these files):
+```python
+import sys
+import os
+
+# Bootstrap using LUPIN_ROOT environment variable
+lupin_root = os.environ.get( 'LUPIN_ROOT' )
+if lupin_root is None:
+    raise RuntimeError(
+        "LUPIN_ROOT environment variable not set.\n"
+        "Set it before running:\n"
+        "  export LUPIN_ROOT=/path/to/project\n"
+        "  python src/fastapi_app/main.py"
+    )
+
+src_path = os.path.join( lupin_root, 'src' )
+if src_path not in sys.path:
+    sys.path.insert( 0, src_path )  # Use insert(0), not append()
+
+# Now cosa is importable
+import cosa.utils.util as du
+```
+
+**After Bootstrap**: Use `du.get_project_root()` for all subsequent paths.
+
+### Test Infrastructure
+
+**Pytest Bootstrap** (`src/tests/conftest.py`):
+- Create top-level conftest.py with LUPIN_ROOT bootstrap
+- All test files can then import cosa directly
+- No path manipulation needed in individual test files
+
+**Package Markers**: Add `__init__.py` files for:
+- `src/tests/__init__.py`
+- `src/tests/<test_subdirs>/__init__.py`
+
+**Standalone Test Scripts** (with `__main__` blocks):
+- Must include bootstrap pattern (can't rely on conftest.py)
+- Use absolute imports after bootstrap: `from tests.smoke.utilities import ...`
+
+### File Categories
+
+**Category 1: Bootstrap Files** (4-6 files maximum)
+- Use LUPIN_ROOT bootstrap pattern
+- Unavoidable manual path setup
+- Examples: main.py, migration scripts, conftest.py
+
+**Category 2: Regular Code** (Everything else)
+- Use `du.get_project_root()` - NO path manipulation
+- Rely on conftest.py (tests) or proper imports (app code)
+- Never touch sys.path
 
 ## TESTING & INCREMENTAL DEVELOPMENT
 **Purpose**: Build testable, maintainable code through progressive testing adoption
