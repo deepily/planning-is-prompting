@@ -30,7 +30,7 @@ planning-is-prompting/
 │   ├── plan-session-start.md
 │   ├── plan-session-end.md
 │   └── plan-history-management.md
-├── global/                # Global config snapshot (reference template)
+├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
 └── README.md             # Repository overview

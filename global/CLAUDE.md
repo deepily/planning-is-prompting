@@ -6,6 +6,23 @@
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
+## Environment Configuration
+
+**Planning is Prompting Root Path**:
+
+```bash
+export PLANNING_IS_PROMPTING_ROOT="/mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting"
+```
+
+**Purpose**: Points to the planning-is-prompting repository for:
+- Backup script version checking (automatic update discovery)
+- Canonical workflow reference lookups
+- Template file locations for installation
+
+**Usage**: Add to your ~/.bashrc, ~/.zshrc, or shell configuration file
+
+**Verification**: `echo $PLANNING_IS_PROMPTING_ROOT` should display the repository path
+
 ## General Preferences
 
 - With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
@@ -119,7 +136,7 @@ notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
   ```python
   # CORRECT - one-line conditionals for simple checks
   if debug: print( f"Debug: {value}" )
-  if verbose: du.print_banner( "Processing complete" )
+  if verbose: cu.print_banner( "Processing complete" )
 
   # CORRECT - multi-line for more complex operations
   if condition:
@@ -160,23 +177,23 @@ base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 **ALWAYS use the canonical function**:
 ```python
 # ✅ CORRECT - Canonical pattern
-import cosa.utils.util as du
+import cosa.utils.util as cu
 
 # Get project root from environment variable (LUPIN_ROOT)
-project_root = du.get_project_root()
+project_root = cu.get_project_root()
 
 # Combine with relative paths from config
-full_path = du.get_project_root() + "/src/conf/long-term-memory/events.csv"
+full_path = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
 ```
 
 ### How It Works
 
 1. **Import the utility module**:
    ```python
-   import cosa.utils.util as du
+   import cosa.utils.util as cu
    ```
 
-2. **Use `du.get_project_root()` for all path operations**:
+2. **Use `cu.get_project_root()` for all path operations**:
    - Returns `LUPIN_ROOT` environment variable value
    - Falls back to `/var/lupin` if env var not set
    - Single source of truth for project root
@@ -184,28 +201,28 @@ full_path = du.get_project_root() + "/src/conf/long-term-memory/events.csv"
 3. **Store relative paths in configuration**:
    - Config files store paths starting with `/src/`
    - Example: `solution snapshots lancedb path = /src/conf/long-term-memory/lupin.lancedb`
-   - Combine at runtime: `du.get_project_root() + config_path`
+   - Combine at runtime: `cu.get_project_root() + config_path`
 
 ### Real-World Examples from COSA
 
 **Configuration Manager**:
 ```python
 # Correct pattern from configuration_manager.py
-self.config_path = du.get_project_root() + cli_args["config_path"]
-self.splainer_path = du.get_project_root() + cli_args["splainer_path"]
+self.config_path = cu.get_project_root() + cli_args["config_path"]
+self.splainer_path = cu.get_project_root() + cli_args["splainer_path"]
 ```
 
 **File Operations**:
 ```python
 # Correct pattern from util_code_runner.py
-code_path = du.get_project_root() + "/io/code_execution.py"
-os.chdir( du.get_project_root() + "/io" )
+code_path = cu.get_project_root() + "/io/code_execution.py"
+os.chdir( cu.get_project_root() + "/io" )
 ```
 
 **Data Loading**:
 ```python
 # Correct pattern from util_pandas.py
-df = read_csv( du.get_project_root() + "/src/conf/long-term-memory/todo.csv" )
+df = read_csv( cu.get_project_root() + "/src/conf/long-term-memory/todo.csv" )
 ```
 
 **API Key Access**:
@@ -227,16 +244,16 @@ def get_api_key( key_name: str, project_root: str = None ):
 
 ### Enforcement
 
-- Always import: `import cosa.utils.util as du`
-- Always use: `du.get_project_root()` for base paths
+- Always import: `import cosa.utils.util as cu`
+- Always use: `cu.get_project_root()` for base paths
 - Never use: `Path(__file__).parent` chains, `os.path.dirname()` chains, `sys.path.append()`
 - Store relative paths (starting with `/src/`) in config files
-- Combine paths: `du.get_project_root() + relative_path`
+- Combine paths: `cu.get_project_root() + relative_path`
 - **Exception**: Bootstrap files only (see below)
 
 ### Bootstrap Files - The Exception
 
-**Problem**: Some files run BEFORE cosa is importable and cannot use `du.get_project_root()`.
+**Problem**: Some files run BEFORE cosa is importable and cannot use `cu.get_project_root()`.
 
 **Bootstrap Files** (Manual path setup required):
 1. Entry points: `src/fastapi_app/main.py`
@@ -263,10 +280,10 @@ if src_path not in sys.path:
     sys.path.insert( 0, src_path )  # Use insert(0), not append()
 
 # Now cosa is importable
-import cosa.utils.util as du
+import cosa.utils.util as cu
 ```
 
-**After Bootstrap**: Use `du.get_project_root()` for all subsequent paths.
+**After Bootstrap**: Use `cu.get_project_root()` for all subsequent paths.
 
 ### Test Infrastructure
 
@@ -291,7 +308,7 @@ import cosa.utils.util as du
 - Examples: main.py, migration scripts, conftest.py
 
 **Category 2: Regular Code** (Everything else)
-- Use `du.get_project_root()` - NO path manipulation
+- Use `cu.get_project_root()` - NO path manipulation
 - Rely on conftest.py (tests) or proper imports (app code)
 - Never touch sys.path
 
@@ -322,9 +339,9 @@ def quick_smoke_test():
     """
     Quick smoke test for ModuleName - validates basic functionality.
     """
-    import cosa.utils.util as du
+    import cosa.utils.util as cu
 
-    du.print_banner( "ModuleName Smoke Test", prepend_nl=True )
+    cu.print_banner( "ModuleName Smoke Test", prepend_nl=True )
 
     try:
         # Test 1: Module loads
@@ -355,7 +372,7 @@ if __name__ == "__main__":
 **Characteristics**:
 - Fast (10-100ms per module)
 - Tests complete workflow, not just object creation
-- Uses `du.print_banner()` for consistent formatting
+- Uses `cu.print_banner()` for consistent formatting
 - Includes try/catch with ✓/✗ status indicators
 - Professional output with clear progress messages
 
@@ -565,7 +582,7 @@ Mature Project:
 
 ### Test Output Formatting
 
-**Smoke Tests** - Use `du.print_banner()`:
+**Smoke Tests** - Use `cu.print_banner()`:
 ```
 ==================================================
   ModuleName Smoke Test
@@ -633,3 +650,10 @@ Total: 65 passed, 2 failed, 1 skipped
 **Visual Storytelling**: Multiple archives per month = high-intensity period
 
 For complete details, algorithms, and implementation, see the canonical workflow document above.
+
+## Final instructions
+When you have arrived at this point in passing this CLAUDE.md file to me, please confirm you have read and understood all sections by responding with: 
+
+"CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+
+Then, please summarize the key points of this CLAUDE.md file in a concise bullet point list.

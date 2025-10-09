@@ -27,20 +27,20 @@ Before installing workflows, ensure:
 
 ### Slash Command Naming Convention
 
-**IMPORTANT**: All slash commands should follow the pattern:
+**IMPORTANT**: When installing workflow wrappers from planning-is-prompting, **keep the source repository's prefix** (`plan-`):
 
-`/<lowercase-prefix>-<workflow-name>`
+`/plan-<workflow-name>`
 
 Where:
-- `<lowercase-prefix>` = lowercase version of your `[SHORT_PROJECT_PREFIX]` without brackets
-- `<workflow-name>` = the workflow identifier
+- `plan-` = planning-is-prompting repository prefix (identifies the source)
+- `<workflow-name>` = the workflow identifier (session-end, history-management, etc.)
 
-**Examples:**
-- Project with `[PLAN]` → `/plan-session-end`, `/plan-history-management`
-- Project with `[AUTH]` → `/auth-session-end`, `/auth-history-management`
-- Project with `[LUPIN]` → `/lupin-session-end`, `/lupin-history-management`
+**Examples** (same in ALL target projects):
+- Installing in `[AUTH]` project → `/plan-session-end`, `/plan-history-management`
+- Installing in `[LUPIN]` project → `/plan-session-end`, `/plan-history-management`
+- Installing in `[COSA]` project → `/plan-session-end`, `/plan-history-management`
 
-**Rationale**: Prevents command name conflicts when working across multiple repos simultaneously. This ensures you can clearly identify which project a slash command belongs to.
+**Rationale**: The prefix identifies the **source repository** of the workflow, not the target project. When you see `/plan-session-start` in your COSA repo, you immediately know it's a workflow wrapper from the planning-is-prompting repository. This makes workflow attribution clear and installation simpler (no renaming needed).
 
 ### Installation Process
 
@@ -182,31 +182,28 @@ Comprehensive end-of-session ritual that:
 **Copy-paste this prompt into Claude Code:**
 
 ```
-I need you to create a custom slash command `/<lowercase-prefix>-session-end` for this project that implements the session-end workflow.
-
-(Replace `<lowercase-prefix>` with the lowercase version of this project's [SHORT_PROJECT_PREFIX] - e.g., if [SHORT_PROJECT_PREFIX] is [PLAN], use `/plan-session-end`)
+I need you to install the `/plan-session-end` slash command from the planning-is-prompting repository into this project.
 
 **Instructions:**
 
 1. Read the canonical session-end workflow from: planning-is-prompting → workflow/session-end.md
 
-2. Create a slash command file at `.claude/commands/<lowercase-prefix>-session-end.md` with the following structure:
-   - Reference the canonical workflow document
-   - Define this project's [SHORT_PROJECT_PREFIX] (ask me what it should be)
-   - Customize the workflow for this specific project (paths, history.md location, etc.)
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-session-end.md
+   - Target: .claude/commands/plan-session-end.md
+   - Keep the filename as-is (plan-session-end.md)
 
-3. The slash command should:
-   - Execute all steps from the canonical workflow (0 through 6)
-   - Use this project's specific [SHORT_PROJECT_PREFIX] in all notifications and TODO items
-   - Reference this project's history.md file location
-   - Send notifications after completing each major step
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Update any project-specific paths or configuration
 
 4. Ask me:
    - What should the [SHORT_PROJECT_PREFIX] be for this project? (e.g., [AUTH], [LUPIN], [WS])
-   - Does this project have a history.md file already, or should we create one?
+   - Where is the history.md file located in this project? (provide absolute path)
    - Are there any project-specific planning/tracking documents to update?
 
-After you create the slash command, test it by showing me what would happen if I invoked `/<lowercase-prefix>-session-end` right now.
+After installation, test it by showing me what would happen if I invoked `/plan-session-end` right now.
 ```
 
 ### Expected Questions
@@ -267,40 +264,38 @@ Adaptive history.md archival system that:
 **Copy-paste this prompt into Claude Code:**
 
 ```
-I need you to create a custom slash command `/<lowercase-prefix>-history-management` for this project that implements the adaptive history management workflow.
-
-(Replace `<lowercase-prefix>` with the lowercase version of this project's [SHORT_PROJECT_PREFIX] - e.g., if [SHORT_PROJECT_PREFIX] is [PLAN], use `/plan-history-management`)
+I need you to install the `/plan-history-management` slash command from the planning-is-prompting repository into this project.
 
 **Instructions:**
 
 1. Read the canonical history management workflow from: planning-is-prompting → workflow/history-management.md
 
-2. Create a slash command file at `.claude/commands/<lowercase-prefix>-history-management.md` that:
-   - **References** the canonical workflow document on every invocation
-   - **Reads** and executes the workflow as described in the canonical doc
-   - Accepts mode parameter: mode=check (default), mode=archive, mode=analyze, mode=dry-run
-   - Uses this project's specific configuration (PREFIX, paths, thresholds)
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-history-management.md
+   - Target: .claude/commands/plan-history-management.md
+   - Keep the filename as-is (plan-history-management.md)
 
-3. The slash command should work as a **reference wrapper** that:
-   - Reads the canonical doc each time it's invoked (ensuring always up-to-date implementation)
-   - Applies project-specific configuration
-   - Executes the workflow logic as defined in canonical doc
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Configure archive directory path
+   - Optionally customize token thresholds and retention targets
 
 4. Ask me:
-   - What is this project's [SHORT_PROJECT_PREFIX]?
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
    - Where is the history.md file located? (provide absolute path)
    - Where should archives be stored? (default: history/ subdirectory)
    - Any custom token thresholds? (default: 20k warning, 22k critical, 25k limit)
    - Any custom retention targets? (default: 8-12k tokens, 7-14 days)
 
 5. The command should support:
-   - `/<lowercase-prefix>-history-management` (defaults to mode=check)
-   - `/<lowercase-prefix>-history-management mode=check`
-   - `/<lowercase-prefix>-history-management mode=archive`
-   - `/<lowercase-prefix>-history-management mode=analyze`
-   - `/<lowercase-prefix>-history-management mode=dry-run`
+   - `/plan-history-management` (defaults to mode=check)
+   - `/plan-history-management mode=check`
+   - `/plan-history-management mode=archive`
+   - `/plan-history-management mode=analyze`
+   - `/plan-history-management mode=dry-run`
 
-After creation, run a health check to show me the current status: `/<lowercase-prefix>-history-management mode=check`
+After installation, run a health check to show me the current status: `/plan-history-management mode=check`
 ```
 
 ### Expected Questions
@@ -318,10 +313,10 @@ Claude will ask:
 After installation, test each mode:
 
 ```bash
-/<lowercase-prefix>-history-management mode=check     # Health check with forecast
-/<lowercase-prefix>-history-management mode=dry-run   # Simulate archive (no changes)
-/<lowercase-prefix>-history-management mode=analyze   # Deep trend analysis
-/<lowercase-prefix>-history-management mode=archive   # Execute archival (when needed)
+/plan-history-management mode=check     # Health check with forecast
+/plan-history-management mode=dry-run   # Simulate archive (no changes)
+/plan-history-management mode=analyze   # Deep trend analysis
+/plan-history-management mode=archive   # Execute archival (when needed)
 ```
 
 ### Customization Options
@@ -435,28 +430,315 @@ Session initialization routine:
 **Copy-paste this prompt into Claude Code:**
 
 ```
-Create a custom slash command `/<lowercase-prefix>-session-start` for this project.
-
-(Replace `<lowercase-prefix>` with the lowercase version of this project's [SHORT_PROJECT_PREFIX] - e.g., if [SHORT_PROJECT_PREFIX] is [PLAN], use `/plan-session-start`)
+I need you to install the `/plan-session-start` slash command from the planning-is-prompting repository into this project.
 
 **Instructions:**
 
 1. Read the canonical session-start workflow from: planning-is-prompting → workflow/session-start.md
 
-2. Create `.claude/commands/<lowercase-prefix>-session-start.md` that:
-   - Reads this project's history.md file
-   - Shows current status summary (top 3 lines)
-   - Displays most recent TODO list
-   - Identifies current implementation document (from history.md header)
-   - Optionally reads the implementation document
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-session-start.md
+   - Target: .claude/commands/plan-session-start.md
+   - Keep the filename as-is (plan-session-start.md)
 
-3. Ask me:
-   - What is this project's [SHORT_PROJECT_PREFIX]?
-   - Where is history.md located?
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Configure whether to automatically read implementation documents
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
    - Do you want the command to automatically read the implementation document?
 
-After creation, invoke the command to show me the current project status.
+After installation, invoke the command to show me the current project status: `/plan-session-start`
 ```
+
+---
+
+## Backup Workflow
+
+### What It Does
+
+Automated rsync backup with version checking:
+- Syncs project files from primary to backup storage (e.g., DATA01 → DATA02)
+- Excludes build artifacts, caches, and other noise
+- Automatic version checking against canonical reference
+- Smart updates that preserve your configuration
+- Dry-run by default for safety
+- Accessible via `/plan-backup` slash command
+
+**Canonical Script**: planning-is-prompting → scripts/rsync-backup.sh
+**Canonical Workflow**: planning-is-prompting → workflow/backup-version-check.md
+
+### Prerequisites
+
+**Environment Variable** (Required for version checking):
+
+Add to your ~/.claude/CLAUDE.md or shell config:
+
+```bash
+export PLANNING_IS_PROMPTING_ROOT="/mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting"
+```
+
+Verify:
+```bash
+echo $PLANNING_IS_PROMPTING_ROOT
+```
+
+**Note**: Backup works without this variable, but version checking will be disabled.
+
+### Install as Script + Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the backup workflow from planning-is-prompting into this project.
+
+**Instructions:**
+
+1. **Copy canonical script**:
+   - Source: $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh
+   - Target: src/scripts/backup.sh
+   - Make executable: chmod +x src/scripts/backup.sh
+
+2. **Copy exclusion patterns**:
+   - Source: $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-exclude-default.txt
+   - Target: src/scripts/conf/rsync-exclude.txt
+   - Create directory if needed: mkdir -p src/scripts/conf
+
+3. **Copy slash command template**:
+   - Source: $PLANNING_IS_PROMPTING_ROOT/scripts/backup-command-template.md
+   - Target: .claude/commands/plan-backup.md
+
+4. **Customize src/scripts/backup.sh** (ask me for these values):
+   - SOURCE_DIR: Full path to project directory to backup
+   - DEST_DIR: Full path to backup destination
+   - PROJECT_NAME: Display name for output
+
+5. **Customize src/scripts/conf/rsync-exclude.txt**:
+   - Review exclusion patterns
+   - Add project-specific patterns as needed
+   - Remove commented patterns you want to exclude
+
+6. **Customize .claude/commands/plan-backup.md**:
+   - Replace [PROJECT_NAME] with project's name
+   - Replace [SHORT_PROJECT_PREFIX] with project's prefix
+
+7. **Ask me**:
+   - What is the SOURCE_DIR? (full path to project)
+   - What is the DEST_DIR? (full path to backup destination)
+   - What is the PROJECT_NAME? (for display in output)
+   - What is the [SHORT_PROJECT_PREFIX]?
+   - Any additional exclusion patterns to add?
+
+After installation, test with: `/plan-backup` (dry-run mode)
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **SOURCE_DIR** - Full path to project directory
+   - Example: `/mnt/DATA01/include/www.deepily.ai/projects/genie-in-the-box/`
+   - Include trailing slash
+
+2. **DEST_DIR** - Full path to backup destination
+   - Example: `/mnt/DATA02/include/www.deepily.ai/projects/genie-in-the-box/`
+   - Include trailing slash
+   - Parent directory must exist
+
+3. **PROJECT_NAME** - Display name in output
+   - Example: `Genie in the Box` or `COSA Project`
+
+4. **[SHORT_PROJECT_PREFIX]** - For notifications and commands
+   - Example: `[GITB]`, `[COSA]`, `[AUTH]`
+
+5. **Additional exclusions** - Project-specific files/directories to exclude
+   - Example: `*.bak`, `local_config/`, `secrets/`
+
+### Usage
+
+**Via slash command** (recommended):
+```bash
+/plan-backup                     # Dry-run (preview changes)
+/plan-backup --write             # Execute backup
+/plan-backup --check-for-update  # Check for script updates
+```
+
+**Via script directly**:
+```bash
+./src/scripts/backup.sh                     # Dry-run
+./src/scripts/backup.sh --write             # Execute
+./src/scripts/backup.sh --check-for-update  # Check version
+```
+
+**Skip version check** (for automation):
+```bash
+SKIP_VERSION_CHECK=1 ./src/scripts/backup.sh --write
+```
+
+### Version Checking
+
+**Automatic on every run**:
+- Compares local script vs. canonical reference
+- Notifies if updates available
+- Offers smart update options
+
+**Update options when new version available**:
+- [U] Update script (preserves your config)
+- [E] Update exclusions (merges new patterns)
+- [B] Update both
+- [D] Show diff
+- [S] Skip for now
+- [C] Cancel
+
+**Manual version check**:
+```bash
+/plan-backup --check-for-update
+```
+
+**For complete update workflow**: See planning-is-prompting → workflow/backup-version-check.md
+
+### Customization Options
+
+**Add project-specific exclusions**:
+
+Edit `src/scripts/conf/rsync-exclude.txt`:
+```bash
+# Project-specific exclusions
+my_local_env/
+*.secret
+temp_data/
+```
+
+**Change backup destination**:
+
+Edit `src/scripts/backup.sh` config section:
+```bash
+# === CONFIG START ===
+DEST_DIR="/new/backup/location/"
+# === CONFIG END ===
+```
+
+**Disable version checking**:
+
+Set environment variable:
+```bash
+export SKIP_VERSION_CHECK=1
+```
+
+Or unset PLANNING_IS_PROMPTING_ROOT:
+```bash
+unset PLANNING_IS_PROMPTING_ROOT
+```
+
+### Testing the Installation
+
+**Step 1: Dry-run test**:
+```bash
+/plan-backup
+```
+
+Verify:
+- Source and destination paths are correct
+- Exclusion patterns are appropriate
+- No errors during validation
+- File list looks reasonable
+
+**Step 2: Execute first backup**:
+```bash
+/plan-backup --write
+```
+
+Verify:
+- Rsync completes successfully
+- Destination directory created with correct files
+- Excluded files are not copied
+- Backup stats make sense
+
+**Step 3: Version check test**:
+```bash
+/plan-backup --check-for-update
+```
+
+Verify:
+- Shows current version
+- Shows canonical version (if PLANNING_IS_PROMPTING_ROOT set)
+- Update status is correct
+
+### Troubleshooting
+
+**Issue**: "ERROR: Exclusion file not found"
+
+**Solution**:
+```bash
+# Verify file exists
+ls -l src/scripts/conf/rsync-exclude.txt
+
+# Create if missing
+mkdir -p src/scripts/conf
+cp $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-exclude-default.txt \
+   src/scripts/conf/rsync-exclude.txt
+```
+
+**Issue**: "ERROR: Destination parent directory does not exist"
+
+**Solution**:
+```bash
+# Create parent directory
+mkdir -p $(dirname "$DEST_DIR")
+```
+
+**Issue**: Version check always says "Not configured"
+
+**Solution**:
+```bash
+# Add to ~/.claude/CLAUDE.md
+export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
+
+# Reload shell config
+source ~/.claude/CLAUDE.md
+```
+
+**Issue**: Slash command not found
+
+**Solution**:
+```bash
+# Verify slash command file exists
+ls -l .claude/commands/plan-backup.md
+
+# Copy if missing
+cp $PLANNING_IS_PROMPTING_ROOT/scripts/backup-command-template.md \
+   .claude/commands/plan-backup.md
+```
+
+**Issue**: Rsync is too slow
+
+**Solution**:
+```bash
+# Check what's being synced
+/plan-backup | grep -A 20 "Exclusion patterns"
+
+# Add more exclusions if needed
+echo "large_files/" >> src/scripts/conf/rsync-exclude.txt
+```
+
+### Best Practices
+
+1. **Always test with dry-run first**: Run `/plan-backup` before `/plan-backup --write`
+
+2. **Review exclusions regularly**: Keep `rsync-exclude.txt` up-to-date with your project
+
+3. **Check for updates periodically**: Run `/plan-backup --check-for-update` monthly
+
+4. **Backup before major changes**: Run backup before risky operations
+
+5. **Monitor disk space**: Ensure destination has sufficient space
+
+6. **Schedule regular backups**: Consider cron job or reminder
+
+7. **Test restoration**: Periodically verify you can restore from backup
 
 ---
 
@@ -492,7 +774,7 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 
 ### Issue: Slash command not found
 
-**Solution**: Ensure `.claude/commands/` directory exists and slash command file is properly named (e.g., `session-end.md` for `/session-end`)
+**Solution**: Ensure `.claude/commands/` directory exists and slash command file is properly named (e.g., `plan-session-end.md` for `/plan-session-end`)
 
 ### Issue: Notifications not working
 
@@ -509,7 +791,7 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 
 **Solution**:
 1. Verify token count: `wc -w history.md | awk '{print $1 * 1.33}'`
-2. Run health check: `/history-management mode=check`
+2. Run health check: `/plan-history-management mode=check`
 3. Review canonical workflow for boundary detection algorithm
 
 ### Issue: [SHORT_PROJECT_PREFIX] not working in TODOs
@@ -519,6 +801,13 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 ---
 
 ## Version History
+
+**v1.1** (2025.10.08) - Updated naming convention
+- Changed slash command naming from target project prefix to source repository prefix
+- All workflow wrappers now use `/plan-*` prefix (identifies source as planning-is-prompting)
+- Simplifies installation (no renaming required)
+- Improves workflow attribution across multiple projects
+- Updated all installation instructions and examples
 
 **v1.0** (2025.10.01) - Initial centralized installation guide
 - Session-end workflow installation

@@ -1,11 +1,68 @@
 # Planning is Prompting - Session History
 
-**Current Status**: "Planning is Prompting" core workflows complete with p-is-p-* naming, thin wrapper slash commands, and comprehensive documentation.
-**Next Steps**: Test p-is-p workflows in practice, demonstrate in other repos, create additional workflow content.
+**Current Status**: Session-start workflow complete, backup workflow with version checking implemented, slash command naming consistency enforced across all workflows.
+**Next Steps**: Test backup workflow in practice, install workflows in other repos, continue populating stub workflow files.
 
 ---
 
 ## October 2025
+
+### 2025.10.08 - Session 5: Session-Start Workflow & Backup Infrastructure
+
+**Accomplishments**:
+- **Populated session-start.md workflow** (510 lines):
+  - TodoWrite-based initialization checklist (steps 0-6)
+  - Configuration loading and validation
+  - Workflow discovery and categorization
+  - History loading with token health check
+  - Outstanding TODO handling (ask user for direction, not auto-carry-forward)
+  - Session context presentation with integration to p-is-p workflows
+- **Updated INSTALLATION-GUIDE.md naming convention** (v1.1):
+  - Changed from target project prefix to source repository prefix
+  - All workflows now use `/plan-*` prefix (identifies planning-is-prompting origin)
+  - Updated all examples: `/cosa-session-end` → `/plan-session-end` pattern
+  - Rationale: Prefix shows provenance/source, not target project
+- **Created comprehensive backup workflow with runtime version checking**:
+  - Canonical script: `scripts/rsync-backup.sh` v1.0 (185 lines)
+  - Exclusion template: `scripts/rsync-exclude-default.txt`
+  - Slash command template: `scripts/backup-command-template.md`
+  - Version check workflow: `workflow/backup-version-check.md` (460 lines)
+  - Smart update mechanism preserves config, merges exclusions
+  - Environment-driven: Uses `$PLANNING_IS_PROMPTING_ROOT`
+  - Added to global/CLAUDE.md: PLANNING_IS_PROMPTING_ROOT env var
+  - Installation section in INSTALLATION-GUIDE.md (290 lines)
+- **Fixed backup slash command naming consistency**:
+  - Renamed `.claude/commands/backup.md` → `plan-backup.md`
+  - Updated all documentation: `/backup` → `/plan-backup` (30+ instances)
+  - Files updated: template, canonical script, version check workflow, installation guide
+  - Now consistent with `/plan-session-end`, `/plan-history-management`, `/plan-session-start`
+- **Dogfooding installations** (testing in this repo):
+  - Installed backup.sh in src/scripts/ (customized for planning-is-prompting)
+  - Installed /plan-backup slash command
+  - Installed session-start workflow content
+
+**Key Design Decisions**:
+- **Session-start pattern**: Initialization steps become TodoWrite checklist for visual progress
+- **Outstanding TODOs**: Notification + user prompt [1/2/3], not automatic carry-forward
+- **Backup architecture**: Copy pattern (independent repos) + version checking (update discovery)
+- **Version checking**: Automatic on every run, offers smart updates that preserve config
+- **Slash command provenance**: `/plan-*` prefix identifies source repository across all projects
+- **Environment configuration**: PLANNING_IS_PROMPTING_ROOT for canonical script location
+
+**Accomplishments Summary**:
+- 3 major workflow files created/populated (~1,260 total lines)
+- 8 files updated for naming consistency
+- Environment configuration established
+- Complete backup infrastructure with version management
+
+**TODO for Next Session**:
+- [ ] Test backup workflow: Run /plan-backup in this repo
+- [ ] Test session-start workflow: Run /plan-session-start
+- [ ] Install backup + session workflows in genie-in-the-box repo
+- [ ] Populate remaining workflow stubs (commit-management.md, notification-system.md)
+- [ ] Add practical examples to README.md
+
+---
 
 ### 2025.10.04 - Session 4: Planning is Prompting Core Workflows & Naming System
 

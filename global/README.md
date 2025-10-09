@@ -1,6 +1,6 @@
 # Global Configuration Snapshot
 
-This directory contains a **reference snapshot** of the global Claude Code configuration file.
+This directory contains a **reference snapshot** of the global Claude Code configuration file pulled from my Lupin repo.
 
 ## Purpose
 
@@ -10,7 +10,7 @@ This directory contains a **reference snapshot** of the global Claude Code confi
 
 ## File
 
-- **CLAUDE.md**: Verbatim copy of `/home/rruiz/.claude/CLAUDE.md`
+- **CLAUDE.md**: Verbatim copy of `~/.claude/CLAUDE.md`
 
 ## Usage
 
@@ -34,4 +34,4 @@ This directory shows a **real-world example** of that template in use.
 ## Snapshot Date
 
 - **Captured**: 2025.10.04
-- **From**: Ricardo's working configuration (includes PATH MANAGEMENT, TESTING sections, etc.)
+- **From**: Rick's working configuration (includes PATH MANAGEMENT, TESTING sections, etc.)
