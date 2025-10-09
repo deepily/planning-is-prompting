@@ -78,9 +78,9 @@ if [[ "$1" == "--check-for-update" ]]; then
     echo -e "Local version: ${YELLOW}v$SCRIPT_VERSION${NC}"
 
     if [[ -n "$PLANNING_IS_PROMPTING_ROOT" ]]; then
-        local canonical_script="$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh"
+        canonical_script="$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh"
         if [[ -f "$canonical_script" ]]; then
-            local canonical_version=$( grep -m 1 "# rsync-backup.sh v" "$canonical_script" | sed 's/.*v\([0-9.]*\).*/\1/' )
+            canonical_version=$( grep -m 1 "# rsync-backup.sh v" "$canonical_script" | sed 's/.*v\([0-9.]*\).*/\1/' )
             echo -e "Canonical version: ${GREEN}v$canonical_version${NC}"
 
             if [[ "$canonical_version" == "$SCRIPT_VERSION" ]]; then
