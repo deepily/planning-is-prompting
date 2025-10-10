@@ -1,13 +1,131 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session-end workflow complete. All backup slash commands tested and working. Ready for next session work on remaining TODOs (install workflows in genie-in-the-box, populate workflow stubs, add examples to README).
+**RESUME HERE**: Installation wizard successfully dogfooded and validated. /plan-install-wizard slash command created. All workflows complete and tested.
 
-**Current Status**: Session-start workflow complete, backup workflow with version checking implemented, slash command naming consistency enforced across all workflows.
-**Next Steps**: Test backup workflow in practice, install workflows in other repos, continue populating stub workflow files.
+**Current Status**: Installation system complete with interactive wizard, executable INSTALLATION-GUIDE.md, and optional /plan-install-wizard slash command. All workflows validated through dogfooding.
+**Next Steps**: Cross-project testing (install workflows in genie-in-the-box), update global CLAUDE.md with new workflows, documentation polish.
 
 ---
 
 ## October 2025
+
+### 2025.10.10 - Session 8: Installation Wizard Dogfooding & Validation
+
+**Accomplishments**:
+- **Successfully dogfooded INSTALLATION-GUIDE.md**:
+  - Executed session-start workflow (/plan-session-start) - all steps validated
+  - Shared INSTALLATION-GUIDE.md and triggered installation wizard
+  - Wizard correctly detected existing installation (all workflows present)
+  - "Add More Workflows" mode validated (correctly showed nothing to add)
+  - State detection logic working correctly (clean vs. existing vs. complete)
+- **Created /plan-install-wizard slash command**:
+  - `.claude/commands/plan-install-wizard.md` (62 lines)
+  - Reference wrapper pattern (reads INSTALLATION-GUIDE.md on invocation)
+  - Project-agnostic design (works in any project)
+  - Optional convenience feature (INSTALLATION-GUIDE.md still works standalone)
+- **Updated CLAUDE.md**:
+  - Added plan-install-wizard to repository structure diagram
+  - Added backup commands (plan-backup-check, plan-backup, plan-backup-write) to structure
+  - Created new "Installing Workflows in Other Projects" section
+  - Documents wizard usage patterns and benefits
+- **Updated README.md**:
+  - Added /plan-install-wizard to Quick Install section
+  - Documented two installation methods (share guide vs. slash command)
+  - Listed all 10 available slash commands with descriptions
+
+**Dogfooding Validation Results**:
+1. ✅ Session-start workflow: Executed successfully with TodoWrite tracking
+2. ✅ INSTALLATION-GUIDE.md: Executable instructions pattern works
+3. ✅ State detection: Correctly identified all installed workflows
+4. ✅ "Add More Workflows" mode: Properly shows completion status
+5. ✅ Workflow catalog comparison: Accurate detection (0 remaining to install)
+6. ✅ /plan-install-wizard creation: File created, reference wrapper pattern validated
+
+**Key Design Validations**:
+- **Executable document pattern**: INSTALLATION-GUIDE.md successfully triggers wizard
+- **State detection**: Accurately identifies clean/partial/complete installations
+- **Reference wrapper pattern**: /plan-install-wizard reads canonical guide (no duplication)
+- **Optional convenience**: Wizard works with or without slash command
+- **Project-agnostic**: No customization needed for /plan-install-wizard
+
+**Pattern Used This Session**:
+- Work type: Testing and validation (dogfooding installation system)
+- Scale: Small (1 hour)
+- Pattern: Pattern 4 (Investigation/Testing)
+- Documentation: history.md only
+
+**Files Created**:
+1. `.claude/commands/plan-install-wizard.md` - Installation wizard slash command (62 lines)
+
+**Files Modified**:
+1. `CLAUDE.md` - Added wizard reference and updated repository structure
+2. `README.md` - Added /plan-install-wizard documentation to Quick Install section
+
+**TODO for Next Session**:
+- [ ] Cross-project testing: Install workflows in genie-in-the-box using wizard
+- [ ] Test clean installation scenario (in fresh project)
+- [ ] Update global ~/.claude/CLAUDE.md with new workflow references
+- [ ] Documentation polish: Add more examples to workflows
+- [ ] Test session-end workflow in another repo
+
+---
+
+### 2025.10.10 - Session 7: Installation Wizard Implementation
+
+**Accomplishments**:
+- **Created comprehensive installation wizard** (1,220 lines):
+  - `workflow/installation-wizard.md` - Canonical workflow with complete installation logic
+  - Interactive menu system with workflow catalog metadata
+  - Smart state detection (clean vs existing installation)
+  - "Add More Workflows" mode for existing installations
+  - Step 7.5: Optional self-installation of /plan-install-wizard slash command
+  - Configuration templates and error handling
+- **Updated INSTALLATION-GUIDE.md with executable instruction block** (~108 lines at top):
+  - Detects project state (clean or existing workflows)
+  - Prompts user with appropriate options
+  - Triggers wizard execution based on user choice
+  - Manual reference sections remain below (unchanged)
+- **Enhanced README.md with Quick Install section**:
+  - Prominent 3-step installation process
+  - Lists all available workflows
+  - Explains optional slash command installation
+  - Documents "adding more later" pattern
+- **Architecture clarifications through iteration**:
+  - Confirmed: No slash command needed in planning-is-prompting repo initially
+  - Slash command gets created in target project during Step 7.5 (optional)
+  - INSTALLATION-GUIDE.md is primary entry point (always works)
+  - Single source of truth: installation-wizard.md (others are thin pointers)
+
+**Key Design Decisions**:
+- **Executable document pattern**: INSTALLATION-GUIDE.md contains instructions for Claude to execute wizard
+- **No duplication**: Workflow catalog, logic, templates all in installation-wizard.md only
+- **Smart detection**: Wizard detects existing installations and offers appropriate options (add more, reinstall, cancel)
+- **Optional convenience**: /plan-install-wizard slash command installed only if user opts in (Step 7.5)
+- **Bootstrap-friendly**: First use is sharing INSTALLATION-GUIDE.md (no dependencies)
+- **Future-proof**: Can always share INSTALLATION-GUIDE.md again to add more workflows
+
+**Pattern Used This Session**:
+- Work type: Feature Development (interactive installation system)
+- Scale: Medium (2 hours)
+- Pattern: Pattern 3 (Feature Development)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Created**:
+1. `workflow/installation-wizard.md` - Canonical installation workflow (1,220 lines)
+
+**Files Modified**:
+1. `workflow/INSTALLATION-GUIDE.md` - Added executable instruction block at top
+2. `README.md` - Added Quick Install section with installation wizard documentation
+
+**TODO for Next Session**:
+- [ ] Test installation wizard: Share INSTALLATION-GUIDE.md in fresh session
+- [ ] Dogfood wizard: Validate all steps work correctly (Steps 0-7.5)
+- [ ] Verify slash command self-installation works (Step 7.5)
+- [ ] Test "Add More Workflows" mode with existing installation
+- [ ] Validate configuration collection and file customization
+- [ ] Test in genie-in-the-box repo (cross-project validation)
+
+---
 
 ### 2025.10.08 - Session 6: Backup Slash Command Testing & Session-End Workflow
 

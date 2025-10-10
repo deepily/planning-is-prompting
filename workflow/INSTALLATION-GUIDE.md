@@ -6,6 +6,109 @@
 
 ---
 
+## 🚀 Interactive Installation (Recommended)
+
+**Instructions to Claude Code:**
+
+When a user shares this INSTALLATION-GUIDE.md document with you, they likely want to install or manage planning-is-prompting workflows. Follow this protocol:
+
+### Step 1: Detect Project State
+
+Check if planning-is-prompting workflows are already installed:
+
+```bash
+# Check for existing workflows
+ls .claude/commands/plan-*.md 2>/dev/null
+ls .claude/commands/p-is-p-*.md 2>/dev/null
+
+# Check for configuration
+ls CLAUDE.md 2>/dev/null | xargs grep -l "planning-is-prompting\|Session Management\|History Management"
+```
+
+### Step 2: Offer Appropriate Action
+
+**If NO workflows detected (clean installation):**
+
+Present this prompt to the user:
+
+```
+══════════════════════════════════════════════════════════
+Planning is Prompting - Installation
+══════════════════════════════════════════════════════════
+
+I see you're looking to install planning-is-prompting workflows.
+
+Would you like to run the interactive installation wizard?
+
+The wizard will:
+• Show available workflows (Session, History, Planning, Backup)
+• Let you select which ones to install
+• Guide you through configuration (PREFIX, paths)
+• Install and validate everything automatically
+
+[1] Yes, run the installation wizard
+[2] No, I'll use the manual instructions below
+
+What would you like to do? [1/2]
+```
+
+**If workflows ALREADY detected (existing installation):**
+
+Present this prompt to the user:
+
+```
+══════════════════════════════════════════════════════════
+Planning is Prompting - Existing Installation Detected
+══════════════════════════════════════════════════════════
+
+I found existing planning-is-prompting workflows in this project:
+[List detected workflows here, e.g.:]
+✓ Session Management (/plan-session-start, /plan-session-end)
+✓ History Management (/plan-history-management)
+
+Not yet installed:
+○ Planning is Prompting Core (/p-is-p-*)
+○ Backup Infrastructure (/plan-backup-*)
+
+What would you like to do?
+
+[1] Add more workflows (install additional workflows)
+[2] View manual instructions for specific workflow
+[3] Nothing, I'm just reading the docs
+
+What would you like to do? [1/2/3]
+```
+
+### Step 3: Execute Based on Choice
+
+**If user chooses [1] - Run wizard (either clean or add more):**
+
+1. Read the canonical workflow document:
+   ```
+   planning-is-prompting → workflow/installation-wizard.md
+   ```
+
+2. Execute the installation flow as described in that document:
+   - Step 0: Create installation TODO list
+   - Step 1: Detect current state (already done above)
+   - Step 2: Present workflow catalog
+   - Step 3: Collect user selection and validate
+   - Step 4: Collect project configuration
+   - Step 5: Install workflows
+   - Step 6: Validate installation
+   - Step 7: Present summary and next steps
+   - Step 7.5: Remind about future additions
+
+3. Use TodoWrite to track installation progress
+
+4. Send notifications after each major step (see workflow document for details)
+
+**If user chooses [2] or [3] - Manual instructions:**
+
+Continue reading the manual installation sections below. Answer specific questions about workflows or provide installation snippets as needed.
+
+---
+
 ## Overview
 
 This guide provides copy-paste prompts to install workflow templates from the planning-is-prompting repository into your new or existing projects. Each workflow can be:

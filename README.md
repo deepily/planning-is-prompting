@@ -7,7 +7,43 @@ This repository is a centralized knowledge base for meta-prompting strategies an
 
 ## Getting Started
 
-- **[INSTALLATION-GUIDE.md](workflow/INSTALLATION-GUIDE.md)** - Centralized installation instructions for integrating workflows into your projects
+### 🚀 Quick Install (Interactive Wizard)
+
+The easiest way to install workflows is with the **interactive installation wizard**:
+
+**Method 1: Share the installation guide** (works everywhere):
+   ```
+   planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+   ```
+
+**Method 2: Use the wizard slash command** (if installed):
+   ```
+   /plan-install-wizard
+   ```
+
+**Claude will**:
+- Show available workflows (Session, History, Planning, Backup)
+- Guide you through configuration (PREFIX, paths)
+- Install and validate everything automatically
+- Start working with your new workflows immediately!
+
+**What gets installed** (you choose):
+- ✅ Session Management: `/plan-session-start`, `/plan-session-end`
+- ✅ History Management: `/plan-history-management`
+- ✅ Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
+- ✅ Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
+
+**Optional**: The wizard offers to install `/plan-install-wizard` slash command for future use (Step 7.5).
+
+**Adding more workflows later**:
+- **With wizard installed**: Just type `/plan-install-wizard`
+- **Without wizard**: Share INSTALLATION-GUIDE.md again
+- **Both methods**: Automatically detect existing installations and offer to add more workflows
+
+### 📚 Documentation
+
+- **[INSTALLATION-GUIDE.md](workflow/INSTALLATION-GUIDE.md)** - Interactive wizard + manual installation instructions
+- **[installation-wizard.md](workflow/installation-wizard.md)** - Canonical workflow for installation process
 - **[CLAUDE.md](CLAUDE.md)** - Project-specific configuration for this repository (example for other projects)
 - **[.claude/commands/](.claude/commands/)** - Working examples of slash commands using reference wrapper pattern
 

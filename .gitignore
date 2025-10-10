@@ -4,8 +4,9 @@ venv/
 env/
 ENV/
 
-# Claude Code settings
-.claude/
+# Claude Code settings (exclude user-local settings but keep template slash commands)
+.claude/*
+!.claude/commands/
 
 # IDE directories
 .idea/

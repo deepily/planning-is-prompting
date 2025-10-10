@@ -27,9 +27,13 @@ planning-is-prompting/
 │   ├── p-is-p-00-start-here.md
 │   ├── p-is-p-01-planning.md
 │   ├── p-is-p-02-documentation.md
-│   ├── plan-session-start.md
+│   ├── plan-backup-check.md
+│   ├── plan-backup.md
+│   ├── plan-backup-write.md
+│   ├── plan-history-management.md
+│   ├── plan-install-wizard.md
 │   ├── plan-session-end.md
-│   └── plan-history-management.md
+│   └── plan-session-start.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -146,6 +150,21 @@ When updating workflow documents:
 2. Update version history at bottom of document
 3. Test changes in at least one consuming project
 4. Update README.md if adding new workflow files
+
+### Installing Workflows in Other Projects
+
+Use the interactive installation wizard:
+1. Share INSTALLATION-GUIDE.md in target project, or
+2. Use `/plan-install-wizard` (if installed)
+
+The wizard will:
+- Detect existing workflows (clean vs. partial vs. complete installation)
+- Present catalog of available workflows
+- Guide configuration collection ([PREFIX], paths, etc.)
+- Install and validate selected workflows
+- Optionally install `/plan-install-wizard` for future use
+
+**See**: planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
 ## Development Guidelines
 
