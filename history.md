@@ -1,13 +1,66 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Installation wizard successfully dogfooded and validated. /plan-install-wizard slash command created. All workflows complete and tested.
+**RESUME HERE**: Installation wizard enhanced with git tracking verification, session-end workflow offer, and improved .gitignore pattern. All bugs fixed and ready for cross-project testing.
 
-**Current Status**: Installation system complete with interactive wizard, executable INSTALLATION-GUIDE.md, and optional /plan-install-wizard slash command. All workflows validated through dogfooding.
-**Next Steps**: Cross-project testing (install workflows in genie-in-the-box), update global CLAUDE.md with new workflows, documentation polish.
+**Current Status**: Installation wizard complete with three enhancements: (1) git tracking verification to prevent silent exclusion, (2) optional session-end workflow offer for complete documentation flow, (3) updated .gitignore pattern with negation exception for .claude/commands/. All workflows validated.
+**Next Steps**: Cross-project testing (install workflows in genie-in-the-box using updated wizard), test new verification steps, validate session-end integration.
 
 ---
 
 ## October 2025
+
+### 2025.10.11 - Session 9: Installation Wizard Bug Fixes & Enhancements
+
+**Accomplishments**:
+- **Fixed three critical UX bugs in installation wizard** (workflow/installation-wizard.md):
+  1. **"Press Enter for default" bug**: Changed to 'y' pattern (Enter won't fire on empty input in Claude Code UI)
+  2. **Path auto-linking bug**: Wrapped all path values in backticks to prevent markdown URL auto-linking
+  3. **Permission prompt fatigue**: Added optional Step 0.5 for one-time auto-approval configuration
+- **Added Step 6.5: Verify Git Tracking** (~110 lines):
+  - Purpose: Ensure newly created slash commands are tracked by git
+  - Checks: `git ls-files .claude/commands/*.md` to verify tracking
+  - Diagnostics: Uses `git check-ignore -v` to identify why files aren't tracked
+  - Benefits: Prevents silent exclusion, ensures team sharing, provides actionable fix guidance
+- **Added Step 8: Offer Session-End Workflow** (~108 lines):
+  - Purpose: Allow user to run `/plan-session-end` immediately after installation
+  - Conditional: Only offered if `/plan-session-end` was actually installed
+  - Process: Checks file existence, presents option, invokes workflow if user accepts
+  - Benefits: Immediate documentation, clean git commit, complete end-to-end flow
+- **Updated Step 5: .gitignore Pattern**:
+  - Changed from excluding only `.claude/settings.local.json` to full pattern
+  - New pattern: `.claude/*` with negation exception `!.claude/commands/`
+  - Rationale: Ensures slash commands are tracked while excluding user settings
+  - Added explanatory rationale text in workflow document
+- **Updated Step 0 TODO Template**:
+  - Added new steps: "Verify git tracking" and "Offer session-end workflow"
+  - Updated both template list and example JSON
+  - Ensures installation progress tracking includes all new steps
+
+**Key Design Decisions**:
+- **'y' pattern for defaults**: Single character is quick, clear intent ("yes, use default"), works with Claude Code text input
+- **Backtick wrapping for paths**: Prevents markdown auto-linking, semantically correct (paths are literal values), maintains copy-paste
+- **Git tracking verification**: Catches silent exclusion early, before first commit attempt
+- **Conditional session-end offer**: Only shown when relevant (session management installed), avoids confusing planning-only users
+- **Optional permission setup**: One-time configuration benefits all future workflow installations in project
+
+**Pattern Used This Session**:
+- Work type: Bug fixes and feature enhancements (wizard UX improvements)
+- Scale: Medium (1-2 hours)
+- Pattern: Pattern 4 (Problem Investigation + fixes)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/installation-wizard.md` - Three bug fixes + two new steps + template updates (~340 lines added/modified)
+
+**TODO for Next Session**:
+- [ ] Cross-project testing: Install workflows in genie-in-the-box using updated wizard
+- [ ] Test new Step 6.5: Verify git tracking verification in action
+- [ ] Test new Step 8: Session-end workflow offer flow
+- [ ] Validate 'y' pattern for default values works correctly
+- [ ] Test clean installation scenario with all new enhancements
+- [ ] Update global ~/.claude/CLAUDE.md with new workflow references
+
+---
 
 ### 2025.10.10 - Session 8: Installation Wizard Dogfooding & Validation
 

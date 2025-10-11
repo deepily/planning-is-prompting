@@ -179,13 +179,16 @@ This metadata drives the interactive menu generation in Step 2.
 
 **Template TODO Items**:
 ```
+[INSTALL] Configure permissions (optional)
 [INSTALL] Detect current project state
 [INSTALL] Present workflow catalog and get user selection
 [INSTALL] Validate selection and dependencies
 [INSTALL] Collect project configuration
 [INSTALL] Install selected workflows
 [INSTALL] Validate installation
+[INSTALL] Verify git tracking
 [INSTALL] Present summary and next steps
+[INSTALL] Offer session-end workflow (conditional)
 ```
 
 **Instructions**:
@@ -198,15 +201,142 @@ This metadata drives the interactive menu generation in Step 2.
 **Example**:
 ```json
 [
-  {"content": "[INSTALL] Detect project state", "status": "in_progress", "activeForm": "[INSTALL] Detecting project state"},
+  {"content": "[INSTALL] Configure permissions", "status": "in_progress", "activeForm": "[INSTALL] Configuring permissions"},
+  {"content": "[INSTALL] Detect project state", "status": "pending", "activeForm": "[INSTALL] Detecting project state"},
   {"content": "[INSTALL] Present workflow catalog", "status": "pending", "activeForm": "[INSTALL] Presenting workflow catalog"},
   {"content": "[INSTALL] Validate selection", "status": "pending", "activeForm": "[INSTALL] Validating selection"},
   {"content": "[INSTALL] Collect configuration", "status": "pending", "activeForm": "[INSTALL] Collecting configuration"},
   {"content": "[INSTALL] Install workflows", "status": "pending", "activeForm": "[INSTALL] Installing workflows"},
   {"content": "[INSTALL] Validate installation", "status": "pending", "activeForm": "[INSTALL] Validating installation"},
-  {"content": "[INSTALL] Present summary", "status": "pending", "activeForm": "[INSTALL] Presenting summary"}
+  {"content": "[INSTALL] Verify git tracking", "status": "pending", "activeForm": "[INSTALL] Verifying git tracking"},
+  {"content": "[INSTALL] Present summary", "status": "pending", "activeForm": "[INSTALL] Presenting summary"},
+  {"content": "[INSTALL] Offer session-end workflow", "status": "pending", "activeForm": "[INSTALL] Offering session-end workflow"}
 ]
 ```
+
+---
+
+### Step 0.5: Permission Setup (Optional but Recommended)
+
+**Purpose**: Configure auto-approval for workflow installation files to avoid repeated permission prompts
+
+**When to use**: First time installing workflows, or if experiencing multiple permission prompts during installation
+
+**Process**:
+
+1. **Present Permission Setup Option**:
+
+```
+══════════════════════════════════════════════════════════
+Permission Setup (Optional but Recommended)
+══════════════════════════════════════════════════════════
+
+To avoid repeated permission prompts during installation, you can
+configure auto-approval for workflow files.
+
+This is a ONE-TIME setup that will benefit all future workflow
+installations in this project.
+
+Would you like to configure auto-approval now?
+
+[1] Yes, show me how to configure auto-approval (recommended)
+[2] No, I'll approve each file manually during installation
+
+What would you like to do? [1/2]
+```
+
+2. **If user chooses [1] - Show Configuration Instructions**:
+
+```
+══════════════════════════════════════════════════════════
+Auto-Approval Configuration
+══════════════════════════════════════════════════════════
+
+To configure auto-approval, add these patterns to your Claude Code
+settings file.
+
+**File location**: `~/.claude/settings.local.json`
+
+**Patterns to add** (inside the "tools" → "approvedCommands" array):
+
+```json
+{
+  "tools": {
+    "approvedCommands": [
+      "Write(./.claude/commands/*):*",
+      "Write(./CLAUDE.md):*",
+      "Write(./history.md):*",
+      "Write(./src/scripts/*):*",
+      "Write(./.gitignore):*",
+      "Bash(mkdir:*)"
+    ]
+  }
+}
+```
+
+**What these patterns do**:
+• `Write(./.claude/commands/*):*` - Auto-approve creating slash commands
+• `Write(./CLAUDE.md):*` - Auto-approve creating/updating project config
+• `Write(./history.md):*` - Auto-approve creating history file
+• `Write(./src/scripts/*):*` - Auto-approve creating backup scripts
+• `Write(./.gitignore):*` - Auto-approve updating .gitignore
+• `Bash(mkdir:*` - Auto-approve directory creation
+
+**How to add them**:
+
+1. Open ~/.claude/settings.local.json in your editor
+2. Find the "approvedCommands" array under "tools"
+   (Create it if it doesn't exist)
+3. Add the patterns above (merge with any existing patterns)
+4. Save the file
+5. No need to restart - settings are reloaded automatically
+
+**Security note**:
+These patterns only apply to the current working directory (./),
+so they won't affect other projects.
+
+**Example of complete settings file**:
+```json
+{
+  "tools": {
+    "approvedCommands": [
+      "Write(./.claude/commands/*):*",
+      "Write(./CLAUDE.md):*",
+      "Write(./history.md):*",
+      "Write(./src/scripts/*):*",
+      "Write(./.gitignore):*",
+      "Bash(mkdir:*)"
+    ]
+  }
+}
+```
+
+──────────────────────────────────────────────────────────
+Ready to proceed with installation?
+──────────────────────────────────────────────────────────
+
+[1] I've configured auto-approval, continue installation
+[2] Skip auto-approval, I'll manually approve each file
+[3] Cancel installation
+```
+
+3. **Wait for user response**
+
+4. **Update TodoWrite**: Mark "Configure permissions" as completed
+
+5. **Send Notification**:
+   ```bash
+   notify-claude "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
+   ```
+
+6. **Proceed to Step 1** (State Detection)
+
+**Key Benefits**:
+- **One-time setup** - Works for all future workflow installations
+- **Optional** - Users can choose manual approval if preferred
+- **Secure** - Patterns scoped to current directory only
+- **Clear instructions** - Copy-pasteable JSON with explanations
+- **Educational** - Users learn about Claude Code's settings system
 
 ---
 
@@ -513,6 +643,8 @@ notify-claude "[INSTALL] ✅ Selection validated - dependencies satisfied" --typ
 
 **Process**:
 
+**Input Note**: For optional paths with defaults, type `y` to accept the default value, or type your custom path.
+
 1. **Collect Required Configuration**:
 
 ```
@@ -561,10 +693,14 @@ Where should history.md be stored?
 Default: ./history.md (project root)
 Other: ./docs/history.md, ./planning/history.md
 
-Your history path: ___________ (press Enter for default)
+Your history path: ___________ (type 'y' for default: ./history.md)
 ```
 
-   **Wait for response**, then:
+   **Wait for response**:
+   - If user responds with `y` → Use default: `./history.md`
+   - Otherwise → Use response as the custom path
+
+   Then:
 
 ```
 ──────────────────────────────────────────────────────────
@@ -576,8 +712,12 @@ Where should archived history files be stored?
 Default: ./history/ (subdirectory in project root)
 Other: ./docs/archive/, ./planning/archive/
 
-Your archive path: ___________ (press Enter for default)
+Your archive path: ___________ (type 'y' for default: ./history/)
 ```
+
+   **Wait for response**:
+   - If user responds with `y` → Use default: `./history/`
+   - Otherwise → Use response as the custom path
 
 2. **If Backup Infrastructure Selected**, additionally collect:
 
@@ -606,11 +746,11 @@ Configuration Summary
 
 ✓ Project Prefix: [MYPROJ]
 ✓ Project Name: My Project
-✓ History File: ./history.md
-✓ Archive Directory: ./history/
+✓ History File: `./history.md`
+✓ Archive Directory: `./history/`
 [If backup selected]
-✓ Backup Source: /mnt/DATA01/.../my-project/
-✓ Backup Destination: /mnt/DATA02/.../my-project/
+✓ Backup Source: `/mnt/DATA01/.../my-project/`
+✓ Backup Destination: `/mnt/DATA02/.../my-project/`
 
 Is this correct?
 [1] Yes, proceed with installation
@@ -769,12 +909,15 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
 
    Add if not already present:
    ```
-   # Claude Code local config
-   .claude/settings.local.json
+   # Claude Code settings (exclude user-local settings but keep template slash commands)
+   .claude/*
+   !.claude/commands/
 
    # Backup exclusions (if backup installed)
    src/scripts/conf/rsync-exclude-local.txt
    ```
+
+   **Rationale**: The `!.claude/commands/` negation pattern ensures slash commands are tracked by git while excluding user-specific settings like `settings.local.json`.
 
 7. **Track Installation Progress** (update TodoWrite as each file created):
 
@@ -861,8 +1004,8 @@ File Checks:
 
 Configuration Checks:
 ✓ [SHORT_PROJECT_PREFIX] = [MYPROJ] (verified in CLAUDE.md)
-✓ History path = ./history.md (exists)
-✓ Archive path = ./history/ (exists)
+✓ History path = `./history.md` (exists)
+✓ Archive path = `./history/` (exists)
 ✓ No placeholder text found
 
 Discoverability:
@@ -883,6 +1026,118 @@ Installation validated successfully!
 ```bash
 notify-claude "[MYPROJ] ✅ Installation validated - all checks passed" --type=progress --priority=medium
 ```
+
+---
+
+### Step 6.5: Verify Git Tracking
+
+**Purpose**: Ensure newly created slash commands are being tracked by git
+
+**Process**:
+
+1. **Check if slash commands are tracked by git**:
+   ```bash
+   git ls-files .claude/commands/*.md
+   ```
+
+2. **Analyze Tracking Status**:
+
+   **If files are listed** (tracking successful):
+   ```
+   ──────────────────────────────────────────────────────────
+   Git Tracking Verification
+   ──────────────────────────────────────────────────────────
+
+   ✓ Slash commands are being tracked by git:
+
+   .claude/commands/plan-session-start.md
+   .claude/commands/plan-session-end.md
+   .claude/commands/plan-history-management.md
+
+   These files will be included in commits and can be shared with
+   your team.
+
+   Your .gitignore is properly configured.
+   ```
+
+   **If no files are listed** (tracking failed):
+   ```
+   ──────────────────────────────────────────────────────────
+   ⚠️ Git Tracking Issue Detected
+   ──────────────────────────────────────────────────────────
+
+   The newly created slash commands are NOT being tracked by git.
+
+   This usually happens when .gitignore excludes the .claude/
+   directory without an exception pattern.
+
+   Checking .gitignore patterns...
+   ```
+
+   Then check why files aren't tracked:
+   ```bash
+   git check-ignore -v .claude/commands/*.md
+   ```
+
+   If `.gitignore` excludes `.claude/`:
+   ```
+   Found exclusion pattern: .claude/* (no exception for commands/)
+
+   ──────────────────────────────────────────────────────────
+   Recommended Fix
+   ──────────────────────────────────────────────────────────
+
+   Your .gitignore should use a negation pattern to track slash
+   commands while excluding user settings:
+
+   # Claude Code settings (exclude user-local settings but keep template slash commands)
+   .claude/*
+   !.claude/commands/
+
+   This pattern was added to .gitignore in Step 5. Please verify
+   it's present and correctly formatted.
+
+   If it's missing, add it manually and run:
+     git add .claude/commands/*.md
+     git status
+
+   The slash commands should now appear as "Changes to be committed".
+   ```
+
+3. **Verify and Report**:
+   ```
+   ──────────────────────────────────────────────────────────
+   Next Steps
+   ──────────────────────────────────────────────────────────
+
+   [If tracking successful]
+   ✓ Git tracking verified. Your slash commands will be included
+     in commits and shared with your repository.
+
+   [If tracking failed]
+   ⚠ Please verify .gitignore configuration before committing.
+     The wizard updated .gitignore in Step 5, but git may need
+     a manual `git add` to track the files.
+
+   You can verify by running:
+     git status .claude/commands/
+
+   The files should appear in the "Changes to be committed"
+   section (not "Untracked files").
+   ```
+
+**Update TodoWrite**: Mark "Verify git tracking" as completed, mark next item as in_progress
+
+**Send Notification**:
+```bash
+notify-claude "[MYPROJ] ✅ Git tracking verified" --type=progress --priority=low
+```
+
+**Key Benefits**:
+- **Prevents silent exclusion**: Catches if `.gitignore` accidentally excludes workflows
+- **Team sharing**: Ensures workflows can be committed and shared with team
+- **Early detection**: Identifies issues before first commit
+- **Actionable guidance**: Provides clear steps to fix tracking issues
 
 ---
 
@@ -1031,9 +1286,9 @@ Backup Infrastructure Installed:
    → Shows available updates
 
 Configuration:
-• Source: /mnt/DATA01/.../my-project/
-• Destination: /mnt/DATA02/.../my-project/
-• Exclusions: src/scripts/conf/rsync-exclude.txt
+• Source: `/mnt/DATA01/.../my-project/`
+• Destination: `/mnt/DATA02/.../my-project/`
+• Exclusions: `src/scripts/conf/rsync-exclude.txt`
 
 First-Time Setup:
 1. Test dry-run: /plan-backup
@@ -1150,6 +1405,117 @@ notify-claude "[MYPROJ] ✅ Installation wizard available as /plan-install-wizar
 - **Optional**: Works fine without it (can always share guide)
 - **No maintenance**: Template stays in planning-is-prompting repo
 - **Future-proof**: Updates when you update planning-is-prompting repo
+
+---
+
+### Step 8: Offer Session-End Workflow (Conditional)
+
+**Purpose**: Allow user to run session-end workflow to record installation progress
+
+**When to Offer**: ONLY if `/plan-session-end` workflow was installed during this session
+
+**Process**:
+
+1. **Check if Session-End Workflow Exists**:
+   ```bash
+   ls .claude/commands/plan-session-end.md 2>/dev/null
+   ```
+
+2. **If File Exists**, present option to user:
+
+```
+══════════════════════════════════════════════════════════
+Run Session-End Workflow? (Optional)
+══════════════════════════════════════════════════════════
+
+I've successfully installed planning-is-prompting workflows in
+your project.
+
+Would you like to run /plan-session-end now to record this
+installation session in history.md?
+
+This will:
+• Update history.md with installation summary
+• Commit the new workflows to git
+• Archive history if approaching token limits
+• Send completion notifications
+
+──────────────────────────────────────────────────────────
+[1] Yes, run /plan-session-end now (recommended)
+[2] No thanks, I'll run it manually later
+
+What would you like to do? [1/2]
+```
+
+3. **If User Chooses [1] - Run Session-End**:
+
+   ```
+   ──────────────────────────────────────────────────────────
+   Running Session-End Workflow
+   ──────────────────────────────────────────────────────────
+
+   Invoking /plan-session-end...
+   ```
+
+   Then actually invoke the `/plan-session-end` slash command.
+
+   The session-end workflow will:
+   - Update history.md with this installation session
+   - Create git commit with new workflows
+   - Archive history if needed (unlikely after fresh install)
+   - Send notifications
+
+   Report completion:
+   ```
+   ──────────────────────────────────────────────────────────
+   ✅ Session Recorded
+   ──────────────────────────────────────────────────────────
+
+   The /plan-session-end workflow has completed:
+   ✓ Installation recorded in history.md
+   ✓ Changes committed to git
+   ✓ Notifications sent
+
+   Your project is now fully set up and documented!
+   ```
+
+4. **If User Chooses [2] - Skip for Now**:
+
+   ```
+   ──────────────────────────────────────────────────────────
+   No Problem!
+   ──────────────────────────────────────────────────────────
+
+   You can run /plan-session-end anytime to record this session.
+
+   Reminder: Run /plan-session-end before closing Claude Code to:
+   • Document your work in history.md
+   • Create git commits
+   • Keep your project history organized
+
+   Type: /plan-session-end
+   ```
+
+5. **If File Does NOT Exist** (Session Management not installed):
+
+   Skip this step entirely. Do not present the option.
+
+   **Rationale**: Only offer session-end if user installed Session Management
+   workflows. Don't confuse users who only installed Planning or Backup workflows.
+
+**Update TodoWrite**: Mark "Offer session-end workflow" as completed
+
+**Send Notification** (if user ran session-end):
+```bash
+notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end" --type=progress --priority=low
+```
+
+**Key Benefits**:
+- **Immediate Documentation**: Records installation right away in history.md
+- **Git Commit**: Creates clean commit with all new workflows
+- **Conditional**: Only offered when relevant (/plan-session-end exists)
+- **Optional**: User can decline and run manually later
+- **Complete Setup**: Full end-to-end installation + documentation in one flow
 
 ---
 
