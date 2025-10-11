@@ -87,6 +87,21 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### Resource Management
 - [**history-management.md**](workflow/history-management.md) - Prompts for maintaining session history and documentation
 
+### Testing Workflows
+- [**testing-baseline.md**](workflow/testing-baseline.md) - Pre-change baseline collection (establish known-good state)
+- [**testing-remediation.md**](workflow/testing-remediation.md) - Post-change verification and systematic fixes (compare, analyze, fix, validate)
+- [**testing-harness-update.md**](workflow/testing-harness-update.md) - Test maintenance planning (discover changes, identify gaps, generate update plan)
+
+**Quick Usage**:
+```bash
+/plan-test-baseline                    # Before changes: establish baseline
+# ... make code changes ...
+/plan-test-remediation                 # After changes: verify & fix regressions
+/plan-test-harness-update              # Analyze code changes, plan test updates
+```
+
+**Learn more**: See [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide
+
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
 - [**notification-system.md**](workflow/notification-system.md) - Prompts for using the notification system

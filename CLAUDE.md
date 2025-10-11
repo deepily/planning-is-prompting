@@ -21,6 +21,9 @@ planning-is-prompting/
 │   ├── session-start.md                  # Session initialization workflows
 │   ├── session-end.md                    # Session wrap-up workflows
 │   ├── history-management.md             # History archival workflows (canonical)
+│   ├── testing-baseline.md               # Pre-change baseline collection
+│   ├── testing-remediation.md            # Post-change verification and fixes
+│   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
 │   └── notification-system.md            # Notification usage patterns
 ├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
@@ -33,7 +36,10 @@ planning-is-prompting/
 │   ├── plan-history-management.md
 │   ├── plan-install-wizard.md
 │   ├── plan-session-end.md
-│   └── plan-session-start.md
+│   ├── plan-session-start.md
+│   ├── plan-test-baseline.md
+│   ├── plan-test-remediation.md
+│   └── plan-test-harness-update.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -222,9 +228,23 @@ Then execute based on the mode parameter...
 This project follows the session-end ritual defined in planning-is-prompting → workflow/session-end.md
 ```
 
-## No Build/Test Commands
+## Testing Workflows
 
-This repository contains **documentation only** - there are no commands to build, lint, test, or run. All validation is manual review of documentation quality and usability.
+**New in this repository**: Testing workflow abstractions for baseline collection, post-change remediation, and test harness maintenance.
+
+**Available Commands**:
+- `/plan-test-baseline` - Establish pre-change baseline (documentation validation for this repo)
+- `/plan-test-remediation` - Post-change verification (documentation structure validation)
+- `/plan-test-harness-update` - Analyze documentation changes and identify missing cross-references
+
+**Canonical Workflows**:
+- planning-is-prompting → workflow/testing-baseline.md
+- planning-is-prompting → workflow/testing-remediation.md
+- planning-is-prompting → workflow/testing-harness-update.md
+
+**Note**: For this documentation-only repository, "testing" means validating documentation structure (all workflow files exist, cross-references work, etc.). For code projects, these workflows run actual test suites (smoke, unit, integration).
+
+**See**: [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide for complete usage documentation.
 
 ## References
 

@@ -845,6 +845,405 @@ echo "large_files/" >> src/scripts/conf/rsync-exclude.txt
 
 ---
 
+## Testing Workflows
+
+### What It Does
+
+**Comprehensive testing infrastructure** with three integrated workflows:
+
+**1. Baseline Collection** (`/plan-test-baseline`):
+- Establish pre-change baseline through pure data collection
+- Execute all test suites (smoke, unit, integration)
+- Generate comprehensive report with metrics
+- Zero remediation - objective observation only
+- Creates timestamped baseline for future comparison
+
+**2. Post-Change Remediation** (`/plan-test-remediation`):
+- Compare current state against baseline
+- Identify regressions (tests that went PASS → FAIL)
+- Systematic remediation in priority order (CRITICAL→HIGH→MEDIUM)
+- Multiple scope modes (FULL|CRITICAL_ONLY|SELECTIVE|ANALYSIS_ONLY)
+- Validation re-testing after fixes
+- Comprehensive before/after reporting
+
+**3. Test Harness Update** (`/plan-test-harness-update`):
+- Discover code changes via git log analysis
+- Classify components by testing requirements
+- Identify missing and outdated tests
+- Generate priority-based update plan
+- Provide test creation templates
+- Systematic gap analysis
+
+**Canonical Workflows**:
+- planning-is-prompting → workflow/testing-baseline.md
+- planning-is-prompting → workflow/testing-remediation.md
+- planning-is-prompting → workflow/testing-harness-update.md
+
+### Decision Matrix: Which Testing Workflows Do You Need?
+
+| Project Maturity | Test Infrastructure | Which Workflows? | Primary Use Case |
+|------------------|---------------------|------------------|------------------|
+| New project | No tests yet | Harness Update only | Build test infrastructure from scratch |
+| Growing project | Smoke tests only | All three | Expand to unit/integration tests |
+| Mature project | Full test suite | Baseline + Remediation | Maintain quality through changes |
+| Documentation repo | Validation scripts | All three (adapted) | Validate docs structure |
+
+**Quick Rule**:
+- **Building tests?** → Use Harness Update to plan what to create
+- **Making changes?** → Use Baseline (before) + Remediation (after)
+- **Regular CI/CD?** → Baseline + Remediation for change validation
+
+### Install as Slash Commands
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the testing workflow commands from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. **Read the canonical workflows**:
+   - Baseline: planning-is-prompting → workflow/testing-baseline.md
+   - Remediation: planning-is-prompting → workflow/testing-remediation.md
+   - Harness Update: planning-is-prompting → workflow/testing-harness-update.md
+
+2. **Copy the slash command files** from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-test-baseline.md
+   - Source: planning-is-prompting/.claude/commands/plan-test-remediation.md
+   - Source: planning-is-prompting/.claude/commands/plan-test-harness-update.md
+   - Target: .claude/commands/ (keep filenames as-is)
+
+3. **Customize for this project** (ask me for these values):
+   - [SHORT_PROJECT_PREFIX] - For TodoWrite and notifications
+   - Working directory - Full path to project root
+   - Test types - Which types exist: smoke, unit, integration
+   - Test script paths - Relative paths to test runners
+   - Logs directory - Where to store test logs (default: tests/results/logs)
+   - Reports directory - Where to store reports (default: tests/results/reports)
+   - Health check - URL or command to verify system operational
+
+4. **Ask me**:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [COSA])
+   - What test types does this project have? (smoke, unit, integration)
+   - What are the test script paths?
+     - Smoke: (e.g., ./tests/run-smoke-tests.sh)
+     - Unit: (e.g., ./tests/run-unit-tests.sh)
+     - Integration: (e.g., ./tests/run-integration-tests.sh)
+   - Where should logs be stored? (default: tests/results/logs)
+   - Where should reports be stored? (default: tests/results/reports)
+   - Health check endpoint? (e.g., http://localhost:8000/health or a command)
+
+5. **For multi-suite projects** (like Lupin + COSA):
+   - Ask about scope parameter support (full|project_only|cosa|lupin)
+   - Configure separate test execution for each suite
+   - Set up conditional execution based on scope
+
+After installation, test with: `/plan-test-baseline` (dry-run to see what would execute)
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - For notifications and TodoWrite tracking
+   - Examples: `[AUTH]`, `[LUPIN]`, `[API]`
+
+2. **Test Infrastructure Details**:
+   - Which test types exist? (smoke / unit / integration / all three)
+   - Where are test scripts located? (absolute or relative paths)
+   - Do tests require a running server? (health check URL/command)
+
+3. **Directory Structure**:
+   - Where to store logs? (recommend: tests/results/logs)
+   - Where to store reports? (recommend: tests/results/reports)
+   - Create directories if they don't exist? (usually yes)
+
+4. **Test Configuration**:
+   - Are there multiple test suites? (e.g., app + framework)
+   - Does scope parameter apply? (full vs selective execution)
+   - Any environment variables needed? (e.g., PYTHONPATH)
+
+5. **Baseline/Remediation Settings**:
+   - Default remediation scope? (FULL / CRITICAL_ONLY / ANALYSIS_ONLY)
+   - Time limits per issue priority? (default: 10m/5m/2m for C/H/M)
+   - Should git backup be created before remediation? (recommend: yes)
+
+### Usage
+
+**Typical workflow for making changes:**
+
+```bash
+# 1. Before changes: Establish baseline
+/plan-test-baseline                          # Default scope (all tests)
+# Or with scope:
+/plan-test-baseline full                     # All test suites
+/plan-test-baseline quick                    # Quick smoke tests only
+
+# 2. Make your code changes...
+
+# 3. After changes: Verify and remediate
+/plan-test-remediation                       # Auto-detect baseline, FULL remediation
+# Or with explicit options:
+/plan-test-remediation auto CRITICAL_ONLY    # Fix critical issues only
+/plan-test-remediation auto ANALYSIS_ONLY    # Report only, no fixes
+/plan-test-remediation path/to/baseline.md SELECTIVE  # Choose which issues to fix
+
+# 4. After code changes: Update test harness
+/plan-test-harness-update                    # Analyze last 7 days of changes
+# Or with specific date range:
+/plan-test-harness-update 2025-10-01         # Since specific date
+/plan-test-harness-update 2025-10-01..2025-10-10  # Date range
+```
+
+**Remediation scope options:**
+- **FULL** (default) - Fix all issues in priority order (CRITICAL→HIGH→MEDIUM)
+- **CRITICAL_ONLY** - Fix only blocking issues, document the rest
+- **SELECTIVE** - Claude presents issues, you choose which to fix
+- **ANALYSIS_ONLY** - Generate comparison report only, no fixes
+
+**Test harness update workflow:**
+```bash
+# Discover what tests need updating
+/plan-test-harness-update
+
+# Review the analysis report (in tests/results/reports/)
+# Implement recommended tests using provided templates
+```
+
+### Configuration Examples
+
+**Simple Project** (single test suite):
+```yaml
+[SHORT_PROJECT_PREFIX]: [MYAPI]
+Working Directory: /path/to/project
+Test Types: smoke, unit
+Smoke Script: ./tests/run-tests.sh
+Unit Script: ./tests/run-unit-tests.sh
+Logs: tests/results/logs
+Reports: tests/results/reports
+Health Check: http://localhost:8000/health
+```
+
+**Complex Project** (multi-suite like Lupin + COSA):
+```yaml
+[SHORT_PROJECT_PREFIX]: [LUPIN] or [COSA]
+Working Directory: /path/to/genie-in-the-box
+Test Types: smoke, unit, integration
+Scope Support: yes (full|lupin|cosa)
+
+# Lupin configuration (scope=lupin or scope=full)
+Lupin Smoke: ./src/tests/run-lupin-smoke-tests.sh
+Lupin Unit: ./src/tests/run-unit-tests.sh
+Lupin Integration: ./src/tests/run-integration-tests.sh
+Health Check: http://localhost:7999/health
+
+# COSA configuration (scope=cosa or scope=full)
+COSA Smoke: ./src/cosa/tests/smoke/scripts/run-cosa-smoke-tests.sh
+COSA Unit: ./src/cosa/tests/unit/scripts/run-cosa-unit-tests.sh
+PYTHONPATH: /path/to/genie-in-the-box/src
+
+# Common
+Logs: src/tests/logs (Lupin), src/cosa/tests/results/logs (COSA)
+Reports: src/tests/results/reports
+```
+
+**Documentation Project** (like planning-is-prompting):
+```yaml
+[SHORT_PROJECT_PREFIX]: [PLAN]
+Working Directory: /path/to/planning-is-prompting
+Test Types: smoke (documentation validation)
+Smoke Script: Simple validation script (checks files exist)
+Logs: tests/results/logs
+Reports: tests/results/reports
+Health Check: None (no server)
+```
+
+### Customization Options
+
+**Adjust time limits for remediation:**
+
+Edit your project's `/plan-test-remediation` command:
+```yaml
+time_limit_critical: 600    # 10 minutes per critical issue
+time_limit_high: 300        # 5 minutes per high priority
+time_limit_medium: 120      # 2 minutes per medium priority
+```
+
+**Add custom component classification:**
+
+Edit your project's `/plan-test-harness-update` command:
+```yaml
+component_types:
+  "src/api/": {type: "critical", requires_unit: true, requires_smoke: true}
+  "src/ml/": {type: "critical", requires_unit: true, requires_integration: true}
+  "src/utils/": {type: "support", requires_unit: true, requires_smoke: false}
+```
+
+**Customize coverage thresholds:**
+```yaml
+coverage_requirements:
+  critical_components: {line: 95, method: 100, branch: 90}
+  standard_components: {line: 85, method: 95, branch: 80}
+  support_components: {line: 75, method: 90, branch: 70}
+```
+
+### Testing the Installation
+
+**Step 1: Test baseline collection**:
+```bash
+/plan-test-baseline
+```
+
+Verify:
+- TodoWrite tracking appears
+- Test scripts execute correctly
+- Log files created in correct directory
+- Report generated with metrics
+- Notifications sent (if configured)
+
+**Step 2: Test remediation (ANALYSIS_ONLY)**:
+```bash
+/plan-test-remediation auto ANALYSIS_ONLY
+```
+
+Verify:
+- Baseline auto-detection works
+- Comparison analysis generated
+- No actual fixes applied (analysis only)
+- Report shows regressions/improvements
+
+**Step 3: Test harness update**:
+```bash
+/plan-test-harness-update
+```
+
+Verify:
+- Git log analysis works
+- Changed files discovered
+- Gap analysis identifies missing tests
+- Update plan generated with priorities
+
+### Troubleshooting
+
+**Issue**: Test script not found
+
+**Solution**:
+```bash
+# Verify path is correct
+ls -l ./tests/run-smoke-tests.sh
+
+# Check if executable
+chmod +x ./tests/run-smoke-tests.sh
+
+# Update configuration if path wrong
+```
+
+**Issue**: Health check fails
+
+**Solution**:
+- Start your application server
+- Or configure health check as optional
+- Or use a command instead of URL
+
+**Issue**: Cannot auto-detect baseline
+
+**Solution**:
+```bash
+# Verify baseline report exists
+ls -l tests/results/reports/*baseline*.md
+
+# Or provide explicit path
+/plan-test-remediation tests/results/reports/2025.10.10-baseline-test-report.md FULL
+```
+
+**Issue**: Git log shows no changes
+
+**Solution**:
+```bash
+# Check date range
+git log --since="7 days ago" --oneline
+
+# Use explicit date range
+/plan-test-harness-update 2025-10-01..2025-10-10
+```
+
+**Issue**: Remediation time exceeded
+
+**Solution**:
+- Use CRITICAL_ONLY scope to focus on blockers
+- Increase time limits in configuration
+- Break into multiple remediation sessions
+
+### Best Practices
+
+1. **Always run baseline before major changes**: Establish known-good state
+
+2. **Use appropriate remediation scope**:
+   - ANALYSIS_ONLY for exploration
+   - CRITICAL_ONLY for quick fixes
+   - FULL for comprehensive cleanup
+
+3. **Review baseline reports**: Understand system health before starting work
+
+4. **Keep test scripts maintained**: Run harness update after code changes
+
+5. **Archive old reports**: Keep reports directory clean (30-day retention)
+
+6. **Use scope parameter wisely**: Don't run full suite if only testing one component
+
+7. **Document custom configurations**: Note any deviations from defaults
+
+8. **Validate fixes incrementally**: Re-run specific test categories after each fix
+
+9. **Monitor execution time**: If remediation exceeds 60 minutes, break it up
+
+10. **Rollback if needed**: Git backup created automatically before remediation
+
+### Integration with CI/CD
+
+**For automated testing in CI**:
+
+```yaml
+# Example GitHub Actions workflow
+steps:
+  - name: Run Baseline
+    run: |
+      # Establish baseline from main branch
+      git checkout main
+      /plan-test-baseline
+      BASELINE_FILE=$(ls -t tests/results/reports/*baseline*.md | head -1)
+      echo "BASELINE=$BASELINE_FILE" >> $GITHUB_ENV
+
+  - name: Test PR Changes
+    run: |
+      # Switch to PR branch
+      git checkout ${{ github.head_ref }}
+
+      # Run remediation in analysis mode
+      /plan-test-remediation $BASELINE ANALYSIS_ONLY
+
+      # Check if regressions exist
+      REGRESSIONS=$(grep "Regressions Introduced" tests/results/reports/*comparison*.md | grep -o "[0-9]*")
+
+      if [ "$REGRESSIONS" -gt 0 ]; then
+        echo "❌ $REGRESSIONS regression(s) detected"
+        exit 1
+      fi
+```
+
+### Advanced: Multi-Project Testing
+
+**For monorepos or multi-component projects**:
+
+Create separate wrapper commands for each component:
+- `/plan-test-baseline-api` - API component only
+- `/plan-test-baseline-web` - Web component only
+- `/plan-test-baseline-full` - All components
+
+Each wrapper configures different test script paths and scopes.
+
+---
+
 ## Configuration Files
 
 ### Global CLAUDE.md Template
