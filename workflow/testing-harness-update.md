@@ -294,29 +294,58 @@ fi
 
 #### 3.2 Find Smoke Tests
 
+**Two-Tier Smoke Test Pattern**:
+
+Modern projects often use a two-tier approach to smoke testing:
+
+**Tier 1 - Inline (Preferred)**:
+- Module contains `def quick_smoke_test()` function in its `__main__` block
+- **Runnable standalone**: `python -m module.name` for immediate feedback
+- Co-located with code for easier maintenance
+- Discoverable by test runners via module introspection
+
+**Tier 2 - Dedicated File (Fallback)**:
+- Separate test file: `tests/smoke/test_module_smoke.py`
+- Traditional test organization
+- Works for modules without `__main__` blocks
+
+**Benefits of Inline Pattern**:
+- **Developer workflow**: Fast feedback during development (`python -m module.name`)
+- **CI/CD integration**: Test runner discovers all modules with `quick_smoke_test()`
+- **Single source**: Test logic co-located with implementation
+
 ```bash
 echo "=== Inventorying Smoke Tests ==="
 
 {For each changed file}
 FILE="{file_path}"
+SMOKE_TEST_FOUND=false
 
-# Check for inline quick_smoke_test function
+# Tier 1: Check for inline quick_smoke_test function
 if grep -q "def quick_smoke_test" "$FILE"; then
     echo "✅ Inline smoke test exists: $FILE"
+
+    # Extract module path for standalone execution
+    MODULE_PATH=$(echo "$FILE" | sed 's/\.py$//' | sed 's/^src\///' | tr '/' '.')
+    echo "   Standalone: python -m ${MODULE_PATH}"
+    echo "   Discoverable: Test runner finds via hasattr(module, 'quick_smoke_test')"
+
     SMOKE_TEST_FOUND=true
 else
-    # Check for dedicated smoke test file
+    # Tier 2: Check for dedicated smoke test file
     FILE_BASENAME=$(basename "$FILE" .py)
     SMOKE_TEST_FILE="{test_directories.smoke}/test_${FILE_BASENAME}_smoke.py"
 
     if [ -f "$SMOKE_TEST_FILE" ]; then
-        echo "✅ Smoke test file exists: $SMOKE_TEST_FILE"
+        echo "✅ Dedicated smoke test file exists: $SMOKE_TEST_FILE"
         SMOKE_TEST_FOUND=true
-    else
-        if [ "$REQUIRES_SMOKE" = true ]; then
-            echo "❌ Smoke test MISSING for: $FILE"
-        fi
     fi
+fi
+
+# Report missing smoke tests (if required)
+if [ "$SMOKE_TEST_FOUND" = false ] && [ "$REQUIRES_SMOKE" = true ]; then
+    echo "❌ Smoke test MISSING for: $FILE"
+    echo "   Recommendation: Add inline quick_smoke_test() function (Tier 1 pattern)"
 fi
 
 {End for each}
@@ -653,12 +682,45 @@ if __name__ == "__main__":
 
 #### 6.2 Smoke Test Template
 
-**For inline quick_smoke_test() function**:
+**Inline Smoke Test Pattern (Tier 1)**:
+
+The inline smoke test serves a **dual purpose**:
+
+1. **Standalone Execution** (Developer Workflow):
+   ```bash
+   python -m {module.path.name}
+   ```
+   - Immediate feedback during development
+   - No test runner required
+   - Exit code indicates pass/fail
+
+2. **Automatic Discovery** (CI/CD Integration):
+   ```python
+   # Test runner discovers via introspection
+   module = importlib.import_module('{module.path.name}')
+   if hasattr(module, 'quick_smoke_test'):
+       module.quick_smoke_test()  # Execute discovered test
+   ```
+   - Test runner finds all modules with `quick_smoke_test()`
+   - Comprehensive suite execution
+   - No manual test registration needed
+
+**Benefits**:
+- Co-located with implementation (easier maintenance)
+- Fast developer feedback loop
+- Automatically included in test suite
+- Single source of truth
+
+**Template**:
 
 ```python
 def quick_smoke_test():
     """
     Quick smoke test for {ComponentName} - validates core workflow.
+
+    Dual Purpose:
+        1. Standalone: python -m {module.path.name}
+        2. Discoverable: Test runner auto-detects via hasattr(module, 'quick_smoke_test')
 
     Tests:
         - {Core functionality}
@@ -666,8 +728,13 @@ def quick_smoke_test():
         - {Integration with dependencies}
 
     Uses real dependencies for end-to-end validation.
+
+    Returns:
+        bool: True if all tests pass, False otherwise
     """
-    print( "\\n=== {ComponentName} Smoke Test ===" )
+    import {project}.utils.util as cu  # Or your project's utility module
+
+    cu.print_banner( "{ComponentName} Smoke Test", prepend_nl=True )
 
     try:
         # Test 1: Module imports correctly

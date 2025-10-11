@@ -1,13 +1,69 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Testing workflows abstraction complete - three canonical workflows created (baseline, remediation, harness-update) with thin wrapper commands. Comprehensive documentation added to installation guide, README, and CLAUDE.md. Ready for cross-project adoption.
+**RESUME HERE**: Two-tier smoke test strategy incorporated across all three testing workflows - universal pattern (inline quick_smoke_test() + discovery) now consistently documented in baseline, remediation, and harness-update workflows. Category-based complexity removed for project-agnostic simplicity.
 
-**Current Status**: Testing workflows fully implemented with ~2,400 lines of canonical workflow logic (testing-baseline.md ~800 lines, testing-remediation.md ~1,000 lines, testing-harness-update.md ~600 lines). Three dogfooding wrapper commands created. Reduces testing workflow duplication by ~70% across projects. Complete installation documentation added.
-**Next Steps**: Test workflows in planning-is-prompting repository, migrate genie-in-the-box ad-hoc commands to use canonical workflows, validate in production environments.
+**Current Status**: Testing workflows updated with simplified two-tier smoke test pattern (~260 lines modified across 3 files, 6 sections). Pattern emphasizes inline tests (Tier 1) with dedicated file fallback (Tier 2), dual-purpose execution (standalone + discoverable), no category dependencies. Maintains COSA architectural benefits while removing project-specific complexity.
+**Next Steps**: Test workflows in planning-is-prompting repository, migrate genie-in-the-box ad-hoc commands to use canonical workflows, validate two-tier pattern in production environments.
 
 ---
 
 ## October 2025
+
+### 2025.10.11 - Session 11: Two-Tier Smoke Test Strategy Integration
+
+**Accomplishments**:
+- **Incorporated two-tier smoke test strategy across all three testing workflows**:
+  - Analyzed COSA smoke test architecture (inline quick_smoke_test() + discovery runner)
+  - Simplified pattern by removing category-based execution (agents, core, rest, memory, training)
+  - Retained universal benefits: dual-purpose (standalone + discoverable), module introspection, fast feedback
+- **Updated testing-harness-update.md** (2 sections modified):
+  - Section 3.2 "Find Smoke Tests" (~58 lines): Added two-tier pattern explanation, enhanced discovery logic
+  - Section 6.2 "Smoke Test Template" (~93 lines): Added dual-purpose explanation, updated template with cu.print_banner()
+- **Updated testing-baseline.md** (1 section modified):
+  - Section 3.2 "Smoke Tests" (~93 lines): Split into Pattern A (traditional script) and Pattern B (inline discovery)
+  - Both patterns show execution logic, metric extraction, benefits
+- **Updated testing-remediation.md** (1 section modified):
+  - Section 3 (~146 lines): Reorganized into 3.1-3.3 subsections (Smoke/Unit/Integration)
+  - Applied Pattern A/B structure matching baseline, different log naming (postchange_*)
+- **Consistency review**:
+  - Verified terminology consistency (Tier 1/Tier 2, inline/dedicated, dual-purpose)
+  - Ensured template structure matches across all references
+  - Confirmed no category-based logic remains
+- **Validation**: Created example scenario showing discovery → baseline → remediation flow
+
+**Key Architecture Pattern**:
+- **Tier 1 (Preferred)**: Module contains `def quick_smoke_test()` in `__main__` block
+  - Runnable standalone: `python -m module.name` (immediate developer feedback)
+  - Discoverable: Test runner finds via `hasattr(module, 'quick_smoke_test')`
+- **Tier 2 (Fallback)**: Dedicated smoke test files (traditional organization)
+- **Benefits**: Co-located tests, fast feedback, automatic discovery, no manual registration
+
+**Simplifications Applied**:
+- ❌ Removed: Category-based execution, scope filtering, COSA-specific orchestration
+- ✅ Kept: Two-tier discovery, dual-purpose pattern, module introspection, template structure
+
+**Pattern Used This Session**:
+- Work type: Documentation enhancement (workflow consistency)
+- Scale: Medium (2 hours)
+- Pattern: Pattern 3 (Feature Development - well-defined scope)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/testing-harness-update.md` - Sections 3.2 + 6.2 updated (~151 lines modified)
+2. `workflow/testing-baseline.md` - Section 3.2 updated (~93 lines modified)
+3. `workflow/testing-remediation.md` - Section 3 updated (~146 lines modified)
+
+**Total Changes**: ~390 lines modified/added across 3 files, 6 sections updated
+
+**TODO for Next Session**:
+- [ ] Test /plan-test-baseline in planning-is-prompting (documentation validation using Pattern B)
+- [ ] Test /plan-test-remediation with ANALYSIS_ONLY scope
+- [ ] Test /plan-test-harness-update for recent workflow changes
+- [ ] Cross-project testing: Install testing workflows in genie-in-the-box
+- [ ] Validate two-tier pattern works correctly with both traditional and inline approaches
+- [ ] Consider creating minimal example project demonstrating both patterns
+
+---
 
 ### 2025.10.11 - Session 10: Testing Workflows Abstraction Implementation
 

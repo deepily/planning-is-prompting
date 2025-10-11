@@ -263,13 +263,23 @@ echo "Log file: ${LOG_FILE}"
 
 #### 3.2 Smoke Tests (Always Included)
 
+**Smoke Test Execution Patterns**:
+
+Projects implement smoke tests using different architectures. Choose the pattern that matches your project's test organization.
+
+---
+
+**Pattern A: Traditional Test Script** (Single monolithic execution)
+
+Simple, straightforward test execution:
+
 ```bash
 TEST_TYPE="smoke"
 TEST_SCRIPT="{smoke_test_script}"
 LOG_FILE="{logs_directory}/baseline_smoke_${TIMESTAMP}.log"
 
 echo "=========================================="
-echo "Executing Smoke Tests..."
+echo "Executing Smoke Tests (Traditional Script)"
 echo "=========================================="
 echo "Starting smoke test baseline collection at $(date)" | tee "${LOG_FILE}"
 echo "===========================================" | tee -a "${LOG_FILE}"
@@ -288,6 +298,62 @@ SMOKE_PASS_RATE=$(echo "scale=1; (($SMOKE_TOTAL - $SMOKE_FAILURES) * 100) / $SMO
 
 echo "Quick Summary: ${SMOKE_TOTAL} tests, ${SMOKE_FAILURES} failures, ${SMOKE_PASS_RATE}% pass rate"
 ```
+
+---
+
+**Pattern B: Inline Discovery System** (Two-tier architecture)
+
+For projects using inline `quick_smoke_test()` functions in modules:
+
+**Architecture Overview**:
+- **Tier 1**: Individual modules have inline `quick_smoke_test()` in `__main__` block
+  - Runnable standalone: `python -m module.name`
+  - Fast developer feedback
+- **Tier 2**: Test runner discovers all modules via introspection
+  - Uses `hasattr(module, 'quick_smoke_test')`
+  - Comprehensive suite execution
+
+**Execution Options**:
+
+```bash
+TEST_TYPE="smoke"
+TEST_RUNNER="{smoke_test_script}"  # e.g., "./tests/smoke/run-smoke-tests.sh"
+LOG_FILE="{logs_directory}/baseline_smoke_${TIMESTAMP}.log"
+
+echo "=========================================="
+echo "Executing Smoke Tests (Inline Discovery)"
+echo "=========================================="
+echo "Test Runner: ${TEST_RUNNER}"
+echo "Starting smoke test baseline collection at $(date)" | tee "${LOG_FILE}"
+echo "===========================================" | tee -a "${LOG_FILE}"
+
+# Option 1: Full suite via discovery runner
+echo "Running full test suite (all discovered modules)" | tee -a "${LOG_FILE}"
+${TEST_RUNNER} 2>&1 | tee -a "${LOG_FILE}"
+
+# Option 2: Individual module (for targeted testing during development)
+# Uncomment to test specific module:
+# MODULE_PATH="module.path.name"
+# echo "Testing individual module: ${MODULE_PATH}" | tee -a "${LOG_FILE}"
+# python -m ${MODULE_PATH} 2>&1 | tee -a "${LOG_FILE}"
+
+echo "===========================================" | tee -a "${LOG_FILE}"
+echo "Smoke tests completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Log file: ${LOG_FILE}"
+
+# Extract metrics (inline discovery systems provide structured output)
+SMOKE_TOTAL=$(grep -E "Total.*tests?:" "${LOG_FILE}" | grep -o "[0-9]*" | head -1 || echo "0")
+SMOKE_FAILURES=$(grep -E "(Failed|Failures).*:" "${LOG_FILE}" | grep -o "[0-9]*" | head -1 || echo "0")
+SMOKE_PASS_RATE=$(echo "scale=1; (($SMOKE_TOTAL - $SMOKE_FAILURES) * 100) / $SMOKE_TOTAL" | bc -l 2>/dev/null || echo "0.0")
+
+echo "Quick Summary: ${SMOKE_TOTAL} tests, ${SMOKE_FAILURES} failures, ${SMOKE_PASS_RATE}% pass rate"
+```
+
+**Benefits of Pattern B**:
+- **Developer workflow**: Test individual modules during development (`python -m module.name`)
+- **CI/CD integration**: Comprehensive suite via discovery runner
+- **Maintenance**: Tests co-located with implementation
+- **Discovery**: No manual test registration needed
 
 #### 3.3 Unit Tests (If Configured)
 

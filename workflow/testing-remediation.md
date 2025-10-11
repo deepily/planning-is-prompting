@@ -272,30 +272,147 @@ notify-claude "[{PREFIX}] 🔧 Post-change remediation STARTED (${REMEDIATION_SC
 
 **Task**: Run same tests as baseline, capture current state
 
-**Use exact same logic as testing-baseline.md Step 3**, but with different log file naming:
+**Use exact same execution patterns as testing-baseline.md Step 3**, but with different log file naming (postchange_* instead of baseline_*).
+
+#### 3.1 Smoke Tests (Always Included)
+
+**Smoke Test Execution Patterns**:
+
+Choose the pattern that matches your project's test organization.
+
+---
+
+**Pattern A: Traditional Test Script** (Single monolithic execution)
 
 ```bash
-# For each test type in configuration
-
-# Smoke tests
+TEST_TYPE="smoke"
+TEST_SCRIPT="{smoke_test_script}"
 LOG_FILE="{logs_directory}/postchange_smoke_${SESSION_TIMESTAMP}.log"
-{smoke_test_script} 2>&1 | tee "${LOG_FILE}"
 
-# Unit tests (if configured)
-LOG_FILE="{logs_directory}/postchange_unit_${SESSION_TIMESTAMP}.log"
-{unit_test_script} 2>&1 | tee "${LOG_FILE}"
+echo "=========================================="
+echo "Executing Post-Change Smoke Tests (Traditional Script)"
+echo "=========================================="
+echo "Starting post-change smoke test at $(date)" | tee "${LOG_FILE}"
+echo "===========================================" | tee -a "${LOG_FILE}"
 
-# Integration tests (if configured)
-LOG_FILE="{logs_directory}/postchange_integration_${SESSION_TIMESTAMP}.log"
-{integration_test_script} 2>&1 | tee "${LOG_FILE}"
+# Execute smoke tests
+{smoke_test_script} 2>&1 | tee -a "${LOG_FILE}"
 
-# Extract metrics for each test type
-SMOKE_TOTAL=$(grep -o "Tests run: [0-9]*" "${SMOKE_LOG}" | tail -1 | grep -o "[0-9]*" || echo "0")
-SMOKE_FAILURES=$(grep -o "Failures: [0-9]*" "${SMOKE_LOG}" | tail -1 | grep -o "[0-9]*" || echo "0")
+echo "===========================================" | tee -a "${LOG_FILE}"
+echo "Smoke tests completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Log file: ${LOG_FILE}"
+
+# Extract basic metrics
+SMOKE_TOTAL=$(grep -o "Tests run: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
+SMOKE_FAILURES=$(grep -o "Failures: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
 SMOKE_PASS_RATE=$(echo "scale=1; (($SMOKE_TOTAL - $SMOKE_FAILURES) * 100) / $SMOKE_TOTAL" | bc -l 2>/dev/null || echo "0.0")
 
-# (Repeat for unit and integration if configured)
+echo "Quick Summary: ${SMOKE_TOTAL} tests, ${SMOKE_FAILURES} failures, ${SMOKE_PASS_RATE}% pass rate"
 ```
+
+---
+
+**Pattern B: Inline Discovery System** (Two-tier architecture)
+
+For projects using inline `quick_smoke_test()` functions in modules:
+
+```bash
+TEST_TYPE="smoke"
+TEST_RUNNER="{smoke_test_script}"  # e.g., "./tests/smoke/run-smoke-tests.sh"
+LOG_FILE="{logs_directory}/postchange_smoke_${SESSION_TIMESTAMP}.log"
+
+echo "=========================================="
+echo "Executing Post-Change Smoke Tests (Inline Discovery)"
+echo "=========================================="
+echo "Test Runner: ${TEST_RUNNER}"
+echo "Starting post-change smoke test at $(date)" | tee "${LOG_FILE}"
+echo "===========================================" | tee -a "${LOG_FILE}"
+
+# Full suite via discovery runner
+echo "Running full test suite (all discovered modules)" | tee -a "${LOG_FILE}"
+${TEST_RUNNER} 2>&1 | tee -a "${LOG_FILE}"
+
+echo "===========================================" | tee -a "${LOG_FILE}"
+echo "Smoke tests completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Log file: ${LOG_FILE}"
+
+# Extract metrics (inline discovery systems provide structured output)
+SMOKE_TOTAL=$(grep -E "Total.*tests?:" "${LOG_FILE}" | grep -o "[0-9]*" | head -1 || echo "0")
+SMOKE_FAILURES=$(grep -E "(Failed|Failures).*:" "${LOG_FILE}" | grep -o "[0-9]*" | head -1 || echo "0")
+SMOKE_PASS_RATE=$(echo "scale=1; (($SMOKE_TOTAL - $SMOKE_FAILURES) * 100) / $SMOKE_TOTAL" | bc -l 2>/dev/null || echo "0.0")
+
+echo "Quick Summary: ${SMOKE_TOTAL} tests, ${SMOKE_FAILURES} failures, ${SMOKE_PASS_RATE}% pass rate"
+```
+
+---
+
+#### 3.2 Unit Tests (If Configured)
+
+**If "unit" in test_types**:
+
+```bash
+TEST_TYPE="unit"
+TEST_SCRIPT="{unit_test_script}"
+LOG_FILE="{logs_directory}/postchange_unit_${SESSION_TIMESTAMP}.log"
+
+echo ""
+echo "=========================================="
+echo "Executing Post-Change Unit Tests..."
+echo "=========================================="
+echo "Starting post-change unit test at $(date)" | tee "${LOG_FILE}"
+echo "===========================================" | tee -a "${LOG_FILE}"
+
+# Execute unit tests
+{unit_test_script} 2>&1 | tee -a "${LOG_FILE}"
+
+echo "===========================================" | tee -a "${LOG_FILE}"
+echo "Unit tests completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Log file: ${LOG_FILE}"
+
+# Extract basic metrics
+UNIT_TOTAL=$(grep -o "Tests run: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
+UNIT_FAILURES=$(grep -o "Failures: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
+UNIT_PASS_RATE=$(echo "scale=1; (($UNIT_TOTAL - $UNIT_FAILURES) * 100) / $UNIT_TOTAL" | bc -l 2>/dev/null || echo "0.0")
+
+echo "Quick Summary: ${UNIT_TOTAL} tests, ${UNIT_FAILURES} failures, ${UNIT_PASS_RATE}% pass rate"
+```
+
+**If "unit" not in test_types**: Skip this section entirely.
+
+---
+
+#### 3.3 Integration Tests (If Configured)
+
+**If "integration" in test_types**:
+
+```bash
+TEST_TYPE="integration"
+TEST_SCRIPT="{integration_test_script}"
+LOG_FILE="{logs_directory}/postchange_integration_${SESSION_TIMESTAMP}.log"
+
+echo ""
+echo "=========================================="
+echo "Executing Post-Change Integration Tests..."
+echo "=========================================="
+echo "Starting post-change integration test at $(date)" | tee "${LOG_FILE}"
+echo "===========================================" | tee -a "${LOG_FILE}"
+
+# Execute integration tests
+{integration_test_script} 2>&1 | tee -a "${LOG_FILE}"
+
+echo "===========================================" | tee -a "${LOG_FILE}"
+echo "Integration tests completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Log file: ${LOG_FILE}"
+
+# Extract basic metrics
+INTEGRATION_TOTAL=$(grep -o "Tests run: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
+INTEGRATION_FAILURES=$(grep -o "Failures: [0-9]*" "${LOG_FILE}" | tail -1 | grep -o "[0-9]*" || echo "0")
+INTEGRATION_PASS_RATE=$(echo "scale=1; (($INTEGRATION_TOTAL - $INTEGRATION_FAILURES) * 100) / $INTEGRATION_TOTAL" | bc -l 2>/dev/null || echo "0.0")
+
+echo "Quick Summary: ${INTEGRATION_TOTAL} tests, ${INTEGRATION_FAILURES} failures, ${INTEGRATION_PASS_RATE}% pass rate"
+```
+
+**If "integration" not in test_types**: Skip this section entirely.
 
 ---
 
