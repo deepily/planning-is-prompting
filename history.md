@@ -1,13 +1,67 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Two-tier smoke test strategy incorporated across all three testing workflows - universal pattern (inline quick_smoke_test() + discovery) now consistently documented in baseline, remediation, and harness-update workflows. Category-based complexity removed for project-agnostic simplicity.
+**RESUME HERE**: Installation wizard now includes testing workflows (option E) and handles "Add More Workflows" mode correctly with 'y' pattern for existing configuration confirmation. No "press Enter" bugs remaining.
 
-**Current Status**: Testing workflows updated with simplified two-tier smoke test pattern (~260 lines modified across 3 files, 6 sections). Pattern emphasizes inline tests (Tier 1) with dedicated file fallback (Tier 2), dual-purpose execution (standalone + discoverable), no category dependencies. Maintains COSA architectural benefits while removing project-specific complexity.
-**Next Steps**: Test workflows in planning-is-prompting repository, migrate genie-in-the-box ad-hoc commands to use canonical workflows, validate two-tier pattern in production environments.
+**Current Status**: Installation wizard enhanced with testing workflows integration and configuration detection bug fixes. Testing workflows (baseline/remediation/harness-update) now available for installation alongside core, planning, and backup workflows. "Add More Workflows" mode properly detects existing PREFIX and project name from CLAUDE.md.
+**Next Steps**: Test installation wizard with testing workflows in practice, cross-project validation in genie-in-the-box, verify 'y' pattern works for configuration confirmation.
 
 ---
 
 ## October 2025
+
+### 2025.10.11 - Session 12: Installation Wizard Testing Workflows Integration & Config Bug Fixes
+
+**Accomplishments**:
+- **Added testing workflows to installation wizard** (~200 lines added):
+  - New workflow catalog entry: "Testing Workflows" as option [E]
+  - Updated Step 2 menu: Added testing workflows section with 3 commands
+  - Updated Step 3 validation: Added testing workflows dependency check (none)
+  - Updated Step 5 installation: Added testing slash command installation logic
+  - Created CLAUDE.md template: "With Testing Workflows" template showing integration
+  - Updated Step 7 summary: Added comprehensive testing workflows guidance (~60 lines)
+- **Fixed "press Enter for default" bug in Step 4 configuration** (~90 lines added):
+  - Added Section 1a: "Detect and Confirm Existing Configuration" (Add More Workflows mode)
+  - Reads existing PREFIX and project name from CLAUDE.md using grep
+  - Presents values with 'y' to keep pattern (not "press Enter")
+  - Skips history/archive paths (already configured, shouldn't change)
+  - Reorganized Section 1b: "Collect New Configuration" (Clean Install mode)
+  - Added mode detection note explaining when each section runs
+- **Testing workflows now fully installable**:
+  - `/plan-test-baseline` - Pre-change baseline collection
+  - `/plan-test-remediation` - Post-change verification and remediation
+  - `/plan-test-harness-update` - Test maintenance planning
+  - All three workflows adapt to project type (code vs documentation)
+- **Configuration collection now mode-aware**:
+  - Add More Workflows: Confirms existing values with 'y' pattern
+  - Clean Install: Collects all configuration from scratch
+  - Both modes support backup paths if Backup Infrastructure selected
+
+**Key Design Decisions**:
+- **Testing workflows as option E**: Consistent with existing A-D pattern, easy to discover
+- **'y' pattern throughout**: Eliminates "press Enter" bugs, works in Claude Code UI
+- **Mode-aware configuration**: Different flows for new vs existing installations
+- **Preserve existing config**: Add More Workflows mode doesn't change history/archive paths
+- **Project type adaptation noted**: Testing workflows work for both code and documentation projects
+
+**Pattern Used This Session**:
+- Work type: Bug fix + feature integration (installation wizard enhancements)
+- Scale: Medium (1-2 hours)
+- Pattern: Pattern 3 (Feature Development - well-scoped)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/installation-wizard.md` - Added testing workflows catalog entry + configuration detection (~290 lines added/modified)
+
+**Total Changes**: ~290 lines added across 6 sections (catalog, menu, validation, installation, templates, summary)
+
+**TODO for Next Session**:
+- [ ] Test installation wizard with testing workflows selection (option E or option 2)
+- [ ] Test "Add More Workflows" mode with 'y' pattern for PREFIX confirmation
+- [ ] Cross-project validation: Install workflows in genie-in-the-box using updated wizard
+- [ ] Verify testing workflows work in documentation projects (this repo)
+- [ ] Update global ~/.claude/CLAUDE.md with workflow improvements if needed
+
+---
 
 ### 2025.10.11 - Session 11: Two-Tier Smoke Test Strategy Integration
 

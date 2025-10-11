@@ -167,6 +167,44 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Testing Workflows (Optional)
+
+```json
+{
+  "id": "testing-workflows",
+  "name": "Testing Workflows",
+  "description": "Baseline collection, post-change remediation, test maintenance",
+  "category": "testing",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-test-baseline",
+      "description": "Establish pre-change baseline (collect test results before changes)"
+    },
+    {
+      "name": "/plan-test-remediation",
+      "description": "Post-change verification (compare vs baseline, fix regressions)"
+    },
+    {
+      "name": "/plan-test-harness-update",
+      "description": "Test maintenance planning (analyze changes, identify missing tests)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-test-baseline.md",
+    ".claude/commands/plan-test-remediation.md",
+    ".claude/commands/plan-test-harness-update.md"
+  ],
+  "notes": "Workflows adapt to project type: code projects run test suites, documentation projects validate structure"
+}
+```
+
 ---
 
 ## Installation Flow
@@ -519,12 +557,24 @@ Available Workflows:
       • /plan-backup-write - Execute backup
     Dependencies: rsync (tool), target backup location
 
+┌─────────────────────────────────────────────────────────┐
+│ TESTING WORKFLOWS (Optional - for test-driven projects)│
+└─────────────────────────────────────────────────────────┘
+
+[E] Testing Workflows
+    Pre-change baseline, post-change remediation, test maintenance
+    Commands:
+      • /plan-test-baseline - Establish pre-change baseline
+      • /plan-test-remediation - Post-change verification
+      • /plan-test-harness-update - Test maintenance planning
+    Dependencies: None (adapts to project type)
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D)
-[3] Custom selection (tell me which: A, B, C, D)
+[2] Install everything (A + B + C + D + E)
+[3] Custom selection (tell me which: A, B, C, D, E)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -555,8 +605,8 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D")
+   - **Option [2] - Everything**: Select A + B + C + D + E (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -603,6 +653,12 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
      [2] Cancel installation (I'll install rsync first)
      ```
 
+   **Testing Workflows (E)**:
+   - No dependencies (workflows adapt to project type)
+   - Code projects: Expects test suites (smoke, unit, integration)
+   - Documentation projects: Validates documentation structure
+   - No validation needed (always available)
+
 3. **Confirm Selection**:
 
 ```
@@ -644,6 +700,106 @@ notify-claude "[INSTALL] ✅ Selection validated - dependencies satisfied" --typ
 **Process**:
 
 **Input Note**: For optional paths with defaults, type `y` to accept the default value, or type your custom path.
+
+**Mode Detection**: The wizard runs differently based on installation state:
+- **Add More Workflows mode** (existing installation) → Use section 1a (confirm existing config)
+- **Clean Install mode** (new installation) → Use section 1b (collect all config)
+
+---
+
+### 1a. Detect and Confirm Existing Configuration (Add More Workflows Mode)
+
+**When to use**: User chose [1] "Add More Workflows" in Step 1 (existing installation detected)
+
+**Process**:
+
+1. **Read CLAUDE.md** to extract existing configuration:
+   ```bash
+   # Extract prefix (look for line matching pattern)
+   grep "Short Prefix" CLAUDE.md
+   # Example output: **Short Prefix**: [MYPROJ] - Use this prefix...
+
+   # Extract project name
+   grep "Project Name" CLAUDE.md
+   # Example output: **Project Name**: My Project
+
+   # Extract history path (from Configuration section)
+   grep "History file:" CLAUDE.md
+   # Example output: - History file: ./history.md
+
+   # Extract archive path
+   grep "Archive directory:" CLAUDE.md
+   # Example output: - Archive directory: ./history/
+   ```
+
+2. **Present Existing Configuration** with 'y' to keep option:
+
+```
+══════════════════════════════════════════════════════════
+Configuration Confirmation
+══════════════════════════════════════════════════════════
+
+I found existing configuration in your CLAUDE.md file.
+Let's confirm these values for the new workflows:
+
+──────────────────────────────────────────────────────────
+1. Project Prefix (for TODO items and notifications)
+──────────────────────────────────────────────────────────
+
+Current value: [MYPROJ]
+
+Your project prefix: ___________ (type 'y' to keep [MYPROJ], or enter new value)
+```
+
+   **Wait for response**:
+   - If user responds with `y` → Keep existing: `[MYPROJ]`
+   - Otherwise → Use response as new value
+
+   Then:
+
+```
+──────────────────────────────────────────────────────────
+2. Project Name (full display name)
+──────────────────────────────────────────────────────────
+
+Current value: My Project
+
+Your project name: ___________ (type 'y' to keep "My Project", or enter new value)
+```
+
+   **Wait for response**:
+   - If user responds with `y` → Keep existing: `My Project`
+   - Otherwise → Use response as new value
+
+3. **Skip Path Configuration** (already configured, don't change):
+
+   ```
+   ──────────────────────────────────────────────────────────
+   History Configuration
+   ──────────────────────────────────────────────────────────
+
+   Using existing configuration:
+   ✓ History file: ./history.md
+   ✓ Archive directory: ./history/
+
+   (These paths were configured during initial installation and won't be changed)
+   ```
+
+4. **Proceed to Step 2 (Backup Configuration)** if needed, then skip to Step 3 (Summarize Configuration)
+
+**Key Points**:
+- Preserves existing PREFIX and project name by default
+- Uses 'y' pattern consistently (no "press Enter" prompts)
+- History/archive paths are NOT changed (prevents breaking existing setup)
+- Only asks for new configuration items (e.g., backup paths if Backup Infrastructure selected)
+
+---
+
+### 1b. Collect New Configuration (Clean Install Mode)
+
+**When to use**: Clean installation (no existing CLAUDE.md or workflows)
+
+**Process**:
 
 1. **Collect Required Configuration**:
 
@@ -841,6 +997,23 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    - Replace SOURCE_DIR → User's source path
    - Replace DEST_DIR → User's destination path
    - Replace PROJECT_NAME → User's project name
+
+   **Testing Workflows (E)**:
+   ```bash
+   # Copy testing workflow slash commands
+   cp planning-is-prompting/.claude/commands/plan-test-baseline.md \
+      ./.claude/commands/plan-test-baseline.md
+
+   cp planning-is-prompting/.claude/commands/plan-test-remediation.md \
+      ./.claude/commands/plan-test-remediation.md
+
+   cp planning-is-prompting/.claude/commands/plan-test-harness-update.md \
+      ./.claude/commands/plan-test-harness-update.md
+   ```
+
+   Customize testing slash commands:
+   - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
+   - No other customization needed (workflows adapt to project type)
 
 3. **Create or Update CLAUDE.md**:
 
@@ -1302,6 +1475,60 @@ Regular Usage:
 • Add project-specific exclusions to rsync-exclude.txt
 ```
 
+4. **If Testing Workflows Installed**, add testing guidance:
+
+```
+Testing Workflows Installed:
+──────────────────────────────────────────────────────────
+
+✅ /plan-test-baseline (pre-change baseline collection)
+   → Run BEFORE making changes to establish known-good state
+   → Collects test results (smoke/unit/integration)
+   → Creates baseline for comparison
+
+✅ /plan-test-remediation (post-change verification)
+   → Run AFTER making changes to detect regressions
+   → Compares current results vs baseline
+   → Priority-based remediation (CRITICAL→HIGH→MEDIUM)
+   → Modes: FULL/CRITICAL_ONLY/SELECTIVE/ANALYSIS_ONLY
+
+✅ /plan-test-harness-update (test maintenance planning)
+   → Analyzes git changes to identify missing test coverage
+   → Creates priority-ordered update plan
+   → Provides test templates for new components
+
+Testing Workflow Pattern:
+──────────────────────────────────────────────────────────
+
+1. Before Changes:
+   /plan-test-baseline
+   → Establishes pre-change baseline
+
+2. Make Your Changes:
+   • Implement features, fix bugs, refactor code
+   • Use TodoWrite to track progress
+
+3. After Changes:
+   /plan-test-remediation scope=FULL
+   → Compare vs baseline, fix any regressions
+
+4. Maintain Tests:
+   /plan-test-harness-update date_range="7 days"
+   → Analyze recent changes, identify missing tests
+   → Update test harness to match code changes
+
+Project Type Adaptation:
+──────────────────────────────────────────────────────────
+• Code projects: Runs smoke/unit/integration test suites
+• Documentation projects: Validates structure and cross-references
+• Workflows automatically detect project type and adapt
+
+For detailed workflow documentation, see:
+• planning-is-prompting → workflow/testing-baseline.md
+• planning-is-prompting → workflow/testing-remediation.md
+• planning-is-prompting → workflow/testing-harness-update.md
+```
+
 **Update TodoWrite**: Mark "Present summary" as completed
 
 **Send Notification**:
@@ -1554,6 +1781,53 @@ notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end"
 **History Management**: See planning-is-prompting → workflow/history-management.md
 ```
 
+### Template: Project CLAUDE.md (With Testing Workflows)
+
+```markdown
+# CLAUDE.md
+
+**Short Prefix**: [MYPROJ] - Use this prefix in all TODO items and notifications for this project.
+
+## Project Overview
+
+**Project Name**: My Project
+
+## Installed Workflows
+
+**Session Management**:
+- `/plan-session-start` - Initialize work session
+- `/plan-session-end` - Wrap up session
+
+**History Management**:
+- `/plan-history-management` - Manage history.md archival
+
+**Testing Workflows**:
+- `/plan-test-baseline` - Pre-change baseline collection
+- `/plan-test-remediation` - Post-change verification
+- `/plan-test-harness-update` - Test maintenance planning
+
+**Configuration**:
+- History file: ./history.md
+- Archive directory: ./history/
+- Test results: ./tests/results/
+
+## Session Workflows
+
+**Session Start**: Use `/plan-session-start` or see planning-is-prompting → workflow/session-start.md
+
+**Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
+
+**History Management**: See planning-is-prompting → workflow/history-management.md
+
+## Testing Workflows
+
+**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
+
+**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
+
+**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
+```
+
 ### Template: Project CLAUDE.md (With Planning Workflows)
 
 ```markdown
@@ -1579,10 +1853,16 @@ notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end"
 - `/p-is-p-01-planning` - Work planning workflow
 - `/p-is-p-02-documentation` - Implementation documentation
 
+**Testing Workflows** (if installed):
+- `/plan-test-baseline` - Pre-change baseline collection
+- `/plan-test-remediation` - Post-change verification
+- `/plan-test-harness-update` - Test maintenance planning
+
 **Configuration**:
 - History file: ./history.md
 - Archive directory: ./history/
 - Planning docs: ./src/rnd/
+- Test results: ./tests/results/ (if testing workflows installed)
 
 ## Planning Workflows
 
@@ -1602,6 +1882,14 @@ notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end"
 **Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
 
 **History Management**: See planning-is-prompting → workflow/history-management.md
+
+## Testing Workflows (if installed)
+
+**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
+
+**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
+
+**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
 ```
 
 ### Template: Initial history.md
