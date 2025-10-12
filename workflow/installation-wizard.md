@@ -1676,15 +1676,48 @@ What would you like to do? [1/2]
 
 3. **If User Chooses [1] - Run Session-End**:
 
+   **Important**: The `/plan-session-end` slash command was just created and won't be loaded until the next Claude Code session. Slash commands are loaded at startup.
+
+   Present execution options:
+
    ```
    ──────────────────────────────────────────────────────────
    Running Session-End Workflow
    ──────────────────────────────────────────────────────────
 
-   Invoking /plan-session-end...
+   The /plan-session-end command was just created and isn't yet
+   loaded in this session. Slash commands are loaded when Claude Code
+   starts.
+
+   I can execute the session-end workflow right now using the canonical
+   workflow document, or you can run /plan-session-end in your next
+   session.
+
+   What would you like to do?
+
+   [1] Execute session-end workflow now (manual execution)
+       → Read and execute planning-is-prompting → workflow/session-end.md
+       → Records installation in history.md immediately
+       → Creates git commit with new workflows
+
+   [2] Skip for now, I'll run /plan-session-end in my next session
+       → The slash command will be available after restarting Claude Code
+       → You can document this installation session then
+
+   What would you like to do? [1/2]
    ```
 
-   Then actually invoke the `/plan-session-end` slash command.
+   **If user chooses [1] - Execute Now**:
+
+   ```
+   ──────────────────────────────────────────────────────────
+   Executing Session-End Workflow
+   ──────────────────────────────────────────────────────────
+
+   Reading canonical workflow: planning-is-prompting → workflow/session-end.md
+   ```
+
+   Then read and execute the canonical session-end workflow from planning-is-prompting → workflow/session-end.md.
 
    The session-end workflow will:
    - Update history.md with this installation session
@@ -1698,13 +1731,20 @@ What would you like to do? [1/2]
    ✅ Session Recorded
    ──────────────────────────────────────────────────────────
 
-   The /plan-session-end workflow has completed:
+   The session-end workflow has completed:
    ✓ Installation recorded in history.md
    ✓ Changes committed to git
    ✓ Notifications sent
 
    Your project is now fully set up and documented!
+
+   Note: The /plan-session-end slash command will be available in your
+   next Claude Code session.
    ```
+
+   **If user chooses [2] - Skip for Now**:
+
+   (See section 4 below)
 
 4. **If User Chooses [2] - Skip for Now**:
 

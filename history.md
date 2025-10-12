@@ -1,13 +1,59 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Installation wizard now includes testing workflows (option E) and handles "Add More Workflows" mode correctly with 'y' pattern for existing configuration confirmation. No "press Enter" bugs remaining.
+**RESUME HERE**: Installation wizard Step 8 UX bug fixed - now intelligently explains slash commands aren't loaded yet instead of attempting doomed execution and showing error.
 
-**Current Status**: Installation wizard enhanced with testing workflows integration and configuration detection bug fixes. Testing workflows (baseline/remediation/harness-update) now available for installation alongside core, planning, and backup workflows. "Add More Workflows" mode properly detects existing PREFIX and project name from CLAUDE.md.
-**Next Steps**: Test installation wizard with testing workflows in practice, cross-project validation in genie-in-the-box, verify 'y' pattern works for configuration confirmation.
+**Current Status**: Installation wizard Step 8 now offers manual session-end execution upfront when user wants to run /plan-session-end after installation (slash commands load at startup, not during session). No more confusing error messages.
+**Next Steps**: Test installation wizard with testing workflows in practice, cross-project validation in genie-in-the-box, verify Step 8 intelligent flow works correctly.
 
 ---
 
 ## October 2025
+
+### 2025.10.11 - Session 13: Installation Wizard Step 8 UX Bug Fix
+
+**Accomplishments**:
+- **Fixed Step 8 UX bug in installation wizard** (workflow/installation-wizard.md lines 1677-1747):
+  - **Problem**: Wizard offered to execute `/plan-session-end` after installation, attempted to invoke it (always fails - slash commands load at startup), then showed error and fallback
+  - **Root cause**: We **know** slash commands aren't available yet, so why attempt execution at all?
+  - **Solution**: Skip doomed attempt, immediately explain situation, offer intelligent choices upfront
+- **New intelligent flow** (~70 lines modified):
+  - User chooses [1] "Yes, run session-end now"
+  - Wizard immediately explains: "Slash command just created, not loaded yet (loads at startup)"
+  - Presents nested menu with two options:
+    * [1] Execute manually now (read canonical workflow → execute)
+    * [2] Wait for next session (use /plan-session-end then)
+  - No failed attempts, no error messages, clear expectations set upfront
+- **User education built-in**:
+  - Explains when slash commands load (at Claude Code startup)
+  - Clarifies manual execution vs slash command execution
+  - Sets correct expectations for next session
+
+**Key Design Improvements**:
+- ✅ **Eliminates confusion** - No "Unknown slash command" error followed by apology
+- ✅ **Educates proactively** - Explains slash command loading before user experiences problem
+- ✅ **Better UX pattern** - Explain → offer solutions (not fail → apologize → offer workaround)
+- ✅ **Faster flow** - Skips predictable failure, goes directly to valid options
+- ✅ **Preserves functionality** - Manual execution still available immediately if user wants it
+
+**Pattern Used This Session**:
+- Work type: Bug fix (UX improvement)
+- Scale: Small (<30 minutes)
+- Pattern: Pattern 4 (Problem Investigation + fix)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/installation-wizard.md` - Step 8 section 3 rewritten (~70 lines modified)
+
+**Total Changes**: ~70 lines modified (Step 8 execution logic)
+
+**TODO for Next Session**:
+- [ ] Test installation wizard Step 8 with new intelligent flow
+- [ ] Test "Add More Workflows" mode with 'y' pattern for PREFIX confirmation
+- [ ] Cross-project validation: Install workflows in genie-in-the-box using updated wizard
+- [ ] Verify testing workflows work in documentation projects (this repo)
+- [ ] Update global ~/.claude/CLAUDE.md with workflow improvements if needed
+
+---
 
 ### 2025.10.11 - Session 12: Installation Wizard Testing Workflows Integration & Config Bug Fixes
 
