@@ -15,6 +15,33 @@
 
 ## When to Create Implementation Documentation
 
+### Context-Aware Decision
+
+**Analyzing your project context...**
+
+**From p-is-p-01 (Planning Workflow)**:
+```
+Pattern selected: Pattern 1 (Multi-Phase Implementation)
+Duration: 8-12 weeks
+Phases: 8 distinct phases identified
+Work type: JWT/OAuth Authentication System
+```
+
+**Decision Analysis**:
+```
+✓ Pattern 1 detected → Dedicated docs recommended
+✓ Duration > 8 weeks → Dedicated docs recommended
+✓ Multiple phases (8) → Dedicated docs recommended
+✓ Complex architecture → Need separate architecture doc
+
+Recommendation: CREATE dedicated implementation documentation
+Suggested structure: Pattern A (Multi-Phase Implementation Documentation)
+```
+
+**Create dedicated documentation?** [y/n or specify different approach]:
+
+---
+
 ### Decision Criteria
 
 Use **history.md only** when:
@@ -22,14 +49,14 @@ Use **history.md only** when:
 - ✓ Single phase or simple linear workflow
 - ✓ Total documentation < 5,000 tokens
 - ✓ Team size: 1-2 developers
-- ✓ Pattern from work-planning.md: Pattern 3 (Feature Development)
+- ✓ Pattern from p-is-p-01: Pattern 3 (Feature Development) or Pattern 4 (Investigation)
 
 Create **dedicated implementation docs** when:
 - ✓ Project duration 8+ weeks
 - ✓ Multiple distinct phases (3+)
 - ✓ Documentation will exceed 10,000 tokens
 - ✓ Need to track architecture and decisions separately
-- ✓ Pattern from work-planning.md: Pattern 1 (Multi-Phase Implementation) or Pattern 5 (Architecture & Design)
+- ✓ Pattern from p-is-p-01: Pattern 1 (Multi-Phase), Pattern 2 (Research), Pattern 5 (Architecture), or Pattern 6 (Research-Driven)
 
 ### The Segue from Work Planning
 
@@ -1009,5 +1036,6 @@ grep -o '](.*\.md' 01-implementation-current.md | \
 
 ## Version History
 
+- **2025.10.14**: Added context-aware decision section that analyzes pattern from p-is-p-01 and suggests appropriate documentation structure (Pattern A/B/C)
 - **2025.10.04**: Renamed from implementation-documentation.md to p-is-p-02-documenting-the-implementation.md for "Planning is Prompting" grouping
 - **2025.10.04**: Initial workflow created, companion to p-is-p-01-planning-the-work.md

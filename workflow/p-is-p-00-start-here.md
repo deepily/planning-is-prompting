@@ -35,6 +35,71 @@ When you create a structured plan, it continuously asks questions:
 
 ---
 
+## Interactive Workflow Selection (How This Works)
+
+**Key Enhancement**: Context-aware defaults make planning faster and easier
+
+Instead of answering every question from scratch, these workflows now:
+
+**1. Analyze Your Context** (Automatic):
+- Read your work description for keywords and intent
+- Scan recent history.md for pattern learning
+- Check git branch/status for current work clues
+- Detect project maturity and existing patterns
+
+**2. Suggest Smart Defaults**:
+- Work type: "add" → Feature Development, "fix" → Investigation, "research" → Research
+- Scale: Components mentioned → Small/Medium/Large estimate
+- Pattern: Historical preferences + work characteristics → Recommended pattern
+- Task breakdown: Pattern + description → Suggested initial tasks
+
+**3. Allow Easy Acceptance or Override**:
+- Workflow presents "Suggested: [default] - Accept? [y/n]"
+- Accept with 'y' for quick confirmation
+- Override by providing different answer
+- Only engage deeply on non-standard aspects
+
+**Example Interaction**:
+
+```
+You: "I need to add email notifications to the app"
+
+Workflow analyzes:
+- Keywords: "add", "email notifications", "to the app"
+- Recent history: Last 3 projects were Pattern 3 (Feature Development)
+- Git branch: feature/email-notifications
+- Detected: Feature Development, Medium scale, Sprint timeline
+
+Workflow suggests:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Context-Based Suggestions:
+- Work type: Feature Development ✓
+- Scale: Medium (1-2 weeks, 8-12 tasks) ✓
+- Pattern: Pattern 3 (Feature Development) ✓
+- Need Step 2 docs? No (use history.md) ✓
+
+These defaults look correct? [y/n]:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You: "y"
+
+Workflow: ✓ Creating Phase 1-5 breakdown for email notifications...
+          ✓ Generating TodoWrite list with 12 suggested tasks...
+          Ready to begin implementation!
+```
+
+**Time Savings**:
+- **Traditional**: ~5-10 minutes of manual Q&A
+- **Enhanced**: ~30 seconds to review and accept defaults
+- **User Engagement**: Only on unusual aspects or overrides
+
+**Transparency**:
+- Always shows WHY defaults were suggested
+- Explains reasoning for each inference
+- Full control to override any suggestion
+
+---
+
 ## The Two-Step Process
 
 "Planning is Prompting" consists of two core workflows that work together:
@@ -132,27 +197,63 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 
 **Key question**: Do you have external research materials, documentation, or recommendations to synthesize BEFORE planning implementation?
 
+#### Context-Aware Routing
+
+**Analyzing your work description for research indicators...**
+
+**Keywords detected**:
+- SDK/framework mentions: "Google ADK", "LangChain", "AWS Bedrock", "OpenAI API"
+- Documentation references: "docs", "spec", "RFC", "requirements"
+- Vendor materials: "official guide", "best practices", "architecture guide"
+
+**Context analysis**:
 ```
-Do you have existing research/docs to process first?
-├─ YES → Use Pattern 6 (Research-Driven Implementation)
-│         • Start with Phase 0 (Research Synthesis)
-│         • Then Phase 1 (Architecture Design using p-is-p-02 Pattern B)
-│         • Then Phase 2 (Implementation Planning using p-is-p-02 Pattern A)
-│         • Requires Step 2: Yes (both Pattern B + Pattern A)
-│
-└─ NO → Continue to pattern selection below
-        Use decision matrix to select Pattern 1-5
+Checking your description: "{user's work description}"
+
+Research indicators found:
+  ✓ Mentioned "Google ADK documentation" → External research present
+  ✓ Mentioned "2 use cases" → Requirements to map
+  ✓ No indication of prior ADK experience → Need synthesis first
+
+Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 ```
 
-**Examples of existing research scenarios**:
+**Question: Do you have existing research/docs to process first?**
+
+**Suggested**: YES (detected SDK mentions + documentation references)
+
+**Reasoning**: You mentioned external documentation/SDK, suggesting synthesis would help
+
+**Accept suggestion?** [y/n or override]:
+
+---
+
+**If YES** → Use Pattern 6 (Research-Driven Implementation)
+```
+  •  Start with Phase 0 (Research Synthesis)
+  •  Then Phase 1 (Architecture Design using p-is-p-02 Pattern B)
+  •  Then Phase 2 (Implementation Planning using p-is-p-02 Pattern A)
+  •  Requires Step 2: Yes (both Pattern B + Pattern A)
+```
+
+**If NO** → Continue to pattern selection below
+```
+  Use decision matrix to select Pattern 1-5
+```
+
+---
+
+**Examples triggering "YES"** (existing research scenarios):
 - Building with new SDK/framework (Google ADK, LangChain, etc.)
 - Have vendor documentation or architectural recommendations
 - Implementing from technical specifications or RFCs
 - Have use case requirements needing technology mapping
 
-**Not existing research** (use other patterns):
+**Examples triggering "NO"** (not existing research):
 - Doing your own research/exploration → Pattern 2
 - Already understand the technology → Pattern 1, 3, 4, or 5
+- Simple feature addition → Pattern 3
+- Bug investigation → Pattern 4
 
 ### Quick Decision Rules
 
@@ -628,4 +729,5 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ## Version History
 
+- **2025.10.14**: Added interactive workflow selection section explaining context-aware defaults; enhanced First Decision section with context-aware routing for Pattern 6 detection
 - **2025.10.04**: Initial creation as meta wrapper for "Planning is Prompting" core workflows

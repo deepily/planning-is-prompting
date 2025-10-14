@@ -37,6 +37,112 @@ When you create a structured plan, it continuously asks questions:
 
 ---
 
+## Interactive Discovery with Context-Aware Defaults
+
+### The Enhancement Pattern
+
+**Problem**: Traditional planning workflows require answering every question from scratch, even when context makes answers obvious.
+
+**Solution**: This workflow analyzes available context (your work description, recent history, git state) to infer smart defaults, reducing cognitive load.
+
+### How It Works
+
+**1. Context Analysis** (Automatic):
+- Scans your initial work description for keywords and intent
+- Reviews recent sessions in history.md for pattern learning
+- Checks git branch/status for current work clues
+- Analyzes codebase state for project maturity indicators
+
+**2. Smart Default Inference**:
+- Work type: Keywords like "bug" → Investigation, "add" → Feature Development
+- Scale: File count, systems mentioned → Small/Medium/Large estimate
+- Duration: Timeline mentions ("by Friday", "next sprint") → Time horizon
+- Pattern: Historical preferences + work characteristics → Suggested pattern
+
+**3. Interactive Confirmation**:
+- Workflow presents questions WITH suggested defaults
+- User accepts defaults with 'y' or provides override
+- Only need to think about non-standard aspects
+- Batch acceptance for multiple related defaults
+
+**4. Graceful Degradation**:
+- No context available? → Ask questions normally
+- Context unclear? → Present options without default
+- User overrides? → Learn from correction
+
+### Benefits
+
+- **Faster Planning**: Accept sensible defaults instead of answering every question
+- **Less Cognitive Load**: Focus on unusual aspects, not routine classification
+- **Transparent Reasoning**: See WHY defaults were suggested
+- **Full Control**: Override any default easily
+- **Pattern Learning**: Workflow learns from your preferences over time
+
+### Example Interaction
+
+**Traditional flow** (8 manual answers required):
+```
+Q1: What type of work is this? [user must choose from 6 options]
+Q2: What is the scale and complexity? [user must assess]
+Q3: What is the time horizon? [user must estimate]
+... (8 questions total)
+```
+
+**Enhanced flow** (context-aware defaults):
+```
+*Analyzing your description: "Add email notifications to existing app"*
+
+Context detected:
+- Work type: Feature Development (keyword "add" + "existing app")
+- Scale: Medium (1-2 weeks)
+- Pattern: Pattern 3 (Feature Development)
+
+These defaults look correct? [y/n]: y ✓
+
+*Creating TodoWrite list for Pattern 3...*
+```
+
+**User only engaged for ~5 seconds instead of ~5 minutes.**
+
+### Context Sources (Prioritized)
+
+1. **User's Work Description** (Primary):
+   - Keywords: "add", "fix", "bug", "research", "design", "implement"
+   - Mentioned systems/technologies
+   - Timeline indicators
+   - Complexity signals (number of components mentioned)
+
+2. **Recent History** (Pattern Learning):
+   - Last 3-5 projects: which patterns were used?
+   - Typical duration for similar work types
+   - User's preferences (tends toward thorough planning vs. quick execution)
+
+3. **Git State** (Current Work Clues):
+   - Branch name: `feature/email-notifications` → Feature Development
+   - Recent commits: multi-phase work vs. single commit fixes
+   - Files changed: scope indicator
+
+4. **Codebase State** (Project Maturity):
+   - Established patterns: architecture already decided
+   - Test coverage: quality expectations
+   - Documentation: thoroughness culture
+
+### When This Pattern Applies
+
+**Use Interactive Discovery** when:
+- ✓ Starting new work with the planning workflow
+- ✓ User provides initial work description (even brief)
+- ✓ history.md exists with recent sessions
+- ✓ Want to reduce planning overhead
+
+**Skip to manual questions** when:
+- ✗ Completely new project (no history)
+- ✗ User explicitly requests full planning session
+- ✗ Work is highly unusual (context won't help)
+- ✗ Teaching/demonstration mode (want to see all questions)
+
+---
+
 ## Work Planning Workflow
 
 ### Phase 0: Research Synthesis (Conditional - Use When Starting From Existing Research)
@@ -221,67 +327,248 @@ Your synthesis document becomes a key reference throughout planning and implemen
 
 ### Phase 1: Work Discovery & Classification
 
-Before diving into implementation, understand what you're trying to accomplish. Answer these discovery questions:
+Before diving into implementation, understand what you're trying to accomplish.
 
-#### Core Questions (Answer these first)
+#### Step 0: Context Analysis (Perform First)
+
+**Before presenting questions**, analyze available context to infer smart defaults:
+
+**Process**:
+1. **Read user's work description** - Extract keywords, intent, scope signals
+2. **Scan recent history.md** - Identify patterns in last 3-5 sessions
+3. **Check git state** - Examine branch name, recent commits, changed files
+4. **Assess codebase** - Detect project maturity, existing patterns
+
+**Keyword Detection Examples**:
+- "add", "implement", "build" + "to existing" → **Feature Development** likely
+- "fix", "bug", "issue", "broken" → **Problem Investigation** likely
+- "research", "evaluate", "compare", "explore" → **Research** likely
+- "design", "architecture", "system" → **Architecture** likely
+- "Google ADK", "framework", "SDK", "documentation" → **Research-Driven** likely
+
+**Timeline Indicators**:
+- "by Friday", "this week" → **Sprint** (1-2 weeks)
+- "next sprint", "couple weeks" → **Short-term** (2-4 weeks)
+- "next month", "Q2" → **Medium-term** (1-3 months)
+- No timeline → Assess from scope
+
+**Scale Signals**:
+- Mentions 1-2 components/files → **Small**
+- Mentions 3-5 systems/features → **Medium**
+- Mentions 6+ components or "entire system" → **Large**
+
+**Output of Context Analysis**:
+- Present findings to user: "Based on your description and context, here's what I inferred..."
+- Offer defaults for each discovery question
+- Allow user to accept ('y') or override
+
+---
+
+#### Core Questions (Answer with Smart Defaults)
+
+**Format**: For each question, present:
+1. Context-based inference (what was detected)
+2. Suggested default answer
+3. Accept with 'y' or provide alternative
+
+---
 
 1. **What type of work is this?**
+
+   **Context Inference**:
+   - Description: "{user's work description}"
+   - Keywords detected: "add email notifications", "existing app"
+   - Git branch: `feature/email-notifications`
+   - Recent history: Last 3 projects were Feature Development
+
+   **Suggested**: Feature Development (adding to existing system)
+
+   **Reasoning**: Keywords "add" + "existing app" indicate enhancement, not new build
+
+   Accept suggestion? [y/n or specify different type]:
+
+   **Options if not accepting default**:
    - Implementation (building something new)
    - Research (exploring options/approaches)
-   - Feature Development (adding to existing system)
    - Problem Investigation (debugging/troubleshooting)
    - Architecture/Design (system structure/patterns)
    - Maintenance (updates, refactoring, cleanup)
 
 2. **What is the scale and complexity?**
+
+   **Context Inference**:
+   - Components mentioned: "email service, templates, queue, user preferences" (4 systems)
+   - Estimated tasks: Setup, templates, queue, triggers, testing (~8-12 tasks)
+   - Complexity signals: Integration with existing app, new infrastructure
+
+   **Suggested**: Medium (3-10 days, 1-3 developers, 5-15 tasks)
+
+   **Reasoning**: Multiple systems involved but well-scoped boundaries
+
+   Accept suggestion? [y/n or specify different scale]:
+
+   **Options if not accepting default**:
    - Small: 1-3 days, single developer, < 5 tasks
-   - Medium: 3-10 days, 1-3 developers, 5-15 tasks
    - Large: 10+ days, multiple developers, 15+ tasks
    - Exploratory: Unknown duration, discovery-oriented
 
 3. **What is the time horizon?**
-   - Sprint: 1-2 weeks
+
+   **Context Inference**:
+   - User mentioned: "need this for next sprint"
+   - Scale assessment: Medium (3-10 days)
+   - No major blockers identified
+
+   **Suggested**: Sprint (1-2 weeks)
+
+   **Reasoning**: "Next sprint" indicates 1-2 week timeline
+
+   Accept suggestion? [y/n or specify different horizon]:
+
+   **Options if not accepting default**:
    - Short-term: 2-4 weeks
    - Medium-term: 1-3 months
    - Long-term: 3+ months
    - Ongoing: No specific deadline
 
 4. **Are there distinct phases or milestones?**
+
+   **Context Inference**:
+   - Work type: Feature Development (typically linear)
+   - Scope: Single feature with dependencies
+   - Pattern emerging: Requirements → Design → Implementation → Testing
+
+   **Suggested**: Maybe, I have some phases in mind (linear workflow with natural breaks)
+
+   **Reasoning**: Feature work typically has requirements → implementation → testing flow
+
+   Accept suggestion? [y/n or specify different answer]:
+
+   **Options if not accepting default**:
    - Yes, I can identify 3+ clear phases
-   - Maybe, I have some phases in mind
    - No, it's more linear/continuous
    - Not sure yet
 
-#### Contextual Questions (Answer as applicable)
+#### Contextual Questions (Answer with Smart Defaults)
 
 5. **What are the success criteria?**
-   - Specific deliverables
-   - Acceptance tests
-   - Performance metrics
+
+   **Context Inference**:
+   - Work type: Feature Development (email notifications)
+   - Typical criteria for this pattern: functional + user-facing + testable
+
+   **Suggested Success Criteria**:
+   - Emails sent successfully when triggered
+   - User can configure notification preferences
+   - Templates render correctly
+   - Integration tests passing
+
+   **Reasoning**: Standard feature acceptance criteria
+
+   Accept suggestion? [y/n or add/modify criteria]:
+
+   **Options for additional criteria**:
+   - Performance metrics (delivery time, queue throughput)
    - Stakeholder approval
+   - User acceptance testing
 
 6. **What are the dependencies and constraints?**
-   - Technical dependencies (APIs, libraries, systems)
+
+   **Context Inference**:
+   - Technical mentions: "SendGrid" (email service), "existing app" (integration point)
+   - Timeline: "next sprint" (time constraint)
+
+   **Suggested Dependencies/Constraints**:
+   - Technical: SendGrid API, existing user database, app notification system
+   - Timeline: Must complete in 1-2 weeks
+   - Integration: Must work with current authentication system
+
+   **Reasoning**: Extracted from description and context
+
+   Accept suggestion? [y/n or add/modify]:
+
+   **Categories for additional dependencies**:
    - Team dependencies (other developers, stakeholders)
-   - Timeline constraints (deadlines, milestones)
-   - Resource constraints (time, budget, tools)
+   - Resource constraints (budget, tools, access)
 
 7. **What is the risk level?**
+
+   **Context Inference**:
+   - Work type: Feature Development (familiar pattern)
+   - Technologies: Sendgrid is well-documented
+   - Integration: Adding to existing system (moderate complexity)
+   - Timeline: Sprint timeline (not urgent/critical)
+
+   **Suggested**: Medium (Some unknowns, moderate impact)
+
+   **Reasoning**: Standard feature development, established tools, not mission-critical
+
+   Accept suggestion? [y/n or specify different level]:
+
+   **Options if not accepting default**:
    - Low: Well-understood work, low impact if delayed
-   - Medium: Some unknowns, moderate impact
    - High: Many unknowns, significant impact
    - Critical: Business-critical, high stakes
 
 8. **Is this a one-time task or recurring pattern?**
+
+   **Context Inference**:
+   - Feature type: Email notification system (infrastructure component)
+   - Applicability: Could be template for SMS, push notifications, etc.
+
+   **Suggested**: Pattern (Creates reusable template for future work)
+
+   **Reasoning**: Notification infrastructure often reused for other channels
+
+   Accept suggestion? [y/n or specify different type]:
+
+   **Options if not accepting default**:
    - One-time: Unique work, won't repeat
    - Recurring: Will do similar work again
-   - Pattern: Creates reusable template for future work
+
+---
+
+**Discovery Complete**: With context analysis and smart defaults, you should have answers to all 8 questions. The workflow will now suggest a pattern based on these answers.
 
 ### Phase 2: Pattern Selection
 
 Based on your discovery answers, select a planning pattern. Each pattern provides a different structure for organizing and tracking work.
 
+#### Suggested Pattern (Based on Discovery Context)
+
+**Context Analysis Summary**:
+```
+Work Type:         Feature Development
+Scale:             Medium (3-10 days, 5-15 tasks)
+Time Horizon:      Sprint (1-2 weeks)
+Distinct Phases:   Maybe (linear workflow)
+Success Criteria:  Functional + testable + user-facing
+Dependencies:      SendGrid API, existing user system
+Risk Level:        Medium
+Recurring:         Pattern (reusable for other notifications)
+```
+
+**Pattern Recommendation**: **Pattern 3 (Feature Development)**
+
+**Rationale**:
+- ✓ Well-scoped feature with clear boundaries
+- ✓ Adding to existing system (not building from scratch)
+- ✓ Linear workflow (requirements → design → implementation → testing)
+- ✓ Sprint timeline (1-2 weeks) fits Pattern 3 characteristics
+- ✓ No need for multi-phase tracking (Pattern 1) or research docs (Pattern 2)
+
+**Alternative Patterns to Consider**:
+- **Pattern 1 (Multi-Phase Implementation)** - Only if scope grows significantly or phases become more complex
+- **Pattern 4 (Problem Investigation)** - If this is primarily debugging existing notification system
+- **Pattern 5 (Architecture & Design)** - If designing entire notification architecture from scratch
+
+**Accept Pattern 3?** [y/n or specify pattern number 1-6]:
+
+---
+
 #### Pattern Library
+
+**Reminder**: The pattern library below provides details on all patterns. Your suggested pattern is **Pattern 3**, but you can review all options before deciding.
 
 ##### Pattern 1: Multi-Phase Implementation
 
@@ -600,6 +887,73 @@ START
 
 Once you've selected a pattern, break down the work into concrete tasks.
 
+#### Suggested Initial Task Breakdown
+
+**Based on**: Pattern 3 (Feature Development) + your work description
+
+**Context**:
+- Feature: Email notification system
+- Components mentioned: SendGrid, templates, queue, user preferences
+- Integration: Existing app + user system
+
+**Proposed Phases**:
+
+```
+1. Requirements & Acceptance Criteria
+   - Define email notification triggers (new message, mentions, etc.)
+   - Design email template requirements (header, content, footer, unsubscribe)
+   - Specify user preferences (frequency, types, opt-out)
+
+2. Technical Design & Planning
+   - Select/configure SendGrid account and API keys
+   - Design template engine approach (Handlebars, Mustache, or SendGrid templates)
+   - Design async queue system (Redis queue, database queue, or SQS)
+   - Plan integration with existing user/notification systems
+
+3. Implementation
+   - Set up SendGrid integration and configuration
+   - Create email template engine
+   - Implement notification queue system
+   - Add trigger logic (new message handler, mention handler)
+   - Build user preferences management (UI + backend)
+
+4. Testing & Validation
+   - Unit tests for template rendering
+   - Integration tests for SendGrid sending
+   - End-to-end tests for trigger → email flow
+   - Manual QA across email clients
+
+5. Documentation & Deployment
+   - API documentation for notification system
+   - User guide for preferences
+   - Deployment checklist
+   - Monitoring setup
+```
+
+**Estimated Tasks**: ~12-15 tasks across 5 phases (fits Medium scale)
+
+**TodoWrite Preview**:
+```
+[EMAIL] Define notification triggers and template requirements
+[EMAIL] Set up SendGrid account and configuration
+[EMAIL] Design template engine and queue system
+[EMAIL] Implement SendGrid integration
+[EMAIL] Create email template engine
+[EMAIL] Implement notification queue system
+[EMAIL] Add notification trigger logic
+[EMAIL] Build user preferences management
+[EMAIL] Write unit tests for templates
+[EMAIL] Write integration tests for SendGrid
+[EMAIL] End-to-end testing
+[EMAIL] Documentation and deployment
+```
+
+**Accept this breakdown?** [y/n or describe modifications]:
+
+**If modifying**: Describe which tasks to add/remove/change, and I'll update the breakdown accordingly.
+
+---
+
 #### Task Breakdown Principles
 
 1. **Manageable Size**: Each task should be completable in 0.5-4 hours
@@ -608,7 +962,7 @@ Once you've selected a pattern, break down the work into concrete tasks.
 4. **Testable Outcomes**: Each task produces verifiable output
 5. **One Active Task**: Only one task in_progress at a time
 
-#### Breakdown Methodology
+#### Manual Breakdown Methodology (If Not Accepting Suggested Tasks)
 
 **Step 1: Identify Major Phases**
 
@@ -1212,5 +1566,6 @@ This work planning workflow integrates with other planning-is-prompting workflow
 
 ## Version History
 
+- **2025.10.14**: Added interactive discovery with context-aware defaults - Phase 1 discovery questions now infer smart defaults from user description, git state, and history; Phase 2 suggests recommended pattern with rationale; Phase 3 provides suggested task breakdown based on pattern and context
 - **2025.10.04**: Renamed from work-planning.md to p-is-p-01-planning-the-work.md for "Planning is Prompting" grouping
 - **2025.10.04**: Initial comprehensive workflow created, adapted from Lupin design-planning-docs slash command
