@@ -1,13 +1,61 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Installation wizard Step 8 UX bug fixed - now intelligently explains slash commands aren't loaded yet instead of attempting doomed execution and showing error.
+**RESUME HERE**: Ready for next feature or cross-project testing
 
-**Current Status**: Installation wizard Step 8 now offers manual session-end execution upfront when user wants to run /plan-session-end after installation (slash commands load at startup, not during session). No more confusing error messages.
-**Next Steps**: Test installation wizard with testing workflows in practice, cross-project validation in genie-in-the-box, verify Step 8 intelligent flow works correctly.
+**Current Status**: Installation wizard fully mature - all UX issues fixed, permission setup streamlined, git tracking verified, session-end workflow integrated
+**Next Steps**: Cross-project validation in genie-in-the-box, test complete installation flow end-to-end, verify all workflows work in production use
 
 ---
 
 ## October 2025
+
+### 2025.10.13 - Session 14: Installation Wizard Step 0.5 & Step 8 UX Enhancements
+
+**Accomplishments**:
+- **Enhanced Step 0.5: Permission Setup** (~180 lines modified):
+  - **Added dynamic project root detection** using `pwd` command
+  - **Interactive confirmation flow**: Detects parent directory, asks user to confirm or provide manually
+  - **Replaced hardcoded paths** with `[USER_CONFIRMED_PROJECT_ROOT]` placeholder
+  - **Example substitution**: Shows user's actual detected path in configuration examples
+  - **Three-step process**: (a) Detect via pwd, (b) Confirm with user [y/n], (c) Show config with substitution
+  - **Portable for all users**: No hardcoded `/mnt/DATA01/...` paths that only work for one user
+  - **Global wildcard pattern remains recommended**: `Write(PROJECT_ROOT/*/.claude/commands/**)`
+- **Fixed Step 8: Session-End Workflow Offer** (~90 lines modified):
+  - **Removed redundant double-question flow**: Was asking same question twice in confusing way
+  - **Old buggy flow**: "Run /plan-session-end?" → "Oh wait it's not loaded, execute manually?"
+  - **New streamlined flow**: Single clear question explaining situation upfront
+  - **Upfront disclosure**: Explains slash command isn't loaded yet (loads at startup)
+  - **Clear options**: [1] Execute manually now vs [2] Use /plan-session-end in next session
+  - **No bait-and-switch**: Sets correct expectations from the start
+  - **Faster UX**: One decision point instead of two redundant questions
+- **Testing**: Executed backup dry-run successfully (2 files to sync: history.md + installation-wizard.md)
+
+**Key UX Improvements**:
+- **Step 0.5 now universally usable**: Any user in any directory structure can use wizard
+- **Step 8 eliminates confusion**: No more "Unknown slash command" error followed by workaround offer
+- **Honest communication**: Explains limitations before user experiences them
+- **Educational value**: Teaches users when slash commands load and how they work
+- **Permission setup works globally**: One-time configuration benefits all projects under user's root
+
+**Pattern Used This Session**:
+- Work type: UX bug fixes and enhancements (installation wizard polish)
+- Scale: Small-Medium (1 hour)
+- Pattern: Pattern 4 (Problem Investigation + fixes)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/installation-wizard.md` - Step 0.5 dynamic detection + Step 8 streamlined flow (~270 lines modified)
+
+**Total Changes**: Step 0.5 section 2 (180 lines), Step 8 section 2-3 (90 lines)
+
+**TODO for Next Session**:
+- [ ] Cross-project validation: Install workflows in genie-in-the-box using enhanced wizard
+- [ ] Test permission setup with different directory structures
+- [ ] Test Step 8 session-end flow in fresh installation
+- [ ] Verify project root detection works on macOS/Windows paths
+- [ ] Update global ~/.claude/CLAUDE.md with latest workflow improvements
+
+---
 
 ### 2025.10.11 - Session 13: Installation Wizard Step 8 UX Bug Fix
 

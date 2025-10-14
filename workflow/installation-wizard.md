@@ -285,15 +285,126 @@ What would you like to do? [1/2]
 
 2. **If user chooses [1] - Show Configuration Instructions**:
 
+   a. **Detect Project Root Directory**:
+
+   ```bash
+   pwd
+   # Example output: /mnt/DATA01/include/www.deepily.ai/projects/my-project
+   ```
+
+   Extract parent directory (projects root):
+   - Get current working directory
+   - Remove trailing slash if present
+   - Remove last path component (current project name)
+   - Result should be the directory containing all your projects
+
+   b. **Present detection results and confirm with user**:
+
+```
+══════════════════════════════════════════════════════════
+Detecting Your Project Root Directory
+══════════════════════════════════════════════════════════
+
+Current project: [output from pwd]
+
+I detected your projects directory (parent of current project) as:
+  [extracted parent directory]
+
+This is where you keep all your projects. The global permission
+pattern will apply to ALL subdirectories under this path.
+
+Example: If your projects root is /home/user/projects/, then
+the pattern will allow workflow installation in:
+  /home/user/projects/project-a/
+  /home/user/projects/project-b/
+  /home/user/projects/any-future-project/
+
+Is this correct? [y/n]
+```
+
+   **If user responds 'y'**: Use detected path, proceed to step c
+
+   **If user responds 'n'**: Ask for manual input:
+
+```
+──────────────────────────────────────────────────────────
+Please Provide Your Projects Root Directory
+──────────────────────────────────────────────────────────
+
+Enter the full path to the directory containing all your projects.
+
+Examples:
+• /home/username/projects/
+• /Users/name/code/
+• /mnt/DATA01/myprojects/
+• C:/Users/name/code/
+
+Your projects root: ___________
+```
+
+   Wait for user input, then proceed to step c.
+
+   c. **Show configuration options** (using confirmed PROJECT_ROOT):
+
 ```
 ══════════════════════════════════════════════════════════
 Auto-Approval Configuration
 ══════════════════════════════════════════════════════════
 
-To configure auto-approval, add these patterns to your Claude Code
+To configure auto-approval, add patterns to your Claude Code
 settings file.
 
 **File location**: `~/.claude/settings.local.json`
+
+You have two options:
+
+┌─────────────────────────────────────────────────────────┐
+│ RECOMMENDED: Global Wildcard Pattern                    │
+└─────────────────────────────────────────────────────────┘
+
+**Pattern to add** (inside the "tools" → "approvedCommands" array):
+
+```json
+{
+  "tools": {
+    "approvedCommands": [
+      "Write([USER_CONFIRMED_PROJECT_ROOT]/*/.claude/commands/**)"
+    ]
+  }
+}
+```
+
+Replace `[USER_CONFIRMED_PROJECT_ROOT]` with your actual path from above.
+
+**Example** (using your confirmed path):
+```json
+{
+  "tools": {
+    "approvedCommands": [
+      "Write(/mnt/DATA01/include/www.deepily.ai/projects/*/.claude/commands/**)"
+    ]
+  }
+}
+```
+
+**What this pattern does**:
+• Allows writing slash commands in .claude/commands/ for ALL projects
+  under your projects root directory
+• ONE-TIME setup works across all current and future projects
+• No per-project configuration needed
+
+**Benefits**:
+✓ Install workflows in ANY project without permission prompts
+✓ Covers all projects under your projects root directory
+✓ Eliminates tedious repeated approvals (7 files = 7 prompts → 0 prompts)
+
+**Security**:
+• Scoped to your standard project directory structure
+• Only affects .claude/commands/ (workflow files), not other directories
+
+┌─────────────────────────────────────────────────────────┐
+│ ALTERNATIVE: Project-Specific Patterns                  │
+└─────────────────────────────────────────────────────────┘
 
 **Patterns to add** (inside the "tools" → "approvedCommands" array):
 
@@ -313,41 +424,44 @@ settings file.
 ```
 
 **What these patterns do**:
-• `Write(./.claude/commands/*):*` - Auto-approve creating slash commands
-• `Write(./CLAUDE.md):*` - Auto-approve creating/updating project config
-• `Write(./history.md):*` - Auto-approve creating history file
-• `Write(./src/scripts/*):*` - Auto-approve creating backup scripts
-• `Write(./.gitignore):*` - Auto-approve updating .gitignore
+• `Write(./.claude/commands/*):*` - Auto-approve slash commands (current project only)
+• `Write(./CLAUDE.md):*` - Auto-approve project config
+• `Write(./history.md):*` - Auto-approve history file
+• `Write(./src/scripts/*):*` - Auto-approve backup scripts
+• `Write(./.gitignore):*` - Auto-approve .gitignore updates
 • `Bash(mkdir:*` - Auto-approve directory creation
 
-**How to add them**:
+**Benefits**:
+✓ More restrictive control per project
+✓ Must configure in each project separately
+
+**Security**:
+• Only applies to current working directory (./)
+• Won't affect other projects
+
+──────────────────────────────────────────────────────────
+How to add patterns:
+──────────────────────────────────────────────────────────
 
 1. Open ~/.claude/settings.local.json in your editor
 2. Find the "approvedCommands" array under "tools"
    (Create it if it doesn't exist)
-3. Add the patterns above (merge with any existing patterns)
+3. Add your chosen pattern(s) above (merge with any existing patterns)
 4. Save the file
 5. No need to restart - settings are reloaded automatically
 
-**Security note**:
-These patterns only apply to the current working directory (./),
-so they won't affect other projects.
-
-**Example of complete settings file**:
+**Example of complete settings file** (with your confirmed path):
 ```json
 {
   "tools": {
     "approvedCommands": [
-      "Write(./.claude/commands/*):*",
-      "Write(./CLAUDE.md):*",
-      "Write(./history.md):*",
-      "Write(./src/scripts/*):*",
-      "Write(./.gitignore):*",
-      "Bash(mkdir:*)"
+      "Write([USER_CONFIRMED_PROJECT_ROOT]/*/.claude/commands/**)"
     ]
   }
 }
 ```
+
+Replace `[USER_CONFIRMED_PROJECT_ROOT]` with your actual projects root from the detection step above.
 
 ──────────────────────────────────────────────────────────
 Ready to proceed with installation?
@@ -1648,66 +1762,39 @@ notify-claude "[MYPROJ] ✅ Installation wizard available as /plan-install-wizar
    ls .claude/commands/plan-session-end.md 2>/dev/null
    ```
 
-2. **If File Exists**, present option to user:
+2. **If File Exists**, present single clear option to user:
 
 ```
 ══════════════════════════════════════════════════════════
-Run Session-End Workflow? (Optional)
+Record Installation Session? (Optional)
 ══════════════════════════════════════════════════════════
 
 I've successfully installed planning-is-prompting workflows in
 your project.
 
-Would you like to run /plan-session-end now to record this
-installation session in history.md?
+Would you like to record this installation session in history.md?
 
-This will:
-• Update history.md with installation summary
-• Commit the new workflows to git
-• Archive history if approaching token limits
-• Send completion notifications
+Note: The /plan-session-end command was just created and won't be
+available until your next Claude Code session (slash commands load
+at startup). I can execute the workflow manually using the canonical
+document.
 
 ──────────────────────────────────────────────────────────
-[1] Yes, run /plan-session-end now (recommended)
-[2] No thanks, I'll run it manually later
+[1] Yes, record installation now (manual execution)
+    → I'll read and execute planning-is-prompting → workflow/session-end.md
+    → Updates history.md with installation summary
+    → Creates git commit with new workflows
+    → Archives history if needed
+    → Sends completion notifications
+
+[2] No thanks, I'll use /plan-session-end in my next session
+    → The /plan-session-end command will be available after restart
+    → You can document this installation session then
 
 What would you like to do? [1/2]
 ```
 
-3. **If User Chooses [1] - Run Session-End**:
-
-   **Important**: The `/plan-session-end` slash command was just created and won't be loaded until the next Claude Code session. Slash commands are loaded at startup.
-
-   Present execution options:
-
-   ```
-   ──────────────────────────────────────────────────────────
-   Running Session-End Workflow
-   ──────────────────────────────────────────────────────────
-
-   The /plan-session-end command was just created and isn't yet
-   loaded in this session. Slash commands are loaded when Claude Code
-   starts.
-
-   I can execute the session-end workflow right now using the canonical
-   workflow document, or you can run /plan-session-end in your next
-   session.
-
-   What would you like to do?
-
-   [1] Execute session-end workflow now (manual execution)
-       → Read and execute planning-is-prompting → workflow/session-end.md
-       → Records installation in history.md immediately
-       → Creates git commit with new workflows
-
-   [2] Skip for now, I'll run /plan-session-end in my next session
-       → The slash command will be available after restarting Claude Code
-       → You can document this installation session then
-
-   What would you like to do? [1/2]
-   ```
-
-   **If user chooses [1] - Execute Now**:
+3. **If User Chooses [1] - Execute Now**:
 
    ```
    ──────────────────────────────────────────────────────────
@@ -1741,10 +1828,6 @@ What would you like to do? [1/2]
    Note: The /plan-session-end slash command will be available in your
    next Claude Code session.
    ```
-
-   **If user chooses [2] - Skip for Now**:
-
-   (See section 4 below)
 
 4. **If User Chooses [2] - Skip for Now**:
 
