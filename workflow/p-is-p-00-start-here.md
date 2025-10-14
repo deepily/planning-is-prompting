@@ -126,6 +126,33 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 | **Medium research** | WebSocket arch evaluation | 2-3 weeks | Pattern 2: Research | ✓ Yes | → **01** → **02** (Pattern C) |
 | **Architecture design** | Microservices design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **01** → **02** (Pattern B) |
 | **Large implementation** | JWT authentication | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **01** → **02** (Pattern A) |
+| **Research-driven build** | Agent system (e.g., Google ADK) | 6-10 weeks | Pattern 6: Research-Driven | ✓ Yes | → **Phase 0** → **01** → **02** (B+A) |
+
+### First Decision: Do You Have Existing Research?
+
+**Key question**: Do you have external research materials, documentation, or recommendations to synthesize BEFORE planning implementation?
+
+```
+Do you have existing research/docs to process first?
+├─ YES → Use Pattern 6 (Research-Driven Implementation)
+│         • Start with Phase 0 (Research Synthesis)
+│         • Then Phase 1 (Architecture Design using p-is-p-02 Pattern B)
+│         • Then Phase 2 (Implementation Planning using p-is-p-02 Pattern A)
+│         • Requires Step 2: Yes (both Pattern B + Pattern A)
+│
+└─ NO → Continue to pattern selection below
+        Use decision matrix to select Pattern 1-5
+```
+
+**Examples of existing research scenarios**:
+- Building with new SDK/framework (Google ADK, LangChain, etc.)
+- Have vendor documentation or architectural recommendations
+- Implementing from technical specifications or RFCs
+- Have use case requirements needing technology mapping
+
+**Not existing research** (use other patterns):
+- Doing your own research/exploration → Pattern 2
+- Already understand the technology → Pattern 1, 3, 4, or 5
 
 ### Quick Decision Rules
 
@@ -377,6 +404,161 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 ```
 
 **No dedicated docs** - bug investigation tracked in history.md with session summaries.
+
+---
+
+### Example 5: Research-Driven Implementation - Agent with Google ADK (6-10 weeks)
+
+**Complete flow**:
+
+```
+WEEK 1: Research Synthesis (Phase 0)
+
+1. INPUT MATERIALS:
+   - Google ADK documentation (architecture, API reference, best practices)
+   - Use Case 1: Customer support automation requirements
+   - Use Case 2: Data analysis assistant requirements
+
+2. START: p-is-p-01 Phase 0 (Research Synthesis)
+   Create: src/rnd/2025.10.14-adk-agent-research-synthesis.md
+
+   TODOWRITE (Phase 0):
+   [AGENT] Read and understand Google ADK documentation
+   [AGENT] Extract ADK capabilities (agent framework, tool integration, memory)
+   [AGENT] Extract ADK constraints (async-only, 100K token limit, API quotas)
+   [AGENT] Extract recommended patterns (Agent-Tool-Memory, ReAct prompting)
+   [AGENT] Analyze Use Case 1: Customer support requirements
+   [AGENT] Analyze Use Case 2: Data analysis requirements
+   [AGENT] Map use cases to ADK capabilities
+   [AGENT] Create research synthesis document
+
+3. SYNTHESIS OUTPUT:
+   Document contains:
+   - ADK Capabilities: Agent framework, tool integration, memory management, prompting
+   - ADK Constraints: Async execution required, context limits, rate limits
+   - Recommended Patterns: Agent-Tool-Memory architecture, ReAct prompting strategy
+   - Use Case Mapping: Support agent needs NLU + ticketing tools, Analysis agent needs data tools
+   - Design Implications: Need extensible plugin system, context windowing, async architecture
+
+WEEK 2-3: Architecture Design (Phase 1)
+
+4. CONTINUE: p-is-p-01 Phase 1 (Discovery) + Phase 2 (Pattern Selection)
+   Discovery answers:
+   - Work type: Implementation (research-driven)
+   - Duration: 6-10 weeks
+   - Phases: 6 distinct phases identified
+   Pattern selected: Pattern 6 (Research-Driven Implementation)
+   Need Step 2: Yes (both Pattern B and Pattern A)
+
+5. STEP 2: p-is-p-02 Pattern B (Architecture & Design)
+   Create: src/rnd/adk-agent/ directory structure
+
+   Files created:
+   ├── 00-index.md (navigation hub)
+   ├── 01-system-context.md (use case requirements)
+   ├── 02-architecture-overview.md (Agent-Tool-Memory pattern from ADK)
+   ├── 03-component-design.md (Agent Engine, Tool Registry, Context Store)
+   ├── 05-integration-patterns.md (tool calling protocol, ReAct prompting)
+   └── 07-decision-rationale.md (all decisions trace to research findings)
+
+   TODOWRITE (Phase 1):
+   [AGENT] Design system architecture using Agent-Tool-Memory pattern
+   [AGENT] Design Agent Engine component (based on ADK framework)
+   [AGENT] Design Tool Registry component (based on ADK tool integration)
+   [AGENT] Design Context Store component (based on ADK memory + our windowing)
+   [AGENT] Document integration patterns (ADK tool protocol + ReAct)
+   [AGENT] Document design decisions with research rationale
+   [AGENT] Review architecture against both use cases
+
+6. ARCHITECTURE OUTPUT:
+   Key components derived from research:
+   - Agent Engine: Orchestrates behavior (ADK Agent Framework)
+   - Tool Registry: Plugin system (ADK Tool Integration)
+   - Context Store: Token-aware memory (ADK Memory + windowing strategy)
+   - Support Agent: Customer support specialization (Use Case 1)
+   - Analysis Agent: Data analysis specialization (Use Case 2)
+
+   Key decisions traced to research:
+   - D001: Context windowing (addresses ADK 100K limit)
+   - D002: Request queuing (addresses ADK rate limits)
+   - D003: Async architecture (required by ADK)
+   - D004: Plugin extensibility (enabled by ADK design)
+
+WEEK 3: Implementation Planning (Phase 2)
+
+7. STEP 2: p-is-p-02 Pattern A (Implementation Tracking)
+   Create: src/rnd/adk-agent/01-implementation-current.md
+
+   Derive implementation phases from architecture:
+   Phase 1: ADK Integration & Agent Framework Setup
+   Phase 2: Tool Registry & Plugin System
+   Phase 3: Context/Memory Management with Windowing
+   Phase 4: Customer Support Agent Implementation (Use Case 1)
+   Phase 5: Data Analysis Agent Implementation (Use Case 2)
+   Phase 6: Testing, Validation & Documentation
+
+   TODOWRITE (Phase 2):
+   [AGENT] Break down Phase 1 into tasks (ADK SDK setup, base agent class, etc.)
+   [AGENT] Break down Phase 2 into tasks (tool interface, registry, plugin loading)
+   [AGENT] Break down Phase 3 into tasks (context store, windowing, persistence)
+   [AGENT] Break down Phase 4 into tasks (support agent, ticketing tools, NLU)
+   [AGENT] Break down Phase 5 into tasks (analysis agent, data tools, viz)
+   [AGENT] Break down Phase 6 into tasks (test suites, validation, docs)
+   [AGENT] Identify cross-phase dependencies
+   [AGENT] Create timeline estimates
+   [AGENT] Finalize implementation tracking document
+
+WEEK 4-10: Implementation Execution (Phases 3-N)
+
+8. EXECUTE: Work through implementation phases using Pattern 1 flow
+
+   Phase 1 TodoWrite (example):
+   [AGENT] Install Google ADK SDK and dependencies
+   [AGENT] Create base agent class implementing ADK interface
+   [AGENT] Implement ADK tool integration hooks
+   [AGENT] Create agent configuration system
+   [AGENT] Write unit tests for base agent
+   [AGENT] Archive Phase 1 when complete
+
+   Phase 2 TodoWrite (example):
+   [AGENT] Define tool interface following ADK protocol
+   [AGENT] Implement tool registry with discovery
+   [AGENT] Create plugin loading system
+   [AGENT] Add tool validation and error handling
+   [AGENT] Write integration tests for tool system
+   [AGENT] Archive Phase 2 when complete
+
+   ... (continue through all phases)
+
+9. TRACKING & ARCHIVAL:
+   - Active phases in 01-implementation-current.md
+   - Completed phases archived to archive/phases-XX-YY-completed.md
+   - Architecture and decisions remain in separate files
+   - Research synthesis referenced throughout implementation
+   - Token budgets maintained via archival strategy
+
+10. INTEGRATION POINTS:
+    Throughout implementation:
+    - Reference research synthesis for ADK best practices
+    - Reference architecture docs for component specs
+    - Reference decision docs for design rationale
+    - Update implementation docs as phases complete
+    - Archive old phases to maintain token budgets
+```
+
+**Key Success Factors**:
+- **Week 1 synthesis** prevented weeks of rework later
+- **Research traceability**: Every design decision traces to research findings
+- **Pattern application**: ADK's Agent-Tool-Memory pattern adopted directly
+- **Use case alignment**: Both use cases validated against architecture
+- **TodoWrite discipline**: One phase in_progress, complete before moving on
+- **Document integration**: Research → Architecture → Implementation chain clear
+
+**Dedicated docs required**:
+- Research synthesis (Phase 0 output)
+- Architecture design (Pattern B docs)
+- Implementation tracking (Pattern A docs)
+- Total: ~40,000 tokens across multiple files, all under 25K individually
 
 ---
 

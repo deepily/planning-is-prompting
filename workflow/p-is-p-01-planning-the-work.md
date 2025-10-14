@@ -39,6 +39,186 @@ When you create a structured plan, it continuously asks questions:
 
 ## Work Planning Workflow
 
+### Phase 0: Research Synthesis (Conditional - Use When Starting From Existing Research)
+
+**When to use**: You have existing research materials, documentation, or recommendations to process BEFORE planning implementation
+
+**Skip this phase if**: You already understand the technology/approach, or are doing your own research (use Pattern 2 instead)
+
+**Purpose**: Transform external research documents into actionable insights that inform architecture and implementation planning
+
+#### Process Steps
+
+**Step 1: Gather Input Materials**
+
+Collect all research sources you need to understand:
+- Technical documentation (e.g., Google ADK documentation, framework guides)
+- Use case recommendations or requirements documents
+- Technical specifications or RFC documents
+- Stakeholder requirements or product briefs
+- Example implementations or reference architectures
+
+**Step 2: Extract Key Information**
+
+For each document, systematically identify:
+
+1. **Capabilities**: What does this technology/approach enable?
+   - Core features and functions
+   - Integration points with other systems
+   - Performance characteristics
+   - Scalability considerations
+
+2. **Constraints**: What limitations or requirements exist?
+   - Technical constraints (API limits, token limits, latency requirements)
+   - Compatibility requirements (versions, dependencies)
+   - Resource constraints (memory, CPU, network)
+   - Licensing or cost constraints
+
+3. **Patterns**: What architectural patterns or best practices are recommended?
+   - Recommended architectures
+   - Design patterns
+   - Integration patterns
+   - Anti-patterns to avoid
+
+4. **Integration Points**: How does this connect to existing systems?
+   - APIs and interfaces
+   - Authentication mechanisms
+   - Data formats and protocols
+   - Event/messaging patterns
+
+5. **Decision Implications**: What design choices does this research suggest?
+   - Technology stack recommendations
+   - Architecture approach (microservices vs. monolith, async vs. sync)
+   - Data storage strategies
+   - Security considerations
+
+**Step 3: Create Research Synthesis Document**
+
+Create `src/rnd/YYYY.MM.DD-{topic}-research-synthesis.md` with this structure:
+
+```markdown
+# {Topic} Research Synthesis
+
+**Created**: YYYY.MM.DD
+**Source Materials**: List of documents reviewed
+**Purpose**: Synthesize research to inform {project name} implementation
+
+## Source Documents
+
+1. **[Document Name]** ({URL or path})
+   - Type: Documentation/Specification/Recommendation
+   - Focus areas: {What you extracted from this}
+
+2. **[Document Name]** ({URL or path})
+   - Type: Documentation/Specification/Recommendation
+   - Focus areas: {What you extracted from this}
+
+## Key Capabilities Extracted
+
+### From {Source 1}
+- Capability 1: {Description and implications}
+- Capability 2: {Description and implications}
+
+### From {Source 2}
+- Capability 3: {Description and implications}
+
+## Constraints & Requirements
+
+### Technical Constraints
+- Constraint 1: {Description and impact on design}
+- Constraint 2: {Description and impact on design}
+
+### Integration Requirements
+- Requirement 1: {What we must support}
+- Requirement 2: {What we must support}
+
+## Recommended Patterns & Approaches
+
+### From {Source 1}
+- Pattern: {Name and description}
+  - When to use: {Context}
+  - How to implement: {High-level approach}
+  - Benefits: {Why this pattern}
+
+### From {Source 2}
+- Pattern: {Name and description}
+  - When to use: {Context}
+  - How to implement: {High-level approach}
+  - Benefits: {Why this pattern}
+
+## Design Implications
+
+Based on research, the following design decisions are recommended:
+
+1. **Architecture Approach**: {Monolith/Microservices/Hybrid and why}
+2. **Technology Stack**: {Key technologies and rationale}
+3. **Integration Strategy**: {How components will connect}
+4. **Data Management**: {Storage, caching, retrieval approach}
+5. **Security Model**: {Authentication, authorization approach}
+
+## Use Case Mapping
+
+### Use Case 1: {Name}
+- **Requirements extracted**: {What this use case needs}
+- **Relevant capabilities**: {Which researched features apply}
+- **Implementation approach**: {High-level how to build this}
+
+### Use Case 2: {Name}
+- **Requirements extracted**: {What this use case needs}
+- **Relevant capabilities**: {Which researched features apply}
+- **Implementation approach**: {High-level how to build this}
+
+## Open Questions & Risks
+
+### Questions Requiring Further Investigation
+- Question 1: {What's still unclear}
+- Question 2: {What needs deeper research}
+
+### Identified Risks
+- Risk 1: {Potential issue and mitigation approach}
+- Risk 2: {Potential issue and mitigation approach}
+
+## Next Steps
+
+With research synthesis complete, proceed to:
+1. **Phase 1** (Discovery Questions): Answer based on synthesized understanding
+2. **Phase 2** (Pattern Selection): Likely Pattern 6 (Research-Driven Implementation)
+3. **Step 2** (Documentation): Create Pattern B (Architecture) and Pattern A (Implementation Tracking)
+```
+
+**Step 4: Create TodoWrite Checklist for Synthesis**
+
+Track your research synthesis progress:
+
+```javascript
+TodoWrite({
+  todos: [
+    { content: "[PROJECT] Gather all research source materials", status: "completed", activeForm: "Gathering research materials" },
+    { content: "[PROJECT] Extract capabilities from {Source 1}", status: "in_progress", activeForm: "Extracting capabilities from {Source 1}" },
+    { content: "[PROJECT] Extract capabilities from {Source 2}", status: "pending", activeForm: "Extracting capabilities from {Source 2}" },
+    { content: "[PROJECT] Document constraints and requirements", status: "pending", activeForm: "Documenting constraints" },
+    { content: "[PROJECT] Identify recommended patterns", status: "pending", activeForm: "Identifying patterns" },
+    { content: "[PROJECT] Map use cases to capabilities", status: "pending", activeForm: "Mapping use cases" },
+    { content: "[PROJECT] Create research synthesis document", status: "pending", activeForm: "Creating synthesis doc" },
+    { content: "[PROJECT] Transition to Phase 1 (Discovery)", status: "pending", activeForm: "Transitioning to Phase 1" }
+  ]
+})
+```
+
+**Step 5: Transition to Planning**
+
+With synthesis complete, proceed to Phase 1 (Discovery) armed with:
+- ✅ Clear understanding of technology/approach from research
+- ✅ Concrete requirements derived from use cases
+- ✅ Design constraints extracted from documentation
+- ✅ Recommended patterns to follow
+- ✅ Integration points identified
+- ✅ Risk areas surfaced
+
+Your synthesis document becomes a key reference throughout planning and implementation phases.
+
+---
+
 ### Phase 1: Work Discovery & Classification
 
 Before diving into implementation, understand what you're trying to accomplish. Answer these discovery questions:
@@ -280,6 +460,108 @@ Phase 4: Deployment & Documentation [PLANNED]
 
 ---
 
+##### Pattern 6: Research-Driven Implementation
+
+**Best for**: Building systems based on external research, documentation, or recommendations where you need to understand existing materials before planning
+
+**Characteristics**:
+- Starts with existing research materials (not your own research work)
+- Requires synthesis and translation before planning
+- Design decisions heavily influenced by research findings
+- Implementation follows researched best practices and patterns
+- Multi-phase workflow: Synthesis → Architecture → Planning → Execution
+
+**When to use**:
+- Building with new framework/SDK (e.g., Google ADK, LangChain, etc.)
+- Have vendor documentation or architectural recommendations to follow
+- Implementing based on technical specifications or RFCs
+- Have use case requirements that need mapping to technology capabilities
+
+**Structure**:
+```
+Phase 0: Research Synthesis [WEEK 1]
+  ├─ Gather input materials (docs, use cases, specs)
+  ├─ Extract capabilities, constraints, patterns
+  ├─ Map use cases to technology features
+  └─ Create synthesis summary document
+
+Phase 1: Architecture Design [WEEK 2-3]
+  ├─ Translate research findings → system components
+  ├─ Apply recommended patterns from research
+  ├─ Make design decisions informed by constraints
+  ├─ Document architecture (use p-is-p-02 Pattern B)
+  └─ Create decision rationale doc
+
+Phase 2: Implementation Planning [WEEK 3]
+  ├─ Derive implementation phases from architecture
+  ├─ Break down phases into concrete tasks
+  ├─ Identify dependencies and milestones
+  └─ Create implementation tracking docs (use p-is-p-02 Pattern A)
+
+Phase 3-N: Implementation Execution [WEEK 4+]
+  ├─ Execute phases using TodoWrite
+  ├─ Apply patterns extracted from research
+  ├─ Reference architecture and decisions
+  └─ Archive completed phases (maintain token budgets)
+```
+
+**TodoWrite Pattern**:
+
+*Phase 0 (Research Synthesis):*
+```
+[PROJECT] Gather research source materials (e.g., SDK docs, use cases, specs)
+[PROJECT] Extract capabilities and constraints from documentation
+[PROJECT] Identify recommended patterns and best practices
+[PROJECT] Map use cases to technology capabilities
+[PROJECT] Create research synthesis summary document
+[PROJECT] Transition to Phase 1 (Architecture Design)
+```
+
+*Phase 1 (Architecture Design):*
+```
+[PROJECT] Design system architecture based on research patterns
+[PROJECT] Define components using researched capabilities
+[PROJECT] Document design decisions with research rationale
+[PROJECT] Create architecture diagrams and component specs
+[PROJECT] Review architecture against use case requirements
+```
+
+*Phase 2 (Implementation Planning):*
+```
+[PROJECT] Derive implementation phases from architecture
+[PROJECT] Break down Phase 1 tasks (e.g., ADK integration)
+[PROJECT] Break down Phase 2 tasks (e.g., Tool registry)
+[PROJECT] Identify cross-phase dependencies
+[PROJECT] Create implementation tracking document
+[PROJECT] Estimate timeline and resource needs
+```
+
+*Phase 3+ (Execution):*
+```
+[PROJECT] Phase 3.1: Set up SDK and dependencies
+[PROJECT] Phase 3.2: Implement base framework
+[PROJECT] Phase 3.3: Build component X following researched pattern
+[PROJECT] Phase 3.4: Integrate components
+... (continue through all implementation phases)
+```
+
+**Example**: Building agent system with Google ADK - synthesize ADK documentation and 2 use case recommendations, design agent architecture based on ADK's Agent-Tool-Memory pattern, derive implementation phases (ADK integration, tool registry, context management, use case 1 implementation, use case 2 implementation), execute with TodoWrite tracking.
+
+**Integration with p-is-p-02**:
+- Phase 0 creates: `src/rnd/YYYY.MM.DD-{topic}-research-synthesis.md`
+- Phase 1 creates: Pattern B (Architecture & Design) docs
+- Phase 2 creates: Pattern A (Implementation Tracking) docs
+- Phases 3+ use: Pattern A for active work, archive completed phases
+
+**Key Success Factors**:
+- Thorough Phase 0 synthesis prevents rework later
+- Research synthesis doc becomes key reference throughout project
+- Design decisions explicitly trace back to research findings
+- Implementation phases align with use case requirements
+- TodoWrite discipline maintains focus through long project
+
+---
+
 ### Pattern Selection Decision Tree
 
 Use this decision tree to select the right pattern:
@@ -287,7 +569,11 @@ Use this decision tree to select the right pattern:
 ```
 START
   |
-  ├─ Is this primarily research/exploration?
+  ├─ Do you have existing research/docs to synthesize first?
+  |    YES → Pattern 6 (Research-Driven Implementation)
+  |    NO → Continue
+  |
+  ├─ Is this primarily research/exploration (doing new research)?
   |    YES → Pattern 2 (Research & Exploration)
   |    NO → Continue
   |
@@ -305,6 +591,7 @@ START
 ```
 
 **Hybrid Patterns**: You can combine patterns for complex work. For example:
+- Research synthesis (Pattern 6 Phase 0) → Architecture design (Pattern 5) → Implementation (Pattern 1)
 - Research phase (Pattern 2) → Implementation phases (Pattern 1)
 - Architecture design (Pattern 5) → Feature development (Pattern 3)
 - Problem investigation (Pattern 4) → Solution implementation (Pattern 3)

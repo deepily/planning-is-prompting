@@ -173,6 +173,173 @@ src/rnd/{project-name}/
 - Cross-references between related design elements
 - ADRs track why design decisions were made
 
+#### Populating Architecture Design from Research (Pattern 6 Integration)
+
+**When to use**: You've completed Phase 0 (Research Synthesis) and need to translate research findings into architecture design documents
+
+**Translation Process**:
+
+**Step 1: Research Capabilities → System Components**
+
+Map technology capabilities to system architecture:
+
+**Generic Template**:
+
+| Research Finding | Maps To | Design Document |
+|------------------|---------|-----------------|
+| "{Framework/SDK Core}" | Primary system component | 03-component-design.md |
+| "{Tool/Plugin System}" | Extension/plugin component | 03-component-design.md |
+| "{State/Memory Management}" | Data/context component | 03-component-design.md |
+| "{Async/Execution Model}" | Architecture approach | 02-architecture-overview.md |
+
+**Example: Applying to Google ADK**
+
+| Research Finding | Maps To | Design Document |
+|------------------|---------|-----------------|
+| "ADK Agent Framework" | Agent Engine component | 03-component-design.md |
+| "ADK Tool Integration" | Tool Registry component | 03-component-design.md |
+| "ADK Memory Management" | Context Store component | 03-component-design.md |
+| "ADK supports async execution" | Asynchronous architecture | 02-architecture-overview.md |
+
+---
+
+**Step 2: Research Constraints → Design Decisions**
+
+Translate constraints into architectural choices:
+
+**Generic Template**:
+
+| Research Constraint | Implies | Decision Document |
+|---------------------|---------|-------------------|
+| "{Resource limit (tokens/memory/CPU)}" | Need resource management strategy | 07-decision-rationale.md (D001) |
+| "{API/Service rate limits}" | Need request queuing and retry logic | 07-decision-rationale.md (D002) |
+| "{Required execution model}" | Must use specific pattern throughout | 07-decision-rationale.md (D003) |
+| "{Architecture constraints}" | Design for specific characteristics | 02-architecture-overview.md |
+
+**Example: Applying to Google ADK**
+
+| Research Constraint | Implies | Decision Document |
+|---------------------|---------|-------------------|
+| "ADK context limit 100K tokens" | Need context windowing strategy | 07-decision-rationale.md (D001) |
+| "ADK API rate limits" | Need request queuing and retry logic | 07-decision-rationale.md (D002) |
+| "ADK async-only execution" | Must use async/await pattern throughout | 07-decision-rationale.md (D003) |
+| "ADK plugin architecture" | Design for extensibility from start | 02-architecture-overview.md |
+
+---
+
+**Step 3: Research Patterns → Integration Design**
+
+Apply recommended patterns from research:
+
+**Generic Template**:
+
+| Research Pattern | Implementation | Design Document |
+|------------------|----------------|-----------------|
+| "{Primary architectural pattern}" | Adopt as core architecture | 02-architecture-overview.md |
+| "{Interaction/Communication pattern}" | Use for component interaction | 05-integration-patterns.md |
+| "{Protocol/Interface specification}" | Implement standardized interface | 05-integration-patterns.md |
+
+**Example: Applying to Google ADK**
+
+| Research Pattern | Implementation | Design Document |
+|------------------|----------------|-----------------|
+| "Agent-Tool-Memory pattern" | Adopt as core architecture | 02-architecture-overview.md |
+| "ReAct prompting approach" | Use for agent decision-making | 05-integration-patterns.md |
+| "Tool calling protocol" | Implement standardized tool interface | 05-integration-patterns.md |
+
+---
+
+**Step 4: Use Cases → Component Specifications**
+
+Derive components from use case requirements:
+
+**Generic Template**:
+
+| Use Case | Requires | Component Design |
+|----------|----------|------------------|
+| "{Use Case 1 name}" | Specialized component 1 | 03-component-design.md ({Component 1}) |
+| "{Use Case 2 name}" | Specialized component 2 | 03-component-design.md ({Component 2}) |
+| Shared requirements | Common infrastructure | 03-component-design.md ({Base Component}) |
+| Shared requirements | Shared services | 03-component-design.md ({Service Component}) |
+
+**Example: Applying to Google ADK**
+
+| Use Case | Requires | Component Design |
+|----------|----------|------------------|
+| "Customer Support Automation" | Support Agent component | 03-component-design.md (Support Agent) |
+| "Data Analysis Assistant" | Analysis Agent component | 03-component-design.md (Analysis Agent) |
+| Both use cases need | Shared agent infrastructure | 03-component-design.md (Base Agent) |
+| Both use cases need | Common tool registry | 03-component-design.md (Tool Registry) |
+
+---
+
+**Example Workflow**:
+
+```markdown
+# From Research Synthesis to Architecture Design
+
+## Input: Research Synthesis Document
+`src/rnd/2025.10.14-adk-agent-research-synthesis.md` contains:
+- ADK capabilities: Agent framework, tool integration, memory, prompting
+- ADK constraints: Async-only, 100K token limit, API quotas
+- ADK patterns: Agent-Tool-Memory, ReAct prompting
+- Use cases: Customer support + Data analysis
+
+## Output: Architecture Design Documents
+
+### 01-system-context.md
+**From use case analysis**:
+- Business context: Need AI agents for customer support and data analysis
+- Requirements: Natural language understanding, tool usage, context retention
+- Constraints: Must work within ADK limitations (async, token limits)
+
+### 02-architecture-overview.md
+**From ADK patterns**:
+- Core pattern: Agent-Tool-Memory (from ADK recommendation)
+- Agent Engine: Orchestrates agent behavior (ADK Agent Framework)
+- Tool Registry: Manages available tools (ADK Tool Integration)
+- Context Store: Manages conversation history (ADK Memory Management)
+- Communication: Async message passing (ADK constraint)
+
+### 03-component-design.md
+**From use cases + capabilities**:
+- Base Agent: Common infrastructure for all agents
+- Support Agent: Specialization for customer support use case
+- Analysis Agent: Specialization for data analysis use case
+- Tool Registry: Dynamic tool registration and discovery
+- Context Store: Token-aware context window management
+
+### 05-integration-patterns.md
+**From ADK patterns**:
+- Agent-Tool interaction: ADK's tool calling protocol
+- Prompting strategy: ReAct pattern (from ADK research)
+- Context management: Sliding window with summarization
+
+### 07-decision-rationale.md
+**From constraints + research**:
+- D001: Context windowing strategy (addresses 100K token limit)
+- D002: Request queuing with retry logic (addresses API rate limits)
+- D003: Async architecture throughout (required by ADK)
+- D004: Plugin-based extensibility (enabled by ADK architecture)
+```
+
+**Key Traceability**:
+
+Every design decision should trace back to:
+1. **Research finding**: What did we learn from documentation?
+2. **Use case need**: What do users require?
+3. **Technical constraint**: What are the limitations?
+4. **Pattern recommendation**: What did research suggest?
+
+This creates a clear chain: Research → Design Rationale → Component Specification
+
+**Benefits of This Approach**:
+- Design decisions have clear justification
+- Easy to update design if research changes
+- New team members can understand "why" from design docs
+- Architecture aligns with vendor best practices
+- Use case requirements drive component design
+
 ---
 
 ### Pattern C: Research Documentation
