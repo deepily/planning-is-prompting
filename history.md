@@ -1,13 +1,80 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Interactive discovery with context-aware defaults integrated into P-is-P workflows - major UX enhancement complete
+**RESUME HERE**: Global CLAUDE.md configuration synchronized with planning-is-prompting repository
 
-**Current Status**: All three P-is-P workflows (00, 01, 02) now feature context-aware defaults that infer smart suggestions from user description, git state, and history - reduces planning overhead from ~5-10 min to ~30 sec
-**Next Steps**: Dogfood enhanced workflows in practice, test context analysis accuracy, cross-project validation
+**Current Status**: Global config now includes Environment Configuration section with PLANNING_IS_PROMPTING_ROOT documentation while maintaining symbolic reference pattern for all workflow references
+**Next Steps**: Monitor workflows across projects, continue dogfooding P-is-P workflows with context analysis
 
 ---
 
 ## October 2025
+
+### 2025.10.17 - Session 19: Global CLAUDE.md Sync & Configuration Audit
+
+**Accomplishments**:
+- **Audited global vs. local CLAUDE.md configurations**:
+  - Compared `~/.claude/CLAUDE.md` (global) with `global/CLAUDE.md` (repo snapshot)
+  - Identified missing "Environment Configuration" section in home directory version
+  - Confirmed symbolic reference pattern usage (planning-is-prompting → workflow/...) in both
+- **Synchronized global configuration** (complete copy operation):
+  - Copied `global/CLAUDE.md` → `~/.claude/CLAUDE.md`
+  - Added missing Environment Configuration section (lines 9-24)
+  - Documented `$PLANNING_IS_PROMPTING_ROOT` environment variable purpose and usage
+  - Verified all workflow references use symbolic pattern (not runtime variable expansion)
+- **Executed backup dry-run** via `/plan-backup`:
+  - Detected 4 files to sync (history.md + 3 workflow files)
+  - Version check passed (script v1.0 matches canonical)
+  - Dry-run preview successful
+- **Executed session-end workflow** via `/plan-session-end`:
+  - Created TodoWrite tracking (8 steps)
+  - Quick token count: 10,915 tokens (43.6% of limit, ✅ HEALTHY)
+  - History health check: ~220 tok/day velocity, will reach 20k in ~41 days
+  - Completed all steps including history update and commit
+
+**Configuration Findings**:
+
+**Differences Identified**:
+1. **Environment Configuration section** (lines 9-24) - Present in repo, missing from home
+   - Documents `PLANNING_IS_PROMPTING_ROOT` environment variable
+   - Explains usage for backup scripts, canonical workflow lookups, template locations
+   - Provides verification command: `echo $PLANNING_IS_PROMPTING_ROOT`
+
+**Symbolic Reference Pattern Confirmed**:
+- All 3 workflow references use format: `planning-is-prompting → workflow/<filename>`
+- Line 5: session-end.md
+- Line 7: INSTALLATION-GUIDE.md
+- Line 630: history-management.md
+- No runtime variable expansion (e.g., `$PLANNING_IS_PROMPTING_ROOT/...`)
+
+**Rationale for Symbolic Pattern**:
+- Claude Code interprets references contextually (not shell-style expansion)
+- Conceptual/semantic references > literal path substitution
+- Maintains portability across different Claude Code invocations
+- Environment variable documented for human reference and script usage
+
+**Pattern Used This Session**:
+- Work type: Configuration audit and synchronization
+- Scale: Small (<30 minutes)
+- Pattern: Pattern 4 (Investigation + sync)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `~/.claude/CLAUDE.md` - Complete replacement with repo version (added Environment Configuration section)
+2. `history.md` - Added this session summary
+
+**Key Design Validation**:
+- ✅ **Two-file system working**: Repo `global/CLAUDE.md` as template, `~/.claude/CLAUDE.md` as active config
+- ✅ **Environment variable documented**: Users know to set `PLANNING_IS_PROMPTING_ROOT`
+- ✅ **Symbolic references maintained**: Workflow references remain portable
+- ✅ **Sync process validated**: Copy operation preserves all content correctly
+
+**TODO for Next Session**:
+- [ ] Update global/CLAUDE.md if future changes made to ~/.claude/CLAUDE.md
+- [ ] Monitor workflow reference resolution across projects
+- [ ] Test P-is-P workflows with context-aware defaults in practice
+- [ ] Cross-project validation: Test workflows in genie-in-the-box
+
+---
 
 ### 2025.10.14 - Session 18: Interactive Discovery with Context-Aware Defaults
 
