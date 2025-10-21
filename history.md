@@ -1,13 +1,114 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Global CLAUDE.md configuration synchronized with planning-is-prompting repository
+**RESUME HERE**: Interactive Requirements Elicitation pattern formalized in global configs and P-is-P workflows
 
-**Current Status**: Global config now includes Environment Configuration section with PLANNING_IS_PROMPTING_ROOT documentation while maintaining symbolic reference pattern for all workflow references
-**Next Steps**: Monitor workflows across projects, continue dogfooding P-is-P workflows with context analysis
+**Current Status**: Added comprehensive "Interactive Requirements Elicitation with Smart Defaults" pattern to both global CLAUDE.md files (active + template) and p-is-p-00-start-here.md - standardizes pre-planning conversations with Socratic questioning, historical+best-practice synthesis, topic tracking, and explicit transitions to structured workflows
+**Next Steps**: Dogfood interactive requirements elicitation pattern in next planning session, monitor proactive detection effectiveness, validate smart defaults algorithm (historical + best practices synthesis)
 
 ---
 
 ## October 2025
+
+### 2025.10.20 - Session 20: Interactive Requirements Elicitation Pattern Formalization
+
+**Accomplishments**:
+- **Formalized "Interactive Requirements Elicitation with Smart Defaults" pattern** based on organically emerged user workflows:
+  - Added comprehensive section to global CLAUDE.md (~145 lines) documenting triggers, offers, algorithms, examples
+  - Added "Pre-Planning" section to p-is-p-00-start-here.md (~150 lines) with practical examples and workflow integration
+  - Added "Python Development" section to both global configs (virtual environment naming: `.venv`)
+  - Synchronized both global CLAUDE.md files (active ~/.claude/ and repo global/)
+- **Pattern standardization** (terminology and structure):
+  - Official name: "Interactive Requirements Elicitation with Smart Defaults"
+  - Sub-patterns: Socratic Discovery + Anticipatory Suggestions + Topic Tracking
+  - Proactive detection triggers documented (vague phrasing, short descriptions, plan mode)
+  - Explicit transition guidance (ask before invoking workflows)
+- **Smart Defaults Algorithm** (historical + best practices synthesis):
+  - Step 1: Gather historical context from history.md (last 3-5 patterns, typical durations, technologies, task structures)
+  - Step 2: Gather industry best practices (standard approaches, common architectures, proven methodologies)
+  - Step 3: Synthesize 3-4 labeled options with transparent provenance (📊 Historical, ✅ Best Practice, 🔄 Blend, 💡 Alternative)
+  - Transparency principle: Always show WHY each option suggested
+- **Key design elements captured**:
+  - **Proactive offer template**: "I notice you're in early stages..." → offer clarification with historical+best-practice context
+  - **Socratic questioning examples**: Scope, Timeline, Constraints, Outcomes (4 categories with sample questions)
+  - **Topic tracking visual**: ✓ Complete, ~ Partial, ○ Not discussed (progress indicator during conversation)
+  - **Explicit transition**: "Ready for /p-is-p-01-planning?" → user controls when to formalize
+
+**User's Original Observations** (patterns that emerged organically):
+1. **Clarifying follow-up questions**: Design starts with user thinking out loud → Claude asks disambiguating questions
+2. **Topic list with candidate answers**: Claude builds list of discussed topics, offers 3-4 best candidate answers for efficiency
+
+**Analysis & Standardization Process**:
+- Identified this as PRE-PLANNING phase (before formal workflow invocation)
+- Terminology selection: "Interactive Requirements Elicitation with Smart Defaults" (user-confirmed preference)
+- Insertion point: Pre-planning conversation (before /p-is-p-01-planning), not as new Phase 0
+- Proactivity: Offer clarification when detecting vague requirements (user-confirmed preference)
+- Smart defaults prioritization: Combine historical patterns + best practices (user-confirmed preference)
+
+**Implementation Details**:
+
+**Global CLAUDE.md Enhancement** (~145 lines added to both files):
+- **Section**: "## INTERACTIVE REQUIREMENTS ELICITATION" (after Session Workflows, before Environment Configuration)
+- **Subsections**:
+  - When to Trigger (Proactive Detection) - 5 trigger conditions
+  - Proactive Offer Template - Phrasing for offering help
+  - Smart Defaults Algorithm (Historical + Best Practices) - 3-step synthesis with example output
+  - Socratic Questioning Examples - 4 categories (Scope, Timeline, Constraints, Outcomes)
+  - Topic Tracking During Conversation - Visual progress indicator
+  - Transition to Structured Planning - Explicit ask before invoking workflows
+  - Integration with Planning is Prompting Workflows - Flow diagram
+
+**p-is-p-00-start-here.md Enhancement** (~150 lines added):
+- **Section**: "## Pre-Planning: Interactive Requirements Elicitation" (before The Two-Step Process section)
+- **Subsections**:
+  - The Pattern - Complete example dialogue showing flow from vague idea → refined requirements
+  - Key Elements of This Pattern - 5 numbered elements (Proactive Detection, Socratic Questioning, Smart Defaults, Topic Tracking, Explicit Transition)
+  - Benefits of Pre-Planning - 5 benefits explained
+  - When to Skip Pre-Planning - Clear guidance on when to jump directly to /p-is-p-01
+  - Connection to Formal Workflows - Flow showing pre-planning → Step 1 → Step 2
+
+**Python Development Addition** (~15 lines added to both global CLAUDE.md files):
+- **Section**: "## Python Development" (after Environment Configuration, before General Preferences)
+- **Content**: Virtual environment naming convention (always use `.venv`), rationale, example
+
+**Pattern Used This Session**:
+- Work type: Pattern formalization (capturing emergent user behavior into standard workflow)
+- Scale: Medium (2-3 hours of analysis, design, and implementation)
+- Pattern: Pattern 3 (Feature Development - well-scoped enhancement to P-is-P system)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Modified**:
+1. `/home/rruiz/.claude/CLAUDE.md` - Added Interactive Requirements Elicitation section (~145 lines) + Python Development section (~15 lines)
+2. `global/CLAUDE.md` - Same additions as above (synchronized)
+3. `workflow/p-is-p-00-start-here.md` - Added Pre-Planning section (~150 lines)
+4. `history.md` - Added this session summary
+
+**Total Changes**: ~310 lines added across global configs + ~150 lines added to p-is-p-00 + synchronization verified
+
+**Key Success Metrics**:
+- ✅ **Pattern captured**: Organic user behavior now standardized
+- ✅ **Terminology clarified**: "Interactive Requirements Elicitation with Smart Defaults"
+- ✅ **Smart defaults algorithm**: Historical (history.md) + best practices synthesis with labeled provenance
+- ✅ **Proactive detection**: Trigger conditions documented (5 scenarios)
+- ✅ **User control**: Explicit transitions (always ask before invoking workflows)
+- ✅ **Transparency**: Shows WHY suggestions made (historical vs best practice vs hybrid)
+- ✅ **Global + local sync**: Both CLAUDE.md files identical (820 lines each)
+
+**Design Principles Validated**:
+- **Transparency**: Always show provenance (📊 historical, ✅ best practice, 🔄 blend, 💡 alternative)
+- **User Control**: Can skip pre-planning if requirements already clear
+- **Proactivity**: Detect vague requirements, offer help (not force it)
+- **Learning**: Incorporate historical patterns from history.md automatically
+- **Flexibility**: Quick (5 min) or thorough (30 min) based on needs
+
+**TODO for Next Session**:
+- [ ] Dogfood interactive requirements elicitation pattern: Test with real vague requirements
+- [ ] Validate proactive detection works correctly (trigger conditions)
+- [ ] Test smart defaults algorithm with historical + best practices synthesis
+- [ ] Verify topic tracking visual format is clear and helpful
+- [ ] Monitor transition effectiveness (pre-planning → /p-is-p-01-planning)
+- [ ] Cross-project testing: Install enhanced workflows in genie-in-the-box
+
+---
 
 ### 2025.10.17 - Session 19: Global CLAUDE.md Sync & Configuration Audit
 

@@ -100,6 +100,157 @@ Workflow: ✓ Creating Phase 1-5 breakdown for email notifications...
 
 ---
 
+## Pre-Planning: Interactive Requirements Elicitation
+
+**When to use this**: When you have a vague or early-stage idea and need help refining requirements before starting structured planning.
+
+### The Pattern
+
+Before invoking formal workflows (like `/p-is-p-01-planning`), engage in a **free-form conversation** to clarify what you're building:
+
+```
+You: "I'm thinking about adding email notifications..." (vague, exploratory)
+↓
+Claude: [Detects vague requirements, proactively offers]
+"I notice you're in early stages. Would it be helpful if I asked clarifying
+questions? I can suggest common approaches based on your previous work."
+↓
+You: "Yes, that would help"
+↓
+Claude: [Begins Socratic dialogue with smart defaults]
+"Let me understand what you're envisioning..."
+
+[Topic tracking shows progress]
+Topics covered:
+✓ Scope (email notifications for order status changes)
+✓ Timeline (2 weeks target)
+~ Tech stack (considering SendGrid vs AWS SES)
+○ Testing strategy (not yet discussed)
+
+"Based on past projects, here are 4 approaches:
+1. Full async queue system (like your recent order processing - 2 weeks)
+2. Simple SMTP integration (industry standard - 1 week)
+3. Hybrid: queue for reliability, SMTP for simplicity (1.5 weeks)
+4. Third-party service integration (fastest - 3 days)
+
+Which resonates? [1/2/3/4 or describe]"
+↓
+You: "Option 3 sounds right"
+↓
+Claude: [Refines understanding through more questions]
+↓
+Claude: [Summarizes and transitions]
+"Based on our conversation, I now understand:
+- Add email notifications for order status changes
+- Use message queue (Redis) for reliability
+- Integrate SMTP (SendGrid) for delivery
+- Target 1.5 weeks, ~10 tasks estimated
+
+This looks like Pattern 3 (Feature Development). Ready for /p-is-p-01-planning?"
+```
+
+### Key Elements of This Pattern
+
+**1. Proactive Detection**
+
+Claude automatically detects when to offer help based on:
+- Vague phrasing ("I want to...", "thinking about...", "maybe...")
+- Short descriptions (<3 sentences)
+- Missing implementation details (goals without approach)
+- Plan mode active (explicit design discussion)
+
+**2. Socratic Questioning**
+
+Claude asks targeted clarifying questions across dimensions:
+
+**Scope**: "New feature or enhancement? Multiple components or self-contained?"
+**Timeline**: "Days, weeks, or months? Hard deadline or exploratory?"
+**Constraints**: "Existing systems to integrate? Tech preferences? Performance needs?"
+**Outcomes**: "What does success look like? Who are the users? How to know it's ready?"
+
+**3. Smart Defaults (Historical + Best Practices)**
+
+When suggesting options, Claude synthesizes:
+
+**Historical Context** (from your history.md):
+- Last 3-5 patterns you've used
+- Typical project durations in this repo
+- Common technologies mentioned
+- Previous task breakdown structures
+
+**Industry Best Practices** (general knowledge):
+- Standard approaches for this work type
+- Common architectures
+- Proven methodologies
+
+**Synthesis** (3-4 labeled options):
+```
+1. **[Approach]** - 📊 Historical: Matches your recent [project]
+2. **[Approach]** - ✅ Best Practice: Standard for [work type]
+3. **[Approach]** - 🔄 Blend: Your typical [X] + standard [Y]
+4. **[Approach]** - 💡 Alternative: Less common but might fit if [condition]
+```
+
+**Transparency**: Shows provenance (historical vs. best practice vs. hybrid)
+
+**4. Topic Tracking**
+
+Visual progress indicator showing what's been discussed:
+```
+Topics covered so far:
+✓ Project scope (email notifications)
+✓ Timeline (2 weeks)
+✓ Tech stack (SendGrid)
+~ Testing approach (partial - needs more detail)
+○ Deployment strategy (not yet discussed)
+○ Monitoring/alerting (not yet discussed)
+```
+
+Symbols:
+- ✓ Complete understanding
+- ~ Partial (needs clarification)
+- ○ Not yet discussed
+
+**5. Explicit Transition**
+
+Claude ASKS before moving to formal workflows:
+```
+"Requirements are clearer now. Would you like me to use /p-is-p-01-planning
+to create a structured task breakdown? Or continue refining first?"
+```
+
+**Key principle**: User controls when to transition from free-form to structured planning.
+
+### Benefits of Pre-Planning
+
+**1. Reduces False Starts**: Clarify vague ideas before committing to structure
+**2. Faster Planning**: Smart defaults accelerate decision-making
+**3. Better Alignment**: Shared understanding before formal planning begins
+**4. Flexible Pacing**: Can be quick (5 min) or thorough (30 min) based on needs
+**5. Learning Integration**: Incorporates your historical patterns automatically
+
+### When to Skip Pre-Planning
+
+Skip directly to `/p-is-p-01-planning` if you already have:
+- Clear requirements and scope
+- Defined approach or architecture
+- Specific pattern in mind (Pattern 1-6)
+- Detailed task list ready to formalize
+
+Pre-planning is optional but recommended when starting with ambiguity.
+
+### Connection to Formal Workflows
+
+**Pre-Planning Conversation** (This section)
+↓ [Vague idea refined into clear requirements]
+↓
+**Step 1: p-is-p-01-planning** (Structured planning with context-aware defaults)
+↓ [Conditional based on pattern]
+↓
+**Step 2: p-is-p-02-documentation** (Implementation tracking for larger work)
+
+---
+
 ## The Two-Step Process
 
 "Planning is Prompting" consists of two core workflows that work together:
