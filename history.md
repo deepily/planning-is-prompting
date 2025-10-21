@@ -1,13 +1,64 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Interactive Requirements Elicitation pattern formalized in global configs and P-is-P workflows
+**RESUME HERE**: Claude Code Skills directory documented with comprehensive README
 
-**Current Status**: Added comprehensive "Interactive Requirements Elicitation with Smart Defaults" pattern to both global CLAUDE.md files (active + template) and p-is-p-00-start-here.md - standardizes pre-planning conversations with Socratic questioning, historical+best-practice synthesis, topic tracking, and explicit transitions to structured workflows
-**Next Steps**: Dogfood interactive requirements elicitation pattern in next planning session, monitor proactive detection effectiveness, validate smart defaults algorithm (historical + best practices synthesis)
+**Current Status**: Created comprehensive skills/README.md (572 lines) documenting Anthropic's October 2025 Skills feature - includes token efficiency architecture (30-50 tokens until loaded), progressive disclosure, file structure, creation guide, best practices, and team collaboration workflows
+**Next Steps**: Consider creating Skills for planning-is-prompting workflows (e.g., workflow validation Skill), test Skills feature in practice, potentially create example Skills for this repository
 
 ---
 
 ## October 2025
+
+### 2025.10.21 - Session 21: Claude Code Skills Documentation
+
+**Accomplishments**:
+- **Created comprehensive skills/README.md** (572 lines) documenting Anthropic's Claude Code Skills feature:
+  - Complete overview of Skills announced October 16, 2025
+  - Token efficiency architecture explained (30-50 tokens initial footprint, progressive disclosure)
+  - File structure and SKILL.md format specifications
+  - Storage locations (personal, project, plugin)
+  - Step-by-step creation guide with examples
+  - Best practices from official Anthropic documentation
+  - Testing and debugging guidance
+  - Team collaboration workflows specific to this repository
+  - Comprehensive references to official Anthropic documentation
+- **Research conducted**: Web search across Anthropic's official sites and documentation
+  - Primary sources: docs.claude.com, anthropic.com/news, anthropic.com/engineering
+  - Key findings: Skills use "progressive disclosure" (30-50 tokens until loaded), model-invoked vs user-invoked
+  - Integration patterns: Personal (~/.claude/skills/), Project (.claude/skills/), Plugin (marketplace)
+- **Documentation structure**:
+  - Table of contents with 10 major sections
+  - Skills vs Slash Commands comparison table
+  - Token efficiency benefits and examples
+  - Complete file structure templates
+  - Anti-patterns and troubleshooting guidance
+  - Version history and contributing guidelines
+
+**Key Features Documented**:
+- **Token Efficiency**: 30-50 tokens per Skill until activated (vs. thousands if fully loaded)
+- **Progressive Disclosure**: Three-tier loading (name+description → SKILL.md → supporting files)
+- **Model-Invoked**: Claude autonomously decides when to use Skills based on task
+- **Composable**: Multiple Skills can stack together automatically
+- **Portable**: Build once, use across Claude apps, Claude Code, and API
+
+**Pattern Used This Session**:
+- Work type: Documentation creation (research + synthesis)
+- Scale: Small-Medium (1 hour research + 1 hour writing)
+- Pattern: Pattern 2 (Research & Documentation)
+- Documentation: history.md only
+
+**Files Created**:
+1. `skills/README.md` - Comprehensive Skills documentation (572 lines, 10 sections, ~4,200 tokens)
+
+**Total Output**: 572 lines documenting complete Skills feature with examples, best practices, and integration guidance
+
+**TODO for Next Session**:
+- [ ] Consider creating example Skills for planning-is-prompting workflows
+- [ ] Test Skills feature in practice (create a workflow validation Skill?)
+- [ ] Cross-reference Skills vs Slash Commands in INSTALLATION-GUIDE.md
+- [ ] Potentially add Skills section to main README.md
+
+---
 
 ### 2025.10.20 - Session 20: Interactive Requirements Elicitation Pattern Formalization
 
