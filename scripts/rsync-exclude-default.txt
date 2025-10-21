@@ -1,0 +1,82 @@
+# Rsync Exclusion Patterns - Default Template v1.0
+#
+# This file defines patterns for files/directories to EXCLUDE from backup.
+# Copy to your project's src/scripts/conf/rsync-exclude.txt and customize.
+#
+# Pattern syntax: See `man rsync` for details
+# - Trailing slash (/) matches directories only
+# - Wildcards: * (any chars), ** (recursive), ? (single char)
+# - Lines starting with # are comments
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Logs
+*.log
+logs/
+nohup.out
+
+# Large model files (uncomment if you don't want to back these up)
+# models/
+# *.pt
+# *.pth
+# *.ckpt
+# *.safetensors
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node.js (if applicable)
+# node_modules/
+# npm-debug.log
+# yarn-error.log
+
+# Database files (be careful - you may want to back these up!)
+# *.sqlite
+# *.db
+
+# Project-specific exclusions (add your patterns below)
