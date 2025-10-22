@@ -46,7 +46,7 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ## Step 1: Notification System
 
-**Mandate**: Keep me updated with notifications after completing each step of the start-of-session ritual.
+**Mandate**: Send a single notification at the end of session initialization when ready to begin work.
 
 **Global Command**: `notify-claude` (works from any directory)
 
@@ -56,24 +56,20 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 ```
 
 **When to Send Notifications**:
-- After completing each major initialization step
-- When outstanding TODOs are found (awaiting user direction)
-- When session is ready to begin work
-- If errors occur during initialization
+- **Once only**: At end of Step 6 when session is ready to begin work
+- If errors occur during initialization (as needed)
 
 **Priority Levels**:
-- `urgent`: Errors during initialization, missing critical files
-- `high`: Outstanding TODOs found (need direction)
-- `medium`: Session initialization complete
-- `low`: Individual step completions, informational notices
+- `urgent`: Critical errors during initialization
+- `high`: Normal session-ready notification (used for session-start)
+- `medium`: Not used in session-start
+- `low`: Not used in session-start
 
 **Types**: task, progress, alert, custom
 
-**Example Notifications**:
+**Example Final Notification**:
 ```bash
-notify-claude "[SHORT_PROJECT_PREFIX] ✅ Configuration loaded" --type=progress --priority=low
-notify-claude "[SHORT_PROJECT_PREFIX] ⏸ Outstanding TODOs found - awaiting direction" --type=task --priority=high
-notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" --type=progress --priority=medium
+notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" --type=task --priority=high
 ```
 
 ---
@@ -118,11 +114,6 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
    - History: /path/to/project/history.md
    - Workflows: Session management, p-is-p planning, history management
    - Notifications: Configured (notify-claude)
-   ```
-
-6. **Send Notification**:
-   ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Configuration loaded" --type=progress --priority=low
    ```
 
 **Update TodoWrite**: Mark "Load configuration files" as completed, mark next item as in_progress
@@ -174,11 +165,6 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
      • /p-is-p-00-start-here
      • /p-is-p-01-planning
      • /p-is-p-02-documentation
-   ```
-
-4. **Send Notification**:
-   ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Workflows discovered" --type=progress --priority=low
    ```
 
 **Update TodoWrite**: Mark "Discover available workflows" as completed, mark next item as in_progress
@@ -242,11 +228,6 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
 
    Most Recent Session: 2025.10.04 - Session 4
    Token Health: ✅ HEALTHY (6,115 / 25,000 tokens)
-   ```
-
-6. **Send Notification**:
-   ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ History loaded" --type=progress --priority=low
    ```
 
 **When to Read More History**:
@@ -327,12 +308,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
    What would you like to do? [1/2/3]
    ```
 
-5. **Send Notification** (Awaiting User Input):
-   ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ⏸ Outstanding TODOs found - awaiting direction" --type=task --priority=high
-   ```
-
-6. **Wait for User Response**:
+5. **Wait for User Response**:
 
    **CRITICAL**: STOP here and wait for user input. Do NOT proceed to Step 6 until user responds.
 
@@ -419,7 +395,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
 
 4. **Send Notification**:
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" --type=progress --priority=medium
+   notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" --type=task --priority=high
    ```
 
 5. **Wait for User Direction**:
@@ -465,12 +441,6 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
 - Complex features → Use `/p-is-p-01-planning` for structured planning
 - Large projects → May need `/p-is-p-02-documentation` for implementation docs
 
-**When History is Too Large**:
-- Quick token count shows health status
-- If ⚠️ WARNING or 🚨 CRITICAL, mention to user during Step 4
-- Suggest running `/plan-history-management mode=check` for details
-- Archival can be deferred to end-of-session if needed
-
 **Error Handling**:
 - Missing history.md → Create new file with status summary
 - Missing CLAUDE.md → Ask user for [SHORT_PROJECT_PREFIX]
@@ -498,11 +468,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session initialized - ready for work" 
 ```
 
 **Notification Timing**:
-- After Step 2: "✅ Configuration loaded" (low)
-- After Step 3: "✅ Workflows discovered" (low)
-- After Step 4: "✅ History loaded" (low)
-- After Step 5: "⏸ Outstanding TODOs found" (high) - WAIT FOR RESPONSE
-- After Step 6: "✅ Session initialized" (medium)
+- After Step 6: "Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" (high)
 
 **Key Decision Points**:
 - Step 5: User chooses [1] Continue / [2] Fresh / [3] Modify

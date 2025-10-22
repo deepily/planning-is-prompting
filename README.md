@@ -1,5 +1,7 @@
-# planning-is-prompting
-When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt!
+# Planning is Prompting
+When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt! 
+
+Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation with Claude Code](https://medium.com/@ricardo.felipe.ruiz/faster-better-morer-how-to-5-10x-your-code-generation-with-claude-code-81bc79619c3f)
 
 <p align="center">
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
@@ -38,6 +40,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
 - ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
 - ✅ **[F]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
+- ✅ **[G]** Uninstall Wizard: `/plan-uninstall-wizard` (removes installed workflows when no longer needed)
 
 **Get the wizard itself**: You can select option [F] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
 
