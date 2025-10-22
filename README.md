@@ -28,22 +28,52 @@ The easiest way to install workflows is with the **interactive installation wiza
 - Start working with your new workflows immediately!
 
 **What gets installed** (you choose):
-- ✅ Session Management: `/plan-session-start`, `/plan-session-end`
-- ✅ History Management: `/plan-history-management`
-- ✅ Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
-- ✅ Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
+- ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-end`
+- ✅ **[B]** History Management: `/plan-history-management`
+- ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
+- ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
+- ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
+- ✅ **[F]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
 
-**Optional**: The wizard offers to install `/plan-install-wizard` slash command for future use (Step 7.5).
+**Get the wizard itself**: You can select option [F] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
 
 **Adding more workflows later**:
 - **With wizard installed**: Just type `/plan-install-wizard`
 - **Without wizard**: Share INSTALLATION-GUIDE.md again
 - **Both methods**: Automatically detect existing installations and offer to add more workflows
 
+### 🗑️ Removing Workflows (Uninstall Wizard)
+
+**Uninstall workflows you no longer need:**
+
+```bash
+/plan-uninstall-wizard
+```
+
+**What it does**:
+- Detects currently installed workflows
+- Shows catalog with installed status (A-F options, same as installer)
+- Lets you select workflows to remove
+- Shows deletion candidates and requires confirmation
+- Deletes slash command files only (`.claude/commands/*.md`)
+- Offers optional cleanup (CLAUDE.md, .gitignore, empty directories)
+- Suggests manual cleanup for related files (history.md, backup.sh, etc.)
+
+**Safety features**:
+- Shows exactly what will be deleted before removing anything
+- Requires confirmation before deletion
+- Only removes slash commands (preserves your data)
+- Lists related files for manual cleanup review
+
+**To reinstall later**:
+- Run `/plan-install-wizard` (if kept installed)
+- Or share INSTALLATION-GUIDE.md again
+
 ### 📚 Documentation
 
 - **[INSTALLATION-GUIDE.md](workflow/INSTALLATION-GUIDE.md)** - Interactive wizard + manual installation instructions
 - **[installation-wizard.md](workflow/installation-wizard.md)** - Canonical workflow for installation process
+- **[uninstall-wizard.md](workflow/uninstall-wizard.md)** - Canonical workflow for uninstallation process
 - **[CLAUDE.md](CLAUDE.md)** - Project-specific configuration for this repository (example for other projects)
 - **[.claude/commands/](.claude/commands/)** - Working examples of slash commands using reference wrapper pattern
 

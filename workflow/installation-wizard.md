@@ -205,6 +205,60 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Utility Workflows (Optional)
+
+```json
+{
+  "id": "installation-wizard",
+  "name": "Installation Wizard",
+  "description": "Install this wizard as a slash command for convenient future use",
+  "category": "utility",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-install-wizard",
+      "description": "Run installation wizard to add/update workflows"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-install-wizard.md"
+  ],
+  "notes": "Makes wizard available as slash command; alternative to sharing INSTALLATION-GUIDE.md"
+}
+```
+
+```json
+{
+  "id": "uninstall-wizard",
+  "name": "Uninstall Wizard",
+  "description": "Install uninstall wizard as a slash command for removing workflows later",
+  "category": "utility",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-uninstall-wizard",
+      "description": "Run uninstall wizard to remove workflows"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-uninstall-wizard.md"
+  ],
+  "notes": "Allows removal of workflows; can uninstall itself; preserves user data (history.md, backup.sh)"
+}
+```
+
 ---
 
 ## Installation Flow
@@ -683,12 +737,30 @@ Available Workflows:
       • /plan-test-harness-update - Test maintenance planning
     Dependencies: None (adapts to project type)
 
+┌─────────────────────────────────────────────────────────┐
+│ UTILITY WORKFLOWS (Optional - meta tools)              │
+└─────────────────────────────────────────────────────────┘
+
+[F] Installation Wizard
+    Install this wizard as a slash command for convenient future use
+    Commands:
+      • /plan-install-wizard - Run wizard to add/update workflows
+    Dependencies: None
+    Note: Makes wizard available as /plan-install-wizard command
+
+[G] Uninstall Wizard
+    Install uninstall wizard for removing workflows later
+    Commands:
+      • /plan-uninstall-wizard - Run wizard to remove workflows
+    Dependencies: None
+    Note: Allows safe workflow removal with confirmation
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E)
-[3] Custom selection (tell me which: A, B, C, D, E)
+[2] Install everything (A + B + C + D + E + F + G)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -719,8 +791,8 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -772,6 +844,17 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
    - Code projects: Expects test suites (smoke, unit, integration)
    - Documentation projects: Validates documentation structure
    - No validation needed (always available)
+
+   **Installation Wizard (F)**:
+   - No dependencies
+   - Creates slash command for running wizard in future
+   - No validation needed (always available)
+
+   **Uninstall Wizard (G)**:
+   - No dependencies
+   - Creates slash command for removing workflows later
+   - No validation needed (always available)
+   - Note: Can uninstall itself along with other workflows
 
 3. **Confirm Selection**:
 
@@ -1128,6 +1211,28 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    Customize testing slash commands:
    - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
    - No other customization needed (workflows adapt to project type)
+
+   **Installation Wizard (F)**:
+   ```bash
+   # Copy installation wizard slash command
+   cp planning-is-prompting/.claude/commands/plan-install-wizard.md \
+      ./.claude/commands/plan-install-wizard.md
+   ```
+
+   Customize:
+   - No customization needed (wizard is project-agnostic)
+   - Note: This makes wizard available as `/plan-install-wizard` for future use
+
+   **Uninstall Wizard (G)**:
+   ```bash
+   # Copy uninstall wizard slash command
+   cp planning-is-prompting/.claude/commands/plan-uninstall-wizard.md \
+      ./.claude/commands/plan-uninstall-wizard.md
+   ```
+
+   Customize:
+   - No customization needed (wizard is project-agnostic)
+   - Note: This makes uninstall wizard available as `/plan-uninstall-wizard` for removing workflows
 
 3. **Create or Update CLAUDE.md**:
 
@@ -1656,9 +1761,35 @@ notify-claude "[MYPROJ] 🎉 Installation complete - ready to work!" --type=task
 
 **Purpose**: Offer to install `/plan-install-wizard` slash command for convenient future use
 
+**Important**: Skip this step if user already selected Installation Wizard (F) in Step 2
+
 **Process**:
 
-1. **Present Installation Option**:
+1. **Check if Already Installed**:
+
+   ```bash
+   # Check if wizard was already installed in Step 5
+   if [ -f .claude/commands/plan-install-wizard.md ]; then
+       echo "✓ Installation wizard already installed (selected in Step 2)"
+       # Skip to Step 8
+   fi
+   ```
+
+   If wizard already exists, display:
+   ```
+   ══════════════════════════════════════════════════════════
+   Installation Wizard Already Installed
+   ══════════════════════════════════════════════════════════
+
+   ✓ You selected Installation Wizard (F) in Step 2
+   ✓ /plan-install-wizard is already available
+
+   No additional installation needed. Skipping to next step...
+   ```
+
+   Then skip to Step 8.
+
+2. **Present Installation Option** (only if not already installed):
 
 ```
 ══════════════════════════════════════════════════════════
@@ -1682,7 +1813,7 @@ Alternative: You can always share INSTALLATION-GUIDE.md again
 What would you like to do? [1/2]
 ```
 
-2. **If User Chooses [1] - Install Slash Command**:
+3. **If User Chooses [1] - Install Slash Command**:
 
    ```bash
    # Copy wizard slash command from planning-is-prompting repo
@@ -1692,14 +1823,14 @@ What would you like to do? [1/2]
 
    **Note**: No customization needed - wizard is project-agnostic
 
-3. **Update CLAUDE.md** (append wizard reference):
+4. **Update CLAUDE.md** (append wizard reference):
 
    ```markdown
    **Installation Wizard**:
    - `/plan-install-wizard` - Add more workflows or check for updates
    ```
 
-4. **Report Installation**:
+5. **Report Installation**:
 
 ```
 ──────────────────────────────────────────────────────────
@@ -1719,7 +1850,7 @@ The wizard will detect your existing installation and offer
 appropriate options.
 ```
 
-5. **If User Chooses [2] - Skip Slash Command**:
+6. **If User Chooses [2] - Skip Slash Command**:
 
 ```
 ──────────────────────────────────────────────────────────

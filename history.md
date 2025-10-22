@@ -1,13 +1,116 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Claude Code Skills directory documented with comprehensive README
+**RESUME HERE**: Uninstall wizard complete - ready for testing tomorrow
 
-**Current Status**: Created comprehensive skills/README.md (572 lines) documenting Anthropic's October 2025 Skills feature - includes token efficiency architecture (30-50 tokens until loaded), progressive disclosure, file structure, creation guide, best practices, and team collaboration workflows
-**Next Steps**: Consider creating Skills for planning-is-prompting workflows (e.g., workflow validation Skill), test Skills feature in practice, potentially create example Skills for this repository
+**Current Status**: Created /plan-uninstall-wizard workflow for safely removing planning-is-prompting slash commands - detects installed workflows, shows catalog (A-G options), requires confirmation, deletes slash commands only, offers optional cleanup (CLAUDE.md, .gitignore), suggests manual cleanup for data files
+**Next Steps**: Test installation wizard (all A-G options), test uninstall wizard (detection, selection, deletion, cleanup), test wizard self-removal scenario, cross-project validation in genie-in-the-box
 
 ---
 
 ## October 2025
+
+### 2025.10.21 - Session 22: Uninstall Wizard & Installation Wizard Enhancement
+
+**Accomplishments**:
+- **Created /plan-uninstall-wizard workflow** for safe workflow removal (~1,370 lines total):
+  - **Canonical workflow**: `workflow/uninstall-wizard.md` (~1,300 lines) with 9 comprehensive steps
+  - **Slash command wrapper**: `.claude/commands/plan-uninstall-wizard.md` (~70 lines)
+  - Step 1: Detect installed workflows (scan `.claude/commands/` for plan-* and p-is-p-* files)
+  - Step 2: Present catalog with installed/uninstalled status (mirrors A-G options from installer)
+  - Step 3: Validate user selection (only installed workflows selectable)
+  - Step 4: Show deletion candidates (list specific files to be deleted)
+  - Step 5: Delete slash command files only (with confirmation)
+  - Step 6: Offer CLAUDE.md cleanup (remove workflow sections - optional)
+  - Step 7: Offer .gitignore cleanup (remove .claude entries if no longer needed - optional)
+  - Step 8: Handle empty directory cleanup (ask about removing empty .claude/commands/ - optional)
+  - Step 9: Present summary with manual cleanup suggestions (history.md, backup.sh, etc.)
+- **Added Installation Wizard to catalog** (earlier session completion):
+  - Added option [F] Installation Wizard to workflow catalog in installation-wizard.md
+  - Updated Step 2 menu, Step 3 validation, Step 5 installation logic
+  - Updated Step 7.5 to check if wizard already installed (skip if selected in Step 2)
+  - Updated README.md to show all A-F options with [F] wizard
+- **Added Uninstall Wizard to catalog** (option [G]):
+  - Added catalog metadata for uninstall-wizard in installation-wizard.md
+  - Updated Step 2 menu to show [G] Uninstall Wizard option
+  - Updated Step 3 validation for [G]
+  - Updated Step 5 installation logic for [G]
+  - Updated "Install everything" option to A + B + C + D + E + F + G
+- **Updated README.md** with comprehensive uninstall documentation:
+  - Added "Removing Workflows (Uninstall Wizard)" section
+  - Documented /plan-uninstall-wizard command usage
+  - Listed what it does, safety features, reinstallation options
+  - Added uninstall-wizard.md to Documentation section
+  - Updated "What gets installed" to show all A-G options with labels
+
+**Key Design Decisions**:
+- **Slash commands only**: Uninstaller deletes only `.claude/commands/*.md` files (preserves user data)
+- **Manual cleanup suggestions**: Lists related files for user review (history.md, backup.sh, src/scripts/, etc.)
+- **Catalog mirroring**: Same A-G options as installer, marks uninstalled workflows as non-selectable
+- **Safety confirmations**: Shows deletion candidates → requires confirmation → deletes
+- **Self-removal allowed**: Can uninstall /plan-install-wizard and /plan-uninstall-wizard (restores via INSTALLATION-GUIDE.md)
+- **Optional cleanup offers**: CLAUDE.md section removal, .gitignore cleanup, empty directory removal (all optional)
+- **Dependency awareness**: Warns if removing Session Management while History Management installed
+
+**Pre-Planning Conversation**:
+- User had vague idea: "uninstall slash commands workflow"
+- Interactive Requirements Elicitation applied:
+  - Clarifying questions: Scope (what to remove?), Safety (confirmation?), UX (naming?)
+  - Smart defaults suggested: 4 implementation options (separate wizard, combined, minimal, integrated)
+  - Topic tracking: Covered scope, granularity, safety, restoration, naming
+  - Explicit transition: Presented refined requirements → ExitPlanMode → user approved plan
+- **Transition time**: ~5 minutes from vague idea to approved structured plan
+- **Pattern selected**: Pattern 3 (Feature Development - well-scoped, 2-3 hours)
+
+**Pattern Used This Session**:
+- Work type: Two feature implementations (installation wizard to catalog [earlier] + uninstall wizard creation [today])
+- Scale: Medium (3 hours total across both sessions)
+- Pattern: Pattern 3 (Feature Development - well-scoped)
+- Documentation: history.md only (no Step 2 needed)
+
+**Files Created**:
+1. `workflow/uninstall-wizard.md` - Canonical uninstall workflow (~1,300 lines, 9 steps)
+2. `.claude/commands/plan-uninstall-wizard.md` - Slash command wrapper (~70 lines)
+
+**Files Modified** (Installation Wizard to Catalog - Session 22 Part 1):
+1. `workflow/installation-wizard.md` - Added option [F] catalog metadata, updated Steps 2, 3, 5, 7.5
+2. `README.md` - Updated "What gets installed" section with A-F labels + option [F] documentation
+
+**Files Modified** (Uninstall Wizard Creation - Session 22 Part 2):
+1. `workflow/installation-wizard.md` - Added option [G] catalog metadata, updated Steps 2, 3, 5 for [G]
+2. `README.md` - Added "Removing Workflows" section, documented /plan-uninstall-wizard, added A-G labels
+
+**Total Output**:
+- Installation wizard enhancement: ~200 lines modified across 2 files
+- Uninstall wizard: ~1,370 lines created + ~150 lines modified across 2 files
+- Combined: ~1,720 lines added/modified
+
+**Token Health**:
+- History.md: 13,101 tokens (52.4% of 25K limit, ✅ HEALTHY)
+- Velocity: Not analyzed (quick check only)
+- No archival needed
+
+**Key Success Metrics**:
+- ✅ **Installation wizard now installable**: Option [F] in catalog
+- ✅ **Uninstall wizard complete**: Full workflow with 9 steps
+- ✅ **Uninstall wizard installable**: Option [G] in catalog
+- ✅ **Safety built-in**: Confirmation required, slash commands only, data preserved
+- ✅ **Restoration path clear**: Can always reinstall via INSTALLATION-GUIDE.md or /plan-install-wizard
+- ✅ **Symmetric design**: Install and uninstall wizards mirror each other (A-G options)
+
+**Design Principles Validated**:
+- **Interactive Requirements Elicitation**: Pre-planning conversation refined vague idea into clear spec
+- **Smart Defaults**: Suggested 4 options with reasoning (historical, best practice, blend, alternative)
+- **User Control**: User chose option 1 (separate wizard) after seeing all choices
+- **Explicit Transition**: Asked before invoking /p-is-p-01-planning (user ready to proceed)
+- **Pattern-Driven**: Let work characteristics (well-scoped, 2-3 hours) select Pattern 3
+
+**TODO for Next Session**:
+- [ ] Test installation wizard in fresh project (validate all A-G options)
+- [ ] Test uninstall wizard (verify detection, selection, deletion, cleanup offers)
+- [ ] Test wizard self-removal scenario (uninstall F and G together)
+- [ ] Cross-project validation: Install and uninstall in genie-in-the-box
+
+---
 
 ### 2025.10.21 - Session 21: Claude Code Skills Documentation
 
