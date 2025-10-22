@@ -1,5 +1,9 @@
 # planning-is-prompting
-When it comes to driving agentic coding assistants like Claude Code, Gemini CLI, and OpenAI's Codex, the plan is the prompt!
+When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt!
+
+<p align="center">
+  <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
+</p>
 
 ## Overview
 
