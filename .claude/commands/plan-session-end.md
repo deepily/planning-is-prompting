@@ -9,31 +9,25 @@
 
 **On every invocation of this command:**
 
-1. **Read the canonical workflow**: planning-is-prompting → workflow/session-end.md
-
-2. **Execute the complete session-end ritual** as described in the canonical document (Steps 0, 0.4, 0.5, 1-5)
-
-3. **Apply project-specific configuration**:
+1. **MUST use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: [PLAN]
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Planning documents**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/workflow/
    - **Archive directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history/
+   - Do NOT proceed without these parameters
 
-4. **Execute all steps** in sequence:
-   - Step 0: Use Notification System Throughout (send notifications after each major step)
-   - [Procedural]: Create TODO list for tracking the session-end workflow
-   - Step 0.4: Quick token count check (optional - use `~/.claude/scripts/get-token-count.sh`)
-   - Step 0.5: History health check (invoke `/plan-history-management mode=check`)
-   - Step 1: Update session history in history.md
-   - Step 2: Update planning and tracking documents in workflow/ directory
-   - Step 3: Summarize uncommitted changes via `git status`
-   - Step 4: Propose commit message
-   - Step 5: Commit changes (after user approval)
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/session-end.md
+   - This is the ONLY authoritative source for ALL session-end steps
+   - Do NOT proceed without reading this document in full
+   - The canonical workflow contains: TodoWrite tracking list, token count check, history health check, history update, planning document updates, uncommitted changes summary, commit message proposal, and commit execution (with notifications throughout)
 
-5. **Use notifications** throughout:
-   - Send `notify-claude "[PLAN] <message>"` after completing each major step
-   - Use appropriate priority levels (urgent/high/medium/low)
-   - Use appropriate types (task/progress/alert)
+3. **MUST execute the complete session-end ritual**:
+   - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-5)
+   - Do NOT skip any steps (including notifications, TodoWrite tracking, or health checks)
+   - Do NOT substitute a shortened or summarized version
+   - Do NOT commit without user approval
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
 ---
 

@@ -1490,6 +1490,71 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 
 ---
 
+## For Workflow Authors
+
+### Creating New Slash Command Wrappers
+
+If you're creating new workflows and need to create slash command wrappers for them, follow the **Deterministic Wrapper Pattern** to ensure Claude executes workflows correctly without shortcuts or ambiguity.
+
+**Comprehensive guide**: planning-is-prompting → workflow/deterministic-wrapper-pattern.md
+
+### Key Principles
+
+**Wrappers should be thin reference pointers, NOT alternative instruction sets.**
+
+**The Problem**: When wrappers say "read the canonical workflow" but then provide an alternative task list (Step 4), they create cognitive ambiguity. Claude will often choose the concrete task list over the abstract "read the canonical" instruction, causing skipped steps and incomplete execution.
+
+**The Solution**: Use the three-step deterministic pattern:
+
+```markdown
+## Instructions to Claude
+
+**On every invocation of this command:**
+
+1. **MUST use the following project-specific configuration**:
+   - [Parameters here]
+   - Do NOT proceed without these parameters
+
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/[name].md
+   - This is the ONLY authoritative source for ALL execution steps
+   - Do NOT proceed without reading this document in full
+
+3. **MUST execute the complete workflow**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented
+```
+
+### Why This Matters
+
+**Before deterministic pattern**:
+- Claude would read wrapper's Step 4 (short task list) instead of canonical workflow
+- Steps like notifications, TodoWrite tracking, and user prompts were skipped
+- Inconsistent execution across sessions
+
+**After deterministic pattern**:
+- Claude MUST read the canonical workflow first
+- Claude MUST execute ALL steps (no shortcuts)
+- MUST language eliminates ambiguity
+- Explicit constraints prevent substitution
+
+### Examples
+
+**Good wrapper**: `.claude/commands/plan-session-start.md` (uses deterministic pattern)
+**Bad wrapper**: Old versions with competing Step 4 task lists (anti-pattern)
+
+**See the complete guide** for:
+- Anti-patterns to avoid
+- Testing your wrappers
+- Implementation guidelines
+- Real-world examples
+
+**Reference**: planning-is-prompting → workflow/deterministic-wrapper-pattern.md
+
+---
+
 ## Version History
 
 **v1.1** (2025.10.08) - Updated naming convention

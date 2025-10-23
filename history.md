@@ -1,13 +1,83 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Created Workflow Execution Audit system - meta-tool for analyzing workflow compliance and ensuring deterministic execution
+**RESUME HERE**: Fixed slash command wrappers - implemented deterministic wrapper pattern to eliminate competing instructions
 
-**Current Status**: Workflow audit system complete - analyzes TodoWrite mandates, language strength, verification checkpoints; offers automatic remediation; integrated into install/uninstall wizards
-**Next Steps**: Test workflow-audit on existing workflows (session-start, p-is-p-01, history-management), apply fixes to non-compliant workflows, retrofit all workflows to 80+ compliance score
+**Current Status**: Deterministic wrapper pattern complete - 5 wrappers fixed with MUST language, comprehensive pattern documentation created, ready for next-session testing
+**Next Steps**: Test /plan-session-start in next session to verify complete workflow execution (all 8 steps including notifications, TodoWrite, [1/2/3] prompts)
 
 ---
 
 ## October 2025
+
+### 2025.10.23 - Session 28: Fix Slash Command Wrappers with Deterministic Pattern
+
+**Accomplishments**:
+- **Fixed critical ambiguity issue in slash command wrappers** (~142 insertions, ~66 deletions across 7 files):
+  - **Problem**: Wrappers told Claude to "read canonical workflow" but then provided competing Step 4 task lists
+  - **Root cause**: Non-deterministic language + competing instructions = cognitive ambiguity → Claude chose concrete Step 4 over abstract canonical
+  - **Impact**: Session-start workflow was being skipped all day (no notifications, no TodoWrite, no [1/2/3] prompts)
+  - **Solution**: Deterministic Wrapper Pattern - Parameters → Read → Execute with MUST language throughout
+  - **Result**: Eliminates competing instructions, forces complete canonical workflow execution
+- **Fixed 5 slash command wrappers**:
+  - `.claude/commands/plan-session-start.md` - Removed competing Step 4 (5-item task list), added MUST language, explicit constraints
+  - `.claude/commands/plan-session-end.md` - Removed competing Steps 4-5, added MUST language (being tested NOW in this session!)
+  - `.claude/commands/p-is-p-01-planning.md` - Removed competing Step 4 (phase list), preserved --pattern argument
+  - `.claude/commands/p-is-p-02-documentation.md` - Removed competing Step 4, preserved --pattern and --project-name arguments
+  - `.claude/commands/p-is-p-00-start-here.md` - Added MUST language for consistency
+- **Created workflow/deterministic-wrapper-pattern.md** (~477 lines):
+  - Comprehensive design pattern documentation for future workflow authors
+  - Problem statement with cognitive bias analysis (recency bias, concreteness bias, false disambiguation)
+  - Three-step pattern: (1) MUST use config, (2) MUST read canonical, (3) MUST execute complete workflow
+  - Implementation guidelines with parameter placement, canonical reference, execution commands
+  - Anti-patterns to avoid (competing task lists, permissive language, implicit steps, buried parameters)
+  - Testing checklist (invocation test, step completeness test, language audit)
+  - Good/bad examples with rationale
+  - Benefits: Single source of truth, deterministic execution, project portability, maintainability, testability
+  - History of pattern discovery (Session 23-26 evolution from random selection → fixed message → example-based generation)
+- **Updated workflow/INSTALLATION-GUIDE.md** (~65 lines added):
+  - Added "For Workflow Authors" section with wrapper design guidance
+  - Explains problem, solution, and importance of deterministic pattern
+  - Quick reference to three-step structure
+  - Before/after comparison showing impact
+  - Links to comprehensive deterministic-wrapper-pattern.md guide
+- **Validation**:
+  - All wrappers now follow Parameters → Read → Execute structure
+  - MUST language throughout ("MUST use", "MUST read", "MUST execute")
+  - Explicit constraints ("Do NOT skip", "Do NOT substitute", "ONLY authoritative source")
+  - No competing instruction sets
+  - Ready for next-session testing
+
+**The Deterministic Pattern**:
+```markdown
+1. MUST use project-specific configuration (parameters first)
+   - Do NOT proceed without these parameters
+
+2. MUST read the canonical workflow document
+   - This is the ONLY authoritative source
+   - Do NOT proceed without reading in full
+
+3. MUST execute the complete workflow
+   - Do NOT skip any steps
+   - Do NOT substitute a shortened version
+```
+
+**Testing Plan** (next session):
+- Invoke `/plan-session-start` and verify:
+  - [ ] Preliminary notification sent (low priority)
+  - [ ] TodoWrite initialization list created (5 items)
+  - [ ] Configuration loaded and reported
+  - [ ] Workflows discovered and categorized
+  - [ ] History loaded with token count
+  - [ ] Ready notification sent (high priority, generated variation)
+  - [ ] [1/2/3] options presented
+  - [ ] Wait for user response (not skipped)
+
+**TODO for Next Session**:
+- [ ] Test /plan-session-start with complete workflow execution
+- [ ] Verify all 8 steps execute without shortcuts
+- [ ] Document results and any remaining issues
+
+---
 
 ### 2025.10.23 - Session 27: Create Workflow Execution Audit System
 
