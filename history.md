@@ -76,6 +76,8 @@
 - [ ] Test /plan-session-start with complete workflow execution
 - [ ] Verify all 8 steps execute without shortcuts
 - [ ] Document results and any remaining issues
+- [ ] Analyze ALL slash command files (.claude/commands/*.md) for ambiguous language
+- [ ] Apply deterministic pattern to any remaining wrappers that need it
 
 ---
 
