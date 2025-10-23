@@ -34,7 +34,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 **Example Notifications**:
 ```bash
 notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session history updated" --type=progress --priority=low
-notify-claude "[SHORT_PROJECT_PREFIX] Ready for commit approval" --type=task --priority=medium
+notify-claude "[SHORT_PROJECT_PREFIX] Ready for commit approval" --type=task --priority=high
 notify-claude "[SHORT_PROJECT_PREFIX] 🎉 Session wrap-up complete" --type=task --priority=low
 ```
 
