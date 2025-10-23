@@ -10,6 +10,27 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
+## Preliminary: Send Start Notification
+
+**Purpose**: Immediately notify user that session initialization has begun
+
+**Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
+
+**Command**:
+```bash
+notify-claude "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low
+```
+
+**Why This Matters**:
+- Provides immediate awareness that Claude is awake and working
+- Especially helpful for long initializations (large history files, many workflows)
+- Sets user expectation that initialization is in progress
+- Complements the end notification (which signals completion and readiness)
+
+**Note**: This is a low-priority "I'm starting" ping. The high-priority "I'm ready" notification comes at the end (Step 6).
+
+---
+
 ## Step 0: Create Session Start TODO List
 
 **Purpose**: Track initialization progress visually using TodoWrite
@@ -44,9 +65,9 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
-## Step 1: Notification System
+## Step 1: Notification System Overview
 
-**Mandate**: Send a single notification at the end of session initialization when ready to begin work.
+**Two-Notification Pattern**: This workflow uses a start/end notification pair to provide complete initialization feedback.
 
 **Global Command**: `notify-claude` (works from any directory)
 
@@ -56,21 +77,43 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 ```
 
 **When to Send Notifications**:
-- **Once only**: At end of Step 6 when session is ready to begin work
-- If errors occur during initialization (as needed)
+1. **Start Notification** (Preliminary step, before Step 0):
+   - Low-priority progress notification
+   - Signals initialization has begun
+   - Command: `notify-claude "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low`
+
+2. **End Notification** (Step 6, after all initialization complete):
+   - High-priority task notification
+   - Signals readiness to work
+   - Command: `notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" --type=task --priority=high`
+
+3. **Error Notifications** (As needed):
+   - Urgent priority
+   - Sent if critical errors occur during initialization
 
 **Priority Levels**:
 - `urgent`: Critical errors during initialization
-- `high`: Normal session-ready notification (used for session-start)
+- `high`: Session-ready notification (end of initialization)
 - `medium`: Not used in session-start
-- `low`: Not used in session-start
+- `low`: Session-start notification (beginning of initialization)
 
 **Types**: task, progress, alert, custom
 
-**Example Final Notification**:
-```bash
-notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" --type=task --priority=high
-```
+**Rationale for Two Notifications**:
+
+**Start Notification Benefits**:
+- User immediately knows Claude is awake and working
+- Reduces anxiety during long initializations (large history files, many workflows)
+- Sets clear expectation: "initialization in progress"
+- Low priority: informational, doesn't demand immediate attention
+
+**End Notification Benefits**:
+- User knows initialization is complete
+- Signals readiness for interaction
+- High priority: actively requests user engagement
+- Provides context summary for decision-making
+
+**Together**: The two-notification pattern creates a complete feedback loop - user knows when initialization starts AND when it's ready for work.
 
 ---
 
@@ -394,9 +437,33 @@ notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and 
    ```
 
 4. **Send Notification**:
+
+   Choose randomly from varied completion messages for natural variety:
+
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" --type=task --priority=high
+   # Choose randomly from varied completion messages
+   MESSAGES=(
+       "Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?"
+       "All set! Config loaded, history reviewed, TODOs checked. Ready to roll - what should we work on?"
+       "Good to go! I've loaded up your project and caught up on where we were. What would you like to start with?"
+       "Hi! I've synced up - loaded configs, parsed history, discovered workflows. Ready when you are - what's next?"
+       "Alright, I'm all caught up! Loaded configuration, reviewed session history, checked outstanding work. What would you like to tackle first?"
+       "Hey there! Finished getting up to speed and I'm ready to work. Where should we start?"
+   )
+
+   # Random selection (using $RANDOM % array length)
+   SELECTED_MESSAGE="${MESSAGES[$RANDOM % ${#MESSAGES[@]}]}"
+
+   notify-claude "[SHORT_PROJECT_PREFIX] $SELECTED_MESSAGE" --type=task --priority=high
    ```
+
+   **Message Variations** (chosen randomly each session):
+   - **Option 1** (Original): Comprehensive, mentions reviewing history
+   - **Option 2** (Short & punchy): Checklist style, energetic
+   - **Option 3** (Friendly casual): Emphasizes catching up context
+   - **Option 4** (Process-focused): Technical steps (sync/parse/discover)
+   - **Option 5** (Comprehensive): Thorough review emphasis
+   - **Option 6** (Energetic & concise): Ready & momentum-focused
 
 5. **Wait for User Direction**:
 
@@ -458,17 +525,28 @@ notify-claude "[SHORT_PROJECT_PREFIX] Hey, I've finished loading everything and 
 
 **Typical Session Start Flow**:
 ```
-1. Create TodoWrite initialization checklist
+Preliminary: Send start notification (low priority)
+     ↓
+0. Create TodoWrite initialization checklist
+     ↓
+1. Notification System Overview (reference only)
+     ↓
 2. Load configs → Extract [PREFIX]
+     ↓
 3. Discover workflows → List slash commands
+     ↓
 4. Load history → Read last 3-7 days
+     ↓
 5. Find TODOs → Ask user for direction [1/2/3]
-   └→ WAIT for user response
-6. Present context → Await work direction
+     └→ WAIT for user response
+     ↓
+6. Present context → Send end notification (high priority) → Await work direction
 ```
 
 **Notification Timing**:
-- After Step 6: "Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?" (high)
+- **Preliminary (before Step 0)**: "Starting session initialization, loading config and history..." (low priority, type=progress)
+- **Step 6 (after all steps)**: Random selection from 6 varied completion messages (high priority, type=task)
+  - Examples: "All set! Ready to roll...", "Good to go! What would you like to start with?", "Alright, I'm all caught up...", etc.
 
 **Key Decision Points**:
 - Step 5: User chooses [1] Continue / [2] Fresh / [3] Modify

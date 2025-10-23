@@ -1,13 +1,82 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Uninstall wizard complete - ready for testing tomorrow
+**RESUME HERE**: Session-start workflow enhanced with two-notification pattern and varied messages
 
-**Current Status**: Created /plan-uninstall-wizard workflow for safely removing planning-is-prompting slash commands - detects installed workflows, shows catalog (A-G options), requires confirmation, deletes slash commands only, offers optional cleanup (CLAUDE.md, .gitignore), suggests manual cleanup for data files
-**Next Steps**: Test installation wizard (all A-G options), test uninstall wizard (detection, selection, deletion, cleanup), test wizard self-removal scenario, cross-project validation in genie-in-the-box
+**Current Status**: Enhanced session-start workflow with low-priority start notification, high-priority end notification with 6 varied messages, fixed notify-claude to use COSA venv python (notifications now working globally)
+**Next Steps**: Test enhanced session-start workflow in next session, test installation wizard (all A-G options), test uninstall wizard (detection, selection, deletion, cleanup), cross-project validation in genie-in-the-box
 
 ---
 
 ## October 2025
+
+### 2025.10.22 - Session 23: Session-Start Two-Notification Pattern & Notification System Fix
+
+**Accomplishments**:
+- **Enhanced session-start workflow with two-notification pattern** (~110 lines modified):
+  - Added preliminary low-priority notification (before Step 0): "Starting session initialization, loading config and history..."
+  - Updated Step 1 to document two-notification pattern with comprehensive rationale
+  - Added benefits explanation: Start ping (awareness), End ping (readiness), together (complete feedback loop)
+  - Updated Quick Reference section to show both notifications
+- **Added message variety to end notification** (~30 lines modified):
+  - Created 6 varied completion messages with different tones and emphases
+  - Implemented bash random selection using `$RANDOM % array_length`
+  - Messages range from comprehensive to punchy, friendly to technical, casual to energetic
+  - Updated Step 6 section 4 with full message array and selection logic
+  - Updated Quick Reference to document varied messages
+  - Tested random selection - confirmed variety working
+- **Fixed notification system to use COSA virtual environment** (~10 lines modified):
+  - Root cause: `notify-claude` was using system python3 without `requests` module
+  - Modified `/home/rruiz/.local/bin/notify-claude` to use COSA's venv python
+  - VENV_PYTHON path: `/mnt/DATA01/include/www.deepily.ai/projects/genie-in-the-box/src/cosa/.venv/bin/python`
+  - Added graceful fallback with warning if venv not found
+  - Tested both low and high priority notifications - both working perfectly ✓
+
+**Key Design Decisions**:
+- **Two-notification pattern**: Start (low priority, progress type) + End (high priority, task type) for complete feedback loop
+- **Message variety**: 6 options provide natural variety, prevent robotic repetition
+- **Random selection**: Bash `$RANDOM` for simplicity, no external dependencies
+- **COSA venv reuse**: Leverage existing virtual environment instead of installing dependencies globally
+
+**The 6 Message Variations**:
+1. **Original**: "Hey, I've finished loading everything and reviewed where we left off..." (comprehensive, familiar)
+2. **Short & punchy**: "All set! Config loaded, history reviewed, TODOs checked. Ready to roll..." (energetic, checklist)
+3. **Friendly casual**: "Good to go! I've loaded up your project and caught up on where we were..." (conversational)
+4. **Process-focused**: "Hi! I've synced up - loaded configs, parsed history, discovered workflows..." (technical steps)
+5. **Comprehensive**: "Alright, I'm all caught up! Loaded configuration, reviewed session history..." (thorough review)
+6. **Energetic & concise**: "Hey there! Finished getting up to speed and I'm ready to work..." (momentum-focused)
+
+**Pattern Used This Session**:
+- Work type: Feature enhancements + bug fix (workflow improvement + notification system repair)
+- Scale: Medium (2-3 hours total)
+- Pattern: Pattern 3 (Feature Development - well-scoped enhancements)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `workflow/session-start.md` - Added preliminary notification step, updated Step 1 with two-notification pattern, added message variety to Step 6, updated Quick Reference (~140 lines added/modified total)
+2. `/home/rruiz/.local/bin/notify-claude` - Modified to use COSA venv python (~10 lines modified)
+
+**Total Changes**: ~150 lines modified across 2 files
+
+**Token Health**:
+- History.md: 14,256 tokens (57.0% of 25K limit, ✅ HEALTHY)
+- No archival needed
+
+**Key Success Metrics**:
+- ✅ **Two-notification pattern documented**: Clear rationale and benefits explained
+- ✅ **Message variety implemented**: 6 varied options with random selection
+- ✅ **Notification system working**: Both low and high priority notifications tested and confirmed
+- ✅ **COSA venv reuse**: No additional dependencies needed, leverages existing infrastructure
+- ✅ **User feedback**: Confirmed notifications received and working as expected
+
+**TODO for Next Session**:
+- [ ] Experience enhanced session-start workflow with varied messages
+- [ ] Test installation wizard in fresh project (validate all A-G options)
+- [ ] Test uninstall wizard (verify detection, selection, deletion, cleanup offers)
+- [ ] Test wizard self-removal scenario (uninstall F and G together)
+- [ ] Cross-project validation: Install and uninstall in genie-in-the-box
+
+---
+
 
 ### 2025.10.21 - Session 22: Uninstall Wizard & Installation Wizard Enhancement
 
