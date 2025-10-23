@@ -74,6 +74,11 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 - Related files: None
 - Note: Can uninstall itself (will also remove `/plan-uninstall-wizard`)
 
+**[G] Workflow Execution Audit**
+- Commands: `/plan-workflow-audit`
+- Related files: None
+- Note: Meta-tool for auditing workflow compliance (no dependencies, no cleanup needed)
+
 ---
 
 ## Uninstallation Flow
@@ -174,6 +179,9 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 
    # Installation Wizard (F)
    ls .claude/commands/plan-install-wizard.md 2>/dev/null && echo "F_installed"
+
+   # Workflow Execution Audit (G)
+   ls .claude/commands/plan-workflow-audit.md 2>/dev/null && echo "G_installed"
    ```
 
 3. **Build installed workflow list**:
@@ -187,6 +195,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    ✗ [D] Backup Infrastructure (not installed)
    ✗ [E] Testing Workflows (not installed)
    ✓ [F] Installation Wizard (1 file)
+   ✗ [G] Workflow Execution Audit (not installed)
    ```
 
 4. **Check if any workflows installed**:
@@ -291,11 +300,14 @@ Currently Installed Workflows:
     ⚠️  WARNING: Removing this will also remove /plan-uninstall-wizard
     (To reinstall later, share INSTALLATION-GUIDE.md again)
 
+[G] Workflow Execution Audit ✗ NOT INSTALLED
+    (Cannot be selected - not currently installed)
+
 ──────────────────────────────────────────────────────────
 Select workflows to uninstall:
 
 [1] Uninstall all installed workflows (A + B + C + F)
-[2] Custom selection (tell me which: A, B, C, F)
+[2] Custom selection (tell me which: A, B, C, F, G)
 [3] Cancel uninstallation
 
 What would you like to do? [1/2/3]

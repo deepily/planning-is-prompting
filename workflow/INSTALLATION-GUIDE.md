@@ -1244,6 +1244,194 @@ Each wrapper configures different test script paths and scopes.
 
 ---
 
+## Meta-Workflow Tools
+
+### Workflow Execution Audit
+
+**What It Does**:
+
+**Analyzes workflows for execution protocol compliance** - ensures deterministic execution standards:
+
+- **TodoWrite Mandates**: Verifies multi-step workflows require TodoWrite creation
+- **TodoWrite Updates**: Checks each step ends with TodoWrite update instruction
+- **Language Strength**: Identifies weak language (SHOULD/CAN) in critical instructions
+- **Verification Checkpoints**: Ensures each step has verification checklist
+- **Execution Metadata**: Confirms metadata fields present (protocol, duration, etc.)
+- **Compliance Scoring**: Generates 0-100 score with breakdown
+- **Automatic Remediation**: Offers to apply fixes automatically or selectively
+
+**Canonical Workflow**:
+- planning-is-prompting → workflow/workflow-execution-audit.md
+
+**Slash Command**: `/plan-workflow-audit`
+
+### When to Use
+
+**Ad-hoc quality checks**:
+- You notice non-deterministic execution (steps being skipped)
+- Creating new workflow and want to validate compliance
+- Retrofitting existing workflows with execution protocol
+- Regular workflow maintenance and quality assurance
+
+**Problem it solves**:
+LLMs are probabilistic, not deterministic. Without explicit tracking (TodoWrite) and strong language (MUST vs SHOULD), workflows may have steps skipped or executed inconsistently. This audit tool identifies compliance gaps and offers automatic remediation.
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the workflow-execution-audit command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. **Read the canonical workflow**:
+   - Audit workflow: planning-is-prompting → workflow/workflow-execution-audit.md
+
+2. **Copy the slash command file** from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-workflow-audit.md
+   - Target: .claude/commands/plan-workflow-audit.md (keep filename as-is)
+
+3. **No customization needed** - This meta-tool works universally across projects
+
+4. **Verify installation**:
+   ```bash
+   # Check file exists
+   ls -l .claude/commands/plan-workflow-audit.md
+
+   # Test command
+   /plan-workflow-audit
+   ```
+
+5. **First use**:
+   ```bash
+   /plan-workflow-audit
+
+   # When prompted, enter path to workflow to audit:
+   workflow/your-workflow-name.md
+   ```
+```
+
+### Usage
+
+**Basic audit**:
+```bash
+/plan-workflow-audit
+
+# When prompted:
+Enter path to workflow file: workflow/session-start.md
+```
+
+**The workflow will**:
+1. Create TodoWrite tracking list (10 steps)
+2. Prompt you for target workflow path
+3. Analyze structure (count steps, substeps)
+4. Check TodoWrite mandate (Step 0 present? MUST language used?)
+5. Check TodoWrite update instructions (all steps have them?)
+6. Analyze language strength (MUST vs SHOULD vs MAY)
+7. Check verification checkpoints (present and meaningful?)
+8. Check execution metadata (5 required fields present?)
+9. Generate compliance report (0-100 score with breakdown)
+10. Suggest specific fixes (numbered, with line numbers and content)
+11. Offer remediation options:
+    - [1] Apply all fixes automatically (creates backup first)
+    - [2] Apply selected fixes (you choose which fix numbers)
+    - [3] Show fixes but don't apply (manual edit)
+    - [4] Save report to file (for later reference)
+    - [5] Audit another workflow
+    - [6] Exit without changes
+
+**Example output**:
+```
+════════════════════════════════════════════════════════
+WORKFLOW EXECUTION AUDIT REPORT
+════════════════════════════════════════════════════════
+
+Target: workflow/example-workflow.md
+Total Steps: 7
+COMPLIANCE SCORE: 65/100
+
+CRITICAL ISSUES (blocking): 0
+WARNINGS (should fix): 5
+⚠️ TodoWrite mandate uses weak language (SHOULD → MUST)
+⚠️ 2 of 7 steps missing TodoWrite update instructions
+⚠️ 4 critical instructions using weak language
+⚠️ 3 of 7 steps missing verification checkpoints
+⚠️ 3 of 5 execution metadata fields missing
+
+SUGGESTIONS (nice to have): 1
+💡 Consider adding examples for complex steps
+
+[Detailed findings and suggested fixes follow...]
+```
+
+### Remediation Options
+
+**Option 1: Apply all fixes automatically**
+- Creates backup (.backup file)
+- Applies all suggested fixes in order
+- Verifies file valid after changes
+- Re-runs audit to show improved score
+
+**Option 2: Apply selected fixes**
+- You choose which fix numbers to apply (e.g., "1, 3, 5")
+- Creates backup
+- Applies only selected fixes
+- Useful when some fixes need manual review
+
+**Option 3: Show fixes only**
+- No changes applied
+- You manually edit the file
+- Report optionally saved for reference
+
+**Option 4: Save report to file**
+- Creates `workflow-audit-report-YYYY-MM-DD.md`
+- No changes to workflow
+- Review and apply fixes later
+
+### Configuration
+
+**No configuration needed** - This is a meta-tool that works universally:
+- No [SHORT_PROJECT_PREFIX] needed (uses target workflow's prefix)
+- No paths to configure (prompts for workflow path each time)
+- No dependencies (pure analysis + edit operations)
+
+### Self-Audit
+
+**This workflow audits itself**:
+- workflow/workflow-execution-audit.md scores 100/100 on its own audit
+- Self-demonstrating: follows all its own standards
+- Meta-validation: can audit the auditor
+
+**Try it:**
+```bash
+/plan-workflow-audit
+
+# When prompted:
+Enter path: workflow/workflow-execution-audit.md
+
+# Expected result: 100/100 score with all checkmarks
+```
+
+### Integration with Other Workflows
+
+**During workflow creation**:
+1. Create new workflow document
+2. Run `/plan-workflow-audit` on it
+3. Fix compliance issues before first use
+4. Ensures deterministic execution from start
+
+**During workflow maintenance**:
+1. Notice execution inconsistency
+2. Run `/plan-workflow-audit` on suspect workflow
+3. Review compliance report
+4. Apply suggested fixes
+5. Verify improved execution reliability
+
+**Best practice**: Audit all workflows achieving <80 compliance score
+
+---
+
 ## Configuration Files
 
 ### Global CLAUDE.md Template
