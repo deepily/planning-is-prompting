@@ -44,49 +44,36 @@ arguments:
 
 ## Instructions to Claude
 
-### 1. Read the Canonical Workflow
+**On every invocation of this command:**
 
-Read and execute: **planning-is-prompting → workflow/testing-remediation.md**
+1. **MUST use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+   - **Project Name**: Planning is Prompting
+   - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
+   - **Arguments**:
+     - Baseline Report: ${1:-auto}
+     - Remediation Scope: ${2:-ANALYSIS_ONLY}
+   - **Baseline Auto-Detection**:
+     - Directory: tests/results/reports
+     - Pattern: *baseline-test-report.md
+     - Sort: Most recent timestamp
+   - **Test Configuration**:
+     - Test Types: smoke (documentation validation)
+     - Logs Directory: tests/results/logs
+     - Reports Directory: tests/results/reports
+   - Do NOT proceed without these parameters
 
-### 2. Apply Configuration
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/testing-remediation.md
+   - This is the ONLY authoritative source for ALL remediation steps
+   - Do NOT proceed without reading this document in full
 
-Use the project configuration above when executing the remediation workflow.
-
-### 3. Recommended Scope: ANALYSIS_ONLY
-
-**For this documentation project**:
-- **ANALYSIS_ONLY** is recommended (generates comparison report only)
-- No code to "fix" - just documentation structure to validate
-- If issues found (missing docs, broken links), document them for manual review
-
-**Other scopes**:
-- **FULL**: Could be used if documentation "fixes" are needed (creating missing docs)
-- **CRITICAL_ONLY**: If only critical documentation gaps need immediate attention
-- **SELECTIVE**: If user wants to choose which documentation gaps to address
-
-### 4. Comparison Analysis
-
-**Baseline vs Current**:
-- Check if any workflow documents were deleted (regression)
-- Verify new documents are properly cross-referenced
-- Ensure documentation structure remains intact
-- Validate all links still work
-
-### 5. Expected Outcome
-
-**If no documentation changes**:
-- Pass rate: 100% (same as baseline)
-- Regressions: 0
-- Status: STABLE
-
-**If documentation added**:
-- Pass rate: ≥100% (improvements)
-- Status: IMPROVED
-
-**If documentation removed or broken**:
-- Pass rate: <100% (regressions)
-- Regressions: Listed in report
-- Recommended action: Restore or fix documentation
+3. **MUST execute the complete remediation workflow**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps (including TodoWrite tracking, notifications, or comparison analysis)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+   - For this documentation project, ANALYSIS_ONLY scope is recommended (generates comparison report, no code fixes needed)
 
 ---
 

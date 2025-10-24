@@ -35,69 +35,32 @@ allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit
 
 ## Instructions to Claude
 
-### 1. Read the Canonical Workflow
+**On every invocation of this command:**
 
-Read and execute: **planning-is-prompting → workflow/testing-baseline.md**
+1. **MUST use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+   - **Project Name**: Planning is Prompting
+   - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
+   - **Paths**:
+     - Logs Directory: tests/results/logs
+     - Reports Directory: tests/results/reports
+   - **Test Types**: smoke (documentation validation only)
+   - **Test Scripts**: Simple validation script (validates docs exist and are readable)
+   - **Health Checks**: None required (no server/service dependencies)
+   - **Environment**: No special environment variables needed
+   - Do NOT proceed without these parameters
 
-### 2. Apply Configuration
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/testing-baseline.md
+   - This is the ONLY authoritative source for ALL baseline testing steps
+   - Do NOT proceed without reading this document in full
 
-Use the project configuration above when executing the baseline workflow.
-
-### 3. Test Execution
-
-**For this project, "smoke tests" means**:
-- Verify all workflow documents exist and are readable
-- Check all referenced paths are valid
-- Validate markdown formatting is correct
-- Ensure cross-references between documents work
-
-**Simple validation script** (create if doesn't exist):
-```bash
-#!/bin/bash
-# Simple smoke test for planning-is-prompting
-
-echo "=== Planning is Prompting Documentation Validation ==="
-
-# Check critical workflow files exist
-FILES=(
-    "workflow/testing-baseline.md"
-    "workflow/testing-remediation.md"
-    "workflow/testing-harness-update.md"
-    "workflow/session-start.md"
-    "workflow/session-end.md"
-    "workflow/history-management.md"
-    "CLAUDE.md"
-    "README.md"
-)
-
-FAILED=0
-for file in "${FILES[@]}"; do
-    if [ -f "$file" ]; then
-        echo "✅ $file"
-    else
-        echo "❌ $file MISSING"
-        FAILED=$((FAILED + 1))
-    fi
-done
-
-echo ""
-if [ $FAILED -eq 0 ]; then
-    echo "✅ All documentation files present"
-    exit 0
-else
-    echo "❌ ${FAILED} files missing"
-    exit 1
-fi
-```
-
-### 4. Expected Outcome
-
-**Baseline report should show**:
-- All critical workflow documents present: ✅
-- All markdown files readable: ✅
-- Overall health: EXCELLENT (100% pass rate)
-
-This baseline validates the documentation structure before making changes.
+3. **MUST execute the complete baseline testing workflow**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps (including TodoWrite tracking, notifications, or test execution)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+   - For this documentation project, "smoke tests" means: verify workflow documents exist and are readable, check referenced paths are valid, validate markdown formatting, ensure cross-references work
 
 ---
 

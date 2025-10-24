@@ -10,29 +10,16 @@
 
 **On every invocation of this command:**
 
-1. **Read the canonical uninstall workflow**: planning-is-prompting → workflow/uninstall-wizard.md
+1. **MUST read the canonical uninstall workflow**:
+   - Location: planning-is-prompting → workflow/uninstall-wizard.md
+   - This is the ONLY authoritative source for ALL uninstallation steps
+   - Do NOT proceed without reading this document in full
 
-2. **Execute the interactive uninstall workflow** as described in that document
-
-3. **The wizard will automatically**:
-   - Detect currently installed workflows (scan `.claude/commands/` directory)
-   - Present catalog showing installed vs. uninstalled status
-   - Guide through workflow selection for removal
-   - Show deletion candidates and get confirmation
-   - Delete selected slash command files only
-   - Offer optional cleanup (CLAUDE.md, .gitignore, empty directories)
-   - Suggest manual cleanup for related files (backup.sh, history.md, etc.)
-
-4. **Follow the wizard flow**:
-   - Step 1: Detect installed workflows
-   - Step 2: Present catalog with installation status
-   - Step 3: Get user selection and validate
-   - Step 4: Show deletion candidates
-   - Step 5: Delete slash command files
-   - Step 6: Offer CLAUDE.md cleanup (optional)
-   - Step 7: Offer .gitignore cleanup (optional)
-   - Step 8: Handle empty directory cleanup (optional)
-   - Step 9: Present summary with manual cleanup suggestions
+2. **MUST execute the complete interactive uninstall wizard**:
+   - Execute ALL steps exactly as described in the canonical uninstall workflow
+   - Do NOT skip any steps (including workflow detection, user prompts, or file deletion)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the wizard flow exactly as documented in the uninstall workflow
 
 ---
 

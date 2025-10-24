@@ -10,21 +10,16 @@
 
 **On every invocation of this command:**
 
-1. **Read the canonical installation guide**: planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+1. **MUST read the canonical installation guide**:
+   - Location: planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+   - This is the ONLY authoritative source for ALL installation steps
+   - Do NOT proceed without reading this document in full
 
-2. **Execute the interactive installation wizard** as described in that document
-
-3. **The guide will automatically**:
-   - Detect current project state (clean vs. existing installation)
-   - Present appropriate options based on state
-   - If existing installation: Offer to add more workflows
-   - If clean installation: Run full installation wizard
-   - Guide through workflow selection and configuration
-
-4. **Follow the wizard flow**:
-   - Step 1: Detect project state
-   - Step 2: Offer appropriate action based on state
-   - Step 3: Execute user's choice (install, add more, update, etc.)
+2. **MUST execute the complete interactive installation wizard**:
+   - Execute ALL steps exactly as described in the canonical installation guide
+   - Do NOT skip any steps (including project detection, user prompts, or workflow installation)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the wizard flow exactly as documented in the installation guide
 
 ---
 

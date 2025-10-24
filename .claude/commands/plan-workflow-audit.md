@@ -9,17 +9,20 @@
 
 **On every invocation of this command:**
 
-1. **Read the canonical workflow**: planning-is-prompting → workflow/workflow-execution-audit.md
-
-2. **Execute the audit workflow** as described in the canonical document
-
-3. **Apply project-specific configuration**:
+1. **MUST use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: [PLAN]
-   - Follow all 10 steps with mandatory TodoWrite tracking
-   - Prompt user for target workflow path
-   - Analyze structure, TodoWrite compliance, language strength, verification, metadata
-   - Generate compliance report (0-100 score)
-   - Offer remediation options (apply all, selective, view only, save report, audit another)
+   - Do NOT proceed without this parameter
+
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/workflow-execution-audit.md
+   - This is the ONLY authoritative source for ALL workflow audit steps
+   - Do NOT proceed without reading this document in full
+
+3. **MUST execute the complete workflow audit process**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps (including TodoWrite tracking, notifications, or user prompts)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
 ---
 

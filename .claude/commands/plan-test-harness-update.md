@@ -52,64 +52,31 @@ arguments:
 
 ## Instructions to Claude
 
-### 1. Read the Canonical Workflow
+**On every invocation of this command:**
 
-Read and execute: **planning-is-prompting → workflow/testing-harness-update.md**
+1. **MUST use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+   - **Project Name**: Planning is Prompting
+   - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
+   - **Date Range**: ${1:-auto} (defaults to last 7 days)
+   - **Source Directories**: workflow/, .claude/commands/, src/rnd/
+   - **Component Classification**:
+     - workflow/*.md: critical (requires documentation, cross-references, installation guide)
+     - .claude/commands/*.md: standard (requires documentation, workflow reference)
+     - src/rnd/*.md: support (documentation optional)
+   - Do NOT proceed without these parameters
 
-### 2. Apply Configuration
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/testing-harness-update.md
+   - This is the ONLY authoritative source for ALL test harness update steps
+   - Do NOT proceed without reading this document in full
 
-Use the project configuration above when executing the harness update workflow.
-
-### 3. Documentation-Specific Analysis
-
-**For this project, "test harness updates" means**:
-
-#### A. Changed Workflow Documents
-**For each workflow/*.md file that changed**:
-- ✅ Check: Referenced in README.md?
-- ✅ Check: Referenced in INSTALLATION-GUIDE.md?
-- ✅ Check: Example slash command wrapper exists?
-- ✅ Check: Cross-referenced by related workflows?
-- ✅ Check: Version history updated?
-
-#### B. Changed Slash Commands
-**For each .claude/commands/*.md file that changed**:
-- ✅ Check: References correct canonical workflow?
-- ✅ Check: Documented in CLAUDE.md?
-- ✅ Check: Listed in README.md slash commands section?
-- ✅ Check: Follows thin wrapper pattern?
-
-#### C. Changed Research Documents
-**For each src/rnd/*.md file that changed**:
-- ✅ Check: Listed in README.md research section (if applicable)?
-- ℹ️  Note: Research docs are temporary, don't require extensive cross-referencing
-
-### 4. Gap Analysis
-
-**Missing Documentation**:
-- Workflow has no slash command example
-- Workflow not mentioned in installation guide
-- Slash command not listed in README
-- Cross-references broken or missing
-
-**Priority Framework**:
-- **CRITICAL**: Core workflows missing from installation guide
-- **HIGH**: New workflows without slash command examples
-- **MEDIUM**: Missing cross-references between workflows
-- **LOW**: Research documents not indexed
-
-### 5. Expected Outcome
-
-**Analysis report should show**:
-- Changed documentation files: {count}
-- Missing cross-references: {count}
-- Missing examples: {count}
-- Priority updates: {count} critical, {count} high
-
-**Update plan should list**:
-- Which READMEs need updates
-- Which cross-references to add
-- Which examples to create
+3. **MUST execute the complete test harness update workflow**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps (including TodoWrite tracking, notifications, or analysis)
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+   - For this documentation project, "test harness updates" means: identify changed workflow documents and ensure proper cross-references, examples, and installation documentation exist
 
 ---
 
