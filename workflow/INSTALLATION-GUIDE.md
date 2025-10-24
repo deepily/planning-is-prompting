@@ -72,20 +72,43 @@ Not yet installed:
 
 What would you like to do?
 
-[1] Add more workflows (install additional workflows)
-[2] View manual instructions for specific workflow
-[3] Nothing, I'm just reading the docs
+[1] Update existing workflows (check for newer versions)
+[2] Add more workflows (install additional workflows)
+[3] View manual instructions for specific workflow
+[4] Nothing, I'm just reading the docs
 
-What would you like to do? [1/2/3]
+What would you like to do? [1/2/3/4]
 ```
 
 ### Step 3: Execute Based on Choice
 
-**If user chooses [1] - Run wizard (either clean or add more):**
+**If user chooses [1] - Update existing workflows:**
+
+1. Read the canonical update workflow document:
+   ```
+   planning-is-prompting → workflow/installation-wizard.md → Update Mode Workflow section
+   ```
+
+2. Execute the update flow as described in that document:
+   - Step 0: Create update TODO list
+   - Step 1: Scan local installation (detect versions)
+   - Step 2: Compare with canonical versions
+   - Step 3: Present selective update UI
+   - Step 4: Extract configuration from selected files
+   - Step 5: Show diff preview
+   - Step 6: Apply updates with backups
+   - Step 7: Validate updates
+   - Step 8: Present update summary
+
+3. Use TodoWrite to track update progress
+
+4. Send notifications after each major step (see workflow document for details)
+
+**If user chooses [2] - Add more workflows:**
 
 1. Read the canonical workflow document:
    ```
-   planning-is-prompting → workflow/installation-wizard.md
+   planning-is-prompting → workflow/installation-wizard.md → Installation Flow section
    ```
 
 2. Execute the installation flow as described in that document:
@@ -103,7 +126,7 @@ What would you like to do? [1/2/3]
 
 4. Send notifications after each major step (see workflow document for details)
 
-**If user chooses [2] or [3] - Manual instructions:**
+**If user chooses [3] or [4] - Manual instructions or nothing:**
 
 Continue reading the manual installation sections below. Answer specific questions about workflows or provide installation snippets as needed.
 
