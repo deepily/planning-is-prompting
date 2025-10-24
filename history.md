@@ -1,13 +1,84 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Fixed slash command wrappers - implemented deterministic wrapper pattern to eliminate competing instructions
+**RESUME HERE**: Version tagging complete - building update mode for installation wizard to propagate deterministic pattern fixes to other repos
 
-**Current Status**: Deterministic wrapper pattern complete - 5 wrappers fixed with MUST language, comprehensive pattern documentation created, ready for next-session testing
-**Next Steps**: Test /plan-session-start in next session to verify complete workflow execution (all 8 steps including notifications, TodoWrite, [1/2/3] prompts)
+**Current Status**: Phase 1 complete - all 15 slash commands tagged with Version 1.0, ready to build update mode
+**Next Steps**: Phase 2 - implement update mode in installation-wizard.md with version detection, selective update UI, config extraction, and diff preview
 
 ---
 
 ## October 2025
+
+### 2025.10.23 - Session 29: Complete Deterministic Pattern Rollout & Begin Update Mode
+
+**Accomplishments**:
+- **Analyzed all 15 slash commands for ambiguous language** (~40 min):
+  - Used deterministic-wrapper-pattern.md as audit guide
+  - Found 7 files needing fixes (3 CRITICAL, 2 HIGH, 2 MEDIUM)
+  - 3 bash wrappers exempt (simple command execution, no workflows)
+  - 5 Session 28 files already compliant
+- **Fixed remaining 7 slash command wrappers** (~129 insertions, ~226 deletions):
+  - **CRITICAL fixes** (competing task lists removed):
+    - `plan-test-baseline.md`: Removed ~68 lines of bash script and alternative instructions
+    - `plan-test-harness-update.md`: Removed ~63 lines of analysis instructions
+    - `plan-test-remediation.md`: Removed ~48 lines of remediation guidance
+  - **HIGH priority fixes** (parameter order corrected):
+    - `plan-history-management.md`: Moved config from Step 3 to Step 1
+    - `plan-workflow-audit.md`: Moved config from Step 3 to Step 1
+  - **MEDIUM priority fixes** (ambiguous language eliminated):
+    - `plan-install-wizard.md`: Added MUST language, removed competing wizard steps
+    - `plan-uninstall-wizard.md`: Added MUST language, removed competing wizard steps
+  - All files now enforce Parameters → Read → Execute pattern with MUST language
+  - Committed: `e21054f` "Apply deterministic wrapper pattern to 7 slash command files"
+- **Tested /plan-session-start with complete workflow execution**:
+  - ✅ All 8 steps executed without shortcuts
+  - ✅ Preliminary notification sent (low priority)
+  - ✅ TodoWrite initialization list created (5 items)
+  - ✅ Configuration loaded and reported
+  - ✅ Workflows discovered and categorized (15 commands)
+  - ✅ History loaded with token count (18,667 / 25,000 tokens, 74.6%)
+  - ✅ Ready notification sent (high priority, generated variation)
+  - ✅ [1/2/3] options presented and waited for user response
+  - **Result**: Deterministic wrapper pattern validated - complete canonical workflow execution confirmed
+- **Planned update mode for cross-repo propagation** (via `/p-is-p-00-start-here`):
+  - **Context**: 4-5 repos have installed slash commands via installation wizard
+  - **Goal**: Update all repos with deterministic pattern fixes
+  - **Approach**: Build `/plan-install-wizard mode=update` with:
+    - Version detection (compare local vs. canonical)
+    - Selective update UI (checkboxes for file selection)
+    - Config extraction (preserve project-specific Step 1 params)
+    - Diff preview (show changes before applying)
+    - Smart prompting (extracted config as defaults)
+- **Phase 1: Added version tags to all 15 slash commands** (~15 min):
+  - Added `**Version**: 1.0` to all canonical slash command wrappers
+  - 7 recently fixed files (Session 29)
+  - 5 Session 28 compliant files
+  - 3 bash wrapper files
+  - Enables version detection for upcoming update mode
+  - Committed: `21cf352` "Add version tags to all 15 slash command files (Phase 1 of update mode)"
+
+**Key Decisions**:
+- **Update strategy**: Manual invocation via wizard (not fully automated)
+- **Version approach**: Start at 1.0 (all previous installations treated as v0.0)
+- **Config handling**: Smart extraction + prompting (Option C from planning discussion)
+- **Checkpoint strategy**: Commit Phase 1, continue Phase 2 in next session
+
+**TODO for Next Session**:
+- [ ] **Phase 2**: Implement update mode in installation-wizard.md (~500-800 lines):
+  - [ ] Design update mode workflow section
+  - [ ] Implement file scanning and version detection
+  - [ ] Build selective update UI with checkboxes
+  - [ ] Create config extraction and prompting logic
+  - [ ] Add diff preview and file update logic
+- [ ] **Phase 3**: Update plan-install-wizard.md wrapper for mode parameter support
+- [ ] **Phase 4**: Test update mode in planning-is-prompting repo
+- [ ] **Phase 5**: Deploy to other 4-5 repos manually
+
+**Commits**:
+- `e21054f`: Apply deterministic wrapper pattern to 7 slash command files
+- `21cf352`: Add version tags to all 15 slash command files (Phase 1 of update mode)
+
+---
 
 ### 2025.10.23 - Session 28: Fix Slash Command Wrappers with Deterministic Pattern
 
