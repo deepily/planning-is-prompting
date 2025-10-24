@@ -3,6 +3,7 @@
 **Purpose**: Interactive installation wizard for adding planning-is-prompting workflows to any project.
 
 **Project**: planning-is-prompting (meta-repository)
+**Version**: 1.0
 
 ---
 

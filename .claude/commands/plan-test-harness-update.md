@@ -12,6 +12,7 @@ arguments:
 **Purpose**: Identify which workflows were added/modified and ensure proper documentation
 **Project**: Planning is Prompting (Meta-repository for workflow templates)
 **Note**: For docs repo, "test coverage" means cross-references, examples, and installation docs
+**Version**: 1.0
 
 ---
 

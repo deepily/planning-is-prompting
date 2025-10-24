@@ -2,6 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
+**Version**: 1.0
 
 ---
 

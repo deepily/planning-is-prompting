@@ -16,6 +16,7 @@ arguments:
 **Purpose**: Verify documentation structure after changes
 **Project**: Planning is Prompting (Meta-repository for workflow templates)
 **Note**: ANALYSIS_ONLY scope recommended (documentation repo doesn't need code fixes)
+**Version**: 1.0
 
 ---
 

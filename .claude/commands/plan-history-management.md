@@ -3,6 +3,7 @@
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
 **Mode Parameter**: Accepts mode=check (default), mode=archive, mode=analyze, mode=dry-run
+**Version**: 1.0
 
 ---
 

@@ -3,6 +3,7 @@
 **Purpose**: Interactive uninstallation wizard for removing planning-is-prompting slash commands from any project.
 
 **Project**: planning-is-prompting (meta-repository)
+**Version**: 1.0
 
 ---
 

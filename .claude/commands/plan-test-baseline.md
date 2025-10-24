@@ -8,6 +8,7 @@ allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit
 **Purpose**: Establish baseline before workflow/documentation changes
 **Project**: Planning is Prompting (Meta-repository for workflow templates)
 **Note**: This is a documentation-only project - tests validate document structure and links
+**Version**: 1.0
 
 ---
 
