@@ -748,7 +748,14 @@ Available Workflows:
     Dependencies: None
     Note: Makes wizard available as /plan-install-wizard command
 
-[G] Uninstall Wizard
+[G] Workflow About
+    View installed workflows with version comparison
+    Commands:
+      • /plan-about - Show all installed workflows and versions
+    Dependencies: None
+    Note: Useful for checking installation status and updates
+
+[H] Uninstall Wizard
     Install uninstall wizard for removing workflows later
     Commands:
       • /plan-uninstall-wizard - Run wizard to remove workflows
@@ -759,8 +766,8 @@ Available Workflows:
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G)
+[2] Install everything (A + B + C + D + E + F + G + H)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]

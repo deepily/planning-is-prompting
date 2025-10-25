@@ -178,6 +178,107 @@ Where:
 
 ---
 
+## Installation Management Workflows
+
+### plan-about - View Installed Workflows
+
+**What It Does**:
+
+Displays all installed planning-is-prompting workflows with version comparison against canonical source:
+- Scans local `.claude/commands/` directory for installed workflows
+- Compares local versions against canonical source
+- Groups workflows by category (Session, History, P-is-P Core, Testing, Backup)
+- Shows status indicators (✓ Current / ⚠ Update Available)
+- Provides actionable next steps
+
+**Canonical Workflow**: planning-is-prompting → workflow/installation-about.md
+
+**Slash Command**: `/plan-about`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-about` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/installation-about.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-about.md
+   - Target: .claude/commands/plan-about.md
+   - Keep the filename as-is (plan-about.md)
+
+3. The command will automatically:
+   - Detect your project's [SHORT_PROJECT_PREFIX]
+   - Scan installed workflows in .claude/commands/
+   - Compare versions against canonical source
+   - Generate categorized report
+
+4. No customization needed - the command adapts to your project automatically
+
+After installation, test it: `/plan-about`
+```
+
+### Usage
+
+**Basic usage**:
+```bash
+/plan-about
+```
+
+The command will display:
+```
+Planning is Prompting Workflows - Installation Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project: Your Project Name
+Prefix: [YOUR_PREFIX]
+
+Installed Workflows (12):
+
+Category              Command                      Local    Canonical  Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Installation Mgmt     plan-install-wizard          v1.1     v1.1       ✓ Current
+                      plan-about                   v1.0     v1.0       ✓ Current
+
+Session Mgmt          plan-session-start           v1.0     v1.0       ✓ Current
+                      plan-session-end             v1.0     v1.0       ✓ Current
+
+History Mgmt          plan-history-management      v1.0     v1.0       ✓ Current
+
+P-is-P Core           p-is-p-00-start-here         v1.0     v1.0       ✓ Current
+                      p-is-p-01-planning           v1.0     v1.0       ✓ Current
+                      p-is-p-02-documentation      v1.0     v1.0       ✓ Current
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Status: ✓ All workflows up to date (12/12 current)
+
+Next steps:
+  • Run /plan-install-wizard mode=update to check for updates
+  • Run /plan-install-wizard mode=install to add more workflows
+```
+
+### When to Use
+
+- **After installation** - Verify workflows installed correctly
+- **Periodic check** - See if updates are available
+- **Troubleshooting** - Confirm which workflows are present
+- **Documentation** - Know what's installed in each project
+
+### Requirements
+
+**Environment variable** (for version comparison):
+```bash
+export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
+```
+
+Without this variable, the command will show local versions only (no comparison).
+
+---
+
 ## Planning is Prompting Core Workflows
 
 ### What It Does
