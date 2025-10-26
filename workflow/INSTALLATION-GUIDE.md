@@ -447,6 +447,38 @@ Claude will ask you to provide:
 
 4. **Archive directory** - Usually `history/` subdirectory
 
+**For Projects with Nested Git Repositories:**
+
+If your project contains nested Git repositories (submodules, subtrees, or independent repos in subdirectories), add the nested repository configuration to Step 1 of your wrapper:
+
+```markdown
+1. **MUST use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: [MYPROJ]
+   - **History file**: /path/to/project/history.md
+   - **Nested repositories**: /src/subproject-a/, /src/subproject-b/
+   - **Nested repository descriptions**:
+     * `/src/subproject-a/` - Description (remote URL if applicable)
+     * `/src/subproject-b/` - Description (remote URL if applicable)
+   - Do NOT proceed without these parameters
+```
+
+The canonical workflow will automatically:
+- Detect changes in nested repos during git operations
+- Acknowledge but NOT commit nested repo changes
+- Only manage parent repository files
+- Remind user to manage nested repos separately
+
+**Example output during session-end**:
+```
+⚠️ Detected changes in nested repositories:
+• /src/subproject-a/ (3 modified files)
+
+These are separate Git repositories and will not be included in this commit.
+Reminder: Manage nested repositories in their own sessions/contexts.
+```
+
+This ensures the session-end workflow only manages the parent repository and prevents accidental commits to nested repos.
+
 ### Customization Options
 
 After installation, you can customize:

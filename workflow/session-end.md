@@ -6,6 +6,8 @@ This document contains the comprehensive end-of-session workflow extracted from 
 
 At the end of our work sessions, perform the following wrapup ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:
 
+**Optional Configuration**: If your project contains nested Git repositories, the wrapper can pass their paths for safe handling during commit operations (see Step 5: Nested Repository Handling).
+
 ## 0) Use Notification System Throughout
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
@@ -225,6 +227,43 @@ git ls-files --others --exclude-standard | tree --fromfile -a
 - NEVER skip hooks (--no-verify, --no-gpg-sign, etc) unless user explicitly requests
 - NEVER run force push to main/master, warn user if they request it
 - Avoid `git commit --amend` unless (1) user explicitly requested amend OR (2) adding edits from pre-commit hook
+
+**Nested Repository Handling**:
+
+If the project-specific wrapper specifies nested repositories in Step 1 configuration, respect those boundaries:
+
+1. **Check for nested repo configuration**:
+   - Wrapper may include: `Nested repositories: [list of paths]`
+   - Example: `Nested repositories: /src/cosa/, /src/lupin-plugin-firefox/, /src/lupin-mobile/`
+
+2. **During git operations (Steps 3-5)**:
+   - When running `git status`, acknowledge nested repo changes
+   - Do NOT stage, commit, or push changes within nested repo paths
+   - Only manage parent repository files
+
+3. **If changes detected in nested repos**:
+   - Display acknowledgment:
+     ```
+     ⚠️ Detected changes in nested repositories:
+     • /src/cosa/ (3 modified files)
+     • /src/lupin-mobile/ (1 new file)
+
+     These are separate Git repositories and will not be included in this commit.
+     Reminder: Manage nested repositories in their own sessions/contexts.
+     ```
+   - Filter nested paths from git add commands
+   - Only commit parent repository changes
+
+4. **Detection command** (if nested repos declared but not auto-detected):
+   ```bash
+   # Find all nested .git directories
+   find . -name ".git" -type d | grep -v "^./.git$"
+   ```
+
+5. **Git operation filtering**:
+   - When adding files: Exclude nested repo paths from staging
+   - When committing: Only include parent repo changes in commit message
+   - When pushing: Only push parent repository
 
 
 ## Final Verification
