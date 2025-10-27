@@ -4,6 +4,12 @@
 
 **When to use**: Ad-hoc quality checks on workflow files to ensure deterministic execution standards
 
+**When NOT to use**:
+- **After fresh installation** from canonical source (files are compliant by definition)
+- **Immediately after running installation wizard** (validation already confirmed file integrity)
+- **For bulk compliance checking** of newly installed workflows (waste of 3-5 hours for 19 files)
+- **When you just copied** a workflow directly from planning-is-prompting repository
+
 **What this workflow does**:
 - Audits target workflow for TodoWrite mandates, verification checkpoints, and language strength
 - Generates compliance reports with scores (0-100)
@@ -21,6 +27,63 @@
 - Generate compliance report with scoring
 - Suggest specific fixes with line numbers
 - Offer remediation options (apply all, selective, view only)
+
+---
+
+## Usage Decision Matrix
+
+**Should I run workflow audit?** Use this decision tree:
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│ Q1: Did you just install workflows from canonical source?     │
+│     (via installation wizard or manual copy)                   │
+│                                                                 │
+│     YES → SKIP AUDIT (files are compliant by definition)       │
+│     NO  → Continue to Q2                                       │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ Q2: Are you checking existing workflows that may have been    │
+│     manually edited or created before version 1.0?             │
+│                                                                 │
+│     YES → RUN AUDIT (check for drift and compliance issues)    │
+│     NO  → Continue to Q3                                       │
+└────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────┐
+│ Q3: Are you developing new workflows and want to verify they  │
+│     follow execution protocol standards?                       │
+│                                                                 │
+│     YES → RUN AUDIT (verify your workflow follows standards)   │
+│     NO  → SKIP AUDIT (not needed)                             │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Use Cases by Scenario**:
+
+| Scenario | Run Audit? | Rationale |
+|----------|------------|-----------|
+| **Fresh installation from wizard** | ❌ NO | Files copied from canonical source = compliant by definition |
+| **Manual copy from planning-is-prompting repo** | ❌ NO | Source files already follow standards |
+| **Update mode (v0.0 → v1.0)** | ✅ YES | Check for drift, verify update succeeded |
+| **Manually edited existing workflow** | ✅ YES | Edits may have broken compliance |
+| **Pre-v1.0 workflows (no version tag)** | ✅ YES | May not follow deterministic pattern |
+| **Developing new workflow** | ✅ YES | Verify it follows execution standards |
+| **Unknown workflow origin** | ✅ YES | Confirm compliance before using |
+| **Bulk check of installed workflows** | ❌ NO | Only audit if you suspect drift (save time) |
+
+**Time Investment vs Value**:
+- Single workflow audit: 10-15 minutes
+- Full suite audit (19 workflows): 3-5 hours
+- Value for fresh installation: **ZERO** (already compliant)
+- Value for drift detection: **HIGH** (catches compliance issues)
+
+**Recommended Workflow**:
+1. **Install** → Validation only (Step 6 in installation wizard)
+2. **Wait 3-6 months** → Check for manual drift if workflows were edited
+3. **Update mode** → Audit if updating old workflows to new versions
+4. **Development** → Audit new workflows you create
 
 ---
 

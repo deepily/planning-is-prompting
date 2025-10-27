@@ -1419,6 +1419,52 @@ Workflow Test:
 Installation validated successfully!
 ```
 
+7. **IMPORTANT: Do NOT Run Workflow Audit After Fresh Installation**:
+
+   **Anti-Pattern Warning**: After fresh installation, DO NOT run `/plan-workflow-audit` or execute workflow compliance audits.
+
+   **Why this is redundant**:
+   - Fresh installations copy directly from canonical source
+   - Canonical source = gold standard (files are compliant by definition)
+   - Workflow audit is designed for **existing/drifted** installations, not **fresh** installations
+   - The validation steps above (1-6) already confirm file integrity and correct configuration
+
+   **Validation vs Audit - Key Difference**:
+   ```
+   ┌─────────────────────────────────────────────────────────┐
+   │ Validation (Step 6)      │ Audit (/plan-workflow-audit) │
+   ├──────────────────────────┼──────────────────────────────┤
+   │ File integrity checking  │ Compliance checking          │
+   │ Files created correctly  │ Follows execution standards  │
+   │ Paths configured right   │ TodoWrite mandates present   │
+   │ No placeholders left     │ Language strength analysis   │
+   │ Fast (1-2 minutes)       │ Slow (10-15 min per file)    │
+   │ Run after installation   │ Skip for fresh installations │
+   └──────────────────────────┴──────────────────────────────┘
+   ```
+
+   **When workflow audit IS appropriate**:
+   - **Update mode**: Checking old → new version for drift detection
+   - **Manual edits**: User customizations may break compliance
+   - **Unknown origin**: Files you didn't install from canonical source
+   - **Development**: Testing new workflows you're creating
+
+   **Fresh installation time savings**:
+   - Skipping audit saves 3-5 hours for full workflow suite installation
+   - 19 workflows × 10-15 min each = 190-285 minutes wasted
+
+   **If you see Claude attempting to run workflow audit after installation**:
+   ```
+   ⚠️ STOP - Fresh installations don't need compliance auditing
+
+   The files were just copied from canonical source and are
+   compliant by definition. Validation (Step 6) already confirmed
+   file integrity and correct configuration.
+
+   Save 3-5 hours by skipping the audit. Use /plan-workflow-audit
+   only when checking existing installations for drift.
+   ```
+
 **Update TodoWrite**: Mark "Validate installation" as completed, mark next item as in_progress
 
 **Send Notification**:
