@@ -72,20 +72,43 @@ Not yet installed:
 
 What would you like to do?
 
-[1] Add more workflows (install additional workflows)
-[2] View manual instructions for specific workflow
-[3] Nothing, I'm just reading the docs
+[1] Update existing workflows (check for newer versions)
+[2] Add more workflows (install additional workflows)
+[3] View manual instructions for specific workflow
+[4] Nothing, I'm just reading the docs
 
-What would you like to do? [1/2/3]
+What would you like to do? [1/2/3/4]
 ```
 
 ### Step 3: Execute Based on Choice
 
-**If user chooses [1] - Run wizard (either clean or add more):**
+**If user chooses [1] - Update existing workflows:**
+
+1. Read the canonical update workflow document:
+   ```
+   planning-is-prompting → workflow/installation-wizard.md → Update Mode Workflow section
+   ```
+
+2. Execute the update flow as described in that document:
+   - Step 0: Create update TODO list
+   - Step 1: Scan local installation (detect versions)
+   - Step 2: Compare with canonical versions
+   - Step 3: Present selective update UI
+   - Step 4: Extract configuration from selected files
+   - Step 5: Show diff preview
+   - Step 6: Apply updates with backups
+   - Step 7: Validate updates
+   - Step 8: Present update summary
+
+3. Use TodoWrite to track update progress
+
+4. Send notifications after each major step (see workflow document for details)
+
+**If user chooses [2] - Add more workflows:**
 
 1. Read the canonical workflow document:
    ```
-   planning-is-prompting → workflow/installation-wizard.md
+   planning-is-prompting → workflow/installation-wizard.md → Installation Flow section
    ```
 
 2. Execute the installation flow as described in that document:
@@ -103,7 +126,7 @@ What would you like to do? [1/2/3]
 
 4. Send notifications after each major step (see workflow document for details)
 
-**If user chooses [2] or [3] - Manual instructions:**
+**If user chooses [3] or [4] - Manual instructions or nothing:**
 
 Continue reading the manual installation sections below. Answer specific questions about workflows or provide installation snippets as needed.
 
@@ -152,6 +175,107 @@ Where:
 3. **Paste into Claude Code** in your project's session
 4. **Answer Claude's questions** about project-specific configuration
 5. **Test the workflow** to verify it works correctly
+
+---
+
+## Installation Management Workflows
+
+### plan-about - View Installed Workflows
+
+**What It Does**:
+
+Displays all installed planning-is-prompting workflows with version comparison against canonical source:
+- Scans local `.claude/commands/` directory for installed workflows
+- Compares local versions against canonical source
+- Groups workflows by category (Session, History, P-is-P Core, Testing, Backup)
+- Shows status indicators (✓ Current / ⚠ Update Available)
+- Provides actionable next steps
+
+**Canonical Workflow**: planning-is-prompting → workflow/installation-about.md
+
+**Slash Command**: `/plan-about`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-about` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/installation-about.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-about.md
+   - Target: .claude/commands/plan-about.md
+   - Keep the filename as-is (plan-about.md)
+
+3. The command will automatically:
+   - Detect your project's [SHORT_PROJECT_PREFIX]
+   - Scan installed workflows in .claude/commands/
+   - Compare versions against canonical source
+   - Generate categorized report
+
+4. No customization needed - the command adapts to your project automatically
+
+After installation, test it: `/plan-about`
+```
+
+### Usage
+
+**Basic usage**:
+```bash
+/plan-about
+```
+
+The command will display:
+```
+Planning is Prompting Workflows - Installation Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project: Your Project Name
+Prefix: [YOUR_PREFIX]
+
+Installed Workflows (12):
+
+Category              Command                      Local    Canonical  Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Installation Mgmt     plan-install-wizard          v1.1     v1.1       ✓ Current
+                      plan-about                   v1.0     v1.0       ✓ Current
+
+Session Mgmt          plan-session-start           v1.0     v1.0       ✓ Current
+                      plan-session-end             v1.0     v1.0       ✓ Current
+
+History Mgmt          plan-history-management      v1.0     v1.0       ✓ Current
+
+P-is-P Core           p-is-p-00-start-here         v1.0     v1.0       ✓ Current
+                      p-is-p-01-planning           v1.0     v1.0       ✓ Current
+                      p-is-p-02-documentation      v1.0     v1.0       ✓ Current
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Status: ✓ All workflows up to date (12/12 current)
+
+Next steps:
+  • Run /plan-install-wizard mode=update to check for updates
+  • Run /plan-install-wizard mode=install to add more workflows
+```
+
+### When to Use
+
+- **After installation** - Verify workflows installed correctly
+- **Periodic check** - See if updates are available
+- **Troubleshooting** - Confirm which workflows are present
+- **Documentation** - Know what's installed in each project
+
+### Requirements
+
+**Environment variable** (for version comparison):
+```bash
+export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
+```
+
+Without this variable, the command will show local versions only (no comparison).
 
 ---
 
@@ -322,6 +446,38 @@ Claude will ask you to provide:
 3. **Planning document locations** - Usually in `src/rnd/` or `rnd/` directory
 
 4. **Archive directory** - Usually `history/` subdirectory
+
+**For Projects with Nested Git Repositories:**
+
+If your project contains nested Git repositories (submodules, subtrees, or independent repos in subdirectories), add the nested repository configuration to Step 1 of your wrapper:
+
+```markdown
+1. **MUST use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: [MYPROJ]
+   - **History file**: /path/to/project/history.md
+   - **Nested repositories**: /src/subproject-a/, /src/subproject-b/
+   - **Nested repository descriptions**:
+     * `/src/subproject-a/` - Description (remote URL if applicable)
+     * `/src/subproject-b/` - Description (remote URL if applicable)
+   - Do NOT proceed without these parameters
+```
+
+The canonical workflow will automatically:
+- Detect changes in nested repos during git operations
+- Acknowledge but NOT commit nested repo changes
+- Only manage parent repository files
+- Remind user to manage nested repos separately
+
+**Example output during session-end**:
+```
+⚠️ Detected changes in nested repositories:
+• /src/subproject-a/ (3 modified files)
+
+These are separate Git repositories and will not be included in this commit.
+Reminder: Manage nested repositories in their own sessions/contexts.
+```
+
+This ensures the session-end workflow only manages the parent repository and prevents accidental commits to nested repos.
 
 ### Customization Options
 
@@ -1244,6 +1400,194 @@ Each wrapper configures different test script paths and scopes.
 
 ---
 
+## Meta-Workflow Tools
+
+### Workflow Execution Audit
+
+**What It Does**:
+
+**Analyzes workflows for execution protocol compliance** - ensures deterministic execution standards:
+
+- **TodoWrite Mandates**: Verifies multi-step workflows require TodoWrite creation
+- **TodoWrite Updates**: Checks each step ends with TodoWrite update instruction
+- **Language Strength**: Identifies weak language (SHOULD/CAN) in critical instructions
+- **Verification Checkpoints**: Ensures each step has verification checklist
+- **Execution Metadata**: Confirms metadata fields present (protocol, duration, etc.)
+- **Compliance Scoring**: Generates 0-100 score with breakdown
+- **Automatic Remediation**: Offers to apply fixes automatically or selectively
+
+**Canonical Workflow**:
+- planning-is-prompting → workflow/workflow-execution-audit.md
+
+**Slash Command**: `/plan-workflow-audit`
+
+### When to Use
+
+**Ad-hoc quality checks**:
+- You notice non-deterministic execution (steps being skipped)
+- Creating new workflow and want to validate compliance
+- Retrofitting existing workflows with execution protocol
+- Regular workflow maintenance and quality assurance
+
+**Problem it solves**:
+LLMs are probabilistic, not deterministic. Without explicit tracking (TodoWrite) and strong language (MUST vs SHOULD), workflows may have steps skipped or executed inconsistently. This audit tool identifies compliance gaps and offers automatic remediation.
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the workflow-execution-audit command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. **Read the canonical workflow**:
+   - Audit workflow: planning-is-prompting → workflow/workflow-execution-audit.md
+
+2. **Copy the slash command file** from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-workflow-audit.md
+   - Target: .claude/commands/plan-workflow-audit.md (keep filename as-is)
+
+3. **No customization needed** - This meta-tool works universally across projects
+
+4. **Verify installation**:
+   ```bash
+   # Check file exists
+   ls -l .claude/commands/plan-workflow-audit.md
+
+   # Test command
+   /plan-workflow-audit
+   ```
+
+5. **First use**:
+   ```bash
+   /plan-workflow-audit
+
+   # When prompted, enter path to workflow to audit:
+   workflow/your-workflow-name.md
+   ```
+```
+
+### Usage
+
+**Basic audit**:
+```bash
+/plan-workflow-audit
+
+# When prompted:
+Enter path to workflow file: workflow/session-start.md
+```
+
+**The workflow will**:
+1. Create TodoWrite tracking list (10 steps)
+2. Prompt you for target workflow path
+3. Analyze structure (count steps, substeps)
+4. Check TodoWrite mandate (Step 0 present? MUST language used?)
+5. Check TodoWrite update instructions (all steps have them?)
+6. Analyze language strength (MUST vs SHOULD vs MAY)
+7. Check verification checkpoints (present and meaningful?)
+8. Check execution metadata (5 required fields present?)
+9. Generate compliance report (0-100 score with breakdown)
+10. Suggest specific fixes (numbered, with line numbers and content)
+11. Offer remediation options:
+    - [1] Apply all fixes automatically (creates backup first)
+    - [2] Apply selected fixes (you choose which fix numbers)
+    - [3] Show fixes but don't apply (manual edit)
+    - [4] Save report to file (for later reference)
+    - [5] Audit another workflow
+    - [6] Exit without changes
+
+**Example output**:
+```
+════════════════════════════════════════════════════════
+WORKFLOW EXECUTION AUDIT REPORT
+════════════════════════════════════════════════════════
+
+Target: workflow/example-workflow.md
+Total Steps: 7
+COMPLIANCE SCORE: 65/100
+
+CRITICAL ISSUES (blocking): 0
+WARNINGS (should fix): 5
+⚠️ TodoWrite mandate uses weak language (SHOULD → MUST)
+⚠️ 2 of 7 steps missing TodoWrite update instructions
+⚠️ 4 critical instructions using weak language
+⚠️ 3 of 7 steps missing verification checkpoints
+⚠️ 3 of 5 execution metadata fields missing
+
+SUGGESTIONS (nice to have): 1
+💡 Consider adding examples for complex steps
+
+[Detailed findings and suggested fixes follow...]
+```
+
+### Remediation Options
+
+**Option 1: Apply all fixes automatically**
+- Creates backup (.backup file)
+- Applies all suggested fixes in order
+- Verifies file valid after changes
+- Re-runs audit to show improved score
+
+**Option 2: Apply selected fixes**
+- You choose which fix numbers to apply (e.g., "1, 3, 5")
+- Creates backup
+- Applies only selected fixes
+- Useful when some fixes need manual review
+
+**Option 3: Show fixes only**
+- No changes applied
+- You manually edit the file
+- Report optionally saved for reference
+
+**Option 4: Save report to file**
+- Creates `workflow-audit-report-YYYY-MM-DD.md`
+- No changes to workflow
+- Review and apply fixes later
+
+### Configuration
+
+**No configuration needed** - This is a meta-tool that works universally:
+- No [SHORT_PROJECT_PREFIX] needed (uses target workflow's prefix)
+- No paths to configure (prompts for workflow path each time)
+- No dependencies (pure analysis + edit operations)
+
+### Self-Audit
+
+**This workflow audits itself**:
+- workflow/workflow-execution-audit.md scores 100/100 on its own audit
+- Self-demonstrating: follows all its own standards
+- Meta-validation: can audit the auditor
+
+**Try it:**
+```bash
+/plan-workflow-audit
+
+# When prompted:
+Enter path: workflow/workflow-execution-audit.md
+
+# Expected result: 100/100 score with all checkmarks
+```
+
+### Integration with Other Workflows
+
+**During workflow creation**:
+1. Create new workflow document
+2. Run `/plan-workflow-audit` on it
+3. Fix compliance issues before first use
+4. Ensures deterministic execution from start
+
+**During workflow maintenance**:
+1. Notice execution inconsistency
+2. Run `/plan-workflow-audit` on suspect workflow
+3. Review compliance report
+4. Apply suggested fixes
+5. Verify improved execution reliability
+
+**Best practice**: Audit all workflows achieving <80 compliance score
+
+---
+
 ## Configuration Files
 
 ### Global CLAUDE.md Template
@@ -1299,6 +1643,71 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 ### Issue: [SHORT_PROJECT_PREFIX] not working in TODOs
 
 **Solution**: Ensure it's defined in your project's `.claude/CLAUDE.md` file and properly formatted with square brackets
+
+---
+
+## For Workflow Authors
+
+### Creating New Slash Command Wrappers
+
+If you're creating new workflows and need to create slash command wrappers for them, follow the **Deterministic Wrapper Pattern** to ensure Claude executes workflows correctly without shortcuts or ambiguity.
+
+**Comprehensive guide**: planning-is-prompting → workflow/deterministic-wrapper-pattern.md
+
+### Key Principles
+
+**Wrappers should be thin reference pointers, NOT alternative instruction sets.**
+
+**The Problem**: When wrappers say "read the canonical workflow" but then provide an alternative task list (Step 4), they create cognitive ambiguity. Claude will often choose the concrete task list over the abstract "read the canonical" instruction, causing skipped steps and incomplete execution.
+
+**The Solution**: Use the three-step deterministic pattern:
+
+```markdown
+## Instructions to Claude
+
+**On every invocation of this command:**
+
+1. **MUST use the following project-specific configuration**:
+   - [Parameters here]
+   - Do NOT proceed without these parameters
+
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/[name].md
+   - This is the ONLY authoritative source for ALL execution steps
+   - Do NOT proceed without reading this document in full
+
+3. **MUST execute the complete workflow**:
+   - Execute ALL steps exactly as described in the canonical workflow document
+   - Do NOT skip any steps
+   - Do NOT substitute a shortened or summarized version
+   - Follow the workflow exactly as documented
+```
+
+### Why This Matters
+
+**Before deterministic pattern**:
+- Claude would read wrapper's Step 4 (short task list) instead of canonical workflow
+- Steps like notifications, TodoWrite tracking, and user prompts were skipped
+- Inconsistent execution across sessions
+
+**After deterministic pattern**:
+- Claude MUST read the canonical workflow first
+- Claude MUST execute ALL steps (no shortcuts)
+- MUST language eliminates ambiguity
+- Explicit constraints prevent substitution
+
+### Examples
+
+**Good wrapper**: `.claude/commands/plan-session-start.md` (uses deterministic pattern)
+**Bad wrapper**: Old versions with competing Step 4 task lists (anti-pattern)
+
+**See the complete guide** for:
+- Anti-patterns to avoid
+- Testing your wrappers
+- Implementation guidelines
+- Real-world examples
+
+**Reference**: planning-is-prompting → workflow/deterministic-wrapper-pattern.md
 
 ---
 

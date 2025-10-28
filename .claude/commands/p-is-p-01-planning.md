@@ -2,6 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
+**Version**: 1.0
 
 ---
 
@@ -9,21 +10,23 @@
 
 **On every invocation of this command:**
 
-1. **Read the canonical workflow**: planning-is-prompting → workflow/p-is-p-01-planning-the-work.md
-
-2. **Execute the work planning workflow** as described in the canonical document
-
-3. **Apply project-specific configuration**:
+1. **MUST use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: [PLAN]
-   - Guide through: Discovery → Pattern Selection → Breakdown → TodoWrite
-   - Accept optional `--pattern` argument to skip discovery questions
+   - **Optional argument**: `--pattern=N` (if provided, skip discovery and use specified pattern)
+   - Do NOT proceed without the [SHORT_PROJECT_PREFIX] parameter
 
-4. **Execute the following** (as detailed in canonical workflow):
-   - Phase 1: Work Discovery & Classification
-   - Phase 2: Pattern Selection (or use --pattern if provided)
-   - Phase 3: Work Breakdown
-   - Phase 4: TodoWrite Creation
-   - Route to Step 2 if Pattern 1, 2, or 5
+2. **MUST read the canonical workflow document**:
+   - Location: planning-is-prompting → workflow/p-is-p-01-planning-the-work.md
+   - This is the ONLY authoritative source for ALL work planning steps
+   - Do NOT proceed without reading this document in full
+   - The canonical workflow contains: Work Discovery & Classification, Pattern Selection (6 patterns), Work Breakdown, TodoWrite Creation, and optional routing to Step 2 documentation
+
+3. **MUST execute the complete work planning workflow**:
+   - Execute ALL phases exactly as described in the canonical workflow document (Phases 1-4)
+   - Do NOT skip any phases (including discovery questions, pattern selection, breakdown, or TodoWrite)
+   - Do NOT substitute a shortened or summarized version
+   - If `--pattern` argument is provided, skip Phase 1 discovery and proceed directly to Phase 2 with the specified pattern
+   - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
 ---
 
