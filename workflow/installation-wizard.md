@@ -316,7 +316,7 @@ This metadata drives the interactive menu generation in Step 2.
 
 **Process**:
 
-1. **Present Permission Setup Option**:
+#### Section 0.5.1: Present Permission Setup Option
 
 ```
 ══════════════════════════════════════════════════════════
@@ -327,32 +327,46 @@ To avoid repeated permission prompts during installation, you can
 configure auto-approval for workflow files.
 
 This is a ONE-TIME setup that will benefit all future workflow
-installations in this project.
+installations in any project.
 
 Would you like to configure auto-approval now?
 
-[1] Yes, show me how to configure auto-approval (recommended)
+[1] Yes, configure auto-approval (recommended)
 [2] No, I'll approve each file manually during installation
 
 What would you like to do? [1/2]
 ```
 
-2. **If user chooses [1] - Show Configuration Instructions**:
+Wait for user response.
 
-   a. **Detect Project Root Directory**:
+#### Section 0.5.2: Automatic Update Offer (If user chooses [1])
 
-   ```bash
-   pwd
-   # Example output: /mnt/DATA01/include/www.deepily.ai/projects/my-project
-   ```
+**Step 1: Check Current Settings File**
 
-   Extract parent directory (projects root):
-   - Get current working directory
-   - Remove trailing slash if present
-   - Remove last path component (current project name)
-   - Result should be the directory containing all your projects
+Read `~/.claude/settings.json`:
 
-   b. **Present detection results and confirm with user**:
+```bash
+cat ~/.claude/settings.json
+```
+
+**If file doesn't exist**: Note that we'll create it in Step 3
+
+**If file exists**: Display current content
+
+**Step 2: Detect Project Root Directory**
+
+```bash
+pwd
+# Example output: /mnt/DATA01/include/www.deepily.ai/projects/my-project
+```
+
+Extract parent directory (projects root):
+- Get current working directory
+- Remove trailing slash if present
+- Remove last path component (current project name)
+- Result should be the directory containing all your projects
+
+**Step 3: Confirm Project Root**
 
 ```
 ══════════════════════════════════════════════════════════
@@ -376,9 +390,9 @@ the pattern will allow workflow installation in:
 Is this correct? [y/n]
 ```
 
-   **If user responds 'y'**: Use detected path, proceed to step c
+**If user responds 'y'**: Store detected path as PROJECT_ROOT, proceed to Step 4
 
-   **If user responds 'n'**: Ask for manual input:
+**If user responds 'n'**: Ask for manual input:
 
 ```
 ──────────────────────────────────────────────────────────
@@ -396,146 +410,240 @@ Examples:
 Your projects root: ___________
 ```
 
-   Wait for user input, then proceed to step c.
+Wait for user input, store as PROJECT_ROOT, proceed to Step 4.
 
-   c. **Show configuration options** (using confirmed PROJECT_ROOT):
+**Step 4: Build Updated Settings JSON**
+
+Prepare the updated JSON structure:
+
+**If settings.json didn't exist**:
+```json
+{
+  "tools": {
+    "approvedCommands": [
+      "Write(PROJECT_ROOT/**/.claude/commands/*.md)"
+    ]
+  }
+}
+```
+
+**If settings.json exists**:
+- Parse current JSON
+- Check if `tools.approvedCommands` array exists
+- If not: Create it
+- If yes: Check if our pattern already exists
+- If pattern exists: Skip (already configured)
+- If pattern doesn't exist: Add to array
+
+**Step 5: Present Update Choice**
+
+Display current and proposed settings:
 
 ```
 ══════════════════════════════════════════════════════════
 Auto-Approval Configuration
 ══════════════════════════════════════════════════════════
 
-To configure auto-approval, add patterns to your Claude Code
-settings file.
+I can automatically update your settings.json file for you.
 
-**File location**: `~/.claude/settings.local.json`
+Current configuration:
+────────────────────────────────────────────────────────────
+{current JSON content or "File doesn't exist - will be created"}
+────────────────────────────────────────────────────────────
 
-You have two options:
+Proposed configuration:
+────────────────────────────────────────────────────────────
+{
+  "tools": {
+    "approvedCommands": [
+      "Write(PROJECT_ROOT/**/.claude/commands/*.md)"
+    ]
+  }
+}
+────────────────────────────────────────────────────────────
 
-┌─────────────────────────────────────────────────────────┐
-│ RECOMMENDED: Global Wildcard Pattern                    │
-└─────────────────────────────────────────────────────────┘
+What this pattern does:
+• Allows workflow installation in ALL projects under PROJECT_ROOT
+• ONE-TIME setup - no more permission prompts when installing workflows
+• Secure: Only affects .claude/commands/ directory, nowhere else
 
-**Pattern to add** (inside the "tools" → "approvedCommands" array):
+What would you like to do?
+
+[1] Update settings.json automatically (recommended)
+    → I'll read the file, merge the pattern, and save it
+    → Preserves your existing settings
+    → Adds only the approval pattern
+
+[2] Show me manual instructions instead
+    → You copy the pattern
+    → You edit ~/.claude/settings.json yourself
+    → Good if you want full control
+
+Which option? [1/2]
+```
+
+Wait for user response.
+
+#### Section 0.5.3: Automatic Update Path (If user chooses [1])
+
+**Step 1: Execute File Update**
+
+```
+══════════════════════════════════════════════════════════
+Updating settings.json automatically...
+══════════════════════════════════════════════════════════
+```
+
+**Process**:
+
+1. **Read or create settings.json**:
+   - If file doesn't exist: Create with minimal structure
+   - If file exists: Read current content
+
+2. **Parse and merge**:
+   - Parse JSON (handle errors → fallback to Section 0.5.4)
+   - Navigate to `tools.approvedCommands` array (create if missing)
+   - Check if pattern already exists (skip if present)
+   - Add pattern: `Write(PROJECT_ROOT/**/.claude/commands/*.md)`
+
+3. **Write updated file**:
+   ```
+   Write ~/.claude/settings.json with merged content
+   ```
+
+4. **Verify update**:
+   ```bash
+   cat ~/.claude/settings.json
+   ```
+
+**Step 2: Confirm Success**
+
+If update succeeded:
+
+```
+══════════════════════════════════════════════════════════
+✅ Success! Settings Updated
+══════════════════════════════════════════════════════════
+
+Updated configuration:
+────────────────────────────────────────────────────────────
+{displayed merged JSON}
+────────────────────────────────────────────────────────────
+
+✓ Approval pattern added successfully
+✓ No restart needed - settings reload automatically
+✓ You won't see permission prompts during installation
+
+Ready to proceed with workflow installation!
+```
+
+Proceed to Section 0.5.5 (Completion).
+
+**If update failed** (write permission denied, JSON parse error, etc.):
+
+```
+══════════════════════════════════════════════════════════
+⚠️ Automatic Update Failed
+══════════════════════════════════════════════════════════
+
+Error: {error message}
+
+Falling back to manual instructions...
+```
+
+Proceed to Section 0.5.4 (Manual Update Path).
+
+#### Section 0.5.4: Manual Update Path (If user chooses [2] or automatic failed)
+
+**Present Manual Instructions**:
+
+```
+══════════════════════════════════════════════════════════
+Manual Configuration Instructions
+══════════════════════════════════════════════════════════
+
+To configure auto-approval manually, follow these steps:
+
+**File location**: `~/.claude/settings.json`
+
+**Pattern to add**:
 
 ```json
 {
   "tools": {
     "approvedCommands": [
-      "Write([USER_CONFIRMED_PROJECT_ROOT]/*/.claude/commands/**)"
+      "Write(PROJECT_ROOT/**/.claude/commands/*.md)"
     ]
   }
 }
 ```
 
-Replace `[USER_CONFIRMED_PROJECT_ROOT]` with your actual path from above.
+Replace `PROJECT_ROOT` with your confirmed path: {displayed PROJECT_ROOT}
 
-**Example** (using your confirmed path):
+**Complete example** (using your confirmed path):
 ```json
 {
   "tools": {
     "approvedCommands": [
-      "Write(/mnt/DATA01/include/www.deepily.ai/projects/*/.claude/commands/**)"
+      "Write({PROJECT_ROOT}/**/.claude/commands/*.md)"
     ]
   }
 }
 ```
-
-**What this pattern does**:
-• Allows writing slash commands in .claude/commands/ for ALL projects
-  under your projects root directory
-• ONE-TIME setup works across all current and future projects
-• No per-project configuration needed
-
-**Benefits**:
-✓ Install workflows in ANY project without permission prompts
-✓ Covers all projects under your projects root directory
-✓ Eliminates tedious repeated approvals (7 files = 7 prompts → 0 prompts)
-
-**Security**:
-• Scoped to your standard project directory structure
-• Only affects .claude/commands/ (workflow files), not other directories
-
-┌─────────────────────────────────────────────────────────┐
-│ ALTERNATIVE: Project-Specific Patterns                  │
-└─────────────────────────────────────────────────────────┘
-
-**Patterns to add** (inside the "tools" → "approvedCommands" array):
-
-```json
-{
-  "tools": {
-    "approvedCommands": [
-      "Write(./.claude/commands/*):*",
-      "Write(./CLAUDE.md):*",
-      "Write(./history.md):*",
-      "Write(./src/scripts/*):*",
-      "Write(./.gitignore):*",
-      "Bash(mkdir:*)"
-    ]
-  }
-}
-```
-
-**What these patterns do**:
-• `Write(./.claude/commands/*):*` - Auto-approve slash commands (current project only)
-• `Write(./CLAUDE.md):*` - Auto-approve project config
-• `Write(./history.md):*` - Auto-approve history file
-• `Write(./src/scripts/*):*` - Auto-approve backup scripts
-• `Write(./.gitignore):*` - Auto-approve .gitignore updates
-• `Bash(mkdir:*` - Auto-approve directory creation
-
-**Benefits**:
-✓ More restrictive control per project
-✓ Must configure in each project separately
-
-**Security**:
-• Only applies to current working directory (./)
-• Won't affect other projects
 
 ──────────────────────────────────────────────────────────
-How to add patterns:
+How to add this pattern:
 ──────────────────────────────────────────────────────────
 
-1. Open ~/.claude/settings.local.json in your editor
+1. Open ~/.claude/settings.json in your editor
 2. Find the "approvedCommands" array under "tools"
-   (Create it if it doesn't exist)
-3. Add your chosen pattern(s) above (merge with any existing patterns)
+   (Create it if it doesn't exist - use the complete example above)
+3. Add the pattern shown above
+   (If array already has entries, add this as another item)
 4. Save the file
 5. No need to restart - settings are reloaded automatically
-
-**Example of complete settings file** (with your confirmed path):
-```json
-{
-  "tools": {
-    "approvedCommands": [
-      "Write([USER_CONFIRMED_PROJECT_ROOT]/*/.claude/commands/**)"
-    ]
-  }
-}
-```
-
-Replace `[USER_CONFIRMED_PROJECT_ROOT]` with your actual projects root from the detection step above.
 
 ──────────────────────────────────────────────────────────
 Ready to proceed with installation?
 ──────────────────────────────────────────────────────────
 
 [1] I've configured auto-approval, continue installation
-[2] Skip auto-approval, I'll manually approve each file
+[2] Skip auto-approval, I'll manually approve each file during installation
 [3] Cancel installation
+
+What would you like to do? [1/2/3]
 ```
 
-3. **Wait for user response**
+Wait for user response. Proceed to Section 0.5.5.
 
-4. **Update TodoWrite**: Mark "Configure permissions" as completed
+#### Section 0.5.5: Completion and Error Handling
 
-5. **Send Notification**:
-   ```bash
-   notify-claude "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
-   ```
+**Update TodoWrite**: Mark "Configure permissions" as completed
 
-6. **Proceed to Step 1** (State Detection)
+**Send Notification**:
+```bash
+notify-claude "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
+```
+
+**Error Handling Notes**:
+
+**Common Errors and Solutions**:
+
+1. **File doesn't exist**: Create with default structure (automatic mode) or provide complete example (manual mode)
+
+2. **JSON syntax error in existing file**:
+   - Automatic mode → Fall back to manual with error explanation
+   - Manual mode → Show error, suggest JSON validation tool
+
+3. **Write permission denied**:
+   - Automatic mode → Fall back to manual
+   - Manual mode → Suggest checking file permissions or using sudo
+
+4. **Pattern already exists**:
+   - Skip update, show success message
+   - Explain that configuration already complete
+
+**Proceed to Step 1** (State Detection)
 
 **Key Benefits**:
 - **One-time setup** - Works for all future workflow installations

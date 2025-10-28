@@ -6,7 +6,7 @@ This document contains the comprehensive end-of-session workflow extracted from 
 
 At the end of our work sessions, perform the following wrapup ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:
 
-**Optional Configuration**: If your project contains nested Git repositories, the wrapper can pass their paths for safe handling during commit operations (see Step 5: Nested Repository Handling).
+**Optional Configuration**: If your project contains nested Git repositories, the wrapper can pass their paths for safe handling during commit operations (see Step 4.1: Nested Repository Handling).
 
 ## 0) Use Notification System Throughout
 
@@ -205,65 +205,198 @@ Health: ✅ HEALTHY
 git ls-files --others --exclude-standard | tree --fromfile -a
 ```
 
-## 4) Propose Commit Message
+## 4) Draft, Approve, and Execute Commit
 
-**Format**: Use summary + listed items format
+This step combines commit message drafting, user approval, and execution into a single unified workflow to eliminate duplication.
 
-**Guidelines**:
-- Concise summary line
-- Bullet points listing main changes
-- Focus on "why" rather than just "what"
+### 4.1) Analyze Changes and Apply Nested Repo Filtering
 
-## 5) Commit Changes
+**Check for Nested Repository Configuration**:
+- Project wrapper may specify: `Nested repositories: [list of paths]`
+- Example: `Nested repositories: /src/cosa/, /src/lupin-plugin-firefox/, /src/lupin-mobile/`
 
-**Critical Requirements**:
-- **MUST ALWAYS stop and wait for user response** for both commits and push confirmations
-- DO NOT continue to next steps until user responds
-- After approval, commit and offer to push
-- Note: Not all repos can be pushed, but always ask
+**If nested repos are configured**:
 
-**Git Safety Protocol**:
-- NEVER run destructive/irreversible git commands (like push --force, hard reset, etc) unless user explicitly requests
-- NEVER skip hooks (--no-verify, --no-gpg-sign, etc) unless user explicitly requests
-- NEVER run force push to main/master, warn user if they request it
-- Avoid `git commit --amend` unless (1) user explicitly requested amend OR (2) adding edits from pre-commit hook
-
-**Nested Repository Handling**:
-
-If the project-specific wrapper specifies nested repositories in Step 1 configuration, respect those boundaries:
-
-1. **Check for nested repo configuration**:
-   - Wrapper may include: `Nested repositories: [list of paths]`
-   - Example: `Nested repositories: /src/cosa/, /src/lupin-plugin-firefox/, /src/lupin-mobile/`
-
-2. **During git operations (Steps 3-5)**:
-   - When running `git status`, acknowledge nested repo changes
-   - Do NOT stage, commit, or push changes within nested repo paths
-   - Only manage parent repository files
-
-3. **If changes detected in nested repos**:
-   - Display acknowledgment:
-     ```
-     ⚠️ Detected changes in nested repositories:
-     • /src/cosa/ (3 modified files)
-     • /src/lupin-mobile/ (1 new file)
-
-     These are separate Git repositories and will not be included in this commit.
-     Reminder: Manage nested repositories in their own sessions/contexts.
-     ```
-   - Filter nested paths from git add commands
-   - Only commit parent repository changes
-
-4. **Detection command** (if nested repos declared but not auto-detected):
+1. **Detect changes in nested repos**:
    ```bash
    # Find all nested .git directories
    find . -name ".git" -type d | grep -v "^./.git$"
    ```
 
-5. **Git operation filtering**:
-   - When adding files: Exclude nested repo paths from staging
-   - When committing: Only include parent repo changes in commit message
-   - When pushing: Only push parent repository
+2. **Acknowledge nested repo changes** (if detected):
+   ```
+   ⚠️ Detected changes in nested repositories:
+   • /src/cosa/ (3 modified files)
+   • /src/lupin-mobile/ (1 new file)
+
+   These are separate Git repositories and will not be included in this commit.
+   Reminder: Manage nested repositories in their own sessions/contexts.
+   ```
+
+3. **Filter nested paths**: When staging files in Step 4.4, exclude nested repo paths from git add commands
+
+**Review parent repository changes only**:
+- Modified files (excluding nested repos)
+- New files created (excluding nested repos)
+- Deleted files (excluding nested repos)
+- Staged vs unstaged changes
+
+### 4.2) Draft Commit Message
+
+**Format**: Use summary + listed items format
+
+**Guidelines**:
+- Concise summary line
+- Bullet points listing main changes (parent repo only)
+- Focus on "why" rather than just "what"
+- Include Claude Code attribution footer:
+  ```
+  🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+  Co-Authored-By: Claude <noreply@anthropic.com>
+  ```
+
+### 4.3) Present for Approval (Single Decision Point)
+
+**Display drafted commit message and options**:
+
+```
+══════════════════════════════════════════════════════════
+Proposed Commit Message
+══════════════════════════════════════════════════════════
+
+[Your drafted commit message here]
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+
+══════════════════════════════════════════════════════════
+What would you like to do?
+══════════════════════════════════════════════════════════
+
+[1] Commit only (keep changes local)
+    → Stage files and commit with this message
+
+[2] Commit and push (sync to remote)
+    → Stage, commit, and push to remote repository
+
+[3] Modify message (provide changes)
+    → Update the commit message and show options again
+
+[4] Cancel (don't commit now)
+    → Skip commit, continue with session wrap-up
+
+What would you like to do? [1/2/3/4]
+```
+
+**CRITICAL**: STOP and WAIT for user response. Do NOT proceed until user selects an option.
+
+### 4.4) Execute Based on User Choice
+
+**If user selects [1] - Commit only**:
+
+1. Stage changes (excluding nested repo paths if configured):
+   ```bash
+   git add [filtered file list]
+   ```
+
+2. Create commit with approved message:
+   ```bash
+   git commit -m "$(cat <<'EOF'
+   [Your commit message here]
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   EOF
+   )"
+   ```
+
+3. Send success notification:
+   ```bash
+   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Changes committed successfully" --type=progress --priority=low
+   ```
+
+4. DONE - Skip to Final Verification
+
+**If user selects [2] - Commit and push**:
+
+1. Stage changes (excluding nested repo paths if configured):
+   ```bash
+   git add [filtered file list]
+   ```
+
+2. Create commit with approved message:
+   ```bash
+   git commit -m "$(cat <<'EOF'
+   [Your commit message here]
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   EOF
+   )"
+   ```
+
+3. Push to remote (parent repo only):
+   ```bash
+   git push
+   ```
+
+4. Send success notification:
+   ```bash
+   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Changes committed and pushed successfully" --type=progress --priority=low
+   ```
+
+5. DONE - Skip to Final Verification
+
+**If user selects [3] - Modify message**:
+
+1. Prompt user: "Please provide your updated commit message or describe the changes you'd like:"
+
+2. Wait for user input
+
+3. Update commit message based on user feedback
+
+4. Loop back to Step 4.3 (present options again with updated message)
+
+**If user selects [4] - Cancel**:
+
+1. Send notification:
+   ```bash
+   notify-claude "[SHORT_PROJECT_PREFIX] Commit cancelled by user" --type=progress --priority=low
+   ```
+
+2. Continue to Final Verification (without committing)
+
+### 4.5) Error Handling
+
+**Pre-commit hook modifies files**:
+- If commit succeeds but hook modified files, check:
+  - Authorship: `git log -1 --format='%an %ae'` (must be current user)
+  - Not pushed: `git status` shows "Your branch is ahead"
+- If both true: Use `git commit --amend` to include hook changes
+- Otherwise: Create NEW commit (never amend other developers' commits)
+
+**Push fails after successful commit**:
+- Inform user: "Commit succeeded but push failed: [error message]"
+- Options:
+  - [1] Retry push
+  - [2] Continue without push (can push manually later)
+  - [3] View detailed error
+- Commit is already saved, no data loss
+
+**No remote configured** (when user selects [2]):
+- Detect: `git remote -v` returns empty
+- Inform user: "No remote repository configured. Commit succeeded but cannot push."
+- Auto-fallback to [1] behavior (commit only)
+
+**Git Safety Protocol** (applies to all operations):
+- NEVER run destructive/irreversible git commands (push --force, hard reset, etc.) unless user explicitly requests
+- NEVER skip hooks (--no-verify, --no-gpg-sign, etc.) unless user explicitly requests
+- NEVER force push to main/master - warn user if they request it
+- Avoid `git commit --amend` except for pre-commit hook edits (see above)
 
 
 ## Final Verification
