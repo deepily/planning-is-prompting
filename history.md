@@ -1,13 +1,75 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 31 complete - Four major improvements deployed (session-end fix, settings pattern fix, history archive, installation wizard enhancement)
+**RESUME HERE**: Session 32 complete - Created comprehensive v0.1.0 PR and validated workflow execution
 
-**Current Status**: All critical UX improvements complete - session-end unified workflow, automatic settings editing in installer, history healthy at 649 tokens
-**Next Steps**: Test enhanced installation wizard Step 0.5 in fresh project, validate automatic settings.json editing works correctly
+**Current Status**: v0.1.0 PR #2 created and already merged to main, currently on v0.1.1 post-release branch, history healthy at 1,913 tokens (7.6%)
+**Next Steps**: Begin v0.1.1 post-release cleanup work, test workflows in cross-project scenarios
 
 ---
 
 ## October 2025
+
+### 2025.10.28 - Session 32: v0.1.0 Pull Request Creation and Workflow Validation
+
+**Accomplishments**:
+- **Created comprehensive pull request for v0.1.0 release**:
+  - **PR #2**: "Release v0.1.0: Complete Claude Code workflow system with enhanced installation and management tools"
+  - **URL**: https://github.com/deepily/planning-is-prompting/pull/2
+  - **Scope**: 29 files modified, 7,559 additions, 1,790 deletions (net +5,769 lines)
+  - **Commits**: 17 commits from wip-v0.1.0-2025.10.21-prepare-for-1st-demo branch
+  - **Base branch**: main
+  - **Status**: Already merged to main (discovered during session)
+- **PR description includes**:
+  - Comprehensive summary of v0.1.0 features (core workflows, slash commands, installation infrastructure, QA tools)
+  - Statistics breakdown (code changes, new files, session count)
+  - Key improvements by area (installation, session management, workflow quality)
+  - Design patterns established (5 core patterns documented)
+  - Testing & validation checklist
+  - Post-merge testing checklist (7 items)
+  - Breaking changes section (none - first release)
+  - Migration guide for pre-release users
+- **Validated branch structure**:
+  - Confirmed current branch: `wip-v0.1.1-2025.10.28-post-release-cleanup`
+  - PR branch: `wip-v0.1.0-2025.10.21-prepare-for-1st-demo` (already merged)
+  - Working tree: clean, no uncommitted changes
+- **Executed session-end workflow** (`/plan-session-end`):
+  - Created TodoWrite tracking with [PLAN] prefix
+  - Token count check: 1,913 tokens (7.6% of limit, ✅ HEALTHY)
+  - History health: excellent, no archival needed
+  - Completed all workflow steps including history update
+
+**Session Flow**:
+1. User requested: "Prepare a pull request based on git log and history document"
+2. Analyzed git log (10 recent commits) and full history.md
+3. Examined branch structure and diff statistics from main
+4. Created comprehensive PR using `gh pr create` with detailed description
+5. Discovered PR #2 was already merged to main
+6. User validated correct branch awareness
+7. Confirmed project prefix: [PLAN]
+8. Executed `/plan-session-end` workflow
+
+**Key Insights**:
+- **PR descriptions should tell a story**: Summary → Features → Improvements → Statistics → Patterns → Testing
+- **Post-merge checklists aid collaboration**: 7-item checklist helps team validate release
+- **Branch naming conventions clarify intent**: wip-v0.1.0 (feature work) vs wip-v0.1.1 (post-release cleanup)
+- **Session-end workflow validated**: Successfully tested unified commit workflow from Session 31 improvements
+
+**Pattern Used This Session**:
+- Work type: PR creation and workflow validation
+- Scale: Small (~30 minutes)
+- Pattern: Pattern 5 (Operational Task - create PR, execute workflow)
+- Documentation: history.md only
+
+**Files Modified**:
+1. `history.md` - Added this session summary
+
+**TODO for Next Session**:
+- [ ] Begin v0.1.1 post-release cleanup work
+- [ ] Review and address post-merge testing checklist items from PR #2
+- [ ] Test workflows in cross-project scenario (genie-in-the-box)
+- [ ] Validate session-end unified commit workflow continues working correctly
+
+---
 
 ### 2025.10.27 - Session 31: Session-End Fix + Settings Pattern + History Archive + Installation Wizard Enhancement
 
