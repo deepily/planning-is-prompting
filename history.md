@@ -1,9 +1,100 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 32 complete - Created comprehensive v0.1.0 PR and validated workflow execution
+**RESUME HERE**: Session 33 complete - Integrated two-tier notification system (async + sync) across all workflows
 
-**Current Status**: v0.1.0 PR #2 created and already merged to main, currently on v0.1.1 post-release branch, history healthy at 1,913 tokens (7.6%)
-**Next Steps**: Begin v0.1.1 post-release cleanup work, test workflows in cross-project scenarios
+**Current Status**: notify-claude-sync blocking notifications integrated at 7 decision points, notify-claude renamed to notify-claude-async, comprehensive documentation added, history healthy at ~4,500 tokens (18%)
+**Next Steps**: Test sync notifications in production, establish bin/ directory for script management, continue v0.1.1 post-release work
+
+---
+
+## November 2025
+
+### 2025.11.08 - Session 33: Two-Tier Notification System Integration (notify-claude-async + notify-claude-sync)
+
+**Accomplishments**:
+- **Integrated synchronous blocking notifications** across Planning-is-Prompting workflows:
+  - **notify-claude-sync**: New command for blocking/response-required notifications
+  - **notify-claude-async**: Renamed from notify-claude for clarity (fire-and-forget)
+  - **7 critical decision points** now use sync notifications with timeout handling
+  - **19 async notifications** renamed across all workflows for consistency
+- **Foundation documentation** (~600 lines added):
+  - **workflow/notification-system.md**: Comprehensive two-tier system documentation
+    - Async vs sync decision matrix
+    - Full parameter reference (response-type, response-default, timeout)
+    - Timeout strategies (180s/300s recommendations)
+    - Safe default actions for all 7 integration points
+    - Integration template for workflow authors
+    - 3 detailed examples from real workflows
+    - Script management strategy (future bin/ directory)
+  - **global/CLAUDE.md**: Two-tier notification section with quick reference
+  - **README.md**: Updated notification-system.md description
+- **Core workflow updates** (7 files with sync integrations):
+  - **session-end.md** (2 sync points):
+    - Commit approval (Step 4.3): Yes/no decision, 5-minute timeout, default to Cancel
+    - History archive (Step 0.5): Open-ended choice, 3-minute timeout, default to Next Session
+    - All fire-and-forget notifications renamed to notify-claude-async
+  - **installation-wizard.md** (4 sync points):
+    - Workflow catalog selection (Step 2): Open-ended, 5-min timeout, default to Cancel
+    - Update mode outdated notification: Alert before selection
+    - Update selection presented: Open-ended, 5-min timeout
+    - Diff confirmation: Yes/no, 5-min timeout, default to Cancel (no changes)
+    - 15 async notifications renamed
+  - **session-start.md, history-management.md, testing-remediation.md**: Async renames only
+- **Script management TODO established**:
+  - Proposed bin/ directory structure in planning-is-prompting repo
+  - notify-claude-async and notify-claude-sync as canonical versions
+  - Installation via /plan-install-wizard (future enhancement)
+  - Symlink pattern to ~/.local/bin/ for global access
+  - Version control and automatic updates via git
+
+**Session Flow**:
+1. User requested integration of notify-claude-sync with focus on documentation and timeout strategies
+2. Ultra-thinking session on optimal bin/ directory structure for script management
+3. Created comprehensive implementation plan (4-5 hours estimated)
+4. User approved plan with modifications:
+   - Rename notify-claude → notify-claude-async for clarity
+   - Add bin/ directory TODO to session
+   - Use full parameter documentation (response-type, response-default, timeout)
+   - Fallback to defaults on timeout (safe defaults principle)
+5. Executed implementation across 3 phases:
+   - **Phase 1**: Foundation documentation (notification-system.md, global/CLAUDE.md, README)
+   - **Phase 2**: Core workflow updates (session-end, installation-wizard, other workflows)
+   - **Phase 3**: Slash commands (no changes - reference canonical workflows)
+6. Updated history.md with session summary
+
+**Key Insights**:
+- **Two-tier architecture matches semantic intent**: Async for "FYI", sync for "need your input"
+- **Safe defaults preserve data integrity**: Cancel > auto-commit, defer > force action
+- **Timeout handling must be explicit**: Every sync notification defines what happens on timeout
+- **25% of current notifications are semantically synchronous**: 7/32 instances required blocking behavior
+- **Script management belongs in planning-is-prompting**: Canonical versions, version control, installation wizard integration
+
+**Pattern Used This Session**:
+- Work type: Infrastructure enhancement (notification system architecture)
+- Scale: Large (~4 hours, comprehensive integration)
+- Pattern: Pattern 3 (Feature Development - well-scoped, complete in one session)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Modified** (11 files):
+1. `workflow/notification-system.md` - Added ~400 lines of two-tier system documentation
+2. `global/CLAUDE.md` - Replaced notification section with two-tier architecture (~230 lines)
+3. `README.md` - Updated notification-system.md description
+4. `workflow/session-end.md` - 2 sync integrations + async renames (~40 lines modified)
+5. `workflow/installation-wizard.md` - 4 sync integrations + async bulk rename (~50 lines modified)
+6. `workflow/session-start.md` - Async bulk rename
+7. `workflow/history-management.md` - Async bulk rename
+8. `workflow/testing-remediation.md` - Async bulk rename
+9. `history.md` - Added this session summary
+10-11. *(Version notes to be added to modified workflow files)*
+
+**TODO for Next Session**:
+- [ ] Test notify-claude-sync in production with real decision points
+- [ ] Establish bin/ directory structure in planning-is-prompting
+- [ ] Create bin/README.md with installation instructions
+- [ ] Optional: Create bin/install.sh for automated symlink setup
+- [ ] Update /plan-install-wizard to offer notification script installation
+- [ ] Add version checking for script updates
+- [ ] Consider: Should notify-claude-async replace notify-claude in genie-in-the-box?
 
 ---
 

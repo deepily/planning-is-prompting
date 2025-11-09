@@ -18,7 +18,7 @@ At the start of work sessions, perform the following initialization ritual with 
 
 **Command**:
 ```bash
-notify-claude "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low
+notify-claude-async "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low
 ```
 
 **Why This Matters**:
@@ -69,18 +69,18 @@ notify-claude "[SHORT_PROJECT_PREFIX] Starting session initialization, loading c
 
 **Two-Notification Pattern**: This workflow uses a start/end notification pair to provide complete initialization feedback.
 
-**Global Command**: `notify-claude` (works from any directory)
+**Global Command**: `notify-claude-async` (works from any directory)
 
 **Command Format**:
 ```bash
-notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
+notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 ```
 
 **When to Send Notifications**:
 1. **Start Notification** (Preliminary step, before Step 0):
    - Low-priority progress notification
    - Signals initialization has begun
-   - Command: `notify-claude "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low`
+   - Command: `notify-claude-async "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low`
 
 2. **Ready Notification** (Step 4, after loading history):
    - High-priority task notification
@@ -157,7 +157,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
    - Prefix: [PLAN]
    - History: /path/to/project/history.md
    - Workflows: Session management, p-is-p planning, history management
-   - Notifications: Configured (notify-claude)
+   - Notifications: Configured (notify-claude-async)
    ```
 
 **Update TodoWrite**: Mark "Load configuration files" as completed, mark next item as in_progress
@@ -312,7 +312,7 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 
    **Command**:
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] {your_generated_variation}" --type=task --priority=high
+   notify-claude-async "[SHORT_PROJECT_PREFIX] {your_generated_variation}" --type=task --priority=high
    ```
 
    **Rationale**: Example-based generation provides infinite variety while maintaining consistent tone. This prevents robotic repetition across many sessions while avoiding permission prompts from bash random selection. Sending the high-priority notification here (after loading context, before asking questions) ensures user gets alerted that Claude is ready, then sees the [1/2/3] options when they open Claude Code.
@@ -654,7 +654,7 @@ At workflow execution time, Claude:
 **Pattern A: Fixed Single Message**
 ```markdown
 **Command**:
-notify-claude "[PREFIX] Hey, I've finished loading everything..." --type=task --priority=high
+notify-claude-async "[PREFIX] Hey, I've finished loading everything..." --type=task --priority=high
 ```
 
 **Pros**: Simple, predictable, no complexity
@@ -670,7 +670,7 @@ notify-claude "[PREFIX] Hey, I've finished loading everything..." --type=task --
 [6 example messages]
 **Required Elements**: [list]
 **Style Guidelines**: [constraints]
-**Command**: notify-claude "[PREFIX] {your_generated_variation}" ...
+**Command**: notify-claude-async "[PREFIX] {your_generated_variation}" ...
 ```
 
 **Pros**: Infinite variety, context-aware, natural feel, no permission prompts
@@ -685,7 +685,7 @@ notify-claude "[PREFIX] Hey, I've finished loading everything..." --type=task --
 **Command**:
 messages=("Message 1" "Message 2" "Message 3")
 selected="${messages[$RANDOM % ${#messages[@]}]}"
-notify-claude "[PREFIX] $selected" --type=task --priority=high
+notify-claude-async "[PREFIX] $selected" --type=task --priority=high
 ```
 
 **Pros**: True randomness, predictable set of messages
@@ -728,7 +728,7 @@ Use this template when implementing Pattern B in other workflows:
 
 **Command**:
 ```bash
-notify-claude "[PREFIX] {your_generated_variation}" --type=[type] --priority=[priority]
+notify-claude-async "[PREFIX] {your_generated_variation}" --type=[type] --priority=[priority]
 ```
 
 **Rationale**: [Why generation is better than fixed or random for this use case]

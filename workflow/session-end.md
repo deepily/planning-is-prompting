@@ -12,11 +12,17 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
 
-**Global Command**: `notify-claude` (works from any directory)
+**Global Commands**: Two-tier notification system (works from any directory)
+- `notify-claude-async`: Fire-and-forget (progress updates, completions)
+- `notify-claude-sync`: Blocking/waits for response (approvals, decisions)
 
-**Command Format**:
+**Command Formats**:
 ```bash
-notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
+# Async - for informational updates
+notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
+
+# Sync - for user decisions (commit approval, archive decision)
+notify-claude-sync "[SHORT_PROJECT_PREFIX] MESSAGE" --response-type TYPE --timeout SECONDS --priority=PRIORITY
 ```
 
 **When to Send Notifications**:
@@ -35,9 +41,13 @@ notify-claude "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
 
 **Example Notifications**:
 ```bash
-notify-claude "[SHORT_PROJECT_PREFIX] ✅ Session history updated" --type=progress --priority=low
-notify-claude "[SHORT_PROJECT_PREFIX] Ready for commit approval" --type=task --priority=high
-notify-claude "[SHORT_PROJECT_PREFIX] 🎉 Session wrap-up complete" --type=task --priority=low
+# Async (fire-and-forget)
+notify-claude-async "[SHORT_PROJECT_PREFIX] ✅ Session history updated" --type=progress --priority=low
+notify-claude-async "[SHORT_PROJECT_PREFIX] 🎉 Session wrap-up complete" --type=task --priority=low
+
+# Sync (blocking, waits for user response)
+notify-claude-sync "[SHORT_PROJECT_PREFIX] Commit approval needed - review message and choose action" \
+  --response-type yes_no --timeout 300 --type=task --priority=high
 ```
 
 ## 0.4) Quick Token Count Check (Manual)
@@ -116,6 +126,14 @@ Health: ✅ HEALTHY
 
    **If ⚠️ WARNING** (≥20k tokens OR breach <7 days):
    - **PAUSE session-end workflow**
+   - **Send blocking notification**:
+     ```bash
+     notify-claude-sync "[SHORT_PROJECT_PREFIX] ⚠️ History.md at {X}k tokens - [1] Archive now [2] Next session [3] Skip" \
+       --response-type open_ended \
+       --timeout 180 \
+       --type alert \
+       --priority high
+     ```
    - **Present options**:
      ```
      ⚠️ History.md needs archival soon
@@ -130,17 +148,23 @@ Health: ✅ HEALTHY
    - **If [1] selected**:
      * Invoke `/history-management mode=archive`
      * Wait for completion
-     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] ✅ History archived" --type=progress --priority=low`
+     * Send notification: `notify-claude-async "[SHORT_PROJECT_PREFIX] ✅ History archived" --type=progress --priority=low`
      * Resume session-end workflow (continue to Step 1)
 
    - **If [2] selected**:
      * Add "[SHORT_PROJECT_PREFIX] Archive history.md" to TODO list
-     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] History archive deferred to next session" --type=task --priority=medium`
+     * Send notification: `notify-claude-async "[SHORT_PROJECT_PREFIX] History archive deferred to next session" --type=task --priority=medium`
      * Resume session-end workflow (continue to Step 1)
 
    - **If [3] selected**:
      * Log decision
-     * Send notification: `notify-claude "[SHORT_PROJECT_PREFIX] ⚠️ Continuing with large history.md (manual handling)" --type=alert --priority=medium`
+     * Send notification: `notify-claude-async "[SHORT_PROJECT_PREFIX] ⚠️ Continuing with large history.md (manual handling)" --type=alert --priority=medium`
+     * Resume session-end workflow (continue to Step 1)
+
+   - **If timeout** (no response within 3 minutes):
+     * Default to [2] Archive next session
+     * Add "[SHORT_PROJECT_PREFIX] Archive history.md" to TODO list
+     * Send notification: `notify-claude-async "[SHORT_PROJECT_PREFIX] Archive deferred - added to TODO for next session" --type=progress --priority=low`
      * Resume session-end workflow (continue to Step 1)
 
    **If 🚨 CRITICAL** (≥22k tokens OR breach <3 days):
@@ -155,12 +179,12 @@ Health: ✅ HEALTHY
      Invoking /history-management mode=archive...
      ```
    - Execute archive workflow automatically
-   - Send urgent notification: `notify-claude "[SHORT_PROJECT_PREFIX] 🚨 Critical: History archived to prevent limit breach" --type=alert --priority=urgent`
+   - Send urgent notification: `notify-claude-async "[SHORT_PROJECT_PREFIX] 🚨 Critical: History archived to prevent limit breach" --type=alert --priority=urgent`
    - After completion, resume session-end workflow (continue to Step 1)
 
 **Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit.
 
-**Notification**: Health check results are automatically sent via notify-claude if severity >= MONITOR.
+**Notification**: Health check results are automatically sent via notify-claude-async if severity >= MONITOR.
 
 ---
 
@@ -258,6 +282,17 @@ This step combines commit message drafting, user approval, and execution into a 
 
 ### 4.3) Present for Approval (Single Decision Point)
 
+**Send blocking notification and display options**:
+
+```bash
+notify-claude-sync "[SHORT_PROJECT_PREFIX] Commit approval needed - review message and choose action" \
+  --response-type yes_no \
+  --response-default no \
+  --timeout 300 \
+  --type task \
+  --priority high
+```
+
 **Display drafted commit message and options**:
 
 ```
@@ -292,6 +327,17 @@ What would you like to do? [1/2/3/4]
 
 **CRITICAL**: STOP and WAIT for user response. Do NOT proceed until user selects an option.
 
+**Timeout Handling**: If timeout occurs (exit code 2), default to [4] Cancel:
+
+```bash
+if [ $? -eq 2 ]; then
+    echo "⚠️ Commit approval timeout - changes preserved, commit cancelled"
+    notify-claude-async "[SHORT_PROJECT_PREFIX] Commit timeout - changes uncommitted, preserved for next session" \
+      --type alert --priority medium
+    # Skip commit, preserve working tree, continue to Final Verification
+fi
+```
+
 ### 4.4) Execute Based on User Choice
 
 **If user selects [1] - Commit only**:
@@ -315,7 +361,7 @@ What would you like to do? [1/2/3/4]
 
 3. Send success notification:
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Changes committed successfully" --type=progress --priority=low
+   notify-claude-async "[SHORT_PROJECT_PREFIX] ✅ Changes committed successfully" --type=progress --priority=low
    ```
 
 4. DONE - Skip to Final Verification
@@ -346,7 +392,7 @@ What would you like to do? [1/2/3/4]
 
 4. Send success notification:
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] ✅ Changes committed and pushed successfully" --type=progress --priority=low
+   notify-claude-async "[SHORT_PROJECT_PREFIX] ✅ Changes committed and pushed successfully" --type=progress --priority=low
    ```
 
 5. DONE - Skip to Final Verification
@@ -365,7 +411,7 @@ What would you like to do? [1/2/3/4]
 
 1. Send notification:
    ```bash
-   notify-claude "[SHORT_PROJECT_PREFIX] Commit cancelled by user" --type=progress --priority=low
+   notify-claude-async "[SHORT_PROJECT_PREFIX] Commit cancelled by user" --type=progress --priority=low
    ```
 
 2. Continue to Final Verification (without committing)

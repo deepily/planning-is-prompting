@@ -10,7 +10,7 @@
 **Key capabilities**:
 - Real-time health monitoring with velocity forecasting
 - Adaptive boundary detection for natural split points
-- Dual-channel notifications (CLI + notify-claude)
+- Dual-channel notifications (CLI + notify-claude-async)
 - Four operational modes (check, archive, analyze, dry-run)
 - Integration with session-end workflows
 
@@ -52,19 +52,19 @@
 
 **🚨 CRITICAL** (≥22k tokens OR breach <3 days)
 - Immediate action required
-- notify-claude priority: `urgent`
+- notify-claude-async priority: `urgent`
 - Blocks session-end until addressed
 - Recommendation: Archive immediately
 
 **⚠️ WARNING** (≥20k tokens OR breach <7 days)
 - Archive recommended soon
-- notify-claude priority: `high`
+- notify-claude-async priority: `high`
 - User decision: Archive now / Archive next session / Continue
 - Recommendation: Archive within 1-2 sessions
 
 **ℹ️ MONITOR** (breach <14 days)
 - Watch closely
-- notify-claude priority: `medium`
+- notify-claude-async priority: `medium`
 - No immediate action required
 - Recommendation: Plan archival within next week
 
@@ -105,7 +105,7 @@ days_until_25k = (25000 - current_tokens) / velocity_7d
 3. Forecast breach dates
 4. Determine severity level
 5. Display report in CLI
-6. Send notify-claude if severity ≥ MONITOR
+6. Send notify-claude-async if severity ≥ MONITOR
 
 **Output Format**:
 ```
@@ -122,7 +122,7 @@ Status: [ICON] [SEVERITY]
 
 **Notification Example** (if WARNING):
 ```bash
-notify-claude "[PROJECT] ⚠️ History.md at 21k tokens - archive recommended" \
+notify-claude-async "[PROJECT] ⚠️ History.md at 21k tokens - archive recommended" \
   --type=alert --priority=high
 ```
 

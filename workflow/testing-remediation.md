@@ -259,7 +259,7 @@ Create comprehensive task list based on remediation scope:
 ### Step 2: Send Start Notification
 
 ```bash
-notify-claude "[{PREFIX}] 🔧 Post-change remediation STARTED (${REMEDIATION_SCOPE}) - Comparing against baseline $(basename $BASELINE_REPORT)" --type=progress --priority=medium
+notify-claude-async "[{PREFIX}] 🔧 Post-change remediation STARTED (${REMEDIATION_SCOPE}) - Comparing against baseline $(basename $BASELINE_REPORT)" --type=progress --priority=medium
 ```
 
 **Examples**:
@@ -1183,7 +1183,7 @@ else
     STATUS="➖ STABLE"
 fi
 
-notify-claude "[{PREFIX}] ✅ Remediation COMPLETE (${REMEDIATION_SCOPE}) - ${FINAL_PASS_RATE}% final pass rate (baseline: ${BASELINE_PASS_RATE}%), ${TOTAL_FIXES} issues fixed, system ${STATUS}" --type=progress --priority=medium
+notify-claude-async "[{PREFIX}] ✅ Remediation COMPLETE (${REMEDIATION_SCOPE}) - ${FINAL_PASS_RATE}% final pass rate (baseline: ${BASELINE_PASS_RATE}%), ${TOTAL_FIXES} issues fixed, system ${STATUS}" --type=progress --priority=medium
 ```
 
 **Examples**:
@@ -1283,7 +1283,7 @@ categorize_issue() {
 
 **Escalation notification**:
 ```bash
-notify-claude "[{PREFIX}] 🚨 URGENT: Remediation requires immediate attention - {DESCRIPTION}" --type=alert --priority=urgent
+notify-claude-async "[{PREFIX}] 🚨 URGENT: Remediation requires immediate attention - {DESCRIPTION}" --type=alert --priority=urgent
 ```
 
 ---

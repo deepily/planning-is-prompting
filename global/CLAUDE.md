@@ -197,53 +197,237 @@ source .venv/bin/activate  # Linux/Mac
 ## CLAUDE CODE NOTIFICATION SYSTEM
 **Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
 
-- **Command**: Use `notify-claude` (global command, works from any directory)
 - **Target**: ricardo.felipe.ruiz@gmail.com
 - **API Key**: claude_code_simple_key
 - **Requirements**: COSA_CLI_PATH environment variable (usually auto-detected)
 
+### Two-Tier Notification Architecture
+
+Planning is Prompting workflows use **two notification commands** to match the semantic needs of different workflow steps:
+
+- **notify-claude-async**: Fire-and-forget notifications (no response expected)
+- **notify-claude-sync**: Blocking notifications (waits for user response before continuing)
+
+---
+
+### notify-claude-async (Asynchronous/Fire-and-Forget)
+
+**Purpose**: Send informational notifications without blocking workflow execution.
+
+**Use for**:
+- Progress updates ("✅ Step 3 completed")
+- Milestone completions ("🎉 Installation complete")
+- Informational notices ("📋 Found 5 TODO items")
+- Post-action confirmations ("✅ Changes committed successfully")
+
+**Global Command**: Works from any directory, no setup required
+
+**Syntax**:
+```bash
+notify-claude-async "MESSAGE" --type TYPE --priority PRIORITY
+```
+
+**Parameters**:
+- `--type`: task | progress | alert | custom
+- `--priority`: urgent | high | medium | low
+
+**Examples**:
+```bash
+# Progress update
+notify-claude-async "[PLAN] ✅ Session history updated" --type progress --priority low
+
+# Task completion
+notify-claude-async "[PLAN] ✅ Email authentication system complete" --type task --priority low
+
+# Alert
+notify-claude-async "[PLAN] Found potential issue in config file" --type alert --priority medium
+```
+
+**Characteristics**:
+- Does NOT wait for user response
+- Returns immediately after sending
+- Workflow continues without blocking
+- Auto-detects COSA installation (COSA_CLI_PATH)
+
+---
+
+### notify-claude-sync (Synchronous/Blocking)
+
+**Purpose**: Send notifications that WAIT for user response before continuing workflow execution.
+
+**Use for**:
+- Commit approval workflows (user must choose [1/2/3/4])
+- Workflow/configuration selection menus
+- Critical decisions with explicit options
+- Anytime workflow contains "STOP and WAIT" or "PAUSE workflow"
+
+**Global Command**: Works from any directory, blocks until response
+
+**Syntax**:
+```bash
+notify-claude-sync "MESSAGE" --response-type TYPE [OPTIONS]
+```
+
+**Required Parameters**:
+- `--response-type`: yes_no | open_ended
+
+**Optional Parameters**:
+- `--response-default`: Default response if timeout (e.g., "yes", "no", "skip")
+- `--timeout`: Seconds to wait (30-600, recommended: 180 or 300)
+- `--type`: task | progress | alert | custom (default: task)
+- `--priority`: urgent | high | medium | low (default: high)
+
+**Exit Codes**:
+- `0`: Success (response received, or offline with default)
+- `1`: Error (validation failure, network error, user not found)
+- `2`: Timeout (no response within timeout period)
+
+**Examples**:
+```bash
+# Commit approval (yes/no decision, 5-minute timeout)
+notify-claude-sync "[PLAN] Approve commit? View message above" \
+  --response-type yes_no \
+  --response-default no \
+  --timeout 300 \
+  --type task \
+  --priority high
+
+# Workflow selection (open-ended choice, 5-minute timeout)
+notify-claude-sync "[INSTALL] Select workflow [1/2/3/4]" \
+  --response-type open_ended \
+  --timeout 300 \
+  --type task \
+  --priority high
+
+# Quick decision (3-minute timeout)
+notify-claude-sync "[BACKUP] Update [U], diff [D], or skip [S]?" \
+  --response-type open_ended \
+  --timeout 180 \
+  --type task \
+  --priority medium
+```
+
+**Characteristics**:
+- BLOCKS workflow execution until response received or timeout
+- Returns user response via stdout
+- Timeout triggers fallback behavior (workflows define safe defaults)
+- Claude waits synchronously - matches "STOP and WAIT" semantics
+
+---
+
 ### When to Send Notifications
-- **Need approval**: Before making significant changes (enhance existing approval workflow)
-- **Blocked/waiting**: When waiting for your input >2 minutes and can't proceed
-- **Errors encountered**: Unexpected errors requiring your guidance
-- **Task completion**: Major tasks finished or session milestones reached
-- **Clarifying questions**: When requirements are unclear
-- **Progress updates**: When you've finished a something on your to do list
+
+**Use async for**:
+- Progress updates during long operations
+- Task completions and milestones
+- Informational notices
+- Errors that don't require acknowledgment
+
+**Use sync for**:
+- Approval requests (commit, configuration changes)
+- Blocking decisions (workflow selection, archive now/later)
+- Critical errors requiring acknowledgment
+- Any workflow step that contains "STOP and WAIT"
+
+---
 
 ### Notification Guidelines
-**Priorities**:
-- `urgent`: Errors, blocked, time-sensitive questions
-- `high`: Approval requests, important status updates
-- `medium`: Progress milestones
-- `low`: Minor updates, to do list task completions, informational notices, progress updates
+
+**Priorities** (same for both async and sync):
+- `urgent`: Critical errors, system failures, immediate attention required
+- `high`: Approval requests, blocking decisions, important status updates
+- `medium`: Progress milestones, non-critical alerts
+- `low`: Minor updates, task completions, informational notices
 
 **Types**: task, progress, alert, custom
 
-### Using the Global notify-claude Command
-The `notify-claude` command is available globally from any directory or project:
+**Detection Pattern**: If workflow documentation contains these phrases, use **sync**:
+- "STOP and WAIT for user response"
+- "PAUSE workflow until user selects"
+- "BLOCK session-end workflow"
+- "awaiting selection/confirmation"
+- "Wait for User Selection"
+
+---
+
+### Timeout Handling (sync only)
+
+**Recommended Timeouts**:
+- **Quick decisions**: 180s (3 min) - Archive now/later/skip, Update/skip
+- **Complex decisions**: 300s (5 min) - Commit approval, workflow selection
+- **Emergency**: 30s - Critical errors requiring immediate attention
+
+**Every sync notification MUST define a safe default action** on timeout:
 
 ```bash
-notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
+# Timeout handling pattern
+if ! notify-claude-sync "[PREFIX] Message" \
+     --response-type yes_no \
+     --response-default no \
+     --timeout 300 \
+     --type task \
+     --priority high; then
+
+    exit_code=$?
+
+    if [ $exit_code -eq 2 ]; then
+        # Timeout occurred - use safe default
+        notify-claude-async "[PREFIX] ⚠️ Decision timeout - using default action" \
+            --type alert --priority medium
+        # Execute safe default (e.g., cancel commit, skip install)
+    fi
+fi
 ```
 
-- **No setup required** - Command works from any directory
-- **Auto-detects COSA installation** - Uses COSA_CLI_PATH if set, or searches common paths
-- **Backward compatible** - All existing notify_user.py arguments supported
-- **Environment validation** - Use `notify-claude "test" --validate-env` to check configuration
+**Safe Defaults** (preserve data integrity, avoid irreversible actions):
+- Commit approval → Default to Cancel (preserve uncommitted changes)
+- Workflow selection → Default to Cancel installation
+- Archive decision → Default to "Next session" (defer)
+- Update confirmation → Default to Cancel (keep current versions)
 
-### Notification Command Examples
-**Examples**:
-- `notify-claude "[SHORT_PROJECT_PREFIX] Need approval to modify 5 files for authentication system" --type=task --priority=high`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Blocked: Which database migration approach should I use?" --type=alert --priority=urgent`
-- `notify-claude "[SHORT_PROJECT_PREFIX] ✅ Email authentication system implementation complete" --type=task --priority=low`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Found potential issue in config file - should I fix it?" --type=alert --priority=medium`
+---
 
 ### Notification Tips
+
 - **Use the `[SHORT_PROJECT_PREFIX]`**: Whenever you are building to do lists or querying me using the notification endpoint you MUST use your project specific prefix to help me understand which repo the lists, notifications, or queries belong to
 - **`[SHORT_PROJECT_PREFIX]` is defined in your repo specific CLAUDE.md**: Each project will have its own `[SHORT_PROJECT_PREFIX]`
+- **Choose the right command**: async for "FYI", sync for "need your input"
+- **Define timeouts appropriately**: 180s for quick decisions, 300s for complex ones
+- **Always specify safe defaults**: timeout handling should preserve data integrity
+
+---
+
+### Script Management
+
+**Current Location**: Both scripts installed in `~/.local/bin/` (global user location, in PATH)
+
+**Future**: Planning to integrate into planning-is-prompting repository for version control and automatic installation via `/plan-install-wizard`
+
+**Proposed Structure**:
+```
+planning-is-prompting/
+├── bin/
+│   ├── notify-claude-async
+│   ├── notify-claude-sync
+│   ├── README.md
+│   └── install.sh
+```
+
+---
+
+### Full Documentation
+
+For comprehensive sync/async patterns, timeout strategies, integration templates, and examples:
+
+**See**: planning-is-prompting → workflow/notification-system.md
+
+---
 
 ### DEPRECATED: Per-Project notify.sh Scripts
-**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude` command instead.
+
+**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude-async` command instead.
+
+**Old command name (DEPRECATED)**: `notify-claude` has been renamed to `notify-claude-async` for clarity. If you encounter workflows using the old name, update them to use `notify-claude-async`.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages

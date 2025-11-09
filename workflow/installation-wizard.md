@@ -622,7 +622,7 @@ Wait for user response. Proceed to Section 0.5.5.
 
 **Send Notification**:
 ```bash
-notify-claude "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
+notify-claude-async "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
 ```
 
 **Error Handling Notes**:
@@ -769,7 +769,7 @@ Ready for fresh installation.
 
 **Send Notification**:
 ```bash
-notify-claude "[INSTALL] ✅ Project state detected - clean installation" --type=progress --priority=low
+notify-claude-async "[INSTALL] ✅ Project state detected - clean installation" --type=progress --priority=low
 ```
 
 ---
@@ -890,9 +890,13 @@ What would you like to do? [1/2/3/4]
 
 **Update TodoWrite**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
-**Send Notification**:
+**Send Blocking Notification and Await Selection**:
 ```bash
-notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --type=task --priority=high
+notify-claude-sync "[INSTALL] Workflow catalog ready - select bundle to install [1/2/3/4]" \
+  --response-type open_ended \
+  --timeout 300 \
+  --type task \
+  --priority high
 ```
 
 ---
@@ -900,6 +904,15 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
 ### Step 3: Collect User Selection and Validate
 
 **Purpose**: Get user's workflow choices and verify dependencies
+
+**Timeout Handling**: If timeout (5 minutes, exit code 2), default to [4] Cancel:
+```bash
+if [ $? -eq 2 ]; then
+    echo "⚠️ Selection timeout - installation cancelled"
+    notify-claude-async "[INSTALL] Installation timeout - no changes made" --type=alert --priority=low
+    exit 0
+fi
+```
 
 **Process**:
 
@@ -1000,7 +1013,7 @@ Ready to proceed with configuration.
 
 **Send Notification**:
 ```bash
-notify-claude "[INSTALL] ✅ Selection validated - dependencies satisfied" --type=progress --priority=low
+notify-claude-async "[INSTALL] ✅ Selection validated - dependencies satisfied" --type=progress --priority=low
 ```
 
 ---
@@ -1230,7 +1243,7 @@ Is this correct?
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=low
+notify-claude-async "[MYPROJ] ✅ Configuration collected" --type=progress --priority=low
 ```
 
 ---
@@ -1442,7 +1455,7 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Workflows installed successfully" --type=progress --priority=medium
+notify-claude-async "[MYPROJ] ✅ Workflows installed successfully" --type=progress --priority=medium
 ```
 
 ---
@@ -1577,7 +1590,7 @@ Installation validated successfully!
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Installation validated - all checks passed" --type=progress --priority=medium
+notify-claude-async "[MYPROJ] ✅ Installation validated - all checks passed" --type=progress --priority=medium
 ```
 
 ---
@@ -1683,7 +1696,7 @@ notify-claude "[MYPROJ] ✅ Installation validated - all checks passed" --type=p
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Git tracking verified" --type=progress --priority=low
+notify-claude-async "[MYPROJ] ✅ Git tracking verified" --type=progress --priority=low
 ```
 
 **Key Benefits**:
@@ -1913,7 +1926,7 @@ For detailed workflow documentation, see:
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] 🎉 Installation complete - ready to work!" --type=task --priority=high
+notify-claude-async "[MYPROJ] 🎉 Installation complete - ready to work!" --type=task --priority=high
 ```
 
 ---
@@ -2029,7 +2042,7 @@ command installed or not.
 
 **Send Notification** (if installed):
 ```bash
-notify-claude "[MYPROJ] ✅ Installation wizard available as /plan-install-wizard" --type=progress --priority=low
+notify-claude-async "[MYPROJ] ✅ Installation wizard available as /plan-install-wizard" --type=progress --priority=low
 ```
 
 **Key Benefits**:
@@ -2149,7 +2162,7 @@ What would you like to do? [1/2]
 
 **Send Notification** (if user ran session-end):
 ```bash
-notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end" --type=progress --priority=low
+notify-claude-async "[MYPROJ] ✅ Installation session recorded via /plan-session-end" --type=progress --priority=low
 ```
 
 **Key Benefits**:
@@ -2490,7 +2503,7 @@ Version Summary:
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Scanned local installation - found 7 workflows" --type=progress --priority=low
+notify-claude-async "[UPDATE] ✅ Scanned local installation - found 7 workflows" --type=progress --priority=low
 ```
 
 ---
@@ -2597,7 +2610,11 @@ Affected Files (6):
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ⚠️ Found 6 outdated workflows (v0.0 → v1.0 available)" --type=task --priority=high
+notify-claude-sync "[UPDATE] Found 6 outdated workflows - review and select which to update" \
+  --response-type open_ended \
+  --timeout 300 \
+  --type task \
+  --priority high
 ```
 
 ---
@@ -2728,7 +2745,11 @@ Ready to proceed.
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ⏸ Update selection presented - awaiting user choice" --type=task --priority=high
+notify-claude-sync "[UPDATE] Update selection presented - choose workflows to update" \
+  --response-type open_ended \
+  --timeout 300 \
+  --type task \
+  --priority high
 ```
 
 ---
@@ -2851,7 +2872,7 @@ All configurations extracted successfully.
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Configuration extracted from 6 files" --type=progress --priority=low
+notify-claude-async "[UPDATE] ✅ Configuration extracted from 6 files" --type=progress --priority=low
 ```
 
 ---
@@ -3022,7 +3043,12 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ⏸ Diff preview shown - awaiting confirmation" --type=task --priority=high
+notify-claude-sync "[UPDATE] Review diff above - [1] Apply updates [2] Cancel" \
+  --response-type yes_no \
+  --response-default no \
+  --timeout 300 \
+  --type task \
+  --priority high
 ```
 
 ---
@@ -3166,7 +3192,7 @@ All files updated. Proceeding to validation...
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Updates applied successfully - 6 files updated" --type=progress --priority=medium
+notify-claude-async "[UPDATE] ✅ Updates applied successfully - 6 files updated" --type=progress --priority=medium
 ```
 
 ---
@@ -3350,7 +3376,7 @@ Update validation complete!
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Validation complete - all 6 workflows verified" --type=progress --priority=medium
+notify-claude-async "[UPDATE] ✅ Validation complete - all 6 workflows verified" --type=progress --priority=medium
 ```
 
 ---
@@ -3533,7 +3559,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] 🎉 Update complete - 6 workflows updated to v1.0" --type=task --priority=high
+notify-claude-async "[UPDATE] 🎉 Update complete - 6 workflows updated to v1.0" --type=task --priority=high
 ```
 
 ---

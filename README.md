@@ -141,7 +141,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
-- [**notification-system.md**](workflow/notification-system.md) - Prompts for using the notification system
+- [**notification-system.md**](workflow/notification-system.md) - Two-tier notification system (async fire-and-forget + sync blocking), decision matrix, timeout strategies, integration patterns
 
 ## Usage
 
