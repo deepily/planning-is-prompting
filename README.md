@@ -143,6 +143,23 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
 - [**notification-system.md**](workflow/notification-system.md) - Two-tier notification system (async fire-and-forget + sync blocking), decision matrix, timeout strategies, integration patterns
 
+### Script Installation
+- [**bin/**](bin/) - Notification scripts with automated installation
+  - [**bin/README.md**](bin/README.md) - Installation guide, usage examples, troubleshooting
+  - [**bin/install.sh**](bin/install.sh) - Interactive/non-interactive installer
+  - **bin/notify-claude-async** - Fire-and-forget notifications (v1.0.0)
+  - **bin/notify-claude-sync** - Response-required notifications (v1.0.0)
+  - **bin/notify-claude** - Deprecated wrapper (backward compatibility)
+
+**Quick Install**:
+```bash
+cd planning-is-prompting
+./bin/install.sh              # Interactive (recommended)
+./bin/install.sh --non-interactive  # Automated (CI/CD)
+```
+
+**Prerequisites**: Requires COSA (Claude Code Service Agent). See [bin/README.md](bin/README.md) for complete installation instructions.
+
 ## Usage
 
 Each workflow file contains:

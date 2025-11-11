@@ -1,13 +1,199 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 33 complete - Integrated two-tier notification system (async + sync) across all workflows
+**RESUME HERE**: Session 34 complete (enhanced) - bin/ directory with v1.1.0 (version checking + installation wizard integration)
 
-**Current Status**: notify-claude-sync blocking notifications integrated at 7 decision points, notify-claude renamed to notify-claude-async, comprehensive documentation added, history healthy at ~4,500 tokens (18%)
-**Next Steps**: Test sync notifications in production, establish bin/ directory for script management, continue v0.1.1 post-release work
+**Current Status**: Notification scripts v1.1.0 with --update mode, Step 7.6 added to installation wizard, comprehensive version management, all documentation updated
+**Next Steps**: Test --update mode in production, test Step 7.6 during workflow installation, consider automatic update prompts
 
 ---
 
 ## November 2025
+
+### 2025.11.10 - Session 34 Enhancement: Version Checking and Installation Wizard Integration (v1.1.0)
+
+**Accomplishments**:
+- **Added --update mode to install.sh** (~200 lines):
+  - Version extraction from script headers (get_version function)
+  - Version comparison logic (installed vs canonical)
+  - Update menu with options: [U] Update, [D] Show diff, [S] Skip
+  - Diff display between versions (shows exact changes)
+  - Symlink update mechanism (preserves installation, points to new versions)
+  - Handles "not_installed" and "unknown" version edge cases
+  - Clean exit codes and error messages
+- **Integrated with installation wizard** (~200 lines):
+  - Added Step 7.6 to workflow/installation-wizard.md
+  - Optional notification script installation during workflow setup
+  - Version checking for existing installations
+  - COSA detection and guided setup integration
+  - Update flow for existing installations (via --update)
+  - Skip option with manual installation instructions
+- **Enhanced documentation** (3 files):
+  - **bin/README.md**: Added "Check for Updates" section with examples
+  - **workflow/notification-system.md**: Updated Version Management section, added v1.1.0 version history
+  - Both files now reference --update workflow
+- **Version management features**:
+  - Extract version from header: `# notify-claude-async v1.0.0`
+  - Compare versions: detect updates, show diffs, update selectively
+  - Future-proof: `git pull && ./bin/install.sh --update` for easy updates
+
+**Session Flow**:
+1. User requested two optional tasks:
+   - Integrate with /plan-install-wizard
+   - Add version checking mode (--update)
+2. Researched installation-wizard.md structure and backup-version-check.md pattern
+3. Implemented --update mode in install.sh:
+   - Version extraction and comparison logic
+   - Interactive update menu [U/D/S]
+   - Diff display capability
+   - Update execution
+4. Added Step 7.6 to installation-wizard.md
+5. Updated all documentation files
+6. Updated history.md with enhancement summary
+
+**Key Insights**:
+- **Symlink-based updates are simple**: Just re-create symlinks to new canonical versions
+- **Version headers enable tracking**: Grep-based version extraction from script comments
+- **Diff shows value**: [D] option lets users see exactly what changed before updating
+- **Integration with wizard enhances adoption**: Step 7.6 offers notification scripts during initial setup
+- **Version management follows established pattern**: Similar to backup-version-check.md workflow
+
+**Pattern Used This Session**:
+- Work type: Enhancement (version management and wizard integration)
+- Scale: Medium (~2 hours, focused enhancement to existing system)
+- Pattern: Pattern 3 (Feature Development - well-scoped enhancement)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Modified** (4 files):
+1. `bin/install.sh` - Added --update mode (~200 lines, total now 657 lines)
+2. `workflow/installation-wizard.md` - Added Step 7.6 (~200 lines)
+3. `bin/README.md` - Added "Check for Updates" section + v1.1.0 version history
+4. `workflow/notification-system.md` - Updated Version Management section + version history
+
+**Testing Performed**:
+- ✓ Ran `./bin/install.sh --update` - Version detection works
+- ✓ Detected version differences (unknown → v1.0.0)
+- ✓ Update menu displays correctly with [U/D/S] options
+- ✓ Help message updated with --update flag
+
+**TODO for Next Session**:
+- [ ] Test --update mode with actual version updates (v1.0.0 → v1.1.0)
+- [ ] Test Step 7.6 during actual workflow installation
+- [ ] Optional: Add changelog display in update menu
+- [ ] Optional: Selective updates (async only, sync only)
+- [ ] Optional: Automatic update prompts in workflows
+
+---
+
+### 2025.11.10 - Session 34: bin/ Directory Establishment with install.sh and Notification Scripts
+
+**Accomplishments**:
+- **Created bin/ directory structure** with version-controlled notification scripts:
+  - **bin/notify-claude-async** (v1.0.0): Fire-and-forget notifications, 70 lines, version header
+  - **bin/notify-claude-sync** (v1.0.0): Response-required notifications, 71 lines, version header
+  - **bin/notify-claude** (v1.0.0, deprecated): Backward compatibility wrapper, 33 lines
+  - Updated error messages to reference `lupin/src` instead of genie-in-the-box
+- **Created bin/install.sh** (~400 lines): Automated installation script
+  - **Interactive mode** (default):
+    - Prompts [O]verwrite/[B]ackup/[C]ancel for existing installations
+    - Auto-detects COSA or shows guided setup with [R]etry/[C]ancel
+    - Validates dependencies (Pydantic, requests in COSA venv)
+    - Optionally installs deprecated wrapper
+    - Optionally runs validation test
+  - **Non-interactive mode** (--non-interactive):
+    - Auto-backs up existing files
+    - Fails immediately if COSA not found
+    - No prompts, suitable for CI/CD
+  - **Help mode** (--help): Shows usage instructions
+  - **7-step installation algorithm**:
+    1. Validate environment (create ~/.local/bin/, check PATH)
+    2. Detect existing installation (prompt for action)
+    3. Validate COSA installation (auto-detect or show guide)
+    4. Check COSA dependencies (venv, Pydantic, requests)
+    5. Create symlinks (ln -sf to ~/.local/bin/)
+    6. Verify installation (test commands in PATH)
+    7. Display success message with next steps
+- **Created bin/README.md** (~300 lines): Comprehensive documentation
+  - **Prerequisites**: Full COSA installation guide
+    - Clone COSA repo: https://github.com/deepily/cosa
+    - Structure: `YOUR_REPOS_DIRECTORY/lupin/src/cosa`
+    - Setup venv: `python3 -m venv .venv`
+    - Install dependencies: `pip install -r requirements.txt`
+    - Configure COSA_CLI_PATH environment variable
+    - Verification steps
+  - **Installation**: Interactive, non-interactive, manual methods
+  - **Usage**: Examples for notify-claude-async and notify-claude-sync
+  - **Troubleshooting**: 6 common issues with solutions
+  - **Version History**: v1.0.0 features and requirements
+- **Updated documentation** (3 files):
+  - **workflow/notification-system.md**: Updated Script Management section
+    - Changed from "future plan" to "✅ IMPLEMENTED (v1.0.0, Session 34)"
+    - Documented 3 installation methods
+    - Added prerequisites (COSA dependency)
+    - Added version history entry
+  - **README.md**: Added Script Installation section
+    - Quick install commands
+    - Prerequisites note
+    - Links to bin/README.md
+  - **history.md**: Added this session summary
+- **Tested installation**:
+  - Verified scripts are executable
+  - Tested help message
+  - Ran validation test successfully
+  - Confirmed COSA_CLI_PATH detection
+
+**Session Flow**:
+1. User requested: "Implement install.sh script for automating symlink creation"
+2. User clarified:
+   - Remove existing files in ~/.local/bin/ before creating symlinks
+   - Assume COSA dependency (not genie-in-the-box)
+   - Use `pip install -r requirements.txt` instead of hardcoding packages
+   - Use `YOUR_REPOS_DIRECTORY` placeholder (don't prescribe paths)
+   - Eliminate all "genie-in-the-box" references in documentation
+3. Presented comprehensive implementation plan (5 phases)
+4. User approved plan with corrections on COSA instructions
+5. Executed implementation:
+   - **Phase 1**: Created bin/ directory, copied scripts with version headers
+   - **Phase 2**: Created install.sh with 7-step algorithm (interactive + non-interactive)
+   - **Phase 3**: Created bin/README.md with full COSA setup guide
+   - **Phase 4**: Tested installation script (help, validation, COSA detection)
+   - **Phase 5**: Updated workflow/notification-system.md, README.md, history.md
+
+**Key Insights**:
+- **Symlinks require removal first**: Existing regular files must be removed before `ln -sf` creates symlinks
+- **COSA is the dependency**: Notification scripts depend on COSA (not Lupin parent project)
+- **Use requirements.txt**: Better than hardcoding individual packages
+- **Path flexibility matters**: Users install repos in different locations (~/projects, /mnt/data/repos, etc.)
+- **Guided setup helps adoption**: When COSA missing, show complete installation guide with [R]etry option
+- **Interactive prompts improve UX**: [O]verwrite/[B]ackup/[C]ancel gives users control
+- **Version headers enable tracking**: v1.0.0 in scripts allows future version checking/updates
+
+**Pattern Used This Session**:
+- Work type: Infrastructure setup (script management system)
+- Scale: Medium-Large (~4 hours, comprehensive implementation)
+- Pattern: Pattern 3 (Feature Development - well-scoped, complete in one session)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Created** (5 files):
+1. `bin/notify-claude-async` - Canonical async script with version header
+2. `bin/notify-claude-sync` - Canonical sync script with version header
+3. `bin/notify-claude` - Deprecated wrapper for backward compatibility
+4. `bin/install.sh` - Automated installer (interactive + non-interactive + help)
+5. `bin/README.md` - Installation guide, usage, troubleshooting
+
+**Files Modified** (3 files):
+1. `workflow/notification-system.md` - Updated Script Management section + version history
+2. `README.md` - Added Script Installation section
+3. `history.md` - Added this session summary
+
+**TODO for Next Session**:
+- [ ] Test install.sh in fresh environment (clean ~/.local/bin/)
+- [ ] Run full installation with COSA detection
+- [ ] Test backup/overwrite prompts with existing files
+- [ ] Optional: Integrate with /plan-install-wizard (add notification scripts as optional step)
+- [ ] Optional: Add version checking mode (--update) for future releases
+- [ ] Optional: Add script management to INSTALLATION-GUIDE.md
+
+---
 
 ### 2025.11.08 - Session 33: Two-Tier Notification System Integration (notify-claude-async + notify-claude-sync)
 

@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# notify-claude-sync v1.0.0
+# Part of planning-is-prompting notification system
+# Repository: https://github.com/deepily/planning-is-prompting
+#
+# Changelog:
+#   v1.0.0 (2025.11.10): Initial canonical version
+#     - Response-required notifications via SSE blocking
+#     - Auto-detects COSA_CLI_PATH
+#     - Pydantic validation via COSA
+#     - Timeout handling with safe defaults
+#
+# notify-claude-sync - Global synchronous notification script for Claude Code (Phase 2.3)
+#
+# This script allows Claude Code to send response-required notifications with SSE blocking,
+# waiting for user response before returning. Follows the same pattern as notify-claude.
+#
+# Usage:
+#   notify-claude-sync "Message" --response-type yes_no --response-default yes
+#   notify-claude-sync "Enter API key" --response-type open_ended --timeout 60
+#
+# Exit Codes:
+#   0: Success (response received or offline with default)
+#   1: Error (validation, network, user not found, etc.)
+#   2: Timeout (no response within timeout period)
+#
+# Environment Variables:
+#   COSA_CLI_PATH: Path to COSA CLI directory (auto-detected if not set)
+#   COSA_APP_SERVER_URL: Server URL (default: http://localhost:7999)
+#
+
+# Auto-detect COSA_CLI_PATH if not set
+if [ -z "$COSA_CLI_PATH" ]; then
+    # Common installation paths to check
+    CANDIDATE_PATHS=(
+        "/mnt/DATA01/include/www.deepily.ai/projects/genie-in-the-box/src"
+        "$HOME/projects/genie-in-the-box/src"
+        "$HOME/lupin/src"
+    )
+
+    for candidate in "${CANDIDATE_PATHS[@]}"; do
+        if [ -f "$candidate/cosa/cli/notify_user_sync.py" ]; then
+            export COSA_CLI_PATH="$candidate"
+            break
+        fi
+    done
+
+    # If still not found, error out
+    if [ -z "$COSA_CLI_PATH" ]; then
+        echo "✗ ERROR: COSA_CLI_PATH not set and could not auto-detect COSA installation" >&2
+        echo "  Please set COSA_CLI_PATH environment variable to point to your COSA src directory" >&2
+        echo "  Example: export COSA_CLI_PATH=/path/to/lupin/src" >&2
+        exit 1
+    fi
+fi
+
+# Validate that notify_user_sync.py exists
+NOTIFY_SCRIPT="$COSA_CLI_PATH/cosa/cli/notify_user_sync.py"
+if [ ! -f "$NOTIFY_SCRIPT" ]; then
+    echo "✗ ERROR: Could not find notify_user_sync.py at: $NOTIFY_SCRIPT" >&2
+    echo "  COSA_CLI_PATH is set to: $COSA_CLI_PATH" >&2
+    echo "  Please verify your COSA installation" >&2
+    exit 1
+fi
+
+# Set PYTHONPATH to include the parent src directory
+export PYTHONPATH="$COSA_CLI_PATH:$PYTHONPATH"
+
+# Use COSA's virtual environment python if available
+VENV_PYTHON="$COSA_CLI_PATH/cosa/.venv/bin/python"
+if [ -f "$VENV_PYTHON" ]; then
+    # Use COSA's venv python (has all dependencies including pydantic)
+    exec "$VENV_PYTHON" "$NOTIFY_SCRIPT" "$@"
+else
+    # Fall back to system python3 with warning
+    echo "⚠️  WARNING: COSA venv python not found at: $VENV_PYTHON" >&2
+    echo "   Falling back to system python3 (may be missing dependencies)" >&2
+    echo "   Note: Pydantic is required for this script" >&2
+    exec python3 "$NOTIFY_SCRIPT" "$@"
+fi

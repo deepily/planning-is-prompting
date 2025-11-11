@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# notify-claude v1.0.0 (DEPRECATED)
+# Part of planning-is-prompting notification system
+# Repository: https://github.com/deepily/planning-is-prompting
+#
+# Changelog:
+#   v1.0.0 (2025.11.10): Initial canonical version (deprecated)
+#     - Backward compatibility wrapper only
+#     - Redirects to notify-claude-async
+#     - Marked for future removal
+#
+# notify-claude - DEPRECATED wrapper for backward compatibility
+#
+# ⚠️  DEPRECATION NOTICE:
+# This command is deprecated and will be removed in a future version.
+#
+# Please use one of the following instead:
+#   - notify-claude-async (for fire-and-forget notifications)
+#   - notify-claude-sync (for response-required notifications)
+#
+# This script now redirects to notify-claude-async for backward compatibility.
+#
+
+# Display deprecation warning to stderr
+echo "" >&2
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+echo "⚠️  DEPRECATION WARNING" >&2
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+echo "" >&2
+echo "The 'notify-claude' command is deprecated." >&2
+echo "" >&2
+echo "Please use:" >&2
+echo "  • notify-claude-async  (fire-and-forget notifications)" >&2
+echo "  • notify-claude-sync   (response-required notifications)" >&2
+echo "" >&2
+echo "This command will redirect to 'notify-claude-async'..." >&2
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+echo "" >&2
+
+# Redirect to notify-claude-async
+exec notify-claude-async "$@"

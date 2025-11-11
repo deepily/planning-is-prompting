@@ -478,35 +478,78 @@ fi
 
 ## Script Management
 
-**Current Location**: Both scripts installed in `~/.local/bin/` (global user location, in PATH)
+**Status**: ✅ IMPLEMENTED (v1.0.0, Session 34)
 
-**Future**: Planning to integrate into planning-is-prompting repository
+**Installation Location**: Scripts installed globally in `~/.local/bin/` via symlinks
 
-**Proposed Structure**:
+**Repository Structure**:
 ```
 planning-is-prompting/
 ├── bin/
-│   ├── notify-claude-async       # Canonical version (fire-and-forget)
-│   ├── notify-claude-sync         # Canonical version (blocking)
-│   ├── README.md                  # Installation, usage, versioning
-│   └── install.sh                 # Optional: automated symlink to ~/.local/bin/
+│   ├── notify-claude-async       # Canonical version v1.0.0 (fire-and-forget)
+│   ├── notify-claude-sync         # Canonical version v1.0.0 (blocking)
+│   ├── notify-claude              # Deprecated wrapper (backward compatibility)
+│   ├── README.md                  # Installation guide, usage examples, troubleshooting
+│   └── install.sh                 # Automated installation script (interactive + non-interactive)
 ```
 
-**Installation Pattern** (planned):
-```bash
-# During /plan-install-wizard (future optional step):
-ln -sf /path/to/planning-is-prompting/bin/notify-claude-async ~/.local/bin/notify-claude-async
-ln -sf /path/to/planning-is-prompting/bin/notify-claude-sync ~/.local/bin/notify-claude-sync
-```
+**Installation Methods**:
 
-**Benefits of bin/ directory approach**:
-- ✅ Single source of truth (version controlled in planning-is-prompting)
-- ✅ Installation wizard can install/update automatically
-- ✅ Standard Unix convention (bin/ for executables)
-- ✅ Scripts remain globally accessible (in PATH via symlinks)
-- ✅ Update via `git pull` + reinstall
+1. **Interactive Installation** (recommended):
+   ```bash
+   cd planning-is-prompting
+   ./bin/install.sh
+   ```
+   - Prompts for backup/overwrite on existing installations
+   - Auto-detects COSA or shows installation guide
+   - Validates dependencies
+   - Creates symlinks in ~/.local/bin/
 
-**See**: FUTURE TODO in planning-is-prompting history.md for implementation timeline
+2. **Non-Interactive Installation** (CI/CD):
+   ```bash
+   ./bin/install.sh --non-interactive
+   ```
+   - Auto-backs up existing files
+   - Fails immediately if COSA not found
+   - No prompts, suitable for automation
+
+3. **Manual Installation**:
+   ```bash
+   ln -sf "$(pwd)/bin/notify-claude-async" ~/.local/bin/notify-claude-async
+   ln -sf "$(pwd)/bin/notify-claude-sync" ~/.local/bin/notify-claude-sync
+   ```
+
+**Prerequisites**:
+- **COSA (Claude Code Service Agent)** must be installed
+- **Installation Guide**: See `bin/README.md` for complete COSA setup instructions
+- **Repository**: https://github.com/deepily/cosa
+- **Structure**: `YOUR_REPOS_DIRECTORY/lupin/src/cosa`
+
+**Key Features**:
+- ✅ Version-controlled scripts (v1.0.0)
+- ✅ Automated installation with validation
+- ✅ COSA dependency checking (venv, Pydantic, requests)
+- ✅ Guided setup for missing COSA
+- ✅ Interactive prompts for existing installations (backup/overwrite/cancel)
+- ✅ Comprehensive documentation (bin/README.md)
+- ✅ Update via `git pull` + `./bin/install.sh`
+
+**Documentation**:
+- **Installation**: `planning-is-prompting/bin/README.md`
+- **Usage**: This document (notification-system.md)
+- **Troubleshooting**: `bin/README.md` (comprehensive guide)
+
+**Version Management** (v1.1.0):
+- ✅ Version checking: `./bin/install.sh --update`
+- ✅ Compare installed vs canonical versions
+- ✅ Show diff between versions
+- ✅ Update with single command
+- ✅ Integration with `/plan-install-wizard` (Step 7.6)
+
+**Future Enhancements** (v1.2+):
+- Automatic update prompts during workflow execution
+- Changelog display in update menu
+- Selective script updates (async only, sync only, or both)
 
 ---
 
@@ -522,6 +565,21 @@ ln -sf /path/to/planning-is-prompting/bin/notify-claude-sync ~/.local/bin/notify
 
 ## Version History
 
+- **2025.11.10 (Session 34 - Enhancement)**: Added version checking and installation wizard integration (v1.1.0)
+  - **--update mode**: Version comparison, diff display, update management (~200 lines in install.sh)
+  - **Installation wizard integration**: Step 7.6 for optional notification script installation (~200 lines)
+  - **Version management**: Extract versions from headers, compare installed vs canonical
+  - **Update options**: [U] Update all, [D] Show diff, [S] Skip for now
+  - **Enhanced documentation**: bin/README.md with update workflow, workflow/notification-system.md with version management
+  - **Future-proof**: Easy updates via `git pull && ./bin/install.sh --update`
+- **2025.11.10 (Session 34)**: Established bin/ directory with installation infrastructure (v1.0.0, ~70 lines modified)
+  - Created bin/ directory structure with version-controlled scripts
+  - Added notify-claude-async, notify-claude-sync, notify-claude (deprecated)
+  - Created install.sh with interactive/non-interactive modes (~400 lines)
+  - Created comprehensive bin/README.md with COSA installation guide (~300 lines)
+  - Updated Script Management section from "future plan" to "implemented"
+  - COSA dependency: Full installation instructions for Lupin/COSA setup
+  - Guided setup for missing COSA installations
 - **2025.11.08 (Session 33)**: Added comprehensive sync/async two-tier system documentation (~400 lines)
   - notify-claude-async (fire-and-forget) command reference
   - notify-claude-sync (blocking) command reference with full parameter set

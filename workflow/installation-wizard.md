@@ -2054,6 +2054,208 @@ notify-claude-async "[MYPROJ] ✅ Installation wizard available as /plan-install
 
 ---
 
+### Step 7.6: Install Notification Scripts (Optional)
+
+**Purpose**: Offer to install notify-claude-async and notify-claude-sync scripts for workflow notifications
+
+**Important**: This step is optional - workflows can function without notification scripts, but notifications enhance the development experience with real-time alerts
+
+**Prerequisites**:
+- User must have COSA (Claude Code Service Agent) installed
+- See planning-is-prompting → bin/README.md for COSA installation guide
+
+**Process**:
+
+1. **Check if Already Installed**:
+
+   ```bash
+   # Check if notification scripts are already installed
+   if command -v notify-claude-async &> /dev/null && command -v notify-claude-sync &> /dev/null; then
+       # Check versions
+       INSTALLED_VERSION=$(grep -m 1 "^# notify-claude-async v" ~/.local/bin/notify-claude-async | grep -oP 'v\K[0-9.]+' || echo "unknown")
+       CANONICAL_VERSION=$(grep -m 1 "^# notify-claude-async v" planning-is-prompting/bin/notify-claude-async | grep -oP 'v\K[0-9.]+')
+
+       if [ "$INSTALLED_VERSION" = "$CANONICAL_VERSION" ]; then
+           echo "✓ Notification scripts already installed (v$INSTALLED_VERSION)"
+           # Skip to Step 8
+       else
+           # Offer update
+           echo "⚠ Notification scripts update available: v$INSTALLED_VERSION → v$CANONICAL_VERSION"
+           # Continue to step 2 with update option
+       fi
+   fi
+   ```
+
+2. **Present Installation Option** (if not installed or update available):
+
+```
+══════════════════════════════════════════════════════════
+Install Notification Scripts? (Optional)
+══════════════════════════════════════════════════════════
+
+Would you like to install notification scripts for real-time alerts?
+
+What notification scripts do:
+• Send progress updates to mobile/desktop during workflows
+• Alert you when approval needed (e.g., commit confirmations)
+• Notify when tasks complete or errors occur
+• Uses COSA (Claude Code Service Agent) for delivery
+
+Two commands will be installed:
+• notify-claude-async  (fire-and-forget, non-blocking)
+• notify-claude-sync   (response-required, blocking)
+
+Prerequisites:
+• COSA must be installed (see bin/README.md for setup)
+• ~5 minutes for COSA setup if not already installed
+
+Installation:
+• Interactive installer with COSA detection
+• Auto-backup of existing scripts
+• Validates dependencies (Pydantic, requests)
+
+Alternative: You can skip now and install later with:
+  cd planning-is-prompting
+  ./bin/install.sh
+
+[1] Yes, install notification scripts now
+[2] No thanks, I'll install manually later (or skip entirely)
+
+What would you like to do? [1/2]
+```
+
+3. **If User Chooses [1] - Install Scripts**:
+
+   a. **Check for COSA**:
+   ```bash
+   # Try to detect COSA_CLI_PATH
+   if [ -z "$COSA_CLI_PATH" ]; then
+       echo ""
+       echo "⚠  COSA_CLI_PATH not detected"
+       echo ""
+       echo "Notification scripts require COSA (Claude Code Service Agent)."
+       echo ""
+       echo "Installation Guide: planning-is-prompting → bin/README.md"
+       echo ""
+       echo "Quick Setup:"
+       echo "  1. Clone COSA: git clone https://github.com/deepily/cosa"
+       echo "  2. Setup venv: cd cosa && python3 -m venv .venv"
+       echo "  3. Install deps: source .venv/bin/activate && pip install -r requirements.txt"
+       echo "  4. Set env var: export COSA_CLI_PATH='/path/to/lupin/src'"
+       echo ""
+
+       read -p "Have you installed COSA? [Y/n] " -r
+       if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+           echo "Skipping notification scripts. Install COSA first, then run:"
+           echo "  cd planning-is-prompting"
+           echo "  ./bin/install.sh"
+           # Skip to Step 8
+       fi
+   fi
+   ```
+
+   b. **Run Installation Script**:
+   ```bash
+   echo ""
+   echo "Running notification script installer..."
+   echo ""
+
+   cd planning-is-prompting
+   ./bin/install.sh --non-interactive
+   ```
+
+   c. **Report Installation**:
+   ```
+   ──────────────────────────────────────────────────────────
+   Notification Scripts Installed
+   ──────────────────────────────────────────────────────────
+
+   ✅ Created: ~/.local/bin/notify-claude-async
+   ✅ Created: ~/.local/bin/notify-claude-sync
+
+   Test installation:
+     notify-claude-async "Test notification" --validate-env
+
+   Usage in workflows:
+     # Fire-and-forget
+     notify-claude-async "[PREFIX] Task completed" --type task --priority low
+
+     # Response-required
+     notify-claude-sync "[PREFIX] Approve commit?" \
+       --response-type yes_no \
+       --response-default no \
+       --timeout 300
+
+   Documentation:
+     • planning-is-prompting → bin/README.md (usage guide)
+     • planning-is-prompting → workflow/notification-system.md (patterns)
+   ```
+
+4. **If Update Was Available** (instead of fresh install):
+
+```
+══════════════════════════════════════════════════════════
+Update Notification Scripts?
+══════════════════════════════════════════════════════════
+
+Installed version: v1.0.0
+Available version: v1.1.0
+
+Update available. Would you like to update now?
+
+[U] Update scripts now
+[D] Show diff first
+[S] Skip for now
+
+What would you like to do? [U/D/S]
+```
+
+   If user chooses [U] or [D]:
+   ```bash
+   cd planning-is-prompting
+   ./bin/install.sh --update
+   ```
+
+5. **If User Chooses [2] - Skip Installation**:
+
+```
+──────────────────────────────────────────────────────────
+No Problem!
+──────────────────────────────────────────────────────────
+
+You can install notification scripts later by running:
+
+  cd planning-is-prompting
+  ./bin/install.sh              # Interactive mode
+  ./bin/install.sh --update     # Check for updates
+
+COSA Installation Guide:
+  planning-is-prompting → bin/README.md
+
+Workflows will function normally without notifications.
+```
+
+**Update TodoWrite**: Add and complete "Install notification scripts (optional)" item
+
+**Send Notification** (if scripts were installed):
+```bash
+notify-claude-async "[MYPROJ] ✅ Notification scripts installed successfully" --type=progress --priority=low
+```
+
+**Key Benefits**:
+- **Real-time alerts**: Get notified immediately when workflows need attention
+- **Improved UX**: Know when long-running tasks complete
+- **Decision support**: Receive prompts for approvals (commits, archives, etc.)
+- **Optional**: Works fine without notifications (workflows are self-sufficient)
+- **Easy updates**: Use `./bin/install.sh --update` to check for new versions
+
+**Troubleshooting**:
+- **COSA not found**: See bin/README.md for complete COSA installation guide
+- **Dependencies missing**: Ensure Pydantic and requests installed in COSA venv
+- **Scripts not in PATH**: Add ~/.local/bin/ to PATH in ~/.bashrc
+
+---
+
 ### Step 8: Offer Session-End Workflow (Conditional)
 
 **Purpose**: Allow user to run session-end workflow to record installation progress
