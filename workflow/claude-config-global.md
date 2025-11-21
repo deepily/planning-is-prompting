@@ -29,7 +29,7 @@
 ## CLAUDE CODE NOTIFICATION SYSTEM
 **Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
 
-- **Command**: Use `notify-claude` (global command, works from any directory)
+- **Commands**: Use `notify-claude-async` (fire-and-forget) or `notify-claude-sync` (response-required)
 - **Target**: ricardo.felipe.ruiz@gmail.com
 - **API Key**: claude_code_simple_key
 - **Requirements**: COSA_CLI_PATH environment variable (usually auto-detected)
@@ -51,31 +51,38 @@
 
 **Types**: task, progress, alert, custom
 
-### Using the Global notify-claude Command
-The `notify-claude` command is available globally from any directory or project:
+### Using the Global Notification Commands
+The `notify-claude-async` and `notify-claude-sync` commands are available globally from any directory or project:
 
 ```bash
-notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
+# Fire-and-forget (progress updates, completions, alerts)
+notify-claude-async "MESSAGE" --type=TYPE --priority=PRIORITY --target-user=EMAIL
+
+# Response-required (blocking, waits for user input)
+notify-claude-sync "MESSAGE" --response-type=yes_no|open_ended --target-user=EMAIL [--timeout=SECONDS] [--response-default=VALUE]
 ```
 
 - **No setup required** - Command works from any directory
 - **Auto-detects COSA installation** - Uses COSA_CLI_PATH if set, or searches common paths
 - **Backward compatible** - All existing notify_user.py arguments supported
-- **Environment validation** - Use `notify-claude "test" --validate-env` to check configuration
+- **Environment validation** - Use `notify-claude-async "test" --validate-env --target-user=EMAIL` to check configuration
 
 ### Notification Command Examples
-**Examples**:
-- `notify-claude "[SHORT_PROJECT_PREFIX] Need approval to modify 5 files for authentication system" --type=task --priority=high`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Blocked: Which database migration approach should I use?" --type=alert --priority=urgent`
-- `notify-claude "[SHORT_PROJECT_PREFIX] ✅ Email authentication system implementation complete" --type=task --priority=low`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Found potential issue in config file - should I fix it?" --type=alert --priority=medium`
+**Fire-and-forget (async) examples**:
+- `notify-claude-async "[SHORT_PROJECT_PREFIX] ✅ Email authentication system implementation complete" --type=task --priority=low --target-user=EMAIL`
+- `notify-claude-async "[SHORT_PROJECT_PREFIX] Error: Database connection failed" --type=alert --priority=urgent --target-user=EMAIL`
+- `notify-claude-async "[SHORT_PROJECT_PREFIX] Completed task 3 of 5" --type=progress --priority=medium --target-user=EMAIL`
+
+**Response-required (sync) examples**:
+- `notify-claude-sync "[SHORT_PROJECT_PREFIX] Need approval to modify 5 files for authentication system" --response-type=yes_no --response-default=no --timeout=300 --type=task --priority=high --target-user=EMAIL`
+- `notify-claude-sync "[SHORT_PROJECT_PREFIX] Which database migration approach should I use?" --response-type=open_ended --timeout=600 --type=alert --priority=urgent --target-user=EMAIL`
 
 ### Notification Tips
 - **Use the `[SHORT_PROJECT_PREFIX]`**: Whenever you are building to do lists or querying me using the notification endpoint you MUST use your project specific prefix to help me understand which repo the lists, notifications, or queries belong to
 - **`[SHORT_PROJECT_PREFIX]` is defined in your repo specific CLAUDE.md**: Each project will have its own `[SHORT_PROJECT_PREFIX]`
 
 ### DEPRECATED: Per-Project notify.sh Scripts
-**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude` command instead.
+**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude-async` or `notify-claude-sync` commands instead.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages

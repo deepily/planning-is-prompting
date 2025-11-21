@@ -223,7 +223,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✓ Detection complete - found X installed workflows" --type=progress --priority=low
+notify-claude-async "[UNINSTALL] ✓ Detection complete - found X installed workflows" --type=progress --priority=low --target-user=EMAIL
 ```
 
 ---
@@ -325,7 +325,7 @@ What would you like to do? [1/2/3]
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ⏸ Catalog presented - awaiting selection" --type=task --priority=high
+notify-claude-sync "[UNINSTALL] ⏸ Catalog presented - awaiting selection" --response-type=open_ended --timeout=600 --type=task --priority=high --target-user=EMAIL
 ```
 
 ---
@@ -402,7 +402,7 @@ Ready to proceed with deletion preview.
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✅ Selection validated - X workflows selected" --type=progress --priority=low
+notify-claude-async "[UNINSTALL] ✅ Selection validated - X workflows selected" --type=progress --priority=low --target-user=EMAIL
 ```
 
 ---
@@ -501,7 +501,7 @@ Proceed with deletion of these 5 files? [y/n]
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ⏸ Deletion candidates shown - awaiting confirmation" --type=task --priority=high
+notify-claude-sync "[UNINSTALL] ⏸ Deletion candidates shown - awaiting confirmation" --response-type=yes_no --response-default=no --timeout=300 --type=task --priority=high --target-user=EMAIL
 ```
 
 ---
@@ -561,7 +561,7 @@ Deletion Complete: 5 files removed
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✅ Deleted X slash command files" --type=progress --priority=medium
+notify-claude-async "[UNINSTALL] ✅ Deleted X slash command files" --type=progress --priority=medium --target-user=EMAIL
 ```
 
 ---
@@ -681,7 +681,7 @@ What would you like to do? [1/2/3]
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✓ CLAUDE.md cleanup handled" --type=progress --priority=low
+notify-claude-async "[UNINSTALL] ✓ CLAUDE.md cleanup handled" --type=progress --priority=low --target-user=EMAIL
 ```
 
 ---
@@ -768,7 +768,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✓ .gitignore cleanup handled" --type=progress --priority=low
+notify-claude-async "[UNINSTALL] ✓ .gitignore cleanup handled" --type=progress --priority=low --target-user=EMAIL
 ```
 
 ---
@@ -859,7 +859,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] ✓ Directory cleanup handled" --type=progress --priority=low
+notify-claude-async "[UNINSTALL] ✓ Directory cleanup handled" --type=progress --priority=low --target-user=EMAIL
 ```
 
 ---
@@ -948,7 +948,7 @@ planning-is-prompting workflows!
 
 **Send Notification**:
 ```bash
-notify-claude "[UNINSTALL] 🎉 Uninstallation complete - X workflows removed" --type=task --priority=high
+notify-claude-async "[UNINSTALL] 🎉 Uninstallation complete - X workflows removed" --type=task --priority=high --target-user=EMAIL
 ```
 
 ---

@@ -147,7 +147,7 @@ Create a comprehensive todo list to track baseline collection progress:
 SCOPE_TEXT="${1:-full}"  # From scope parameter, default to "full"
 
 # Send notification
-notify-claude "[{PREFIX}] 🔍 Baseline collection STARTED ({SCOPE_TEXT}) - Establishing pre-change system health metrics" --type=progress --priority=medium
+notify-claude-async "[{PREFIX}] 🔍 Baseline collection STARTED ({SCOPE_TEXT}) - Establishing pre-change system health metrics" --type=progress --priority=medium --target-user=EMAIL
 ```
 
 **Format**:
@@ -697,9 +697,9 @@ SCOPE_TEXT="${1:-full}"
 
 # Construct completion message with key metrics
 if [ "$SCOPE_TEXT" = "full" ]; then
-    notify-claude "[{PREFIX}] ✅ Baseline collection COMPLETE (FULL SUITE) - {XX.X%} overall pass rate, {health_status}, ready for changes" --type=progress --priority=medium
+    notify-claude-async "[{PREFIX}] ✅ Baseline collection COMPLETE (FULL SUITE) - {XX.X%} overall pass rate, {health_status}, ready for changes" --type=progress --priority=medium --target-user=EMAIL
 else
-    notify-claude "[{PREFIX}] ✅ Baseline collection COMPLETE ({SCOPE_TEXT}) - {XX.X%} pass rate, {health_status}, ready for changes" --type=progress --priority=medium
+    notify-claude-async "[{PREFIX}] ✅ Baseline collection COMPLETE ({SCOPE_TEXT}) - {XX.X%} pass rate, {health_status}, ready for changes" --type=progress --priority=medium --target-user=EMAIL
 fi
 ```
 

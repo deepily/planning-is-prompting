@@ -1,13 +1,89 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 34 complete (enhanced) - bin/ directory with v1.1.0 (version checking + installation wizard integration)
+**RESUME HERE**: Session 35 complete - Deprecated notify-claude replaced with notify-claude-async/sync throughout repository
 
-**Current Status**: Notification scripts v1.1.0 with --update mode, Step 7.6 added to installation wizard, comprehensive version management, all documentation updated
-**Next Steps**: Test --update mode in production, test Step 7.6 during workflow installation, consider automatic update prompts
+**Current Status**: All 37 notify-claude references updated to use async/sync variants, 7 workflow files modified, documentation updated with proper command usage
+**Next Steps**: Test updated workflows with new notification commands, update global CLAUDE.md in ~/.claude/ to match workflow/claude-config-global.md changes
 
 ---
 
 ## November 2025
+
+### 2025.11.20 - Session 35: Replace Deprecated notify-claude with notify-claude-async/sync
+
+**Accomplishments**:
+- **Eliminated all deprecated notify-claude references** (37 occurrences across 7 files):
+  - **workflow/claude-config-global.md** (14 replacements):
+    - Updated section headers to reference both async and sync commands
+    - Replaced command examples with semantic async/sync variants
+    - Added --target-user parameter to all examples
+    - Distinguished fire-and-forget vs response-required patterns
+  - **workflow/uninstall-wizard.md** (10 replacements):
+    - 8 progress updates → notify-claude-async
+    - 2 blocking confirmations → notify-claude-sync with --response-type and --timeout
+  - **workflow/INSTALLATION-GUIDE.md** (3 replacements):
+    - Updated installation and troubleshooting documentation
+  - **workflow/notification-system.md** (4 replacements):
+    - Updated Pattern A/B examples to show both async and sync
+    - Updated key activities list
+  - **workflow/testing-baseline.md** (3 replacements):
+    - All notifications → notify-claude-async (progress updates)
+  - **workflow/testing-harness-update.md** (1 replacement):
+    - Completion notification → notify-claude-async
+  - **CLAUDE.md** (2 replacements):
+    - Updated Notification Integration section with both command syntaxes
+- **Understood async vs sync semantics from COSA CLI source**:
+  - **notify-claude-async**: Fire-and-forget, no SSE streaming, exit codes 0/1
+  - **notify-claude-sync**: Blocking with SSE, waits for response, exit codes 0/1/2, requires --response-type
+- **Applied correct replacement logic**:
+  - Fire-and-forget (27): Progress updates, completions, alerts → notify-claude-async
+  - Response-required (2): User confirmations in uninstall wizard → notify-claude-sync
+  - Intentionally kept (7): Documentation about deprecated command, historical references
+- **All commands now include --target-user=EMAIL** parameter
+
+**Session Flow**:
+1. User requested elimination of deprecated notify-claude command
+2. Used Task agent (Plan subagent) to comprehensively search and categorize all 37 occurrences
+3. User clarified need to understand async vs sync differences
+4. Read COSA CLI source code (notify_user_async.py and notify_user_sync.py) to understand semantics
+5. Revised categorization based on actual blocking vs fire-and-forget behavior
+6. Systematically replaced all occurrences across 7 files
+7. Verified no unintended references remain (grep validation)
+
+**Key Insights**:
+- **Async vs Sync is about blocking behavior, not priority**: High-priority notifications can still be fire-and-forget if they don't need user response
+- **Most workflow notifications are async**: Even "important" notifications like session-start/end are informational, not blocking
+- **Only true blocking cases need sync**: User confirmations, approval requests, decision points
+- **--target-user parameter is required**: All commands now explicitly specify recipient
+- **Documentation files intentionally preserved**: bin/README.md, README.md, history.md, notification-system.md contain references documenting the deprecated command
+
+**Pattern Recognition**:
+- Work type: Systematic refactoring (deprecation elimination)
+- Scale: Medium (37 occurrences, 7 files, ~2 hours)
+- Pattern: Pattern 3 (Feature Development - well-scoped cleanup)
+- Documentation: history.md only (no dedicated implementation docs needed)
+
+**Files Modified** (7 files):
+1. `workflow/claude-config-global.md` - Updated command documentation and examples
+2. `workflow/uninstall-wizard.md` - Replaced 10 notification commands
+3. `workflow/INSTALLATION-GUIDE.md` - Updated installation docs
+4. `workflow/notification-system.md` - Updated pattern examples
+5. `workflow/testing-baseline.md` - Replaced 3 notification commands
+6. `workflow/testing-harness-update.md` - Replaced 1 notification command
+7. `CLAUDE.md` - Updated notification integration section
+
+**Git Statistics**:
+```
+7 files changed, 50 insertions(+), 33 deletions(-)
+```
+
+**TODO for Next Session**:
+- [ ] Test updated workflows with new notification commands in practice
+- [ ] Update global ~/.claude/CLAUDE.md to match workflow/claude-config-global.md template
+- [ ] Consider updating session-start.md and session-end.md notification examples
+- [ ] Test notify-claude-sync blocking behavior in real workflow scenarios
+
+---
 
 ### 2025.11.10 - Session 34 Enhancement: Version Checking and Installation Wizard Integration (v1.1.0)
 

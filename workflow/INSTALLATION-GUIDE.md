@@ -627,7 +627,7 @@ Real-time notification system that:
 
 ### Install as Direct Reference
 
-The `notify-claude` command is global and requires no installation. Reference in your project's `.claude/CLAUDE.md`:
+The `notify-claude-async` and `notify-claude-sync` commands are global and require no installation. Reference in your project's `.claude/CLAUDE.md`:
 
 ```markdown
 ## Notifications
@@ -1625,9 +1625,9 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 ### Issue: Notifications not working
 
 **Solution**:
-1. Verify `notify-claude` command is installed globally
+1. Verify `notify-claude-async` and `notify-claude-sync` commands are installed globally
 2. Check `COSA_CLI_PATH` environment variable
-3. Test with: `notify-claude "test" --validate-env`
+3. Test with: `notify-claude-async "test" --validate-env --target-user=EMAIL`
 
 ### Issue: Can't find planning-is-prompting workflows
 

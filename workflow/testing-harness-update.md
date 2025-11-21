@@ -889,7 +889,7 @@ echo "Generating test harness analysis report: ${REPORT_FILE}"
 ### Step 9: Send Completion Notification
 
 ```bash
-notify-claude "[{PREFIX}] ✅ Test harness analysis COMPLETE - {CHANGED_COUNT} changes analyzed, {TOTAL_GAPS} gaps identified ({CRITICAL_COUNT} critical)" --type=progress --priority=medium
+notify-claude-async "[{PREFIX}] ✅ Test harness analysis COMPLETE - {CHANGED_COUNT} changes analyzed, {TOTAL_GAPS} gaps identified ({CRITICAL_COUNT} critical)" --type=progress --priority=medium --target-user=EMAIL
 ```
 
 ---

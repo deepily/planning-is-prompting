@@ -5,7 +5,7 @@
 **When to use:** To send real-time notifications for approvals, blockers, task completion, or progress updates.
 
 **Key activities:**
-- Using notify-claude global command
+- Using notify-claude-async and notify-claude-sync global commands
 - Setting appropriate priority levels ( urgent, high, medium, low )
 - Choosing notification types ( task, progress, alert, custom )
 - Including `[SHORT_PROJECT_PREFIX]` in messages
@@ -27,7 +27,11 @@ When implementing notifications in workflows, choose the appropriate message pat
 
 **Implementation:**
 ```markdown
-notify-claude "[PREFIX] Fixed message text here" --type=task --priority=high
+# Fire-and-forget (informational messages)
+notify-claude-async "[PREFIX] Fixed message text here" --type=progress --priority=medium --target-user=EMAIL
+
+# Response-required (blocking/approval messages)
+notify-claude-sync "[PREFIX] Need approval for X" --response-type=yes_no --response-default=no --timeout=300 --type=task --priority=high --target-user=EMAIL
 ```
 
 **Pros:** Simple, predictable, no complexity
@@ -56,7 +60,9 @@ notify-claude "[PREFIX] Fixed message text here" --type=task --priority=high
 **Required Elements**: [What must be included]
 **Style Guidelines**: [Length, tone, structure constraints]
 
-**Command**: notify-claude "[PREFIX] {your_generated_variation}" --type=task --priority=high
+**Command**:
+- Fire-and-forget: `notify-claude-async "[PREFIX] {your_generated_variation}" --type=progress --priority=medium --target-user=EMAIL`
+- Response-required: `notify-claude-sync "[PREFIX] {your_generated_variation}" --response-type=TYPE --timeout=SECONDS --type=task --priority=high --target-user=EMAIL`
 ```
 
 **Pros:** Infinite variety, context-aware, natural feel, no permission prompts
@@ -72,7 +78,7 @@ notify-claude "[PREFIX] Fixed message text here" --type=task --priority=high
 ```markdown
 messages=("Msg 1" "Msg 2" "Msg 3")
 selected="${messages[$RANDOM % ${#messages[@]}]}"
-notify-claude "[PREFIX] $selected" --type=task --priority=high
+notify-claude-async "[PREFIX] $selected" --type=progress --priority=medium --target-user=EMAIL
 ```
 
 **Why to avoid:** Causes permission prompts, interrupts workflow flow, breaks transparency

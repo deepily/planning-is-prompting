@@ -80,9 +80,13 @@ The `history.md` file uses an **adaptive archival strategy**:
 
 ### 4. Notification Integration
 
-All workflow steps use the global `notify-claude` command:
+All workflow steps use the global notification commands:
 ```bash
-notify-claude "[PLAN] Message" --type=TYPE --priority=PRIORITY
+# Fire-and-forget (progress updates, completions)
+notify-claude-async "[PLAN] Message" --type=progress --priority=medium --target-user=EMAIL
+
+# Response-required (approvals, decisions)
+notify-claude-sync "[PLAN] Message" --response-type=yes_no|open_ended --timeout=SECONDS --type=task --priority=high --target-user=EMAIL
 ```
 
 Priority levels:
