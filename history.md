@@ -1,13 +1,107 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 35 complete - Deprecated notify-claude replaced with notify-claude-async/sync throughout repository
+**RESUME HERE**: Session 36 complete - Eliminated remaining deprecated notify-claude references in global config and cross-project slash commands
 
-**Current Status**: All 37 notify-claude references updated to use async/sync variants, 7 workflow files modified, documentation updated with proper command usage
-**Next Steps**: Test updated workflows with new notification commands, update global CLAUDE.md in ~/.claude/ to match workflow/claude-config-global.md changes
+**Current Status**: Global ~/.claude/CLAUDE.md updated with two-tier notification system, genie-in-the-box history-management.md updated, all executable workflows now use notify-claude-async/sync
+**Next Steps**: Monitor for deprecation warnings in cross-project workflows, consider propagating updates to other repos if needed
 
 ---
 
 ## November 2025
+
+### 2025.11.23 - Session 36: Global Config Sync - Eliminate Remaining notify-claude References
+
+**Accomplishments**:
+- **Root cause identified**: Global ~/.claude/CLAUDE.md was outdated, causing deprecation warnings in ALL repos
+- **Comprehensive inventory completed** via Plan agent research:
+  - **Category A (Global Config)**: ~/.claude/CLAUDE.md - OUTDATED (lines 200-246 using deprecated notify-claude)
+  - **Category B (Planning-is-Prompting)**: All workflows ✅ CLEAN (updated in Session 35)
+  - **Category C (Genie-in-the-Box)**: 1 executable slash command outdated, 5 documentation files correctly showing migration history
+  - **Category D (File History)**: Historical artifacts only, no action needed
+- **Global configuration updated** (~60 lines replaced):
+  - **File**: ~/.claude/CLAUDE.md (lines 197-253)
+  - **Before**: Single `notify-claude` command with simple examples
+  - **After**: Two-tier system (`notify-claude-async` + `notify-claude-sync`) with comprehensive examples
+  - **Surgical replacement**: Preserved all custom sections (Interactive Requirements Elicitation, PATH MANAGEMENT, TESTING, etc.)
+  - **Impact**: Fixes deprecation warnings in ALL repositories globally
+- **Genie-in-the-box slash command updated**:
+  - **File**: genie-in-the-box/.claude/commands/history-management.md (line 176)
+  - **Change**: `notify-claude` → `notify-claude-async` with --target-user parameter
+  - **Impact**: Eliminates warning when running /plan-history-management in genie repo
+- **Documentation files correctly preserved**:
+  - 5 research/design docs in genie-in-the-box/src/rnd/ intentionally show "Before/After" migration examples
+  - These are historical documentation, not executable code - no changes needed
+- **Verification passed** (100% clean):
+  - ✅ `grep -n 'notify-claude "' ~/.claude/CLAUDE.md` → 0 results
+  - ✅ Planning-is-prompting workflows → 0 deprecated references
+  - ✅ Genie-in-the-box slash commands → 0 deprecated references
+  - ✅ Global config shows 11 occurrences of notify-claude-async/sync (correct)
+  - ✅ Genie history-management shows 3 occurrences of notify-claude-async (correct)
+
+**Session Flow**:
+1. User reported deprecation warnings in other repos despite Session 35 cleanup
+2. User requested "Ultrathink" analysis to find ALL outdated references
+3. Launched Plan agent for comprehensive cross-repo inventory
+4. Agent identified root cause: Global ~/.claude/CLAUDE.md outdated (affects all repos)
+5. Created remediation plan with 3 phases (global config, genie slash command, optional docs)
+6. User approved plan
+7. Executed Phase 1: Updated global CLAUDE.md (surgical replacement preserving custom sections)
+8. Executed Phase 2: Updated genie-in-the-box history-management.md
+9. Executed Phase 3: Verified documentation files are correctly showing migration history (no changes needed)
+10. Ran comprehensive verification (all checks passed)
+
+**Key Insights**:
+- **Global config affects all repos**: Outdated ~/.claude/CLAUDE.md caused warnings across all projects
+- **Surgical updates preserve customization**: Template replacement would have lost valuable custom sections (PATH MANAGEMENT, TESTING, etc.)
+- **Documentation vs executable code**: Migration docs SHOULD show deprecated commands in "Before" examples
+- **Propagation path**: ~/.claude/CLAUDE.md → loaded in all sessions → influences workflow execution
+- **Two-file system working**: Repo template (workflow/claude-config-global.md) + active config (~/.claude/CLAUDE.md)
+
+**Root Cause Analysis**:
+```
+~/.claude/CLAUDE.md (outdated, lines 197-246)
+        ↓
+Claude loads global config at session start
+        ↓
+/plan-session-start invoked in other repos (genie-in-the-box, etc.)
+        ↓
+Examples from global config may influence workflow execution
+        ↓
+Deprecation warning appears in other repos
+```
+
+**Pattern Used This Session**:
+- Work type: Configuration synchronization + cross-project cleanup
+- Scale: Medium (~90 minutes, comprehensive research + targeted updates)
+- Pattern: Pattern 4 (Problem Investigation) → Pattern 5 (Operational Task)
+- Documentation: history.md only (no dedicated implementation docs)
+
+**Files Modified** (2 files):
+1. `/home/rruiz/.claude/CLAUDE.md` - Updated notification system section (lines 197-253, ~60 lines replaced)
+2. `/mnt/DATA01/include/www.deepily.ai/projects/genie-in-the-box/.claude/commands/history-management.md` - Updated line 176
+
+**Verification Summary**:
+```
+Category A (Global Config):
+  ✅ ~/.claude/CLAUDE.md - 0 deprecated, 11 updated commands
+
+Category B (Planning-is-Prompting):
+  ✅ workflow/*.md - 0 deprecated references
+
+Category C (Genie-in-the-Box Executables):
+  ✅ .claude/commands/*.md - 0 deprecated references
+
+Category C (Genie-in-the-Box Docs):
+  ✅ src/rnd/*.md - Correctly showing migration history (intentional references)
+```
+
+**TODO for Next Session**:
+- [ ] Test session-start workflow in genie-in-the-box (verify no deprecation warnings)
+- [ ] Monitor other repos for deprecation warnings (lupin, other projects)
+- [ ] Consider creating /plan-sync-global-config workflow for future template updates
+- [ ] Optional: Audit other repos for outdated slash commands copied before Session 35
+
+---
 
 ### 2025.11.20 - Session 35: Replace Deprecated notify-claude with notify-claude-async/sync
 
