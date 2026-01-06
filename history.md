@@ -1,9 +1,71 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 36 complete - Eliminated remaining deprecated notify-claude references in global config and cross-project slash commands
+**RESUME HERE**: Session 37 planning complete - Full notification system deprecation plan ready for execution
 
-**Current Status**: Global ~/.claude/CLAUDE.md updated with two-tier notification system, genie-in-the-box history-management.md updated, all executable workflows now use notify-claude-async/sync
-**Next Steps**: Monitor for deprecation warnings in cross-project workflows, consider propagating updates to other repos if needed
+**Current Status**: cosa-voice MCP v0.2.0 now complete with all 4 tools (notify, converse, ask_yes_no, ask_multiple_choice). Ready to migrate planning-is-prompting from bash notification commands to MCP tools.
+**Next Steps**: Execute migration plan in src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md
+
+**TODO for Next Session**:
+- [ ] Execute cosa-voice MCP migration plan (see src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md)
+- [ ] Delete bin/ directory (5 files, ~1,428 lines)
+- [ ] Create workflow/cosa-voice-integration.md
+- [ ] Update all workflow files (~20 files, 700+ notification references)
+- [ ] Test notify(), ask_yes_no(), converse(), ask_multiple_choice() in workflows
+
+---
+
+## January 2026
+
+### 2026.01.05 - Session 37: cosa-voice MCP Migration Planning
+
+**Accomplishments**:
+- **Comprehensive notification system deprecation plan created**:
+  - Analyzed ~20 files with 700+ notification command instances
+  - Mapped semantic purposes: progress updates, blocking decisions, error alerts, completion signals
+  - Designed migration from bash commands to cosa-voice MCP tools
+- **cosa-voice MCP v0.2.0 tool mapping completed**:
+  - `notify-claude-async` → `notify()` (fire-and-forget)
+  - `notify-claude-sync --response-type=yes_no` → `ask_yes_no()` (binary decisions)
+  - `notify-claude-sync --response-type=open_ended` → `converse()` (open-ended questions)
+  - `notify-claude-sync` with menu options → `ask_multiple_choice()` (mirrors AskUserQuestion)
+- **New MCP tool documented**: User implemented `ask_multiple_choice()` during session
+  - Provides 1:1 compatibility with Claude Code's AskUserQuestion format
+  - Includes `_format_questions_for_tts()`, `_convert_questions_format()`, `_parse_multiple_choice_response()`
+  - Version bumped to v0.2.0
+- **Key simplifications identified**:
+  - No more `[PREFIX]` in messages - project auto-detected from cwd
+  - No more `--target-user=` parameter - handled internally
+  - No more bash script installation - MCP already registered
+  - Direct 1:1 compatibility with Claude Code's AskUserQuestion format
+
+**Session Flow**:
+1. User requested deprecation of old notification system (notify-claude-async/sync)
+2. Launched 3 Explore agents in parallel to analyze scope
+3. Agent 1: Found all 700+ notification references across 20 files
+4. Agent 2: Explored cosa-voice MCP patterns and available tools
+5. Agent 3: Analyzed semantic purposes of each notification type
+6. Launched Plan agent to design optimal replacement architecture
+7. User clarified: Waiting for multiple-choice UI implementation
+8. User completed `ask_multiple_choice()` implementation during session
+9. Updated plan with complete MCP tool mappings
+10. Wrote plan to src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md
+11. Updated history.md with TODO for next session
+
+**Pattern Used This Session**:
+- Work type: Migration planning (deprecation + replacement design)
+- Scale: Large (~2 hours, comprehensive analysis)
+- Pattern: Pattern 2 (Research & Design) → staged for Pattern 3 (Feature Development) execution
+- Documentation: R&D document + history.md
+
+**Files Created** (2 files):
+1. `src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md` - Complete migration plan
+2. `/home/rruiz/.claude/plans/lively-riding-neumann.md` - Plan mode working document
+
+**Key Insights**:
+- **cosa-voice MCP replaces bash commands**: Native tool calls instead of shell execution
+- **Project auto-detection eliminates prefixes**: No more [PLAN] in notification messages
+- **AskUserQuestion compatibility**: ask_multiple_choice() uses same format for seamless migration
+- **Hybrid approach considered**: For complex menus, may combine notify() (audio alert) with native tools
 
 ---
 
