@@ -1,20 +1,75 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 37 planning complete - Full notification system deprecation plan ready for execution
+**RESUME HERE**: Session 38 complete - cosa-voice MCP migration FULLY EXECUTED
 
-**Current Status**: cosa-voice MCP v0.2.0 now complete with all 4 tools (notify, converse, ask_yes_no, ask_multiple_choice). Ready to migrate planning-is-prompting from bash notification commands to MCP tools.
-**Next Steps**: Execute migration plan in src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md
+**Current Status**: All notification system references migrated from bash commands to cosa-voice MCP tools. bin/ directory deleted, workflow/notification-system.md deleted, workflow/cosa-voice-integration.md created as new canonical reference.
+**Next Steps**: Test cosa-voice MCP tools in live workflows, update other projects using these workflows
 
 **TODO for Next Session**:
-- [ ] Execute cosa-voice MCP migration plan (see src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md)
-- [ ] Delete bin/ directory (5 files, ~1,428 lines)
-- [ ] Create workflow/cosa-voice-integration.md
-- [ ] Update all workflow files (~20 files, 700+ notification references)
-- [ ] Test notify(), ask_yes_no(), converse(), ask_multiple_choice() in workflows
+- [ ] Test cosa-voice MCP tools (notify, ask_yes_no, ask_multiple_choice, converse) in real session-end workflow
+- [ ] Update global ~/.claude/CLAUDE.md to reference cosa-voice-integration.md
+- [ ] Consider migrating genie-in-the-box to cosa-voice MCP tools
 
 ---
 
 ## January 2026
+
+### 2026.01.06 - Session 38: cosa-voice MCP Migration EXECUTION
+
+**Accomplishments**:
+- **COMPLETE migration from bash notification commands to cosa-voice MCP tools**:
+  - Executed all 12 phases of migration plan from src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md
+  - Migrated ~90 notification references across 13 files
+  - All `notify-claude-async` → `notify()` MCP tool
+  - All `notify-claude-sync` → `ask_yes_no()`, `ask_multiple_choice()`, or `converse()` MCP tools
+
+- **Files Deleted** (7 files, ~1,700 lines removed):
+  - `bin/notify-claude-async` (80 lines)
+  - `bin/notify-claude-sync` (82 lines)
+  - `bin/notify-claude` (43 lines)
+  - `bin/install.sh` (1,200 lines)
+  - `bin/README.md` (23 lines)
+  - `workflow/notification-system.md` (~270 lines)
+
+- **Files Created** (1 file):
+  - `workflow/cosa-voice-integration.md` (~280 lines) - New canonical reference for cosa-voice MCP
+
+- **Files Updated** (13 files):
+  | File | Changes |
+  |------|---------|
+  | global/CLAUDE.md | Rewrote notification section (~75 lines) |
+  | workflow/claude-config-global.md | Updated notification section |
+  | workflow/session-start.md | Updated ~10 refs |
+  | workflow/session-end.md | Updated ~19 refs |
+  | workflow/installation-wizard.md | Updated ~32 refs, deleted Step 7.6 (~200 lines) |
+  | workflow/uninstall-wizard.md | Updated ~9 refs |
+  | workflow/history-management.md | Updated ~6 refs |
+  | workflow/testing-baseline.md | Updated ~3 refs |
+  | workflow/testing-remediation.md | Updated ~3 refs |
+  | workflow/testing-harness-update.md | Updated ~1 ref |
+  | CLAUDE.md | Updated notification integration section |
+  | README.md | Removed script install section |
+  | workflow/INSTALLATION-GUIDE.md | Updated ~3 refs |
+
+**Key Simplifications Achieved**:
+- No `[PREFIX]` needed in messages - project auto-detected from working directory
+- No `--target-user` parameter - handled internally by MCP server
+- No bash script installation - MCP server handles everything
+- AskUserQuestion-compatible format for `ask_multiple_choice()`
+
+**Pattern Used This Session**:
+- Work type: Migration execution (systematic file updates)
+- Scale: Large (~1.5 hours, 12 phases)
+- Pattern: Pattern 3 (Feature Development) - executing plan from Session 37
+- Documentation: history.md + existing migration plan
+
+**Verification Results**:
+- ✅ bin/ directory successfully deleted
+- ✅ workflow/notification-system.md successfully deleted
+- ✅ workflow/cosa-voice-integration.md created (11,982 bytes)
+- ✅ Remaining notify-claude refs only in history.md (historical) and migration docs (intentional)
+
+---
 
 ### 2026.01.05 - Session 37: cosa-voice MCP Migration Planning
 

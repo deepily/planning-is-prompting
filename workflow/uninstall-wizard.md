@@ -222,8 +222,8 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 **Update TodoWrite**: Mark "Detect installed workflows" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude-async "[UNINSTALL] ✓ Detection complete - found X installed workflows" --type=progress --priority=low --target-user=EMAIL
+```python
+notify( "Detection complete - found X installed workflows", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -325,7 +325,7 @@ What would you like to do? [1/2/3]
 
 **Send Notification**:
 ```bash
-notify-claude-sync "[UNINSTALL] ⏸ Catalog presented - awaiting selection" --response-type=open_ended --timeout=600 --type=task --priority=high --target-user=EMAIL
+notify( "Catalog presented - awaiting selection", notification_type="task", priority="high" )
 ```
 
 ---
@@ -402,7 +402,7 @@ Ready to proceed with deletion preview.
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] ✅ Selection validated - X workflows selected" --type=progress --priority=low --target-user=EMAIL
+notify( "Selection validated - X workflows selected", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -501,7 +501,7 @@ Proceed with deletion of these 5 files? [y/n]
 
 **Send Notification**:
 ```bash
-notify-claude-sync "[UNINSTALL] ⏸ Deletion candidates shown - awaiting confirmation" --response-type=yes_no --response-default=no --timeout=300 --type=task --priority=high --target-user=EMAIL
+ask_yes_no( "Proceed with deletion of selected workflows?", default="no", timeout_seconds=300 )
 ```
 
 ---
@@ -561,7 +561,7 @@ Deletion Complete: 5 files removed
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] ✅ Deleted X slash command files" --type=progress --priority=medium --target-user=EMAIL
+notify( "Deleted X slash command files", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -681,7 +681,7 @@ What would you like to do? [1/2/3]
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] ✓ CLAUDE.md cleanup handled" --type=progress --priority=low --target-user=EMAIL
+notify( "CLAUDE.md cleanup handled", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -768,7 +768,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] ✓ .gitignore cleanup handled" --type=progress --priority=low --target-user=EMAIL
+notify( ".gitignore cleanup handled", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -859,7 +859,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] ✓ Directory cleanup handled" --type=progress --priority=low --target-user=EMAIL
+notify( "Directory cleanup handled", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -948,7 +948,7 @@ planning-is-prompting workflows!
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UNINSTALL] 🎉 Uninstallation complete - X workflows removed" --type=task --priority=high --target-user=EMAIL
+notify( "Uninstallation complete - X workflows removed", notification_type="task", priority="high" )
 ```
 
 ---

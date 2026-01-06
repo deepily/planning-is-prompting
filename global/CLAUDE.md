@@ -195,239 +195,165 @@ source .venv/bin/activate  # Linux/Mac
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
-**Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
 
-- **Target**: ricardo.felipe.ruiz@gmail.com
-- **API Key**: claude_code_simple_key
-- **Requirements**: COSA_CLI_PATH environment variable (usually auto-detected)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
 
-### Two-Tier Notification Architecture
+The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
 
-Planning is Prompting workflows use **two notification commands** to match the semantic needs of different workflow steps:
+### Available MCP Tools
 
-- **notify-claude-async**: Fire-and-forget notifications (no response expected)
-- **notify-claude-sync**: Blocking notifications (waits for user response before continuing)
+| Tool | Purpose | Blocking | Example |
+|------|---------|----------|---------|
+| `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
+| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no" )` |
+| `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...] )` |
+| `get_session_info()` | Session metadata | No | `get_session_info()` |
+
+### Key Features
+
+- **No [PREFIX] needed**: Project auto-detected from working directory
+- **No --target-user parameter**: Routing handled internally by MCP server
+- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
+- **Native MCP tool calls**: No bash command execution required
 
 ---
 
-### notify-claude-async (Asynchronous/Fire-and-Forget)
+### Fire-and-Forget Notifications
 
-**Purpose**: Send informational notifications without blocking workflow execution.
-
-**Use for**:
-- Progress updates ("✅ Step 3 completed")
-- Milestone completions ("🎉 Installation complete")
-- Informational notices ("📋 Found 5 TODO items")
-- Post-action confirmations ("✅ Changes committed successfully")
-
-**Global Command**: Works from any directory, no setup required
-
-**Syntax**:
-```bash
-notify-claude-async "MESSAGE" --type TYPE --priority PRIORITY
-```
+Use `notify()` for progress updates, completions, alerts, and informational messages.
 
 **Parameters**:
-- `--type`: task | progress | alert | custom
-- `--priority`: urgent | high | medium | low
+- `message` (required): The message to announce
+- `notification_type`: task | progress | alert | custom (default: task)
+- `priority`: urgent | high | medium | low (default: medium)
+
+**Priority Guidelines**:
+- `urgent`: Critical errors, blockers, time-sensitive
+- `high`: Session-ready notifications, important status updates
+- `medium`: Progress milestones, phase completions
+- `low`: Minor updates, task completions
 
 **Examples**:
-```bash
+```python
 # Progress update
-notify-claude-async "[PLAN] ✅ Session history updated" --type progress --priority low
+notify( "Starting session initialization...", notification_type="progress", priority="low" )
 
-# Task completion
-notify-claude-async "[PLAN] ✅ Email authentication system complete" --type task --priority low
+# Session ready
+notify( "All set! Config loaded, ready to work.", notification_type="task", priority="high" )
 
-# Alert
-notify-claude-async "[PLAN] Found potential issue in config file" --type alert --priority medium
+# Error alert
+notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
 ```
-
-**Characteristics**:
-- Does NOT wait for user response
-- Returns immediately after sending
-- Workflow continues without blocking
-- Auto-detects COSA installation (COSA_CLI_PATH)
 
 ---
 
-### notify-claude-sync (Synchronous/Blocking)
+### Blocking Decisions
 
-**Purpose**: Send notifications that WAIT for user response before continuing workflow execution.
+Use blocking tools when you need user input before proceeding.
 
-**Use for**:
-- Commit approval workflows (user must choose [1/2/3/4])
-- Workflow/configuration selection menus
-- Critical decisions with explicit options
-- Anytime workflow contains "STOP and WAIT" or "PAUSE workflow"
+#### ask_yes_no()
 
-**Global Command**: Works from any directory, blocks until response
+For simple binary yes/no decisions.
 
-**Syntax**:
-```bash
-notify-claude-sync "MESSAGE" --response-type TYPE [OPTIONS]
+```python
+response = ask_yes_no(
+    question="Commit these changes?",
+    default="no",
+    timeout_seconds=300
+)
+# Returns: {"answer": "yes"} or {"answer": "no"}
 ```
 
-**Required Parameters**:
-- `--response-type`: yes_no | open_ended
+#### converse()
 
-**Optional Parameters**:
-- `--response-default`: Default response if timeout (e.g., "yes", "no", "skip")
-- `--timeout`: Seconds to wait (30-600, recommended: 180 or 300)
-- `--type`: task | progress | alert | custom (default: task)
-- `--priority`: urgent | high | medium | low (default: high)
+For open-ended questions requiring text or voice response.
 
-**Exit Codes**:
-- `0`: Success (response received, or offline with default)
-- `1`: Error (validation failure, network error, user not found)
-- `2`: Timeout (no response within timeout period)
-
-**Examples**:
-```bash
-# Commit approval (yes/no decision, 5-minute timeout)
-notify-claude-sync "[PLAN] Approve commit? View message above" \
-  --response-type yes_no \
-  --response-default no \
-  --timeout 300 \
-  --type task \
-  --priority high
-
-# Workflow selection (open-ended choice, 5-minute timeout)
-notify-claude-sync "[INSTALL] Select workflow [1/2/3/4]" \
-  --response-type open_ended \
-  --timeout 300 \
-  --type task \
-  --priority high
-
-# Quick decision (3-minute timeout)
-notify-claude-sync "[BACKUP] Update [U], diff [D], or skip [S]?" \
-  --response-type open_ended \
-  --timeout 180 \
-  --type task \
-  --priority medium
+```python
+response = converse(
+    message="Which migration approach should I use?",
+    response_type="open_ended",
+    timeout_seconds=600,
+    response_default="defer to next session"
+)
+# Returns: {"response": "Use incremental migration"}
 ```
 
-**Characteristics**:
-- BLOCKS workflow execution until response received or timeout
-- Returns user response via stdout
-- Timeout triggers fallback behavior (workflows define safe defaults)
-- Claude waits synchronously - matches "STOP and WAIT" semantics
+#### ask_multiple_choice()
+
+For menu selections with 2-4 options. Uses same format as Claude Code's `AskUserQuestion`.
+
+```python
+response = ask_multiple_choice( questions=[
+    {
+        "question": "How would you like to proceed with the commit?",
+        "header": "Commit",
+        "multiSelect": False,
+        "options": [
+            {"label": "Commit only", "description": "Keep changes local"},
+            {"label": "Commit and push", "description": "Sync to remote"},
+            {"label": "Modify", "description": "Edit commit message"},
+            {"label": "Cancel", "description": "Skip commit"}
+        ]
+    }
+] )
+# Returns: {"answers": {"0": "Commit and push"}}
+```
 
 ---
 
-### When to Send Notifications
+### Timeout Handling
 
-**Use async for**:
-- Progress updates during long operations
-- Task completions and milestones
-- Informational notices
-- Errors that don't require acknowledgment
+All blocking tools support timeout with safe defaults:
 
-**Use sync for**:
-- Approval requests (commit, configuration changes)
-- Blocking decisions (workflow selection, archive now/later)
-- Critical errors requiring acknowledgment
-- Any workflow step that contains "STOP and WAIT"
+| Tool | Default Timeout | Safe Default Action |
+|------|-----------------|---------------------|
+| `ask_yes_no()` | 300s (5 min) | Return `default` value |
+| `converse()` | 600s (10 min) | Return `response_default` |
+| `ask_multiple_choice()` | 300s (5 min) | Return first option or cancel |
 
----
-
-### Notification Guidelines
-
-**Priorities** (same for both async and sync):
-- `urgent`: Critical errors, system failures, immediate attention required
-- `high`: Approval requests, blocking decisions, important status updates
-- `medium`: Progress milestones, non-critical alerts
-- `low`: Minor updates, task completions, informational notices
-
-**Types**: task, progress, alert, custom
-
-**Detection Pattern**: If workflow documentation contains these phrases, use **sync**:
-- "STOP and WAIT for user response"
-- "PAUSE workflow until user selects"
-- "BLOCK session-end workflow"
-- "awaiting selection/confirmation"
-- "Wait for User Selection"
+**Safe Default Principle**: On timeout, choose actions that preserve data integrity:
+- Commit decisions → default to "Cancel"
+- Archive decisions → default to "Next session"
+- Destructive actions → default to "No"
 
 ---
 
-### Timeout Handling (sync only)
+### Project Auto-Detection
 
-**Recommended Timeouts**:
-- **Quick decisions**: 180s (3 min) - Archive now/later/skip, Update/skip
-- **Complex decisions**: 300s (5 min) - Commit approval, workflow selection
-- **Emergency**: 30s - Critical errors requiring immediate attention
+cosa-voice automatically detects project from working directory:
 
-**Every sync notification MUST define a safe default action** on timeout:
+| Directory Pattern | Detected Project |
+|-------------------|------------------|
+| `*/planning-is-prompting/*` | `plan` |
+| `*/genie-in-the-box/*` | `lupin` |
+| Other | Directory name |
 
-```bash
-# Timeout handling pattern
-if ! notify-claude-sync "[PREFIX] Message" \
-     --response-type yes_no \
-     --response-default no \
-     --timeout 300 \
-     --type task \
-     --priority high; then
-
-    exit_code=$?
-
-    if [ $exit_code -eq 2 ]; then
-        # Timeout occurred - use safe default
-        notify-claude-async "[PREFIX] ⚠️ Decision timeout - using default action" \
-            --type alert --priority medium
-        # Execute safe default (e.g., cancel commit, skip install)
-    fi
-fi
-```
-
-**Safe Defaults** (preserve data integrity, avoid irreversible actions):
-- Commit approval → Default to Cancel (preserve uncommitted changes)
-- Workflow selection → Default to Cancel installation
-- Archive decision → Default to "Next session" (defer)
-- Update confirmation → Default to Cancel (keep current versions)
-
----
-
-### Notification Tips
-
-- **Use the `[SHORT_PROJECT_PREFIX]`**: Whenever you are building to do lists or querying me using the notification endpoint you MUST use your project specific prefix to help me understand which repo the lists, notifications, or queries belong to
-- **`[SHORT_PROJECT_PREFIX]` is defined in your repo specific CLAUDE.md**: Each project will have its own `[SHORT_PROJECT_PREFIX]`
-- **Choose the right command**: async for "FYI", sync for "need your input"
-- **Define timeouts appropriately**: 180s for quick decisions, 300s for complex ones
-- **Always specify safe defaults**: timeout handling should preserve data integrity
-
----
-
-### Script Management
-
-**Current Location**: Both scripts installed in `~/.local/bin/` (global user location, in PATH)
-
-**Future**: Planning to integrate into planning-is-prompting repository for version control and automatic installation via `/plan-install-wizard`
-
-**Proposed Structure**:
-```
-planning-is-prompting/
-├── bin/
-│   ├── notify-claude-async
-│   ├── notify-claude-sync
-│   ├── README.md
-│   └── install.sh
-```
+**No need for [PREFIX] in messages** - project context handled automatically.
 
 ---
 
 ### Full Documentation
 
-For comprehensive sync/async patterns, timeout strategies, integration templates, and examples:
+For comprehensive patterns, examples, and migration reference:
 
-**See**: planning-is-prompting → workflow/notification-system.md
+**See**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ---
 
-### DEPRECATED: Per-Project notify.sh Scripts
+### DEPRECATED (Removed)
 
-**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude-async` command instead.
+The following bash commands have been replaced by cosa-voice MCP tools:
 
-**Old command name (DEPRECATED)**: `notify-claude` has been renamed to `notify-claude-async` for clarity. If you encounter workflows using the old name, update them to use `notify-claude-async`.
+| Deprecated Command | Replacement |
+|--------------------|-------------|
+| `notify-claude-async` | `notify()` |
+| `notify-claude-sync --response-type=yes_no` | `ask_yes_no()` |
+| `notify-claude-sync --response-type=open_ended` | `converse()` |
+| `notify-claude-sync` with menu options | `ask_multiple_choice()` |
+| `notify-claude` | Removed entirely |
+
+The `bin/` directory with notification scripts has been removed. All notifications now use native MCP tool calls.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages

@@ -80,20 +80,28 @@ The `history.md` file uses an **adaptive archival strategy**:
 
 ### 4. Notification Integration
 
-All workflow steps use the global notification commands:
-```bash
+All workflow steps use cosa-voice MCP tools (v0.2.0):
+```python
 # Fire-and-forget (progress updates, completions)
-notify-claude-async "[PLAN] Message" --type=progress --priority=medium --target-user=EMAIL
+notify( "Message", notification_type="progress", priority="medium" )
 
 # Response-required (approvals, decisions)
-notify-claude-sync "[PLAN] Message" --response-type=yes_no|open_ended --timeout=SECONDS --type=task --priority=high --target-user=EMAIL
+ask_yes_no( "Proceed with changes?", default="no", timeout_seconds=300 )
+ask_multiple_choice( questions=[...] )  # AskUserQuestion-compatible format
+converse( "Which approach?", response_type="open_ended", timeout_seconds=600 )
 ```
+
+**Key Features**:
+- Project auto-detected from working directory (no [PLAN] prefix needed)
+- No --target-user parameter (handled internally)
 
 Priority levels:
 - `urgent`: Blockers, errors, time-sensitive
 - `high`: Approval requests, important status
 - `medium`: Progress milestones
 - `low`: Task completions, informational
+
+**See**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ## Planning is Prompting Workflows
 

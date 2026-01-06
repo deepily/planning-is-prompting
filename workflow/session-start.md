@@ -17,8 +17,8 @@ At the start of work sessions, perform the following initialization ritual with 
 **Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
 
 **Command**:
-```bash
-notify-claude-async "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low
+```python
+notify( "Starting session initialization, loading config and history...", notification_type="progress", priority="low" )
 ```
 
 **Why This Matters**:
@@ -69,18 +69,19 @@ notify-claude-async "[SHORT_PROJECT_PREFIX] Starting session initialization, loa
 
 **Two-Notification Pattern**: This workflow uses a start/end notification pair to provide complete initialization feedback.
 
-**Global Command**: `notify-claude-async` (works from any directory)
+**MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
 
-**Command Format**:
-```bash
-notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIORITY
-```
+**Available Tools**:
+- `notify()` - Fire-and-forget announcements
+- `ask_yes_no()` - Binary yes/no decisions
+- `converse()` - Open-ended questions
+- `ask_multiple_choice()` - Menu selections (mirrors AskUserQuestion)
 
 **When to Send Notifications**:
 1. **Start Notification** (Preliminary step, before Step 0):
    - Low-priority progress notification
    - Signals initialization has begun
-   - Command: `notify-claude-async "[SHORT_PROJECT_PREFIX] Starting session initialization, loading config and history..." --type=progress --priority=low`
+   - Command: `notify( "Starting session initialization...", notification_type="progress", priority="low" )`
 
 2. **Ready Notification** (Step 4, after loading history):
    - High-priority task notification
@@ -97,7 +98,12 @@ notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIO
 - `medium`: Not used in session-start
 - `low`: Session-start notification (beginning of initialization)
 
-**Types**: task, progress, alert, custom
+**Notification Types**: task, progress, alert, custom
+
+**Key Simplifications** (cosa-voice MCP):
+- No `[PREFIX]` needed - project auto-detected from working directory
+- No `--target-user` parameter - handled internally
+- Native MCP tool calls - no bash execution
 
 **Rationale for Two Notifications**:
 
@@ -157,7 +163,7 @@ notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIO
    - Prefix: [PLAN]
    - History: /path/to/project/history.md
    - Workflows: Session management, p-is-p planning, history management
-   - Notifications: Configured (notify-claude-async)
+   - Notifications: Configured (cosa-voice MCP)
    ```
 
 **Update TodoWrite**: Mark "Load configuration files" as completed, mark next item as in_progress
@@ -311,11 +317,11 @@ notify-claude-async "[SHORT_PROJECT_PREFIX] MESSAGE" --type=TYPE --priority=PRIO
    - Structure: Past tense for what was done + present/future for readiness + question
 
    **Command**:
-   ```bash
-   notify-claude-async "[SHORT_PROJECT_PREFIX] {your_generated_variation}" --type=task --priority=high
+   ```python
+   notify( "{your_generated_variation}", notification_type="task", priority="high" )
    ```
 
-   **Rationale**: Example-based generation provides infinite variety while maintaining consistent tone. This prevents robotic repetition across many sessions while avoiding permission prompts from bash random selection. Sending the high-priority notification here (after loading context, before asking questions) ensures user gets alerted that Claude is ready, then sees the [1/2/3] options when they open Claude Code.
+   **Rationale**: Example-based generation provides infinite variety while maintaining consistent tone. This prevents robotic repetition across many sessions. Sending the high-priority notification here (after loading context, before asking questions) ensures user gets alerted that Claude is ready, then sees the [1/2/3] options when they open Claude Code.
 
 **Update TodoWrite**: Mark "Load session history" as completed, mark next item as in_progress
 
@@ -654,13 +660,12 @@ At workflow execution time, Claude:
 **Pattern A: Fixed Single Message**
 ```markdown
 **Command**:
-notify-claude-async "[PREFIX] Hey, I've finished loading everything..." --type=task --priority=high
+notify( "Hey, I've finished loading everything...", notification_type="task", priority="high" )
 ```
 
 **Pros**: Simple, predictable, no complexity
 **Cons**: Robotic repetition, exact same message every session
 **When to use**: Infrequent workflows, error messages, legal text
-**Example from history**: Session 25 (removed random selection, used fixed message)
 
 ---
 
@@ -670,28 +675,13 @@ notify-claude-async "[PREFIX] Hey, I've finished loading everything..." --type=t
 [6 example messages]
 **Required Elements**: [list]
 **Style Guidelines**: [constraints]
-**Command**: notify-claude-async "[PREFIX] {your_generated_variation}" ...
+**Command**: notify( "{your_generated_variation}", notification_type="task", priority="high" )
 ```
 
-**Pros**: Infinite variety, context-aware, natural feel, no permission prompts
+**Pros**: Infinite variety, context-aware, natural feel
 **Cons**: Less predictable, requires trust in generation quality
 **When to use**: High-frequency workflows, progress updates, session start/end
-**Example**: This workflow (Session 26)
-
----
-
-**Anti-Pattern: Bash Random Selection**
-```markdown
-**Command**:
-messages=("Message 1" "Message 2" "Message 3")
-selected="${messages[$RANDOM % ${#messages[@]}]}"
-notify-claude-async "[PREFIX] $selected" --type=task --priority=high
-```
-
-**Pros**: True randomness, predictable set of messages
-**Cons**: **Permission prompts**, breaks workflow flow, requires bash execution
-**When to avoid**: Any high-frequency workflow requiring smooth execution
-**Example from history**: Session 23 (caused permission prompt problem)
+**Example**: This workflow
 
 ---
 
@@ -727,11 +717,11 @@ Use this template when implementing Pattern B in other workflows:
 - Structure: [constraint]
 
 **Command**:
-```bash
-notify-claude-async "[PREFIX] {your_generated_variation}" --type=[type] --priority=[priority]
+```python
+notify( "{your_generated_variation}", notification_type="[type]", priority="[priority]" )
 ```
 
-**Rationale**: [Why generation is better than fixed or random for this use case]
+**Rationale**: [Why generation is better than fixed for this use case]
 ```
 
 ---
@@ -824,7 +814,7 @@ When creating new high-frequency workflows:
 - **Interactive Prompts**: Use fixed text (exact wording may matter)
 
 **See Also**:
-- `workflow/notification-system.md` - Comprehensive notification usage patterns
+- `workflow/cosa-voice-integration.md` - cosa-voice MCP notification patterns
 - `workflow/session-end.md` - Session completion workflow (candidate for Pattern B)
 
 ---

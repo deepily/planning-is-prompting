@@ -621,8 +621,8 @@ Wait for user response. Proceed to Section 0.5.5.
 **Update TodoWrite**: Mark "Configure permissions" as completed
 
 **Send Notification**:
-```bash
-notify-claude-async "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
+```python
+notify( "Permission setup completed", notification_type="progress", priority="low" )
 ```
 
 **Error Handling Notes**:
@@ -769,7 +769,7 @@ Ready for fresh installation.
 
 **Send Notification**:
 ```bash
-notify-claude-async "[INSTALL] ✅ Project state detected - clean installation" --type=progress --priority=low
+notify( "Project state detected - clean installation", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -891,12 +891,20 @@ What would you like to do? [1/2/3/4]
 **Update TodoWrite**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
 **Send Blocking Notification and Await Selection**:
-```bash
-notify-claude-sync "[INSTALL] Workflow catalog ready - select bundle to install [1/2/3/4]" \
-  --response-type open_ended \
-  --timeout 300 \
-  --type task \
-  --priority high
+```python
+ask_multiple_choice( questions=[
+    {
+        "question": "Workflow catalog ready - select bundle to install",
+        "header": "Install",
+        "multiSelect": False,
+        "options": [
+            {"label": "Complete Suite", "description": "All workflows"},
+            {"label": "Core Only", "description": "Essential workflows"},
+            {"label": "Custom", "description": "Choose specific workflows"},
+            {"label": "Cancel", "description": "Exit without installing"}
+        ]
+    }
+] )
 ```
 
 ---
@@ -905,14 +913,9 @@ notify-claude-sync "[INSTALL] Workflow catalog ready - select bundle to install 
 
 **Purpose**: Get user's workflow choices and verify dependencies
 
-**Timeout Handling**: If timeout (5 minutes, exit code 2), default to [4] Cancel:
-```bash
-if [ $? -eq 2 ]; then
-    echo "⚠️ Selection timeout - installation cancelled"
-    notify-claude-async "[INSTALL] Installation timeout - no changes made" --type=alert --priority=low
-    exit 0
-fi
-```
+**Timeout Handling**: If timeout (5 minutes), default to Cancel:
+- Send notification: `notify( "Installation timeout - no changes made", notification_type="alert", priority="low" )`
+- Exit without changes
 
 **Process**:
 
@@ -1013,7 +1016,7 @@ Ready to proceed with configuration.
 
 **Send Notification**:
 ```bash
-notify-claude-async "[INSTALL] ✅ Selection validated - dependencies satisfied" --type=progress --priority=low
+notify( "Selection validated - dependencies satisfied", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -1243,7 +1246,7 @@ Is this correct?
 
 **Send Notification**:
 ```bash
-notify-claude-async "[MYPROJ] ✅ Configuration collected" --type=progress --priority=low
+notify( "Configuration collected", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -1455,7 +1458,7 @@ notify-claude-async "[MYPROJ] ✅ Configuration collected" --type=progress --pri
 
 **Send Notification**:
 ```bash
-notify-claude-async "[MYPROJ] ✅ Workflows installed successfully" --type=progress --priority=medium
+notify( "Workflows installed successfully", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -1590,7 +1593,7 @@ Installation validated successfully!
 
 **Send Notification**:
 ```bash
-notify-claude-async "[MYPROJ] ✅ Installation validated - all checks passed" --type=progress --priority=medium
+notify( "Installation validated - all checks passed", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -1696,7 +1699,7 @@ notify-claude-async "[MYPROJ] ✅ Installation validated - all checks passed" --
 
 **Send Notification**:
 ```bash
-notify-claude-async "[MYPROJ] ✅ Git tracking verified" --type=progress --priority=low
+notify( "Git tracking verified", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -1926,7 +1929,7 @@ For detailed workflow documentation, see:
 
 **Send Notification**:
 ```bash
-notify-claude-async "[MYPROJ] 🎉 Installation complete - ready to work!" --type=task --priority=high
+notify( "Installation complete - ready to work!", notification_type="task", priority="high" )
 ```
 
 ---
@@ -2042,7 +2045,7 @@ command installed or not.
 
 **Send Notification** (if installed):
 ```bash
-notify-claude-async "[MYPROJ] ✅ Installation wizard available as /plan-install-wizard" --type=progress --priority=low
+notify( "Installation wizard available as /plan-install-wizard", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -2051,208 +2054,6 @@ notify-claude-async "[MYPROJ] ✅ Installation wizard available as /plan-install
 - **Optional**: Works fine without it (can always share guide)
 - **No maintenance**: Template stays in planning-is-prompting repo
 - **Future-proof**: Updates when you update planning-is-prompting repo
-
----
-
-### Step 7.6: Install Notification Scripts (Optional)
-
-**Purpose**: Offer to install notify-claude-async and notify-claude-sync scripts for workflow notifications
-
-**Important**: This step is optional - workflows can function without notification scripts, but notifications enhance the development experience with real-time alerts
-
-**Prerequisites**:
-- User must have COSA (Claude Code Service Agent) installed
-- See planning-is-prompting → bin/README.md for COSA installation guide
-
-**Process**:
-
-1. **Check if Already Installed**:
-
-   ```bash
-   # Check if notification scripts are already installed
-   if command -v notify-claude-async &> /dev/null && command -v notify-claude-sync &> /dev/null; then
-       # Check versions
-       INSTALLED_VERSION=$(grep -m 1 "^# notify-claude-async v" ~/.local/bin/notify-claude-async | grep -oP 'v\K[0-9.]+' || echo "unknown")
-       CANONICAL_VERSION=$(grep -m 1 "^# notify-claude-async v" planning-is-prompting/bin/notify-claude-async | grep -oP 'v\K[0-9.]+')
-
-       if [ "$INSTALLED_VERSION" = "$CANONICAL_VERSION" ]; then
-           echo "✓ Notification scripts already installed (v$INSTALLED_VERSION)"
-           # Skip to Step 8
-       else
-           # Offer update
-           echo "⚠ Notification scripts update available: v$INSTALLED_VERSION → v$CANONICAL_VERSION"
-           # Continue to step 2 with update option
-       fi
-   fi
-   ```
-
-2. **Present Installation Option** (if not installed or update available):
-
-```
-══════════════════════════════════════════════════════════
-Install Notification Scripts? (Optional)
-══════════════════════════════════════════════════════════
-
-Would you like to install notification scripts for real-time alerts?
-
-What notification scripts do:
-• Send progress updates to mobile/desktop during workflows
-• Alert you when approval needed (e.g., commit confirmations)
-• Notify when tasks complete or errors occur
-• Uses COSA (Claude Code Service Agent) for delivery
-
-Two commands will be installed:
-• notify-claude-async  (fire-and-forget, non-blocking)
-• notify-claude-sync   (response-required, blocking)
-
-Prerequisites:
-• COSA must be installed (see bin/README.md for setup)
-• ~5 minutes for COSA setup if not already installed
-
-Installation:
-• Interactive installer with COSA detection
-• Auto-backup of existing scripts
-• Validates dependencies (Pydantic, requests)
-
-Alternative: You can skip now and install later with:
-  cd planning-is-prompting
-  ./bin/install.sh
-
-[1] Yes, install notification scripts now
-[2] No thanks, I'll install manually later (or skip entirely)
-
-What would you like to do? [1/2]
-```
-
-3. **If User Chooses [1] - Install Scripts**:
-
-   a. **Check for COSA**:
-   ```bash
-   # Try to detect COSA_CLI_PATH
-   if [ -z "$COSA_CLI_PATH" ]; then
-       echo ""
-       echo "⚠  COSA_CLI_PATH not detected"
-       echo ""
-       echo "Notification scripts require COSA (Claude Code Service Agent)."
-       echo ""
-       echo "Installation Guide: planning-is-prompting → bin/README.md"
-       echo ""
-       echo "Quick Setup:"
-       echo "  1. Clone COSA: git clone https://github.com/deepily/cosa"
-       echo "  2. Setup venv: cd cosa && python3 -m venv .venv"
-       echo "  3. Install deps: source .venv/bin/activate && pip install -r requirements.txt"
-       echo "  4. Set env var: export COSA_CLI_PATH='/path/to/lupin/src'"
-       echo ""
-
-       read -p "Have you installed COSA? [Y/n] " -r
-       if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-           echo "Skipping notification scripts. Install COSA first, then run:"
-           echo "  cd planning-is-prompting"
-           echo "  ./bin/install.sh"
-           # Skip to Step 8
-       fi
-   fi
-   ```
-
-   b. **Run Installation Script**:
-   ```bash
-   echo ""
-   echo "Running notification script installer..."
-   echo ""
-
-   cd planning-is-prompting
-   ./bin/install.sh --non-interactive
-   ```
-
-   c. **Report Installation**:
-   ```
-   ──────────────────────────────────────────────────────────
-   Notification Scripts Installed
-   ──────────────────────────────────────────────────────────
-
-   ✅ Created: ~/.local/bin/notify-claude-async
-   ✅ Created: ~/.local/bin/notify-claude-sync
-
-   Test installation:
-     notify-claude-async "Test notification" --validate-env
-
-   Usage in workflows:
-     # Fire-and-forget
-     notify-claude-async "[PREFIX] Task completed" --type task --priority low
-
-     # Response-required
-     notify-claude-sync "[PREFIX] Approve commit?" \
-       --response-type yes_no \
-       --response-default no \
-       --timeout 300
-
-   Documentation:
-     • planning-is-prompting → bin/README.md (usage guide)
-     • planning-is-prompting → workflow/notification-system.md (patterns)
-   ```
-
-4. **If Update Was Available** (instead of fresh install):
-
-```
-══════════════════════════════════════════════════════════
-Update Notification Scripts?
-══════════════════════════════════════════════════════════
-
-Installed version: v1.0.0
-Available version: v1.1.0
-
-Update available. Would you like to update now?
-
-[U] Update scripts now
-[D] Show diff first
-[S] Skip for now
-
-What would you like to do? [U/D/S]
-```
-
-   If user chooses [U] or [D]:
-   ```bash
-   cd planning-is-prompting
-   ./bin/install.sh --update
-   ```
-
-5. **If User Chooses [2] - Skip Installation**:
-
-```
-──────────────────────────────────────────────────────────
-No Problem!
-──────────────────────────────────────────────────────────
-
-You can install notification scripts later by running:
-
-  cd planning-is-prompting
-  ./bin/install.sh              # Interactive mode
-  ./bin/install.sh --update     # Check for updates
-
-COSA Installation Guide:
-  planning-is-prompting → bin/README.md
-
-Workflows will function normally without notifications.
-```
-
-**Update TodoWrite**: Add and complete "Install notification scripts (optional)" item
-
-**Send Notification** (if scripts were installed):
-```bash
-notify-claude-async "[MYPROJ] ✅ Notification scripts installed successfully" --type=progress --priority=low
-```
-
-**Key Benefits**:
-- **Real-time alerts**: Get notified immediately when workflows need attention
-- **Improved UX**: Know when long-running tasks complete
-- **Decision support**: Receive prompts for approvals (commits, archives, etc.)
-- **Optional**: Works fine without notifications (workflows are self-sufficient)
-- **Easy updates**: Use `./bin/install.sh --update` to check for new versions
-
-**Troubleshooting**:
-- **COSA not found**: See bin/README.md for complete COSA installation guide
-- **Dependencies missing**: Ensure Pydantic and requests installed in COSA venv
-- **Scripts not in PATH**: Add ~/.local/bin/ to PATH in ~/.bashrc
 
 ---
 
@@ -2364,7 +2165,7 @@ What would you like to do? [1/2]
 
 **Send Notification** (if user ran session-end):
 ```bash
-notify-claude-async "[MYPROJ] ✅ Installation session recorded via /plan-session-end" --type=progress --priority=low
+notify( "Installation session recorded via /plan-session-end", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -2705,7 +2506,7 @@ Version Summary:
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UPDATE] ✅ Scanned local installation - found 7 workflows" --type=progress --priority=low
+notify( "Scanned local installation - found 7 workflows", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -2811,12 +2612,19 @@ Affected Files (6):
 **Update TodoWrite**: Mark "Compare versions" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude-sync "[UPDATE] Found 6 outdated workflows - review and select which to update" \
-  --response-type open_ended \
-  --timeout 300 \
-  --type task \
-  --priority high
+```python
+ask_multiple_choice( questions=[
+    {
+        "question": "Found 6 outdated workflows - review and select which to update",
+        "header": "Update",
+        "multiSelect": True,
+        "options": [
+            {"label": "Update all", "description": "Update all 6 outdated workflows"},
+            {"label": "Select specific", "description": "Choose which workflows to update"},
+            {"label": "Skip", "description": "Keep current versions"}
+        ]
+    }
+] )
 ```
 
 ---
@@ -2946,12 +2754,8 @@ Ready to proceed.
 **Update TodoWrite**: Mark "Present update UI" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude-sync "[UPDATE] Update selection presented - choose workflows to update" \
-  --response-type open_ended \
-  --timeout 300 \
-  --type task \
-  --priority high
+```python
+notify( "Update selection presented - awaiting user choice", notification_type="task", priority="high" )
 ```
 
 ---
@@ -3074,7 +2878,7 @@ All configurations extracted successfully.
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UPDATE] ✅ Configuration extracted from 6 files" --type=progress --priority=low
+notify( "Configuration extracted from 6 files", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -3244,13 +3048,8 @@ What would you like to do? [1/2]
 **Update TodoWrite**: Mark "Show diff preview" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude-sync "[UPDATE] Review diff above - [1] Apply updates [2] Cancel" \
-  --response-type yes_no \
-  --response-default no \
-  --timeout 300 \
-  --type task \
-  --priority high
+```python
+ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=300 )
 ```
 
 ---
@@ -3394,7 +3193,7 @@ All files updated. Proceeding to validation...
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UPDATE] ✅ Updates applied successfully - 6 files updated" --type=progress --priority=medium
+notify( "Updates applied successfully - 6 files updated", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -3578,7 +3377,7 @@ Update validation complete!
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UPDATE] ✅ Validation complete - all 6 workflows verified" --type=progress --priority=medium
+notify( "Validation complete - all 6 workflows verified", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -3761,7 +3560,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude-async "[UPDATE] 🎉 Update complete - 6 workflows updated to v1.0" --type=task --priority=high
+notify( "Update complete - 6 workflows updated to v1.0", notification_type="task", priority="high" )
 ```
 
 ---

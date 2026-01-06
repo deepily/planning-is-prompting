@@ -623,20 +623,20 @@ Real-time notification system that:
 - Uses priority levels (urgent/high/medium/low)
 - Includes [SHORT_PROJECT_PREFIX] for multi-repo workflows
 
-**Canonical Workflow**: planning-is-prompting → workflow/notification-system.md
+**Canonical Workflow**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ### Install as Direct Reference
 
-The `notify-claude-async` and `notify-claude-sync` commands are global and require no installation. Reference in your project's `.claude/CLAUDE.md`:
+The cosa-voice MCP server provides notification tools with no additional script installation required. Reference in your project's `.claude/CLAUDE.md`:
 
 ```markdown
 ## Notifications
 
-See planning-is-prompting → workflow/notification-system.md
+See planning-is-prompting → workflow/cosa-voice-integration.md
 
-**Project Configuration:**
-- [SHORT_PROJECT_PREFIX]: [YOUR_PREFIX]
-- Use in all TODO items and notification messages
+**Key Features:**
+- Project auto-detected from working directory (no prefix needed in messages)
+- MCP tools: notify(), ask_yes_no(), ask_multiple_choice(), converse()
 ```
 
 ---
@@ -1625,9 +1625,9 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 ### Issue: Notifications not working
 
 **Solution**:
-1. Verify `notify-claude-async` and `notify-claude-sync` commands are installed globally
-2. Check `COSA_CLI_PATH` environment variable
-3. Test with: `notify-claude-async "test" --validate-env --target-user=EMAIL`
+1. Verify cosa-voice MCP server is installed and running
+2. Check MCP server configuration in Claude Code settings
+3. Test with: `notify( "test", notification_type="progress", priority="low" )`
 
 ### Issue: Can't find planning-is-prompting workflows
 
