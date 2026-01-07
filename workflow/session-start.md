@@ -25,9 +25,9 @@ notify( "Starting session initialization, loading config and history...", notifi
 - Provides immediate awareness that Claude is awake and working
 - Especially helpful for long initializations (large history files, many workflows)
 - Sets user expectation that initialization is in progress
-- Complements the end notification (which signals completion and readiness)
+- Complements the work direction question (which comes in Step 5)
 
-**Note**: This is a low-priority "I'm starting" ping. The high-priority "I'm ready" notification comes at the end (Step 6).
+**Note**: This is a low-priority "I'm starting" ping. The high-priority work direction question comes in Step 5, via `ask_multiple_choice()`.
 
 ---
 
@@ -67,15 +67,15 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ## Step 1: Notification System Overview
 
-**Two-Notification Pattern**: This workflow uses a start/end notification pair to provide complete initialization feedback.
+**Three-Phase Pattern**: This workflow uses progress notifications during initialization, then a blocking question once ready.
 
 **MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
 
 **Available Tools**:
-- `notify()` - Fire-and-forget announcements
+- `notify()` - Fire-and-forget announcements (progress updates)
 - `ask_yes_no()` - Binary yes/no decisions
 - `converse()` - Open-ended questions
-- `ask_multiple_choice()` - Menu selections (mirrors AskUserQuestion)
+- `ask_multiple_choice()` - Menu selections (blocking, mirrors AskUserQuestion)
 
 **When to Send Notifications**:
 1. **Start Notification** (Preliminary step, before Step 0):
@@ -83,20 +83,25 @@ notify( "Starting session initialization, loading config and history...", notifi
    - Signals initialization has begun
    - Command: `notify( "Starting session initialization...", notification_type="progress", priority="low" )`
 
-2. **Ready Notification** (Step 4, after loading history):
-   - High-priority task notification
-   - Signals readiness to work (sent BEFORE asking user for direction in Step 5)
-   - Generated variation: Claude creates natural variation based on example messages (see Step 4, Section 6 for pattern details)
+2. **Progress Notification** (Step 4, after loading history):
+   - Low-priority progress notification
+   - Signals history loaded, analyzing work
+   - Command: `notify( "History loaded, analyzing outstanding work...", notification_type="progress", priority="low" )`
 
-3. **Error Notifications** (As needed):
+3. **Work Direction Question** (Step 5, AFTER identifying outstanding work):
+   - HIGH-PRIORITY blocking `ask_multiple_choice()` call
+   - Asks user what they want to work on WITH actual options
+   - Only sent AFTER outstanding work is identified (so options are meaningful)
+
+4. **Error Notifications** (As needed):
    - Urgent priority
    - Sent if critical errors occur during initialization
 
 **Priority Levels**:
 - `urgent`: Critical errors during initialization
-- `high`: Session-ready notification (end of initialization)
+- `high`: Work direction question (Step 5) - uses `ask_multiple_choice()`
 - `medium`: Not used in session-start
-- `low`: Session-start notification (beginning of initialization)
+- `low`: Progress notifications (Preliminary, Step 4)
 
 **Notification Types**: task, progress, alert, custom
 
@@ -105,22 +110,22 @@ notify( "Starting session initialization, loading config and history...", notifi
 - No `--target-user` parameter - handled internally
 - Native MCP tool calls - no bash execution
 
-**Rationale for Two Notifications**:
+**Rationale for This Pattern**:
 
-**Start Notification Benefits**:
+**Progress Notifications (Low Priority)**:
 - User immediately knows Claude is awake and working
-- Reduces anxiety during long initializations (large history files, many workflows)
+- Reduces anxiety during long initializations
 - Sets clear expectation: "initialization in progress"
-- Low priority: informational, doesn't demand immediate attention
+- Informational only, doesn't demand immediate attention
 
-**Ready Notification Benefits**:
-- User knows context loading is complete (config, workflows, history)
-- Signals readiness for interaction
-- High priority: actively requests user engagement
-- Sent BEFORE asking questions, so user is alerted first, then sees options
-- Better UX: User gets pinged → opens Claude Code → sees [1/2/3] question
+**Work Direction Question (High Priority, Blocking)**:
+- Sent AFTER outstanding work is identified
+- Contains actual options based on what was found in history
+- User receives notification AND question together
+- Blocking: workflow waits for user response before proceeding
+- Better UX: Question has context, options are meaningful
 
-**Together**: The two-notification pattern creates a complete feedback loop - user knows when initialization starts AND when context is loaded and ready for direction. The ready notification uses example-based generation to provide natural variety while maintaining consistent tone and required elements across sessions.
+**Key Insight**: Don't ask "what do you want to work on?" until you know what the options are. The blocking question in Step 5 combines notification + question into a single interaction with real context.
 
 ---
 
@@ -289,39 +294,18 @@ notify( "Starting session initialization, loading config and history...", notifi
 - Brand new project with minimal history
 - Starting completely new feature unrelated to recent work
 
-6. **Send Ready Notification**:
+6. **Send Progress Notification**:
 
-   **Purpose**: Alert user that initialization is complete and Claude is ready for work direction
+   **Purpose**: Notify user that history is loaded and outstanding work is being analyzed
 
-   **Timing**: Send immediately after loading history, BEFORE asking user for direction in Step 5
-
-   **Message Generation Pattern**: Create a natural variation of a "ready to work" message based on these examples:
-
-   **Example Messages** (showing variety in tone and emphasis):
-   1. "Hey, I've finished loading everything and reviewed where we left off. I'm ready to start working - what would you like to tackle today?"
-   2. "All set! Config loaded, history reviewed, TODOs checked. Ready to roll - what's first?"
-   3. "Good to go! I've loaded up your project and caught up on where we were. What should we work on?"
-   4. "Hi! I've synced up - loaded configs, parsed history, discovered workflows. Ready when you are - what would you like to focus on?"
-   5. "Alright, I'm all caught up! Loaded configuration, reviewed session history, and checked for outstanding work. What's the priority today?"
-   6. "Hey there! Finished getting up to speed - everything's loaded and I've reviewed where we left off. What would you like to tackle?"
-
-   **Required Elements** (include in your generated message):
-   - Friendly, conversational tone
-   - Indicate what was loaded (configuration, history, workflows, or similar)
-   - Signal current state (ready to work, waiting for direction)
-   - Ask what to work on (question or prompt to user)
-
-   **Style Guidelines**:
-   - Length: 1-2 sentences maximum
-   - Tone: Friendly but professional
-   - Structure: Past tense for what was done + present/future for readiness + question
+   **Timing**: Send after loading history, before identifying outstanding work in Step 5
 
    **Command**:
    ```python
-   notify( "{your_generated_variation}", notification_type="task", priority="high" )
+   notify( "History loaded, analyzing outstanding work...", notification_type="progress", priority="low" )
    ```
 
-   **Rationale**: Example-based generation provides infinite variety while maintaining consistent tone. This prevents robotic repetition across many sessions. Sending the high-priority notification here (after loading context, before asking questions) ensures user gets alerted that Claude is ready, then sees the [1/2/3] options when they open Claude Code.
+   **Note**: This is a progress update only. The actual question asking what to work on comes in Step 5, AFTER outstanding work has been identified and options are known.
 
 **Update TodoWrite**: Mark "Load session history" as completed, mark next item as in_progress
 
@@ -358,10 +342,11 @@ notify( "Starting session initialization, loading config and history...", notifi
    Found 1 active implementation document: src/rnd/2025.09.28-auth-system.md
    ```
 
-4. **Present Options to User**:
+4. **Display Outstanding Work Summary**:
 
-   **DO NOT auto-carry-forward old TODOs** - instead, ask for direction:
+   **DO NOT auto-carry-forward old TODOs** - instead, display what was found and ask for direction.
 
+   First, display the summary in Claude Code:
    ```
    ══════════════════════════════════════════════════════════
    Outstanding Work from Last Session (2025.10.04)
@@ -375,28 +360,39 @@ notify( "Starting session initialization, loading config and history...", notifi
 
    Active Documents:
    - None (tracking in history.md)
-
-   ──────────────────────────────────────────────────────────
-   How would you like to proceed?
-   ──────────────────────────────────────────────────────────
-
-   [1] Continue with these TODOs
-       → I'll create a TodoWrite list with these items
-
-   [2] Start fresh (you'll tell me what to work on)
-       → I'll clear the list and wait for your direction
-
-   [3] Modify the list (add/remove items)
-       → Tell me what to change and I'll update the list
-
-   What would you like to do? [1/2/3]
    ```
 
-5. **Wait for User Response**:
+5. **Ask User for Direction via MCP**:
+
+   **CRITICAL**: This is when you ask the user what they want to work on - AFTER you know what the options are.
+
+   Use `ask_multiple_choice()` with dynamically generated options based on the outstanding work found:
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! How would you like to proceed?",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "Continue TODOs", "description": "Continue with outstanding items from last session"},
+               {"label": "Start fresh", "description": "You'll tell me what to work on"},
+               {"label": "Modify list", "description": "Add/remove items before starting"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   **Key Points**:
+   - This is a HIGH-PRIORITY blocking call - user receives notification AND question together
+   - Options should be contextual based on what was found in history
+   - If no TODOs were found, adjust options accordingly (e.g., skip "Continue TODOs")
+
+6. **Wait for User Response**:
 
    **CRITICAL**: STOP here and wait for user input. Do NOT proceed to Step 6 until user responds.
 
-   **Note**: The high-priority "ready to work" notification was already sent in Step 4. User has been alerted and will see the [1/2/3] options when they open Claude Code.
+   **Note**: The `ask_multiple_choice()` call above is blocking - it waits for user response. This combines the notification and question into a single interaction.
 
    **If [1] - Continue with TODOs**:
    - Create new TodoWrite list with old TODO items
@@ -481,7 +477,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 4. **Wait for User Direction**:
 
-   **Note**: The high-priority "ready to work" notification was already sent in Step 4 (after loading history). User has been alerted and is now seeing this context.
+   **Note**: By this point, the user has already responded to the `ask_multiple_choice()` question in Step 5 and indicated their work direction. This step presents the final context summary.
 
    User may respond with:
    - Specific task to work on ("Let's start with task #2")
@@ -551,23 +547,23 @@ Preliminary: Send start notification (low priority)
      ↓
 3. Discover workflows → List slash commands
      ↓
-4. Load history → Read last 3-7 days → Send high-priority notification
+4. Load history → Read last 3-7 days → Send progress notification (low priority)
      ↓
-5. Find TODOs → Ask user for direction [1/2/3]
+5. Find TODOs → ask_multiple_choice() with options (HIGH priority, BLOCKING)
      └→ WAIT for user response
      ↓
 6. Present context → Await work direction
 ```
 
 **Notification Timing**:
-- **Preliminary (before Step 0)**: "Starting session initialization, loading config and history..." (low priority, type=progress)
-- **Step 4 (after loading history)**: Generated variation based on examples (high priority, type=task)
-  - **Pattern**: Example-based generation (see Step 4, Section 6 for details)
-  - **Examples**: 6 varied messages showing different tones (comprehensive, punchy, friendly, technical, energetic)
-  - **Rationale**: User gets high-priority ping BEFORE seeing [1/2/3] options in Step 5, ensuring better UX flow. Generation provides natural variety while maintaining consistent tone.
+- **Preliminary (before Step 0)**: "Starting session initialization..." (low priority, type=progress)
+- **Step 4 (after loading history)**: "History loaded, analyzing outstanding work..." (low priority, type=progress)
+- **Step 5 (after identifying work)**: `ask_multiple_choice()` with actual options (HIGH priority, BLOCKING)
+  - **Key Insight**: Only ask "what do you want to work on?" AFTER you know what the options are
+  - **Rationale**: User receives notification AND question together, with real context
 
 **Key Decision Points**:
-- Step 5: User chooses [1] Continue / [2] Fresh / [3] Modify
+- Step 5: User chooses Continue TODOs / Start fresh / Modify list (via `ask_multiple_choice()`)
 - Step 6: User provides work direction or invokes planning workflow
 
 ---
@@ -580,20 +576,26 @@ Preliminary: Send start notification (low priority)
 
 **Solution**: Example-based generation - workflow documents provide 4-6 example messages, Claude generates natural variations at runtime based on the examples and required elements.
 
+**Important Note**: This pattern is for fire-and-forget `notify()` calls. When you need user input, use blocking tools like `ask_multiple_choice()` instead - see Step 5 for the work direction question pattern.
+
 ---
 
 ### When to Use This Pattern
 
 **High-Frequency, Cross-Session Workflows** (use Pattern B):
-- Session-start notifications
 - Session-end completion messages
 - Progress update notifications
 - Milestone achievement messages
-- Any message sent multiple times per week
+- Any fire-and-forget message sent multiple times per week
+
+**When NOT to Use This Pattern**:
+- When you need user input → Use `ask_multiple_choice()`, `ask_yes_no()`, or `converse()` instead
+- When the message should contain options/questions → Use blocking MCP tools
+- When exact wording matters → Use fixed messages
 
 **Characteristics requiring this pattern**:
 - ✓ Executed frequently (multiple times per day/week)
-- ✓ Must be transparent (no user interaction)
+- ✓ Fire-and-forget (no user interaction needed)
 - ✓ Benefits from variety (avoid robotic repetition)
 - ✓ Maintains consistent tone and required elements
 
@@ -613,12 +615,12 @@ Show variety in tone, emphasis, and structure while maintaining core elements:
 
 ```markdown
 **Example Messages** (showing variety in tone and emphasis):
-1. "Hey, I've finished loading everything and reviewed where we left off..."
-2. "All set! Config loaded, history reviewed, TODOs checked..."
-3. "Good to go! I've loaded up your project and caught up..."
-4. "Hi! I've synced up - loaded configs, parsed history, discovered workflows..."
-5. "Alright, I'm all caught up! Loaded configuration, reviewed session history..."
-6. "Hey there! Finished getting up to speed - everything's loaded..."
+1. "Session complete! All changes committed and history updated."
+2. "All done! Wrapped up the session - changes saved, history recorded."
+3. "Session wrapped up successfully. Everything's committed and documented."
+4. "Finished! Session documented, changes committed, ready for next time."
+5. "Session complete - all good! History updated, changes pushed."
+6. "Done for now! Everything's saved and documented for next session."
 ```
 
 **2. Specify Required Elements**:
@@ -628,9 +630,8 @@ List what MUST be included in every generated variation:
 ```markdown
 **Required Elements** (include in your generated message):
 - Friendly, conversational tone
-- Indicate what was loaded (configuration, history, workflows)
-- Signal current state (ready to work, waiting for direction)
-- Ask what to work on (question or prompt to user)
+- Indicate what was accomplished
+- Signal completion state
 ```
 
 **3. Specify Style Guidelines**:
@@ -641,7 +642,7 @@ Constrain generation to maintain consistency:
 **Style Guidelines**:
 - Length: 1-2 sentences maximum
 - Tone: Friendly but professional
-- Structure: Past tense (what was done) + present/future (readiness) + question
+- Structure: Completion statement + brief summary
 ```
 
 **4. Claude Generates Variation**:
@@ -821,6 +822,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.
 - **2025.10.23 (Session 26)**: Implemented Pattern B (example-based generation) for ready notification; added Design Pattern documentation section (~150 lines)
 - **2025.10.23 (Session 25)**: Removed bash random selection, implemented fixed message to eliminate permission prompts (~35 lines simplified)
 - **2025.10.23 (Session 24)**: Moved notification timing from Step 6 to Step 4 for better UX (~80 lines modified)

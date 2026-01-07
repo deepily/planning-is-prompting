@@ -333,6 +333,34 @@ cosa-voice automatically detects project from working directory:
 
 ---
 
+### When to Proactively Use cosa-voice
+
+**Use cosa-voice proactively in day-to-day work, not just in explicit workflows.**
+
+The MCP tools should be used automatically during regular coding work to keep the user informed and engaged. Don't wait for workflow documents to tell you when to notify.
+
+**Trigger Conditions for `notify()` (fire-and-forget)**:
+| Trigger | Priority | Example |
+|---------|----------|---------|
+| Task completion | low | Finished a TODO item or significant subtask |
+| Progress milestones | medium | Completed a phase of multi-step work |
+| Error alerts | urgent | Encountered unexpected errors blocking progress |
+| Build/test results | medium | Tests passed/failed, build completed |
+| Long process finished | low | Background command completed |
+
+**Trigger Conditions for blocking tools (`ask_yes_no`, `ask_multiple_choice`, `converse`)**:
+| Trigger | Tool | Example |
+|---------|------|---------|
+| Need approval | `ask_yes_no()` | Before significant codebase changes |
+| Multiple approaches | `ask_multiple_choice()` | Architectural decisions with valid options |
+| Unclear requirements | `converse()` | User intent is ambiguous, need clarification |
+| Blocked/waiting | `converse()` | Waiting >2 minutes for user input to proceed |
+| Destructive operations | `ask_yes_no()` | Before deleting files, resetting branches |
+
+**Key Principle**: If you would normally wait for the user to check back, use `notify()` instead. If you would use `AskUserQuestion`, prefer the cosa-voice equivalent for voice delivery.
+
+---
+
 ### Full Documentation
 
 For comprehensive patterns, examples, and migration reference:

@@ -1,18 +1,54 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 39 complete - cosa-voice MCP migration VERIFIED complete
+**RESUME HERE**: Session 40 complete - cosa-voice proactive triggers + session-start workflow fixed
 
-**Current Status**: cosa-voice MCP migration fully verified. All 11 workflow files use native MCP tools. No deprecated bash command usage found. Audit confirms migration complete.
-**Next Steps**: Update global ~/.claude/CLAUDE.md, migrate other projects (genie-in-the-box) to cosa-voice MCP
+**Current Status**: cosa-voice MCP now includes proactive trigger conditions for day-to-day use. Session-start workflow fixed to ask questions AFTER options are known.
+**Next Steps**: Migrate other projects (genie-in-the-box) to cosa-voice MCP, populate commit-management.md stub
 
 **TODO for Next Session**:
-- [ ] Update global ~/.claude/CLAUDE.md to sync with latest global/CLAUDE.md template
 - [ ] Consider migrating genie-in-the-box to cosa-voice MCP tools
 - [ ] Populate workflow/commit-management.md stub
 
 ---
 
 ## January 2026
+
+### 2026.01.06 - Session 40: Proactive cosa-voice + Session Workflow Fixes
+
+**Accomplishments**:
+- **Fixed session-start workflow notification order**:
+  - Problem: Step 4 sent "ready to work" notification BEFORE Step 5 identified outstanding work options
+  - Solution: Step 4 now sends simple progress notification; Step 5 asks `ask_multiple_choice()` AFTER options are known
+  - Updated "Two-Notification Pattern" → "Three-Phase Pattern" in workflow docs
+
+- **Verified session-end workflow already correct**:
+  - Commit approval `ask_multiple_choice()` is called AFTER commit message is drafted ✅
+
+- **Added proactive cosa-voice trigger conditions**:
+  - Added "When to Proactively Use cosa-voice" section to `global/CLAUDE.md` (lines 336-360)
+  - Added same section to `workflow/cosa-voice-integration.md` (lines 19-49)
+  - Defines when to use `notify()` vs blocking tools outside explicit workflows
+  - Key principle: "If you would normally wait for the user to check back, use `notify()` instead"
+
+- **Synced personal config**:
+  - Copied `global/CLAUDE.md` to `~/.claude/CLAUDE.md`
+  - User's personal config now includes proactive trigger conditions
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/session-start.md | Major refactor - fixed notification order, updated Three-Phase Pattern |
+| global/CLAUDE.md | Added "When to Proactively Use cosa-voice" section (~25 lines) |
+| workflow/cosa-voice-integration.md | Added proactive trigger section (~30 lines) |
+| ~/.claude/CLAUDE.md | Full sync from global template |
+
+**Pattern Used This Session**:
+- Work type: Workflow refinement + documentation
+- Scale: Small (~30 minutes)
+- Pattern: Pattern 5 (Bug Fix/Enhancement)
+- Documentation: history.md only
+
+---
 
 ### 2026.01.06 - Session 39: cosa-voice MCP Migration VERIFICATION
 
