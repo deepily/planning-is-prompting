@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "cosa-voice": {
+      "type": "stdio",
+      "command": "/mnt/DATA01/include/www.deepily.ai/projects/lupin/src/cosa/.venv/bin/python",
+      "args": [
+        "/mnt/DATA01/include/www.deepily.ai/projects/lupin/src/lupin_mcp/cosa_voice_mcp.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/mnt/DATA01/include/www.deepily.ai/projects/lupin/src",
+        "LUPIN_ROOT": "/mnt/DATA01/include/www.deepily.ai/projects/lupin",
+        "MCP_PROJECT": "planning-is-prompting"
+      }
+    }
+  }
+}
