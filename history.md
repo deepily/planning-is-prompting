@@ -1,17 +1,56 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 40 complete - cosa-voice proactive triggers + session-start workflow fixed
+**RESUME HERE**: Session 41 complete - Dynamic TODO option generation in session-start workflow
 
-**Current Status**: cosa-voice MCP now includes proactive trigger conditions for day-to-day use. Session-start workflow fixed to ask questions AFTER options are known.
-**Next Steps**: Migrate other projects (genie-in-the-box) to cosa-voice MCP, populate commit-management.md stub
+**Current Status**: Session-start now presents TODOs as individual selectable options instead of bundling them into "Continue TODOs". Supports 0, 1, 2, and 3+ TODO cases with progressive disclosure.
+**Next Steps**: Test new session-start workflow, migrate genie-in-the-box to cosa-voice MCP
 
 **TODO for Next Session**:
+- [ ] Test dynamic TODO option generation by running /plan-session-start
 - [ ] Consider migrating genie-in-the-box to cosa-voice MCP tools
 - [ ] Populate workflow/commit-management.md stub
 
 ---
 
 ## January 2026
+
+### 2026.01.07 - Session 41: Dynamic TODO Option Generation in Session-Start
+
+**Accomplishments**:
+- **Fixed TODO bundling issue in session-start workflow**:
+  - Problem: Multiple TODOs were bundled into single "Continue TODOs" option with combined description
+  - Example of bad UX: `"Continue with genie-in-the-box migration and commit-management.md"` (two items in one option!)
+  - Solution: Implemented dynamic option generation based on TODO count
+
+- **Implemented 4-case algorithm for TODO presentation**:
+  | TODOs Found | Presentation Strategy |
+  |-------------|----------------------|
+  | 0 | Simplified menu: "New task" / "Browse history" |
+  | 1 | 3 options: [The TODO] / "Start fresh" / "Modify list" |
+  | 2 | 4 options: [TODO 1] / [TODO 2] / "Start fresh" / "Modify list" |
+  | 3+ | Progressive disclosure: Mode selection → TODO selection |
+
+- **Added label formatting rules**:
+  - Labels truncated to ~25-30 chars with ellipsis
+  - Descriptions contain full TODO text (never truncated)
+  - Examples for long TODOs, short TODOs, and path-heavy TODOs
+
+- **Added response handling table**:
+  - Maps each possible selection to specific action
+  - Covers: specific TODO, Start fresh, Modify list, Continue TODOs (N), See more, Back
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/session-start.md | Major update to Step 5 - added 4 cases, label rules, response handling (~150 lines) |
+
+**Pattern Used This Session**:
+- Work type: Workflow enhancement (UX fix)
+- Scale: Small (~45 minutes)
+- Pattern: Pattern 5 (Bug Fix/Enhancement)
+- Documentation: history.md only
+
+---
 
 ### 2026.01.06 - Session 40: Proactive cosa-voice + Session Workflow Fixes
 

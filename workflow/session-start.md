@@ -366,49 +366,197 @@ notify( "Starting session initialization, loading config and history...", notifi
 
    **CRITICAL**: This is when you ask the user what they want to work on - AFTER you know what the options are.
 
-   Use `ask_multiple_choice()` with dynamically generated options based on the outstanding work found:
+   **IMPORTANT CONSTRAINT**: `ask_multiple_choice()` supports **2-4 options maximum**. The number of TODOs found determines the presentation strategy.
+
+   ---
+
+   ### Case A: Zero TODOs Found
+
+   Skip TODO selection; present simplified menu:
 
    ```python
    ask_multiple_choice( questions=[
        {
-           "question": "Session ready! How would you like to proceed?",
+           "question": "Session ready! No outstanding TODOs found.",
            "header": "Direction",
            "multiSelect": False,
            "options": [
-               {"label": "Continue TODOs", "description": "Continue with outstanding items from last session"},
-               {"label": "Start fresh", "description": "You'll tell me what to work on"},
+               {"label": "New task", "description": "Describe what you'd like to work on"},
+               {"label": "Browse history", "description": "Review past sessions for context"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   ---
+
+   ### Case B: Exactly 1 TODO Found
+
+   Present the specific TODO as a selectable option (3 options total):
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! Found 1 outstanding TODO.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "[TODO truncated]", "description": "[Full TODO text]"},
+               {"label": "Start fresh", "description": "Work on something else"},
                {"label": "Modify list", "description": "Add/remove items before starting"}
            ]
        }
    ], priority="high" )
    ```
 
-   **Key Points**:
-   - This is a HIGH-PRIORITY blocking call - user receives notification AND question together
-   - Options should be contextual based on what was found in history
-   - If no TODOs were found, adjust options accordingly (e.g., skip "Continue TODOs")
+   **Example with real TODO**:
+   ```python
+   options = [
+       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Start fresh", "description": "Work on something else"},
+       {"label": "Modify list", "description": "Add/remove items before starting"}
+   ]
+   ```
+
+   ---
+
+   ### Case C: Exactly 2 TODOs Found
+
+   Present BOTH TODOs as individual selectable options (4 options - exactly at max):
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! Found 2 outstanding TODOs.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "Start fresh", "description": "Work on something else"},
+               {"label": "Modify list", "description": "Add/remove items before starting"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   **Example with real TODOs**:
+   ```python
+   options = [
+       {"label": "Migrate genie-in-t...", "description": "Consider migrating genie-in-the-box to cosa-voice MCP tools"},
+       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Start fresh", "description": "Work on something else"},
+       {"label": "Modify list", "description": "Add/remove items before starting"}
+   ]
+   ```
+
+   ---
+
+   ### Case D: 3+ TODOs Found (Progressive Disclosure)
+
+   When there are more TODOs than can fit in 4 options, use a **two-step approach**:
+
+   **Step 5a - Mode Selection** (first question):
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": f"Session ready! Found {n} outstanding TODOs.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": f"Continue TODOs ({n})", "description": "Choose which TODO to work on first"},
+               {"label": "Start fresh", "description": "Work on something else"},
+               {"label": "Modify list", "description": "Add/remove items before starting"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   **If user selects "Continue TODOs (N)"** → proceed to Step 5b
+
+   **Step 5b - TODO Selection** (second question):
+
+   Show the first 3 TODOs as individual options, plus a "See more" option if > 3:
+
+   ```python
+   # Build options from first 3 TODOs
+   options = [
+       {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+       {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+       {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+   ]
+
+   # Add 4th option based on remaining count
+   if remaining_todos > 0:
+       options.append( {"label": f"See {remaining_todos} more...", "description": "View remaining TODOs"} )
+   else:
+       options.append( {"label": "Back", "description": "Return to previous menu"} )
+
+   ask_multiple_choice( questions=[
+       {
+           "question": "Which TODO would you like to work on first?",
+           "header": "Select TODO",
+           "multiSelect": False,
+           "options": options
+       }
+   ] )
+   ```
+
+   **If user selects "See N more..."** → repeat Step 5b with next batch of TODOs
+
+   ---
+
+   ### Label Formatting Rules
+
+   | Field | Max Length | Purpose |
+   |-------|------------|---------|
+   | `label` | ~25-30 chars | Quick scan identifier, truncated with "..." |
+   | `description` | Full text | Complete TODO text - never truncate |
+
+   **Truncation Guidelines**:
+   - Truncate at word boundary when possible
+   - Use ellipsis (...) to indicate truncation
+   - For file paths: Keep filename, truncate directory
+   - For action phrases: Keep verb and key noun
+
+   **Good Examples**:
+   ```python
+   # Long TODO: "Consider migrating genie-in-the-box to cosa-voice MCP tools"
+   {"label": "Migrate genie-in-t...", "description": "Consider migrating genie-in-the-box to cosa-voice MCP tools"}
+
+   # Short TODO: "Fix auth bug"
+   {"label": "Fix auth bug", "description": "Fix auth bug"}
+
+   # Path-heavy TODO: "Update src/tests/integration/test_auth.py"
+   {"label": "Update test_auth.py", "description": "Update src/tests/integration/test_auth.py"}
+   ```
+
+   ---
 
 6. **Wait for User Response**:
 
    **CRITICAL**: STOP here and wait for user input. Do NOT proceed to Step 6 until user responds.
 
-   **Note**: The `ask_multiple_choice()` call above is blocking - it waits for user response. This combines the notification and question into a single interaction.
+   **Note**: The `ask_multiple_choice()` call is blocking - it waits for user response.
 
-   **If [1] - Continue with TODOs**:
-   - Create new TodoWrite list with old TODO items
+   **Response Handling by Selection**:
+
+   | User Selection | Action |
+   |----------------|--------|
+   | [Specific TODO] | Create TodoWrite with that item as `in_progress`, others as `pending` |
+   | "Start fresh" | Clear old TODOs, wait for user to describe today's work |
+   | "Modify list" | Show all TODOs, ask what to add/remove/change |
+   | "Continue TODOs (N)" | Proceed to Step 5b for individual TODO selection |
+   | "See N more..." | Show next batch of TODOs (repeat Step 5b with offset) |
+   | "Back" | Return to Step 5a mode selection |
+   | "New task" | Wait for user to describe new work (zero-TODO case) |
+   | "Browse history" | Show recent session summaries for context |
+
+   **After selection is resolved**:
+   - Create new TodoWrite list with selected TODO as `in_progress`
    - Apply [SHORT_PROJECT_PREFIX] to each item
    - Read implementation docs if referenced
-   - Proceed to Step 6
-
-   **If [2] - Start fresh**:
-   - Clear old TODO list from consideration
-   - Wait for user to describe today's work
-   - Create new TodoWrite list based on user's direction
-   - Proceed to Step 6
-
-   **If [3] - Modify the list**:
-   - Ask user what to add/remove/change
-   - Create updated TodoWrite list
    - Proceed to Step 6
 
 **Update TodoWrite**: Mark "Identify outstanding work" as completed, mark next item as in_progress
@@ -822,6 +970,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.01.07 (Session 41)**: Implemented dynamic TODO option generation in Step 5 - TODOs now presented as individual selectable options instead of bundled into "Continue TODOs". Added 4 cases (0, 1, 2, 3+ TODOs) with progressive disclosure for 3+. Added label formatting rules and response handling table (~150 lines added).
 - **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.
 - **2025.10.23 (Session 26)**: Implemented Pattern B (example-based generation) for ready notification; added Design Pattern documentation section (~150 lines)
 - **2025.10.23 (Session 25)**: Removed bash random selection, implemented fixed message to eliminate permission prompts (~35 lines simplified)
