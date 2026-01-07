@@ -452,9 +452,83 @@ notify( "Starting session initialization, loading config and history...", notifi
 
    ---
 
-   ### Case D: 3+ TODOs Found (Progressive Disclosure)
+   ### Case D: 3 TODOs Found (5 options, single call)
 
-   When there are more TODOs than can fit in 4 options, use a **two-step approach**:
+   Present all 3 TODOs plus fallback options:
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! Found 3 outstanding TODOs.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+               {"label": "Start fresh", "description": "Work on something else"},
+               {"label": "Modify list", "description": "Add/remove items before starting"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   ---
+
+   ### Case E: 4 TODOs Found (6 options, single call)
+
+   Present all 4 TODOs plus fallback options:
+
+   ```python
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! Found 4 outstanding TODOs.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
+               {"label": "Start fresh", "description": "Work on something else"},
+               {"label": "Modify list", "description": "Add/remove items before starting"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   ---
+
+   ### Case F: 5 TODOs Found (6 options, single call)
+
+   Present all 5 TODOs plus unified "Other..." escape hatch:
+
+   ```python
+   # All 5 TODOs + "Other" for custom input (user can type anything)
+   ask_multiple_choice( questions=[
+       {
+           "question": "Session ready! Found 5 outstanding TODOs.",
+           "header": "Direction",
+           "multiSelect": False,
+           "options": [
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
+               {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
+               {"label": "Other...", "description": "Start fresh, modify list, or describe what you want"}
+           ]
+       }
+   ], priority="high" )
+   ```
+
+   **Note**: "Other..." serves as a unified escape hatch - user can type "start fresh", "modify list", or any custom direction.
+
+   ---
+
+   ### Case G: 6+ TODOs Found (Progressive Disclosure)
+
+   When there are more TODOs than can fit in 6 options, use a **two-step approach**:
 
    **Step 5a - Mode Selection** (first question):
 
@@ -477,17 +551,19 @@ notify( "Starting session initialization, loading config and history...", notifi
 
    **Step 5b - TODO Selection** (second question):
 
-   Show the first 3 TODOs as individual options, plus a "See more" option if > 3:
+   Show the first 5 TODOs as individual options, plus a "See more" option if > 5:
 
    ```python
-   # Build options from first 3 TODOs
+   # Build options from first 5 TODOs
    options = [
        {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
        {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
        {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+       {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
+       {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
    ]
 
-   # Add 4th option based on remaining count
+   # Add 6th option based on remaining count
    if remaining_todos > 0:
        options.append( {"label": f"See {remaining_todos} more...", "description": "View remaining TODOs"} )
    else:
@@ -547,9 +623,10 @@ notify( "Starting session initialization, loading config and history...", notifi
    | [Specific TODO] | Create TodoWrite with that item as `in_progress`, others as `pending` |
    | "Start fresh" | Clear old TODOs, wait for user to describe today's work |
    | "Modify list" | Show all TODOs, ask what to add/remove/change |
-   | "Continue TODOs (N)" | Proceed to Step 5b for individual TODO selection |
-   | "See N more..." | Show next batch of TODOs (repeat Step 5b with offset) |
-   | "Back" | Return to Step 5a mode selection |
+   | "Other..." | Parse user's custom text: may be "start fresh", "modify list", or custom direction |
+   | "Continue TODOs (N)" | Proceed to Step 5b for individual TODO selection (Case G only) |
+   | "See N more..." | Show next batch of TODOs (repeat Step 5b with offset, Case G only) |
+   | "Back" | Return to Step 5a mode selection (Case G only) |
    | "New task" | Wait for user to describe new work (zero-TODO case) |
    | "Browse history" | Show recent session summaries for context |
 
@@ -970,6 +1047,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.01.07 (Session 42)**: Expanded to 6-option support (from 4). Cases D/E/F now use single MCP call for 3/4/5 TODOs respectively. Progressive disclosure (Case G) only needed for 6+ TODOs. Updated Lupin notification model to allow 2-6 options. Case F uses "Other..." as unified escape hatch (~70 lines added).
 - **2026.01.07 (Session 41)**: Implemented dynamic TODO option generation in Step 5 - TODOs now presented as individual selectable options instead of bundled into "Continue TODOs". Added 4 cases (0, 1, 2, 3+ TODOs) with progressive disclosure for 3+. Added label formatting rules and response handling table (~150 lines added).
 - **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.
 - **2025.10.23 (Session 26)**: Implemented Pattern B (example-based generation) for ready notification; added Design Pattern documentation section (~150 lines)

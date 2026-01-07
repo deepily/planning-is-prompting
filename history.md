@@ -1,18 +1,57 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 41 complete - Dynamic TODO option generation in session-start workflow
+**RESUME HERE**: Session 42 complete - Expanded ask_multiple_choice to 6 options
 
-**Current Status**: Session-start now presents TODOs as individual selectable options instead of bundling them into "Continue TODOs". Supports 0, 1, 2, and 3+ TODO cases with progressive disclosure.
-**Next Steps**: Test new session-start workflow, migrate genie-in-the-box to cosa-voice MCP
+**Current Status**: Session-start now supports up to 6 options (was 4). Cases D/E/F present 3/4/5 TODOs in single MCP call. Progressive disclosure only needed for 6+ TODOs.
+**Next Steps**: Migrate genie-in-the-box to cosa-voice MCP, populate commit-management.md stub
 
 **TODO for Next Session**:
-- [ ] Test dynamic TODO option generation by running /plan-session-start
 - [ ] Consider migrating genie-in-the-box to cosa-voice MCP tools
 - [ ] Populate workflow/commit-management.md stub
 
 ---
 
 ## January 2026
+
+### 2026.01.07 - Session 42: Expand ask_multiple_choice to 6 Options
+
+**Accomplishments**:
+- **Identified UX issue during session-start testing**:
+  - Problem: 3 TODOs caused TWO separate `ask_multiple_choice()` calls (progressive disclosure)
+  - User expectation: Single call presenting all options
+  - Root cause: Pydantic validator in notification_models.py enforced 2-4 option limit
+
+- **Expanded option limit from 4 to 6**:
+  - Updated `/lupin/src/cosa/cli/notification_models.py` line 224-225
+  - Changed: `> 4` → `> 6` in validation
+  - MCP tool already had no limit; only Pydantic enforced it
+
+- **Refactored session-start workflow Step 5**:
+  - Added Case D: 3 TODOs → 5 options, single call
+  - Added Case E: 4 TODOs → 6 options, single call
+  - Added Case F: 5 TODOs → 6 options with "Other..." escape hatch
+  - Renamed old Case D to Case G: 6+ TODOs → progressive disclosure (rare)
+
+- **Tested successfully**:
+  - Ran `/plan-session-start` with 3 TODOs
+  - Received single `ask_multiple_choice()` call with 5 options ✅
+  - All TODOs presented as individual selectable options
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| lupin/.../notification_models.py:224-225 | 1 line: `> 4` → `> 6` |
+| workflow/session-start.md | Added Cases D/E/F, updated response handling, version history (~70 lines) |
+
+**Key Insight**: Claude Code's `AskUserQuestion` has a 2-4 option limit, but our custom `ask_multiple_choice()` MCP tool is controlled by us - we can set any limit we want.
+
+**Pattern Used This Session**:
+- Work type: UX improvement (expand capabilities)
+- Scale: Small (~1 hour)
+- Pattern: Pattern 5 (Bug Fix/Enhancement)
+- Documentation: history.md only
+
+---
 
 ### 2026.01.07 - Session 41: Dynamic TODO Option Generation in Session-Start
 
