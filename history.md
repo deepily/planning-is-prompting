@@ -3,11 +3,11 @@
 **RESUME HERE**: Session 42 complete - Expanded ask_multiple_choice to 6 options
 
 **Current Status**: Session-start now supports up to 6 options (was 4). Cases D/E/F present 3/4/5 TODOs in single MCP call. Progressive disclosure only needed for 6+ TODOs.
-**Next Steps**: Migrate genie-in-the-box to cosa-voice MCP, populate commit-management.md stub
+**Next Steps**: No outstanding TODOs
 
-**TODO for Next Session**:
-- [ ] Consider migrating genie-in-the-box to cosa-voice MCP tools
-- [ ] Populate workflow/commit-management.md stub
+**Closed This Session**:
+- [x] ~~Consider migrating genie-in-the-box to cosa-voice MCP tools~~ - Already done! cosa-voice MCP is global infrastructure (Sessions 37-39)
+- [x] ~~Populate workflow/commit-management.md stub~~ - Deleted instead (commit workflow already in session-end.md)
 
 ---
 
