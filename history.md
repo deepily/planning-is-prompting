@@ -1,42 +1,53 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 44 complete - Added MCP notification commitment to final instructions
+**RESUME HERE**: Session 44 complete - Added mandatory notification action to final instructions
 
-**Current Status**: Global CLAUDE.md now requires Claude to commit to ALWAYS using cosa-voice notifications in acknowledgment text.
-**Next Steps**: Continue testing cosa-voice mandatory language across sessions
+**Current Status**: Global CLAUDE.md now requires Claude to SEND a high-priority notification (not just recite text) when acknowledging the file.
+**Next Steps**: Test in new session to verify notification is sent as part of acknowledgment
 
 ---
 
 ## January 2026
 
-### 2026.01.08 - Session 44: Add MCP Notification Commitment to Final Instructions
+### 2026.01.08 - Session 44: Add MCP Notification Action to Final Instructions
 
 **Accomplishments**:
-- **Added notification commitment to CLAUDE.md final instructions**:
-  - Updated confirmation text Claude must recite when acknowledging CLAUDE.md
-  - Added: "I will ALWAYS notify you using the cosa-voice MCP server for progress updates, completions, and decisions."
-  - Applied to both `~/.claude/CLAUDE.md` (active config) and `global/CLAUDE.md` (repo template)
+- **Transformed final instructions from "recite text" to "send notification"**:
+  - Initial approach: Added text saying "I will ALWAYS notify you..."
+  - User feedback: "Show, don't tell" - have Claude demonstrate commitment by actually sending a notification
+  - Final approach: Require Claude to send high-priority `mcp__cosa-voice__notify` call as part of acknowledgment
+
+- **New Final Instructions Structure**:
+  1. **Send** high-priority notification using cosa-voice MCP
+  2. **Respond** with acknowledgment text
+  3. **Summarize** key points
 
 **Files Modified**:
 | File | Changes |
 |------|---------|
-| ~/.claude/CLAUDE.md | Line 1007: Added notification commitment sentence |
-| global/CLAUDE.md | Line 1007: Added notification commitment sentence (sync) |
+| ~/.claude/CLAUDE.md | Lines 1004-1014: Restructured final instructions with notification action |
+| global/CLAUDE.md | Lines 1004-1014: Same changes (kept in sync) |
 
-**New Confirmation Text**:
-```
-"CLAUDE.md read and understood. I will abide with your instructions and preferences
-throughout this session. I will ALWAYS notify you using the cosa-voice MCP server
-for progress updates, completions, and decisions."
+**New Final Instructions**:
+```markdown
+## Final instructions
+When you have arrived at this point in reading this CLAUDE.md file, you MUST:
+
+1. **Send a high-priority notification** using the cosa-voice MCP server:
+   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you...", priority: "high" )
+
+2. **Respond with**: "CLAUDE.md read and understood..."
+
+3. **Summarize** the key points in a bullet point list.
 ```
 
 **Pattern Used This Session**:
 - Work type: Configuration update (final instructions enhancement)
-- Scale: Small (~15 minutes)
+- Scale: Small (~20 minutes)
 - Pattern: Pattern 5 (Bug Fix/Small Enhancement)
 - Documentation: history.md only
 
-**Rationale**: Reinforces Session 43's mandatory notification language by requiring explicit commitment at session start.
+**Rationale**: "Show, don't tell" - demonstrating the notification commitment by actually using the system is more effective than adding words to a recitation.
 
 ---
 

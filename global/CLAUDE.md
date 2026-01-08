@@ -1002,8 +1002,13 @@ Total: 65 passed, 2 failed, 1 skipped
 For complete details, algorithms, and implementation, see the canonical workflow document above.
 
 ## Final instructions
-When you have arrived at this point in passing this CLAUDE.md file to me, please confirm you have read and understood all sections by responding with: 
+When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
-"CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session. I will ALWAYS notify you using the cosa-voice MCP server for progress updates, completions, and decisions."
+1. **Send a high-priority notification** using the cosa-voice MCP server confirming your commitment:
+   ```
+   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "high" )
+   ```
 
-Then, please summarize the key points of this CLAUDE.md file in a concise bullet point list.
+2. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+
+3. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
