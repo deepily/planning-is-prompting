@@ -333,31 +333,82 @@ cosa-voice automatically detects project from working directory:
 
 ---
 
-### When to Proactively Use cosa-voice
+### CRITICAL: The User Is NOT Watching the Terminal
 
-**Use cosa-voice proactively in day-to-day work, not just in explicit workflows.**
+**Mental Model**: You are communicating with a user who may be:
+- In another room or away from the computer
+- Working on another task
+- Waiting for AUDIO alerts to know when you need them
 
-The MCP tools should be used automatically during regular coding work to keep the user informed and engaged. Don't wait for workflow documents to tell you when to notify.
+**PRIMARY vs SECONDARY Communication**:
+| Channel | Purpose | When User Sees It |
+|---------|---------|-------------------|
+| cosa-voice notifications | **PRIMARY** - Status, decisions | **Immediately** (audio alert) |
+| Terminal text output | SECONDARY - Detailed explanations | When user checks back |
 
-**Trigger Conditions for `notify()` (fire-and-forget)**:
-| Trigger | Priority | Example |
-|---------|----------|---------|
-| Task completion | low | Finished a TODO item or significant subtask |
-| Progress milestones | medium | Completed a phase of multi-step work |
-| Error alerts | urgent | Encountered unexpected errors blocking progress |
-| Build/test results | medium | Tests passed/failed, build completed |
-| Long process finished | low | Background command completed |
+**Consequence**: If you complete work without notifying, the user has NO IDEA you finished.
 
-**Trigger Conditions for blocking tools (`ask_yes_no`, `ask_multiple_choice`, `converse`)**:
-| Trigger | Tool | Example |
-|---------|------|---------|
-| Need approval | `ask_yes_no()` | Before significant codebase changes |
-| Multiple approaches | `ask_multiple_choice()` | Architectural decisions with valid options |
-| Unclear requirements | `converse()` | User intent is ambiguous, need clarification |
-| Blocked/waiting | `converse()` | Waiting >2 minutes for user input to proceed |
-| Destructive operations | `ask_yes_no()` | Before deleting files, resetting branches |
+---
 
-**Key Principle**: If you would normally wait for the user to check back, use `notify()` instead. If you would use `AskUserQuestion`, prefer the cosa-voice equivalent for voice delivery.
+### MANDATORY Notification Requirements
+
+**MANDATE**: You MUST send notifications for the events below. These are NOT suggestions.
+
+**Required `notify()` Events**:
+| Event | Priority | Requirement |
+|-------|----------|-------------|
+| TodoWrite item completed | low | **MUST** notify after EVERY item |
+| Phase/milestone complete | medium | **MUST** notify at phase boundaries |
+| Error encountered | urgent | **MUST** notify immediately |
+| Test suite finished | medium | **MUST** notify pass or fail |
+| Long process finished (>30s) | low | **MUST** notify completion |
+
+**Required Blocking Tool Events**:
+| Event | Tool | Requirement |
+|-------|------|-------------|
+| Before significant code changes | `ask_yes_no()` | **MUST** get approval |
+| Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
+| Unclear requirements | `converse()` | **MUST** clarify - never assume |
+| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
+
+**PROHIBITED Anti-Patterns** - **NEVER** do the following:
+1. **NEVER** complete a multi-step task without progress notifications
+2. **NEVER** finish work and "wait" for user to check back
+3. **NEVER** make architectural decisions without `ask_multiple_choice()`
+4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
+5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+
+---
+
+### Notification Accountability Checkpoint
+
+**MANDATE**: Before completing ANY task, execute this self-check:
+
+```
+NOTIFICATION VERIFICATION:
+□ Did I notify when I started significant work?
+□ Did I notify for each TodoWrite item completed?
+□ Did I use blocking tools when I needed decisions?
+□ Did I notify about any errors encountered?
+□ Will the user know I'm finished?
+```
+
+**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
+
+---
+
+### Integration with TodoWrite
+
+**MANDATE**: Notifications are TIED to TodoWrite status changes.
+
+**Protocol**:
+1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
+2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
+3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
+
+**CRITICAL**: A task is NOT complete until BOTH:
+- TodoWrite status is updated
+- Notification is sent
 
 ---
 

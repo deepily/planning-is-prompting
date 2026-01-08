@@ -1,17 +1,59 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 42 complete - Expanded ask_multiple_choice to 6 options
+**RESUME HERE**: Session 43 complete - Transformed cosa-voice from advisory to mandatory language
 
-**Current Status**: Session-start now supports up to 6 options (was 4). Cases D/E/F present 3/4/5 TODOs in single MCP call. Progressive disclosure only needed for 6+ TODOs.
-**Next Steps**: No outstanding TODOs
-
-**Closed This Session**:
-- [x] ~~Consider migrating genie-in-the-box to cosa-voice MCP tools~~ - Already done! cosa-voice MCP is global infrastructure (Sessions 37-39)
-- [x] ~~Populate workflow/commit-management.md stub~~ - Deleted instead (commit workflow already in session-end.md)
+**Current Status**: cosa-voice documentation now uses MANDATE/MUST/NEVER language matching TodoWrite patterns. Mental model, accountability checkpoint, and TodoWrite integration added.
+**Next Steps**: Test in next session to verify increased proactive notification usage
 
 ---
 
 ## January 2026
+
+### 2026.01.08 - Session 43: Reinforce Proactive cosa-voice Notification Behavior
+
+**Accomplishments**:
+- **Root cause analysis**: Identified why Claude Code doesn't use cosa-voice proactively
+  - Language strength asymmetry: TodoWrite uses "MANDATE/MUST", git safety uses "NEVER" - cosa-voice used "use proactively" (weakest)
+  - No accountability mechanism: TodoWrite has "verify after each step" - cosa-voice had nothing
+  - Zero mandatory keywords: cosa-voice-integration.md had 0 instances of MUST/MANDATE/REQUIRED/CRITICAL
+  - Advisory framing: "If you would normally wait..." (conditional) vs "MUST notify when..." (imperative)
+
+- **Transformed advisory → mandatory language**:
+  - Added "CRITICAL: The User Is NOT Watching the Terminal" mental model section
+  - Replaced advisory "When to Proactively Use" with "MANDATORY Notification Requirements"
+  - Added PROHIBITED anti-patterns section (5 NEVER rules)
+  - Added "Notification Accountability Checkpoint" self-check protocol
+  - Added "Integration with TodoWrite" mandate (notifications tied to status changes)
+
+- **Applied changes to both documents**:
+  - `workflow/cosa-voice-integration.md` - canonical reference (+~90 lines)
+  - `global/CLAUDE.md` - template (+~75 lines)
+  - `~/.claude/CLAUDE.md` - active config (synced)
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/cosa-voice-integration.md | +~90 lines: Mental model, MANDATORY triggers, PROHIBITED anti-patterns, Accountability checkpoint, TodoWrite integration |
+| global/CLAUDE.md | +~75 lines: Same mandatory language sections |
+| ~/.claude/CLAUDE.md | Synced from global |
+
+**Key Language Transformations**:
+| Before (Advisory) | After (Mandatory) |
+|-------------------|-------------------|
+| "Use cosa-voice proactively" | "**MANDATE**: You MUST use cosa-voice" |
+| "Don't wait for workflows" | "**NEVER** complete work without notifying" |
+| "If you would normally wait..." | "**PROHIBITED**: Waiting silently" |
+| (no accountability) | Self-check before ANY task completion |
+
+**Pattern Used This Session**:
+- Work type: Behavior reinforcement (documentation language transformation)
+- Scale: Medium (~2 hours, planning + implementation)
+- Pattern: Pattern 2 (Research & Design) → Pattern 3 (Feature Development)
+- Documentation: history.md + plan file
+
+**Verification**: Test in next session - notifications should increase from ~2-3 to ~8-12 per session.
+
+---
 
 ### 2026.01.07 - Session 42: Expand ask_multiple_choice to 6 Options
 

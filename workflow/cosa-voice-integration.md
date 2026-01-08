@@ -16,37 +16,95 @@ The cosa-voice MCP server provides real-time voice notifications and interactive
 
 ---
 
-## When to Proactively Use cosa-voice
+## CRITICAL: The User Is NOT Watching the Terminal
 
-**Use cosa-voice proactively in day-to-day work, not just in explicit workflows.**
+**Mental Model**: You are communicating with a user who may be:
+- In another room or away from the computer
+- Working on another task
+- Waiting for AUDIO alerts to know when you need them
+- Unable to see your text output in real-time
 
-Don't wait for workflow documents to tell you when to notify. Use these tools automatically during regular coding work to keep the user informed and engaged.
+**PRIMARY vs SECONDARY Communication**:
 
-### Trigger Conditions for `notify()` (fire-and-forget)
+| Channel | Purpose | When User Sees It |
+|---------|---------|-------------------|
+| cosa-voice notifications | **PRIMARY** - Status, decisions | **Immediately** (audio alert) |
+| Terminal text output | SECONDARY - Detailed explanations | When user checks back |
 
-| Trigger | Priority | Example |
-|---------|----------|---------|
-| Task completion | low | Finished a TODO item or significant subtask |
-| Progress milestones | medium | Completed a phase of multi-step work |
-| Error alerts | urgent | Encountered unexpected errors blocking progress |
-| Build/test results | medium | Tests passed/failed, build completed |
-| Long process finished | low | Background command completed |
+**Consequence**: If you complete work without notifying, the user has NO IDEA you finished. They will wonder if you're still working, stuck, or waiting for input.
 
-### Trigger Conditions for Blocking Tools
+---
 
-| Trigger | Tool | Example |
-|---------|------|---------|
-| Need approval | `ask_yes_no()` | Before significant codebase changes |
-| Multiple approaches | `ask_multiple_choice()` | Architectural decisions with valid options |
-| Unclear requirements | `converse()` | User intent is ambiguous, need clarification |
-| Blocked/waiting | `converse()` | Waiting >2 minutes for user input to proceed |
-| Destructive operations | `ask_yes_no()` | Before deleting files, resetting branches |
+## MANDATORY Notification Requirements
 
-### Key Principle
+**MANDATE**: You MUST send notifications for the events below. These are NOT suggestions.
 
-**If you would normally wait for the user to check back, use `notify()` instead.**
+**CRITICAL**: Completing work without notifying is equivalent to working in silence while the user waits unknowingly.
 
-**If you would use `AskUserQuestion`, prefer the cosa-voice equivalent for voice delivery.**
+### Required `notify()` Events
+
+| Event | Priority | Requirement |
+|-------|----------|-------------|
+| TodoWrite item completed | low | **MUST** notify after EVERY item |
+| Phase/milestone complete | medium | **MUST** notify at phase boundaries |
+| Error encountered | urgent | **MUST** notify immediately |
+| Test suite finished | medium | **MUST** notify pass or fail |
+| Long process finished (>30s) | low | **MUST** notify completion |
+| Workflow step completed | low | **MUST** notify each step |
+
+**Rule**: After marking ANY TodoWrite item as `completed`, you MUST immediately call `notify()`.
+
+### Required Blocking Tool Events
+
+| Event | Tool | Requirement |
+|-------|------|-------------|
+| Before significant code changes | `ask_yes_no()` | **MUST** get approval |
+| Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
+| Unclear requirements | `converse()` | **MUST** clarify - never assume |
+| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
+| Waiting >60s for input | `converse()` | **MUST** ask - don't wait silently |
+
+### PROHIBITED Anti-Patterns
+
+**NEVER** do the following:
+
+1. **NEVER** complete a multi-step task without progress notifications
+2. **NEVER** finish work and "wait" for user to check back
+3. **NEVER** make architectural decisions without `ask_multiple_choice()`
+4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
+5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+
+---
+
+## Notification Accountability Checkpoint
+
+**MANDATE**: Before completing ANY task, execute this self-check:
+
+```
+NOTIFICATION VERIFICATION:
+□ Did I notify when I started significant work?
+□ Did I notify for each TodoWrite item completed?
+□ Did I use blocking tools when I needed decisions?
+□ Did I notify about any errors encountered?
+□ Will the user know I'm finished?
+```
+
+**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
+
+---
+
+## Integration with TodoWrite
+
+**MANDATE**: Notifications are TIED to TodoWrite status changes.
+
+**Protocol**:
+1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
+2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
+3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
+
+**CRITICAL**: A task is NOT complete until BOTH:
+- TodoWrite status is updated
+- Notification is sent
 
 ---
 
@@ -378,6 +436,14 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.01.08 (Session 43)**: Transformed advisory → mandatory language for proactive notifications
+  - Added "CRITICAL: The User Is NOT Watching the Terminal" mental model section
+  - Replaced advisory "When to Proactively Use" with "MANDATORY Notification Requirements"
+  - Added PROHIBITED anti-patterns section (5 NEVER rules)
+  - Added "Notification Accountability Checkpoint" self-check protocol
+  - Added "Integration with TodoWrite" mandate (notifications tied to status changes)
+  - Key insight: Advisory language doesn't overcome Claude's base CLI output behavior
 
 - **2026.01.06 (Session 40)**: Added "When to Proactively Use cosa-voice" section
   - Defines trigger conditions for proactive notification use outside explicit workflows
