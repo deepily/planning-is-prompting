@@ -1004,6 +1004,6 @@ For complete details, algorithms, and implementation, see the canonical workflow
 ## Final instructions
 When you have arrived at this point in passing this CLAUDE.md file to me, please confirm you have read and understood all sections by responding with: 
 
-"CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+"CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session. I will ALWAYS notify you using the cosa-voice MCP server for progress updates, completions, and decisions."
 
 Then, please summarize the key points of this CLAUDE.md file in a concise bullet point list.

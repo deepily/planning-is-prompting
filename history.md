@@ -1,13 +1,44 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 43 complete - Transformed cosa-voice from advisory to mandatory language
+**RESUME HERE**: Session 44 complete - Added MCP notification commitment to final instructions
 
-**Current Status**: cosa-voice documentation now uses MANDATE/MUST/NEVER language matching TodoWrite patterns. Mental model, accountability checkpoint, and TodoWrite integration added.
-**Next Steps**: Test in next session to verify increased proactive notification usage
+**Current Status**: Global CLAUDE.md now requires Claude to commit to ALWAYS using cosa-voice notifications in acknowledgment text.
+**Next Steps**: Continue testing cosa-voice mandatory language across sessions
 
 ---
 
 ## January 2026
+
+### 2026.01.08 - Session 44: Add MCP Notification Commitment to Final Instructions
+
+**Accomplishments**:
+- **Added notification commitment to CLAUDE.md final instructions**:
+  - Updated confirmation text Claude must recite when acknowledging CLAUDE.md
+  - Added: "I will ALWAYS notify you using the cosa-voice MCP server for progress updates, completions, and decisions."
+  - Applied to both `~/.claude/CLAUDE.md` (active config) and `global/CLAUDE.md` (repo template)
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| ~/.claude/CLAUDE.md | Line 1007: Added notification commitment sentence |
+| global/CLAUDE.md | Line 1007: Added notification commitment sentence (sync) |
+
+**New Confirmation Text**:
+```
+"CLAUDE.md read and understood. I will abide with your instructions and preferences
+throughout this session. I will ALWAYS notify you using the cosa-voice MCP server
+for progress updates, completions, and decisions."
+```
+
+**Pattern Used This Session**:
+- Work type: Configuration update (final instructions enhancement)
+- Scale: Small (~15 minutes)
+- Pattern: Pattern 5 (Bug Fix/Small Enhancement)
+- Documentation: history.md only
+
+**Rationale**: Reinforces Session 43's mandatory notification language by requiring explicit commitment at session start.
+
+---
 
 ### 2026.01.08 - Session 43: Reinforce Proactive cosa-voice Notification Behavior
 
