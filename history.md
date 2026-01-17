@@ -1,13 +1,56 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 44 complete - Added mandatory notification action to final instructions
+**RESUME HERE**: Session 45 complete - Documented `abstract` parameter across all cosa-voice MCP tools
 
-**Current Status**: Global CLAUDE.md now requires Claude to SEND a high-priority notification (not just recite text) when acknowledging the file.
-**Next Steps**: Test in new session to verify notification is sent as part of acknowledgment
+**Current Status**: All cosa-voice documentation now includes the `abstract` parameter for supplementary context (markdown, URLs, details shown in UI but not spoken).
+**Next Steps**: Use `abstract` parameter in real workflows to provide file lists, diff summaries, and detailed context alongside spoken messages.
 
 ---
 
 ## January 2026
+
+### 2026.01.16 - Session 45: Document `abstract` Parameter in cosa-voice MCP Tools
+
+**Accomplishments**:
+- **Documented new `abstract` parameter across all cosa-voice MCP tools**:
+  - Added to `notify()`, `ask_yes_no()`, `converse()`, `ask_multiple_choice()`
+  - Purpose: Supplementary context (markdown, URLs, file lists) shown in UI but NOT spoken aloud
+  - Separates concise audio messages from detailed information user may want to review
+
+- **Created comprehensive "The `abstract` Parameter" section** in canonical documentation:
+  - When to use table (use cases vs content types)
+  - DO/DON'T guidelines for `abstract`
+  - Three comprehensive examples: commit approval with diff, plan approval with breakdown, error alert with stack trace
+
+- **Documented additional parameters** discovered in MCP tool definitions:
+  - `ask_multiple_choice()`: Added `timeout_seconds`, `priority`, `title` parameters
+  - `converse()`: Added `priority`, `title` parameters
+  - Updated from "2-4 options" to "2-6 options" for ask_multiple_choice
+
+- **Updated workflow examples** to demonstrate `abstract` usage:
+  - session-end.md: Commit approval with staged files list
+  - session-end.md: History archive notification with token analysis
+  - session-end.md: Example notifications section with abstract patterns
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/cosa-voice-integration.md | +~80 lines: New abstract section, updated all parameter tables, examples |
+| global/CLAUDE.md | +~15 lines: Tool table, parameters, examples with abstract |
+| ~/.claude/CLAUDE.md | Synced from global |
+| workflow/session-end.md | +~25 lines: Abstract examples in commit/archive flows |
+
+**Pattern Used This Session**:
+- Work type: Documentation update (new parameter documentation)
+- Scale: Small (~1 hour)
+- Pattern: Pattern 5 (Small Enhancement)
+- Documentation: history.md only
+
+**TODO for Next Session**:
+- [ ] Test `abstract` parameter in real commit approval flow
+- [ ] Consider adding `abstract` to history-management notifications
+
+---
 
 ### 2026.01.08 - Session 44: Add MCP Notification Action to Final Instructions
 

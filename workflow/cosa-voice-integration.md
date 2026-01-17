@@ -112,10 +112,10 @@ NOTIFICATION VERIFICATION:
 
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
-| `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority |
-| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds |
-| `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default |
-| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions (same format as Claude Code) |
+| `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract |
+| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract |
+| `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
 | `get_session_info()` | Session metadata (project, sender_id) | No | (none) |
 
 ---
@@ -131,6 +131,7 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 | `message` | string | Yes | The message to announce |
 | `notification_type` | string | No | One of: `task`, `progress`, `alert`, `custom` (default: `task`) |
 | `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `abstract` | string | No | Supplementary context (markdown, URLs, details) not spoken aloud |
 
 ### Priority Guidelines
 
@@ -174,6 +175,7 @@ For simple binary yes/no decisions.
 | `question` | string | Yes | The yes/no question to ask |
 | `default` | string | No | Default on timeout: `yes` or `no` (default: `no`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
 **Example**:
 
@@ -196,9 +198,12 @@ For open-ended questions requiring text or voice response.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `message` | string | Yes | The question or prompt |
-| `response_type` | string | No | `open_ended` (default) |
+| `response_type` | string | No | `open_ended` or `yes_no` (default: `open_ended`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 600) |
 | `response_default` | string | No | Default response on timeout |
+| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `title` | string | No | Short title for the notification |
+| `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
 **Example**:
 
@@ -215,13 +220,17 @@ response = converse(
 
 ### ask_multiple_choice()
 
-For menu selections with 2-4 options. Uses the same format as Claude Code's `AskUserQuestion` tool for seamless compatibility.
+For menu selections with 2-6 options. Uses the same format as Claude Code's `AskUserQuestion` tool for seamless compatibility.
 
 **Parameters**:
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `questions` | array | Yes | Array of question objects (same format as AskUserQuestion) |
+| `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `title` | string | No | Short title for the notification |
+| `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
 **Question Object Format** (mirrors AskUserQuestion):
 
@@ -374,6 +383,104 @@ All blocking tools support timeout with safe defaults:
 
 ---
 
+## The `abstract` Parameter
+
+The `abstract` parameter allows you to include supplementary context that is shown in the UI but NOT spoken aloud. This separates the concise audio message from detailed information the user may want to review.
+
+### When to Use `abstract`
+
+| Use Case | Spoken Message | Abstract Content |
+|----------|----------------|------------------|
+| Commit approval | "Ready to commit 5 files" | Staged file list, diff summary |
+| Error notification | "Build failed with 3 errors" | Full error messages, stack traces |
+| Plan approval | "Plan ready for review" | Detailed task breakdown, markdown |
+| Multiple choice | "How should we proceed?" | Options context, URLs, references |
+
+### `abstract` Guidelines
+
+**DO use `abstract` for**:
+- Markdown-formatted details (code blocks, tables, lists)
+- File lists and diff summaries
+- URLs and documentation references
+- Detailed error messages or stack traces
+- Plan summaries with task breakdowns
+
+**DON'T use `abstract` for**:
+- Information that must be heard (put in main message)
+- Very short context (just include in the message)
+- Critical warnings (these should be spoken)
+
+### Examples with `abstract`
+
+**Commit Approval with Diff Summary**:
+```python
+response = ask_yes_no(
+    question="Commit these 5 files to the repository?",
+    default="no",
+    timeout_seconds=300,
+    abstract="""**Staged files**:
+- src/auth/jwt_service.py (+45/-12)
+- src/auth/password.py (+23/-8)
+- tests/test_jwt.py (+67/-0)
+- tests/test_password.py (+34/-0)
+- CHANGELOG.md (+5/-0)
+
+**Summary**: Added password strength validation with tests"""
+)
+```
+
+**Multiple Choice with Plan Details**:
+```python
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "Implementation plan ready. How should we proceed?",
+            "header": "Plan",
+            "multiSelect": False,
+            "options": [
+                {"label": "Approve", "description": "Start implementation"},
+                {"label": "Modify", "description": "Request changes to plan"},
+                {"label": "Defer", "description": "Save for next session"}
+            ]
+        }
+    ],
+    title="Plan Approval",
+    abstract="""## Implementation Plan
+
+**Phase 1: Core Authentication**
+- [ ] Add JWT service
+- [ ] Implement password hashing
+- [ ] Create login endpoint
+
+**Phase 2: Testing**
+- [ ] Unit tests for JWT
+- [ ] Integration tests for auth flow
+
+**Estimated scope**: 4-6 files, ~300 lines"""
+)
+```
+
+**Error Alert with Details**:
+```python
+notify(
+    message="Build failed: 3 type errors in auth module",
+    notification_type="alert",
+    priority="urgent",
+    abstract="""```
+error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+  --> src/auth/jwt_service.ts:45:23
+
+error TS2339: Property 'userId' does not exist on type 'TokenPayload'.
+  --> src/auth/jwt_service.ts:67:12
+
+error TS2322: Type 'undefined' is not assignable to type 'string'.
+  --> src/auth/password.ts:23:5
+```"""
+)
+```
+
+---
+
 ## Workflow Integration Patterns
 
 ### Session Start Notification
@@ -436,6 +543,13 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.01.16 (Session 45)**: Documented `abstract` parameter across all tools
+  - Added `abstract` parameter to all tool parameter tables (notify, ask_yes_no, converse, ask_multiple_choice)
+  - Added `priority`, `title`, `timeout_seconds` parameters to ask_multiple_choice() and converse()
+  - Created "The `abstract` Parameter" section with guidelines and examples
+  - Updated Available MCP Tools summary table with new parameters
+  - Key insight: `abstract` separates spoken message from detailed UI context
 
 - **2026.01.08 (Session 43)**: Transformed advisory → mandatory language for proactive notifications
   - Added "CRITICAL: The User Is NOT Watching the Terminal" mental model section

@@ -43,20 +43,32 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 notify( "Session history updated", notification_type="progress", priority="low" )
 notify( "Session wrap-up complete", notification_type="task", priority="low" )
 
-# Blocking decisions
-ask_multiple_choice( questions=[
-    {
-        "question": "Commit approval needed - how would you like to proceed?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Keep changes local"},
-            {"label": "Commit and push", "description": "Sync to remote"},
-            {"label": "Modify", "description": "Edit commit message"},
-            {"label": "Cancel", "description": "Skip commit"}
-        ]
-    }
-] )
+# Fire-and-forget with abstract (for detailed context)
+notify(
+    message="Build completed with warnings",
+    notification_type="alert",
+    priority="medium",
+    abstract="**Warnings**:\n- Unused import in auth.py:12\n- Deprecated API call in utils.py:45"
+)
+
+# Blocking decisions with abstract (shows file list in UI, not spoken)
+ask_multiple_choice(
+    questions=[
+        {
+            "question": "Commit approval needed - how would you like to proceed?",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Keep changes local"},
+                {"label": "Commit and push", "description": "Sync to remote"},
+                {"label": "Modify", "description": "Edit commit message"},
+                {"label": "Cancel", "description": "Skip commit"}
+            ]
+        }
+    ],
+    title="Commit Decision",
+    abstract="**Staged files**: 5 modified, 2 new\n**Lines**: +124/-45"
+)
 ```
 
 ## 0.4) Quick Token Count Check (Manual)
@@ -137,18 +149,27 @@ Health: ✅ HEALTHY
    - **PAUSE session-end workflow**
    - **Send blocking notification**:
      ```python
-     ask_multiple_choice( questions=[
-         {
-             "question": "History.md at {X}k tokens - archival needed soon",
-             "header": "Archive",
-             "multiSelect": False,
-             "options": [
-                 {"label": "Archive now", "description": "Recommended - will take ~3-5 minutes"},
-                 {"label": "Next session", "description": "Adds archive task to TODO"},
-                 {"label": "Continue anyway", "description": "I'll handle it manually"}
-             ]
-         }
-     ] )
+     ask_multiple_choice(
+         questions=[
+             {
+                 "question": "History.md at {X}k tokens - archival needed soon",
+                 "header": "Archive",
+                 "multiSelect": False,
+                 "options": [
+                     {"label": "Archive now", "description": "Recommended - will take ~3-5 minutes"},
+                     {"label": "Next session", "description": "Adds archive task to TODO"},
+                     {"label": "Continue anyway", "description": "I'll handle it manually"}
+                 ]
+             }
+         ],
+         title="History Health",
+         abstract="""**Token Analysis**:
+- Current: {X} tokens (80% of 25k limit)
+- 7-day velocity: +1,200 tokens/day
+- Forecast: Will breach limit in ~4 days
+
+**Recommendation**: Archive sessions older than 14 days"""
+     )
      ```
    - **If "Archive now" selected**:
      * Invoke `/history-management mode=archive`
@@ -290,19 +311,31 @@ This step combines commit message drafting, user approval, and execution into a 
 **Send blocking notification and display options**:
 
 ```python
-ask_multiple_choice( questions=[
-    {
-        "question": "Commit approval needed - review message and choose action",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Keep changes local"},
-            {"label": "Commit and push", "description": "Sync to remote"},
-            {"label": "Modify message", "description": "Edit commit message"},
-            {"label": "Cancel", "description": "Skip commit for now"}
-        ]
-    }
-] )
+ask_multiple_choice(
+    questions=[
+        {
+            "question": "Commit approval needed - review message and choose action",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Keep changes local"},
+                {"label": "Commit and push", "description": "Sync to remote"},
+                {"label": "Modify message", "description": "Edit commit message"},
+                {"label": "Cancel", "description": "Skip commit for now"}
+            ]
+        }
+    ],
+    title="Commit Decision",
+    abstract="""**Staged files**:
+- workflow/session-end.md (+45/-12)
+- global/CLAUDE.md (+23/-8)
+- history.md (+15/-0)
+
+**Commit message**:
+Document abstract parameter in cosa-voice MCP tools (Session 45)
+
+**Summary**: 3 files changed, +83/-20 lines"""
+)
 ```
 
 **Display drafted commit message and options**:

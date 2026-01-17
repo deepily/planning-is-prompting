@@ -205,9 +205,9 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | Tool | Purpose | Blocking | Example |
 |------|---------|----------|---------|
 | `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
-| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no" )` |
+| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
 | `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
-| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...] )` |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
 | `get_session_info()` | Session metadata | No | `get_session_info()` |
 
 ### Key Features
@@ -227,6 +227,7 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 - `message` (required): The message to announce
 - `notification_type`: task | progress | alert | custom (default: task)
 - `priority`: urgent | high | medium | low (default: medium)
+- `abstract`: Supplementary context (markdown, URLs, details) shown in UI but not spoken
 
 **Priority Guidelines**:
 - `urgent`: Critical errors, blockers, time-sensitive
@@ -250,7 +251,7 @@ notify( "Build failed: 3 type errors found", notification_type="alert", priority
 
 ### Blocking Decisions
 
-Use blocking tools when you need user input before proceeding.
+Use blocking tools when you need user input before proceeding. All blocking tools support an optional `abstract` parameter for supplementary context (markdown, file lists, URLs) shown in UI but not spoken aloud.
 
 #### ask_yes_no()
 
@@ -260,7 +261,8 @@ For simple binary yes/no decisions.
 response = ask_yes_no(
     question="Commit these changes?",
     default="no",
-    timeout_seconds=300
+    timeout_seconds=300,
+    abstract="**Staged files**:\n- src/auth.py (+45/-12)\n- tests/test_auth.py (+67/-0)"
 )
 # Returns: {"answer": "yes"} or {"answer": "no"}
 ```
@@ -281,22 +283,26 @@ response = converse(
 
 #### ask_multiple_choice()
 
-For menu selections with 2-4 options. Uses same format as Claude Code's `AskUserQuestion`.
+For menu selections with 2-6 options. Uses same format as Claude Code's `AskUserQuestion`. Supports `title`, `priority`, `timeout_seconds`, and `abstract` parameters.
 
 ```python
-response = ask_multiple_choice( questions=[
-    {
-        "question": "How would you like to proceed with the commit?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Keep changes local"},
-            {"label": "Commit and push", "description": "Sync to remote"},
-            {"label": "Modify", "description": "Edit commit message"},
-            {"label": "Cancel", "description": "Skip commit"}
-        ]
-    }
-] )
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "How would you like to proceed with the commit?",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Keep changes local"},
+                {"label": "Commit and push", "description": "Sync to remote"},
+                {"label": "Modify", "description": "Edit commit message"},
+                {"label": "Cancel", "description": "Skip commit"}
+            ]
+        }
+    ],
+    title="Commit Decision",
+    abstract="**Changed files**: 3 modified, 2 new\n**Diff summary**: +124/-45 lines"
+)
 # Returns: {"answers": {"0": "Commit and push"}}
 ```
 
