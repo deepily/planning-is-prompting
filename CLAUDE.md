@@ -25,7 +25,8 @@ planning-is-prompting/
 │   ├── testing-remediation.md            # Post-change verification and fixes
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
-│   └── notification-system.md            # Notification usage patterns
+│   ├── notification-system.md            # Notification usage patterns
+│   └── bug-fix-mode.md                   # Iterative bug fixing workflow
 ├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
 │   ├── p-is-p-00-start-here.md
 │   ├── p-is-p-01-planning.md
@@ -33,6 +34,7 @@ planning-is-prompting/
 │   ├── plan-backup-check.md
 │   ├── plan-backup.md
 │   ├── plan-backup-write.md
+│   ├── plan-bug-fix-mode.md
 │   ├── plan-history-management.md
 │   ├── plan-install-wizard.md
 │   ├── plan-session-end.md
@@ -257,6 +259,29 @@ This project follows the session-end ritual defined in planning-is-prompting →
 **Note**: For this documentation-only repository, "testing" means validating documentation structure (all workflow files exist, cross-references work, etc.). For code projects, these workflows run actual test suites (smoke, unit, integration).
 
 **See**: [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide for complete usage documentation.
+
+## Bug Fix Mode
+
+**Purpose**: Iterative bug fixing with incremental commits and history tracking across context clears.
+
+**Entry Points**:
+- `/plan-bug-fix-mode start` - Initialize new bug fix session
+- `/plan-bug-fix-mode continue` - Resume after context clear
+- `/plan-bug-fix-mode close` - End bug fix session for the day
+
+**Canonical Workflow**: planning-is-prompting → workflow/bug-fix-mode.md
+
+**Key Features**:
+- Atomic commits per bug (only bug-related files staged)
+- Session ownership prevents parallel session interference
+- `bug-fix-queue.md` tracks queued vs completed bugs
+- `history.md` provides persistent memory across context clears
+- GitHub integration (fetch issues, auto-close with `Fixes #N`)
+
+**Runtime Artifacts**:
+- `bug-fix-queue.md` - Created in project root when bug fix mode starts
+
+**See**: [Bug Fix Mode](workflow/INSTALLATION-GUIDE.md#bug-fix-mode-workflow) in installation guide for complete usage documentation.
 
 ## References
 

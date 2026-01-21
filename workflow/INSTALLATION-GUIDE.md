@@ -715,6 +715,116 @@ After installation, invoke the command to show me the current project status: `/
 
 ---
 
+## Bug Fix Mode Workflow
+
+### What It Does
+
+Iterative bug fixing workflow with incremental documentation and commits:
+- Fix bugs one at a time with atomic commits
+- Maintain detailed history of fixes across context clears
+- Integrate with GitHub issues for tracking and closure
+- Ensure clean file staging (only bug-related files per commit)
+- Session ownership prevents interference from parallel Claude sessions
+
+**Canonical Workflow**: planning-is-prompting → workflow/bug-fix-mode.md
+
+**Slash Command**: `/plan-bug-fix-mode`
+
+### Modes
+
+| Mode | Purpose |
+|------|---------|
+| `start` | Initialize new bug fix session (default) |
+| `continue` | Resume after context clear |
+| `close` | End bug fix session for the day |
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-bug-fix-mode` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/bug-fix-mode.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-bug-fix-mode.md
+   - Target: .claude/commands/plan-bug-fix-mode.md
+   - Keep the filename as-is (plan-bug-fix-mode.md)
+
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Update the bug-fix-queue.md path (project root)
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+   - Where should bug-fix-queue.md be created? (default: project root)
+
+After installation, test it: `/plan-bug-fix-mode start`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **History.md location** - Usually in project root, confirm path
+
+3. **Bug fix queue location** - Usually in project root (`bug-fix-queue.md`)
+
+### Usage
+
+```bash
+# Start a new bug fix session
+/plan-bug-fix-mode start
+
+# Resume after context clear
+/plan-bug-fix-mode continue
+
+# End bug fix session
+/plan-bug-fix-mode close
+```
+
+### Key Features
+
+**File Tracking**: Every file modified during a bug fix is tracked. Only tracked files are staged for commit - prevents accidentally committing unrelated changes.
+
+**Selective Staging**: NEVER uses `git add .` or `git add -A`. Only stages:
+- Files modified during current bug fix
+- `history.md`
+- `bug-fix-queue.md`
+
+**Session Ownership**: Queue file includes session ID to prevent parallel Claude sessions from interfering.
+
+**GitHub Integration**:
+- Fetch issue: `gh issue view #N`
+- Auto-close: `Fixes #N` in commit message
+- Manual close: `gh issue close #N --comment "Fixed in [hash]"`
+
+### Creates Runtime Artifacts
+
+| File | Purpose |
+|------|---------|
+| `bug-fix-queue.md` | Tracks queued and completed bugs |
+| Session entries in `history.md` | Persistent memory across context clears |
+
+### Integration with Session-End
+
+When `/plan-session-end` runs:
+- Detects if bug fix mode is active (queue file exists)
+- Checks if current session owns the queue
+- If same session: prompts to close bug fix mode
+- If different session: skips (no interference)
+
+---
+
 ## Backup Workflow
 
 ### What It Does

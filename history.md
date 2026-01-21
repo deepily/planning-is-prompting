@@ -1,13 +1,75 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 45 complete - Documented `abstract` parameter across all cosa-voice MCP tools
+**RESUME HERE**: Session 46 complete - Implemented Bug Fix Mode workflow
 
-**Current Status**: All cosa-voice documentation now includes the `abstract` parameter for supplementary context (markdown, URLs, details shown in UI but not spoken).
-**Next Steps**: Use `abstract` parameter in real workflows to provide file lists, diff summaries, and detailed context alongside spoken messages.
+**Current Status**: New `/plan-bug-fix-mode` workflow enables iterative bug fixing with incremental commits, session ownership tracking, and history continuity across context clears.
+**Next Steps**: Test bug fix mode in a real project with actual bugs; verify session-end integration works correctly.
 
 ---
 
 ## January 2026
+
+### 2026.01.21 - Session 46: Implement Bug Fix Mode Workflow
+
+**Accomplishments**:
+- **Created canonical bug fix mode workflow** (`workflow/bug-fix-mode.md`):
+  - 17-step workflow covering session initialization, per-bug fix cycles, recovery after context clear, and session closure
+  - Session ownership tracking (via `get_session_info()`) prevents parallel Claude sessions from interfering
+  - Selective file staging - only commits files touched during current bug fix (never `git add .`)
+  - GitHub integration: fetch issues, auto-close with `Fixes #N` in commit messages
+
+- **Created slash command wrapper** (`.claude/commands/plan-bug-fix-mode.md`):
+  - Three modes: `start`, `continue`, `close`
+  - References canonical workflow document
+  - Project-specific configuration for [PLAN] prefix
+
+- **Updated INSTALLATION-GUIDE.md**:
+  - Added complete Bug Fix Mode section with installation instructions
+  - Usage examples, key features, and runtime artifacts documented
+
+- **Updated CLAUDE.md**:
+  - Added `bug-fix-mode.md` to workflow listing in repository structure
+  - Added `plan-bug-fix-mode.md` to slash commands listing
+  - Added new Bug Fix Mode documentation section
+
+- **Updated session-end.md**:
+  - Added Step 0.6: Bug Fix Mode Integration
+  - Session ownership check: only prompts to close if current session owns the queue
+  - Different session handling: skips entirely to avoid interference
+
+**Problem Solved**:
+Claude Code's "plan to file → clear context → execute" pattern breaks history management because cleared context loses awareness of cumulative work. Bug fix mode solves this by:
+1. Incremental commits after each bug fix
+2. `history.md` as persistent memory across context clears
+3. `bug-fix-queue.md` tracking bugs queued vs completed
+4. Session ownership enabling parallel Claude sessions
+
+**Files Created**:
+| File | Description |
+|------|-------------|
+| workflow/bug-fix-mode.md | Canonical workflow (17 steps, ~450 lines) |
+| .claude/commands/plan-bug-fix-mode.md | Slash command wrapper |
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/INSTALLATION-GUIDE.md | +110 lines: Bug Fix Mode section |
+| CLAUDE.md | +27 lines: Structure listing, documentation section |
+| workflow/session-end.md | +65 lines: Step 0.6 bug fix mode integration |
+
+**Pattern Used This Session**:
+- Work type: New workflow implementation
+- Scale: Medium (~2 hours)
+- Pattern: Pattern 3 (Feature Development)
+- Documentation: history.md + canonical workflow doc
+
+**TODO for Next Session**:
+- [ ] Test `/plan-bug-fix-mode start` in a real project
+- [ ] Test context clear recovery with `/plan-bug-fix-mode continue`
+- [ ] Verify session-end integration detects queue ownership correctly
+- [ ] Consider adding bug fix mode to the README.md
+
+---
 
 ### 2026.01.16 - Session 45: Document `abstract` Parameter in cosa-voice MCP Tools
 

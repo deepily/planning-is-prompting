@@ -214,6 +214,71 @@ Health: ✅ HEALTHY
 
 ---
 
+## 0.6) Bug Fix Mode Integration
+
+**Purpose**: Check if bug fix mode is active and prompt for session closure if this session owns it.
+
+**When**: After history health check, before updating session history.
+
+**Process**:
+
+1. **Check if `bug-fix-queue.md` exists in project root**:
+   ```bash
+   ls bug-fix-queue.md 2>/dev/null
+   ```
+
+2. **If queue file does NOT exist**: Skip this step entirely. No bug fix mode is active.
+
+3. **If queue file EXISTS**:
+
+   a. **Get current session ID**:
+   ```python
+   session_info = get_session_info()
+   current_session_id = session_info["session_id"]
+   ```
+
+   b. **Read queue file and extract owner**:
+   - Parse the `**Owner**: [session_id]` line
+   - Compare with current session ID
+
+   c. **If SAME session** (this session owns bug fix mode):
+
+   ```python
+   # Parse queue to get stats
+   queued_count = count_queued_bugs()
+   completed_count = count_completed_bugs()
+
+   ask_yes_no(
+       question="Close bug fix session?",
+       default="yes",
+       priority="high",
+       abstract="**Bug fix mode active**\nThis session owns the bug fix queue.\n\n**Completed today**: [completed_count] fixes\n**Remaining**: [queued_count] bugs\n\nClose session and finalize?"
+   )
+   ```
+
+   - **If YES**: Execute bug fix mode closure:
+     1. Finalize history.md session entry with summary
+     2. Archive completed bugs in queue (or clear queue)
+     3. Send notification: `notify( "Bug fix session closed", notification_type="progress", priority="low" )`
+
+   - **If NO**: Skip closure, leave bug fix mode open for next session
+
+   d. **If DIFFERENT session** (another session owns bug fix mode):
+
+   Skip prompt entirely. Do not interfere with other session's bug fix mode.
+
+   Optional informational message:
+   ```
+   Note: Bug fix mode is active but owned by another session.
+   Skipping bug fix mode integration.
+   ```
+
+**Rationale**: Session ownership tracking enables parallel Claude sessions to work on the same repository without accidentally interfering with each other's bug fix workflows.
+
+**For complete bug fix mode workflow**: See planning-is-prompting → workflow/bug-fix-mode.md
+
+---
+
 ## 1) Update Session History
 
 **Target**: Record in main `history.md` under current month section
@@ -481,6 +546,99 @@ What would you like to do? [1/2/3/4]
 - NEVER skip hooks (--no-verify, --no-gpg-sign, etc.) unless user explicitly requests
 - NEVER force push to main/master - warn user if they request it
 - Avoid `git commit --amend` except for pre-commit hook edits (see above)
+
+
+## 5) Backup Prompt (Conditional)
+
+**Condition**: Only execute this step if Step 4 resulted in a commit (user selected "Commit only" or "Commit and push"). Skip this step if commit was cancelled or timed out.
+
+### 5.1) Offer Backup Options
+
+**Send blocking notification**:
+
+```python
+ask_multiple_choice(
+    questions=[
+        {
+            "question": "Commit complete. Would you like to run the backup script?",
+            "header": "Backup",
+            "multiSelect": False,
+            "options": [
+                {"label": "Run dry-run", "description": "Preview changes without modifying files"},
+                {"label": "Run backup", "description": "Execute backup to sync destination"},
+                {"label": "Skip", "description": "No backup this session"}
+            ]
+        }
+    ],
+    title="Backup",
+    abstract="""**Backup Script**: ./src/scripts/backup.sh
+**Source**: DATA01 → DATA02
+
+Tip: Dry-run first to preview, then execute."""
+)
+```
+
+### 5.2) Execute Based on Choice
+
+**If user selects "Run dry-run"**:
+
+1. Execute dry-run:
+   ```bash
+   ./src/scripts/backup.sh
+   ```
+
+2. Show output summary to user
+
+3. Send follow-up prompt:
+   ```python
+   ask_yes_no(
+       question="Dry-run complete. Execute actual backup now?",
+       default="no",
+       timeout_seconds=120,
+       abstract="[Summary of dry-run output showing files to sync]"
+   )
+   ```
+
+4. **If yes** → execute actual backup:
+   ```bash
+   ./src/scripts/backup.sh --write
+   ```
+   Then notify:
+   ```python
+   notify( "Backup complete", notification_type="task", priority="low" )
+   ```
+
+5. **If no** → notify and continue:
+   ```python
+   notify( "Backup skipped after dry-run review", notification_type="progress", priority="low" )
+   ```
+
+**If user selects "Run backup"**:
+
+1. Execute backup directly:
+   ```bash
+   ./src/scripts/backup.sh --write
+   ```
+
+2. Show output
+
+3. Notify:
+   ```python
+   notify( "Backup complete", notification_type="task", priority="low" )
+   ```
+
+**If user selects "Skip"**:
+
+1. Notify:
+   ```python
+   notify( "Backup skipped", notification_type="progress", priority="low" )
+   ```
+
+**Timeout Handling**:
+
+If timeout occurs, default to Skip:
+- Send notification: `notify( "Backup prompt timeout - skipped", notification_type="progress", priority="low" )`
+- Continue to Final Verification
 
 
 ## Final Verification
