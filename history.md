@@ -1,13 +1,50 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 46 complete - Implemented Bug Fix Mode workflow
+**RESUME HERE**: Session 47 complete - Split bug fix mode into separate slash commands
 
-**Current Status**: New `/plan-bug-fix-mode` workflow enables iterative bug fixing with incremental commits, session ownership tracking, and history continuity across context clears.
-**Next Steps**: Test bug fix mode in a real project with actual bugs; verify session-end integration works correctly.
+**Current Status**: Bug fix mode now has three discoverable slash commands (`/plan-bug-fix-mode-start`, `-continue`, `-close`) in addition to the original argument-based command.
+**Next Steps**: Test the new commands in a real project; update INSTALLATION-GUIDE.md if needed.
 
 ---
 
 ## January 2026
+
+### 2026.01.21 - Session 47: Split Bug Fix Mode into Separate Slash Commands
+
+**Accomplishments**:
+- **Created three new slash command files** for bug fix mode:
+  - `plan-bug-fix-mode-start.md` - Initialize new bug fix session
+  - `plan-bug-fix-mode-continue.md` - Resume after context clear
+  - `plan-bug-fix-mode-close.md` - End bug fix session for the day
+
+- **Updated original command** (`plan-bug-fix-mode.md`):
+  - Added Related Commands section pointing to mode-specific variants
+  - Original command still works (defaults to `start` mode for backward compatibility)
+
+**Problem Solved**:
+The original `/plan-bug-fix-mode` command required users to know argument syntax (`start`, `continue`, `close`). Users couldn't discover these modes from the slash command menu. Now all three modes are individually selectable.
+
+**Pattern Followed**:
+Followed the existing backup commands pattern (`plan-backup.md`, `plan-backup-write.md`, `plan-backup-check.md`) for consistent UX.
+
+**Files Created**:
+| File | Purpose |
+|------|---------|
+| .claude/commands/plan-bug-fix-mode-start.md | Initialize new session |
+| .claude/commands/plan-bug-fix-mode-continue.md | Resume after context clear |
+| .claude/commands/plan-bug-fix-mode-close.md | End session for the day |
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| .claude/commands/plan-bug-fix-mode.md | Added Related Commands section |
+
+**TODO for Next Session**:
+- [ ] Test all four bug fix mode commands work correctly
+- [ ] Update INSTALLATION-GUIDE.md with new command variants
+- [ ] Consider similar split for other argument-based commands
+
+---
 
 ### 2026.01.21 - Session 46: Implement Bug Fix Mode Workflow
 

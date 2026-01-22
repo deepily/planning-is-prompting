@@ -6,6 +6,18 @@
 
 ---
 
+## Related Commands
+
+This command supports all three modes via arguments. For discoverability in the slash command menu, use the mode-specific variants:
+
+- `/plan-bug-fix-mode-start` - Initialize new bug fix session
+- `/plan-bug-fix-mode-continue` - Resume after context clear
+- `/plan-bug-fix-mode-close` - End bug fix session for the day
+
+**Note**: This command (`/plan-bug-fix-mode`) defaults to `start` mode for backward compatibility.
+
+---
+
 ## Instructions to Claude
 
 **On every invocation of this command:**
