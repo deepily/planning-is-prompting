@@ -229,21 +229,28 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 - `priority`: urgent | high | medium | low (default: medium)
 - `abstract`: Supplementary context (markdown, URLs, details) shown in UI but not spoken
 
-**Priority Guidelines**:
-- `urgent`: Critical errors, blockers, time-sensitive
-- `high`: Session-ready notifications, important status updates
-- `medium`: Progress milestones, phase completions
-- `low`: Minor updates, task completions
+**Priority Levels and Audio Behavior**:
+
+Priority determines **how the user is alerted**, not workflow importance:
+
+| Priority | Audio Behavior | When to Use |
+|----------|----------------|-------------|
+| `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures |
+| `high` | Prominent ping + TTS read aloud | Blocking decisions requiring response |
+| `medium` | Gentle ping | Informational updates user should notice |
+| `low` | Silent (no sound) | Background info, minor completions |
+
+**Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
 
 **Examples**:
 ```python
-# Progress update
+# Progress update (silent - background info)
 notify( "Starting session initialization...", notification_type="progress", priority="low" )
 
-# Session ready
-notify( "All set! Config loaded, ready to work.", notification_type="task", priority="high" )
+# Session ready (gentle ping - informational)
+notify( "All set! Config loaded, ready to work.", notification_type="task", priority="medium" )
 
-# Error alert
+# Error alert (alert tone + TTS - critical)
 notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
 ```
 
@@ -1010,9 +1017,9 @@ For complete details, algorithms, and implementation, see the canonical workflow
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
-1. **Send a high-priority notification** using the cosa-voice MCP server confirming your commitment:
+1. **Send a medium-priority notification** using the cosa-voice MCP server confirming your commitment:
    ```
-   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "high" )
+   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "medium" )
    ```
 
 2. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."

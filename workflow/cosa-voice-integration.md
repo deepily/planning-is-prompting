@@ -133,29 +133,46 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 | `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) not spoken aloud |
 
-### Priority Guidelines
+### Priority Levels and Audio Behavior
 
-| Priority | When to Use | Examples |
-|----------|-------------|----------|
-| `urgent` | Critical errors, blockers, time-sensitive | "Build failed with errors", "Blocked waiting for input" |
-| `high` | Important status updates, session milestones | "Session initialized, ready to work" |
-| `medium` | Progress milestones, phase completions | "Phase 2 complete, starting Phase 3" |
-| `low` | Minor updates, task completions | "File saved", "Commit created" |
+Priority determines **how the user is alerted**, not workflow importance:
+
+| Priority | Audio Behavior | When to Use | Examples |
+|----------|----------------|-------------|----------|
+| `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures | "Build failed", "Blocked: cannot proceed" |
+| `high` | Prominent ping + TTS read aloud | Decisions requiring response | Blocking tools (ask_yes_no, ask_multiple_choice, converse) |
+| `medium` | Gentle ping | Informational updates user should notice | "Ready to work", "Phase complete", "CLAUDE.md acknowledged" |
+| `low` | Silent (no sound) | Background info, minor completions | "File saved", "TodoWrite item complete" |
+
+**Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
+
+### Priority Selection by Tool Type
+
+**For `notify()` (fire-and-forget)**:
+- `urgent` - Errors, failures, blockers (user needs to know immediately)
+- `medium` - Progress milestones, session ready, phase complete (ping to inform)
+- `low` - Minor task completions, file operations (silent background info)
+- `high` - Rarely used for notify() - if user needs to act, use a blocking tool instead
+
+**For blocking tools** (`ask_yes_no`, `ask_multiple_choice`, `converse`):
+- `high` - Default for decisions (message read aloud so user knows to respond)
+- `urgent` - Time-sensitive decisions, error recovery choices
+- `medium`/`low` - Generally avoid (user may not notice the request)
 
 ### Examples
 
 ```python
-# Progress update
+# Progress update (silent - background info)
 notify( "Starting session initialization...", notification_type="progress", priority="low" )
 
-# Task completion
+# Task completion (gentle ping - user should notice)
 notify( "Migration complete - 15 files updated", notification_type="task", priority="medium" )
 
-# Error alert
+# Error alert (alert tone + TTS - critical)
 notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
 
-# Session ready (high priority to get attention)
-notify( "All set! Config loaded, history reviewed. Ready to work.", notification_type="task", priority="high" )
+# Session ready (gentle ping - informational, not TTS)
+notify( "All set! Config loaded, history reviewed. Ready to work.", notification_type="task", priority="medium" )
 ```
 
 ---
