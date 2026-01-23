@@ -93,9 +93,9 @@ Health: ✅ HEALTHY
 ```
 
 **Status Indicators**:
-- ✅ HEALTHY: <20k tokens
-- ⚠️  WARNING: 20-22k tokens - Consider archiving soon
-- 🚨 CRITICAL: >22k tokens - Archive immediately
+- ✅ HEALTHY: <17k tokens
+- ⚠️  WARNING: 17-19k tokens - Consider archiving soon
+- 🚨 CRITICAL: >19k tokens - Archive immediately
 
 **Advantages**:
 - Fast, lightweight check
@@ -131,7 +131,7 @@ Health: ✅ HEALTHY
 2. **Review Health Report**:
    - Current token count
    - 7-day velocity trend
-   - Forecast to breach (days until 20k/25k limit)
+   - Forecast to breach (days until 17k/25k limit)
    - Severity status (HEALTHY, MONITOR, WARNING, CRITICAL)
 
 3. **Take Action Based on Severity**:
@@ -145,7 +145,7 @@ Health: ✅ HEALTHY
    - Continue to Step 1
    - Consider archiving within next few sessions
 
-   **If ⚠️ WARNING** (≥20k tokens OR breach <7 days):
+   **If ⚠️ WARNING** (≥17k tokens OR breach <7 days):
    - **PAUSE session-end workflow**
    - **Send blocking notification**:
      ```python
@@ -193,7 +193,7 @@ Health: ✅ HEALTHY
      * Send notification: `notify( "Archive deferred - added to TODO for next session", notification_type="progress", priority="low" )`
      * Resume session-end workflow (continue to Step 1)
 
-   **If 🚨 CRITICAL** (≥22k tokens OR breach <3 days):
+   **If 🚨 CRITICAL** (≥19k tokens OR breach <3 days):
    - **BLOCK session-end workflow**
    - **Require immediate archival**:
      ```

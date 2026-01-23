@@ -1004,7 +1004,7 @@ Total: 65 passed, 2 failed, 1 skipped
 
 ### Quick Reference
 
-**Token Thresholds**: 20k warning, 22k critical, velocity-based forecasting
+**Token Thresholds**: 17k warning, 19k critical, velocity-based forecasting (chars÷4 estimation)
 
 **Archive Naming**: `YYYY-MM-DD-to-DD-history.md` (partial month), no consolidation
 
