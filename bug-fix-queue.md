@@ -1,12 +1,10 @@
 # Bug Fix Queue
 
-## Session: 2026.01.22
+## Session: 2026.01.22 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#ffd49209
+**Status**: Session closed
 
-### Queued
-(No bugs currently queued)
-
-### Completed
+### Completed (3 fixes)
 - [x] CLAUDE.md acknowledgment notification uses priority="high", should be "medium" (ad-hoc)
   - Fixed: Changed final instructions to use `priority: "medium"` for routine startup notification
 - [x] Document/clarify priority level semantics for cosa-voice MCP notifications (ad-hoc)
