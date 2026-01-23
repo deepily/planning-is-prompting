@@ -91,6 +91,47 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "bug-fix-mode",
+  "name": "Bug Fix Mode",
+  "description": "Iterative bug fixing with incremental commits and history tracking",
+  "category": "core",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-bug-fix-mode",
+      "description": "Main entry point (defaults to start mode)"
+    },
+    {
+      "name": "/plan-bug-fix-mode-start",
+      "description": "Initialize new bug fix session"
+    },
+    {
+      "name": "/plan-bug-fix-mode-continue",
+      "description": "Resume after context clear"
+    },
+    {
+      "name": "/plan-bug-fix-mode-close",
+      "description": "End bug fix session for the day"
+    }
+  ],
+  "dependencies": {
+    "files": ["history.md"],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": ["git", "gh (optional)"]
+  },
+  "creates": [
+    ".claude/commands/plan-bug-fix-mode.md",
+    ".claude/commands/plan-bug-fix-mode-start.md",
+    ".claude/commands/plan-bug-fix-mode-continue.md",
+    ".claude/commands/plan-bug-fix-mode-close.md",
+    "bug-fix-queue.md (runtime artifact)"
+  ]
+}
+```
+
 ### Planning Workflows (For Structured Work Planning)
 
 ```json
@@ -809,11 +850,20 @@ Available Workflows:
       • /plan-history-management - Manage archival (4 modes)
     Dependencies: Session Management
 
+[C] Bug Fix Mode (Optional)
+    Iterative bug fixing with incremental commits and history tracking
+    Commands:
+      • /plan-bug-fix-mode - Main entry point (defaults to start)
+      • /plan-bug-fix-mode-start - Initialize new bug fix session
+      • /plan-bug-fix-mode-continue - Resume after context clear
+      • /plan-bug-fix-mode-close - End bug fix session for the day
+    Dependencies: Session Management, git, gh (optional)
+
 ┌─────────────────────────────────────────────────────────┐
 │ PLANNING WORKFLOWS (For structured work planning)      │
 └─────────────────────────────────────────────────────────┘
 
-[C] Planning is Prompting Core
+[D] Planning is Prompting Core
     Two-step planning: classify work → document implementation
     Commands:
       • /p-is-p-00-start-here - Entry point & decision matrix
@@ -825,7 +875,7 @@ Available Workflows:
 │ BACKUP WORKFLOWS (Optional)                            │
 └─────────────────────────────────────────────────────────┘
 
-[D] Backup Infrastructure
+[E] Backup Infrastructure
     Automated rsync backup with version checking
     Commands:
       • /plan-backup-check - Version checking
@@ -837,7 +887,7 @@ Available Workflows:
 │ TESTING WORKFLOWS (Optional - for test-driven projects)│
 └─────────────────────────────────────────────────────────┘
 
-[E] Testing Workflows
+[F] Testing Workflows
     Pre-change baseline, post-change remediation, test maintenance
     Commands:
       • /plan-test-baseline - Establish pre-change baseline
@@ -849,21 +899,21 @@ Available Workflows:
 │ UTILITY WORKFLOWS (Optional - meta tools)              │
 └─────────────────────────────────────────────────────────┘
 
-[F] Installation Wizard
+[G] Installation Wizard
     Install this wizard as a slash command for convenient future use
     Commands:
       • /plan-install-wizard - Run wizard to add/update workflows
     Dependencies: None
     Note: Makes wizard available as /plan-install-wizard command
 
-[G] Workflow About
+[H] Workflow About
     View installed workflows with version comparison
     Commands:
       • /plan-about - Show all installed workflows and versions
     Dependencies: None
     Note: Useful for checking installation status and updates
 
-[H] Uninstall Wizard
+[I] Uninstall Wizard
     Install uninstall wizard for removing workflows later
     Commands:
       • /plan-uninstall-wizard - Run wizard to remove workflows
@@ -874,8 +924,8 @@ Available Workflows:
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H)
+[2] Install everything (A + B + C + D + E + F + G + H + I)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -922,8 +972,8 @@ ask_multiple_choice( questions=[
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E + F + G (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -948,10 +998,41 @@ ask_multiple_choice( questions=[
      [3] Cancel installation
      ```
 
-   **Planning is Prompting Core (C)**:
+   **Bug Fix Mode (C)**:
+   - Requires: Session Management (A) must also be selected
+   - Requires: git (check with `which git`)
+   - Optional: gh CLI (check with `which gh`, not required)
+   - If user selected C but not A, warn:
+     ```
+     ⚠️ Dependency Warning
+
+     Bug Fix Mode (C) depends on Session Management (A).
+     Would you like me to add Session Management to your selection?
+
+     [1] Yes, add Session Management (A)
+     [2] No, remove Bug Fix Mode (C) from selection
+     [3] Cancel installation
+     ```
+   - If git not found:
+     ```
+     ⚠️ Missing Dependency
+
+     Bug Fix Mode requires git, which is not installed.
+
+     Install git:
+     - Ubuntu/Debian: sudo apt install git
+     - macOS: xcode-select --install
+     - Other: Check your package manager
+
+     Would you like to:
+     [1] Remove Bug Fix Mode from selection
+     [2] Cancel installation (I'll install git first)
+     ```
+
+   **Planning is Prompting Core (D)**:
    - No dependencies
 
-   **Backup Infrastructure (D)**:
+   **Backup Infrastructure (E)**:
    - Requires: rsync (check with `which rsync`)
    - Requires: Target backup location (will ask in config step)
    - If rsync not found:
@@ -970,18 +1051,23 @@ ask_multiple_choice( questions=[
      [2] Cancel installation (I'll install rsync first)
      ```
 
-   **Testing Workflows (E)**:
+   **Testing Workflows (F)**:
    - No dependencies (workflows adapt to project type)
    - Code projects: Expects test suites (smoke, unit, integration)
    - Documentation projects: Validates documentation structure
    - No validation needed (always available)
 
-   **Installation Wizard (F)**:
+   **Installation Wizard (G)**:
    - No dependencies
    - Creates slash command for running wizard in future
    - No validation needed (always available)
 
-   **Uninstall Wizard (G)**:
+   **Workflow About (H)**:
+   - No dependencies
+   - Creates slash command for viewing installed workflows
+   - No validation needed (always available)
+
+   **Uninstall Wizard (I)**:
    - No dependencies
    - Creates slash command for removing workflows later
    - No validation needed (always available)
@@ -1290,7 +1376,26 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - Replace history.md path → User's configured path
    - Replace archive directory → User's configured path
 
-   **Planning is Prompting Core (C)**:
+   **Bug Fix Mode (C)** (if selected):
+   ```bash
+   # Copy all four command files
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode.md \
+      ./.claude/commands/plan-bug-fix-mode.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md \
+      ./.claude/commands/plan-bug-fix-mode-start.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md \
+      ./.claude/commands/plan-bug-fix-mode-continue.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md \
+      ./.claude/commands/plan-bug-fix-mode-close.md
+   ```
+
+   Customize all four files:
+   - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
+   - Replace `/mnt/DATA01/.../planning-is-prompting/history.md` → User's history path
+   - Replace `/mnt/DATA01/.../planning-is-prompting/bug-fix-queue.md` → `{PROJECT_ROOT}/bug-fix-queue.md`
+   - Replace `/mnt/DATA01/.../planning-is-prompting/` → User's project root
+
+   **Planning is Prompting Core (D)**:
    ```bash
    cp planning-is-prompting/.claude/commands/p-is-p-*.md \
       ./.claude/commands/
@@ -1299,7 +1404,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    Customize:
    - No customization needed (workflows are project-agnostic)
 
-   **Backup Infrastructure (D)**:
+   **Backup Infrastructure (E)**:
    ```bash
    # Create script directory
    mkdir -p src/scripts/conf
@@ -1326,7 +1431,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - Replace DEST_DIR → User's destination path
    - Replace PROJECT_NAME → User's project name
 
-   **Testing Workflows (E)**:
+   **Testing Workflows (F)**:
    ```bash
    # Copy testing workflow slash commands
    cp planning-is-prompting/.claude/commands/plan-test-baseline.md \
@@ -1343,7 +1448,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
    - No other customization needed (workflows adapt to project type)
 
-   **Installation Wizard (F)**:
+   **Installation Wizard (G)**:
    ```bash
    # Copy installation wizard slash command
    cp planning-is-prompting/.claude/commands/plan-install-wizard.md \
@@ -1354,7 +1459,18 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - No customization needed (wizard is project-agnostic)
    - Note: This makes wizard available as `/plan-install-wizard` for future use
 
-   **Uninstall Wizard (G)**:
+   **Workflow About (H)**:
+   ```bash
+   # Copy workflow about slash command
+   cp planning-is-prompting/.claude/commands/plan-about.md \
+      ./.claude/commands/plan-about.md
+   ```
+
+   Customize:
+   - No customization needed (workflow is project-agnostic)
+   - Note: This makes about available as `/plan-about` for viewing installed workflows
+
+   **Uninstall Wizard (I)**:
    ```bash
    # Copy uninstall wizard slash command
    cp planning-is-prompting/.claude/commands/plan-uninstall-wizard.md \

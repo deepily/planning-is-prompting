@@ -740,31 +740,37 @@ Iterative bug fixing workflow with incremental documentation and commits:
 
 ### Install as Slash Command
 
-**Copy-paste this prompt into Claude Code:**
+**Option 1: Use Installation Wizard** (Recommended)
+
+Run `/plan-install-wizard` and select "Bug Fix Mode (C)" from the workflow catalog.
+
+**Option 2: Copy-paste this prompt into Claude Code:**
 
 ```
-I need you to install the `/plan-bug-fix-mode` slash command from the planning-is-prompting repository into this project.
+I need you to install the `/plan-bug-fix-mode` slash commands from the planning-is-prompting repository into this project.
 
 **Instructions:**
 
 1. Read the canonical workflow from: planning-is-prompting → workflow/bug-fix-mode.md
 
-2. Copy the slash command file from planning-is-prompting:
-   - Source: planning-is-prompting/.claude/commands/plan-bug-fix-mode.md
-   - Target: .claude/commands/plan-bug-fix-mode.md
-   - Keep the filename as-is (plan-bug-fix-mode.md)
+2. Copy ALL FOUR slash command files from planning-is-prompting:
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode.md → .claude/commands/plan-bug-fix-mode.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md → .claude/commands/plan-bug-fix-mode-start.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md → .claude/commands/plan-bug-fix-mode-continue.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md → .claude/commands/plan-bug-fix-mode-close.md
 
-3. Customize the slash command for this project:
-   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
-   - Update the history.md file path to this project's location
-   - Update the bug-fix-queue.md path (project root)
+3. Customize ALL FOUR files for this project:
+   - Replace `[PLAN]` with this project's [SHORT_PROJECT_PREFIX]
+   - Replace the planning-is-prompting history.md path with this project's history.md location
+   - Replace the planning-is-prompting bug-fix-queue.md path with this project's path
+   - Replace the planning-is-prompting project root path with this project's root
 
 4. Ask me:
    - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
    - Where is history.md located? (provide absolute path)
-   - Where should bug-fix-queue.md be created? (default: project root)
+   - What is this project's root directory? (provide absolute path)
 
-After installation, test it: `/plan-bug-fix-mode start`
+After installation, test it: `/plan-bug-fix-mode-start`
 ```
 
 ### Expected Questions
@@ -783,14 +789,16 @@ Claude will ask you to provide:
 
 ```bash
 # Start a new bug fix session
-/plan-bug-fix-mode start
+/plan-bug-fix-mode-start
 
 # Resume after context clear
-/plan-bug-fix-mode continue
+/plan-bug-fix-mode-continue
 
 # End bug fix session
-/plan-bug-fix-mode close
+/plan-bug-fix-mode-close
 ```
+
+**Note**: Each mode has its own dedicated slash command for clarity. The base `/plan-bug-fix-mode` command defaults to start mode.
 
 ### Key Features
 
