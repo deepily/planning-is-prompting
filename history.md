@@ -1,13 +1,48 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 47 complete - Split bug fix mode into separate slash commands
+**RESUME HERE**: Session 48 complete
 
-**Current Status**: Bug fix mode now has three discoverable slash commands (`/plan-bug-fix-mode-start`, `-continue`, `-close`) in addition to the original argument-based command.
-**Next Steps**: Test the new commands in a real project; update INSTALLATION-GUIDE.md if needed.
+**Current Status**: Token estimation bug fixed, workflows updated.
+**Next Steps**: Test estimation accuracy on Lupin repo history.md
 
 ---
 
 ## January 2026
+
+### 2026.01.22 - Session 48 | Bug Fix Mode
+
+**Accomplishments**:
+- **Fixed token estimation undercount bug** causing history.md to exceed 25k limit
+  - Root cause: `word × 1.33` underestimates by ~46% for markdown/technical content
+  - Solution: Switched to `chars ÷ 4` estimation method
+  - Lowered thresholds: WARNING 17k (was 20k), CRITICAL 19k (was 22k)
+
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| workflow/history-management.md | Estimation formula, thresholds, troubleshooting |
+| workflow/session-end.md | Status indicators, threshold references |
+| workflow/p-is-p-02-documenting-the-implementation.md | Measurement command, warning thresholds |
+| global/CLAUDE.md | Quick reference section |
+| bug-fix-queue.md | Added fix to completed list |
+
+**Evidence** (from Lupin repo):
+```
+Error: File content (25739 tokens) exceeds maximum allowed tokens (25000)
+```
+
+**Verification** (this repo's history.md):
+| Method | Calculation | Estimate |
+|--------|-------------|----------|
+| Old (word × 1.33) | 7,903 × 1.33 | 10,511 tokens |
+| New (char ÷ 4) | 61,620 ÷ 4 | 15,405 tokens |
+
+**TODO for Next Session**:
+- [ ] Test new estimation on Lupin repo history.md after compaction
+- [ ] Verify estimate is within 5% of Claude Code's reported count
+- [ ] Consider updating get-token-count.sh script if it exists
+
+---
 
 ### 2026.01.21 - Session 47: Split Bug Fix Mode into Separate Slash Commands
 
