@@ -1,13 +1,33 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 48 complete
+**RESUME HERE**: Session 49 in progress
 
-**Current Status**: Token estimation bug fixed, workflows updated.
-**Next Steps**: Test estimation accuracy on Lupin repo history.md
+**Current Status**: Bug Fix Mode active
+**Next Steps**: Fix selected bug(s)
 
 ---
 
 ## January 2026
+
+### 2026.01.25 - Session 49 | Bug Fix Mode
+
+### Fixes
+
+#### Fix 1: Add `suppress_ding` parameter to cosa-voice documentation
+- **Source**: ad-hoc (user request to sync MCP server updates)
+- **Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md
+- **Test**: Grep verification of all occurrences
+- **Commit**: [pending]
+- **Details**:
+  - Added `suppress_ding` to notify() parameter table
+  - Added "The `suppress_ding` Parameter" section explaining use cases
+  - Added example: `notify( "Task complete", suppress_ding=True )`
+  - Updated version history
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.01.22 - Session 48 | Bug Fix Mode
 

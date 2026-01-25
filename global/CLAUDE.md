@@ -228,6 +228,7 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 - `notification_type`: task | progress | alert | custom (default: task)
 - `priority`: urgent | high | medium | low (default: medium)
 - `abstract`: Supplementary context (markdown, URLs, details) shown in UI but not spoken
+- `suppress_ding`: Suppress notification sound while still speaking via TTS (default: false)
 
 **Priority Levels and Audio Behavior**:
 
@@ -252,6 +253,9 @@ notify( "All set! Config loaded, ready to work.", notification_type="task", prio
 
 # Error alert (alert tone + TTS - critical)
 notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
+
+# Conversational TTS without notification sound
+notify( "Task complete", suppress_ding=True )
 ```
 
 ---

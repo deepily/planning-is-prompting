@@ -1,6 +1,17 @@
 # Bug Fix Queue
 
-## Session: 2026.01.22 (CLOSED)
+## Session: 2026.01.25
+**Owner**: claude.code@plan.deepily.ai#db2872fc
+
+### Queued
+- [ ] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc)
+
+### Completed
+(Completed bugs will be moved here)
+
+---
+
+## Previous Session: 2026.01.22 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#ffd49209
 **Status**: Session closed
 

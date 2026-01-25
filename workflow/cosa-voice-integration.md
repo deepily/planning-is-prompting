@@ -112,7 +112,7 @@ NOTIFICATION VERIFICATION:
 
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
-| `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract |
+| `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract, suppress_ding |
 | `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
@@ -132,6 +132,7 @@ Use `notify()` for progress updates, completions, alerts, and informational mess
 | `notification_type` | string | No | One of: `task`, `progress`, `alert`, `custom` (default: `task`) |
 | `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) not spoken aloud |
+| `suppress_ding` | bool | No | Suppress notification sound while still speaking via TTS (default: `false`) |
 
 ### Priority Levels and Audio Behavior
 
@@ -145,6 +146,24 @@ Priority determines **how the user is alerted**, not workflow importance:
 | `low` | Silent (no sound) | Background info, minor completions | "File saved", "TodoWrite item complete" |
 
 **Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
+
+### The `suppress_ding` Parameter
+
+Use `suppress_ding=True` when you want TTS speech output without playing a notification sound. This is useful for:
+
+| Use Case | Why Suppress | Example |
+|----------|--------------|---------|
+| Conversational responses | User is already engaged, no alert needed | Queue processing updates |
+| Rapid status updates | Multiple quick updates would be annoying | "File 1 of 10 processed" |
+| TTS-only announcements | Speech is the notification, no ding required | Voice assistant responses |
+| Job card TTS | User watching job card, audio feedback only | Status within a job flow |
+
+**Default Behavior**: `suppress_ding=False` - notification sounds play based on priority level.
+
+**When NOT to suppress**:
+- First notification after silence (user needs to know you're active)
+- Error alerts (critical events need attention)
+- Session-start/end milestones (user should notice these)
 
 ### Priority Selection by Tool Type
 
@@ -173,6 +192,9 @@ notify( "Build failed: 3 type errors found", notification_type="alert", priority
 
 # Session ready (gentle ping - informational, not TTS)
 notify( "All set! Config loaded, history reviewed. Ready to work.", notification_type="task", priority="medium" )
+
+# Conversational TTS without notification sound (TTS only, no ding)
+notify( "Task complete", suppress_ding=True )
 ```
 
 ---
@@ -560,6 +582,12 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.01.25 (Session 49)**: Added `suppress_ding` parameter documentation
+  - Added `suppress_ding` parameter to notify() parameter table
+  - Added "The `suppress_ding` Parameter" section with use cases
+  - Added example: `notify( "Task complete", suppress_ding=True )`
+  - Key insight: Use for conversational TTS without notification sounds
 
 - **2026.01.16 (Session 45)**: Documented `abstract` parameter across all tools
   - Added `abstract` parameter to all tool parameter tables (notify, ask_yes_no, converse, ask_multiple_choice)
