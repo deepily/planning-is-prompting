@@ -17,7 +17,7 @@
 - **Source**: ad-hoc (user request to sync MCP server updates)
 - **Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md
 - **Test**: Grep verification of all occurrences
-- **Commit**: [pending]
+- **Commit**: 2737bf0
 - **Details**:
   - Added `suppress_ding` to notify() parameter table
   - Added "The `suppress_ding` Parameter" section explaining use cases

@@ -4,10 +4,10 @@
 **Owner**: claude.code@plan.deepily.ai#db2872fc
 
 ### Queued
-- [ ] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc)
+(Add bugs here)
 
 ### Completed
-(Completed bugs will be moved here)
+- [x] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc) → commit: 2737bf0
 
 ---
 
