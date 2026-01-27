@@ -311,15 +311,72 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ---
 
-## Step 5: Identify Outstanding Work
+## Step 4.5: Review TODO.md
 
-**Purpose**: Extract outstanding TODO items from last session and determine work direction
+**Purpose**: Check persistent TODO tracking file for pending work items
+
+**Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
 
 **Process**:
 
-1. **Extract TODO List from Last Session**:
+1. **Check if TODO.md exists** in project root:
+   ```bash
+   ls TODO.md 2>/dev/null
+   ```
 
-   Find the "TODO for Next Session" section from most recent session in history.md:
+2. **If TODO.md exists**:
+
+   a. **Read the file**:
+   ```bash
+   cat TODO.md
+   ```
+
+   b. **Extract pending items**:
+   - Look for items under `## Pending` section
+   - Items are formatted as `- [ ] Item description`
+
+   c. **Display summary**:
+   ```
+   ══════════════════════════════════════════════════════════
+   TODO.md - Persistent Work Items
+   ══════════════════════════════════════════════════════════
+
+   Pending Items (3):
+   - [ ] Implement user authentication
+   - [ ] Update API documentation
+   - [ ] Fix pagination bug
+
+   Last updated: 2026-01-26 (Session 49)
+   ```
+
+3. **If TODO.md does NOT exist**:
+   - Note: "No TODO.md found - will be created at session-end if needed"
+   - Continue to Step 5
+
+4. **Merge with history.md TODOs** (if any):
+   - If both TODO.md and history.md have TODO items, **prefer TODO.md as authoritative**
+   - history.md TODOs may exist in older repos not yet migrated
+   - Display combined list in Step 5
+
+**Key Principle**: TODO.md is the single source of truth for pending work. If it exists, use it. If not, fall back to history.md TODO sections (legacy pattern).
+
+---
+
+## Step 5: Identify Outstanding Work
+
+**Purpose**: Gather outstanding TODO items and determine work direction
+
+**Process**:
+
+1. **Gather TODO Items**:
+
+   **Primary Source**: TODO.md (if exists from Step 4.5)
+   - Use items from `## Pending` section
+   - These are the authoritative pending items
+
+   **Fallback Source**: history.md (legacy pattern)
+   - Only if TODO.md doesn't exist
+   - Find the "TODO for Next Session" section from most recent session in history.md:
    ```
    **TODO for Next Session**:
    - [ ] Test p-is-p workflows in practice

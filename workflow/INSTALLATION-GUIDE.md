@@ -505,6 +505,109 @@ See planning-is-prompting → workflow/session-end.md for complete ritual.
 
 ---
 
+## TODO Management Workflow
+
+### What It Does
+
+Persistent TODO tracking across sessions:
+- Maintains `TODO.md` file at project root
+- Survives history archival (never archived)
+- Cross-session visibility for pending work
+- Session attribution for completed items
+- Integrates with session-start and session-end workflows
+
+**Canonical Workflow**: planning-is-prompting → workflow/todo-management.md
+
+**Slash Command**: `/plan-todo`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-todo` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical TODO management workflow from: planning-is-prompting → workflow/todo-management.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-todo.md
+   - Target: .claude/commands/plan-todo.md
+   - Keep the filename as-is (plan-todo.md)
+
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the TODO.md file path to this project's root
+   - Update the working directory path
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - What is the project root directory? (where TODO.md should be created)
+
+After installation, test it: `/plan-todo`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **Project root directory** - Full path where TODO.md will be created
+
+### Usage
+
+```bash
+# Check/list mode (default) - show pending items, create if missing
+/plan-todo
+
+# Add mode - add new item(s) interactively
+/plan-todo add
+
+# Complete mode - mark item(s) as complete
+/plan-todo complete
+
+# Edit mode - full review and edit
+/plan-todo edit
+```
+
+### Integration with Session Workflows
+
+**Session-Start**: Step 4.5 reads TODO.md for pending items
+**Session-End**: Step 1.5 updates TODO.md with completions and new items
+
+**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+
+### File Format
+
+```markdown
+# TODO
+
+Last updated: YYYY-MM-DD (Session N)
+
+## Pending
+
+- [ ] Item description
+
+## Completed (Recent)
+
+- [x] Item description - Session N
+
+---
+
+*Completed items older than 7 days can be removed or archived.*
+```
+
+### Dependencies
+
+- Requires session-start and session-end workflows for full integration
+- Can be used standalone with `/plan-todo` command
+
+---
+
 ## History Management Workflow
 
 ### What It Does

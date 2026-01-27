@@ -26,7 +26,8 @@ planning-is-prompting/
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
 │   ├── notification-system.md            # Notification usage patterns
-│   └── bug-fix-mode.md                   # Iterative bug fixing workflow
+│   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
+│   └── todo-management.md                # Persistent TODO.md file management
 ├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
 │   ├── p-is-p-00-start-here.md
 │   ├── p-is-p-01-planning.md
@@ -41,7 +42,8 @@ planning-is-prompting/
 │   ├── plan-session-start.md
 │   ├── plan-test-baseline.md
 │   ├── plan-test-remediation.md
-│   └── plan-test-harness-update.md
+│   ├── plan-test-harness-update.md
+│   └── plan-todo.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -78,7 +80,7 @@ The `history.md` file uses an **adaptive archival strategy**:
 - Date format: `yyyy.mm.dd`
 - Reverse chronological order (newest sessions at top)
 - Status summary at top of file (3 lines)
-- TODO list at end of each session summary
+- Session accomplishments documented (NOT TODO items - see TODO.md)
 
 ### 4. Notification Integration
 
@@ -148,20 +150,32 @@ Priority levels:
 ### Starting a Session
 
 1. Read `history.md` to understand current project status
-2. Review TODO list from previous session
+2. Read `TODO.md` to review pending items from previous sessions
 3. Reference relevant workflow documents as needed
 
 ### Ending a Session
 
 Follow the workflow in planning-is-prompting → workflow/session-end.md:
-1. Create TODO list for tracking
-2. Health check history.md (archive if needed)
-3. Update session history
+1. Health check history.md (archive if needed)
+2. Update session history (accomplishments only, NOT TODOs)
+3. Update TODO.md with new items and mark completions
 4. Update planning documents
 5. Summarize uncommitted changes
 6. Propose commit message
 7. Commit changes (after approval)
 8. Send notifications at each step
+
+### Managing TODO.md
+
+This project uses a persistent `TODO.md` file for tracking pending work:
+
+- **At session start**: Read TODO.md, review pending items
+- **At session end**: Add new items, mark completions, update timestamp
+- **Via slash command**: `/plan-todo` for quick operations
+
+**Canonical Workflow**: See workflow/todo-management.md for complete documentation.
+
+**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
 
 ### Modifying Workflow Templates
 

@@ -1,10 +1,39 @@
 ## Session Workflows
 
-**Session Start**: Read history.md and implementation document at start of each session
+**Session Start**: Read history.md, TODO.md, and implementation document at start of each session
 
 **Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+
+## TODO.md MANAGEMENT
+
+**Purpose**: Persistent tracking of pending work items across sessions.
+
+**Location**: `TODO.md` at project root (alongside `history.md`)
+
+**Workflow Integration**:
+- **Session-Start**: Read TODO.md to review pending items (Step 4.5)
+- **Session-End**: Update TODO.md with new items and mark completions (Step 1.5)
+
+**Key Principle**: TODO.md is the single source of truth for pending work. Do NOT embed TODO lists in history.md entries.
+
+**File Format**:
+```markdown
+# TODO
+
+Last updated: YYYY-MM-DD (Session N)
+
+## Pending
+- [ ] Item description
+
+## Completed (Recent)
+- [x] Item description - Session N
+```
+
+**Slash Command**: `/plan-todo` (modes: add, complete, edit)
+
+**Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
 
 ## INTERACTIVE REQUIREMENTS ELICITATION
 

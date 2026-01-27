@@ -132,6 +132,32 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "todo-management",
+  "name": "TODO Management",
+  "description": "Persistent TODO tracking across sessions with TODO.md file",
+  "category": "core",
+  "recommended": true,
+  "commands": [
+    {
+      "name": "/plan-todo",
+      "description": "Check/create TODO.md, show pending items (modes: add/complete/edit)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-todo.md",
+    "TODO.md (created on first use)"
+  ]
+}
+```
+
 ### Planning Workflows (For Structured Work Planning)
 
 ```json

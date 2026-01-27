@@ -286,7 +286,7 @@ Health: ✅ HEALTHY
 **Requirements**:
 - Use date format: `yyyy.mm.dd`
 - Sort newest changes at TOP ( reverse chronological )
-- Keep track of where we are and write a quick todo list for tomorrow's restart
+- Session summary with accomplishments (NOT TODO items - see Step 1.5)
 
 **For complete history management guidelines**: See planning-is-prompting repo → workflow/history-management.md
 
@@ -295,6 +295,65 @@ Health: ✅ HEALTHY
 - Archive when approaching 25k token limit
 - Current project status summary at top ( 3 lines )
 - Session summary with accomplishments
+
+**Important**: Do NOT add TODO lists to history.md session entries. TODOs are tracked separately in TODO.md (see Step 1.5).
+
+---
+
+## 1.5) Update TODO.md
+
+**Purpose**: Maintain persistent TODO tracking across sessions
+
+**Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
+
+**Process**:
+
+1. **Open or create TODO.md** in project root:
+   - If file doesn't exist, create using template below
+   - If file exists, read current contents
+
+2. **Move completed items** from Pending → Completed section:
+   - Add session number attribution: `- [x] Item description - Session N`
+   - Remove from Pending section
+
+3. **Add new items** discovered during this session:
+   - Use checkbox format: `- [ ] New item description`
+   - Add to Pending section
+
+4. **Update timestamp**:
+   - Update "Last updated: YYYY-MM-DD (Session N)"
+
+5. **Prune old completions** (optional):
+   - Remove completed items older than 7 days
+   - Keep recent completions for context
+
+**Template for new TODO.md**:
+```markdown
+# TODO
+
+Last updated: YYYY-MM-DD (Session N)
+
+## Pending
+
+- [ ] [First item]
+
+## Completed (Recent)
+
+*No completed items yet*
+
+---
+
+*Completed items older than 7 days can be removed or archived.*
+```
+
+**Notification**:
+```python
+notify( "TODO.md updated", notification_type="progress", priority="low" )
+```
+
+**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+
+---
 
 ## 2) Update Planning and Tracking Documents
 
