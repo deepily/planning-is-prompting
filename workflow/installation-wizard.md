@@ -272,6 +272,34 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Skills Management (Optional)
+
+```json
+{
+  "id": "skills-management",
+  "name": "Skills Management",
+  "description": "Discover, create, edit, audit, and delete Agent Skills for better AI context management",
+  "category": "skills",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-skills-management",
+      "description": "Skills lifecycle management (modes: discover/create/edit/audit/delete)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-skills-management.md"
+  ],
+  "notes": "For repos with complex conditional documentation. Skills live in target repos at .claude/skills/, not in planning-is-prompting."
+}
+```
+
 ### Utility Workflows (Optional)
 
 ```json
@@ -922,24 +950,36 @@ Available Workflows:
     Dependencies: None (adapts to project type)
 
 ┌─────────────────────────────────────────────────────────┐
+│ SKILLS MANAGEMENT (Optional - for complex documentation)│
+└─────────────────────────────────────────────────────────┘
+
+[G] Skills Management
+    Discover, create, edit, audit, and delete Agent Skills
+    Commands:
+      • /plan-skills-management - Skills lifecycle management
+    Dependencies: None
+    Note: For repos with conditional documentation that benefits from
+          intent-based activation. Skills live in .claude/skills/
+
+┌─────────────────────────────────────────────────────────┐
 │ UTILITY WORKFLOWS (Optional - meta tools)              │
 └─────────────────────────────────────────────────────────┘
 
-[G] Installation Wizard
+[H] Installation Wizard
     Install this wizard as a slash command for convenient future use
     Commands:
       • /plan-install-wizard - Run wizard to add/update workflows
     Dependencies: None
     Note: Makes wizard available as /plan-install-wizard command
 
-[H] Workflow About
+[I] Workflow About
     View installed workflows with version comparison
     Commands:
       • /plan-about - Show all installed workflows and versions
     Dependencies: None
     Note: Useful for checking installation status and updates
 
-[I] Uninstall Wizard
+[J] Uninstall Wizard
     Install uninstall wizard for removing workflows later
     Commands:
       • /plan-uninstall-wizard - Run wizard to remove workflows
@@ -950,8 +990,8 @@ Available Workflows:
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]

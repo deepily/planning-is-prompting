@@ -1576,6 +1576,158 @@ git log --since="7 days ago" --oneline
 
 10. **Rollback if needed**: Git backup created automatically before remediation
 
+---
+
+## Skills Management Workflow
+
+### What It Does
+
+**Ongoing Agent Skills lifecycle management** - discovery, creation, editing, auditing, and deletion of skills across repositories:
+
+**Modes:**
+
+| Mode | Purpose |
+|------|---------|
+| `discover` | Scan CLAUDE.md and docs for skill candidates |
+| `create` | Build new skill from documentation |
+| `edit` | Update existing skill when docs change |
+| `audit` | Check skills health against current documentation |
+| `delete` | Remove obsolete skill |
+
+**The Problem**: Large repos have extensive documentation with nuances (testing caveats, deployment rules). This documentation is:
+- Read once at session start, then forgotten as context fills
+- "Rediscovered" after failures
+- No activation trigger - saying "run tests" doesn't invoke testing-specific knowledge
+
+**The Solution**: Agent Skills use YAML frontmatter for **intent-based discovery**:
+- ~100 tokens loaded at startup (name + description only)
+- Full instructions (<5k tokens) loaded **when skill activates**
+- Progressive disclosure: SKILL.md → references/ for details
+
+**Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
+
+**Slash Command**: `/plan-skills-management`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-skills-management` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/skills-management.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-skills-management.md
+   - Target: .claude/commands/plan-skills-management.md
+   - Keep the filename as-is (plan-skills-management.md)
+
+3. The command supports these modes:
+   - `/plan-skills-management` (defaults to discover mode)
+   - `/plan-skills-management discover`
+   - `/plan-skills-management create <skill-name>`
+   - `/plan-skills-management edit <skill-name>`
+   - `/plan-skills-management audit`
+   - `/plan-skills-management delete`
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where are your primary documentation sources? (CLAUDE.md, docs/, workflow/)
+
+After installation, test it: `/plan-skills-management discover`
+```
+
+### Usage
+
+**Initial adoption (new repository):**
+```bash
+# 1. Discover candidates
+/plan-skills-management discover
+
+# 2. Review candidates, prioritize
+# Output shows: testing-patterns (high), path-management (medium)
+
+# 3. Create highest priority skill
+/plan-skills-management create testing-patterns
+
+# 4. Verify skill works - in fresh session, say "I need to write tests"
+# → testing-patterns skill should activate
+```
+
+**Ongoing maintenance:**
+```bash
+# Weekly audit
+/plan-skills-management audit
+
+# Output shows path-management needs update
+/plan-skills-management edit path-management
+
+# Output shows new candidate discovered
+/plan-skills-management create error-handling
+```
+
+**Removing obsolete skill:**
+```bash
+# Feature deprecated, remove skill
+/plan-skills-management delete
+
+# Select skill, confirm deletion
+```
+
+### Skill Templates
+
+Templates are available in `planning-is-prompting → workflow/skill-templates/`:
+
+| Template | Use Case |
+|----------|----------|
+| `testing-skill-template.md` | Testing patterns, pytest, smoke/unit/integration |
+| `api-skill-template.md` | API conventions, endpoints, authentication |
+| `generic-skill-template.md` | Minimal starting template for any domain |
+
+### Key Concepts
+
+**Trigger-Rich Descriptions:**
+
+```yaml
+# Good (trigger-rich)
+description: Testing patterns and caveats for this project. Use when writing tests, running pytest, debugging test failures, choosing between smoke/unit/integration tests.
+
+# Bad (vague)
+description: Helps with testing.
+```
+
+**Token Budget:**
+
+| Layer | Content | Budget | When Loaded |
+|-------|---------|--------|-------------|
+| Metadata | name + description | ~100 tokens | Startup (ALL skills) |
+| Instructions | SKILL.md body | <5000 tokens | Skill activation |
+| Resources | references/, scripts/ | As needed | Explicit reference |
+
+**Directory Structure:**
+```
+.claude/skills/
+└── skill-name/
+    ├── SKILL.md              # Required (<500 lines recommended)
+    ├── scripts/              # Executable code (optional)
+    ├── references/           # Detailed docs (loaded on demand)
+    └── assets/               # Templates, images, data files
+```
+
+### Anti-Patterns
+
+- **Skills too long** (>500 lines) - defeats progressive disclosure
+- **Vague descriptions** ("helps with testing") - won't trigger on specific intents
+- **Missing trigger keywords** - user says "run integration tests" but skill doesn't activate
+- **Duplicating CLAUDE.md** - extract and refine, don't copy verbatim
+- **Stale skills** - documentation evolved but skill didn't
+
+### Integration with Installation Wizard
+
+Skills Management is available in the installation wizard catalog. Run `/plan-install-wizard` and select "Skills Management" to install.
+
 ### Integration with CI/CD
 
 **For automated testing in CI**:

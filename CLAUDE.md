@@ -21,13 +21,18 @@ planning-is-prompting/
 │   ├── session-start.md                  # Session initialization workflows
 │   ├── session-end.md                    # Session wrap-up workflows
 │   ├── history-management.md             # History archival workflows (canonical)
+│   ├── skills-management.md              # Agent Skills lifecycle management
 │   ├── testing-baseline.md               # Pre-change baseline collection
 │   ├── testing-remediation.md            # Post-change verification and fixes
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
 │   ├── notification-system.md            # Notification usage patterns
 │   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
-│   └── todo-management.md                # Persistent TODO.md file management
+│   ├── todo-management.md                # Persistent TODO.md file management
+│   └── skill-templates/                  # Agent Skill reference templates
+│       ├── testing-skill-template.md     # Template for testing skills
+│       ├── api-skill-template.md         # Template for API skills
+│       └── generic-skill-template.md     # Minimal starting template
 ├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
 │   ├── p-is-p-00-start-here.md
 │   ├── p-is-p-01-planning.md
@@ -43,7 +48,8 @@ planning-is-prompting/
 │   ├── plan-test-baseline.md
 │   ├── plan-test-remediation.md
 │   ├── plan-test-harness-update.md
-│   └── plan-todo.md
+│   ├── plan-todo.md
+│   └── plan-skills-management.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -273,6 +279,35 @@ This project follows the session-end ritual defined in planning-is-prompting →
 **Note**: For this documentation-only repository, "testing" means validating documentation structure (all workflow files exist, cross-references work, etc.). For code projects, these workflows run actual test suites (smoke, unit, integration).
 
 **See**: [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide for complete usage documentation.
+
+## Skills Management
+
+**Purpose**: Ongoing Agent Skills lifecycle management - discovery, creation, editing, auditing, and deletion of skills across repositories.
+
+**Entry Points**:
+- `/plan-skills-management discover` - Find documentation candidates for skill conversion
+- `/plan-skills-management create` - Build new skill from documentation
+- `/plan-skills-management edit` - Update existing skill
+- `/plan-skills-management audit` - Check skills health against documentation
+- `/plan-skills-management delete` - Remove obsolete skill
+
+**Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
+
+**Key Features**:
+- Progressive disclosure pattern (metadata → instructions → references)
+- agentskills.io specification compliance
+- Token-aware skill design (<500 lines per SKILL.md)
+- Intent-based activation via trigger-rich descriptions
+- Skill templates for common patterns (testing, API, generic)
+
+**Skill Templates**:
+- `workflow/skill-templates/testing-skill-template.md` - Testing patterns template
+- `workflow/skill-templates/api-skill-template.md` - API conventions template
+- `workflow/skill-templates/generic-skill-template.md` - Minimal starting template
+
+**Skills Location**: Skills live in target repos at `.claude/skills/`, not in planning-is-prompting.
+
+**See**: [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide for complete usage documentation.
 
 ## Bug Fix Mode
 

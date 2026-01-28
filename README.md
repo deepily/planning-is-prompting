@@ -39,10 +39,11 @@ The easiest way to install workflows is with the **interactive installation wiza
 - ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
 - ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
-- ✅ **[F]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
-- ✅ **[G]** Uninstall Wizard: `/plan-uninstall-wizard` (removes installed workflows when no longer needed)
+- ✅ **[F]** Skills Management: `/plan-skills-management` (discover, create, edit, audit, delete Agent Skills)
+- ✅ **[G]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
+- ✅ **[H]** Uninstall Wizard: `/plan-uninstall-wizard` (removes installed workflows when no longer needed)
 
-**Get the wizard itself**: You can select option [F] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
+**Get the wizard itself**: You can select option [G] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
 
 **Adding more workflows later**:
 - **With wizard installed**: Just type `/plan-install-wizard`
@@ -138,6 +139,19 @@ The easiest way to install workflows is with the **interactive installation wiza
 ```
 
 **Learn more**: See [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide
+
+### Skills Management
+- [**skills-management.md**](workflow/skills-management.md) - Agent Skills lifecycle management (discover, create, edit, audit, delete)
+- [**skill-templates/**](workflow/skill-templates/) - Reference templates for creating skills (testing, API, generic)
+
+**Quick Usage**:
+```bash
+/plan-skills-management discover  # Find documentation candidates for skills
+/plan-skills-management create    # Build new skill from documentation
+/plan-skills-management audit     # Check skills health against documentation
+```
+
+**Learn more**: See [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide
 
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
