@@ -1,12 +1,17 @@
 # Bug Fix Queue
 
-## Session: 2026.01.25
+## Previous Session: 2026.01.27 (CLOSED)
+**Owner**: claude.code@plan.deepily.ai#8ca60a60
+
+### Completed (1 feature)
+- [x] Implement persistent TODO.md pattern for cross-session tracking → commit: 9f0bbf4
+
+---
+
+## Previous Session: 2026.01.25 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#db2872fc
 
-### Queued
-(Add bugs here)
-
-### Completed
+### Completed (1 fix)
 - [x] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc) → commit: 2737bf0
 
 ---
