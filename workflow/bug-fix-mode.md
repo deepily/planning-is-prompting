@@ -11,6 +11,7 @@
 **Entry Points**:
 - `/plan-bug-fix-mode start` - Initialize new bug fix session
 - `/plan-bug-fix-mode continue` - Resume after context clear
+- `/plan-bug-fix-mode wrap` - Wrap up completed fix (document + commit)
 - `/plan-bug-fix-mode close` - End bug fix session for the day
 
 ---
@@ -62,6 +63,16 @@ For CLOSE mode:
 1. [PLAN] Finalize history.md session entry
 2. [PLAN] Archive completed bugs in queue
 3. [PLAN] Send session summary notification
+
+For WRAP mode:
+1. [PLAN] Validate wrap conditions
+2. [PLAN] Document fix in history.md
+3. [PLAN] Update bug-fix-queue.md
+4. [PLAN] Check/update TODO.md
+5. [PLAN] Stage files and commit
+6. [PLAN] Capture hash and update documents
+7. [PLAN] Send completion notification
+8. [PLAN] Present next action options
 ```
 
 **Verification**:
@@ -614,6 +625,385 @@ notify(
 
 ---
 
+## Fix Wrap (`wrap` mode)
+
+**Purpose**: Wrap up a completed bug fix with documentation and commit in a single command. Invoked when user says "bug fixed, wrap it" or similar.
+
+**Key Behavior**: By invoking wrap mode, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
+
+> **⚠️ PARALLEL SESSION SAFETY**
+>
+> This workflow is designed for environments where **multiple Claude Code sessions may be working on the same repository simultaneously**. Each session works on different bugs/features and MUST NOT interfere with other sessions' work.
+>
+> **CRITICAL ISOLATION RULE**: Only files in the current session's `touched_files` list may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
+>
+> **Before every commit**:
+> 1. Run `git status` to see all modified files
+> 2. Compare against `touched_files` list
+> 3. Stage ONLY files that appear in BOTH lists
+> 4. If you see modified files NOT in `touched_files`, leave them unstaged - they belong to another session
+
+### Step 18: Validate Wrap Conditions
+
+**MUST verify all conditions before proceeding:**
+
+1. **Queue exists**: Check `bug-fix-queue.md` exists in project root
+2. **Session ownership**: Current session owns the queue (compare session ID)
+3. **Files tracked**: `touched_files` list is not empty (WARN if empty, offer to continue)
+4. **Current bug identified**: Determine which bug was just fixed
+
+**If queue does not exist**:
+```python
+notify(
+    message="No bug fix session active. Use /plan-bug-fix-mode-start to begin.",
+    notification_type="alert",
+    priority="high"
+)
+```
+FAIL and exit.
+
+**If different session owns queue**:
+```python
+notify(
+    message="This session does not own the bug fix queue.",
+    notification_type="alert",
+    priority="high"
+)
+```
+FAIL and exit.
+
+**If no files tracked**:
+```python
+ask_yes_no(
+    question="No files tracked for this bug. Continue anyway?",
+    default="no",
+    priority="high",
+    abstract="**Warning**: touched_files is empty.\n\nThis could mean:\n- You haven't made any changes yet\n- File tracking was reset unexpectedly\n\nContinuing will create an empty commit (history.md + queue only)."
+)
+```
+If no: Return to fix work.
+If yes: Continue with documentation-only commit.
+
+**If current bug is ambiguous** (multiple bugs in queue):
+```python
+ask_multiple_choice(
+    questions=[{
+        "question": "Which bug was just fixed?",
+        "header": "Bug",
+        "multiSelect": False,
+        "options": [
+            # List queued bugs from bug-fix-queue.md
+            {"label": "Bug A", "description": "From queue"},
+            {"label": "Bug B", "description": "From queue"}
+        ]
+    }],
+    priority="high",
+    abstract="**Multiple bugs in queue**\n\nSelect the bug you just completed."
+)
+```
+
+**TodoWrite Update**: Mark Step 18 complete.
+
+**Verification**:
+- [ ] bug-fix-queue.md exists
+- [ ] Session ownership verified
+- [ ] touched_files status known (empty or populated)
+- [ ] Current bug identified
+- [ ] TodoWrite updated
+
+---
+
+### Step 19: Document in History
+
+**Add fix entry to history.md under current session:**
+
+```markdown
+### Fix N: [Brief description]
+- **Source**: GitHub #123 / ad-hoc
+- **Files**: file1.py, file2.py, file3.py
+- **Test**: Smoke PASS, Unit PASS (or "Not run" if skipped)
+- **Commit**: [pending]
+```
+
+**Note**: Commit hash will be updated in Step 22 after commit succeeds.
+
+**TodoWrite Update**: Mark Step 19 complete.
+
+**Verification**:
+- [ ] Fix entry added to history.md
+- [ ] All touched files listed
+- [ ] Test results recorded (or "Not run")
+- [ ] Commit marked as [pending]
+- [ ] TodoWrite updated
+
+---
+
+### Step 20: Update Bug Fix Queue
+
+**Move bug from Queued to Completed in bug-fix-queue.md:**
+
+```markdown
+### Completed
+- [x] [Brief description] → commit: [pending], closed #123
+```
+
+**Note**: Commit hash will be updated in Step 22.
+
+**TodoWrite Update**: Mark Step 20 complete.
+
+**Verification**:
+- [ ] Bug moved from Queued to Completed
+- [ ] Commit hash marked as [pending]
+- [ ] GitHub issue reference included (if applicable)
+- [ ] TodoWrite updated
+
+---
+
+### Step 21: Check TODO.md Integration
+
+**Search TODO.md for items related to this bug:**
+
+1. Search for bug description keywords
+2. Search for GitHub issue number (if applicable)
+3. Search for related file names
+
+**If matching TODO item found**:
+- Mark as complete with session attribution
+- Example: `- [x] Fix JWT token expiration bug - Session 53`
+
+**If no matching TODO item found**:
+```
+INFO: Bug not found in TODO.md (no action needed)
+```
+
+**TodoWrite Update**: Mark Step 21 complete.
+
+**Verification**:
+- [ ] TODO.md searched for related items
+- [ ] Matching items marked complete (if found)
+- [ ] TodoWrite updated
+
+---
+
+### Step 22: Stage and Commit
+
+**CRITICAL: No approval required. User invocation of wrap mode IS the approval.**
+
+#### Step 22a: Pre-Commit Verification
+
+**MUST verify file isolation before staging:**
+
+```bash
+# Show all modified files in repository
+git status --short
+```
+
+**Compare `git status` output against `touched_files` list:**
+
+| File in git status | In touched_files? | Action |
+|--------------------|-------------------|--------|
+| file1.py | ✓ Yes | Stage it |
+| file2.py | ✓ Yes | Stage it |
+| other_file.py | ✗ No | **DO NOT STAGE** - belongs to another session |
+| random_change.js | ✗ No | **DO NOT STAGE** - belongs to another session |
+
+**If files appear modified but are NOT in `touched_files`**:
+```
+INFO: Detected [N] modified files not in touched_files - skipping (likely from parallel session)
+  - other_file.py (not staging)
+  - random_change.js (not staging)
+```
+
+> **⚠️ WARNING**: NEVER stage files that are not in `touched_files`. They may have been modified by another Claude Code session working on a different bug/feature. Staging them would mix unrelated changes and cause confusion.
+
+#### Step 22b: Selective Staging
+
+**Stage ONLY files from this bug fix:**
+
+```bash
+# NEVER use: git add . / git add -A / git add --all
+# These commands stage EVERYTHING and break parallel session isolation
+
+# Stage ONLY files in touched_files (one by one)
+git add file1.py
+git add file2.py
+git add file3.py
+
+# Also stage tracking files (these are session-specific)
+git add history.md
+git add bug-fix-queue.md
+git add TODO.md  # If modified in Step 21
+```
+
+**Verify staging is correct:**
+
+```bash
+git diff --cached --name-only
+# Should show ONLY: touched_files + history.md + bug-fix-queue.md + TODO.md
+# Should NOT show any files from other sessions
+```
+
+#### Step 22c: Create Commit
+
+**Create commit with issue reference (if applicable):**
+
+```bash
+git commit -m "$(cat <<'EOF'
+Fix: [Brief description]
+
+[Optional longer explanation]
+
+Fixes #123
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+**If commit fails**:
+```python
+notify(
+    message="Git commit failed. See error details.",
+    notification_type="alert",
+    priority="urgent",
+    abstract="**Error**: [git error message]\n\nOptions:\n- Fix the issue and retry\n- Use /plan-bug-fix-mode-wrap to try again"
+)
+```
+Present retry option.
+
+**TodoWrite Update**: Mark Step 22 complete.
+
+**Verification**:
+- [ ] Pre-commit verification performed (git status compared to touched_files)
+- [ ] Files NOT in touched_files were identified and skipped
+- [ ] ONLY touched_files staged (verified with git diff --cached --name-only)
+- [ ] No files from parallel sessions accidentally staged
+- [ ] history.md and bug-fix-queue.md staged
+- [ ] TODO.md staged (if modified)
+- [ ] Commit created successfully
+- [ ] TodoWrite updated
+
+---
+
+### Step 23: Capture Hash and Update Documents
+
+**Capture commit hash:**
+
+```bash
+git rev-parse --short HEAD
+# Returns: abc1234
+```
+
+**Update history.md with commit hash:**
+
+Replace `[pending]` with actual hash:
+```markdown
+- **Commit**: abc1234
+```
+
+**Update bug-fix-queue.md with commit hash:**
+
+Replace `[pending]` with actual hash:
+```markdown
+- [x] [Brief description] → commit: abc1234, closed #123
+```
+
+**Amend commit to include updated files:**
+
+```bash
+git add history.md bug-fix-queue.md
+git commit --amend --no-edit
+```
+
+**If GitHub issue, close it:**
+
+```bash
+gh issue close #123 --comment "Fixed in commit abc1234"
+```
+
+**If GitHub issue not found** (404 or similar):
+```
+WARN: GitHub issue #123 not found. Continuing without closure.
+```
+
+**TodoWrite Update**: Mark Step 23 complete.
+
+**Verification**:
+- [ ] Commit hash captured
+- [ ] history.md updated with hash
+- [ ] bug-fix-queue.md updated with hash
+- [ ] Commit amended with final document state
+- [ ] GitHub issue closed (if applicable)
+- [ ] TodoWrite updated
+
+---
+
+### Step 24: Notify Completion
+
+**Send completion notification:**
+
+```python
+notify(
+    message="Bug fix wrapped and committed",
+    notification_type="task",
+    priority="medium",
+    abstract="**Fix**: [brief description]\n**Files**: [N] changed\n**Tests**: [result summary]\n**Commit**: abc1234\n**GitHub**: #123 closed (or N/A)"
+)
+```
+
+**TodoWrite Update**: Mark Step 24 complete.
+
+**Verification**:
+- [ ] Completion notification sent
+- [ ] All fix details included in abstract
+- [ ] TodoWrite updated
+
+---
+
+### Step 25: Suggest Next Action
+
+**Clear tracking for next bug:**
+
+```python
+touched_files = []
+```
+
+**Present next action options:**
+
+```python
+ask_multiple_choice(
+    questions=[{
+        "question": "What would you like to do next?",
+        "header": "Next",
+        "multiSelect": False,
+        "options": [
+            {"label": "Next bug", "description": "Continue to next bug in queue"},
+            {"label": "Clear context", "description": "Clear context, use /plan-bug-fix-mode-continue to resume"},
+            {"label": "Close session", "description": "End bug fix session for today"}
+        ]
+    }],
+    priority="high",
+    abstract="**Fix committed**: [description]\n**Remaining**: [M] bugs in queue"
+)
+```
+
+**If "Next bug"**: Loop back to Step 4 (bug selection) in same context.
+
+**If "Clear context"**: User clears context manually, will use `/plan-bug-fix-mode continue`.
+
+**If "Close session"**: Execute Session Closure (Steps 15-17).
+
+**TodoWrite Update**: Mark Step 25 complete.
+
+**Verification**:
+- [ ] touched_files reset
+- [ ] Next action options presented
+- [ ] User response received
+- [ ] Appropriate follow-up action initiated
+- [ ] All TodoWrite items complete
+
+---
+
 ## File Tracking Mechanism
 
 **CRITICAL**: Only commit files touched during current bug fix.
@@ -741,6 +1131,13 @@ Skip entirely. No bug fix mode active.
 ---
 
 ## Version History
+
+**v1.1** (2026.01.29) - Added wrap mode
+- New `wrap` mode for wrapping up completed fixes with documentation and commit
+- Steps 18-25 for wrap mode execution
+- Automatic commit without approval (user invocation IS approval)
+- TODO.md integration for marking related items complete
+- Enhanced error handling for commit failures and missing GitHub issues
 
 **v1.0** (2026.01.21) - Initial workflow
 - Session initialization with ownership tracking

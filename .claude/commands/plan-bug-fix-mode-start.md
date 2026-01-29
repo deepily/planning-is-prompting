@@ -8,8 +8,9 @@
 
 ## Related Commands
 
-- `/plan-bug-fix-mode-start` - Initialize new bug fix session ← **You are here**
+- `/plan-bug-fix-mode-start` - Initialize new bug fix session <- **You are here**
 - `/plan-bug-fix-mode-continue` - Resume after context clear
+- `/plan-bug-fix-mode-wrap` - Wrap up completed fix (document + commit)
 - `/plan-bug-fix-mode-close` - End bug fix session for the day
 
 ---

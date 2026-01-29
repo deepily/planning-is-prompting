@@ -839,6 +839,7 @@ Iterative bug fixing workflow with incremental documentation and commits:
 |------|---------|
 | `start` | Initialize new bug fix session (default) |
 | `continue` | Resume after context clear |
+| `wrap` | Wrap up completed fix (document + commit) |
 | `close` | End bug fix session for the day |
 
 ### Install as Slash Command
@@ -856,13 +857,14 @@ I need you to install the `/plan-bug-fix-mode` slash commands from the planning-
 
 1. Read the canonical workflow from: planning-is-prompting → workflow/bug-fix-mode.md
 
-2. Copy ALL FOUR slash command files from planning-is-prompting:
-   - planning-is-prompting/.claude/commands/plan-bug-fix-mode.md → .claude/commands/plan-bug-fix-mode.md
-   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md → .claude/commands/plan-bug-fix-mode-start.md
-   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md → .claude/commands/plan-bug-fix-mode-continue.md
-   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md → .claude/commands/plan-bug-fix-mode-close.md
+2. Copy ALL FIVE slash command files from planning-is-prompting:
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode.md -> .claude/commands/plan-bug-fix-mode.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md -> .claude/commands/plan-bug-fix-mode-start.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md -> .claude/commands/plan-bug-fix-mode-continue.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-wrap.md -> .claude/commands/plan-bug-fix-mode-wrap.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md -> .claude/commands/plan-bug-fix-mode-close.md
 
-3. Customize ALL FOUR files for this project:
+3. Customize ALL FIVE files for this project:
    - Replace `[PLAN]` with this project's [SHORT_PROJECT_PREFIX]
    - Replace the planning-is-prompting history.md path with this project's history.md location
    - Replace the planning-is-prompting bug-fix-queue.md path with this project's path
@@ -896,6 +898,9 @@ Claude will ask you to provide:
 
 # Resume after context clear
 /plan-bug-fix-mode-continue
+
+# Wrap up completed fix (document + commit)
+/plan-bug-fix-mode-wrap
 
 # End bug fix session
 /plan-bug-fix-mode-close

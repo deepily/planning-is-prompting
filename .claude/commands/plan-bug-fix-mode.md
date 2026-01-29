@@ -8,10 +8,11 @@
 
 ## Related Commands
 
-This command supports all three modes via arguments. For discoverability in the slash command menu, use the mode-specific variants:
+This command supports all four modes via arguments. For discoverability in the slash command menu, use the mode-specific variants:
 
 - `/plan-bug-fix-mode-start` - Initialize new bug fix session
 - `/plan-bug-fix-mode-continue` - Resume after context clear
+- `/plan-bug-fix-mode-wrap` - Wrap up completed fix (document + commit)
 - `/plan-bug-fix-mode-close` - End bug fix session for the day
 
 **Note**: This command (`/plan-bug-fix-mode`) defaults to `start` mode for backward compatibility.
@@ -37,6 +38,7 @@ This command supports all three modes via arguments. For discoverability in the 
 3. **MUST determine the mode from arguments**:
    - `start` (default) - Initialize new bug fix session
    - `continue` - Resume after context clear
+   - `wrap` - Wrap up completed fix (document + commit)
    - `close` - End bug fix session for the day
 
 4. **MUST execute the complete workflow for the selected mode**:
@@ -56,6 +58,9 @@ This command supports all three modes via arguments. For discoverability in the 
 
 # Resume after context clear
 /plan-bug-fix-mode continue
+
+# Wrap up completed fix (document + commit)
+/plan-bug-fix-mode wrap
 
 # End bug fix session for the day
 /plan-bug-fix-mode close
@@ -80,6 +85,19 @@ Resume after context clear:
 - Reads `history.md` for session context
 - Presents continuation options
 - Does NOT re-initialize session ownership
+
+### `wrap` Mode
+
+Wrap up a completed bug fix (document + commit):
+- Validates wrap conditions (queue exists, session ownership, files tracked)
+- Documents fix in `history.md`
+- Updates `bug-fix-queue.md` (moves bug to Completed)
+- Checks/updates `TODO.md` for related items
+- Stages files and commits **WITHOUT ASKING FOR APPROVAL**
+- Closes GitHub issue (if applicable)
+- Presents next action options
+
+**Key**: By invoking wrap mode, user has already approved the commit.
 
 ### `close` Mode
 

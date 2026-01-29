@@ -1,13 +1,38 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 53
+**RESUME HERE**: Session 54
 
 **Current Status**: Ready for new session
-**Last Session**: Session 52 - Bug Fix Mode (2 fixes)
+**Last Session**: Session 53 - Added wrap mode to Bug Fix Workflow
 
 ---
 
 ## January 2026
+
+### 2026.01.29 - Session 53 | Feature Addition
+
+#### Add `wrap` Mode to Bug Fix Workflow
+- **Source**: Plan mode (user request for streamlined post-fix documentation and commit)
+- **Files**:
+  - workflow/bug-fix-mode.md (+180 lines: Steps 18-25 for wrap mode, parallel session safety)
+  - .claude/commands/plan-bug-fix-mode-wrap.md (NEW, ~100 lines)
+  - .claude/commands/plan-bug-fix-mode.md (+20 lines: wrap mode description)
+  - .claude/commands/plan-bug-fix-mode-start.md (+1 line: Related Commands)
+  - .claude/commands/plan-bug-fix-mode-continue.md (+1 line: Related Commands)
+  - .claude/commands/plan-bug-fix-mode-close.md (+1 line: Related Commands)
+  - workflow/INSTALLATION-GUIDE.md (+10 lines: updated to 5 commands)
+- **Details**:
+  - New `wrap` mode wraps up completed bug fix with documentation and commit
+  - Steps 18-25: Validate conditions → Document in history → Update queue → Check TODO.md → Stage and commit → Capture hash → Notify → Suggest next action
+  - **Key behavior**: No approval required - user invocation IS the approval
+  - **Parallel session safety**: Explicit isolation rules for multi-session environments
+  - Pre-commit verification substeps (22a/22b/22c) ensure only touched_files are staged
+  - TODO.md integration: searches for related items and marks complete
+  - Natural language triggers: "bug fixed, wrap it", "update docs and commit"
+  - Updated version to v1.1 in canonical workflow
+- **Commit**: 57c23c6
+
+---
 
 ### 2026.01.28 - Session 52 | Bug Fix Mode
 
