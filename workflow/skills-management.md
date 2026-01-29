@@ -124,15 +124,27 @@ description: Helps with testing.
 
 **Process**:
 
-1. **Scan CLAUDE.md for Conditional Knowledge**
-   - Look for "if X then Y" patterns
-   - Identify sections with caveats, exceptions, or context-dependent rules
-   - Flag knowledge that requires remembering across tasks
+1. **Scan Configuration Files for Conditional Knowledge**
+
+   **Scan Order** (processes in this sequence):
+   1. Global `~/.claude/CLAUDE.md` (user-level defaults)
+   2. Project `CLAUDE.md` at repository root (project-specific overrides)
+   3. `README.md` at repository root (project overview, often links to detailed docs)
+   4. Documentation linked from README (follow links to other .md files)
+   5. `docs/`, `workflow/`, `src/rnd/` directories
+   6. `history.md` for rediscovery patterns
+
+   **What to look for**:
+   - "if X then Y" patterns (conditional knowledge)
+   - Sections with caveats, exceptions, or context-dependent rules
+   - Knowledge that requires remembering across tasks
+   - README sections describing project capabilities (prime skill candidates)
 
 2. **Scan Documentation Directories**
    - Check `docs/`, `workflow/`, `src/rnd/` for domain-specific docs
    - Identify documents >200 lines (candidates for extraction)
-   - Flag documents frequently referenced in CLAUDE.md
+   - Flag documents frequently referenced in CLAUDE.md or README
+   - **Follow links**: If README links to `docs/architecture.md`, scan that too
 
 3. **Identify Rediscovery Patterns**
    - Review history.md for repeated mistakes or reminders
@@ -146,21 +158,35 @@ description: Helps with testing.
 📋 Skill Candidates Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Source: CLAUDE.md
-1. testing-patterns
+Source: Global CLAUDE.md (~/.claude/CLAUDE.md)
+1. notification-patterns
+   - Section: "CLAUDE CODE NOTIFICATION SYSTEM"
+   - Conditional knowledge: when to use notify vs ask_yes_no vs converse
+   - Size: ~400 lines → needs split (SKILL.md + references/)
+   - Trigger keywords: notify, notification, cosa-voice, alert
+
+Source: Project CLAUDE.md
+2. testing-patterns
    - Section: "Testing & Incremental Development"
    - Conditional knowledge: smoke vs unit vs integration
    - Size: ~800 lines → needs split (SKILL.md + references/)
    - Trigger keywords: pytest, test, smoke, unit, integration
 
-2. path-management
+3. path-management
    - Section: "PATH MANAGEMENT"
    - Conditional knowledge: bootstrap files vs regular code
    - Size: ~200 lines → fits in single SKILL.md
    - Trigger keywords: path, import, sys.path, LUPIN_ROOT
 
+Source: README.md (linked docs)
+4. api-endpoints
+   - Linked from: README.md → docs/api-reference.md
+   - Explicit API documentation with conventions
+   - Size: ~350 lines → SKILL.md + references/
+   - Trigger keywords: endpoint, REST, API, route
+
 Source: workflow/
-3. session-workflows
+5. session-workflows
    - File: session-end.md
    - Explicit workflow with multiple steps
    - Size: ~300 lines → SKILL.md + references/
@@ -169,10 +195,71 @@ Source: workflow/
 Recommendations:
 - Priority 1: testing-patterns (high rediscovery frequency)
 - Priority 2: path-management (common errors)
-- Priority 3: session-workflows (explicit workflow)
+- Priority 3: notification-patterns (conditional usage rules)
+- Priority 4: session-workflows (explicit workflow)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Scanned: 6 sources | Candidates found: 5
 
 To create a skill: /plan-skills-management create <skill-name>
+Or suggest a topic: Type a topic name to analyze for skill potential
 ```
+
+5. **User-Suggested Topics** (Interactive)
+
+   After presenting the candidate report, ask the user:
+   ```
+   Would you like to suggest a topic not found in the scan?
+
+   You can propose any topic you think should become a skill.
+   I'll search the codebase and documentation to see if there's
+   enough substance for a skill.
+
+   Enter topic name (or press Enter to skip): _
+   ```
+
+   **If user suggests a topic**:
+   - Search CLAUDE.md, README.md, and docs/ for related content
+   - Look for the topic name, synonyms, and related keywords
+   - Analyze whether there's enough conditional knowledge (>50 lines)
+   - Report findings:
+
+   ```
+   📋 Topic Analysis: <suggested-topic>
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Search Results:
+   ✅ Found in CLAUDE.md (lines 245-320): "Error Handling" section
+   ✅ Found in docs/error-codes.md: Error code reference
+   ⚠️  Not found in README.md
+
+   Content Analysis:
+   - Total relevant content: ~180 lines
+   - Conditional knowledge: Yes (error types, handling strategies)
+   - Trigger keywords: error, exception, catch, handle, throw
+
+   Recommendation: ✅ VIABLE - Sufficient content for skill
+
+   To create: /plan-skills-management create error-handling
+   ```
+
+   **If topic not viable**:
+   ```
+   📋 Topic Analysis: <suggested-topic>
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Search Results:
+   ⚠️  Minimal references found (12 lines total)
+   ⚠️  No conditional knowledge detected
+   ⚠️  Content too brief for meaningful skill
+
+   Recommendation: ❌ NOT VIABLE - Insufficient content
+
+   Options:
+   [1] Add documentation first, then create skill
+   [2] Combine with related topic (suggest alternatives)
+   [3] Create minimal skill anyway (not recommended)
+   ```
 
 ---
 
@@ -184,8 +271,35 @@ To create a skill: /plan-skills-management create <skill-name>
 - After `discover` identifies a candidate
 - When creating a skill from scratch
 - When extracting knowledge from CLAUDE.md
+- When creating from a user-suggested topic (even if not in discover list)
 
 **Process**:
+
+**Step 0: Topic Resolution** (if skill name not from discover list)
+
+If the skill name wasn't in the discover candidate list:
+```
+Topic not found in discover candidates.
+
+Searching for "<skill-name>" across documentation...
+
+Search Results:
+[List of files/sections where topic was found]
+
+Would you like to proceed with skill creation? [y/n]
+```
+
+If no content found:
+```
+No documentation found for "<skill-name>".
+
+Options:
+[1] Create skill from scratch (you'll provide the content)
+[2] Search with different keywords
+[3] Cancel and run /plan-skills-management discover first
+
+Select option: _
+```
 
 **Step 1: Identify Source Documentation**
 ```
@@ -193,9 +307,12 @@ Creating skill: <skill-name>
 
 Source options:
 [1] CLAUDE.md section: "<section-name>"
-[2] File: <path/to/file.md>
-[3] Multiple sources (will merge)
-[4] From scratch (no existing docs)
+[2] Project CLAUDE.md section: "<section-name>"
+[3] README.md section or linked doc
+[4] File: <path/to/file.md>
+[5] Multiple sources (will merge)
+[6] From template
+[7] From scratch (no existing docs)
 
 Select source: _
 ```
@@ -729,6 +846,22 @@ ask_multiple_choice( questions=[{
 ---
 
 ## Version History
+
+**v1.1** (2026.01.28) - Enhanced discovery and usability
+- Expanded discover mode scanning scope:
+  - Added README.md scanning
+  - Added project CLAUDE.md scanning (separate from global)
+  - Added link-following from README to other documentation
+- Added user-suggested topic capability:
+  - Users can propose topics not found in automated scan
+  - System analyzes viability and searches for documentation
+- Added mode-specific slash commands for discoverability:
+  - `/plan-skills-management-discover`
+  - `/plan-skills-management-create`
+  - `/plan-skills-management-edit`
+  - `/plan-skills-management-audit`
+  - `/plan-skills-management-delete`
+- Updated create mode source options (7 options instead of 4)
 
 **v1.0** (2026.01.28) - Initial canonical workflow
 - Five operational modes (discover, create, edit, audit, delete)

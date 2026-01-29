@@ -21,13 +21,39 @@
   - global/CLAUDE.md (+20 lines: Document Separation Rules quick reference)
   - ~/.claude/CLAUDE.md (+45 lines: TODO.md section + Document Separation Rules)
 - **Test**: Grep verification of new sections
-- **Commit**: [pending]
+- **Commit**: 530aa50
 - **Details**:
   - Added "Document Separation Rules" to session-end.md with explicit ✅/❌ examples
   - Added "Three-Document System" to todo-management.md explaining history.md vs TODO.md vs implementation docs
   - Added quick reference table to global/CLAUDE.md
   - Updated user's active ~/.claude/CLAUDE.md to include TODO.md section and document separation rules
   - Clarifies that "update all tracking documents" means distinct updates to each document type
+
+#### Fix 2: Skills Management Workflow Enhancements
+- **Source**: ad-hoc (usability improvements identified during Session 51 testing)
+- **Files**:
+  - workflow/skills-management.md (~60 lines: expanded discover scope, user-suggested topics, version history)
+  - .claude/commands/plan-skills-management.md (~30 lines: Related Commands, Instructions to Claude)
+  - .claude/commands/plan-skills-management-discover.md (NEW, ~70 lines)
+  - .claude/commands/plan-skills-management-create.md (NEW, ~80 lines)
+  - .claude/commands/plan-skills-management-edit.md (NEW, ~70 lines)
+  - .claude/commands/plan-skills-management-audit.md (NEW, ~80 lines)
+  - .claude/commands/plan-skills-management-delete.md (NEW, ~75 lines)
+- **Test**: Glob verification of all 6 slash command files
+- **Details**:
+  - **Fix 2A**: Expanded discover mode scanning scope
+    - New 6-step scan order: global CLAUDE.md → project CLAUDE.md → README.md → linked docs → directories → history.md
+    - README.md often contains best overview of project capabilities (prime skill candidates)
+  - **Fix 2B**: Added user-suggested topic capability
+    - Discover mode: after scanning, offers "Suggest a topic" option
+    - System analyzes topic viability (searches for documentation, checks >50 lines content)
+    - Create mode: Step 0 (Topic Resolution) for skills not from discover list
+    - Expanded source options from 4 to 7 in create mode
+  - **Fix 2C**: Split into mode-specific slash commands (following bug-fix-mode pattern from Session 47)
+    - 5 new commands: discover, create, edit, audit, delete
+    - Each has Related Commands section with "← You are here" indicator
+    - Original `/plan-skills-management` still works (defaults to discover)
+  - Updated version history to v1.1 in canonical workflow
 
 ### Session Summary
 (Will be completed at session close)

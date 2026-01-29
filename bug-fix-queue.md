@@ -4,10 +4,10 @@
 **Owner**: claude.code@plan.deepily.ai#21522570
 
 ### Queued
-- [ ] Clarify document separation in session-end workflow: history.md (brief accomplishments only), TODO.md (pending items), implementation docs (phase tracking) (ad-hoc)
+(Add bugs here)
 
 ### Completed
-(Completed bugs will be moved here)
+- [x] Clarify document separation in session-end workflow → commit: 530aa50
 
 ---
 
