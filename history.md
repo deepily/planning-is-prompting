@@ -1,13 +1,42 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 54
+**RESUME HERE**: Session 55
 
 **Current Status**: Ready for new session
-**Last Session**: Session 53 - Added wrap mode to Bug Fix Workflow
+**Last Session**: Session 54 - Extracted testing section from global CLAUDE.md to skill
 
 ---
 
 ## January 2026
+
+### 2026.01.29 - Session 54 | Global Config Optimization
+
+#### Extract Testing Section to Global Skill
+- **Source**: Plan mode (CLAUDE.md exceeded 40k character performance threshold)
+- **Problem**: Global `~/.claude/CLAUDE.md` at 40,863 chars triggered warning: "CLAUDE.md will impact performance (40.9k chars > 40.0k)"
+- **Solution**: Extracted TESTING & INCREMENTAL DEVELOPMENT section (~309 lines, 9,629 chars) to dedicated skill
+- **Files Created**:
+  - `~/.claude/skills/testing-development/SKILL.md` (4,635 chars)
+  - `~/.claude/skills/testing-development/references/smoke-tests.md` (2,896 chars)
+  - `~/.claude/skills/testing-development/references/unit-tests.md` (3,214 chars)
+  - `~/.claude/skills/testing-development/references/integration-tests.md` (4,432 chars)
+  - `~/.claude/skills/testing-development/references/example-interactions.md` (3,353 chars)
+- **Files Modified**:
+  - `~/.claude/CLAUDE.md` - Replaced 309-line section with 25-line summary referencing skill
+- **Results**:
+  - CLAUDE.md: 40,863 → 32,730 chars (20% reduction)
+  - Performance warning resolved
+  - Testing knowledge now loaded on-demand via skill activation
+- **Skill Triggers**: "run tests", "write tests", "pytest", "smoke test", "unit test", "integration test", "debug test failure", "should I add tests"
+- **Key Features Preserved**:
+  - Three-tier testing strategy (smoke → unit → integration)
+  - "Always Offer Test Updates" workflow (CRITICAL behavior)
+  - Progressive adoption pattern
+  - Example interaction dialogues
+
+**Pattern**: Pattern 3 (Feature Development - well-scoped extraction)
+
+---
 
 ### 2026.01.29 - Session 53 | Feature Addition
 

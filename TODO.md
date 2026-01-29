@@ -1,9 +1,11 @@
 # TODO
 
-Last updated: 2026-01-28 (Session 51)
+Last updated: 2026-01-29 (Session 54)
 
 ## Pending
 
+- [ ] Verify testing-development skill activation in new Claude Code session
+- [ ] Consider extracting other large CLAUDE.md sections if needed (notifications, path management)
 - [ ] Test new token estimation on Lupin repo history.md after compaction
 - [ ] Verify estimate is within 5% of Claude Code's reported count
 - [ ] Consider updating get-token-count.sh script if it exists
