@@ -1,13 +1,12 @@
 # Bug Fix Queue
 
-## Session: 2026.01.28
+## Session: 2026.01.28 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#21522570
+**Status**: Session closed
 
-### Queued
-(Add bugs here)
-
-### Completed
+### Completed (2 fixes)
 - [x] Clarify document separation in session-end workflow → commit: 530aa50
+- [x] Skills Management Workflow Enhancements (expanded discover, user-suggested topics, mode-specific commands) → commit: bae9f86
 
 ---
 
