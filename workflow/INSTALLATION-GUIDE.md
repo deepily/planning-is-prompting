@@ -398,11 +398,23 @@ Comprehensive end-of-session ritual that:
 - Updates session history with date/summary/TODOs
 - Updates planning and tracking documents
 - Summarizes uncommitted changes
+- **Verifies files against session tracking** (parallel session safety)
 - Proposes commit message
-- Commits and optionally pushes changes
+- Commits and optionally pushes changes (selective staging)
 - Sends notifications at each step
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-end.md
+
+### Parallel Session Safety
+
+**New in v1.2**: When multiple Claude sessions work on the same repository:
+
+- Session-start initializes `touched_files` tracking
+- Session-end verifies modified files against `touched_files`
+- **Only files from THIS session are committed** (prevents mixing parallel session changes)
+- Falls back to user selection if tracking was not initialized
+
+**Key Principle**: Never use `git add .` or `git add -A`. Always stage files explicitly based on session tracking.
 
 ### Install as Slash Command
 

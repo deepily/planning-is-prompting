@@ -6,6 +6,59 @@
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
+## PARALLEL SESSION SAFETY
+
+**Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
+
+### The Problem
+
+When multiple Claude Code sessions work on the same repository simultaneously:
+- Session A modifies `src/auth.py`, `src/utils.py`
+- Session B modifies `src/database.py`, `tests/test_db.py`
+- At Session A's commit time: `git status` shows ALL 4 files
+- **Without tracking**: Session A commits ALL 4 files (wrong!)
+- **With tracking**: Session A commits only its 2 files (correct!)
+
+### The Solution: `touched_files` Tracking
+
+**At Session-Start** (Step 3.5):
+```python
+session_info = get_session_info()
+session_id = session_info["session_id"]
+touched_files = []  # Initialize tracking
+```
+
+**During Session** (after EVERY Edit/Write):
+```python
+touched_files.append( file_path )
+```
+
+**At Session-End** (Step 3.5 + 4.4):
+1. Compare `git status` against `touched_files`
+2. Stage ONLY files in `touched_files` (plus auto-includes like history.md)
+3. **NEVER** use `git add .` or `git add -A`
+
+### Auto-Include Files
+
+These files are always included in commits even if not in `touched_files`:
+- `history.md` - Session documentation
+- `TODO.md` - If modified
+- `CLAUDE.md` - If modified
+- `bug-fix-queue.md` - If bug-fix-mode active
+
+### Fallback: When Tracking is Missing
+
+If session-start was skipped and `touched_files` is empty:
+1. Display warning to user
+2. Show all modified files from `git status`
+3. Ask user: "Commit all", "Let me select", or "Cancel"
+
+### Key Principle
+
+**Selective staging is strictly better than bulk staging.** Even when not working in parallel sessions, explicitly staging files prevents accidental commits of temporary files, IDE artifacts, or unintended changes.
+
+**See**: planning-is-prompting → workflow/session-start.md (Step 3.5) and workflow/session-end.md (Step 3.5 + 4.4)
+
 ## TODO.md MANAGEMENT
 
 **Purpose**: Persistent tracking of pending work items across sessions.

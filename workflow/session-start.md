@@ -226,6 +226,63 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ---
 
+## Step 3.5: Initialize Session Tracking (Parallel Session Safety)
+
+**Purpose**: Initialize file tracking for parallel session safety. When multiple Claude sessions work on the same repository simultaneously, this tracking ensures each session only commits its own changes.
+
+**Process**:
+
+1. **Get Session Information**:
+   ```python
+   session_info = get_session_info()
+   session_id = session_info["session_id"]
+   ```
+
+2. **Initialize Touched Files List**:
+   ```python
+   touched_files = []  # Will track files modified by THIS session
+   ```
+
+3. **Display Tracking Status**:
+   ```
+   ══════════════════════════════════════════════════════════
+   Parallel Session Safety Initialized
+   ══════════════════════════════════════════════════════════
+   Session ID: [session_id]
+   Tracking Mode: Active
+   Touched Files: 0 (will grow as you edit)
+   ══════════════════════════════════════════════════════════
+   ```
+
+**MANDATE: Track ALL File Modifications**
+
+Throughout the session, after **EVERY** Edit or Write tool call:
+```python
+touched_files.append( file_path )
+```
+
+**Why This Matters**:
+- Multiple Claude sessions can work on the same repository
+- Each session may modify different files
+- At commit time, `git status` shows ALL modified files (from ALL sessions)
+- Without tracking, Claude commits ALL files - mixing unrelated changes
+- With tracking, Claude commits ONLY this session's files
+
+**Example Scenario**:
+```
+Session A (this session): Modified src/auth.py, src/utils.py
+Session B (parallel):     Modified src/database.py, tests/test_db.py
+
+At Session A's /plan-session-end:
+  git status shows: all 4 files modified
+  WITHOUT tracking: Commits all 4 files ❌ (mixes Session B's changes!)
+  WITH tracking:    Commits only auth.py and utils.py ✓
+```
+
+**Note**: This tracking is in-memory only. Unlike bug-fix-mode (which uses a queue file for context-clear recovery), regular session tracking does not persist across context clears. This is acceptable because regular sessions don't typically need context-clear recovery.
+
+---
+
 ## Step 4: Load Session History
 
 **Purpose**: Read recent session history to understand project state, progress, and context
@@ -1104,6 +1161,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety - initializes `touched_files` tracking to prevent committing files modified by parallel Claude sessions. Documented tracking mandate (~50 lines added).
 - **2026.01.07 (Session 42)**: Expanded to 6-option support (from 4). Cases D/E/F now use single MCP call for 3/4/5 TODOs respectively. Progressive disclosure (Case G) only needed for 6+ TODOs. Updated Lupin notification model to allow 2-6 options. Case F uses "Other..." as unified escape hatch (~70 lines added).
 - **2026.01.07 (Session 41)**: Implemented dynamic TODO option generation in Step 5 - TODOs now presented as individual selectable options instead of bundled into "Continue TODOs". Added 4 cases (0, 1, 2, 3+ TODOs) with progressive disclosure for 3+. Added label formatting rules and response handling table (~150 lines added).
 - **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.

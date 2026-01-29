@@ -8,6 +8,24 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 **Optional Configuration**: If your project contains nested Git repositories, the wrapper can pass their paths for safe handling during commit operations (see Step 4.1: Nested Repository Handling).
 
+---
+
+## ⚠️ PARALLEL SESSION SAFETY
+
+**CRITICAL**: When multiple Claude sessions work on the same repository simultaneously:
+- **NEVER** use `git add .` or `git add -A`
+- **ONLY** stage files tracked in `touched_files` from session-start
+- **VERIFY** staged files match session's work before committing
+
+**If `touched_files` is empty or undefined** (session-start was skipped):
+- Display warning to user
+- Show all modified files from `git status`
+- Ask user to confirm which files to commit
+
+**See Step 3.5 (Pre-Commit File Verification) for implementation details.**
+
+---
+
 ## 0) Use Notification System Throughout
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
@@ -449,6 +467,90 @@ notify( "Tracking documents updated", notification_type="progress", priority="lo
 git ls-files --others --exclude-standard | tree --fromfile -a
 ```
 
+## 3.5) Pre-Commit File Verification (Parallel Session Safety)
+
+**Purpose**: Verify files to commit match this session's work. Prevents accidentally committing files modified by parallel Claude sessions.
+
+**Process**:
+
+1. **Get Files from `git status`**:
+   ```bash
+   git status --porcelain
+   ```
+
+2. **Compare Against `touched_files`**:
+
+   **If `touched_files` exists and is non-empty** (normal case):
+
+   ```
+   ══════════════════════════════════════════════════════════
+   Pre-Commit File Verification
+   ══════════════════════════════════════════════════════════
+
+   Files to COMMIT (this session's work):
+   ✓ src/auth.py
+   ✓ src/utils.py
+   ✓ history.md (always included)
+   ✓ TODO.md (if modified)
+
+   Files to SKIP (parallel session changes):
+   ○ src/database.py (not in touched_files)
+   ○ tests/test_db.py (not in touched_files)
+
+   ══════════════════════════════════════════════════════════
+   ```
+
+   **Automatically include** (even if not in `touched_files`):
+   - `history.md` - Always included (session documentation)
+   - `TODO.md` - If it exists and was modified
+   - `CLAUDE.md` - If modified during session
+   - `bug-fix-queue.md` - If bug-fix-mode is active
+
+3. **Handle Missing Tracking** (session-start was skipped):
+
+   **If `touched_files` is empty or undefined**:
+
+   ```python
+   ask_multiple_choice(
+       questions=[
+           {
+               "question": "Session tracking not initialized. How should I handle commit?",
+               "header": "Commit Scope",
+               "multiSelect": False,
+               "options": [
+                   {"label": "Commit all", "description": "Include all modified files (may include parallel session changes)"},
+                   {"label": "Let me select", "description": "Show me the files and I'll choose"},
+                   {"label": "Cancel", "description": "Don't commit - I'll run /plan-session-start first"}
+               ]
+           }
+       ],
+       title="Tracking Missing",
+       abstract="**Warning**: Session-start tracking was not initialized.\n\n**Modified files**:\n[list from git status]"
+   )
+   ```
+
+   **If user selects "Let me select"**:
+   - Display all modified files
+   - Ask user to specify which files to include
+   - Proceed with user-specified files only
+
+4. **Notify if Parallel Files Detected**:
+
+   **If files were skipped** (parallel session changes detected):
+
+   ```python
+   notify(
+       message=f"Skipping {n} files from parallel session",
+       notification_type="progress",
+       priority="low",
+       abstract="**Skipped files**:\n- src/database.py\n- tests/test_db.py\n\nThese files were modified but not tracked in this session."
+   )
+   ```
+
+**Rationale**: This step prevents the common mistake of committing all modified files when working in parallel sessions. By comparing `git status` against `touched_files`, we ensure atomic, session-scoped commits.
+
+---
+
 ## 4) Draft, Approve, and Execute Commit
 
 This step combines commit message drafting, user approval, and execution into a single unified workflow to eliminate duplication.
@@ -572,11 +674,31 @@ What would you like to do? [1/2/3/4]
 
 ### 4.4) Execute Based on User Choice
 
+**CRITICAL: Use Selective Staging from Step 3.5**
+
+**NEVER** use `git add .` or `git add -A`. Always stage files explicitly based on the verified file list from Step 3.5.
+
 **If user selects [1] - Commit only**:
 
-1. Stage changes (excluding nested repo paths if configured):
+1. **Stage ONLY verified files** from Step 3.5:
+
    ```bash
-   git add [filtered file list]
+   # Stage each file individually - NEVER git add . or git add -A
+   git add src/auth.py
+   git add src/utils.py
+   git add history.md
+   git add TODO.md
+   # ... (only files from touched_files + auto-includes)
+   ```
+
+   **Verification** (immediately after staging):
+   ```bash
+   git diff --cached --name-only
+   ```
+
+   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them:
+   ```bash
+   git reset HEAD <unexpected_file>
    ```
 
 2. Create commit with approved message:
@@ -600,10 +722,23 @@ What would you like to do? [1/2/3/4]
 
 **If user selects [2] - Commit and push**:
 
-1. Stage changes (excluding nested repo paths if configured):
+1. **Stage ONLY verified files** from Step 3.5:
+
    ```bash
-   git add [filtered file list]
+   # Stage each file individually - NEVER git add . or git add -A
+   git add src/auth.py
+   git add src/utils.py
+   git add history.md
+   git add TODO.md
+   # ... (only files from touched_files + auto-includes)
    ```
+
+   **Verification** (immediately after staging):
+   ```bash
+   git diff --cached --name-only
+   ```
+
+   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them.
 
 2. Create commit with approved message:
    ```bash
@@ -791,3 +926,10 @@ At the end of every session when user says goodbye, verify completion of the man
 - When working with multiple repos, always use `[SHORT_PROJECT_PREFIX]` for clarity
 - Maintain organization across all steps to demonstrate thoroughness
 - Always wait for explicit approval before committing changes
+
+---
+
+## Version History
+
+- **2026.01.29 (Session 53)**: Added parallel session safety - warning box, Step 3.5 (pre-commit file verification), modified Step 4.4 (selective staging based on `touched_files`). NEVER use `git add .` or `git add -A`. (~100 lines added, ~30 modified)
+- **2026.01.XX**: Prior iterations (no version tracking before this date)
