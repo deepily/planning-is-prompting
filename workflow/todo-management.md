@@ -187,7 +187,17 @@ Last updated: YYYY-MM-DD (Session N)
 
 ---
 
-## Relationship with history.md
+## Relationship with Other Documents
+
+### Three-Document System
+
+| Document | Purpose | What Goes Here | What Does NOT Go Here |
+|----------|---------|----------------|----------------------|
+| **history.md** | Brief accomplishments | What was completed this session | TODOs, implementation tracking details |
+| **TODO.md** | Pending work items | Tasks not yet done | Detailed phase/step tracking |
+| **Implementation docs** | Multi-phase tracking | Phase progress, step-by-step status | General TODO items |
+
+### history.md
 
 **Before TODO.md** (legacy pattern):
 - TODO lists embedded in session entries
@@ -205,6 +215,51 @@ Last updated: YYYY-MM-DD (Session N)
 - Session-end workflow writes to TODO.md instead of history.md
 - Session-start workflow reads from TODO.md
 - history.md session entries reference TODO.md but don't duplicate items
+
+### Implementation Tracking Documents
+
+**Location**: `src/rnd/YYYY.MM.DD-project-name.md`
+
+**Purpose**: Track progress through multi-phase projects with many steps
+
+**What goes in implementation docs**:
+- Phase headers with status (IN PROGRESS, COMPLETE)
+- Step checklists within phases
+- Detailed technical notes
+- Design decisions
+- Blockers and dependencies
+
+**What does NOT go in implementation docs**:
+- General TODO items (use TODO.md)
+- Session summaries (use history.md)
+
+**Example**:
+```markdown
+## Phase 2: Authentication Module
+
+**Status**: IN PROGRESS
+
+### Steps
+- [x] 2.1 Create JWT service
+- [x] 2.2 Add token validation
+- [ ] 2.3 Integration tests ← Current focus
+- [ ] 2.4 Documentation
+
+### Technical Notes
+- Using RS256 algorithm for signing
+- Token expiry: 24 hours
+```
+
+### When to Use Each Document
+
+| Scenario | Document |
+|----------|----------|
+| "What did I accomplish today?" | history.md |
+| "What do I still need to do?" | TODO.md |
+| "Where am I in this 20-step project?" | Implementation doc |
+| "What tests are failing?" | Implementation doc |
+| "What's the next session priority?" | TODO.md |
+| "What happened last week?" | history.md |
 
 ---
 

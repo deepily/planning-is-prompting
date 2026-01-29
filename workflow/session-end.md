@@ -286,7 +286,7 @@ Health: ✅ HEALTHY
 **Requirements**:
 - Use date format: `yyyy.mm.dd`
 - Sort newest changes at TOP ( reverse chronological )
-- Session summary with accomplishments (NOT TODO items - see Step 1.5)
+- Session summary with **brief accomplishments only**
 
 **For complete history management guidelines**: See planning-is-prompting repo → workflow/history-management.md
 
@@ -295,6 +295,39 @@ Health: ✅ HEALTHY
 - Archive when approaching 25k token limit
 - Current project status summary at top ( 3 lines )
 - Session summary with accomplishments
+
+### Document Separation Rules
+
+**history.md is for ACCOMPLISHMENTS ONLY**:
+- ✅ Brief summary of what was completed this session
+- ✅ Files modified/created (list format)
+- ✅ Key decisions made
+- ✅ Patterns used, insights gained
+- ❌ NO TODO items (use TODO.md - see Step 1.5)
+- ❌ NO detailed implementation tracking (use implementation docs - see Step 2)
+- ❌ NO step-by-step phase progress (use implementation docs - see Step 2)
+
+**Example of CORRECT history.md entry**:
+```markdown
+### 2026.01.28 - Session 52 | Feature Implementation
+
+**Accomplishments**:
+- Implemented user authentication module
+- Added JWT token validation
+- Created unit tests for auth endpoints
+
+**Files Modified**: 5 files (+234/-45 lines)
+```
+
+**Example of INCORRECT history.md entry** (too detailed):
+```markdown
+### 2026.01.28 - Session 52
+
+**Phase 2 Progress**:
+- [x] Step 2.1: Create base classes ← THIS BELONGS IN IMPLEMENTATION DOC
+- [x] Step 2.2: Add validation
+- [ ] Step 2.3: Integration tests (TODO) ← THIS BELONGS IN TODO.md
+```
 
 **Important**: Do NOT add TODO lists to history.md session entries. TODOs are tracked separately in TODO.md (see Step 1.5).
 
@@ -359,10 +392,47 @@ notify( "TODO.md updated", notification_type="progress", priority="low" )
 
 **Target**: Documents in the repo's `src/rnd` directory
 
-**Requirements**:
-- Update any relevant planning documents modified during session
+### Document Types and Update Responsibilities
+
+When the user says "update all tracking documents", distinguish between these document types:
+
+**A) Implementation Tracking Documents** (Multi-phase project progress):
+- **Location**: `src/rnd/YYYY.MM.DD-project-name.md` or dedicated tracking file
+- **Purpose**: Track progress through multiple phases/steps of a large implementation
+- **Updates**:
+  - ✅ Check off completed steps: `- [x] Step completed`
+  - ✅ Update phase status: `Phase 2: IN PROGRESS` → `Phase 2: COMPLETE`
+  - ✅ Add detailed notes about implementation decisions
+  - ✅ Record blockers, dependencies, technical details
+- **Example**: A multi-week feature development with 4 phases and 20 steps
+
+**B) Research/Design Documents**:
+- **Location**: `src/rnd/YYYY.MM.DD-topic-research.md`
+- **Purpose**: Document investigation findings, design decisions, analysis
+- **Updates**: Add findings, conclusions, recommendations
+- **Naming**: Always begin with date format: `yyyy.mm.dd`
+
+**C) TODO.md** (Pending work items):
+- **Location**: Project root (`TODO.md`)
+- **Purpose**: Single source of truth for pending work
+- **Updates**: See Step 1.5 (dedicated workflow)
+- **Note**: Do NOT put TODO items in implementation docs or history.md
+
+### Update Order
+
+When updating tracking documents:
+1. **First**: Update implementation tracking docs with phase/step progress
+2. **Second**: Update TODO.md with new pending items (Step 1.5)
+3. **Last**: Update history.md with brief accomplishments only (Step 1)
+
+### Requirements
 - Add links to new research documents in readme file
 - All research documents should begin with date format: `yyyy.mm.dd`
+
+### Notification
+```python
+notify( "Tracking documents updated", notification_type="progress", priority="low" )
+```
 
 ## 3) Summarize Uncommitted Changes
 

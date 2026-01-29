@@ -35,6 +35,23 @@ Last updated: YYYY-MM-DD (Session N)
 
 **Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
 
+## DOCUMENT SEPARATION RULES
+
+**Three-Document System** - Know what goes where:
+
+| Document | Purpose | ✅ Include | ❌ Exclude |
+|----------|---------|-----------|-----------|
+| **history.md** | Brief accomplishments | What was done, files changed | TODOs, phase tracking |
+| **TODO.md** | Pending work items | Tasks not yet done | Detailed step tracking |
+| **Implementation docs** | Multi-phase tracking | Phase/step progress | General TODOs |
+
+**Key Principle**: When user says "update all tracking documents":
+1. **First**: Update implementation docs with phase/step progress
+2. **Second**: Update TODO.md with pending items
+3. **Last**: Update history.md with brief accomplishments only
+
+**For complete guidance**: See planning-is-prompting → workflow/session-end.md (Document Separation Rules)
+
 ## INTERACTIVE REQUIREMENTS ELICITATION
 
 **Purpose**: When users arrive with vague or early-stage ideas, proactively engage in Socratic dialogue to refine requirements before invoking structured planning workflows. This pattern emerged organically and should be standardized.

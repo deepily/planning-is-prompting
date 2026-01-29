@@ -1,13 +1,38 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 52 (next session)
+**RESUME HERE**: Session 52 | Bug Fix Mode
 
-**Current Status**: Skills Management Workflow complete
+**Current Status**: Bug Fix Mode active
 **Last Session**: Session 51 - Tested Skills Management Workflow
 
 ---
 
 ## January 2026
+
+### 2026.01.28 - Session 52 | Bug Fix Mode
+
+### Fixes
+
+#### Fix 1: Clarify Document Separation Rules
+- **Source**: ad-hoc (user request for clearer document management)
+- **Files**:
+  - workflow/session-end.md (+35 lines: Document Separation Rules section)
+  - workflow/todo-management.md (+60 lines: Three-Document System, relationship tables)
+  - global/CLAUDE.md (+20 lines: Document Separation Rules quick reference)
+  - ~/.claude/CLAUDE.md (+45 lines: TODO.md section + Document Separation Rules)
+- **Test**: Grep verification of new sections
+- **Commit**: [pending]
+- **Details**:
+  - Added "Document Separation Rules" to session-end.md with explicit ✅/❌ examples
+  - Added "Three-Document System" to todo-management.md explaining history.md vs TODO.md vs implementation docs
+  - Added quick reference table to global/CLAUDE.md
+  - Updated user's active ~/.claude/CLAUDE.md to include TODO.md section and document separation rules
+  - Clarifies that "update all tracking documents" means distinct updates to each document type
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.01.28 - Session 51 | Testing Skills Management Workflow
 

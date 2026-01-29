@@ -1,5 +1,16 @@
 # Bug Fix Queue
 
+## Session: 2026.01.28
+**Owner**: claude.code@plan.deepily.ai#21522570
+
+### Queued
+- [ ] Clarify document separation in session-end workflow: history.md (brief accomplishments only), TODO.md (pending items), implementation docs (phase tracking) (ad-hoc)
+
+### Completed
+(Completed bugs will be moved here)
+
+---
+
 ## Previous Session: 2026.01.27 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#8ca60a60
 
