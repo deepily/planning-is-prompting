@@ -471,50 +471,80 @@ git ls-files --others --exclude-standard | tree --fromfile -a
 
 **Purpose**: Verify files to commit match this session's work. Prevents accidentally committing files modified by parallel Claude sessions.
 
+**Mechanism**: Reads `.claude-session.md` manifest file created at session-start.
+
 **Process**:
 
-1. **Get Files from `git status`**:
+1. **Check for Session Manifest**:
+   ```bash
+   ls .claude-session.md 2>/dev/null
+   ```
+
+2. **Read and Parse Manifest** (if exists):
+
+   ```bash
+   cat .claude-session.md
+   ```
+
+   **Extract touched files** from the "## Touched Files" section:
+   - Parse lines matching pattern: `- [timestamp] | [file_path]`
+   - Extract unique file paths (deduplicate if same file edited multiple times)
+   - Store as `manifest_files` list
+
+   **Verify session ownership**:
+   - Extract Session ID from manifest
+   - Compare with current session ID from `get_session_info()`
+   - If different: warn about session mismatch (manifest from previous/parallel session)
+
+3. **Get Files from `git status`**:
    ```bash
    git status --porcelain
    ```
 
-2. **Compare Against `touched_files`**:
+   Parse to get list of modified/added files as `git_files`.
 
-   **If `touched_files` exists and is non-empty** (normal case):
+4. **Compare Manifest Against Git Status**:
+
+   **If manifest exists and has files** (normal case):
 
    ```
    ══════════════════════════════════════════════════════════
    Pre-Commit File Verification
    ══════════════════════════════════════════════════════════
 
-   Files to COMMIT (this session's work):
-   ✓ src/auth.py
-   ✓ src/utils.py
-   ✓ history.md (always included)
-   ✓ TODO.md (if modified)
+   Manifest: .claude-session.md
+   Session ID: 5c8a3081 ✓ (matches current session)
 
-   Files to SKIP (parallel session changes):
-   ○ src/database.py (not in touched_files)
-   ○ tests/test_db.py (not in touched_files)
+   Files to COMMIT (from manifest + auto-includes):
+   ✓ workflow/session-start.md (in manifest)
+   ✓ workflow/session-end.md (in manifest)
+   ✓ global/CLAUDE.md (in manifest)
+   ✓ history.md (auto-include)
+   ✓ TODO.md (auto-include, modified)
+
+   Files to SKIP (not in manifest):
+   ○ src/database.py (parallel session)
+   ○ tests/test_db.py (parallel session)
 
    ══════════════════════════════════════════════════════════
    ```
 
-   **Automatically include** (even if not in `touched_files`):
+   **Auto-include files** (even if not in manifest):
    - `history.md` - Always included (session documentation)
    - `TODO.md` - If it exists and was modified
    - `CLAUDE.md` - If modified during session
    - `bug-fix-queue.md` - If bug-fix-mode is active
+   - `.claude-session.md` - **NEVER** include (deleted after commit)
 
-3. **Handle Missing Tracking** (session-start was skipped):
+5. **Handle Missing Manifest** (session-start was skipped):
 
-   **If `touched_files` is empty or undefined**:
+   **If `.claude-session.md` does not exist**:
 
    ```python
    ask_multiple_choice(
        questions=[
            {
-               "question": "Session tracking not initialized. How should I handle commit?",
+               "question": "No session manifest found. How should I handle commit?",
                "header": "Commit Scope",
                "multiSelect": False,
                "options": [
@@ -524,17 +554,23 @@ git ls-files --others --exclude-standard | tree --fromfile -a
                ]
            }
        ],
-       title="Tracking Missing",
-       abstract="**Warning**: Session-start tracking was not initialized.\n\n**Modified files**:\n[list from git status]"
+       title="No Manifest",
+       abstract="**Warning**: Session tracking was not initialized (no .claude-session.md found).\n\n**Modified files from git status**:\n[list from git status]"
    )
    ```
 
    **If user selects "Let me select"**:
-   - Display all modified files
+   - Display all modified files from git status
    - Ask user to specify which files to include
    - Proceed with user-specified files only
 
-4. **Notify if Parallel Files Detected**:
+6. **Handle Empty Manifest** (session-start ran but no edits tracked):
+
+   **If `.claude-session.md` exists but has no files** (only "*No files modified yet*"):
+
+   Same handling as missing manifest - ask user how to proceed.
+
+7. **Notify if Parallel Files Detected**:
 
    **If files were skipped** (parallel session changes detected):
 
@@ -543,11 +579,37 @@ git ls-files --others --exclude-standard | tree --fromfile -a
        message=f"Skipping {n} files from parallel session",
        notification_type="progress",
        priority="low",
-       abstract="**Skipped files**:\n- src/database.py\n- tests/test_db.py\n\nThese files were modified but not tracked in this session."
+       abstract="**Skipped files**:\n- src/database.py\n- tests/test_db.py\n\nThese files were modified but not tracked in this session's manifest."
    )
    ```
 
-**Rationale**: This step prevents the common mistake of committing all modified files when working in parallel sessions. By comparing `git status` against `touched_files`, we ensure atomic, session-scoped commits.
+8. **Store Verified File List**:
+
+   Save the final list of files to commit for use in Step 4.4:
+   - Files from manifest (deduplicated)
+   - Plus auto-include files
+   - Minus any files user chose to skip
+
+---
+
+### Manifest Cleanup (After Successful Commit)
+
+**IMPORTANT**: After a successful commit in Step 4.4, delete the session manifest:
+
+```bash
+rm .claude-session.md
+```
+
+This ensures:
+- Clean slate for next session
+- No stale manifests confusing future sessions
+- Manifest doesn't accidentally get committed
+
+**If commit is cancelled**: Keep the manifest (session may continue or resume later).
+
+---
+
+**Rationale**: This step prevents the common mistake of committing all modified files when working in parallel sessions. By reading the `.claude-session.md` manifest, we get a persistent, file-based record of exactly which files THIS session modified, enabling atomic, session-scoped commits.
 
 ---
 
@@ -718,7 +780,12 @@ What would you like to do? [1/2/3/4]
    notify( "Changes committed successfully", notification_type="progress", priority="low" )
    ```
 
-4. DONE - Skip to Final Verification
+4. **Delete session manifest** (cleanup):
+   ```bash
+   rm .claude-session.md
+   ```
+
+5. DONE - Skip to Final Verification
 
 **If user selects [2] - Commit and push**:
 
@@ -762,7 +829,12 @@ What would you like to do? [1/2/3/4]
    notify( "Changes committed and pushed successfully", notification_type="progress", priority="low" )
    ```
 
-5. DONE - Skip to Final Verification
+5. **Delete session manifest** (cleanup):
+   ```bash
+   rm .claude-session.md
+   ```
+
+6. DONE - Skip to Final Verification
 
 **If user selects [3] - Modify message**:
 
@@ -781,7 +853,11 @@ What would you like to do? [1/2/3/4]
    notify( "Commit cancelled by user", notification_type="progress", priority="low" )
    ```
 
-2. Continue to Final Verification (without committing)
+2. **Keep session manifest** (do NOT delete `.claude-session.md`)
+   - Session may continue working
+   - Or resume later with `/plan-session-start` (will detect existing manifest)
+
+3. Continue to Final Verification (without committing)
 
 ### 4.5) Error Handling
 
@@ -931,5 +1007,5 @@ At the end of every session when user says goodbye, verify completion of the man
 
 ## Version History
 
-- **2026.01.29 (Session 53)**: Added parallel session safety - warning box, Step 3.5 (pre-commit file verification), modified Step 4.4 (selective staging based on `touched_files`). NEVER use `git add .` or `git add -A`. (~100 lines added, ~30 modified)
+- **2026.01.29 (Session 53)**: Added parallel session safety with `.claude-session.md` manifest. Step 3.5 reads manifest file, verifies files against git status, handles missing/empty manifest. Step 4.4 uses selective staging and deletes manifest after successful commit. NEVER use `git add .` or `git add -A`. (~150 lines added, ~30 modified)
 - **2026.01.XX**: Prior iterations (no version tracking before this date)

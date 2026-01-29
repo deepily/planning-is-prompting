@@ -10,6 +10,8 @@
 
 **Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
 
+**Mechanism**: File-based tracking via `.claude-session.md` manifest in project root.
+
 ### The Problem
 
 When multiple Claude Code sessions work on the same repository simultaneously:
@@ -19,39 +21,69 @@ When multiple Claude Code sessions work on the same repository simultaneously:
 - **Without tracking**: Session A commits ALL 4 files (wrong!)
 - **With tracking**: Session A commits only its 2 files (correct!)
 
-### The Solution: `touched_files` Tracking
+### The Solution: `.claude-session.md` Manifest
 
 **At Session-Start** (Step 3.5):
-```python
-session_info = get_session_info()
-session_id = session_info["session_id"]
-touched_files = []  # Initialize tracking
-```
+1. Get session ID from `get_session_info()`
+2. Create `.claude-session.md` manifest file:
+   ```markdown
+   # Claude Session Manifest
+
+   **Session ID**: 5c8a3081
+   **Started**: 2026-01-29T14:30:00
+   **Project**: my-project
+
+   ## Touched Files
+
+   *No files modified yet*
+   ```
 
 **During Session** (after EVERY Edit/Write):
-```python
-touched_files.append( file_path )
+
+**MANDATE**: Append to the manifest's "## Touched Files" section:
+```markdown
+- 2026-01-29T14:31:15 | workflow/session-start.md
 ```
 
 **At Session-End** (Step 3.5 + 4.4):
-1. Compare `git status` against `touched_files`
-2. Stage ONLY files in `touched_files` (plus auto-includes like history.md)
-3. **NEVER** use `git add .` or `git add -A`
+1. Read `.claude-session.md` manifest
+2. Extract file paths from "## Touched Files" section
+3. Compare against `git status`
+4. Stage ONLY files from manifest (plus auto-includes)
+5. **NEVER** use `git add .` or `git add -A`
+6. Delete manifest after successful commit
+
+### Manifest Lifecycle
+
+| Event | Action |
+|-------|--------|
+| `/plan-session-start` | Create `.claude-session.md` |
+| Every Edit/Write | Append file path to manifest |
+| `/plan-session-end` | Read manifest, selective commit |
+| After successful commit | Delete `.claude-session.md` |
+| Context clear | Manifest persists, resume on next session-start |
 
 ### Auto-Include Files
 
-These files are always included in commits even if not in `touched_files`:
+These files are always included in commits even if not in manifest:
 - `history.md` - Session documentation
 - `TODO.md` - If modified
 - `CLAUDE.md` - If modified
 - `bug-fix-queue.md` - If bug-fix-mode active
 
-### Fallback: When Tracking is Missing
+### Fallback: When Manifest is Missing
 
-If session-start was skipped and `touched_files` is empty:
+If `.claude-session.md` doesn't exist (session-start was skipped):
 1. Display warning to user
 2. Show all modified files from `git status`
 3. Ask user: "Commit all", "Let me select", or "Cancel"
+
+### .gitignore Recommendation
+
+Add to your project's `.gitignore`:
+```
+.claude-session.md
+```
 
 ### Key Principle
 

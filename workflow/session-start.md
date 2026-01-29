@@ -230,6 +230,8 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Purpose**: Initialize file tracking for parallel session safety. When multiple Claude sessions work on the same repository simultaneously, this tracking ensures each session only commits its own changes.
 
+**Mechanism**: Creates `.claude-session.md` manifest file in project root to track all files modified during this session.
+
 **Process**:
 
 1. **Get Session Information**:
@@ -238,30 +240,110 @@ notify( "Starting session initialization, loading config and history...", notifi
    session_id = session_info["session_id"]
    ```
 
-2. **Initialize Touched Files List**:
-   ```python
-   touched_files = []  # Will track files modified by THIS session
+2. **Check for Existing Manifest**:
+   ```bash
+   ls .claude-session.md 2>/dev/null
    ```
 
-3. **Display Tracking Status**:
+   **If manifest already exists**:
+   - Read it to check session ID
+   - **If SAME session ID**: Resume (context was cleared, continue tracking)
+   - **If DIFFERENT session ID**: Parallel session detected!
+     ```python
+     ask_multiple_choice(
+         questions=[
+             {
+                 "question": "Existing session manifest found from different session. How to proceed?",
+                 "header": "Parallel Session",
+                 "multiSelect": False,
+                 "options": [
+                     {"label": "Take ownership", "description": "Replace manifest, this session takes over"},
+                     {"label": "Work alongside", "description": "Keep existing manifest, skip tracking for this session"},
+                     {"label": "Cancel", "description": "Stop and investigate"}
+                 ]
+             }
+         ],
+         title="Parallel Session Detected",
+         abstract="**Existing manifest**:\nSession ID: [other_session_id]\nStarted: [timestamp]\nFiles: [count] tracked"
+     )
+     ```
+
+3. **Create/Update Session Manifest**:
+
+   **Write `.claude-session.md`** in project root:
+   ```markdown
+   # Claude Session Manifest
+
+   **Session ID**: [session_id]
+   **Started**: [ISO timestamp]
+   **Project**: [project name from CLAUDE.md]
+
+   ## Touched Files
+
+   *No files modified yet*
+   ```
+
+   **Example**:
+   ```markdown
+   # Claude Session Manifest
+
+   **Session ID**: 5c8a3081
+   **Started**: 2026-01-29T14:30:00
+   **Project**: planning-is-prompting
+
+   ## Touched Files
+
+   *No files modified yet*
+   ```
+
+4. **Display Tracking Status**:
    ```
    ══════════════════════════════════════════════════════════
    Parallel Session Safety Initialized
    ══════════════════════════════════════════════════════════
    Session ID: [session_id]
-   Tracking Mode: Active
-   Touched Files: 0 (will grow as you edit)
+   Manifest: .claude-session.md (created)
+   Tracking: Active - will log all file modifications
    ══════════════════════════════════════════════════════════
    ```
 
-**MANDATE: Track ALL File Modifications**
+---
 
-Throughout the session, after **EVERY** Edit or Write tool call:
-```python
-touched_files.append( file_path )
+### MANDATE: Track ALL File Modifications
+
+**CRITICAL**: After **EVERY** Edit or Write tool call, you **MUST** append to the manifest:
+
+```markdown
+## In .claude-session.md, append to "## Touched Files" section:
+
+- [ISO timestamp] | [relative file path]
 ```
 
-**Why This Matters**:
+**Example manifest after edits**:
+```markdown
+# Claude Session Manifest
+
+**Session ID**: 5c8a3081
+**Started**: 2026-01-29T14:30:00
+**Project**: planning-is-prompting
+
+## Touched Files
+
+- 2026-01-29T14:31:15 | workflow/session-start.md
+- 2026-01-29T14:32:40 | workflow/session-end.md
+- 2026-01-29T14:33:22 | global/CLAUDE.md
+```
+
+**Implementation**:
+- After each Edit tool call → append the edited file path
+- After each Write tool call → append the written file path
+- Duplicates are OK (same file edited multiple times)
+- Use relative paths from project root
+
+---
+
+### Why This Matters
+
 - Multiple Claude sessions can work on the same repository
 - Each session may modify different files
 - At commit time, `git status` shows ALL modified files (from ALL sessions)
@@ -271,15 +353,41 @@ touched_files.append( file_path )
 **Example Scenario**:
 ```
 Session A (this session): Modified src/auth.py, src/utils.py
-Session B (parallel):     Modified src/database.py, tests/test_db.py
+  → .claude-session.md contains: auth.py, utils.py
+
+Session B (parallel): Modified src/database.py, tests/test_db.py
+  → Their .claude-session.md contains: database.py, test_db.py
 
 At Session A's /plan-session-end:
   git status shows: all 4 files modified
-  WITHOUT tracking: Commits all 4 files ❌ (mixes Session B's changes!)
-  WITH tracking:    Commits only auth.py and utils.py ✓
+  Manifest shows: auth.py, utils.py only
+  Result: Commits only auth.py and utils.py ✓
 ```
 
-**Note**: This tracking is in-memory only. Unlike bug-fix-mode (which uses a queue file for context-clear recovery), regular session tracking does not persist across context clears. This is acceptable because regular sessions don't typically need context-clear recovery.
+---
+
+### Manifest Lifecycle
+
+| Event | Action |
+|-------|--------|
+| Session-start | Create `.claude-session.md` |
+| Every Edit/Write | Append file path to manifest |
+| Session-end | Read manifest, verify files, selective commit |
+| After successful commit | Delete `.claude-session.md` |
+| Context clear | Manifest persists on disk, resume on `/plan-session-start` |
+
+**Key Benefit**: Unlike in-memory tracking, the manifest file **survives context clears**. If you run `/plan-session-start` again after a context clear, it detects the existing manifest and resumes tracking.
+
+---
+
+### .gitignore Recommendation
+
+Add `.claude-session.md` to your project's `.gitignore`:
+```bash
+echo ".claude-session.md" >> .gitignore
+```
+
+This prevents accidentally committing the session manifest.
 
 ---
 
@@ -1161,7 +1269,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
-- **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety - initializes `touched_files` tracking to prevent committing files modified by parallel Claude sessions. Documented tracking mandate (~50 lines added).
+- **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety with `.claude-session.md` manifest file. Creates persistent file-based tracking of all Edit/Write operations. Survives context clears. Documented manifest lifecycle and tracking mandate (~120 lines added).
 - **2026.01.07 (Session 42)**: Expanded to 6-option support (from 4). Cases D/E/F now use single MCP call for 3/4/5 TODOs respectively. Progressive disclosure (Case G) only needed for 6+ TODOs. Updated Lupin notification model to allow 2-6 options. Case F uses "Other..." as unified escape hatch (~70 lines added).
 - **2026.01.07 (Session 41)**: Implemented dynamic TODO option generation in Step 5 - TODOs now presented as individual selectable options instead of bundled into "Continue TODOs". Added 4 cases (0, 1, 2, 3+ TODOs) with progressive disclosure for 3+. Added label formatting rules and response handling table (~150 lines added).
 - **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.
