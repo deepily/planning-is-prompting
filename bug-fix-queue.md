@@ -8,6 +8,7 @@
 
 ### Completed
 - [x] Add preliminary notification to bug fix mode (ad-hoc) → commit: ceea907
+- [x] Prohibit fragile attribute access patterns in Code Style (ad-hoc) → commit: (pending)
 
 ---
 

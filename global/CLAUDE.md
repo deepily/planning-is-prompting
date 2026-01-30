@@ -659,6 +659,32 @@ The `bin/` directory with notification scripts has been removed. All notificatio
       "top_p": 1.0
   }
   ```
+- **Explicit Attribute Access**: NEVER use defensive `getattr()` chains with fallbacks
+  ```python
+  # ❌ PROHIBITED - Fragile attribute fishing
+  'agent_type': getattr( job, 'agent_class_name', getattr( job, 'JOB_TYPE', 'Unknown' ) )
+  agent_name = getattr( obj, 'name', getattr( obj, 'title', 'Unnamed' ) )
+
+  # ❌ PROHIBITED - Silent fallback hiding missing attributes
+  value = getattr( config, 'timeout', 30 )  # Hides that timeout should be required
+
+  # ✅ CORRECT - Object has explicit attributes from instantiation
+  'agent_type': job.agent_type  # Fails loudly if missing
+
+  # ✅ CORRECT - Use Optional typing with explicit None checks
+  if job.agent_type is not None:
+      process( job.agent_type )
+
+  # ✅ CORRECT - If fallback truly needed, be explicit about why
+  # Only acceptable when interfacing with external/legacy code you don't control
+  timeout = config.timeout if hasattr( config, 'timeout' ) else DEFAULT_TIMEOUT
+  ```
+
+  **Rationale**:
+  - Objects should be instantiated with all required information
+  - Missing attributes should fail at runtime, not silently fallback
+  - Explicit is better than implicit (Python Zen)
+  - Debugging is easier when errors happen at the source
 
 ## PATH MANAGEMENT
 **Purpose**: Use canonical path resolution instead of fragile relative path manipulation

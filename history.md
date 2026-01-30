@@ -25,6 +25,18 @@
   - Priority `low` (no sound, just awareness)
   - Updated version history to v1.2
 
+#### Fix 2: Prohibit Fragile Attribute Access Patterns
+- **Source**: ad-hoc (Claude habit of using defensive getattr() chains)
+- **Files**: `~/.claude/CLAUDE.md`, global/CLAUDE.md
+- **Test**: Visual verification of rule placement and content
+- **Commit**: (pending)
+- **Details**:
+  - Added "Explicit Attribute Access" rule to Code Style section (~25 lines)
+  - Prohibits: `getattr()` chains with fallbacks, silent fallback hiding missing attributes
+  - Correct pattern: Direct attribute access, Optional typing with None checks
+  - Exception: Only acceptable for external/legacy code you don't control
+  - Rationale: Objects should have all required info from instantiation, fail loudly if missing
+
 ### Session Summary
 (Will be completed at session close)
 
