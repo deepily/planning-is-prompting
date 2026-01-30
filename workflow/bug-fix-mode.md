@@ -39,6 +39,27 @@ Claude Code's "plan to file → clear context → execute" pattern breaks histor
 
 ---
 
+## Preliminary: Send Start Notification
+
+**Purpose**: Immediately notify user that bug fix mode initialization has begun
+
+**Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
+
+**Command**:
+```python
+notify( "Initializing bug fix mode, loading queue and history...", notification_type="progress", priority="low" )
+```
+
+**Why This Matters**:
+- Provides immediate awareness that Claude is awake and working
+- User knows bug fix mode is being initialized (not regular session)
+- Helpful when loading large bug-fix-queue.md or history.md files
+- Sets expectation that bug selection menu will appear shortly
+
+**Note**: This is a low-priority "I'm starting" ping. The high-priority bug selection question comes in Step 4 (start mode), Step 14 (continue mode), or Step 18 (wrap mode), via `ask_multiple_choice()`.
+
+---
+
 ## Step 0: TodoWrite Initialization
 
 **MUST create TodoWrite tracking list immediately on invocation.**
@@ -1131,6 +1152,11 @@ Skip entirely. No bug fix mode active.
 ---
 
 ## Version History
+
+**v1.2** (2026.01.30) - Added preliminary notification
+- New "Preliminary" section before Step 0 for immediate user awareness
+- Fire-and-forget notification: "Initializing bug fix mode..."
+- Follows session-start.md pattern for consistency
 
 **v1.1** (2026.01.29) - Added wrap mode
 - New `wrap` mode for wrapping up completed fixes with documentation and commit

@@ -1,6 +1,17 @@
 # Bug Fix Queue
 
-## Session: 2026.01.28 (CLOSED)
+## Session: 2026.01.30
+**Owner**: claude.code@plan.deepily.ai#a357ab00
+
+### Queued
+(No bugs queued)
+
+### Completed
+- [x] Add preliminary notification to bug fix mode (ad-hoc) → commit: ceea907
+
+---
+
+## Previous Session: 2026.01.28 (CLOSED)
 **Owner**: claude.code@plan.deepily.ai#21522570
 **Status**: Session closed
 
