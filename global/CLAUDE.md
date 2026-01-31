@@ -6,11 +6,13 @@
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
-## PARALLEL SESSION SAFETY
+## PARALLEL SESSION SAFETY (v2.0)
 
 **Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
 
-**Mechanism**: File-based tracking via `.claude-session.md` manifest in project root.
+**Mechanism**: Multi-section `.claude-session.md` manifest file in project root. Each session has its own section, enabling true parallel session support with conflict detection.
+
+**Format Version**: 2.0 (Multi-Session)
 
 ### The Problem
 
@@ -19,53 +21,116 @@ When multiple Claude Code sessions work on the same repository simultaneously:
 - Session B modifies `src/database.py`, `tests/test_db.py`
 - At Session A's commit time: `git status` shows ALL 4 files
 - **Without tracking**: Session A commits ALL 4 files (wrong!)
-- **With tracking**: Session A commits only its 2 files (correct!)
+- **With v2.0 tracking**: Session A commits only its 2 files (correct!)
 
-### The Solution: `.claude-session.md` Manifest
+### The Solution: Multi-Section `.claude-session.md` Manifest (v2.0)
+
+**Format**:
+```markdown
+# Claude Session Manifest (Multi-Session)
+
+**Format Version**: 2.0
+**Last Updated**: 2026-01-31T10:30:00
+
+---
+
+## Session: 5c8a3081
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T10:25:00
+**Status**: active
+**Project**: my-project
+
+### Touched Files
+
+- 2026-01-31T09:15:00 | src/auth.py
+- 2026-01-31T09:30:00 | src/utils.py
+
+---
+
+## Session: a357ab00
+
+**Started**: 2026-01-31T08:00:00
+**Last Activity**: 2026-01-31T10:20:00
+**Status**: active
+**Project**: my-project
+
+### Touched Files
+
+- 2026-01-31T08:30:00 | src/database.py
+- 2026-01-31T09:45:00 | tests/test_db.py
+
+---
+```
 
 **At Session-Start** (Step 3.5):
 1. Get session ID from `get_session_info()`
-2. Create `.claude-session.md` manifest file:
-   ```markdown
-   # Claude Session Manifest
-
-   **Session ID**: 5c8a3081
-   **Started**: 2026-01-29T14:30:00
-   **Project**: my-project
-
-   ## Touched Files
-
-   *No files modified yet*
-   ```
+2. Check for existing manifest:
+   - If v1.0 format → auto-migrate to v2.0
+   - If v2.0 format → search for your session's section
+3. Create/resume your section:
+   - Found + active → resume (context clear recovery)
+   - Not found → append new section
+4. Check for stale sessions (>24h inactive)
 
 **During Session** (after EVERY Edit/Write):
 
-**MANDATE**: Append to the manifest's "## Touched Files" section:
+**MANDATE**: Find YOUR section and append to `### Touched Files`:
 ```markdown
-- 2026-01-29T14:31:15 | workflow/session-start.md
+- 2026-01-31T10:35:00 | workflow/session-start.md
 ```
+Also update `**Last Activity**` timestamp in your section.
 
 **At Session-End** (Step 3.5 + 4.4):
-1. Read `.claude-session.md` manifest
-2. Extract file paths from "## Touched Files" section
-3. Compare against `git status`
-4. Stage ONLY files from manifest (plus auto-includes)
+1. Read your section from manifest
+2. **Conflict Detection**: Compare your files against other active sessions
+3. If conflict detected → prompt user (Include mine / Skip conflicts / Cancel)
+4. Stage ONLY files from your section (plus auto-includes)
 5. **NEVER** use `git add .` or `git add -A`
-6. Delete manifest after successful commit
+6. Update your section: Status → `committed`, add commit hash
+7. If only section → delete manifest; if others active → keep manifest
 
-### Manifest Lifecycle
+### Session Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Session running or may resume after context clear |
+| `committed` | Session completed commit successfully |
+| `stale` | Auto-detected: >24h inactive |
+
+### Conflict Detection
+
+When Session A commits and `src/config.py` was edited by both A and B:
+
+```
+⚠️  FILE CONFLICT DETECTED
+
+  src/config.py
+    • Session 5c8a3081 (this session): 2026-01-31T10:25:00
+    • Session a357ab00 (other session): 2026-01-31T09:45:00
+
+Options:
+  [1] Include mine - I made the relevant changes
+  [2] Skip conflicts - Let other session commit it
+  [3] Cancel - I'll investigate first
+```
+
+### Manifest Lifecycle (v2.0)
 
 | Event | Action |
 |-------|--------|
-| `/plan-session-start` | Create `.claude-session.md` |
-| Every Edit/Write | Append file path to manifest |
-| `/plan-session-end` | Read manifest, selective commit |
-| After successful commit | Delete `.claude-session.md` |
-| Context clear | Manifest persists, resume on next session-start |
+| Session-start (new) | Create manifest with single section |
+| Session-start (resume) | Find section by ID, update Last Activity |
+| Session-start (parallel) | Append new section to existing manifest |
+| Every Edit/Write | Append to YOUR section only |
+| Session-end | Parse your section, check conflicts, selective commit |
+| After successful commit | Update status to `committed`, add commit hash |
+| Cleanup | Remove `committed` sections older than 7 days |
+| Context clear | Manifest persists, section found by ID on resume |
 
 ### Auto-Include Files
 
-These files are always included in commits even if not in manifest:
+These files are always included in commits even if not in your section:
 - `history.md` - Session documentation
 - `TODO.md` - If modified
 - `CLAUDE.md` - If modified
@@ -77,6 +142,14 @@ If `.claude-session.md` doesn't exist (session-start was skipped):
 1. Display warning to user
 2. Show all modified files from `git status`
 3. Ask user: "Commit all", "Let me select", or "Cancel"
+
+### Backward Compatibility
+
+v1.0 manifests are auto-migrated to v2.0:
+- If file starts with `# Claude Session Manifest (Multi-Session)` → v2.0
+- If file starts with `# Claude Session Manifest` → v1.0 (migrate)
+
+Migration is automatic and transparent.
 
 ### .gitignore Recommendation
 
