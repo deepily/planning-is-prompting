@@ -158,6 +158,35 @@ Add to your project's `.gitignore`:
 .claude-session.md
 ```
 
+### ⚠️ SESSION ISOLATION RULES (CRITICAL)
+
+**Multiple Claude sessions may run on the same repository simultaneously.** Each session has its own `## Session: {ID}` section. You **MUST** follow these rules:
+
+**ABSOLUTE PROHIBITIONS**:
+| ❌ NEVER | Why It's Forbidden |
+|----------|-------------------|
+| Modify another session's section | Corrupts their file tracking |
+| Overwrite the entire manifest | Destroys all parallel sessions' data |
+| Delete another session's section | They may still be working |
+| Read another session's files and stage them | Mixes unrelated commits |
+| Use `git add .` or `git add -A` | Stages another session's work |
+
+**MANDATORY SCOPING**:
+1. Get YOUR session ID: `get_session_info()`
+2. Find YOUR section: `## Session: {your_id}`
+3. Edit ONLY within YOUR section
+4. Leave other sections UNTOUCHED
+
+**Before EVERY manifest edit, verify**:
+```
+□ I know my session ID
+□ I found my section in the manifest
+□ My edit is ONLY within that section
+□ Other sessions' sections remain UNCHANGED
+```
+
+**If you corrupt another session's data, that Claude instance will commit wrong files or lose tracking entirely.**
+
 ### Key Principle
 
 **Selective staging is strictly better than bulk staging.** Even when not working in parallel sessions, explicitly staging files prevents accidental commits of temporary files, IDE artifacts, or unintended changes.

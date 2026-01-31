@@ -40,7 +40,29 @@
 - Conflict detection: Bug-fix sessions detect overlaps with other sessions
 - Unified tracking: Same mechanism as regular sessions
 
-**Commit**: 2c1055b
+**Commit**: 6bb68f7
+
+#### Fix 2: Strengthen Session Isolation Language
+
+**Problem**: Another Claude session attempted to overwrite a parallel session's manifest data, indicating the protective language wasn't strong enough.
+
+**Solution**: Added prominent "SESSION ISOLATION RULES (CRITICAL)" sections with:
+- ABSOLUTE PROHIBITIONS table (5 forbidden actions with explanations)
+- MANDATORY SCOPING checklist (4 steps before any manifest edit)
+- Verification checklist to run before EVERY manifest edit
+- Warning about consequences of corrupting another session's data
+
+**Files Modified**:
+- `workflow/bug-fix-mode.md` - Added SESSION ISOLATION RULES section after Overview (~50 lines)
+- `workflow/session-start.md` - Added SESSION ISOLATION section after Implementation Rules (~25 lines)
+- `global/CLAUDE.md` - Added SESSION ISOLATION RULES section before Key Principle (~30 lines)
+
+**Key Language Strengthened**:
+- "NEVER modify another session's section"
+- "NEVER overwrite the entire manifest file"
+- "If you corrupt another session's data, that Claude instance will commit wrong files"
+
+**Commit**: b592e26
 
 ---
 

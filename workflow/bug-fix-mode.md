@@ -27,6 +27,64 @@ Claude Code's "plan to file → clear context → execute" pattern breaks histor
 
 ---
 
+## ⚠️ SESSION ISOLATION RULES (CRITICAL)
+
+**Multiple Claude sessions may run on the same repository simultaneously.** Each session has its own section in `.claude-session.md`. You **MUST** follow these rules to prevent data corruption:
+
+### ABSOLUTE PROHIBITIONS
+
+| Action | Why It's Forbidden |
+|--------|-------------------|
+| **NEVER** read another session's `### Touched Files` and act on it | That data belongs to another Claude instance's commit |
+| **NEVER** modify another session's `**Status**` or `**Last Activity**` | You would corrupt their tracking |
+| **NEVER** delete another session's `## Session:` section | They may still be working |
+| **NEVER** overwrite the entire manifest file | You would destroy all parallel sessions' data |
+| **NEVER** use `git add .` or `git add -A` | You would stage another session's uncommitted files |
+
+### MANDATORY SESSION SCOPING
+
+When working with `.claude-session.md`:
+
+1. **IDENTIFY YOUR SESSION**: Use `get_session_info()` to get your session ID
+2. **FIND YOUR SECTION**: Search for `## Session: {your_session_id}` - this is the ONLY section you may modify
+3. **APPEND ONLY TO YOUR SECTION**: When adding touched files, append ONLY within YOUR `### Touched Files`
+4. **UPDATE ONLY YOUR METADATA**: Change `**Last Activity**` and `**Status**` ONLY in YOUR section
+
+### How to Safely Edit the Manifest
+
+```markdown
+# ✅ CORRECT: Find your section, modify only your section
+
+1. Read .claude-session.md
+2. Search for "## Session: a399f98a" (YOUR session ID)
+3. Edit ONLY within that section:
+   - Append to "### Touched Files"
+   - Update "**Last Activity**"
+4. Write file back
+
+# ❌ WRONG: Any of these actions
+
+- Editing a section that starts with "## Session: [different ID]"
+- Using Write tool to replace entire file without preserving other sections
+- Deleting the manifest without checking if other sessions exist
+- Changing **Owner** in bug-fix-queue.md to your ID when another session owns it
+```
+
+### Verification Before Any Manifest Edit
+
+Before EVERY edit to `.claude-session.md`, mentally verify:
+
+```
+□ I know my session ID: ________________
+□ I found my section: "## Session: {my_id}"
+□ I am editing ONLY within my section
+□ Other sessions' sections remain UNTOUCHED
+```
+
+**If you cannot verify all four checkboxes, STOP and re-examine your edit.**
+
+---
+
 ## Execution Metadata
 
 | Field | Value |
@@ -364,12 +422,13 @@ After **EVERY** Edit or Write tool call, you **MUST**:
 ```
 
 **Implementation Rules**:
-- After each Edit tool call → append the edited file path to YOUR section
-- After each Write tool call → append the written file path to YOUR section
-- **NEVER modify other sessions' sections**
+- After each Edit tool call → append the edited file path to **YOUR section ONLY**
+- After each Write tool call → append the written file path to **YOUR section ONLY**
+- **NEVER read, modify, or delete another session's section** - doing so corrupts their data
+- **NEVER overwrite the entire manifest** - use targeted edits within YOUR section
 - Duplicates are OK (same file edited multiple times)
 - Use relative paths from project root
-- Always update Last Activity timestamp
+- Always update **YOUR** Last Activity timestamp (not another session's)
 
 Files to track include:
 - Source files modified

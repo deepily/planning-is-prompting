@@ -456,12 +456,35 @@ notify( "Starting session initialization, loading config and history...", notifi
 ```
 
 **Implementation Rules**:
-- After each Edit tool call → append the edited file path to YOUR section
-- After each Write tool call → append the written file path to YOUR section
-- **NEVER modify other sessions' sections**
+- After each Edit tool call → append the edited file path to **YOUR section ONLY**
+- After each Write tool call → append the written file path to **YOUR section ONLY**
 - Duplicates are OK (same file edited multiple times)
 - Use relative paths from project root
-- Always update Last Activity timestamp
+- Always update **YOUR** Last Activity timestamp (not another session's)
+
+---
+
+### ⚠️ SESSION ISOLATION (CRITICAL)
+
+**Multiple Claude sessions may run on the same repository simultaneously.** You **MUST** follow these rules:
+
+| ❌ NEVER | ✅ ALWAYS |
+|----------|----------|
+| Modify another session's `## Session:` section | Find YOUR section by YOUR session ID first |
+| Overwrite the entire manifest file | Use targeted edits within YOUR section |
+| Delete another session's tracking data | Only delete YOUR section (and only when committing) |
+| Read another session's files and stage them | Stage only files from YOUR `### Touched Files` |
+| Change another session's `**Status**` | Only update YOUR status after YOUR commit |
+
+**Before EVERY manifest edit, verify**:
+```
+□ I know my session ID (from get_session_info())
+□ I found "## Session: {my_id}" in the manifest
+□ My edit is ONLY within that section
+□ Other sessions' sections remain UNCHANGED
+```
+
+**If another session's data gets corrupted, that Claude instance will commit wrong files or lose tracking entirely.**
 
 ---
 
