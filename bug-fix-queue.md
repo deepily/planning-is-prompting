@@ -7,7 +7,8 @@
 (No bugs queued)
 
 ### Completed
-- [x] Implement multi-session manifest v2.0 for true parallel session support (feature)
+- [x] Implement multi-session manifest v2.0 for true parallel session support (feature) → commit: cddfc9b
+- [x] Integrate bug-fix-mode with v2.0 manifest for unified file tracking (feature) → commit: 2c1055b
 
 ---
 

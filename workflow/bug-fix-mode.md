@@ -172,6 +172,7 @@ For WRAP mode:
 ```python
 session_info = get_session_info()
 # Returns: {"session_id": "claude.code@plan.deepily.ai#0057cc64", ...}
+session_id = session_info["session_id"]
 ```
 
 **Update `bug-fix-queue.md` header:**
@@ -181,18 +182,72 @@ session_info = get_session_info()
 **Owner**: claude.code@plan.deepily.ai#0057cc64
 ```
 
-**Initialize file tracking:**
+**Initialize Session Manifest (v2.0)**:
 
-```python
-touched_files = []  # Reset for first bug
-```
+Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for file tracking. This enables:
+- Conflict detection with parallel sessions (bug-fix or regular)
+- Context clear recovery (file list persists)
+- Unified file tracking across all session types
+
+**Process** (same as session-start.md Step 3.5):
+
+1. **Check for existing manifest**:
+   ```bash
+   ls .claude-session.md 2>/dev/null
+   ```
+
+2. **Detect version and handle**:
+
+   **If NO manifest exists** → Create new v2.0 manifest:
+
+   ```markdown
+   # Claude Session Manifest (Multi-Session)
+
+   **Format Version**: 2.0
+   **Last Updated**: [current ISO timestamp]
+
+   ---
+
+   ## Session: [session_id]
+
+   **Started**: [ISO timestamp]
+   **Last Activity**: [ISO timestamp]
+   **Status**: active
+   **Project**: [project name from CLAUDE.md]
+
+   ### Touched Files
+
+   *No files modified yet*
+
+   ---
+   ```
+
+   **If v2.0 manifest exists** → Search for `## Session: {session_id}`:
+   - **Found + active**: Resume tracking (context clear recovery), update Last Activity
+   - **Found + committed**: Create NEW section (previous session complete)
+   - **Not found**: Append new section (parallel session joining)
+
+   **If v1.0 manifest exists** → Auto-migrate to v2.0 format, then proceed as above
+
+3. **Display tracking status**:
+   ```
+   ══════════════════════════════════════════════════════════
+   Bug Fix Mode - Parallel Session Safety (v2.0)
+   ══════════════════════════════════════════════════════════
+   Session ID: [session_id]
+   Manifest: .claude-session.md
+   Status: [created | resumed | joined (N other active sessions)]
+   Tracking: Active - will log all file modifications
+   ══════════════════════════════════════════════════════════
+   ```
 
 **TodoWrite Update**: Mark Step 3 complete.
 
 **Verification**:
 - [ ] Session ID retrieved via get_session_info()
 - [ ] Owner stamp written to bug-fix-queue.md
-- [ ] touched_files initialized as empty list
+- [ ] Session manifest initialized/resumed (`.claude-session.md`)
+- [ ] Manifest section created or found for this session
 - [ ] TodoWrite updated
 
 ---
@@ -264,18 +319,14 @@ Add to queue with reference:
 - [ ] [Title from GitHub] (GitHub: org/repo#N)
 ```
 
-**Reset file tracking:**
-
-```python
-touched_files = []  # Fresh for this bug
-```
+**Note**: File tracking continues in your manifest section (`.claude-session.md`). All files modified during bug-fix-mode are tracked continuously - no reset needed between bugs. The manifest section captures all modifications for the entire session.
 
 **TodoWrite Update**: Add items for current bug fix.
 
 **Verification**:
 - [ ] Bug added to queue (if not already present)
 - [ ] GitHub issue details fetched (if applicable)
-- [ ] touched_files reset to empty list
+- [ ] Manifest section active (tracking continues)
 - [ ] TodoWrite updated with bug-specific items
 
 ---
@@ -284,12 +335,41 @@ touched_files = []  # Fresh for this bug
 
 **Work on the bug fix.**
 
-**CRITICAL - Track ALL file changes:**
+**MANDATE: Track ALL File Modifications (v2.0)**
 
-```python
-# After EVERY Edit/Write tool call:
-touched_files.append( file_path )
+After **EVERY** Edit or Write tool call, you **MUST**:
+
+1. **Find your session's section** in `.claude-session.md` (search for `## Session: {your_id}`)
+2. **Append to your section's `### Touched Files`**:
+   ```markdown
+   - [ISO timestamp] | [relative file path]
+   ```
+3. **Update your section's `**Last Activity**` timestamp**
+
+**Example - Updating your section after an Edit**:
+
+```markdown
+## Session: 0057cc64
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T10:35:00  ← UPDATE this
+**Status**: active
+**Project**: planning-is-prompting
+
+### Touched Files
+
+- 2026-01-31T09:15:00 | src/auth.py
+- 2026-01-31T09:30:00 | src/utils.py
+- 2026-01-31T10:35:00 | src/config.py  ← APPEND this
 ```
+
+**Implementation Rules**:
+- After each Edit tool call → append the edited file path to YOUR section
+- After each Write tool call → append the written file path to YOUR section
+- **NEVER modify other sessions' sections**
+- Duplicates are OK (same file edited multiple times)
+- Use relative paths from project root
+- Always update Last Activity timestamp
 
 Files to track include:
 - Source files modified
@@ -303,8 +383,8 @@ Files to track include:
 
 **Verification**:
 - [ ] Fix implemented
-- [ ] All modified files recorded in touched_files
-- [ ] No untracked file modifications
+- [ ] All modified files recorded in manifest section
+- [ ] Last Activity timestamp updated
 - [ ] TodoWrite reflects implementation progress
 
 ---
@@ -375,10 +455,18 @@ ask_multiple_choice(
 
 ### Step 9: Commit Changes
 
-**CRITICAL: Stage ONLY files from this bug fix.**
+**CRITICAL: Stage ONLY files from your manifest section.**
+
+**Step 9a: Read Your Manifest Section**
+
+1. Read `.claude-session.md`
+2. Find your section (`## Session: {your_id}`)
+3. Extract file paths from `### Touched Files` (deduplicate)
+
+**Step 9b: Selective Staging (from manifest)**
 
 ```bash
-# Stage touched files ONLY (not git add . or git add -A)
+# Stage ONLY files from your manifest section (not git add . or git add -A)
 git add file1.py
 git add file2.py
 git add file3.py
@@ -388,7 +476,9 @@ git add history.md
 git add bug-fix-queue.md
 ```
 
-**Create commit with issue reference (if applicable):**
+**NEVER** use `git add .` or `git add -A`. These commands stage ALL modified files, including those from parallel sessions.
+
+**Step 9c: Create Commit**
 
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -403,7 +493,7 @@ EOF
 )"
 ```
 
-**Capture commit hash:**
+**Step 9d: Capture Hash and Update**
 
 ```bash
 git rev-parse --short HEAD
@@ -425,7 +515,8 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 **TodoWrite Update**: Mark commit complete.
 
 **Verification**:
-- [ ] ONLY touched_files staged (no stray files)
+- [ ] Manifest section read and files extracted
+- [ ] ONLY manifest files staged (no stray files)
 - [ ] history.md and bug-fix-queue.md staged
 - [ ] Commit created with descriptive message
 - [ ] Commit hash captured
@@ -458,11 +549,7 @@ Move from Queued to Completed:
 
 ### Step 11: Suggest Context Clear
 
-**Clear tracking for next bug:**
-
-```python
-touched_files = []
-```
+**Note**: The manifest (`.claude-session.md`) persists across context clears - no reset needed. File tracking will continue from where you left off.
 
 **Ask user about context clear:**
 
@@ -479,10 +566,10 @@ ask_yes_no(
 
 **If no**: Loop back to Step 4 (bug selection) in same context.
 
-**TodoWrite Update**: Mark cycle complete, reset for next bug.
+**TodoWrite Update**: Mark cycle complete.
 
 **Verification**:
-- [ ] touched_files reset
+- [ ] Manifest persists (no reset needed)
 - [ ] User prompted about context clear
 - [ ] Response received
 - [ ] Next action determined
@@ -492,7 +579,7 @@ ask_yes_no(
 
 ## Recovery After Context Clear (`continue` mode)
 
-### Step 12: Read Queue State
+### Step 12: Read Queue State and Resume Manifest
 
 **Read `bug-fix-queue.md`:**
 
@@ -500,12 +587,49 @@ ask_yes_no(
 - Parse queued bugs
 - Note session owner
 
+**Resume Session Manifest (Context Clear Recovery)**:
+
+1. **Get session info**:
+   ```python
+   session_info = get_session_info()
+   session_id = session_info["session_id"]
+   ```
+
+2. **Check for manifest**:
+   ```bash
+   ls .claude-session.md 2>/dev/null
+   ```
+
+3. **Find your section**:
+
+   **If manifest exists** → Search for `## Session: {session_id}`:
+   - **Found + active**: Resume tracking - your file history is preserved!
+   - **Found + committed**: Previous work committed, create new section
+   - **Not found**: Create new section (edge case - session ID mismatch)
+
+   **If no manifest** → Create new v2.0 manifest (context was cleared before any files were edited)
+
+4. **Display recovery status**:
+   ```
+   ══════════════════════════════════════════════════════════
+   Bug Fix Mode - Continue (Context Clear Recovery)
+   ══════════════════════════════════════════════════════════
+   Session ID: [session_id]
+   Manifest: [resumed with N files | created new]
+   Tracking: Active
+   ══════════════════════════════════════════════════════════
+   ```
+
+**Key Benefit**: If you made edits before context cleared, the manifest still has your file list. You can continue where you left off.
+
 **TodoWrite Update**: Mark queue read complete.
 
 **Verification**:
 - [ ] bug-fix-queue.md read
 - [ ] Completed count known
 - [ ] Queued count known
+- [ ] Manifest resumed or created
+- [ ] Session tracking active
 - [ ] TodoWrite updated
 
 ---
@@ -652,17 +776,19 @@ notify(
 
 **Key Behavior**: By invoking wrap mode, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
 
-> **⚠️ PARALLEL SESSION SAFETY**
+> **⚠️ PARALLEL SESSION SAFETY (v2.0)**
 >
 > This workflow is designed for environments where **multiple Claude Code sessions may be working on the same repository simultaneously**. Each session works on different bugs/features and MUST NOT interfere with other sessions' work.
 >
-> **CRITICAL ISOLATION RULE**: Only files in the current session's `touched_files` list may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
+> **CRITICAL ISOLATION RULE**: Only files in the current session's manifest section (`.claude-session.md`) may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
 >
 > **Before every commit**:
-> 1. Run `git status` to see all modified files
-> 2. Compare against `touched_files` list
-> 3. Stage ONLY files that appear in BOTH lists
-> 4. If you see modified files NOT in `touched_files`, leave them unstaged - they belong to another session
+> 1. Read your session's section from `.claude-session.md`
+> 2. Run `git status` to see all modified files
+> 3. Compare against your manifest section's `### Touched Files`
+> 4. Stage ONLY files that appear in BOTH lists
+> 5. Check for conflicts with other active sessions' files
+> 6. If you see modified files NOT in your manifest section, leave them unstaged - they belong to another session
 
 ### Step 18: Validate Wrap Conditions
 
@@ -670,8 +796,20 @@ notify(
 
 1. **Queue exists**: Check `bug-fix-queue.md` exists in project root
 2. **Session ownership**: Current session owns the queue (compare session ID)
-3. **Files tracked**: `touched_files` list is not empty (WARN if empty, offer to continue)
-4. **Current bug identified**: Determine which bug was just fixed
+3. **Manifest section exists**: Check `.claude-session.md` has your session's section
+4. **Files tracked**: Manifest section has files (WARN if empty, offer to continue)
+5. **Current bug identified**: Determine which bug was just fixed
+
+**Step 18a: Read Manifest Section**
+
+```python
+session_info = get_session_info()
+session_id = session_info["session_id"]
+```
+
+Read `.claude-session.md` and find your section (`## Session: {session_id}`):
+- Extract files from `### Touched Files`
+- Note section status (`active`, `committed`, etc.)
 
 **If queue does not exist**:
 ```python
@@ -693,13 +831,25 @@ notify(
 ```
 FAIL and exit.
 
-**If no files tracked**:
+**If no manifest or no session section**:
 ```python
 ask_yes_no(
-    question="No files tracked for this bug. Continue anyway?",
+    question="No manifest section found for this session. Continue anyway?",
     default="no",
     priority="high",
-    abstract="**Warning**: touched_files is empty.\n\nThis could mean:\n- You haven't made any changes yet\n- File tracking was reset unexpectedly\n\nContinuing will create an empty commit (history.md + queue only)."
+    abstract="**Warning**: Session manifest not found.\n\nThis could mean:\n- Bug fix mode wasn't properly initialized\n- Manifest was deleted\n\nContinuing will stage ALL modified files (risky if parallel sessions exist)."
+)
+```
+If no: Return to fix work, reinitialize manifest.
+If yes: Use git status for file list (fallback mode).
+
+**If manifest section has no files**:
+```python
+ask_yes_no(
+    question="No files tracked in manifest. Continue anyway?",
+    default="no",
+    priority="high",
+    abstract="**Warning**: Manifest section has no files.\n\nThis could mean:\n- You haven't made any changes yet\n- Files were edited before manifest was initialized\n\nContinuing will create an empty commit (history.md + queue only)."
 )
 ```
 If no: Return to fix work.
@@ -728,7 +878,8 @@ ask_multiple_choice(
 **Verification**:
 - [ ] bug-fix-queue.md exists
 - [ ] Session ownership verified
-- [ ] touched_files status known (empty or populated)
+- [ ] Manifest section found and parsed
+- [ ] File list extracted from manifest (or fallback mode chosen)
 - [ ] Current bug identified
 - [ ] TodoWrite updated
 
@@ -810,7 +961,11 @@ INFO: Bug not found in TODO.md (no action needed)
 
 **CRITICAL: No approval required. User invocation of wrap mode IS the approval.**
 
-#### Step 22a: Pre-Commit Verification
+#### Step 22a: Pre-Commit Verification (v2.0)
+
+**Read your session's file list from manifest** (parsed in Step 18):
+
+Your manifest section's `### Touched Files` contains all files you modified.
 
 **MUST verify file isolation before staging:**
 
@@ -819,33 +974,69 @@ INFO: Bug not found in TODO.md (no action needed)
 git status --short
 ```
 
-**Compare `git status` output against `touched_files` list:**
+**Compare `git status` output against your manifest section files:**
 
-| File in git status | In touched_files? | Action |
-|--------------------|-------------------|--------|
+| File in git status | In my manifest section? | Action |
+|--------------------|------------------------|--------|
 | file1.py | ✓ Yes | Stage it |
 | file2.py | ✓ Yes | Stage it |
 | other_file.py | ✗ No | **DO NOT STAGE** - belongs to another session |
 | random_change.js | ✗ No | **DO NOT STAGE** - belongs to another session |
 
-**If files appear modified but are NOT in `touched_files`**:
+**If files appear modified but are NOT in your manifest section**:
 ```
-INFO: Detected [N] modified files not in touched_files - skipping (likely from parallel session)
+INFO: Detected [N] modified files not in this session's manifest - skipping (likely from parallel session)
   - other_file.py (not staging)
   - random_change.js (not staging)
 ```
 
-> **⚠️ WARNING**: NEVER stage files that are not in `touched_files`. They may have been modified by another Claude Code session working on a different bug/feature. Staging them would mix unrelated changes and cause confusion.
+#### Step 22b: Conflict Detection with Other Sessions
 
-#### Step 22b: Selective Staging
+**Check other active sessions' files** (v2.0 feature):
 
-**Stage ONLY files from this bug fix:**
+Scan other `## Session:` sections in `.claude-session.md` for overlap:
+
+```
+For each other active session:
+  Compare their "### Touched Files" against my files
+  If overlap exists → conflict detected
+```
+
+**If conflicts detected with other sessions**:
+
+```python
+ask_multiple_choice(
+    questions=[{
+        "question": "File conflict detected with another session",
+        "header": "Conflict",
+        "multiSelect": False,
+        "options": [
+            {"label": "Include mine", "description": "Commit my version (I made the relevant changes)"},
+            {"label": "Skip conflicts", "description": "Skip conflicting files, let other session handle them"},
+            {"label": "Cancel", "description": "Abort commit, investigate first"}
+        ]
+    }],
+    priority="high",
+    abstract="**Conflicting files**:\n- config.py (this session: 10:25, other session: 09:45)\n\nBoth sessions modified the same file."
+)
+```
+
+**Conflict Resolution**:
+- **Include mine**: Add conflicting files to commit
+- **Skip conflicts**: Remove conflicting files from staging
+- **Cancel**: Abort commit, keep manifest
+
+> **⚠️ WARNING**: NEVER stage files that are not in your manifest section. They may have been modified by another Claude Code session working on a different bug/feature. Staging them would mix unrelated changes and cause confusion.
+
+#### Step 22c: Selective Staging
+
+**Stage ONLY files from your manifest section:**
 
 ```bash
 # NEVER use: git add . / git add -A / git add --all
 # These commands stage EVERYTHING and break parallel session isolation
 
-# Stage ONLY files in touched_files (one by one)
+# Stage ONLY files from your manifest section (one by one)
 git add file1.py
 git add file2.py
 git add file3.py
@@ -860,11 +1051,11 @@ git add TODO.md  # If modified in Step 21
 
 ```bash
 git diff --cached --name-only
-# Should show ONLY: touched_files + history.md + bug-fix-queue.md + TODO.md
+# Should show ONLY: manifest files + history.md + bug-fix-queue.md + TODO.md
 # Should NOT show any files from other sessions
 ```
 
-#### Step 22c: Create Commit
+#### Step 22d: Create Commit
 
 **Create commit with issue reference (if applicable):**
 
@@ -895,9 +1086,11 @@ Present retry option.
 **TodoWrite Update**: Mark Step 22 complete.
 
 **Verification**:
-- [ ] Pre-commit verification performed (git status compared to touched_files)
-- [ ] Files NOT in touched_files were identified and skipped
-- [ ] ONLY touched_files staged (verified with git diff --cached --name-only)
+- [ ] Pre-commit verification performed (git status compared to manifest section)
+- [ ] Files NOT in manifest section identified and skipped
+- [ ] Conflict detection with other sessions performed
+- [ ] Conflicts resolved (if any)
+- [ ] ONLY manifest files staged (verified with git diff --cached --name-only)
 - [ ] No files from parallel sessions accidentally staged
 - [ ] history.md and bug-fix-queue.md staged
 - [ ] TODO.md staged (if modified)
@@ -929,6 +1122,30 @@ Replace `[pending]` with actual hash:
 - [x] [Brief description] → commit: abc1234, closed #123
 ```
 
+**Update Manifest Status (v2.0)**:
+
+After successful commit, update your section in `.claude-session.md`:
+
+1. Change `**Status**: active` → `**Status**: committed`
+2. Add `**Commit**: abc1234` line to your section
+
+```markdown
+## Session: 0057cc64
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T11:30:00
+**Status**: committed       ← UPDATE this
+**Commit**: abc1234         ← ADD this
+**Project**: planning-is-prompting
+
+### Touched Files
+...
+```
+
+**Manifest Cleanup**:
+- If this is the ONLY section → delete `.claude-session.md` (clean slate)
+- If other active sessions exist → keep manifest (they still need it)
+
 **Amend commit to include updated files:**
 
 ```bash
@@ -953,6 +1170,8 @@ WARN: GitHub issue #123 not found. Continuing without closure.
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
 - [ ] bug-fix-queue.md updated with hash
+- [ ] Manifest section status updated to `committed`
+- [ ] Manifest cleaned up (deleted if only section, kept if others active)
 - [ ] Commit amended with final document state
 - [ ] GitHub issue closed (if applicable)
 - [ ] TodoWrite updated
@@ -983,11 +1202,10 @@ notify(
 
 ### Step 25: Suggest Next Action
 
-**Clear tracking for next bug:**
-
-```python
-touched_files = []
-```
+**Note on manifest state after commit**:
+- Your manifest section was marked `committed` in Step 23
+- If continuing with another bug, a new section will be created
+- If closing session, manifest will be cleaned up in session closure
 
 **Present next action options:**
 
@@ -1009,15 +1227,17 @@ ask_multiple_choice(
 ```
 
 **If "Next bug"**: Loop back to Step 4 (bug selection) in same context.
+- A new manifest section will be created for tracking the next bug's files
 
 **If "Clear context"**: User clears context manually, will use `/plan-bug-fix-mode continue`.
+- Manifest persists on disk; context clear recovery will work
 
 **If "Close session"**: Execute Session Closure (Steps 15-17).
 
 **TodoWrite Update**: Mark Step 25 complete.
 
 **Verification**:
-- [ ] touched_files reset
+- [ ] Manifest state understood (committed section exists)
 - [ ] Next action options presented
 - [ ] User response received
 - [ ] Appropriate follow-up action initiated
@@ -1025,35 +1245,77 @@ ask_multiple_choice(
 
 ---
 
-## File Tracking Mechanism
+## File Tracking Mechanism (v2.0)
 
-**CRITICAL**: Only commit files touched during current bug fix.
+**CRITICAL**: Only commit files tracked in your session's manifest section.
 
 ### Why Selective Staging Matters
 
-- Parallel processes may modify other files in the repo
+- Parallel sessions may modify other files in the repo
 - Accidental commits of unrelated changes cause confusion
 - Clean atomic commits enable easy reversion if needed
+- v2.0 manifest enables conflict detection between sessions
 
 ### Implementation
 
-```python
-# Maintained per-bug (reset between bugs)
-touched_files = []
+Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions:
 
-# After every Edit/Write tool call:
-touched_files.append( file_path )
+```markdown
+# Claude Session Manifest (Multi-Session)
 
-# At commit time - explicit staging:
-for file in set( touched_files ):
-    git add "{file}"
-git add history.md bug-fix-queue.md
+**Format Version**: 2.0
+**Last Updated**: 2026-01-31T10:30:00
 
-# NEVER use:
-# git add .
-# git add -A
-# git add --all
+---
+
+## Session: 0057cc64
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T10:35:00
+**Status**: active
+**Project**: planning-is-prompting
+
+### Touched Files
+
+- 2026-01-31T09:15:00 | src/auth.py
+- 2026-01-31T09:30:00 | src/utils.py
+- 2026-01-31T10:35:00 | src/config.py
+
+---
 ```
+
+**MANDATE**: After every Edit/Write tool call, append to YOUR section's `### Touched Files`:
+
+```markdown
+- [ISO timestamp] | [relative file path]
+```
+
+**At commit time**:
+
+1. Read your session's section from `.claude-session.md`
+2. Extract unique file paths from `### Touched Files`
+3. Compare against `git status` output
+4. Check for conflicts with other active sessions
+5. Stage ONLY files from your section:
+   ```bash
+   git add file1.py
+   git add file2.py
+   git add history.md bug-fix-queue.md
+   ```
+
+**NEVER use**:
+- `git add .`
+- `git add -A`
+- `git add --all`
+
+### Benefits of v2.0 Manifest
+
+| Capability | Previous (touched_files) | v2.0 Manifest |
+|------------|--------------------------|---------------|
+| Context clear survival | ✗ Lost | ✓ Persists on disk |
+| Parallel session detection | ✗ No awareness | ✓ See other sessions |
+| Conflict detection | ✗ None | ✓ Before commit |
+| Unified tracking | ✗ Bug-fix only | ✓ Same as regular sessions |
 
 ---
 
@@ -1152,6 +1414,18 @@ Skip entirely. No bug fix mode active.
 ---
 
 ## Version History
+
+**v1.3** (2026.01.31) - Unified file tracking with v2.0 manifest
+- **Major**: Replaced in-memory `touched_files` with `.claude-session.md` manifest
+- Bug-fix-mode now uses the same manifest as regular sessions (unified tracking)
+- Enables context clear survival for file tracking (manifest persists on disk)
+- Enables conflict detection with parallel sessions (other bugs or regular work)
+- Step 3: Initialize/resume manifest section (same as session-start.md Step 3.5)
+- Step 6: MANDATE to append to manifest after every Edit/Write
+- Steps 12-14: Continue mode now recovers file list from manifest
+- Steps 18, 22-23: Wrap mode reads manifest, checks conflicts, updates status to `committed`
+- Removed all `touched_files = []` resets (manifest persists continuously)
+- Updated File Tracking Mechanism section with v2.0 benefits table
 
 **v1.2** (2026.01.30) - Added preliminary notification
 - New "Preliminary" section before Step 0 for immediate user awareness

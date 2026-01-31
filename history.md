@@ -1,13 +1,48 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 56
+**RESUME HERE**: Session 57
 
-**Current Status**: Multi-session manifest v2.0 implemented
-**Last Session**: Session 55 - Implemented multi-session manifest for parallel session safety
+**Current Status**: Bug-fix-mode integrated with v2.0 manifest
+**Last Session**: Session 56 - Unified bug-fix-mode file tracking with v2.0 manifest
 
 ---
 
 ## January 2026
+
+### 2026.01.31 - Session 56 | Bug-Fix Mode v2.0 Manifest Integration
+
+**Feature**: Integrate bug-fix-mode with v2.0 multi-session manifest for unified file tracking
+
+**Problem**: Bug-fix-mode used in-memory `touched_files` list while regular sessions use `.claude-session.md` manifest. This created gaps:
+- No context clear survival (touched_files lost on context clear)
+- No conflict detection with parallel sessions
+- Dual tracking systems were confusing
+
+**Solution**: Updated bug-fix-mode to use the same `.claude-session.md` manifest as regular sessions.
+
+**Files Modified**:
+- `workflow/bug-fix-mode.md` - Comprehensive update to v1.3:
+  - Step 3: Initialize/resume manifest section (same as session-start.md Step 3.5)
+  - Step 5: Removed touched_files reset (manifest tracks continuously)
+  - Step 6: MANDATE to append to manifest after every Edit/Write
+  - Step 9: Read from manifest for selective staging
+  - Step 11: Removed touched_files reset
+  - Steps 12-14: Continue mode recovers file list from manifest
+  - Step 18: Validate manifest section instead of touched_files
+  - Steps 22-23: Full v2.0 conflict detection, update status to `committed`
+  - Step 25: Removed final touched_files reset
+  - File Tracking Mechanism section: Rewritten with v2.0 benefits table
+  - Parallel Session Safety callout: Updated for manifest
+  - Version History: Added v1.3 entry
+
+**Key Benefits**:
+- Context clear survival: File list persists in manifest
+- Conflict detection: Bug-fix sessions detect overlaps with other sessions
+- Unified tracking: Same mechanism as regular sessions
+
+**Commit**: 2c1055b
+
+---
 
 ### 2026.01.31 - Session 55 | Multi-Session Manifest v2.0
 
