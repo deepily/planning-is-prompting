@@ -40,6 +40,8 @@ Claude Code's "plan to file → clear context → execute" pattern breaks histor
 | **NEVER** delete another session's `## Session:` section | They may still be working |
 | **NEVER** overwrite the entire manifest file | You would destroy all parallel sessions' data |
 | **NEVER** use `git add .` or `git add -A` | You would stage another session's uncommitted files |
+| **NEVER** claim a bug in `### In Progress` owned by another session | Unless explicitly stealing the claim with user approval |
+| **NEVER** modify another session's row in Active Sessions table | Each session manages only its own row |
 
 ### MANDATORY SESSION SCOPING
 
@@ -167,31 +169,65 @@ For WRAP mode:
 
 **Check if `bug-fix-queue.md` exists in project root.**
 
-**If NOT exists**, create from template:
+**If NOT exists**, create from v2.0 template:
 
 ```markdown
 # Bug Fix Queue
 
-## Session: YYYY.MM.DD
-**Owner**: [session_id from get_session_info()]
+**Format Version**: 2.0
+**Last Updated**: [ISO timestamp]
+
+---
+
+### Active Sessions
+
+| Session ID | Started | Last Activity | Status |
+|------------|---------|---------------|--------|
+
+---
 
 ### Queued
+
+(Available for any session to claim)
+
 - [ ] (Add bugs here)
 
+---
+
+### In Progress
+
+(Claimed by a specific session)
+
+---
+
 ### Completed
-(Completed bugs will be moved here)
+
+(Completed bugs with attribution)
+
+---
+
+## Archive: Previous Sessions
+
+(Archived sessions will be moved here)
 ```
 
-**If EXISTS**, read current state and note:
-- Number of queued bugs
-- Number of completed bugs today
-- Current session owner (if any)
+**If EXISTS**, detect format version and handle:
+
+1. **If v2.0** (contains `**Format Version**: 2.0`):
+   - Parse Active Sessions table
+   - Note: queued bugs, in-progress bugs, completed bugs
+   - Check for stale sessions (>24h inactive)
+
+2. **If v1.0** (contains `**Owner**:` but no Format Version):
+   - Auto-migrate to v2.0 format (see Migration section)
+   - Preserve all existing data
 
 **TodoWrite Update**: Mark Step 1 complete.
 
 **Verification**:
 - [ ] bug-fix-queue.md exists in project root
-- [ ] File has valid structure (Session header, Queued section, Completed section)
+- [ ] File has valid v2.0 structure (Active Sessions, Queued, In Progress, Completed)
+- [ ] v1.0 auto-migration performed (if applicable)
 - [ ] TodoWrite updated
 
 ---
@@ -223,7 +259,7 @@ For WRAP mode:
 
 ---
 
-### Step 3: Stamp Session Ownership
+### Step 3: Register Session in Active Sessions Table
 
 **Get current session info:**
 
@@ -231,13 +267,42 @@ For WRAP mode:
 session_info = get_session_info()
 # Returns: {"session_id": "claude.code@plan.deepily.ai#0057cc64", ...}
 session_id = session_info["session_id"]
+# Extract short ID (last 8 characters after #)
+short_id = session_id.split( "#" )[-1]
 ```
 
-**Update `bug-fix-queue.md` header:**
+**Register in Active Sessions table in `bug-fix-queue.md`:**
 
+Check if your session is already in the table:
+
+**If session NOT in table** (new session or first session today):
 ```markdown
-## Session: YYYY.MM.DD
-**Owner**: claude.code@plan.deepily.ai#0057cc64
+### Active Sessions
+
+| Session ID | Started | Last Activity | Status |
+|------------|---------|---------------|--------|
+| 0057cc64 | 2026-02-02T09:00:00 | 2026-02-02T09:00:00 | active |
+```
+
+**If session ALREADY in table** (context clear recovery):
+- Update `Last Activity` timestamp
+- Verify `Status` is `active`
+- Display recovery message
+
+**If OTHER sessions active** (joining parallel session):
+- Append your row to the table
+- Note: "[N] other active session(s) detected"
+
+**Context Clear Recovery Detection**:
+If your session ID is found in Active Sessions table with `active` status, this is a context clear recovery. Display:
+```
+══════════════════════════════════════════════════════════
+Bug Fix Mode - Context Clear Recovery
+══════════════════════════════════════════════════════════
+Session ID: 0057cc64
+Previous Activity: [timestamp from table]
+Resuming: Yes - session state preserved
+══════════════════════════════════════════════════════════
 ```
 
 **Initialize Session Manifest (v2.0)**:
@@ -303,7 +368,9 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
 
 **Verification**:
 - [ ] Session ID retrieved via get_session_info()
-- [ ] Owner stamp written to bug-fix-queue.md
+- [ ] Session registered in Active Sessions table (bug-fix-queue.md)
+- [ ] Context clear recovery detected (if applicable)
+- [ ] Parallel sessions noted (if applicable)
 - [ ] Session manifest initialized/resumed (`.claude-session.md`)
 - [ ] Manifest section created or found for this session
 - [ ] TodoWrite updated
@@ -321,28 +388,40 @@ ask_multiple_choice(
         "header": "Bug",
         "multiSelect": False,
         "options": [
-            # Include queued bugs from bug-fix-queue.md
-            {"label": "Bug 1", "description": "[Brief from queue]"},
-            {"label": "Bug 2", "description": "[Brief from queue]"},
+            # Include queued bugs from bug-fix-queue.md (unclaimed)
+            {"label": "Bug 1", "description": "[Brief from queue] (unclaimed)"},
+            {"label": "Bug 2", "description": "[Brief from queue] (unclaimed)"},
+            # Include in-progress bugs claimed by THIS session (resume)
+            {"label": "Bug 3", "description": "[Brief] (your in-progress)"},
             {"label": "New bug", "description": "Describe ad-hoc bug"},
             {"label": "Close session", "description": "End bug fix mode"}
         ]
     }],
     priority="high",
-    abstract="**Bug fix mode active**\n**Queue status**: [N] bugs queued, [M] completed today"
+    abstract="**Bug fix mode active**\n**Queue status**: [N] queued, [P] in progress, [M] completed today\n**Active sessions**: [count]"
 )
 ```
+
+**Option categories**:
+- **Queued bugs**: Available for claiming (no owner)
+- **Your in-progress bugs**: Bugs you claimed earlier (context clear recovery)
+- **New bug**: Add an ad-hoc bug
+- **Close session**: End bug fix mode
+
+**Note**: Do NOT show bugs in progress by OTHER sessions - those are claimed.
 
 **If user selects "New bug"**: Use `converse()` to get bug description.
 
 **If user selects "Close session"**: Jump to Session Closure section.
 
-**Otherwise**: Proceed to Per-Bug Fix Cycle.
+**If user selects a queued bug**: Proceed to claim and fix (Step 5).
+
+**If user selects their in-progress bug**: Resume work (skip claiming in Step 5).
 
 **TodoWrite Update**: Mark Step 4 complete, add bug fix cycle items.
 
 **Verification**:
-- [ ] ask_multiple_choice sent with current queue
+- [ ] ask_multiple_choice sent with current queue (excluding other sessions' in-progress)
 - [ ] User response received
 - [ ] Next action determined (fix bug / add new bug / close session)
 - [ ] TodoWrite updated
@@ -353,14 +432,17 @@ ask_multiple_choice(
 
 **MUST be executed for each bug. Follow all steps in order.**
 
-### Step 5: Receive and Register Bug
+### Step 5: Receive, Register, and Claim Bug
 
-**If bug is from queue**: Already registered, proceed.
+**Step 5a: Register bug (if new)**
 
-**If bug is ad-hoc**: Add to queue:
+**If bug is from queue**: Already registered, proceed to claiming.
+
+**If bug is ad-hoc**: Add to Queued section:
 
 ```markdown
 ### Queued
+
 - [ ] [Brief description] (ad-hoc)
 ```
 
@@ -370,19 +452,56 @@ ask_multiple_choice(
 gh issue view #N --json title,body,labels
 ```
 
-Add to queue with reference:
+Add to Queued section with reference:
 
 ```markdown
 ### Queued
-- [ ] [Title from GitHub] (GitHub: org/repo#N)
+
+- [ ] [Title from GitHub] (GitHub: #N)
 ```
+
+**Step 5b: Claim bug (move to In Progress)**
+
+Before working on a bug, you MUST claim it by moving it from Queued to In Progress with your ownership tag.
+
+**Claiming format**:
+```markdown
+### In Progress
+
+- [ ] [Brief description] (GitHub: #N) | Owner: 0057cc64 | Since: 09:15:00
+```
+
+**If bug is already claimed by another session**:
+
+Check the In Progress section. If the bug you want is already claimed:
+
+```python
+ask_multiple_choice(
+    questions=[{
+        "question": "This bug is claimed by another session. What would you like to do?",
+        "header": "Claim",
+        "multiSelect": False,
+        "options": [
+            {"label": "Steal claim", "description": "Take ownership (other session may have stalled)"},
+            {"label": "Pick different bug", "description": "Choose another bug from the queue"},
+            {"label": "Cancel", "description": "Exit bug fix mode"}
+        ]
+    }],
+    priority="high",
+    abstract="**Bug**: [description]\n**Current owner**: [other_session_id]\n**Claimed since**: [timestamp]"
+)
+```
+
+**If "Steal claim"**: Update the Owner tag to your session ID. The other session will detect this if it tries to commit.
 
 **Note**: File tracking continues in your manifest section (`.claude-session.md`). All files modified during bug-fix-mode are tracked continuously - no reset needed between bugs. The manifest section captures all modifications for the entire session.
 
 **TodoWrite Update**: Add items for current bug fix.
 
 **Verification**:
-- [ ] Bug added to queue (if not already present)
+- [ ] Bug added to Queued (if new)
+- [ ] Bug claimed: moved from Queued to In Progress with Owner tag
+- [ ] No ownership conflict (or conflict resolved)
 - [ ] GitHub issue details fetched (if applicable)
 - [ ] Manifest section active (tracking continues)
 - [ ] TodoWrite updated with bug-specific items
@@ -587,19 +706,36 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 
 ### Step 10: Update Queue
 
-**Mark bug as completed in bug-fix-queue.md:**
+**Move bug from In Progress to Completed in bug-fix-queue.md:**
 
-Move from Queued to Completed:
+Remove from In Progress:
+```markdown
+### In Progress
 
+(Bug entry removed)
+```
+
+Add to Completed with attribution:
 ```markdown
 ### Completed
-- [x] [Brief description] → commit: abc1234, closed #123
+
+- [x] [Brief description] -> commit: abc1234 | By: 0057cc64 | Closed: #123
 ```
+
+**Attribution format**:
+- `-> commit: [hash]` - The commit that fixed this bug
+- `| By: [session_id]` - Which session completed the fix
+- `| Closed: #N` - GitHub issue closed (if applicable)
+
+**Update Active Sessions table**:
+Update your row's `Last Activity` timestamp.
 
 **TodoWrite Update**: Mark queue update complete.
 
 **Verification**:
-- [ ] Bug moved from Queued to Completed
+- [ ] Bug removed from In Progress section
+- [ ] Bug added to Completed with full attribution
+- [ ] Active Sessions Last Activity updated
 - [ ] Commit hash recorded
 - [ ] GitHub issue reference included (if applicable)
 - [ ] TodoWrite updated
@@ -772,36 +908,85 @@ ask_multiple_choice(
 
 ---
 
-### Step 16: Archive Completed Bugs
+### Step 16: Archive Completed Bugs and Update Session Status
+
+**Step 16a: Update your session status in Active Sessions table**
+
+Change your row's Status from `active` to `closed`:
+
+```markdown
+### Active Sessions
+
+| Session ID | Started | Last Activity | Status |
+|------------|---------|---------------|--------|
+| 0057cc64 | 2026-02-02T09:00:00 | 2026-02-02T15:30:00 | closed |
+```
+
+**Step 16b: Check for unclaimed In Progress bugs**
+
+If you have bugs in "In Progress" that you claimed but didn't complete:
+
+```python
+ask_multiple_choice(
+    questions=[{
+        "question": "You have unclaimed bugs in progress. What should happen to them?",
+        "header": "Unclaimed",
+        "multiSelect": False,
+        "options": [
+            {"label": "Release to Queued", "description": "Move back to Queued for another session"},
+            {"label": "Keep claimed", "description": "Leave in In Progress (you'll resume later)"},
+            {"label": "Delete", "description": "Remove from queue entirely"}
+        ]
+    }],
+    priority="high",
+    abstract="**Your unclaimed bugs**:\n- [bug 1]\n- [bug 2]"
+)
+```
+
+**If "Release to Queued"**: Move bugs back to Queued section (remove Owner tag).
+**If "Keep claimed"**: Leave in In Progress (your session stays in table as `closed`).
+**If "Delete"**: Remove from queue entirely.
+
+**Step 16c: Archive completed bugs (optional)**
 
 **Option A - Keep for reference:**
 
 Leave Completed section in bug-fix-queue.md for the day.
 
-**Option B - Clear queue:**
+**Option B - Archive to Previous Sessions:**
 
-Reset bug-fix-queue.md for next session:
+Move your session's completed bugs to the Archive section:
 
 ```markdown
-# Bug Fix Queue
+## Archive: Previous Sessions
 
-## Session: [Next session date]
-**Owner**: [To be claimed]
-
-### Queued
-(Carry over any remaining bugs)
-
-### Completed
-(Empty for new session)
+### 2026.02.02 - Session 0057cc64 (3 fixes)
+- [x] Fix login timeout -> commit: abc1234 | Closed: #123
+- [x] Fix auth token expiry -> commit: def5678
+- [x] Fix pagination -> commit: ghi9012 | Closed: #234
 ```
 
-**User preference determines which option.**
+**Step 16d: Clean up stale sessions**
+
+Check Active Sessions table for sessions with:
+- Status: `active`
+- Last Activity: >24h ago
+
+Mark these as `stale` and optionally release their In Progress bugs:
+
+```markdown
+| a357ab00 | 2026-02-01T08:00:00 | 2026-02-01T10:20:00 | stale |
+```
+
+**User preference determines which options.**
 
 **TodoWrite Update**: Mark archive complete.
 
 **Verification**:
-- [ ] User preference for queue handling obtained
-- [ ] Queue updated accordingly
+- [ ] Your session status updated to `closed` in Active Sessions
+- [ ] Unclaimed In Progress bugs handled (if any)
+- [ ] Completed bugs archived (if user chose Option B)
+- [ ] Stale sessions marked (if any)
 - [ ] Remaining bugs preserved if any
 - [ ] TodoWrite updated
 
@@ -854,10 +1039,11 @@ notify(
 **MUST verify all conditions before proceeding:**
 
 1. **Queue exists**: Check `bug-fix-queue.md` exists in project root
-2. **Session ownership**: Current session owns the queue (compare session ID)
-3. **Manifest section exists**: Check `.claude-session.md` has your session's section
-4. **Files tracked**: Manifest section has files (WARN if empty, offer to continue)
-5. **Current bug identified**: Determine which bug was just fixed
+2. **Session registered**: Your session is in Active Sessions table with `active` status
+3. **Bug claimed**: You have a bug in the In Progress section with your Owner tag
+4. **Manifest section exists**: Check `.claude-session.md` has your session's section
+5. **Files tracked**: Manifest section has files (WARN if empty, offer to continue)
+6. **Current bug identified**: Determine which bug was just fixed (from your In Progress)
 
 **Step 18a: Read Manifest Section**
 
@@ -880,10 +1066,20 @@ notify(
 ```
 FAIL and exit.
 
-**If different session owns queue**:
+**If your session is NOT in Active Sessions table**:
 ```python
 notify(
-    message="This session does not own the bug fix queue.",
+    message="Your session is not registered in the Active Sessions table. Use /plan-bug-fix-mode-start to begin.",
+    notification_type="alert",
+    priority="high"
+)
+```
+FAIL and exit.
+
+**If you have no bugs in In Progress with your Owner tag**:
+```python
+notify(
+    message="You have no claimed bugs in progress. Use /plan-bug-fix-mode-continue to claim a bug first.",
     notification_type="alert",
     priority="high"
 )
@@ -971,20 +1167,33 @@ ask_multiple_choice(
 
 ### Step 20: Update Bug Fix Queue
 
-**Move bug from Queued to Completed in bug-fix-queue.md:**
+**Move bug from In Progress to Completed in bug-fix-queue.md:**
 
+Remove from In Progress (your claimed bug):
+```markdown
+### In Progress
+
+(Your bug entry removed)
+```
+
+Add to Completed with attribution:
 ```markdown
 ### Completed
-- [x] [Brief description] → commit: [pending], closed #123
+
+- [x] [Brief description] -> commit: [pending] | By: [your_session_id] | Closed: #123
 ```
 
 **Note**: Commit hash will be updated in Step 22.
 
+**Also update Active Sessions table**: Update your `Last Activity` timestamp.
+
 **TodoWrite Update**: Mark Step 20 complete.
 
 **Verification**:
-- [ ] Bug moved from Queued to Completed
+- [ ] Bug removed from In Progress section
+- [ ] Bug added to Completed with attribution
 - [ ] Commit hash marked as [pending]
+- [ ] Your session's Last Activity updated
 - [ ] GitHub issue reference included (if applicable)
 - [ ] TodoWrite updated
 
@@ -1413,7 +1622,7 @@ Use manual close when:
 
 ## Integration with Session-End Workflow
 
-### Session Ownership Check
+### Session Participation Check (v2.0)
 
 **Purpose**: Enable parallel Claude sessions without interference.
 
@@ -1421,58 +1630,159 @@ Use manual close when:
 
 1. Check if `bug-fix-queue.md` exists in project root
 2. If exists, get current session ID via `get_session_info()`
-3. Compare current session ID to owner stamp in queue file
+3. Check Active Sessions table for your session ID
 
-**If SAME session** (this session owns bug fix mode):
+**If YOUR session is in Active Sessions table with `active` status:**
 
 ```python
 ask_yes_no(
-    question="Close bug fix session?",
+    question="Close your bug fix session?",
     default="yes",
     priority="high",
-    abstract="**Bug fix mode active**\nThis session owns the bug fix queue.\n\n**Completed**: [N] fixes\n**Remaining**: [M] bugs\n\nClose session and finalize?"
+    abstract="**Bug fix mode active**\nYou are registered in the Active Sessions table.\n\n**Your fixes today**: [N]\n**Your in-progress**: [M]\n**Other active sessions**: [P]\n\nClose your session and finalize?"
 )
 ```
 
-If yes: Execute session closure (Steps 15-17).
-If no: Skip, leave bug fix mode open.
+If yes: Execute session closure (Steps 15-17) - only affects YOUR session.
+If no: Skip, leave your bug fix session open.
 
-**If DIFFERENT session** (another session owns bug fix mode):
+**If YOUR session is NOT in Active Sessions table:**
 
-Skip prompt entirely. Do not interfere with other session's bug fix mode.
+Skip prompt entirely. You're not participating in bug fix mode.
+
+**If YOUR session status is already `closed` or `stale`:**
+
+Skip prompt. Your session was already closed.
 
 **If NO queue file**:
 
 Skip entirely. No bug fix mode active.
 
+**Key difference from v1.0**: Multiple sessions can now be in the Active Sessions table. Session-end only closes YOUR session, not the entire bug fix queue.
+
 ---
 
-## Bug Fix Queue Template
+## Bug Fix Queue v2.0 Format Reference
 
 **Location**: Project root as `bug-fix-queue.md`
 
-**Template**:
+**Format Version**: 2.0 (Parallel-Session-Friendly)
+
+### Complete Template
 
 ```markdown
 # Bug Fix Queue
 
-## Session: YYYY.MM.DD
-**Owner**: [session_id from get_session_info()]
+**Format Version**: 2.0
+**Last Updated**: 2026-02-02T10:30:00
+
+---
+
+### Active Sessions
+
+| Session ID | Started | Last Activity | Status |
+|------------|---------|---------------|--------|
+| 5c8a3081 | 2026-02-02T09:00:00 | 2026-02-02T10:25:00 | active |
+| a357ab00 | 2026-02-02T08:00:00 | 2026-02-02T10:20:00 | active |
+
+---
 
 ### Queued
-- [ ] Brief description (GitHub: org/repo#N if applicable)
-- [ ] Brief description (ad-hoc)
+
+(Available for any session to claim)
+
+- [ ] Fix login timeout (GitHub: #789)
+- [ ] Update error messages (ad-hoc)
+
+---
+
+### In Progress
+
+(Claimed by a specific session)
+
+- [ ] Fix database connection (GitHub: #456) | Owner: 5c8a3081 | Since: 09:15:00
+- [ ] Fix auth token expiry (GitHub: #123) | Owner: a357ab00 | Since: 08:30:00
+
+---
 
 ### Completed
-- [x] Brief description → commit: abc1234, closed #123
-- [x] Brief description → commit: def5678 (ad-hoc, no issue)
+
+- [x] Fix pagination -> commit: def5678 | By: a357ab00 | Closed: #234
+- [x] Fix session timeout -> commit: abc1234 | By: 5c8a3081
+
+---
+
+## Archive: Previous Sessions
+
+### 2026.02.01 - Session a399f98a (3 fixes)
+- [x] Implement multi-session manifest v2.0 -> commit: cddfc9b
+- [x] Integrate bug-fix-mode with v2.0 manifest -> commit: 6bb68f7
+- [x] Strengthen session isolation language -> commit: b592e26
 ```
 
-**Session ownership**: Prevents parallel Claude sessions from interfering with each other's bug fix work.
+### Key Changes from v1.0
+
+| Aspect | v1.0 (Legacy) | v2.0 (Current) |
+|--------|---------------|----------------|
+| Ownership | Single `**Owner**` per queue | Per-bug `Owner:` tags |
+| Sessions | One session owns entire queue | Active Sessions table |
+| Bug states | Queued, Completed | Queued, **In Progress**, Completed |
+| Parallel | Not supported | Multiple sessions work simultaneously |
+| Attribution | None | `By: [session_id]` on completed bugs |
+
+### Session Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Session running or may resume after context clear |
+| `closed` | Session completed and ended normally |
+| `stale` | Auto-detected: >24h inactive with no closure |
+
+### v1.0 → v2.0 Migration
+
+When a v1.0 queue is detected (has `**Owner**:` but no `**Format Version**:`):
+
+1. **Parse v1.0 structure**:
+   - Extract Owner session ID
+   - Parse Queued bugs
+   - Parse Completed bugs
+   - Parse Previous Session blocks
+
+2. **Create v2.0 structure**:
+   - Add Format Version header
+   - Create Active Sessions table with old Owner as first row
+   - Move Queued bugs to Queued section (no ownership)
+   - Completed bugs stay in Completed with `| By: [old_owner]` attribution
+   - Previous Session blocks move to Archive
+
+3. **Migration preserves all data** - nothing is lost
+
+**Detection logic**:
+```
+if "**Format Version**: 2.0" in content:
+    use_v2()
+elif "**Owner**:" in content:
+    migrate_v1_to_v2()
+else:
+    create_fresh_v2()
+```
 
 ---
 
 ## Version History
+
+**v1.4** (2026.02.02) - Parallel-session-friendly bug fix queue (v2.0)
+- **Major**: Redesigned bug-fix-queue.md format for parallel session support
+- New Active Sessions table tracks multiple concurrent sessions
+- Per-bug ownership: bugs are claimed (Queued → In Progress) with Owner tags
+- Attribution on completed bugs: `| By: [session_id]` shows who fixed what
+- Step 1: v2.0 format detection and auto-migration from v1.0
+- Step 3: Renamed to "Register Session" - joins Active Sessions table instead of claiming entire queue
+- Step 5: Added claiming mechanism (Queued → In Progress with ownership conflict detection)
+- Step 10: Updated queue update format with full attribution
+- Step 16: Updated archive logic for Active Sessions status and stale session cleanup
+- New section: v2.0 Queue Format Reference with complete template and migration guide
+- Backward compatible: v1.0 queues auto-migrate to v2.0 preserving all data
 
 **v1.3** (2026.01.31) - Unified file tracking with v2.0 manifest
 - **Major**: Replaced in-memory `touched_files` with `.claude-session.md` manifest

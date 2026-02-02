@@ -1,64 +1,60 @@
 # Bug Fix Queue
 
-## Session: 2026.01.31
-**Owner**: claude.code@plan.deepily.ai#a399f98a
+**Format Version**: 2.0
+**Last Updated**: 2026-02-02T10:30:00
+
+---
+
+### Active Sessions
+
+| Session ID | Started | Last Activity | Status |
+|------------|---------|---------------|--------|
+| c4cb0832 | 2026-02-02T10:00:00 | 2026-02-02T10:30:00 | active |
+
+---
 
 ### Queued
-(No bugs queued)
+
+(Available for any session to claim)
+
+- [ ] (Add bugs here)
+
+---
+
+### In Progress
+
+(Claimed by a specific session)
+
+---
 
 ### Completed
-- [x] Implement multi-session manifest v2.0 for true parallel session support (feature) → commit: cddfc9b
-- [x] Integrate bug-fix-mode with v2.0 manifest for unified file tracking (feature) → commit: 6bb68f7
-- [x] Strengthen session isolation language to prevent cross-session data corruption (bug fix) → commit: b592e26
+
+- [x] Implement parallel-session-friendly bug fix queue v2.0 (feature) -> commit: fa1d837 | By: c4cb0832
 
 ---
 
-## Previous Session: 2026.01.30 (CLOSED)
-**Owner**: claude.code@plan.deepily.ai#a357ab00
-**Status**: Session closed
+## Archive: Previous Sessions
 
-### Completed (2 fixes)
-- [x] Add preliminary notification to bug fix mode (ad-hoc) → commit: ceea907
-- [x] Prohibit fragile attribute access patterns in Code Style (ad-hoc) → commit: 9ce2bcd
+### 2026.01.31 - Session a399f98a (3 fixes)
+- [x] Implement multi-session manifest v2.0 for true parallel session support (feature) -> commit: cddfc9b
+- [x] Integrate bug-fix-mode with v2.0 manifest for unified file tracking (feature) -> commit: 6bb68f7
+- [x] Strengthen session isolation language to prevent cross-session data corruption (bug fix) -> commit: b592e26
 
----
+### 2026.01.30 - Session a357ab00 (2 fixes)
+- [x] Add preliminary notification to bug fix mode (ad-hoc) -> commit: ceea907
+- [x] Prohibit fragile attribute access patterns in Code Style (ad-hoc) -> commit: 9ce2bcd
 
-## Previous Session: 2026.01.28 (CLOSED)
-**Owner**: claude.code@plan.deepily.ai#21522570
-**Status**: Session closed
+### 2026.01.28 - Session 21522570 (2 fixes)
+- [x] Clarify document separation in session-end workflow -> commit: 530aa50
+- [x] Skills Management Workflow Enhancements (expanded discover, user-suggested topics, mode-specific commands) -> commit: bae9f86
 
-### Completed (2 fixes)
-- [x] Clarify document separation in session-end workflow → commit: 530aa50
-- [x] Skills Management Workflow Enhancements (expanded discover, user-suggested topics, mode-specific commands) → commit: bae9f86
+### 2026.01.27 - Session 8ca60a60 (1 feature)
+- [x] Implement persistent TODO.md pattern for cross-session tracking -> commit: 9f0bbf4
 
----
+### 2026.01.25 - Session db2872fc (1 fix)
+- [x] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc) -> commit: 2737bf0
 
-## Previous Session: 2026.01.27 (CLOSED)
-**Owner**: claude.code@plan.deepily.ai#8ca60a60
-
-### Completed (1 feature)
-- [x] Implement persistent TODO.md pattern for cross-session tracking → commit: 9f0bbf4
-
----
-
-## Previous Session: 2026.01.25 (CLOSED)
-**Owner**: claude.code@plan.deepily.ai#db2872fc
-
-### Completed (1 fix)
-- [x] Add suppress_ding parameter documentation to cosa-voice MCP references (ad-hoc) → commit: 2737bf0
-
----
-
-## Previous Session: 2026.01.22 (CLOSED)
-**Owner**: claude.code@plan.deepily.ai#ffd49209
-**Status**: Session closed
-
-### Completed (3 fixes)
+### 2026.01.22 - Session ffd49209 (3 fixes)
 - [x] CLAUDE.md acknowledgment notification uses priority="high", should be "medium" (ad-hoc)
-  - Fixed: Changed final instructions to use `priority: "medium"` for routine startup notification
 - [x] Document/clarify priority level semantics for cosa-voice MCP notifications (ad-hoc)
-  - Fixed: Added audio behavior documentation (alert tone + TTS, ping, silent) to both cosa-voice-integration.md and global/CLAUDE.md
 - [x] Token estimation undercount causes history.md to exceed 25k limit (Lupin repo evidence)
-  - Root cause: word×1.33 underestimates by ~46% for markdown/technical content
-  - Fixed: Switched to chars÷4 estimation, lowered thresholds to 17k/19k
-  - Files: history-management.md, session-end.md, p-is-p-02-documenting-the-implementation.md, global/CLAUDE.md

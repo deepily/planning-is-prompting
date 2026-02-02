@@ -322,10 +322,18 @@ This project follows the session-end ritual defined in planning-is-prompting →
 
 **Key Features**:
 - Atomic commits per bug (only bug-related files staged)
-- Session ownership prevents parallel session interference
-- `bug-fix-queue.md` tracks queued vs completed bugs
+- **Parallel session support** via v2.0 queue format with Active Sessions table
+- Per-bug ownership: bugs are claimed (Queued → In Progress) with Owner tags
+- `bug-fix-queue.md` tracks queued, in-progress, and completed bugs with attribution
 - `history.md` provides persistent memory across context clears
 - GitHub integration (fetch issues, auto-close with `Fixes #N`)
+
+**Queue Format (v2.0)**:
+- Active Sessions table tracks multiple concurrent sessions
+- Queued bugs are available for any session to claim
+- In Progress bugs have `| Owner: [session_id]` tags
+- Completed bugs have `| By: [session_id]` attribution
+- Backward compatible: v1.0 queues auto-migrate to v2.0
 
 **Runtime Artifacts**:
 - `bug-fix-queue.md` - Created in project root when bug fix mode starts

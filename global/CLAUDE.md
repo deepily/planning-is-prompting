@@ -134,7 +134,7 @@ These files are always included in commits even if not in your section:
 - `history.md` - Session documentation
 - `TODO.md` - If modified
 - `CLAUDE.md` - If modified
-- `bug-fix-queue.md` - If bug-fix-mode active
+- `bug-fix-queue.md` - If bug-fix-mode active (v2.0 format with Active Sessions table)
 
 ### Fallback: When Manifest is Missing
 
