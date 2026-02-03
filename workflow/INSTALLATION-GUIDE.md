@@ -63,7 +63,7 @@ Planning is Prompting - Existing Installation Detected
 
 I found existing planning-is-prompting workflows in this project:
 [List detected workflows here, e.g.:]
-✓ Session Management (/plan-session-start, /plan-session-end)
+✓ Session Management (/plan-session-start, /plan-session-checkpoint, /plan-session-end)
 ✓ History Management (/plan-history-management)
 
 Not yet installed:
@@ -245,6 +245,7 @@ Installation Mgmt     plan-install-wizard          v1.1     v1.1       ✓ Curre
                       plan-about                   v1.0     v1.0       ✓ Current
 
 Session Mgmt          plan-session-start           v1.0     v1.0       ✓ Current
+                      plan-session-checkpoint      v1.0     v1.0       ✓ Current
                       plan-session-end             v1.0     v1.0       ✓ Current
 
 History Mgmt          plan-history-management      v1.0     v1.0       ✓ Current
@@ -827,6 +828,72 @@ I need you to install the `/plan-session-start` slash command from the planning-
 
 After installation, invoke the command to show me the current project status: `/plan-session-start`
 ```
+
+---
+
+## Session-Checkpoint Workflow
+
+### What It Does
+
+Mid-session commit that preserves session continuity:
+- Commits intermediate work without triggering full session-end workflow
+- Supports checkpoint before context clear (save work in progress)
+- Keeps session manifest `active` for continued tracking
+- Enables multiple checkpoints within a single session
+- Uses selective staging (v2.0 parallel session safety)
+
+**Canonical Workflow**: planning-is-prompting → workflow/session-checkpoint.md
+
+**Key Difference from Session-End**:
+
+| Aspect | `/plan-session-checkpoint` | `/plan-session-end` |
+|--------|----------------------------|---------------------|
+| Session status | Stays `active` | Changes to `committed` |
+| Manifest | Keeps tracking | Closes or deletes section |
+| Cleanup prompts | None | Archive, backup prompts |
+| Can continue working | Yes | No (session ended) |
+| Use case | Save point | Wrap up session |
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-session-checkpoint` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical session-checkpoint workflow from: planning-is-prompting → workflow/session-checkpoint.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-session-checkpoint.md
+   - Target: .claude/commands/plan-session-checkpoint.md
+   - Keep the filename as-is (plan-session-checkpoint.md)
+
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Update the project root path
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+
+After installation, the command is available as: `/plan-session-checkpoint`
+```
+
+### Usage
+
+Invoke when you want to commit work mid-session:
+- Before context clear
+- After completing a milestone
+- Anytime you want to save progress
+
+```bash
+/plan-session-checkpoint
+```
+
+**Natural language triggers**: "checkpoint this work", "save my progress", "commit before context clear"
 
 ---
 

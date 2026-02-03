@@ -34,7 +34,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - Start working with your new workflows immediately!
 
 **What gets installed** (you choose):
-- ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-end`
+- ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-checkpoint`, `/plan-session-end`
 - ✅ **[B]** History Management: `/plan-history-management`
 - ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`

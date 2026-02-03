@@ -19,6 +19,7 @@ planning-is-prompting/
 │   ├── claude-config-global.md           # Global config template (~/.claude/CLAUDE.md)
 │   ├── claude-config-local.md            # Project config template (<project>/.claude/CLAUDE.md)
 │   ├── session-start.md                  # Session initialization workflows
+│   ├── session-checkpoint.md             # Mid-session commit (preserve continuity)
 │   ├── session-end.md                    # Session wrap-up workflows
 │   ├── history-management.md             # History archival workflows (canonical)
 │   ├── skills-management.md              # Agent Skills lifecycle management
@@ -43,6 +44,7 @@ planning-is-prompting/
 │   ├── plan-bug-fix-mode.md
 │   ├── plan-history-management.md
 │   ├── plan-install-wizard.md
+│   ├── plan-session-checkpoint.md
 │   ├── plan-session-end.md
 │   ├── plan-session-start.md
 │   ├── plan-test-baseline.md

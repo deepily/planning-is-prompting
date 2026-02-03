@@ -414,8 +414,43 @@ notify( "Starting session initialization, loading config and history...", notifi
 | `**Started**` | ISO timestamp when session began |
 | `**Last Activity**` | ISO timestamp of most recent file edit |
 | `**Status**` | `active`, `committed`, or `stale` |
+| `**Checkpoints**` | (Optional) Count of mid-session commits |
 | `**Project**` | Project name from CLAUDE.md |
+| `### Checkpoint N (hash) \| timestamp` | (Optional) Files committed in checkpoint N |
 | `### Touched Files` | List of `- timestamp \| filepath` entries |
+
+**Checkpoint Tracking** (for sessions using `/plan-session-checkpoint`):
+
+When a session uses mid-session checkpoints, the manifest includes:
+- `**Checkpoints**: N` counter tracking number of checkpoints
+- `### Checkpoint N (hash) | timestamp` sections listing files committed in each checkpoint
+
+Example with checkpoints:
+```markdown
+## Session: 5c8a3081
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T16:45:00
+**Status**: active
+**Checkpoints**: 2
+**Project**: planning-is-prompting
+
+### Checkpoint 1 (abc1234) | 2026-01-31T11:30:00
+
+- auth.py
+- utils.py
+
+### Checkpoint 2 (def5678) | 2026-01-31T14:15:00
+
+- database.py
+
+### Touched Files
+
+- 2026-01-31T09:15:00 | auth.py
+- 2026-01-31T09:30:00 | utils.py
+- 2026-01-31T12:00:00 | database.py
+- 2026-01-31T15:00:00 | api.py           ← Not yet committed
+```
 
 **Status Values**:
 

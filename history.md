@@ -2,12 +2,50 @@
 
 **RESUME HERE**: Session 58
 
-**Current Status**: Ready for new session
+**Current Status**: Bug Fix Mode active
 **Last Session**: Session 57 - Parallel-session-friendly bug fix queue v2.0
 
 ---
 
 ## February 2026
+
+### 2026.02.03 - Session 58 | Bug Fix Mode
+
+### Fix 1: Implement Mid-Session Checkpoint Workflow (`/plan-session-checkpoint`)
+
+**Feature**: New workflow for committing work mid-session without triggering full session-end
+
+**Problem**: Users couldn't commit work mid-session without triggering the full session-end workflow. Claude Code's aggressive context clearing makes it important to checkpoint work frequently, but the only options were:
+- `/plan-session-end` - Full session wrap with cleanup, archival prompts (ends session)
+- `/plan-bug-fix-mode-wrap` - Only available within bug-fix-mode context
+
+**Solution**: Created `/plan-session-checkpoint` workflow that:
+- Commits intermediate work without ending the session
+- Follows the bug-fix-mode wrap pattern (selective staging, conflict detection)
+- Keeps session manifest `active` for continued tracking
+- Supports multiple checkpoints within a single session
+- Tracks checkpoints in manifest with `**Checkpoints**: N` counter and dedicated sections
+
+**Files Created**:
+- `workflow/session-checkpoint.md` - Canonical workflow (~400 lines)
+  - 8-step checkpoint process (validate, description, TODO, history, conflicts, commit, manifest, notify)
+  - v2.0 parallel session safety (conflict detection)
+  - Manifest checkpoint tracking format
+  - Auto-generate or custom description option
+- `.claude/commands/plan-session-checkpoint.md` - Slash command wrapper
+
+**Files Modified**:
+- `CLAUDE.md` - Added session-checkpoint to workflow and commands listings
+- `README.md` - Added to Session Management section
+- `workflow/INSTALLATION-GUIDE.md` - Added Session-Checkpoint Workflow section
+- `workflow/session-start.md` - Added checkpoint tracking format to manifest documentation
+
+**Commit**: d55274e
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.02.02 - Session 57 | Bug Fix Mode
 
