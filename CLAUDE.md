@@ -30,6 +30,7 @@ planning-is-prompting/
 │   ├── notification-system.md            # Notification usage patterns
 │   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
 │   ├── todo-management.md                # Persistent TODO.md file management
+│   ├── branch-pr-and-merge.md            # Branch completion, PR, and merge workflow
 │   └── skill-templates/                  # Agent Skill reference templates
 │       ├── testing-skill-template.md     # Template for testing skills
 │       ├── api-skill-template.md         # Template for API skills
@@ -51,7 +52,8 @@ planning-is-prompting/
 │   ├── plan-test-remediation.md
 │   ├── plan-test-harness-update.md
 │   ├── plan-todo.md
-│   └── plan-skills-management.md
+│   ├── plan-skills-management.md
+│   └── plan-branch-pr-and-merge.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -341,6 +343,40 @@ This project follows the session-end ritual defined in planning-is-prompting →
 - `bug-fix-queue.md` - Created in project root when bug fix mode starts
 
 **See**: [Bug Fix Mode](workflow/INSTALLATION-GUIDE.md#bug-fix-mode-workflow) in installation guide for complete usage documentation.
+
+## Branch PR and Merge
+
+**Purpose**: Complete feature branches, create pull requests, and transition to the next development branch.
+
+**Entry Point**: `/plan-branch-pr-and-merge`
+
+**Canonical Workflow**: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+**Key Features**:
+- Documentation surface check (README validation against history.md, TODO.md)
+- Branch state audit with uncommitted changes handling
+- Test suite verification (smoke + unit required, integration optional)
+- PR description auto-generation from git log and history.md
+- GitHub CLI integration for PR creation
+- Post-merge sync and branch cleanup
+- Release tagging with version extraction from branch name
+- Next development branch creation with version increment
+
+**Workflow Steps** (12 total):
+1. Documentation surface check (README vs history.md/TODO.md)
+2. Branch state audit
+3. Test verification
+4. Outstanding work review
+5. PR description generation
+6. Create pull request
+7. Push branch (if needed)
+8. Wait for PR merge
+9. Post-merge sync
+10. Branch cleanup
+11. Release tagging (optional)
+12. Create next development branch
+
+**See**: [Branch PR and Merge](workflow/INSTALLATION-GUIDE.md#branch-pr-and-merge-workflow) in installation guide for complete usage documentation.
 
 ## References
 

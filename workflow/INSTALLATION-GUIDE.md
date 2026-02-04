@@ -1020,6 +1020,143 @@ When `/plan-session-end` runs:
 
 ---
 
+## Branch PR and Merge Workflow
+
+### What It Does
+
+Complete feature branch lifecycle workflow:
+- Documentation surface check (README validation against history.md, TODO.md, bug-fix-queue.md)
+- Branch state audit with uncommitted changes handling
+- Test suite verification (smoke + unit required, integration optional)
+- PR description auto-generation from git log and history.md
+- GitHub CLI integration for PR creation
+- Post-merge sync and branch cleanup
+- Release tagging with version extraction from branch name
+- Next development branch creation with version increment
+
+**Canonical Workflow**: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+**Slash Command**: `/plan-branch-pr-and-merge`
+
+### Workflow Steps (12 Total)
+
+| Step | Purpose |
+|------|---------|
+| 0.5 | Documentation surface check (README vs history/TODO) |
+| 1 | Branch state audit |
+| 1.5 | Test suite verification |
+| 2 | Outstanding work review |
+| 3 | PR description generation |
+| 4 | Create pull request |
+| 5 | Push branch (if needed) |
+| 6 | Wait for PR merge |
+| 7 | Post-merge sync |
+| 8 | Branch cleanup |
+| 9 | Release tagging (optional) |
+| 10 | Create next development branch |
+
+### Install as Slash Command
+
+**Option 1: Use Installation Wizard** (Recommended)
+
+Run `/plan-install-wizard` and select the Branch PR and Merge workflow from the catalog.
+
+**Option 2: Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-branch-pr-and-merge` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-branch-pr-and-merge.md
+   - Target: .claude/commands/plan-branch-pr-and-merge.md
+   - Keep the filename as-is (plan-branch-pr-and-merge.md)
+
+3. Customize the slash command for this project:
+   - Replace `[PLAN]` with this project's [SHORT_PROJECT_PREFIX]
+   - Replace the planning-is-prompting history.md path with this project's history.md location
+   - Replace the planning-is-prompting TODO.md path with this project's TODO.md location
+   - Replace the planning-is-prompting README.md path with this project's README.md location
+   - Configure base branch (usually `main` or `master`)
+   - Configure branch naming pattern (e.g., `wip-v{version}-{date}-{description}`)
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+   - Where is TODO.md located? (provide absolute path)
+   - Where is README.md located? (provide absolute path)
+   - What is the base branch? (usually `main`)
+   - What branch naming pattern do you use?
+
+After installation, test it: `/plan-branch-pr-and-merge`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **History.md location** - Full path to history.md file
+
+3. **TODO.md location** - Full path to TODO.md file
+
+4. **README.md location** - Full path to README.md file
+
+5. **Base branch** - Usually `main` or `master`
+
+6. **Branch naming pattern** - Your project's convention (e.g., `wip-v{version}-{date}-{description}`)
+
+### Usage
+
+```bash
+# Complete feature branch workflow
+/plan-branch-pr-and-merge
+```
+
+The workflow will:
+1. Check README for missing features from history.md/TODO.md
+2. Verify branch state and run tests
+3. Generate PR description from git log and history
+4. Create PR via GitHub CLI
+5. Wait for you to merge in GitHub
+6. Sync, cleanup, tag, and create next branch
+
+### Key Features
+
+**Documentation Surface Check**: Scans history.md, TODO.md, and bug-fix-queue.md for major features that should be mentioned in README before creating the PR.
+
+**Test Verification**: Smoke and unit tests must pass 100% before PR. Integration tests are optional.
+
+**PR Auto-Generation**: Generates comprehensive PR description from:
+- Git commit log (`git log main..HEAD`)
+- Session entries from history.md
+- Change statistics (`git diff --stat`)
+- Branch name parsing for version/purpose
+
+**Release Tagging**: Extracts version from branch name (e.g., `wip-v0.1.1-...` → `v0.1.1`) and creates tag.
+
+**Next Branch Creation**: Auto-generates next branch name with incremented version and today's date.
+
+### Prerequisites
+
+- GitHub CLI (`gh`) installed and authenticated
+- Git repository with remote configured
+- Feature branch (not on main/master)
+
+### Integration with Session-End
+
+The session-end workflow (Step 4.6) can optionally offer branch completion:
+- "Continue on this branch" (default)
+- "Wrap up branch (create PR)" → invokes this workflow
+
+---
+
 ## Backup Workflow
 
 ### What It Does

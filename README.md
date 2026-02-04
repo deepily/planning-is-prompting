@@ -155,6 +155,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
+- [**branch-pr-and-merge.md**](workflow/branch-pr-and-merge.md) - Branch completion, PR creation, and merge workflow
 - [**cosa-voice-integration.md**](workflow/cosa-voice-integration.md) - cosa-voice MCP server integration (v0.2.0), voice I/O tools, AskUserQuestion-compatible format
 
 **Notification System**: Uses cosa-voice MCP server (no script installation required)
