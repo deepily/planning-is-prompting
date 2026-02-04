@@ -300,6 +300,34 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Git Workflows (Optional)
+
+```json
+{
+  "id": "branch-pr-and-merge",
+  "name": "Branch PR and Merge",
+  "description": "Complete feature branches, create PRs, and transition to next development branch",
+  "category": "git",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-branch-pr-and-merge",
+      "description": "Full branch completion workflow with PR creation and cleanup"
+    }
+  ],
+  "dependencies": {
+    "files": ["history.md"],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": ["git", "gh"]
+  },
+  "creates": [
+    ".claude/commands/plan-branch-pr-and-merge.md"
+  ],
+  "notes": "Requires GitHub CLI (gh) for PR creation. Includes documentation surface check, test verification, and post-merge cleanup."
+}
+```
+
 ### Utility Workflows (Optional)
 
 ```json
@@ -962,24 +990,36 @@ Available Workflows:
           intent-based activation. Skills live in .claude/skills/
 
 ┌─────────────────────────────────────────────────────────┐
+│ GIT WORKFLOWS (Optional - branch management)           │
+└─────────────────────────────────────────────────────────┘
+
+[H] Branch PR and Merge
+    Complete feature branches, create PRs, and transition to next branch
+    Commands:
+      • /plan-branch-pr-and-merge - Full branch completion workflow
+    Dependencies: Session Management, git, gh (GitHub CLI)
+    Note: Includes documentation surface check, test verification,
+          and post-merge cleanup with release tagging
+
+┌─────────────────────────────────────────────────────────┐
 │ UTILITY WORKFLOWS (Optional - meta tools)              │
 └─────────────────────────────────────────────────────────┘
 
-[H] Installation Wizard
+[I] Installation Wizard
     Install this wizard as a slash command for convenient future use
     Commands:
       • /plan-install-wizard - Run wizard to add/update workflows
     Dependencies: None
     Note: Makes wizard available as /plan-install-wizard command
 
-[I] Workflow About
+[J] Workflow About
     View installed workflows with version comparison
     Commands:
       • /plan-about - Show all installed workflows and versions
     Dependencies: None
     Note: Useful for checking installation status and updates
 
-[J] Uninstall Wizard
+[K] Uninstall Wizard
     Install uninstall wizard for removing workflows later
     Commands:
       • /plan-uninstall-wizard - Run wizard to remove workflows
@@ -990,8 +1030,8 @@ Available Workflows:
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I + J)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J + K)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -1038,8 +1078,8 @@ ask_multiple_choice( questions=[
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I + J + K (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I, J, K")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -1123,17 +1163,68 @@ ask_multiple_choice( questions=[
    - Documentation projects: Validates documentation structure
    - No validation needed (always available)
 
-   **Installation Wizard (G)**:
+   **Skills Management (G)**:
+   - No dependencies
+   - Creates slash command for skills lifecycle management
+   - No validation needed (always available)
+
+   **Branch PR and Merge (H)**:
+   - Requires: Session Management (A) must also be selected
+   - Requires: git (check with `which git`)
+   - Requires: gh CLI (check with `which gh`)
+   - If user selected H but not A, warn:
+     ```
+     ⚠️ Dependency Warning
+
+     Branch PR and Merge (H) depends on Session Management (A).
+     Would you like me to add Session Management to your selection?
+
+     [1] Yes, add Session Management (A)
+     [2] No, remove Branch PR and Merge (H) from selection
+     [3] Cancel installation
+     ```
+   - If git not found:
+     ```
+     ⚠️ Missing Dependency
+
+     Branch PR and Merge requires git, which is not installed.
+
+     Install git:
+     - Ubuntu/Debian: sudo apt install git
+     - macOS: xcode-select --install
+     - Other: Check your package manager
+
+     Would you like to:
+     [1] Remove Branch PR and Merge from selection
+     [2] Cancel installation (I'll install git first)
+     ```
+   - If gh not found:
+     ```
+     ⚠️ Missing Dependency
+
+     Branch PR and Merge requires GitHub CLI (gh) for PR creation.
+
+     Install gh:
+     - Ubuntu/Debian: See https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+     - macOS: brew install gh
+     - Other: See https://cli.github.com/
+
+     Would you like to:
+     [1] Remove Branch PR and Merge from selection
+     [2] Cancel installation (I'll install gh first)
+     ```
+
+   **Installation Wizard (I)**:
    - No dependencies
    - Creates slash command for running wizard in future
    - No validation needed (always available)
 
-   **Workflow About (H)**:
+   **Workflow About (J)**:
    - No dependencies
    - Creates slash command for viewing installed workflows
    - No validation needed (always available)
 
-   **Uninstall Wizard (I)**:
+   **Uninstall Wizard (K)**:
    - No dependencies
    - Creates slash command for removing workflows later
    - No validation needed (always available)

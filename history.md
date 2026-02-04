@@ -1,13 +1,48 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 59
+**RESUME HERE**: Session 60
 
-**Current Status**: In progress - Branch PR and merge workflow
-**Last Session**: Session 59 - Branch PR and Merge workflow implementation
+**Current Status**: Bug Fix Mode active
+**Last Session**: Session 60 - Bug Fix Mode
 
 ---
 
 ## February 2026
+
+### 2026.02.04 - Session 60 | Bug Fix Mode
+
+### Fixes
+
+**Fix 1-5**: Branch PR and Merge Workflow Gaps + Notification Safety
+
+- **Bug 1**: Branch PR and Merge workflow missing from installation wizard catalog
+  - Added JSON metadata block with `branch-pr-and-merge` workflow to `installation-wizard.md`
+  - Added menu entry `[H] Branch PR and Merge` with dependency validation (git, gh required)
+  - Re-lettered subsequent entries (I, J, K)
+
+- **Bug 2**: Branch deletion `default="yes"` is unsafe (destructive action)
+  - Changed to `default="no"` in `branch-pr-and-merge.md` Step 8
+
+- **Bug 3**: Blocking tools missing `priority="high"` mandate
+  - Updated global `~/.claude/CLAUDE.md` - added CRITICAL mandate and updated all examples
+  - Updated `workflow/cosa-voice-integration.md` - added mandate and updated examples
+  - Updated `workflow/branch-pr-and-merge.md` - all `ask_yes_no` and `ask_multiple_choice` calls now include `priority="high"`
+  - **Discovery**: `ask_yes_no()` MCP tool doesn't accept `priority` parameter (only `converse()` and `ask_multiple_choice()` do)
+
+- **Bug 4**: Release tag creation `default="yes"` is unsafe
+  - Changed to `default="no"` in `branch-pr-and-merge.md` Step 9
+
+- **Bug 5**: New branch name prompt timeout too short
+  - Doubled from default 300s to 600s (10 min) in `branch-pr-and-merge.md` Step 10
+
+- **Files**: workflow/installation-wizard.md, workflow/branch-pr-and-merge.md, workflow/cosa-voice-integration.md, ~/.claude/CLAUDE.md
+- **Tests**: Documentation validation PASS
+- **Commit**: [pending]
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.02.04 - Session 59 | Feature Implementation
 

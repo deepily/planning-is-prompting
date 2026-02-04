@@ -444,7 +444,7 @@ ask_multiple_choice(
             {"label": "Cancel", "description": "Abort - I'll set up tests first"}
         ]
     }],
-    priority="medium",
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Searched locations**:\n- src/tests/smoke/\n- src/tests/unit/\n- tests/\n\n**Recommendation**: For documentation-only repos, skip tests or run doc validation."
 )
 ```
@@ -558,6 +558,7 @@ ask_yes_no(
     question="Smoke and unit tests passed. Run integration tests?",
     default="no",
     timeout_seconds=60,
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Smoke tests**: [N]/[N] ✓\n**Unit tests**: [N]/[N] ✓\n\nIntegration tests are optional and may require external services."
 )
 ```
@@ -612,7 +613,7 @@ ask_multiple_choice(
             {"label": "Cancel", "description": "I'll clean up TODOs first"}
         ]
     }],
-    priority="medium",
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Pending items**:\n- [ ] Item 1\n- [ ] Item 2\n..."
 )
 ```
@@ -690,7 +691,7 @@ ask_multiple_choice(
             {"label": "Preview", "description": "Show me the full description"}
         ]
     }],
-    priority="medium",
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Title**: [generated title]\n**Summary**: [first 100 chars]...\n**Changes**: [N] items listed"
 )
 ```
@@ -843,6 +844,7 @@ ask_yes_no(
     question="Has the PR been merged in GitHub?",
     default="no",
     timeout_seconds=600,  # 10 min - user may take time reviewing
+    priority="high",  # MANDATORY for blocking tools
     abstract="**PR**: #[N]\n**URL**: [URL]\n\nConfirm when merge is complete."
 )
 ```
@@ -911,8 +913,9 @@ Latest: [hash] [message]
 ```python
 ask_yes_no(
     question="Delete the merged branch?",
-    default="yes",
+    default="no",
     timeout_seconds=60,
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Branch**: [branch-name]\n\nBranch has been merged. Safe to delete, but keeping it preserves history reference."
 )
 ```
@@ -976,8 +979,9 @@ Parse branch name for version pattern:
 ```python
 ask_yes_no(
     question="Create release tag?",
-    default="yes",
+    default="no",
     timeout_seconds=60,
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Suggested tag**: [version]\n(extracted from branch name: [branch-name])"
 )
 ```
@@ -1044,7 +1048,8 @@ ask_multiple_choice(
             {"label": "Stay on main", "description": "Don't create a new branch yet"}
         ]
     }],
-    priority="medium",
+    timeout_seconds=600,  # 10 min - user may need time to consider branch naming
+    priority="high",  # MANDATORY for blocking tools
     abstract="**Old branch**: [old-branch-name]\n**Suggested**: [new-branch-name]"
 )
 ```

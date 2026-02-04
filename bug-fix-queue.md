@@ -1,7 +1,7 @@
 # Bug Fix Queue
 
 **Format Version**: 2.0
-**Last Updated**: 2026-02-03T10:00:00
+**Last Updated**: 2026-02-04T11:00:00
 
 ---
 
@@ -9,6 +9,7 @@
 
 | Session ID | Started | Last Activity | Status |
 |------------|---------|---------------|--------|
+| f428d212 | 2026-02-04T11:00:00 | 2026-02-04T12:00:00 | active |
 | 2f9bb363 | 2026-02-03T09:00:00 | 2026-02-03T10:00:00 | closed |
 | c4cb0832 | 2026-02-02T10:00:00 | 2026-02-02T11:15:00 | closed |
 
@@ -18,7 +19,7 @@
 
 (Available for any session to claim)
 
-- [ ] (Add bugs here)
+(none)
 
 ---
 
@@ -26,10 +27,17 @@
 
 (Claimed by a specific session)
 
+(none)
+
 ---
 
 ### Completed
 
+- [x] Bug 5: New branch name prompt timeout too short - doubled from 5 to 10 min (branch-pr-and-merge.md) | By: f428d212
+- [x] Bug 4: Release tag creation default should be "no" (branch-pr-and-merge.md) | By: f428d212
+- [x] Bug 3: Blocking tools missing priority="high" mandate (global CLAUDE.md, cosa-voice-integration.md, branch-pr-and-merge.md) | By: f428d212
+- [x] Bug 2: Branch deletion default="yes" is unsafe (branch-pr-and-merge.md) | By: f428d212
+- [x] Bug 1: Branch PR and Merge workflow missing from installation wizard catalog (installation-wizard.md) | By: f428d212
 - [x] Implement mid-session checkpoint workflow (/plan-session-checkpoint) (feature) -> commit: d55274e | By: 2f9bb363
 - [x] Implement parallel-session-friendly bug fix queue v2.0 (feature) -> commit: 58960d5 | By: c4cb0832
 

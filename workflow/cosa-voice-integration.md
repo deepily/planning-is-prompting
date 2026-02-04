@@ -203,6 +203,8 @@ notify( "Task complete", suppress_ding=True )
 
 Use blocking tools when you need user input before proceeding. All blocking tools support timeout with configurable defaults.
 
+**CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user. Without `high` priority, the notification will not be spoken aloud and may time out before the user notices.
+
 ### ask_yes_no()
 
 For simple binary yes/no decisions.
@@ -214,6 +216,7 @@ For simple binary yes/no decisions.
 | `question` | string | Yes | The yes/no question to ask |
 | `default` | string | No | Default on timeout: `yes` or `no` (default: `no`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
 **Example**:
@@ -223,7 +226,8 @@ For simple binary yes/no decisions.
 response = ask_yes_no(
     question="Commit these 5 files to the repository?",
     default="no",
-    timeout_seconds=300
+    timeout_seconds=300,
+    priority="high"  # MANDATORY for blocking tools
 )
 # Returns: {"answer": "yes"} or {"answer": "no"}
 ```
@@ -240,7 +244,7 @@ For open-ended questions requiring text or voice response.
 | `response_type` | string | No | `open_ended` or `yes_no` (default: `open_ended`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 600) |
 | `response_default` | string | No | Default response on timeout |
-| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `title` | string | No | Short title for the notification |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
@@ -252,6 +256,7 @@ response = converse(
     message="Which database migration approach should I use?",
     response_type="open_ended",
     timeout_seconds=600,
+    priority="high",  # MANDATORY for blocking tools
     response_default="defer to next session"
 )
 # Returns: {"response": "Use the incremental migration with rollback support"}
@@ -267,7 +272,7 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 |-----------|------|----------|-------------|
 | `questions` | array | Yes | Array of question objects (same format as AskUserQuestion) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
-| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `title` | string | No | Short title for the notification |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
@@ -290,19 +295,22 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 
 ```python
 # Session-end commit decision
-response = ask_multiple_choice( questions=[
-    {
-        "question": "How would you like to proceed with the commit?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
-            {"label": "Commit and push", "description": "Create commit and push to remote"},
-            {"label": "Modify message", "description": "Edit the commit message before committing"},
-            {"label": "Cancel", "description": "Skip commit for now"}
-        ]
-    }
-] )
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "How would you like to proceed with the commit?",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
+                {"label": "Commit and push", "description": "Create commit and push to remote"},
+                {"label": "Modify message", "description": "Edit the commit message before committing"},
+                {"label": "Cancel", "description": "Skip commit for now"}
+            ]
+        }
+    ],
+    priority="high"  # MANDATORY for blocking tools
+)
 # Returns: {"answers": {"0": "Commit and push"}}
 ```
 
@@ -310,18 +318,21 @@ response = ask_multiple_choice( questions=[
 
 ```python
 # History management decision
-response = ask_multiple_choice( questions=[
-    {
-        "question": "History approaching token limit. How should we proceed?",
-        "header": "Archive",
-        "multiSelect": False,
-        "options": [
-            {"label": "Archive now", "description": "Create archive immediately"},
-            {"label": "Next session", "description": "Defer archival to next session"},
-            {"label": "Show details", "description": "Display token count and velocity analysis"}
-        ]
-    }
-] )
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "History approaching token limit. How should we proceed?",
+            "header": "Archive",
+            "multiSelect": False,
+            "options": [
+                {"label": "Archive now", "description": "Create archive immediately"},
+                {"label": "Next session", "description": "Defer archival to next session"},
+                {"label": "Show details", "description": "Display token count and velocity analysis"}
+            ]
+        }
+    ],
+    priority="high"  # MANDATORY for blocking tools
+)
 ```
 
 ---
