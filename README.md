@@ -1,11 +1,41 @@
 # Planning is Prompting
-When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt! 
+When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt!
 
 Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation with Claude Code](https://medium.com/@ricardo.felipe.ruiz/faster-better-morer-how-to-5-10x-your-code-generation-with-claude-code-81bc79619c3f)
 
 <p align="center">
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
 </p>
+
+## What's New in v0.1.1
+
+### Major Features
+
+- **Bug Fix Mode** (`/plan-bug-fix-mode`) - Iterative bug fixing workflow with context-clear survival, incremental commits, and GitHub issue integration. Supports `start`, `continue`, `wrap`, and `close` modes.
+
+- **Parallel Session Safety v2.0** - Multi-session manifest (`.claude-session.md`) enabling multiple Claude Code sessions to work on the same repository simultaneously without file conflicts. Includes conflict detection and resolution prompts.
+
+- **Mid-Session Checkpoint** (`/plan-session-checkpoint`) - Commit work mid-session without triggering full session-end. Preserves session continuity for continued work after context clears.
+
+- **Skills Management** (`/plan-skills-management`) - Agent Skills lifecycle management: discover documentation candidates, create skills from docs, edit existing skills, audit health, and delete obsolete skills.
+
+- **Branch PR and Merge** (`/plan-branch-pr-and-merge`) - Complete feature branch lifecycle: documentation surface check, test verification, PR auto-generation, post-merge sync, release tagging, and next branch creation.
+
+### Infrastructure
+
+- **cosa-voice MCP Integration** - Migrated all notifications from bash scripts to native MCP tools (`notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `converse()`). No script installation required.
+
+- **Persistent TODO.md** - Cross-session task tracking that survives history archival. Single source of truth for pending work.
+
+- **Document Separation Rules** - Clear guidance on what goes in history.md (accomplishments) vs TODO.md (pending) vs implementation docs (phase tracking).
+
+### Quality of Life
+
+- **Token Estimation Fix** - Accurate history.md size tracking using chars÷4 instead of word×1.33
+- **Dynamic TODO Presentation** - Session-start workflow now presents pending TODOs interactively
+- **Test Infrastructure Detection** - Workflows gracefully handle repos without test suites
+
+---
 
 ## Overview
 
