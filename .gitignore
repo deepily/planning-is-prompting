@@ -45,3 +45,6 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude session manifest (parallel session tracking)
+.claude-session.md

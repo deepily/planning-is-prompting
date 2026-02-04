@@ -1,11 +1,41 @@
 # Planning is Prompting
-When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt! 
+When it comes to driving agentic coding assistants like Claude Code, the plan is the prompt!
 
 Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation with Claude Code](https://medium.com/@ricardo.felipe.ruiz/faster-better-morer-how-to-5-10x-your-code-generation-with-claude-code-81bc79619c3f)
 
 <p align="center">
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
 </p>
+
+## What's New in v0.1.1
+
+### Major Features
+
+- **Bug Fix Mode** (`/plan-bug-fix-mode`) - Iterative bug fixing workflow with context-clear survival, incremental commits, and GitHub issue integration. Supports `start`, `continue`, `wrap`, and `close` modes.
+
+- **Parallel Session Safety v2.0** - Multi-session manifest (`.claude-session.md`) enabling multiple Claude Code sessions to work on the same repository simultaneously without file conflicts. Includes conflict detection and resolution prompts.
+
+- **Mid-Session Checkpoint** (`/plan-session-checkpoint`) - Commit work mid-session without triggering full session-end. Preserves session continuity for continued work after context clears.
+
+- **Skills Management** (`/plan-skills-management`) - Agent Skills lifecycle management: discover documentation candidates, create skills from docs, edit existing skills, audit health, and delete obsolete skills.
+
+- **Branch PR and Merge** (`/plan-branch-pr-and-merge`) - Complete feature branch lifecycle: documentation surface check, test verification, PR auto-generation, post-merge sync, release tagging, and next branch creation.
+
+### Infrastructure
+
+- **cosa-voice MCP Integration** - Migrated all notifications from bash scripts to native MCP tools (`notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `converse()`). No script installation required.
+
+- **Persistent TODO.md** - Cross-session task tracking that survives history archival. Single source of truth for pending work.
+
+- **Document Separation Rules** - Clear guidance on what goes in history.md (accomplishments) vs TODO.md (pending) vs implementation docs (phase tracking).
+
+### Quality of Life
+
+- **Token Estimation Fix** - Accurate history.md size tracking using chars÷4 instead of word×1.33
+- **Dynamic TODO Presentation** - Session-start workflow now presents pending TODOs interactively
+- **Test Infrastructure Detection** - Workflows gracefully handle repos without test suites
+
+---
 
 ## Overview
 
@@ -34,15 +64,16 @@ The easiest way to install workflows is with the **interactive installation wiza
 - Start working with your new workflows immediately!
 
 **What gets installed** (you choose):
-- ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-end`
+- ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-checkpoint`, `/plan-session-end`
 - ✅ **[B]** History Management: `/plan-history-management`
 - ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
 - ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
-- ✅ **[F]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
-- ✅ **[G]** Uninstall Wizard: `/plan-uninstall-wizard` (removes installed workflows when no longer needed)
+- ✅ **[F]** Skills Management: `/plan-skills-management` (discover, create, edit, audit, delete Agent Skills)
+- ✅ **[G]** Installation Wizard: `/plan-install-wizard` (makes wizard available as slash command)
+- ✅ **[H]** Uninstall Wizard: `/plan-uninstall-wizard` (removes installed workflows when no longer needed)
 
-**Get the wizard itself**: You can select option [F] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
+**Get the wizard itself**: You can select option [G] during installation to install `/plan-install-wizard` as a slash command, or the wizard will offer it in Step 7.5 after installing other workflows.
 
 **Adding more workflows later**:
 - **With wizard installed**: Just type `/plan-install-wizard`
@@ -139,9 +170,30 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 **Learn more**: See [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide
 
+### Skills Management
+- [**skills-management.md**](workflow/skills-management.md) - Agent Skills lifecycle management (discover, create, edit, audit, delete)
+- [**skill-templates/**](workflow/skill-templates/) - Reference templates for creating skills (testing, API, generic)
+
+**Quick Usage**:
+```bash
+/plan-skills-management discover  # Find documentation candidates for skills
+/plan-skills-management create    # Build new skill from documentation
+/plan-skills-management audit     # Check skills health against documentation
+```
+
+**Learn more**: See [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide
+
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
-- [**notification-system.md**](workflow/notification-system.md) - Prompts for using the notification system
+- [**branch-pr-and-merge.md**](workflow/branch-pr-and-merge.md) - Branch completion, PR creation, and merge workflow
+- [**cosa-voice-integration.md**](workflow/cosa-voice-integration.md) - cosa-voice MCP server integration (v0.2.0), voice I/O tools, AskUserQuestion-compatible format
+
+**Notification System**: Uses cosa-voice MCP server (no script installation required)
+- `notify()` - Fire-and-forget announcements
+- `ask_yes_no()` / `ask_multiple_choice()` - Blocking decisions
+- `converse()` - Open-ended questions
+
+**Prerequisites**: cosa-voice MCP server installed and configured. See [cosa-voice-integration.md](workflow/cosa-voice-integration.md).
 
 ## Usage
 

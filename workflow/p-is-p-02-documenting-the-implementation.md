@@ -96,8 +96,8 @@ Claude Code has a **25,000 token context window limit**. When a single document 
 
 **Measurement command**:
 ```bash
-# Estimate tokens from word count (multiply by 1.33)
-wc -w document.md | awk '{print int($1 * 1.33) " tokens (estimated)"}'
+# Estimate tokens from character count (divide by 4)
+wc -c document.md | awk '{print int($1 / 4) " tokens (estimated)"}'
 ```
 
 ### Token Budget Strategy
@@ -111,8 +111,8 @@ wc -w document.md | awk '{print int($1 * 1.33) " tokens (estimated)"}'
 
 **Warning thresholds**:
 - 15,000 tokens: Start planning archival
-- 20,000 tokens: Archive immediately
-- 22,000 tokens: Critical - must archive before adding content
+- 17,000 tokens: Archive soon (WARNING)
+- 19,000 tokens: Critical - must archive before adding content
 
 **Total project capacity**: 60,000-100,000 tokens distributed across multiple files (not in a single file!)
 

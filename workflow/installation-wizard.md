@@ -91,6 +91,73 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "bug-fix-mode",
+  "name": "Bug Fix Mode",
+  "description": "Iterative bug fixing with incremental commits and history tracking",
+  "category": "core",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-bug-fix-mode",
+      "description": "Main entry point (defaults to start mode)"
+    },
+    {
+      "name": "/plan-bug-fix-mode-start",
+      "description": "Initialize new bug fix session"
+    },
+    {
+      "name": "/plan-bug-fix-mode-continue",
+      "description": "Resume after context clear"
+    },
+    {
+      "name": "/plan-bug-fix-mode-close",
+      "description": "End bug fix session for the day"
+    }
+  ],
+  "dependencies": {
+    "files": ["history.md"],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": ["git", "gh (optional)"]
+  },
+  "creates": [
+    ".claude/commands/plan-bug-fix-mode.md",
+    ".claude/commands/plan-bug-fix-mode-start.md",
+    ".claude/commands/plan-bug-fix-mode-continue.md",
+    ".claude/commands/plan-bug-fix-mode-close.md",
+    "bug-fix-queue.md (runtime artifact)"
+  ]
+}
+```
+
+```json
+{
+  "id": "todo-management",
+  "name": "TODO Management",
+  "description": "Persistent TODO tracking across sessions with TODO.md file",
+  "category": "core",
+  "recommended": true,
+  "commands": [
+    {
+      "name": "/plan-todo",
+      "description": "Check/create TODO.md, show pending items (modes: add/complete/edit)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-todo.md",
+    "TODO.md (created on first use)"
+  ]
+}
+```
+
 ### Planning Workflows (For Structured Work Planning)
 
 ```json
@@ -202,6 +269,34 @@ This metadata drives the interactive menu generation in Step 2.
     ".claude/commands/plan-test-harness-update.md"
   ],
   "notes": "Workflows adapt to project type: code projects run test suites, documentation projects validate structure"
+}
+```
+
+### Skills Management (Optional)
+
+```json
+{
+  "id": "skills-management",
+  "name": "Skills Management",
+  "description": "Discover, create, edit, audit, and delete Agent Skills for better AI context management",
+  "category": "skills",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-skills-management",
+      "description": "Skills lifecycle management (modes: discover/create/edit/audit/delete)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-skills-management.md"
+  ],
+  "notes": "For repos with complex conditional documentation. Skills live in target repos at .claude/skills/, not in planning-is-prompting."
 }
 ```
 
@@ -621,8 +716,8 @@ Wait for user response. Proceed to Section 0.5.5.
 **Update TodoWrite**: Mark "Configure permissions" as completed
 
 **Send Notification**:
-```bash
-notify-claude "[INSTALL] ✅ Permission setup completed" --type=progress --priority=low
+```python
+notify( "Permission setup completed", notification_type="progress", priority="low" )
 ```
 
 **Error Handling Notes**:
@@ -769,7 +864,7 @@ Ready for fresh installation.
 
 **Send Notification**:
 ```bash
-notify-claude "[INSTALL] ✅ Project state detected - clean installation" --type=progress --priority=low
+notify( "Project state detected - clean installation", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -809,11 +904,20 @@ Available Workflows:
       • /plan-history-management - Manage archival (4 modes)
     Dependencies: Session Management
 
+[C] Bug Fix Mode (Optional)
+    Iterative bug fixing with incremental commits and history tracking
+    Commands:
+      • /plan-bug-fix-mode - Main entry point (defaults to start)
+      • /plan-bug-fix-mode-start - Initialize new bug fix session
+      • /plan-bug-fix-mode-continue - Resume after context clear
+      • /plan-bug-fix-mode-close - End bug fix session for the day
+    Dependencies: Session Management, git, gh (optional)
+
 ┌─────────────────────────────────────────────────────────┐
 │ PLANNING WORKFLOWS (For structured work planning)      │
 └─────────────────────────────────────────────────────────┘
 
-[C] Planning is Prompting Core
+[D] Planning is Prompting Core
     Two-step planning: classify work → document implementation
     Commands:
       • /p-is-p-00-start-here - Entry point & decision matrix
@@ -825,7 +929,7 @@ Available Workflows:
 │ BACKUP WORKFLOWS (Optional)                            │
 └─────────────────────────────────────────────────────────┘
 
-[D] Backup Infrastructure
+[E] Backup Infrastructure
     Automated rsync backup with version checking
     Commands:
       • /plan-backup-check - Version checking
@@ -837,7 +941,7 @@ Available Workflows:
 │ TESTING WORKFLOWS (Optional - for test-driven projects)│
 └─────────────────────────────────────────────────────────┘
 
-[E] Testing Workflows
+[F] Testing Workflows
     Pre-change baseline, post-change remediation, test maintenance
     Commands:
       • /plan-test-baseline - Establish pre-change baseline
@@ -846,24 +950,36 @@ Available Workflows:
     Dependencies: None (adapts to project type)
 
 ┌─────────────────────────────────────────────────────────┐
+│ SKILLS MANAGEMENT (Optional - for complex documentation)│
+└─────────────────────────────────────────────────────────┘
+
+[G] Skills Management
+    Discover, create, edit, audit, and delete Agent Skills
+    Commands:
+      • /plan-skills-management - Skills lifecycle management
+    Dependencies: None
+    Note: For repos with conditional documentation that benefits from
+          intent-based activation. Skills live in .claude/skills/
+
+┌─────────────────────────────────────────────────────────┐
 │ UTILITY WORKFLOWS (Optional - meta tools)              │
 └─────────────────────────────────────────────────────────┘
 
-[F] Installation Wizard
+[H] Installation Wizard
     Install this wizard as a slash command for convenient future use
     Commands:
       • /plan-install-wizard - Run wizard to add/update workflows
     Dependencies: None
     Note: Makes wizard available as /plan-install-wizard command
 
-[G] Workflow About
+[I] Workflow About
     View installed workflows with version comparison
     Commands:
       • /plan-about - Show all installed workflows and versions
     Dependencies: None
     Note: Useful for checking installation status and updates
 
-[H] Uninstall Wizard
+[J] Uninstall Wizard
     Install uninstall wizard for removing workflows later
     Commands:
       • /plan-uninstall-wizard - Run wizard to remove workflows
@@ -874,8 +990,8 @@ Available Workflows:
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -890,9 +1006,21 @@ What would you like to do? [1/2/3/4]
 
 **Update TodoWrite**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
-**Send Notification**:
-```bash
-notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --type=task --priority=high
+**Send Blocking Notification and Await Selection**:
+```python
+ask_multiple_choice( questions=[
+    {
+        "question": "Workflow catalog ready - select bundle to install",
+        "header": "Install",
+        "multiSelect": False,
+        "options": [
+            {"label": "Complete Suite", "description": "All workflows"},
+            {"label": "Core Only", "description": "Essential workflows"},
+            {"label": "Custom", "description": "Choose specific workflows"},
+            {"label": "Cancel", "description": "Exit without installing"}
+        ]
+    }
+] )
 ```
 
 ---
@@ -901,13 +1029,17 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
 
 **Purpose**: Get user's workflow choices and verify dependencies
 
+**Timeout Handling**: If timeout (5 minutes), default to Cancel:
+- Send notification: `notify( "Installation timeout - no changes made", notification_type="alert", priority="low" )`
+- Exit without changes
+
 **Process**:
 
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E + F + G (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -932,10 +1064,41 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
      [3] Cancel installation
      ```
 
-   **Planning is Prompting Core (C)**:
+   **Bug Fix Mode (C)**:
+   - Requires: Session Management (A) must also be selected
+   - Requires: git (check with `which git`)
+   - Optional: gh CLI (check with `which gh`, not required)
+   - If user selected C but not A, warn:
+     ```
+     ⚠️ Dependency Warning
+
+     Bug Fix Mode (C) depends on Session Management (A).
+     Would you like me to add Session Management to your selection?
+
+     [1] Yes, add Session Management (A)
+     [2] No, remove Bug Fix Mode (C) from selection
+     [3] Cancel installation
+     ```
+   - If git not found:
+     ```
+     ⚠️ Missing Dependency
+
+     Bug Fix Mode requires git, which is not installed.
+
+     Install git:
+     - Ubuntu/Debian: sudo apt install git
+     - macOS: xcode-select --install
+     - Other: Check your package manager
+
+     Would you like to:
+     [1] Remove Bug Fix Mode from selection
+     [2] Cancel installation (I'll install git first)
+     ```
+
+   **Planning is Prompting Core (D)**:
    - No dependencies
 
-   **Backup Infrastructure (D)**:
+   **Backup Infrastructure (E)**:
    - Requires: rsync (check with `which rsync`)
    - Requires: Target backup location (will ask in config step)
    - If rsync not found:
@@ -954,18 +1117,23 @@ notify-claude "[INSTALL] ⏸ Workflow catalog presented - awaiting selection" --
      [2] Cancel installation (I'll install rsync first)
      ```
 
-   **Testing Workflows (E)**:
+   **Testing Workflows (F)**:
    - No dependencies (workflows adapt to project type)
    - Code projects: Expects test suites (smoke, unit, integration)
    - Documentation projects: Validates documentation structure
    - No validation needed (always available)
 
-   **Installation Wizard (F)**:
+   **Installation Wizard (G)**:
    - No dependencies
    - Creates slash command for running wizard in future
    - No validation needed (always available)
 
-   **Uninstall Wizard (G)**:
+   **Workflow About (H)**:
+   - No dependencies
+   - Creates slash command for viewing installed workflows
+   - No validation needed (always available)
+
+   **Uninstall Wizard (I)**:
    - No dependencies
    - Creates slash command for removing workflows later
    - No validation needed (always available)
@@ -1000,7 +1168,7 @@ Ready to proceed with configuration.
 
 **Send Notification**:
 ```bash
-notify-claude "[INSTALL] ✅ Selection validated - dependencies satisfied" --type=progress --priority=low
+notify( "Selection validated - dependencies satisfied", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -1230,7 +1398,7 @@ Is this correct?
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=low
+notify( "Configuration collected", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -1274,7 +1442,26 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    - Replace history.md path → User's configured path
    - Replace archive directory → User's configured path
 
-   **Planning is Prompting Core (C)**:
+   **Bug Fix Mode (C)** (if selected):
+   ```bash
+   # Copy all four command files
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode.md \
+      ./.claude/commands/plan-bug-fix-mode.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md \
+      ./.claude/commands/plan-bug-fix-mode-start.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md \
+      ./.claude/commands/plan-bug-fix-mode-continue.md
+   cp planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md \
+      ./.claude/commands/plan-bug-fix-mode-close.md
+   ```
+
+   Customize all four files:
+   - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
+   - Replace `/mnt/DATA01/.../planning-is-prompting/history.md` → User's history path
+   - Replace `/mnt/DATA01/.../planning-is-prompting/bug-fix-queue.md` → `{PROJECT_ROOT}/bug-fix-queue.md`
+   - Replace `/mnt/DATA01/.../planning-is-prompting/` → User's project root
+
+   **Planning is Prompting Core (D)**:
    ```bash
    cp planning-is-prompting/.claude/commands/p-is-p-*.md \
       ./.claude/commands/
@@ -1283,7 +1470,7 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    Customize:
    - No customization needed (workflows are project-agnostic)
 
-   **Backup Infrastructure (D)**:
+   **Backup Infrastructure (E)**:
    ```bash
    # Create script directory
    mkdir -p src/scripts/conf
@@ -1310,7 +1497,7 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    - Replace DEST_DIR → User's destination path
    - Replace PROJECT_NAME → User's project name
 
-   **Testing Workflows (E)**:
+   **Testing Workflows (F)**:
    ```bash
    # Copy testing workflow slash commands
    cp planning-is-prompting/.claude/commands/plan-test-baseline.md \
@@ -1327,7 +1514,7 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
    - No other customization needed (workflows adapt to project type)
 
-   **Installation Wizard (F)**:
+   **Installation Wizard (G)**:
    ```bash
    # Copy installation wizard slash command
    cp planning-is-prompting/.claude/commands/plan-install-wizard.md \
@@ -1338,7 +1525,18 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
    - No customization needed (wizard is project-agnostic)
    - Note: This makes wizard available as `/plan-install-wizard` for future use
 
-   **Uninstall Wizard (G)**:
+   **Workflow About (H)**:
+   ```bash
+   # Copy workflow about slash command
+   cp planning-is-prompting/.claude/commands/plan-about.md \
+      ./.claude/commands/plan-about.md
+   ```
+
+   Customize:
+   - No customization needed (workflow is project-agnostic)
+   - Note: This makes about available as `/plan-about` for viewing installed workflows
+
+   **Uninstall Wizard (I)**:
    ```bash
    # Copy uninstall wizard slash command
    cp planning-is-prompting/.claude/commands/plan-uninstall-wizard.md \
@@ -1442,7 +1640,7 @@ notify-claude "[MYPROJ] ✅ Configuration collected" --type=progress --priority=
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Workflows installed successfully" --type=progress --priority=medium
+notify( "Workflows installed successfully", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -1577,7 +1775,7 @@ Installation validated successfully!
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Installation validated - all checks passed" --type=progress --priority=medium
+notify( "Installation validated - all checks passed", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -1683,7 +1881,7 @@ notify-claude "[MYPROJ] ✅ Installation validated - all checks passed" --type=p
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] ✅ Git tracking verified" --type=progress --priority=low
+notify( "Git tracking verified", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -1913,7 +2111,7 @@ For detailed workflow documentation, see:
 
 **Send Notification**:
 ```bash
-notify-claude "[MYPROJ] 🎉 Installation complete - ready to work!" --type=task --priority=high
+notify( "Installation complete - ready to work!", notification_type="task", priority="high" )
 ```
 
 ---
@@ -2029,7 +2227,7 @@ command installed or not.
 
 **Send Notification** (if installed):
 ```bash
-notify-claude "[MYPROJ] ✅ Installation wizard available as /plan-install-wizard" --type=progress --priority=low
+notify( "Installation wizard available as /plan-install-wizard", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -2149,7 +2347,7 @@ What would you like to do? [1/2]
 
 **Send Notification** (if user ran session-end):
 ```bash
-notify-claude "[MYPROJ] ✅ Installation session recorded via /plan-session-end" --type=progress --priority=low
+notify( "Installation session recorded via /plan-session-end", notification_type="progress", priority="low" )
 ```
 
 **Key Benefits**:
@@ -2490,7 +2688,7 @@ Version Summary:
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Scanned local installation - found 7 workflows" --type=progress --priority=low
+notify( "Scanned local installation - found 7 workflows", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -2596,8 +2794,19 @@ Affected Files (6):
 **Update TodoWrite**: Mark "Compare versions" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude "[UPDATE] ⚠️ Found 6 outdated workflows (v0.0 → v1.0 available)" --type=task --priority=high
+```python
+ask_multiple_choice( questions=[
+    {
+        "question": "Found 6 outdated workflows - review and select which to update",
+        "header": "Update",
+        "multiSelect": True,
+        "options": [
+            {"label": "Update all", "description": "Update all 6 outdated workflows"},
+            {"label": "Select specific", "description": "Choose which workflows to update"},
+            {"label": "Skip", "description": "Keep current versions"}
+        ]
+    }
+] )
 ```
 
 ---
@@ -2727,8 +2936,8 @@ Ready to proceed.
 **Update TodoWrite**: Mark "Present update UI" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude "[UPDATE] ⏸ Update selection presented - awaiting user choice" --type=task --priority=high
+```python
+notify( "Update selection presented - awaiting user choice", notification_type="task", priority="high" )
 ```
 
 ---
@@ -2851,7 +3060,7 @@ All configurations extracted successfully.
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Configuration extracted from 6 files" --type=progress --priority=low
+notify( "Configuration extracted from 6 files", notification_type="progress", priority="low" )
 ```
 
 ---
@@ -3021,8 +3230,8 @@ What would you like to do? [1/2]
 **Update TodoWrite**: Mark "Show diff preview" as completed, mark next item as in_progress
 
 **Send Notification**:
-```bash
-notify-claude "[UPDATE] ⏸ Diff preview shown - awaiting confirmation" --type=task --priority=high
+```python
+ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=300 )
 ```
 
 ---
@@ -3166,7 +3375,7 @@ All files updated. Proceeding to validation...
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Updates applied successfully - 6 files updated" --type=progress --priority=medium
+notify( "Updates applied successfully - 6 files updated", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -3350,7 +3559,7 @@ Update validation complete!
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] ✅ Validation complete - all 6 workflows verified" --type=progress --priority=medium
+notify( "Validation complete - all 6 workflows verified", notification_type="progress", priority="medium" )
 ```
 
 ---
@@ -3533,7 +3742,7 @@ What would you like to do? [1/2]
 
 **Send Notification**:
 ```bash
-notify-claude "[UPDATE] 🎉 Update complete - 6 workflows updated to v1.0" --type=task --priority=high
+notify( "Update complete - 6 workflows updated to v1.0", notification_type="task", priority="high" )
 ```
 
 ---

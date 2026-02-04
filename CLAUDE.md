@@ -19,13 +19,22 @@ planning-is-prompting/
 │   ├── claude-config-global.md           # Global config template (~/.claude/CLAUDE.md)
 │   ├── claude-config-local.md            # Project config template (<project>/.claude/CLAUDE.md)
 │   ├── session-start.md                  # Session initialization workflows
+│   ├── session-checkpoint.md             # Mid-session commit (preserve continuity)
 │   ├── session-end.md                    # Session wrap-up workflows
 │   ├── history-management.md             # History archival workflows (canonical)
+│   ├── skills-management.md              # Agent Skills lifecycle management
 │   ├── testing-baseline.md               # Pre-change baseline collection
 │   ├── testing-remediation.md            # Post-change verification and fixes
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
-│   └── notification-system.md            # Notification usage patterns
+│   ├── notification-system.md            # Notification usage patterns
+│   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
+│   ├── todo-management.md                # Persistent TODO.md file management
+│   ├── branch-pr-and-merge.md            # Branch completion, PR, and merge workflow
+│   └── skill-templates/                  # Agent Skill reference templates
+│       ├── testing-skill-template.md     # Template for testing skills
+│       ├── api-skill-template.md         # Template for API skills
+│       └── generic-skill-template.md     # Minimal starting template
 ├── .claude/commands/      # Slash command wrappers (reference canonical workflows)
 │   ├── p-is-p-00-start-here.md
 │   ├── p-is-p-01-planning.md
@@ -33,13 +42,18 @@ planning-is-prompting/
 │   ├── plan-backup-check.md
 │   ├── plan-backup.md
 │   ├── plan-backup-write.md
+│   ├── plan-bug-fix-mode.md
 │   ├── plan-history-management.md
 │   ├── plan-install-wizard.md
+│   ├── plan-session-checkpoint.md
 │   ├── plan-session-end.md
 │   ├── plan-session-start.md
 │   ├── plan-test-baseline.md
 │   ├── plan-test-remediation.md
-│   └── plan-test-harness-update.md
+│   ├── plan-test-harness-update.md
+│   ├── plan-todo.md
+│   ├── plan-skills-management.md
+│   └── plan-branch-pr-and-merge.md
 ├── global/               # Global config snapshot (reference template)
 │   └── CLAUDE.md         # Verbatim copy of ~/.claude/CLAUDE.md
 ├── history.md            # Active session history (30-day window)
@@ -76,20 +90,32 @@ The `history.md` file uses an **adaptive archival strategy**:
 - Date format: `yyyy.mm.dd`
 - Reverse chronological order (newest sessions at top)
 - Status summary at top of file (3 lines)
-- TODO list at end of each session summary
+- Session accomplishments documented (NOT TODO items - see TODO.md)
 
 ### 4. Notification Integration
 
-All workflow steps use the global `notify-claude` command:
-```bash
-notify-claude "[PLAN] Message" --type=TYPE --priority=PRIORITY
+All workflow steps use cosa-voice MCP tools (v0.2.0):
+```python
+# Fire-and-forget (progress updates, completions)
+notify( "Message", notification_type="progress", priority="medium" )
+
+# Response-required (approvals, decisions)
+ask_yes_no( "Proceed with changes?", default="no", timeout_seconds=300 )
+ask_multiple_choice( questions=[...] )  # AskUserQuestion-compatible format
+converse( "Which approach?", response_type="open_ended", timeout_seconds=600 )
 ```
+
+**Key Features**:
+- Project auto-detected from working directory (no [PLAN] prefix needed)
+- No --target-user parameter (handled internally)
 
 Priority levels:
 - `urgent`: Blockers, errors, time-sensitive
 - `high`: Approval requests, important status
 - `medium`: Progress milestones
 - `low`: Task completions, informational
+
+**See**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ## Planning is Prompting Workflows
 
@@ -134,20 +160,32 @@ Priority levels:
 ### Starting a Session
 
 1. Read `history.md` to understand current project status
-2. Review TODO list from previous session
+2. Read `TODO.md` to review pending items from previous sessions
 3. Reference relevant workflow documents as needed
 
 ### Ending a Session
 
 Follow the workflow in planning-is-prompting → workflow/session-end.md:
-1. Create TODO list for tracking
-2. Health check history.md (archive if needed)
-3. Update session history
+1. Health check history.md (archive if needed)
+2. Update session history (accomplishments only, NOT TODOs)
+3. Update TODO.md with new items and mark completions
 4. Update planning documents
 5. Summarize uncommitted changes
 6. Propose commit message
 7. Commit changes (after approval)
 8. Send notifications at each step
+
+### Managing TODO.md
+
+This project uses a persistent `TODO.md` file for tracking pending work:
+
+- **At session start**: Read TODO.md, review pending items
+- **At session end**: Add new items, mark completions, update timestamp
+- **Via slash command**: `/plan-todo` for quick operations
+
+**Canonical Workflow**: See workflow/todo-management.md for complete documentation.
+
+**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
 
 ### Modifying Workflow Templates
 
@@ -245,6 +283,100 @@ This project follows the session-end ritual defined in planning-is-prompting →
 **Note**: For this documentation-only repository, "testing" means validating documentation structure (all workflow files exist, cross-references work, etc.). For code projects, these workflows run actual test suites (smoke, unit, integration).
 
 **See**: [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide for complete usage documentation.
+
+## Skills Management
+
+**Purpose**: Ongoing Agent Skills lifecycle management - discovery, creation, editing, auditing, and deletion of skills across repositories.
+
+**Entry Points**:
+- `/plan-skills-management discover` - Find documentation candidates for skill conversion
+- `/plan-skills-management create` - Build new skill from documentation
+- `/plan-skills-management edit` - Update existing skill
+- `/plan-skills-management audit` - Check skills health against documentation
+- `/plan-skills-management delete` - Remove obsolete skill
+
+**Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
+
+**Key Features**:
+- Progressive disclosure pattern (metadata → instructions → references)
+- agentskills.io specification compliance
+- Token-aware skill design (<500 lines per SKILL.md)
+- Intent-based activation via trigger-rich descriptions
+- Skill templates for common patterns (testing, API, generic)
+
+**Skill Templates**:
+- `workflow/skill-templates/testing-skill-template.md` - Testing patterns template
+- `workflow/skill-templates/api-skill-template.md` - API conventions template
+- `workflow/skill-templates/generic-skill-template.md` - Minimal starting template
+
+**Skills Location**: Skills live in target repos at `.claude/skills/`, not in planning-is-prompting.
+
+**See**: [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide for complete usage documentation.
+
+## Bug Fix Mode
+
+**Purpose**: Iterative bug fixing with incremental commits and history tracking across context clears.
+
+**Entry Points**:
+- `/plan-bug-fix-mode start` - Initialize new bug fix session
+- `/plan-bug-fix-mode continue` - Resume after context clear
+- `/plan-bug-fix-mode close` - End bug fix session for the day
+
+**Canonical Workflow**: planning-is-prompting → workflow/bug-fix-mode.md
+
+**Key Features**:
+- Atomic commits per bug (only bug-related files staged)
+- **Parallel session support** via v2.0 queue format with Active Sessions table
+- Per-bug ownership: bugs are claimed (Queued → In Progress) with Owner tags
+- `bug-fix-queue.md` tracks queued, in-progress, and completed bugs with attribution
+- `history.md` provides persistent memory across context clears
+- GitHub integration (fetch issues, auto-close with `Fixes #N`)
+
+**Queue Format (v2.0)**:
+- Active Sessions table tracks multiple concurrent sessions
+- Queued bugs are available for any session to claim
+- In Progress bugs have `| Owner: [session_id]` tags
+- Completed bugs have `| By: [session_id]` attribution
+- Backward compatible: v1.0 queues auto-migrate to v2.0
+
+**Runtime Artifacts**:
+- `bug-fix-queue.md` - Created in project root when bug fix mode starts
+
+**See**: [Bug Fix Mode](workflow/INSTALLATION-GUIDE.md#bug-fix-mode-workflow) in installation guide for complete usage documentation.
+
+## Branch PR and Merge
+
+**Purpose**: Complete feature branches, create pull requests, and transition to the next development branch.
+
+**Entry Point**: `/plan-branch-pr-and-merge`
+
+**Canonical Workflow**: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+**Key Features**:
+- Documentation surface check (README validation against history.md, TODO.md)
+- Branch state audit with uncommitted changes handling
+- Test suite verification (smoke + unit required, integration optional)
+- PR description auto-generation from git log and history.md
+- GitHub CLI integration for PR creation
+- Post-merge sync and branch cleanup
+- Release tagging with version extraction from branch name
+- Next development branch creation with version increment
+
+**Workflow Steps** (12 total):
+1. Documentation surface check (README vs history.md/TODO.md)
+2. Branch state audit
+3. Test verification
+4. Outstanding work review
+5. PR description generation
+6. Create pull request
+7. Push branch (if needed)
+8. Wait for PR merge
+9. Post-merge sync
+10. Branch cleanup
+11. Release tagging (optional)
+12. Create next development branch
+
+**See**: [Branch PR and Merge](workflow/INSTALLATION-GUIDE.md#branch-pr-and-merge-workflow) in installation guide for complete usage documentation.
 
 ## References
 

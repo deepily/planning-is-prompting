@@ -63,7 +63,7 @@ Planning is Prompting - Existing Installation Detected
 
 I found existing planning-is-prompting workflows in this project:
 [List detected workflows here, e.g.:]
-✓ Session Management (/plan-session-start, /plan-session-end)
+✓ Session Management (/plan-session-start, /plan-session-checkpoint, /plan-session-end)
 ✓ History Management (/plan-history-management)
 
 Not yet installed:
@@ -245,6 +245,7 @@ Installation Mgmt     plan-install-wizard          v1.1     v1.1       ✓ Curre
                       plan-about                   v1.0     v1.0       ✓ Current
 
 Session Mgmt          plan-session-start           v1.0     v1.0       ✓ Current
+                      plan-session-checkpoint      v1.0     v1.0       ✓ Current
                       plan-session-end             v1.0     v1.0       ✓ Current
 
 History Mgmt          plan-history-management      v1.0     v1.0       ✓ Current
@@ -398,11 +399,23 @@ Comprehensive end-of-session ritual that:
 - Updates session history with date/summary/TODOs
 - Updates planning and tracking documents
 - Summarizes uncommitted changes
+- **Verifies files against session tracking** (parallel session safety)
 - Proposes commit message
-- Commits and optionally pushes changes
+- Commits and optionally pushes changes (selective staging)
 - Sends notifications at each step
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-end.md
+
+### Parallel Session Safety
+
+**New in v1.2**: When multiple Claude sessions work on the same repository:
+
+- Session-start initializes `touched_files` tracking
+- Session-end verifies modified files against `touched_files`
+- **Only files from THIS session are committed** (prevents mixing parallel session changes)
+- Falls back to user selection if tracking was not initialized
+
+**Key Principle**: Never use `git add .` or `git add -A`. Always stage files explicitly based on session tracking.
 
 ### Install as Slash Command
 
@@ -502,6 +515,109 @@ See planning-is-prompting → workflow/session-end.md for complete ritual.
 - History location: /path/to/your/project/history.md
 - Planning docs: /path/to/your/project/rnd/
 ```
+
+---
+
+## TODO Management Workflow
+
+### What It Does
+
+Persistent TODO tracking across sessions:
+- Maintains `TODO.md` file at project root
+- Survives history archival (never archived)
+- Cross-session visibility for pending work
+- Session attribution for completed items
+- Integrates with session-start and session-end workflows
+
+**Canonical Workflow**: planning-is-prompting → workflow/todo-management.md
+
+**Slash Command**: `/plan-todo`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-todo` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical TODO management workflow from: planning-is-prompting → workflow/todo-management.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-todo.md
+   - Target: .claude/commands/plan-todo.md
+   - Keep the filename as-is (plan-todo.md)
+
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the TODO.md file path to this project's root
+   - Update the working directory path
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - What is the project root directory? (where TODO.md should be created)
+
+After installation, test it: `/plan-todo`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **Project root directory** - Full path where TODO.md will be created
+
+### Usage
+
+```bash
+# Check/list mode (default) - show pending items, create if missing
+/plan-todo
+
+# Add mode - add new item(s) interactively
+/plan-todo add
+
+# Complete mode - mark item(s) as complete
+/plan-todo complete
+
+# Edit mode - full review and edit
+/plan-todo edit
+```
+
+### Integration with Session Workflows
+
+**Session-Start**: Step 4.5 reads TODO.md for pending items
+**Session-End**: Step 1.5 updates TODO.md with completions and new items
+
+**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+
+### File Format
+
+```markdown
+# TODO
+
+Last updated: YYYY-MM-DD (Session N)
+
+## Pending
+
+- [ ] Item description
+
+## Completed (Recent)
+
+- [x] Item description - Session N
+
+---
+
+*Completed items older than 7 days can be removed or archived.*
+```
+
+### Dependencies
+
+- Requires session-start and session-end workflows for full integration
+- Can be used standalone with `/plan-todo` command
 
 ---
 
@@ -623,20 +739,20 @@ Real-time notification system that:
 - Uses priority levels (urgent/high/medium/low)
 - Includes [SHORT_PROJECT_PREFIX] for multi-repo workflows
 
-**Canonical Workflow**: planning-is-prompting → workflow/notification-system.md
+**Canonical Workflow**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ### Install as Direct Reference
 
-The `notify-claude` command is global and requires no installation. Reference in your project's `.claude/CLAUDE.md`:
+The cosa-voice MCP server provides notification tools with no additional script installation required. Reference in your project's `.claude/CLAUDE.md`:
 
 ```markdown
 ## Notifications
 
-See planning-is-prompting → workflow/notification-system.md
+See planning-is-prompting → workflow/cosa-voice-integration.md
 
-**Project Configuration:**
-- [SHORT_PROJECT_PREFIX]: [YOUR_PREFIX]
-- Use in all TODO items and notification messages
+**Key Features:**
+- Project auto-detected from working directory (no prefix needed in messages)
+- MCP tools: notify(), ask_yes_no(), ask_multiple_choice(), converse()
 ```
 
 ---
@@ -712,6 +828,332 @@ I need you to install the `/plan-session-start` slash command from the planning-
 
 After installation, invoke the command to show me the current project status: `/plan-session-start`
 ```
+
+---
+
+## Session-Checkpoint Workflow
+
+### What It Does
+
+Mid-session commit that preserves session continuity:
+- Commits intermediate work without triggering full session-end workflow
+- Supports checkpoint before context clear (save work in progress)
+- Keeps session manifest `active` for continued tracking
+- Enables multiple checkpoints within a single session
+- Uses selective staging (v2.0 parallel session safety)
+
+**Canonical Workflow**: planning-is-prompting → workflow/session-checkpoint.md
+
+**Key Difference from Session-End**:
+
+| Aspect | `/plan-session-checkpoint` | `/plan-session-end` |
+|--------|----------------------------|---------------------|
+| Session status | Stays `active` | Changes to `committed` |
+| Manifest | Keeps tracking | Closes or deletes section |
+| Cleanup prompts | None | Archive, backup prompts |
+| Can continue working | Yes | No (session ended) |
+| Use case | Save point | Wrap up session |
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-session-checkpoint` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical session-checkpoint workflow from: planning-is-prompting → workflow/session-checkpoint.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-session-checkpoint.md
+   - Target: .claude/commands/plan-session-checkpoint.md
+   - Keep the filename as-is (plan-session-checkpoint.md)
+
+3. Customize the slash command for this project:
+   - Update the [SHORT_PROJECT_PREFIX] (ask me what it should be)
+   - Update the history.md file path to this project's location
+   - Update the project root path
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+
+After installation, the command is available as: `/plan-session-checkpoint`
+```
+
+### Usage
+
+Invoke when you want to commit work mid-session:
+- Before context clear
+- After completing a milestone
+- Anytime you want to save progress
+
+```bash
+/plan-session-checkpoint
+```
+
+**Natural language triggers**: "checkpoint this work", "save my progress", "commit before context clear"
+
+---
+
+## Bug Fix Mode Workflow
+
+### What It Does
+
+Iterative bug fixing workflow with incremental documentation and commits:
+- Fix bugs one at a time with atomic commits
+- Maintain detailed history of fixes across context clears
+- Integrate with GitHub issues for tracking and closure
+- Ensure clean file staging (only bug-related files per commit)
+- Session ownership prevents interference from parallel Claude sessions
+
+**Canonical Workflow**: planning-is-prompting → workflow/bug-fix-mode.md
+
+**Slash Command**: `/plan-bug-fix-mode`
+
+### Modes
+
+| Mode | Purpose |
+|------|---------|
+| `start` | Initialize new bug fix session (default) |
+| `continue` | Resume after context clear |
+| `wrap` | Wrap up completed fix (document + commit) |
+| `close` | End bug fix session for the day |
+
+### Install as Slash Command
+
+**Option 1: Use Installation Wizard** (Recommended)
+
+Run `/plan-install-wizard` and select "Bug Fix Mode (C)" from the workflow catalog.
+
+**Option 2: Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-bug-fix-mode` slash commands from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/bug-fix-mode.md
+
+2. Copy ALL FIVE slash command files from planning-is-prompting:
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode.md -> .claude/commands/plan-bug-fix-mode.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-start.md -> .claude/commands/plan-bug-fix-mode-start.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-continue.md -> .claude/commands/plan-bug-fix-mode-continue.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-wrap.md -> .claude/commands/plan-bug-fix-mode-wrap.md
+   - planning-is-prompting/.claude/commands/plan-bug-fix-mode-close.md -> .claude/commands/plan-bug-fix-mode-close.md
+
+3. Customize ALL FIVE files for this project:
+   - Replace `[PLAN]` with this project's [SHORT_PROJECT_PREFIX]
+   - Replace the planning-is-prompting history.md path with this project's history.md location
+   - Replace the planning-is-prompting bug-fix-queue.md path with this project's path
+   - Replace the planning-is-prompting project root path with this project's root
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+   - What is this project's root directory? (provide absolute path)
+
+After installation, test it: `/plan-bug-fix-mode-start`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **History.md location** - Usually in project root, confirm path
+
+3. **Bug fix queue location** - Usually in project root (`bug-fix-queue.md`)
+
+### Usage
+
+```bash
+# Start a new bug fix session
+/plan-bug-fix-mode-start
+
+# Resume after context clear
+/plan-bug-fix-mode-continue
+
+# Wrap up completed fix (document + commit)
+/plan-bug-fix-mode-wrap
+
+# End bug fix session
+/plan-bug-fix-mode-close
+```
+
+**Note**: Each mode has its own dedicated slash command for clarity. The base `/plan-bug-fix-mode` command defaults to start mode.
+
+### Key Features
+
+**File Tracking**: Every file modified during a bug fix is tracked. Only tracked files are staged for commit - prevents accidentally committing unrelated changes.
+
+**Selective Staging**: NEVER uses `git add .` or `git add -A`. Only stages:
+- Files modified during current bug fix
+- `history.md`
+- `bug-fix-queue.md`
+
+**Session Ownership**: Queue file includes session ID to prevent parallel Claude sessions from interfering.
+
+**GitHub Integration**:
+- Fetch issue: `gh issue view #N`
+- Auto-close: `Fixes #N` in commit message
+- Manual close: `gh issue close #N --comment "Fixed in [hash]"`
+
+### Creates Runtime Artifacts
+
+| File | Purpose |
+|------|---------|
+| `bug-fix-queue.md` | Tracks queued and completed bugs |
+| Session entries in `history.md` | Persistent memory across context clears |
+
+### Integration with Session-End
+
+When `/plan-session-end` runs:
+- Detects if bug fix mode is active (queue file exists)
+- Checks if current session owns the queue
+- If same session: prompts to close bug fix mode
+- If different session: skips (no interference)
+
+---
+
+## Branch PR and Merge Workflow
+
+### What It Does
+
+Complete feature branch lifecycle workflow:
+- Documentation surface check (README validation against history.md, TODO.md, bug-fix-queue.md)
+- Branch state audit with uncommitted changes handling
+- Test suite verification (smoke + unit required, integration optional)
+- PR description auto-generation from git log and history.md
+- GitHub CLI integration for PR creation
+- Post-merge sync and branch cleanup
+- Release tagging with version extraction from branch name
+- Next development branch creation with version increment
+
+**Canonical Workflow**: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+**Slash Command**: `/plan-branch-pr-and-merge`
+
+### Workflow Steps (12 Total)
+
+| Step | Purpose |
+|------|---------|
+| 0.5 | Documentation surface check (README vs history/TODO) |
+| 1 | Branch state audit |
+| 1.5 | Test suite verification |
+| 2 | Outstanding work review |
+| 3 | PR description generation |
+| 4 | Create pull request |
+| 5 | Push branch (if needed) |
+| 6 | Wait for PR merge |
+| 7 | Post-merge sync |
+| 8 | Branch cleanup |
+| 9 | Release tagging (optional) |
+| 10 | Create next development branch |
+
+### Install as Slash Command
+
+**Option 1: Use Installation Wizard** (Recommended)
+
+Run `/plan-install-wizard` and select the Branch PR and Merge workflow from the catalog.
+
+**Option 2: Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-branch-pr-and-merge` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/branch-pr-and-merge.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-branch-pr-and-merge.md
+   - Target: .claude/commands/plan-branch-pr-and-merge.md
+   - Keep the filename as-is (plan-branch-pr-and-merge.md)
+
+3. Customize the slash command for this project:
+   - Replace `[PLAN]` with this project's [SHORT_PROJECT_PREFIX]
+   - Replace the planning-is-prompting history.md path with this project's history.md location
+   - Replace the planning-is-prompting TODO.md path with this project's TODO.md location
+   - Replace the planning-is-prompting README.md path with this project's README.md location
+   - Configure base branch (usually `main` or `master`)
+   - Configure branch naming pattern (e.g., `wip-v{version}-{date}-{description}`)
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where is history.md located? (provide absolute path)
+   - Where is TODO.md located? (provide absolute path)
+   - Where is README.md located? (provide absolute path)
+   - What is the base branch? (usually `main`)
+   - What branch naming pattern do you use?
+
+After installation, test it: `/plan-branch-pr-and-merge`
+```
+
+### Expected Questions
+
+Claude will ask you to provide:
+
+1. **[SHORT_PROJECT_PREFIX]** - Short identifier for this project
+   - Examples: `[AUTH]` for authentication service, `[LUPIN]` for lupin-ai project
+   - Should be 3-6 characters, uppercase, wrapped in brackets
+
+2. **History.md location** - Full path to history.md file
+
+3. **TODO.md location** - Full path to TODO.md file
+
+4. **README.md location** - Full path to README.md file
+
+5. **Base branch** - Usually `main` or `master`
+
+6. **Branch naming pattern** - Your project's convention (e.g., `wip-v{version}-{date}-{description}`)
+
+### Usage
+
+```bash
+# Complete feature branch workflow
+/plan-branch-pr-and-merge
+```
+
+The workflow will:
+1. Check README for missing features from history.md/TODO.md
+2. Verify branch state and run tests
+3. Generate PR description from git log and history
+4. Create PR via GitHub CLI
+5. Wait for you to merge in GitHub
+6. Sync, cleanup, tag, and create next branch
+
+### Key Features
+
+**Documentation Surface Check**: Scans history.md, TODO.md, and bug-fix-queue.md for major features that should be mentioned in README before creating the PR.
+
+**Test Verification**: Smoke and unit tests must pass 100% before PR. Integration tests are optional.
+
+**PR Auto-Generation**: Generates comprehensive PR description from:
+- Git commit log (`git log main..HEAD`)
+- Session entries from history.md
+- Change statistics (`git diff --stat`)
+- Branch name parsing for version/purpose
+
+**Release Tagging**: Extracts version from branch name (e.g., `wip-v0.1.1-...` → `v0.1.1`) and creates tag.
+
+**Next Branch Creation**: Auto-generates next branch name with incremented version and today's date.
+
+### Prerequisites
+
+- GitHub CLI (`gh`) installed and authenticated
+- Git repository with remote configured
+- Feature branch (not on main/master)
+
+### Integration with Session-End
+
+The session-end workflow (Step 4.6) can optionally offer branch completion:
+- "Continue on this branch" (default)
+- "Wrap up branch (create PR)" → invokes this workflow
 
 ---
 
@@ -1355,6 +1797,158 @@ git log --since="7 days ago" --oneline
 
 10. **Rollback if needed**: Git backup created automatically before remediation
 
+---
+
+## Skills Management Workflow
+
+### What It Does
+
+**Ongoing Agent Skills lifecycle management** - discovery, creation, editing, auditing, and deletion of skills across repositories:
+
+**Modes:**
+
+| Mode | Purpose |
+|------|---------|
+| `discover` | Scan CLAUDE.md and docs for skill candidates |
+| `create` | Build new skill from documentation |
+| `edit` | Update existing skill when docs change |
+| `audit` | Check skills health against current documentation |
+| `delete` | Remove obsolete skill |
+
+**The Problem**: Large repos have extensive documentation with nuances (testing caveats, deployment rules). This documentation is:
+- Read once at session start, then forgotten as context fills
+- "Rediscovered" after failures
+- No activation trigger - saying "run tests" doesn't invoke testing-specific knowledge
+
+**The Solution**: Agent Skills use YAML frontmatter for **intent-based discovery**:
+- ~100 tokens loaded at startup (name + description only)
+- Full instructions (<5k tokens) loaded **when skill activates**
+- Progressive disclosure: SKILL.md → references/ for details
+
+**Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
+
+**Slash Command**: `/plan-skills-management`
+
+### Install as Slash Command
+
+**Copy-paste this prompt into Claude Code:**
+
+```
+I need you to install the `/plan-skills-management` slash command from the planning-is-prompting repository into this project.
+
+**Instructions:**
+
+1. Read the canonical workflow from: planning-is-prompting → workflow/skills-management.md
+
+2. Copy the slash command file from planning-is-prompting:
+   - Source: planning-is-prompting/.claude/commands/plan-skills-management.md
+   - Target: .claude/commands/plan-skills-management.md
+   - Keep the filename as-is (plan-skills-management.md)
+
+3. The command supports these modes:
+   - `/plan-skills-management` (defaults to discover mode)
+   - `/plan-skills-management discover`
+   - `/plan-skills-management create <skill-name>`
+   - `/plan-skills-management edit <skill-name>`
+   - `/plan-skills-management audit`
+   - `/plan-skills-management delete`
+
+4. Ask me:
+   - What is this project's [SHORT_PROJECT_PREFIX]? (e.g., [AUTH], [LUPIN], [WS])
+   - Where are your primary documentation sources? (CLAUDE.md, docs/, workflow/)
+
+After installation, test it: `/plan-skills-management discover`
+```
+
+### Usage
+
+**Initial adoption (new repository):**
+```bash
+# 1. Discover candidates
+/plan-skills-management discover
+
+# 2. Review candidates, prioritize
+# Output shows: testing-patterns (high), path-management (medium)
+
+# 3. Create highest priority skill
+/plan-skills-management create testing-patterns
+
+# 4. Verify skill works - in fresh session, say "I need to write tests"
+# → testing-patterns skill should activate
+```
+
+**Ongoing maintenance:**
+```bash
+# Weekly audit
+/plan-skills-management audit
+
+# Output shows path-management needs update
+/plan-skills-management edit path-management
+
+# Output shows new candidate discovered
+/plan-skills-management create error-handling
+```
+
+**Removing obsolete skill:**
+```bash
+# Feature deprecated, remove skill
+/plan-skills-management delete
+
+# Select skill, confirm deletion
+```
+
+### Skill Templates
+
+Templates are available in `planning-is-prompting → workflow/skill-templates/`:
+
+| Template | Use Case |
+|----------|----------|
+| `testing-skill-template.md` | Testing patterns, pytest, smoke/unit/integration |
+| `api-skill-template.md` | API conventions, endpoints, authentication |
+| `generic-skill-template.md` | Minimal starting template for any domain |
+
+### Key Concepts
+
+**Trigger-Rich Descriptions:**
+
+```yaml
+# Good (trigger-rich)
+description: Testing patterns and caveats for this project. Use when writing tests, running pytest, debugging test failures, choosing between smoke/unit/integration tests.
+
+# Bad (vague)
+description: Helps with testing.
+```
+
+**Token Budget:**
+
+| Layer | Content | Budget | When Loaded |
+|-------|---------|--------|-------------|
+| Metadata | name + description | ~100 tokens | Startup (ALL skills) |
+| Instructions | SKILL.md body | <5000 tokens | Skill activation |
+| Resources | references/, scripts/ | As needed | Explicit reference |
+
+**Directory Structure:**
+```
+.claude/skills/
+└── skill-name/
+    ├── SKILL.md              # Required (<500 lines recommended)
+    ├── scripts/              # Executable code (optional)
+    ├── references/           # Detailed docs (loaded on demand)
+    └── assets/               # Templates, images, data files
+```
+
+### Anti-Patterns
+
+- **Skills too long** (>500 lines) - defeats progressive disclosure
+- **Vague descriptions** ("helps with testing") - won't trigger on specific intents
+- **Missing trigger keywords** - user says "run integration tests" but skill doesn't activate
+- **Duplicating CLAUDE.md** - extract and refine, don't copy verbatim
+- **Stale skills** - documentation evolved but skill didn't
+
+### Integration with Installation Wizard
+
+Skills Management is available in the installation wizard catalog. Run `/plan-install-wizard` and select "Skills Management" to install.
+
 ### Integration with CI/CD
 
 **For automated testing in CI**:
@@ -1625,9 +2219,9 @@ Then customize with your project's [SHORT_PROJECT_PREFIX] and specific paths.
 ### Issue: Notifications not working
 
 **Solution**:
-1. Verify `notify-claude` command is installed globally
-2. Check `COSA_CLI_PATH` environment variable
-3. Test with: `notify-claude "test" --validate-env`
+1. Verify cosa-voice MCP server is installed and running
+2. Check MCP server configuration in Claude Code settings
+3. Test with: `notify( "test", notification_type="progress", priority="low" )`
 
 ### Issue: Can't find planning-is-prompting workflows
 

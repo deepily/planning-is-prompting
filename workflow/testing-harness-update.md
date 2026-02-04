@@ -888,8 +888,8 @@ echo "Generating test harness analysis report: ${REPORT_FILE}"
 
 ### Step 9: Send Completion Notification
 
-```bash
-notify-claude "[{PREFIX}] ✅ Test harness analysis COMPLETE - {CHANGED_COUNT} changes analyzed, {TOTAL_GAPS} gaps identified ({CRITICAL_COUNT} critical)" --type=progress --priority=medium
+```python
+notify( "Test harness analysis COMPLETE - {changed_count} changes analyzed, {total_gaps} gaps identified ({critical_count} critical)", notification_type="progress", priority="medium" )
 ```
 
 ---

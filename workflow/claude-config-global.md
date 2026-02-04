@@ -27,55 +27,67 @@
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
-**Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
 
-- **Command**: Use `notify-claude` (global command, works from any directory)
-- **Target**: ricardo.felipe.ruiz@gmail.com
-- **API Key**: claude_code_simple_key
-- **Requirements**: COSA_CLI_PATH environment variable (usually auto-detected)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
+
+The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows.
+
+### Available MCP Tools
+
+| Tool | Purpose | Blocking |
+|------|---------|----------|
+| `notify()` | Fire-and-forget announcement | No |
+| `ask_yes_no()` | Binary yes/no decision | Yes |
+| `converse()` | Open-ended question | Yes |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
+
+### Key Features
+
+- **No [PREFIX] needed**: Project auto-detected from working directory
+- **No --target-user parameter**: Routing handled internally
+- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
 
 ### When to Send Notifications
-- **Need approval**: Before making significant changes (enhance existing approval workflow)
-- **Blocked/waiting**: When waiting for your input >2 minutes and can't proceed
-- **Errors encountered**: Unexpected errors requiring your guidance
-- **Task completion**: Major tasks finished or session milestones reached
-- **Clarifying questions**: When requirements are unclear
-- **Progress updates**: When you've finished a something on your to do list
 
-### Notification Guidelines
-**Priorities**:
-- `urgent`: Errors, blocked, time-sensitive questions
-- `high`: Approval requests, important status updates
-- `medium`: Progress milestones
-- `low`: Minor updates, to do list task completions, informational notices, progress updates
+- **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`
+- **Blocked/waiting**: Use `converse()` for open-ended questions
+- **Errors encountered**: Use `notify()` with `priority="urgent"`
+- **Task completion**: Use `notify()` with `priority="low"`
+- **Progress updates**: Use `notify()` with `notification_type="progress"`
 
-**Types**: task, progress, alert, custom
+### Notification Examples
 
-### Using the Global notify-claude Command
-The `notify-claude` command is available globally from any directory or project:
+```python
+# Fire-and-forget
+notify( "Task complete", notification_type="progress", priority="low" )
+notify( "Build failed", notification_type="alert", priority="urgent" )
 
-```bash
-notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
+# Blocking decisions
+ask_yes_no( "Commit these changes?", default="no", timeout_seconds=300 )
+converse( "Which approach?", response_type="open_ended", timeout_seconds=600 )
+ask_multiple_choice( questions=[
+    {
+        "question": "How to proceed?",
+        "header": "Action",
+        "multiSelect": False,
+        "options": [
+            {"label": "Option A", "description": "First choice"},
+            {"label": "Option B", "description": "Second choice"}
+        ]
+    }
+] )
 ```
 
-- **No setup required** - Command works from any directory
-- **Auto-detects COSA installation** - Uses COSA_CLI_PATH if set, or searches common paths
-- **Backward compatible** - All existing notify_user.py arguments supported
-- **Environment validation** - Use `notify-claude "test" --validate-env` to check configuration
+### Priority Guidelines
 
-### Notification Command Examples
-**Examples**:
-- `notify-claude "[SHORT_PROJECT_PREFIX] Need approval to modify 5 files for authentication system" --type=task --priority=high`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Blocked: Which database migration approach should I use?" --type=alert --priority=urgent`
-- `notify-claude "[SHORT_PROJECT_PREFIX] ✅ Email authentication system implementation complete" --type=task --priority=low`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Found potential issue in config file - should I fix it?" --type=alert --priority=medium`
+- `urgent`: Errors, blockers, time-sensitive
+- `high`: Session-ready, important status
+- `medium`: Progress milestones
+- `low`: Task completions, minor updates
 
-### Notification Tips
-- **Use the `[SHORT_PROJECT_PREFIX]`**: Whenever you are building to do lists or querying me using the notification endpoint you MUST use your project specific prefix to help me understand which repo the lists, notifications, or queries belong to
-- **`[SHORT_PROJECT_PREFIX]` is defined in your repo specific CLAUDE.md**: Each project will have its own `[SHORT_PROJECT_PREFIX]`
+### Full Documentation
 
-### DEPRECATED: Per-Project notify.sh Scripts
-**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude` command instead.
+**See**: planning-is-prompting → workflow/cosa-voice-integration.md
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages

@@ -10,7 +10,7 @@
 **Key capabilities**:
 - Real-time health monitoring with velocity forecasting
 - Adaptive boundary detection for natural split points
-- Dual-channel notifications (CLI + notify-claude)
+- Dual-channel notifications (CLI + cosa-voice MCP)
 - Four operational modes (check, archive, analyze, dry-run)
 - Integration with session-end workflows
 
@@ -20,7 +20,7 @@
 
 ### 1. Trigger-Based Detection (Not Calendar-Based)
 - Monitor token count continuously, not just at month boundaries
-- Alert before hitting 25k limit (thresholds: 20k warning, 22k critical)
+- Alert before hitting 25k limit (thresholds: 17k warning, 19k critical)
 - Forecast based on 7-day velocity trends
 
 ### 2. Context-Aware Splitting
@@ -50,21 +50,21 @@
 
 ### Severity Levels
 
-**🚨 CRITICAL** (≥22k tokens OR breach <3 days)
+**🚨 CRITICAL** (≥19k tokens OR breach <3 days)
 - Immediate action required
-- notify-claude priority: `urgent`
+- `notify()` priority: `urgent`
 - Blocks session-end until addressed
 - Recommendation: Archive immediately
 
-**⚠️ WARNING** (≥20k tokens OR breach <7 days)
+**⚠️ WARNING** (≥17k tokens OR breach <7 days)
 - Archive recommended soon
-- notify-claude priority: `high`
+- `notify()` priority: `high`
 - User decision: Archive now / Archive next session / Continue
 - Recommendation: Archive within 1-2 sessions
 
 **ℹ️ MONITOR** (breach <14 days)
 - Watch closely
-- notify-claude priority: `medium`
+- `notify()` priority: `medium`
 - No immediate action required
 - Recommendation: Plan archival within next week
 
@@ -87,7 +87,7 @@ velocity_30d = (current_tokens - tokens_30_days_ago) / 30
 
 **Forecast**:
 ```
-days_until_20k = (20000 - current_tokens) / velocity_7d
+days_until_17k = (17000 - current_tokens) / velocity_7d
 days_until_25k = (25000 - current_tokens) / velocity_7d
 ```
 
@@ -100,12 +100,12 @@ days_until_25k = (25000 - current_tokens) / velocity_7d
 **Purpose**: Health check with dual notification
 
 **Process**:
-1. Count tokens (word count × 1.33 approximation)
+1. Count tokens (character count ÷ 4 approximation)
 2. Calculate 7-day and 30-day velocity
 3. Forecast breach dates
 4. Determine severity level
 5. Display report in CLI
-6. Send notify-claude if severity ≥ MONITOR
+6. Send `notify()` if severity ≥ MONITOR
 
 **Output Format**:
 ```
@@ -121,9 +121,8 @@ Status: [ICON] [SEVERITY]
 ```
 
 **Notification Example** (if WARNING):
-```bash
-notify-claude "[PROJECT] ⚠️ History.md at 21k tokens - archive recommended" \
-  --type=alert --priority=high
+```python
+notify( "History.md at 18k tokens - archive recommended", notification_type="alert", priority="high" )
 ```
 
 ---
@@ -470,7 +469,7 @@ When implementing this workflow in a specific project, provide:
 # Output: Words, tokens, percentage, and health status (HEALTHY/WARNING/CRITICAL)
 
 # Alternative: Quick manual estimate
-wc -w history.md | awk '{print $1 * 1.33}'
+wc -c history.md | awk '{print int($1 / 4)}'
 
 # Full health check with velocity forecasting
 /history-management mode=check
@@ -508,7 +507,7 @@ ls history/ | grep "2025-09" | wc -l
 ## Troubleshooting
 
 ### Issue: Token count estimation inaccurate
-**Solution**: Word count × 1.33 is approximation. Use actual token counter if available, or be conservative with thresholds.
+**Solution**: Character count ÷ 4 is approximation (~46% more accurate than word × 1.33 for markdown/technical content). Use actual token counter if available, or rely on the 15% safety margin in thresholds (17k/19k vs 25k limit).
 
 ### Issue: Split creates too-small retention
 **Solution**: Algorithm validates minimum 5 days retention. Adjust `calculate_adaptive_retention()` if needed.

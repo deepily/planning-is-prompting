@@ -1,10 +1,243 @@
 ## Session Workflows
 
-**Session Start**: Read history.md and implementation document at start of each session
+**Session Start**: Read history.md, TODO.md, and implementation document at start of each session
 
 **Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+
+## PARALLEL SESSION SAFETY (v2.0)
+
+**Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
+
+**Mechanism**: Multi-section `.claude-session.md` manifest file in project root. Each session has its own section, enabling true parallel session support with conflict detection.
+
+**Format Version**: 2.0 (Multi-Session)
+
+### The Problem
+
+When multiple Claude Code sessions work on the same repository simultaneously:
+- Session A modifies `src/auth.py`, `src/utils.py`
+- Session B modifies `src/database.py`, `tests/test_db.py`
+- At Session A's commit time: `git status` shows ALL 4 files
+- **Without tracking**: Session A commits ALL 4 files (wrong!)
+- **With v2.0 tracking**: Session A commits only its 2 files (correct!)
+
+### The Solution: Multi-Section `.claude-session.md` Manifest (v2.0)
+
+**Format**:
+```markdown
+# Claude Session Manifest (Multi-Session)
+
+**Format Version**: 2.0
+**Last Updated**: 2026-01-31T10:30:00
+
+---
+
+## Session: 5c8a3081
+
+**Started**: 2026-01-31T09:00:00
+**Last Activity**: 2026-01-31T10:25:00
+**Status**: active
+**Project**: my-project
+
+### Touched Files
+
+- 2026-01-31T09:15:00 | src/auth.py
+- 2026-01-31T09:30:00 | src/utils.py
+
+---
+
+## Session: a357ab00
+
+**Started**: 2026-01-31T08:00:00
+**Last Activity**: 2026-01-31T10:20:00
+**Status**: active
+**Project**: my-project
+
+### Touched Files
+
+- 2026-01-31T08:30:00 | src/database.py
+- 2026-01-31T09:45:00 | tests/test_db.py
+
+---
+```
+
+**At Session-Start** (Step 3.5):
+1. Get session ID from `get_session_info()`
+2. Check for existing manifest:
+   - If v1.0 format → auto-migrate to v2.0
+   - If v2.0 format → search for your session's section
+3. Create/resume your section:
+   - Found + active → resume (context clear recovery)
+   - Not found → append new section
+4. Check for stale sessions (>24h inactive)
+
+**During Session** (after EVERY Edit/Write):
+
+**MANDATE**: Find YOUR section and append to `### Touched Files`:
+```markdown
+- 2026-01-31T10:35:00 | workflow/session-start.md
+```
+Also update `**Last Activity**` timestamp in your section.
+
+**At Session-End** (Step 3.5 + 4.4):
+1. Read your section from manifest
+2. **Conflict Detection**: Compare your files against other active sessions
+3. If conflict detected → prompt user (Include mine / Skip conflicts / Cancel)
+4. Stage ONLY files from your section (plus auto-includes)
+5. **NEVER** use `git add .` or `git add -A`
+6. Update your section: Status → `committed`, add commit hash
+7. If only section → delete manifest; if others active → keep manifest
+
+### Session Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Session running or may resume after context clear |
+| `committed` | Session completed commit successfully |
+| `stale` | Auto-detected: >24h inactive |
+
+### Conflict Detection
+
+When Session A commits and `src/config.py` was edited by both A and B:
+
+```
+⚠️  FILE CONFLICT DETECTED
+
+  src/config.py
+    • Session 5c8a3081 (this session): 2026-01-31T10:25:00
+    • Session a357ab00 (other session): 2026-01-31T09:45:00
+
+Options:
+  [1] Include mine - I made the relevant changes
+  [2] Skip conflicts - Let other session commit it
+  [3] Cancel - I'll investigate first
+```
+
+### Manifest Lifecycle (v2.0)
+
+| Event | Action |
+|-------|--------|
+| Session-start (new) | Create manifest with single section |
+| Session-start (resume) | Find section by ID, update Last Activity |
+| Session-start (parallel) | Append new section to existing manifest |
+| Every Edit/Write | Append to YOUR section only |
+| Session-end | Parse your section, check conflicts, selective commit |
+| After successful commit | Update status to `committed`, add commit hash |
+| Cleanup | Remove `committed` sections older than 7 days |
+| Context clear | Manifest persists, section found by ID on resume |
+
+### Auto-Include Files
+
+These files are always included in commits even if not in your section:
+- `history.md` - Session documentation
+- `TODO.md` - If modified
+- `CLAUDE.md` - If modified
+- `bug-fix-queue.md` - If bug-fix-mode active (v2.0 format with Active Sessions table)
+
+### Fallback: When Manifest is Missing
+
+If `.claude-session.md` doesn't exist (session-start was skipped):
+1. Display warning to user
+2. Show all modified files from `git status`
+3. Ask user: "Commit all", "Let me select", or "Cancel"
+
+### Backward Compatibility
+
+v1.0 manifests are auto-migrated to v2.0:
+- If file starts with `# Claude Session Manifest (Multi-Session)` → v2.0
+- If file starts with `# Claude Session Manifest` → v1.0 (migrate)
+
+Migration is automatic and transparent.
+
+### .gitignore Recommendation
+
+Add to your project's `.gitignore`:
+```
+.claude-session.md
+```
+
+### ⚠️ SESSION ISOLATION RULES (CRITICAL)
+
+**Multiple Claude sessions may run on the same repository simultaneously.** Each session has its own `## Session: {ID}` section. You **MUST** follow these rules:
+
+**ABSOLUTE PROHIBITIONS**:
+| ❌ NEVER | Why It's Forbidden |
+|----------|-------------------|
+| Modify another session's section | Corrupts their file tracking |
+| Overwrite the entire manifest | Destroys all parallel sessions' data |
+| Delete another session's section | They may still be working |
+| Read another session's files and stage them | Mixes unrelated commits |
+| Use `git add .` or `git add -A` | Stages another session's work |
+
+**MANDATORY SCOPING**:
+1. Get YOUR session ID: `get_session_info()`
+2. Find YOUR section: `## Session: {your_id}`
+3. Edit ONLY within YOUR section
+4. Leave other sections UNTOUCHED
+
+**Before EVERY manifest edit, verify**:
+```
+□ I know my session ID
+□ I found my section in the manifest
+□ My edit is ONLY within that section
+□ Other sessions' sections remain UNCHANGED
+```
+
+**If you corrupt another session's data, that Claude instance will commit wrong files or lose tracking entirely.**
+
+### Key Principle
+
+**Selective staging is strictly better than bulk staging.** Even when not working in parallel sessions, explicitly staging files prevents accidental commits of temporary files, IDE artifacts, or unintended changes.
+
+**See**: planning-is-prompting → workflow/session-start.md (Step 3.5) and workflow/session-end.md (Step 3.5 + 4.4)
+
+## TODO.md MANAGEMENT
+
+**Purpose**: Persistent tracking of pending work items across sessions.
+
+**Location**: `TODO.md` at project root (alongside `history.md`)
+
+**Workflow Integration**:
+- **Session-Start**: Read TODO.md to review pending items (Step 4.5)
+- **Session-End**: Update TODO.md with new items and mark completions (Step 1.5)
+
+**Key Principle**: TODO.md is the single source of truth for pending work. Do NOT embed TODO lists in history.md entries.
+
+**File Format**:
+```markdown
+# TODO
+
+Last updated: YYYY-MM-DD (Session N)
+
+## Pending
+- [ ] Item description
+
+## Completed (Recent)
+- [x] Item description - Session N
+```
+
+**Slash Command**: `/plan-todo` (modes: add, complete, edit)
+
+**Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
+
+## DOCUMENT SEPARATION RULES
+
+**Three-Document System** - Know what goes where:
+
+| Document | Purpose | ✅ Include | ❌ Exclude |
+|----------|---------|-----------|-----------|
+| **history.md** | Brief accomplishments | What was done, files changed | TODOs, phase tracking |
+| **TODO.md** | Pending work items | Tasks not yet done | Detailed step tracking |
+| **Implementation docs** | Multi-phase tracking | Phase/step progress | General TODOs |
+
+**Key Principle**: When user says "update all tracking documents":
+1. **First**: Update implementation docs with phase/step progress
+2. **Second**: Update TODO.md with pending items
+3. **Last**: Update history.md with brief accomplishments only
+
+**For complete guidance**: See planning-is-prompting → workflow/session-end.md (Document Separation Rules)
 
 ## INTERACTIVE REQUIREMENTS ELICITATION
 
@@ -195,55 +428,261 @@ source .venv/bin/activate  # Linux/Mac
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
-**Purpose**: Send me real-time audio notifications when you need feedback, approval, or are blocked waiting for input. This allows faster task completion by getting my attention immediately rather than waiting for me to check back.
 
-- **Command**: Use `notify-claude` (global command, works from any directory)
-- **Target**: ricardo.felipe.ruiz@gmail.com
-- **API Key**: claude_code_simple_key
-- **Requirements**: COSA_CLI_PATH environment variable (usually auto-detected)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
 
-### When to Send Notifications
-- **Need approval**: Before making significant changes (enhance existing approval workflow)
-- **Blocked/waiting**: When waiting for your input >2 minutes and can't proceed
-- **Errors encountered**: Unexpected errors requiring your guidance
-- **Task completion**: Major tasks finished or session milestones reached
-- **Clarifying questions**: When requirements are unclear
-- **Progress updates**: When you've finished a something on your to do list
+The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
 
-### Notification Guidelines
-**Priorities**:
-- `urgent`: Errors, blocked, time-sensitive questions
-- `high`: Approval requests, important status updates
-- `medium`: Progress milestones
-- `low`: Minor updates, to do list task completions, informational notices, progress updates
+### Available MCP Tools
 
-**Types**: task, progress, alert, custom
+| Tool | Purpose | Blocking | Example |
+|------|---------|----------|---------|
+| `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
+| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
+| `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
+| `get_session_info()` | Session metadata | No | `get_session_info()` |
 
-### Using the Global notify-claude Command
-The `notify-claude` command is available globally from any directory or project:
+### Key Features
 
-```bash
-notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
+- **No [PREFIX] needed**: Project auto-detected from working directory
+- **No --target-user parameter**: Routing handled internally by MCP server
+- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
+- **Native MCP tool calls**: No bash command execution required
+
+---
+
+### Fire-and-Forget Notifications
+
+Use `notify()` for progress updates, completions, alerts, and informational messages.
+
+**Parameters**:
+- `message` (required): The message to announce
+- `notification_type`: task | progress | alert | custom (default: task)
+- `priority`: urgent | high | medium | low (default: medium)
+- `abstract`: Supplementary context (markdown, URLs, details) shown in UI but not spoken
+- `suppress_ding`: Suppress notification sound while still speaking via TTS (default: false)
+
+**Priority Levels and Audio Behavior**:
+
+Priority determines **how the user is alerted**, not workflow importance:
+
+| Priority | Audio Behavior | When to Use |
+|----------|----------------|-------------|
+| `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures |
+| `high` | Prominent ping + TTS read aloud | Blocking decisions requiring response |
+| `medium` | Gentle ping | Informational updates user should notice |
+| `low` | Silent (no sound) | Background info, minor completions |
+
+**Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
+
+**Examples**:
+```python
+# Progress update (silent - background info)
+notify( "Starting session initialization...", notification_type="progress", priority="low" )
+
+# Session ready (gentle ping - informational)
+notify( "All set! Config loaded, ready to work.", notification_type="task", priority="medium" )
+
+# Error alert (alert tone + TTS - critical)
+notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
+
+# Conversational TTS without notification sound
+notify( "Task complete", suppress_ding=True )
 ```
 
-- **No setup required** - Command works from any directory
-- **Auto-detects COSA installation** - Uses COSA_CLI_PATH if set, or searches common paths
-- **Backward compatible** - All existing notify_user.py arguments supported
-- **Environment validation** - Use `notify-claude "test" --validate-env` to check configuration
+---
 
-### Notification Command Examples
-**Examples**:
-- `notify-claude "[SHORT_PROJECT_PREFIX] Need approval to modify 5 files for authentication system" --type=task --priority=high`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Blocked: Which database migration approach should I use?" --type=alert --priority=urgent`
-- `notify-claude "[SHORT_PROJECT_PREFIX] ✅ Email authentication system implementation complete" --type=task --priority=low`
-- `notify-claude "[SHORT_PROJECT_PREFIX] Found potential issue in config file - should I fix it?" --type=alert --priority=medium`
+### Blocking Decisions
 
-### Notification Tips
-- **Use the `[SHORT_PROJECT_PREFIX]`**: Whenever you are building to do lists or querying me using the notification endpoint you MUST use your project specific prefix to help me understand which repo the lists, notifications, or queries belong to
-- **`[SHORT_PROJECT_PREFIX]` is defined in your repo specific CLAUDE.md**: Each project will have its own `[SHORT_PROJECT_PREFIX]`
+Use blocking tools when you need user input before proceeding. All blocking tools support an optional `abstract` parameter for supplementary context (markdown, file lists, URLs) shown in UI but not spoken aloud.
 
-### DEPRECATED: Per-Project notify.sh Scripts
-**Old approach (DEPRECATED)**: Per-project `src/scripts/notify.sh` scripts are no longer needed and will be removed in the future. If you encounter these scripts in existing projects, use the global `notify-claude` command instead.
+#### ask_yes_no()
+
+For simple binary yes/no decisions.
+
+```python
+response = ask_yes_no(
+    question="Commit these changes?",
+    default="no",
+    timeout_seconds=300,
+    abstract="**Staged files**:\n- src/auth.py (+45/-12)\n- tests/test_auth.py (+67/-0)"
+)
+# Returns: {"answer": "yes"} or {"answer": "no"}
+```
+
+#### converse()
+
+For open-ended questions requiring text or voice response.
+
+```python
+response = converse(
+    message="Which migration approach should I use?",
+    response_type="open_ended",
+    timeout_seconds=600,
+    response_default="defer to next session"
+)
+# Returns: {"response": "Use incremental migration"}
+```
+
+#### ask_multiple_choice()
+
+For menu selections with 2-6 options. Uses same format as Claude Code's `AskUserQuestion`. Supports `title`, `priority`, `timeout_seconds`, and `abstract` parameters.
+
+```python
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "How would you like to proceed with the commit?",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Keep changes local"},
+                {"label": "Commit and push", "description": "Sync to remote"},
+                {"label": "Modify", "description": "Edit commit message"},
+                {"label": "Cancel", "description": "Skip commit"}
+            ]
+        }
+    ],
+    title="Commit Decision",
+    abstract="**Changed files**: 3 modified, 2 new\n**Diff summary**: +124/-45 lines"
+)
+# Returns: {"answers": {"0": "Commit and push"}}
+```
+
+---
+
+### Timeout Handling
+
+All blocking tools support timeout with safe defaults:
+
+| Tool | Default Timeout | Safe Default Action |
+|------|-----------------|---------------------|
+| `ask_yes_no()` | 300s (5 min) | Return `default` value |
+| `converse()` | 600s (10 min) | Return `response_default` |
+| `ask_multiple_choice()` | 300s (5 min) | Return first option or cancel |
+
+**Safe Default Principle**: On timeout, choose actions that preserve data integrity:
+- Commit decisions → default to "Cancel"
+- Archive decisions → default to "Next session"
+- Destructive actions → default to "No"
+
+---
+
+### Project Auto-Detection
+
+cosa-voice automatically detects project from working directory:
+
+| Directory Pattern | Detected Project |
+|-------------------|------------------|
+| `*/planning-is-prompting/*` | `plan` |
+| `*/genie-in-the-box/*` | `lupin` |
+| Other | Directory name |
+
+**No need for [PREFIX] in messages** - project context handled automatically.
+
+---
+
+### CRITICAL: The User Is NOT Watching the Terminal
+
+**Mental Model**: You are communicating with a user who may be:
+- In another room or away from the computer
+- Working on another task
+- Waiting for AUDIO alerts to know when you need them
+
+**PRIMARY vs SECONDARY Communication**:
+| Channel | Purpose | When User Sees It |
+|---------|---------|-------------------|
+| cosa-voice notifications | **PRIMARY** - Status, decisions | **Immediately** (audio alert) |
+| Terminal text output | SECONDARY - Detailed explanations | When user checks back |
+
+**Consequence**: If you complete work without notifying, the user has NO IDEA you finished.
+
+---
+
+### MANDATORY Notification Requirements
+
+**MANDATE**: You MUST send notifications for the events below. These are NOT suggestions.
+
+**Required `notify()` Events**:
+| Event | Priority | Requirement |
+|-------|----------|-------------|
+| TodoWrite item completed | low | **MUST** notify after EVERY item |
+| Phase/milestone complete | medium | **MUST** notify at phase boundaries |
+| Error encountered | urgent | **MUST** notify immediately |
+| Test suite finished | medium | **MUST** notify pass or fail |
+| Long process finished (>30s) | low | **MUST** notify completion |
+
+**Required Blocking Tool Events**:
+| Event | Tool | Requirement |
+|-------|------|-------------|
+| Before significant code changes | `ask_yes_no()` | **MUST** get approval |
+| Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
+| Unclear requirements | `converse()` | **MUST** clarify - never assume |
+| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
+
+**PROHIBITED Anti-Patterns** - **NEVER** do the following:
+1. **NEVER** complete a multi-step task without progress notifications
+2. **NEVER** finish work and "wait" for user to check back
+3. **NEVER** make architectural decisions without `ask_multiple_choice()`
+4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
+5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+
+---
+
+### Notification Accountability Checkpoint
+
+**MANDATE**: Before completing ANY task, execute this self-check:
+
+```
+NOTIFICATION VERIFICATION:
+□ Did I notify when I started significant work?
+□ Did I notify for each TodoWrite item completed?
+□ Did I use blocking tools when I needed decisions?
+□ Did I notify about any errors encountered?
+□ Will the user know I'm finished?
+```
+
+**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
+
+---
+
+### Integration with TodoWrite
+
+**MANDATE**: Notifications are TIED to TodoWrite status changes.
+
+**Protocol**:
+1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
+2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
+3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
+
+**CRITICAL**: A task is NOT complete until BOTH:
+- TodoWrite status is updated
+- Notification is sent
+
+---
+
+### Full Documentation
+
+For comprehensive patterns, examples, and migration reference:
+
+**See**: planning-is-prompting → workflow/cosa-voice-integration.md
+
+---
+
+### DEPRECATED (Removed)
+
+The following bash commands have been replaced by cosa-voice MCP tools:
+
+| Deprecated Command | Replacement |
+|--------------------|-------------|
+| `notify-claude-async` | `notify()` |
+| `notify-claude-sync --response-type=yes_no` | `ask_yes_no()` |
+| `notify-claude-sync --response-type=open_ended` | `converse()` |
+| `notify-claude-sync` with menu options | `ask_multiple_choice()` |
+| `notify-claude` | Removed entirely |
+
+The `bin/` directory with notification scripts has been removed. All notifications now use native MCP tool calls.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
@@ -322,6 +761,32 @@ notify-claude "MESSAGE" --type=TYPE --priority=PRIORITY
       "top_p": 1.0
   }
   ```
+- **Explicit Attribute Access**: NEVER use defensive `getattr()` chains with fallbacks
+  ```python
+  # ❌ PROHIBITED - Fragile attribute fishing
+  'agent_type': getattr( job, 'agent_class_name', getattr( job, 'JOB_TYPE', 'Unknown' ) )
+  agent_name = getattr( obj, 'name', getattr( obj, 'title', 'Unnamed' ) )
+
+  # ❌ PROHIBITED - Silent fallback hiding missing attributes
+  value = getattr( config, 'timeout', 30 )  # Hides that timeout should be required
+
+  # ✅ CORRECT - Object has explicit attributes from instantiation
+  'agent_type': job.agent_type  # Fails loudly if missing
+
+  # ✅ CORRECT - Use Optional typing with explicit None checks
+  if job.agent_type is not None:
+      process( job.agent_type )
+
+  # ✅ CORRECT - If fallback truly needed, be explicit about why
+  # Only acceptable when interfacing with external/legacy code you don't control
+  timeout = config.timeout if hasattr( config, 'timeout' ) else DEFAULT_TIMEOUT
+  ```
+
+  **Rationale**:
+  - Objects should be instantiated with all required information
+  - Missing attributes should fail at runtime, not silently fallback
+  - Explicit is better than implicit (Python Zen)
+  - Debugging is easier when errors happen at the source
 
 ## PATH MANAGEMENT
 **Purpose**: Use canonical path resolution instead of fragile relative path manipulation
@@ -802,7 +1267,7 @@ Total: 65 passed, 2 failed, 1 skipped
 
 ### Quick Reference
 
-**Token Thresholds**: 20k warning, 22k critical, velocity-based forecasting
+**Token Thresholds**: 17k warning, 19k critical, velocity-based forecasting (chars÷4 estimation)
 
 **Archive Naming**: `YYYY-MM-DD-to-DD-history.md` (partial month), no consolidation
 
@@ -813,8 +1278,13 @@ Total: 65 passed, 2 failed, 1 skipped
 For complete details, algorithms, and implementation, see the canonical workflow document above.
 
 ## Final instructions
-When you have arrived at this point in passing this CLAUDE.md file to me, please confirm you have read and understood all sections by responding with: 
+When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
-"CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+1. **Send a medium-priority notification** using the cosa-voice MCP server confirming your commitment:
+   ```
+   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "medium" )
+   ```
 
-Then, please summarize the key points of this CLAUDE.md file in a concise bullet point list.
+2. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+
+3. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.

@@ -142,16 +142,12 @@ Create a comprehensive todo list to track baseline collection progress:
 
 **If notification system is available**:
 
-```bash
-# Construct scope text if applicable
-SCOPE_TEXT="${1:-full}"  # From scope parameter, default to "full"
-
-# Send notification
-notify-claude "[{PREFIX}] 🔍 Baseline collection STARTED ({SCOPE_TEXT}) - Establishing pre-change system health metrics" --type=progress --priority=medium
+```python
+notify( "Baseline collection STARTED ({SCOPE_TEXT}) - Establishing pre-change system health metrics", notification_type="progress", priority="medium" )
 ```
 
 **Format**:
-- Use project prefix from config
+- Project auto-detected from working directory (no prefix needed)
 - Include scope if applicable
 - Type: progress
 - Priority: medium (not urgent, informative)
@@ -691,21 +687,17 @@ Write(file_path=report_file, content=report_content)
 
 **If notification system is available**:
 
-```bash
-# Construct scope text
-SCOPE_TEXT="${1:-full}"
-
+```python
 # Construct completion message with key metrics
-if [ "$SCOPE_TEXT" = "full" ]; then
-    notify-claude "[{PREFIX}] ✅ Baseline collection COMPLETE (FULL SUITE) - {XX.X%} overall pass rate, {health_status}, ready for changes" --type=progress --priority=medium
-else
-    notify-claude "[{PREFIX}] ✅ Baseline collection COMPLETE ({SCOPE_TEXT}) - {XX.X%} pass rate, {health_status}, ready for changes" --type=progress --priority=medium
-fi
+if scope == "full":
+    notify( "Baseline collection COMPLETE (FULL SUITE) - {pass_rate}% overall pass rate, {health_status}, ready for changes", notification_type="progress", priority="medium" )
+else:
+    notify( "Baseline collection COMPLETE ({scope}) - {pass_rate}% pass rate, {health_status}, ready for changes", notification_type="progress", priority="medium" )
 ```
 
 **Examples**:
-- `[LUPIN] ✅ Baseline collection COMPLETE (FULL SUITE) - 94.2% overall pass rate, GOOD health, ready for changes`
-- `[MYPROJECT] ✅ Baseline collection COMPLETE - 98.5% pass rate, EXCELLENT health, ready for changes`
+- `Baseline collection COMPLETE (FULL SUITE) - 94.2% overall pass rate, GOOD health, ready for changes`
+- `Baseline collection COMPLETE - 98.5% pass rate, EXCELLENT health, ready for changes`
 
 **Priority**: medium (informational, not urgent)
 

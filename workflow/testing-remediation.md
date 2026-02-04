@@ -258,13 +258,13 @@ Create comprehensive task list based on remediation scope:
 
 ### Step 2: Send Start Notification
 
-```bash
-notify-claude "[{PREFIX}] 🔧 Post-change remediation STARTED (${REMEDIATION_SCOPE}) - Comparing against baseline $(basename $BASELINE_REPORT)" --type=progress --priority=medium
+```python
+notify( "Post-change remediation STARTED ({scope}) - Comparing against baseline {baseline_name}", notification_type="progress", priority="medium" )
 ```
 
 **Examples**:
-- `[LUPIN] 🔧 Post-change remediation STARTED (FULL) - Comparing against baseline 2025.10.10-baseline-test-report.md`
-- `[MYPROJECT] 🔧 Post-change remediation STARTED (ANALYSIS_ONLY) - Analysis mode, no fixes will be applied`
+- `Post-change remediation STARTED (FULL) - Comparing against baseline 2025.10.10-baseline-test-report.md`
+- `Post-change remediation STARTED (ANALYSIS_ONLY) - Analysis mode, no fixes will be applied`
 
 ---
 
@@ -1178,17 +1178,16 @@ git reset --hard HEAD~1  # Go back one commit
 if [ "$FINAL_PASS_RATE" \> "$BASELINE_PASS_RATE" ]; then
     STATUS="✅ IMPROVED"
 elif [ "$FINAL_PASS_RATE" \< "$BASELINE_PASS_RATE" ]; then
-    STATUS="⚠️  DEGRADED"
-else
-    STATUS="➖ STABLE"
-fi
+    status = "DEGRADED"
+else:
+    status = "STABLE"
 
-notify-claude "[{PREFIX}] ✅ Remediation COMPLETE (${REMEDIATION_SCOPE}) - ${FINAL_PASS_RATE}% final pass rate (baseline: ${BASELINE_PASS_RATE}%), ${TOTAL_FIXES} issues fixed, system ${STATUS}" --type=progress --priority=medium
+notify( "Remediation COMPLETE ({scope}) - {final_rate}% final pass rate (baseline: {baseline_rate}%), {fixes} issues fixed, system {status}", notification_type="progress", priority="medium" )
 ```
 
 **Examples**:
-- `[LUPIN] ✅ Remediation COMPLETE (FULL) - 96.3% final pass rate (baseline: 94.2%), 5 issues fixed, system ✅ IMPROVED`
-- `[MYPROJECT] ✅ Remediation COMPLETE (CRITICAL_ONLY) - 92.1% final pass rate (baseline: 94.5%), 2 critical fixes, system ⚠️ DEGRADED`
+- `Remediation COMPLETE (FULL) - 96.3% final pass rate (baseline: 94.2%), 5 issues fixed, system IMPROVED`
+- `Remediation COMPLETE (CRITICAL_ONLY) - 92.1% final pass rate (baseline: 94.5%), 2 critical fixes, system DEGRADED`
 
 ---
 
@@ -1282,8 +1281,8 @@ categorize_issue() {
 - System becomes non-operational after fixes
 
 **Escalation notification**:
-```bash
-notify-claude "[{PREFIX}] 🚨 URGENT: Remediation requires immediate attention - {DESCRIPTION}" --type=alert --priority=urgent
+```python
+notify( "URGENT: Remediation requires immediate attention - {description}", notification_type="alert", priority="urgent" )
 ```
 
 ---
