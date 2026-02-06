@@ -757,9 +757,9 @@ ask_yes_no(
 )
 ```
 
-**If yes**: User clears context manually, will use `/plan-bug-fix-mode continue`.
+**If yes** (response starts with "yes", may include `[comment: ...]`): User clears context manually, will use `/plan-bug-fix-mode continue`.
 
-**If no**: Loop back to Step 4 (bug selection) in same context.
+**If no** (response starts with "no"): Loop back to Step 4 (bug selection) in same context.
 
 **TodoWrite Update**: Mark cycle complete.
 
@@ -1095,8 +1095,8 @@ ask_yes_no(
     abstract="**Warning**: Session manifest not found.\n\nThis could mean:\n- Bug fix mode wasn't properly initialized\n- Manifest was deleted\n\nContinuing will stage ALL modified files (risky if parallel sessions exist)."
 )
 ```
-If no: Return to fix work, reinitialize manifest.
-If yes: Use git status for file list (fallback mode).
+If no (starts with "no"): Return to fix work, reinitialize manifest.
+If yes (starts with "yes", may include `[comment: ...]`): Use git status for file list (fallback mode).
 
 **If manifest section has no files**:
 ```python
@@ -1107,8 +1107,8 @@ ask_yes_no(
     abstract="**Warning**: Manifest section has no files.\n\nThis could mean:\n- You haven't made any changes yet\n- Files were edited before manifest was initialized\n\nContinuing will create an empty commit (history.md + queue only)."
 )
 ```
-If no: Return to fix work.
-If yes: Continue with documentation-only commit.
+If no (starts with "no"): Return to fix work.
+If yes (starts with "yes", may include `[comment: ...]`): Continue with documentation-only commit.
 
 **If current bug is ambiguous** (multiple bugs in queue):
 ```python
@@ -1643,8 +1643,8 @@ ask_yes_no(
 )
 ```
 
-If yes: Execute session closure (Steps 15-17) - only affects YOUR session.
-If no: Skip, leave your bug fix session open.
+If yes (starts with "yes", may include `[comment: ...]`): Execute session closure (Steps 15-17) - only affects YOUR session.
+If no (starts with "no"): Skip, leave your bug fix session open.
 
 **If YOUR session is NOT in Active Sessions table:**
 

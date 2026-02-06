@@ -1,6 +1,6 @@
 # cosa-voice MCP Integration
 
-Voice I/O bridge via cosa-voice MCP server v0.2.0. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
+Voice I/O bridge via cosa-voice MCP server v0.2.1. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
 
 ---
 
@@ -113,7 +113,7 @@ NOTIFICATION VERIFICATION:
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
 | `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract, suppress_ding |
-| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract |
+| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract, job_id |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
 | `get_session_info()` | Session metadata (project, sender_id) | No | (none) |
@@ -207,7 +207,7 @@ Use blocking tools when you need user input before proceeding. All blocking tool
 
 ### ask_yes_no()
 
-For simple binary yes/no decisions.
+For simple binary yes/no decisions. Users can optionally attach a qualifying comment to their answer.
 
 **Parameters**:
 
@@ -218,18 +218,69 @@ For simple binary yes/no decisions.
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
 | `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
+| `job_id` | string | No | Agentic job ID for routing to job cards (e.g., `"dr-a1b2c3d4"`) |
+
+#### Response Format
+
+The response string can be one of four variants:
+
+| Response | Meaning |
+|----------|---------|
+| `"yes"` | Plain approval |
+| `"no"` | Plain rejection |
+| `"yes [comment: ...]"` | Approval with qualifying comment |
+| `"no [comment: ...]"` | Rejection with qualifying comment |
+
+**When checking responses**, use `startswith()` to handle both plain and commented variants:
+
+```python
+response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
+
+# ✅ CORRECT - handles both plain and commented responses
+if response.startswith( "yes" ):
+    proceed_with_commit()
+
+# ❌ WRONG - misses "yes [comment: only the docs]"
+if response == "yes":
+    proceed_with_commit()
+```
+
+#### Qualified Comments
+
+Users can attach a qualifying comment to their yes/no answer by pressing **C** to expand a comment input field. Comments provide additional context without changing the binary decision.
+
+**How it works**:
+- User presses **Y** or **N** for plain yes/no (immediate response)
+- User presses **C** to expand comment field (300 char max)
+- Comment field accepts voice input (mic button) or text input
+- Input guard prevents Y/N keys from triggering while typing in the comment field
+- After entering comment, user presses **Y** or **N** to submit with the comment attached
+
+**Example responses**:
+- `"yes"` - plain approval
+- `"yes [comment: only the March ones]"` - approval with context
+- `"no [comment: let me review the diff first]"` - rejection with explanation
 
 **Example**:
 
 ```python
-# Commit approval
+# Commit approval with comment handling
 response = ask_yes_no(
     question="Commit these 5 files to the repository?",
     default="no",
     timeout_seconds=300,
     priority="high"  # MANDATORY for blocking tools
 )
-# Returns: {"answer": "yes"} or {"answer": "no"}
+
+# Handle response (may include qualified comment)
+if response.startswith( "yes" ):
+    # Extract comment if present
+    if "[comment:" in response:
+        comment = response.split( "[comment: " )[1].rstrip( "]" )
+        # Use comment for commit message annotation, logging, etc.
+    proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
 ```
 
 ### converse()
@@ -593,6 +644,14 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.02.06**: Documented `ask_yes_no()` qualified comment feature (v0.2.1)
+  - Updated version from v0.2.0 to v0.2.1
+  - Added `job_id` parameter to `ask_yes_no()` parameter table and Available MCP Tools summary
+  - Added **Response Format** subsection with four return variants (plain and commented)
+  - Added **Qualified Comments** subsection (C key, 300 char max, voice/text input, input guard)
+  - Updated example to show `startswith()` response handling with comment parsing
+  - Key insight: Use `response.startswith( "yes" )` instead of `response == "yes"` to handle commented responses
 
 - **2026.01.25 (Session 49)**: Added `suppress_ding` parameter documentation
   - Added `suppress_ding` parameter to notify() parameter table

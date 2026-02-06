@@ -32,7 +32,7 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 **MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
 - `notify()`: Fire-and-forget (progress updates, completions)
-- `ask_yes_no()`: Binary yes/no decisions
+- `ask_yes_no()`: Binary yes/no decisions (response may include `[comment: ...]` qualifier - use `startswith("yes")` not `== "yes"`)
 - `ask_multiple_choice()`: Menu selections (commit approval, archive decision)
 - `converse()`: Open-ended questions
 
@@ -274,7 +274,7 @@ Health: ✅ HEALTHY
    )
    ```
 
-   - **If YES**: Execute bug fix mode closure:
+   - **If YES** (response starts with "yes", may include `[comment: ...]`): Execute bug fix mode closure:
      1. Finalize history.md session entry with summary
      2. Archive completed bugs in queue (or clear queue)
      3. Send notification: `notify( "Bug fix session closed", notification_type="progress", priority="low" )`
@@ -1030,7 +1030,7 @@ Tip: Dry-run first to preview, then execute."""
    )
    ```
 
-4. **If yes** → execute actual backup:
+4. **If yes** (response starts with "yes", may include `[comment: ...]`) → execute actual backup:
    ```bash
    ./src/scripts/backup.sh --write
    ```
@@ -1039,7 +1039,7 @@ Tip: Dry-run first to preview, then execute."""
    notify( "Backup complete", notification_type="task", priority="low" )
    ```
 
-5. **If no** → notify and continue:
+5. **If no** (response starts with "no") → notify and continue:
    ```python
    notify( "Backup skipped after dry-run review", notification_type="progress", priority="low" )
    ```

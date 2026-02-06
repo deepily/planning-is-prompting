@@ -1,13 +1,27 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 61
+**RESUME HERE**: Session 62
 
-**Current Status**: Ad-hoc bug triage
-**Last Session**: Session 61 - Bug Triage
+**Current Status**: Documenting cosa-voice v0.2.1 qualified comment feature
+**Last Session**: Session 62 - Documentation Update
 
 ---
 
 ## February 2026
+
+### 2026.02.06 - Session 62 | cosa-voice v0.2.1 Documentation
+
+#### Checkpoint | 2026.02.06 | Document ask_yes_no() qualified comment feature
+
+**Accomplishments**:
+- Updated `cosa-voice-integration.md` (canonical): v0.2.0 → v0.2.1, added `job_id` param, new Response Format + Qualified Comments subsections, version history entry
+- Updated `global/CLAUDE.md` and `~/.claude/CLAUDE.md`: v0.2.1 version, updated ask_yes_no() return format documentation
+- Audited 4 workflow consumers: session-end.md, branch-pr-and-merge.md, bug-fix-mode.md, session-checkpoint.md - added `startswith("yes")` response handling notes at all ask_yes_no() response sites
+
+**Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md, ~/.claude/CLAUDE.md, workflow/session-end.md, workflow/branch-pr-and-merge.md, workflow/bug-fix-mode.md, workflow/session-checkpoint.md
+**Commit**: 9f003ee
+
+---
 
 ### 2026.02.05 - Session 61 | Bug Triage
 

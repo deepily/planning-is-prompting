@@ -429,7 +429,7 @@ source .venv/bin/activate  # Linux/Mac
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.1)
 
 The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
 
@@ -499,7 +499,7 @@ Use blocking tools when you need user input before proceeding. All blocking tool
 
 #### ask_yes_no()
 
-For simple binary yes/no decisions.
+For simple binary yes/no decisions. Users can press **C** to attach a qualifying comment (300 char max).
 
 ```python
 response = ask_yes_no(
@@ -508,7 +508,8 @@ response = ask_yes_no(
     timeout_seconds=300,
     abstract="**Staged files**:\n- src/auth.py (+45/-12)\n- tests/test_auth.py (+67/-0)"
 )
-# Returns: {"answer": "yes"} or {"answer": "no"}
+# Returns: "yes", "no", "yes [comment: ...]", or "no [comment: ...]"
+# Use response.startswith( "yes" ) to handle both plain and commented responses
 ```
 
 #### converse()

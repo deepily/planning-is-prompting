@@ -117,8 +117,8 @@ ask_yes_no(
     abstract="**Warning**: Without session tracking, ALL modified files from git status will be staged.\n\nThis may include files from parallel sessions.\n\nRecommendation: Run /plan-session-start first to initialize tracking."
 )
 ```
-If no: Exit with instructions to run session-start.
-If yes: Use git status for file list (fallback mode).
+If no (starts with "no"): Exit with instructions to run session-start.
+If yes (starts with "yes", may include `[comment: ...]`): Use git status for file list (fallback mode).
 
 **If no files tracked** (empty manifest section):
 ```python
@@ -129,8 +129,8 @@ ask_yes_no(
     abstract="**Note**: Your session has no tracked file modifications.\n\nCommit will include only:\n- history.md (checkpoint entry)\n- TODO.md (if modified)"
 )
 ```
-If no: Exit, return to work.
-If yes: Continue with documentation-only commit.
+If no (starts with "no"): Exit, return to work.
+If yes (starts with "yes", may include `[comment: ...]`): Continue with documentation-only commit.
 
 **TaskUpdate**: Mark Step 1 complete.
 

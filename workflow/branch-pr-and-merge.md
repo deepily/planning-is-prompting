@@ -849,8 +849,8 @@ ask_yes_no(
 )
 ```
 
-- **If YES**: Continue to Step 7
-- **If NO**: Re-prompt or offer to cancel
+- **If YES** (response starts with "yes", may include `[comment: ...]`): Continue to Step 7
+- **If NO** (response starts with "no"): Re-prompt or offer to cancel
 
 **TaskUpdate**: Mark Step 6 complete.
 
@@ -920,7 +920,7 @@ ask_yes_no(
 )
 ```
 
-### If Yes
+### If Yes (response starts with "yes", may include `[comment: ...]`)
 
 1. **Delete local branch**:
    ```bash
@@ -986,7 +986,7 @@ ask_yes_no(
 )
 ```
 
-### If Yes
+### If Yes (response starts with "yes", may include `[comment: ...]`)
 
 ```bash
 git tag [version]
