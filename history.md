@@ -1,13 +1,24 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 60
+**RESUME HERE**: Session 61
 
-**Current Status**: Bug Fix Mode active
-**Last Session**: Session 60 - Bug Fix Mode
+**Current Status**: Ad-hoc bug triage
+**Last Session**: Session 61 - Bug Triage
 
 ---
 
 ## February 2026
+
+### 2026.02.05 - Session 61 | Bug Triage
+
+**Accomplishments**:
+- Recorded bug: `/plan-history-management` is hardcoded to Planning-is-Prompting project paths - when invoked from Lupin it manages PiP's history.md instead of Lupin's
+- Added bug to `bug-fix-queue.md` (Queued section)
+- Updated `TODO.md` with bug description
+
+**Files Modified**: TODO.md, bug-fix-queue.md, history.md
+
+---
 
 ### 2026.02.04 - Session 60 | Bug Fix Mode
 
@@ -37,7 +48,7 @@
 
 - **Files**: workflow/installation-wizard.md, workflow/branch-pr-and-merge.md, workflow/cosa-voice-integration.md, ~/.claude/CLAUDE.md
 - **Tests**: Documentation validation PASS
-- **Commit**: [pending]
+- **Commit**: b5aa3bd
 
 ### Session Summary
 (Will be completed at session close)

@@ -1,9 +1,10 @@
 # TODO
 
-Last updated: 2026-01-31 (Session 56)
+Last updated: 2026-02-05 (Session 61)
 
 ## Pending
 
+- [ ] **BUG**: `/plan-history-management` is hardcoded to Planning-is-Prompting project paths - when invoked from Lupin it manages PiP's history.md instead of Lupin's. Slash command needs to be project-aware (use project root detection, not hardcoded paths)
 - [ ] Verify testing-development skill activation in new Claude Code session
 - [ ] Consider extracting other large CLAUDE.md sections if needed (notifications, path management)
 - [ ] Test new token estimation on Lupin repo history.md after compaction

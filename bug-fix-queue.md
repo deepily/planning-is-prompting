@@ -19,7 +19,7 @@
 
 (Available for any session to claim)
 
-(none)
+- [ ] `/plan-history-management` hardcoded to PiP project paths - manages wrong project's history when invoked from Lupin (ad-hoc)
 
 ---
 
@@ -33,11 +33,11 @@
 
 ### Completed
 
-- [x] Bug 5: New branch name prompt timeout too short - doubled from 5 to 10 min (branch-pr-and-merge.md) | By: f428d212
-- [x] Bug 4: Release tag creation default should be "no" (branch-pr-and-merge.md) | By: f428d212
-- [x] Bug 3: Blocking tools missing priority="high" mandate (global CLAUDE.md, cosa-voice-integration.md, branch-pr-and-merge.md) | By: f428d212
-- [x] Bug 2: Branch deletion default="yes" is unsafe (branch-pr-and-merge.md) | By: f428d212
-- [x] Bug 1: Branch PR and Merge workflow missing from installation wizard catalog (installation-wizard.md) | By: f428d212
+- [x] Bug 5: New branch name prompt timeout too short - doubled from 5 to 10 min (branch-pr-and-merge.md) -> commit: b5aa3bd | By: f428d212
+- [x] Bug 4: Release tag creation default should be "no" (branch-pr-and-merge.md) -> commit: b5aa3bd | By: f428d212
+- [x] Bug 3: Blocking tools missing priority="high" mandate (global CLAUDE.md, cosa-voice-integration.md, branch-pr-and-merge.md) -> commit: b5aa3bd | By: f428d212
+- [x] Bug 2: Branch deletion default="yes" is unsafe (branch-pr-and-merge.md) -> commit: b5aa3bd | By: f428d212
+- [x] Bug 1: Branch PR and Merge workflow missing from installation wizard catalog (installation-wizard.md) -> commit: b5aa3bd | By: f428d212
 - [x] Implement mid-session checkpoint workflow (/plan-session-checkpoint) (feature) -> commit: d55274e | By: 2f9bb363
 - [x] Implement parallel-session-friendly bug fix queue v2.0 (feature) -> commit: 58960d5 | By: c4cb0832
 
