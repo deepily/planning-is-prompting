@@ -429,7 +429,7 @@ source .venv/bin/activate  # Linux/Mac
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.1)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0)
 
 The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
 
@@ -441,6 +441,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
 | `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
 | `get_session_info()` | Session metadata | No | `get_session_info()` |
 
 ### Key Features
@@ -551,6 +552,26 @@ response = ask_multiple_choice(
 # Returns: {"answers": {"0": "Commit and push"}}
 ```
 
+#### ask_open_ended_batch()
+
+For asking multiple open-ended questions at once on a single screen. Much faster than sequential `converse()` calls when gathering 2+ related answers.
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "What is the main goal?", "header": "Goal"},
+        {"question": "Any constraints?", "header": "Constraints"},
+        {"question": "Target branch?", "header": "Branch", "default_value": "main"}
+    ],
+    title="Requirements",
+    priority="high",  # MANDATORY for blocking tools
+    abstract="Gathering requirements before planning."
+)
+# Returns: {"answers": {"Goal": "Add OAuth2", "Constraints": "Use existing DB", "Branch": "main"}}
+```
+
+The optional `default_value` key pre-fills the text input so the user can accept defaults by hitting **Submit All**.
+
 ---
 
 ### Timeout Handling
@@ -562,6 +583,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_yes_no()` | 300s (5 min) | Return `default` value |
 | `converse()` | 600s (10 min) | Return `response_default` |
 | `ask_multiple_choice()` | 300s (5 min) | Return first option or cancel |
+| `ask_open_ended_batch()` | 300s (5 min) | Return empty dict or timeout message |
 
 **Safe Default Principle**: On timeout, choose actions that preserve data integrity:
 - Commit decisions → default to "Cancel"

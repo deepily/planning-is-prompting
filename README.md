@@ -23,7 +23,7 @@ Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation 
 
 ### Infrastructure
 
-- **cosa-voice MCP Integration** - Migrated all notifications from bash scripts to native MCP tools (`notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `converse()`). No script installation required.
+- **cosa-voice MCP Integration** - Migrated all notifications from bash scripts to native MCP tools (`notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `ask_open_ended_batch()`, `converse()`). No script installation required.
 
 - **Persistent TODO.md** - Cross-session task tracking that survives history archival. Single source of truth for pending work.
 
@@ -186,7 +186,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### Git & Notifications
 - [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
 - [**branch-pr-and-merge.md**](workflow/branch-pr-and-merge.md) - Branch completion, PR creation, and merge workflow
-- [**cosa-voice-integration.md**](workflow/cosa-voice-integration.md) - cosa-voice MCP server integration (v0.2.0), voice I/O tools, AskUserQuestion-compatible format
+- [**cosa-voice-integration.md**](workflow/cosa-voice-integration.md) - cosa-voice MCP server integration (v0.3.0), voice I/O tools, AskUserQuestion-compatible format
 
 **Notification System**: Uses cosa-voice MCP server (no script installation required)
 - `notify()` - Fire-and-forget announcements

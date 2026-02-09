@@ -69,13 +69,14 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Three-Phase Pattern**: This workflow uses progress notifications during initialization, then a blocking question once ready.
 
-**MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
+**MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 
 **Available Tools**:
 - `notify()` - Fire-and-forget announcements (progress updates)
 - `ask_yes_no()` - Binary yes/no decisions
 - `converse()` - Open-ended questions
 - `ask_multiple_choice()` - Menu selections (blocking, mirrors AskUserQuestion)
+- `ask_open_ended_batch()` - Batch open-ended questions (single screen, blocking)
 
 **When to Send Notifications**:
 1. **Start Notification** (Preliminary step, before Step 0):

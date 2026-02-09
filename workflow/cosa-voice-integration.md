@@ -1,6 +1,6 @@
 # cosa-voice MCP Integration
 
-Voice I/O bridge via cosa-voice MCP server v0.2.1. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
+Voice I/O bridge via cosa-voice MCP server v0.3.0. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
 
 ---
 
@@ -116,6 +116,7 @@ NOTIFICATION VERIFICATION:
 | `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract, job_id |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | questions (with optional default_value), timeout_seconds, priority, title, abstract |
 | `get_session_info()` | Session metadata (project, sender_id) | No | (none) |
 
 ---
@@ -386,6 +387,73 @@ response = ask_multiple_choice(
 )
 ```
 
+### ask_open_ended_batch()
+
+For asking multiple open-ended questions at once on a single screen. Each question gets its own text input with mic button. User answers all questions and submits once — much faster than sequential `converse()` calls.
+
+**Parameters**:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `questions` | array | Yes | Array of question objects (see format below) |
+| `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert |
+| `title` | string | No | Short title for the notification |
+| `abstract` | string | No | Supplementary context (markdown) shown in UI |
+
+**Question Object Format**:
+
+```python
+{
+    "question": "What topic would you like to research?",  # Displayed to user
+    "header": "Topic",                                      # Key used in response dict
+    "default_value": "quantum computing"                    # Optional: pre-fills text input
+}
+```
+
+The optional `default_value` key pre-fills the text input field so the user can accept defaults by simply hitting **Submit All** without typing. Omit the key for questions that have no sensible default.
+
+**Example - Requirements Gathering**:
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "What is the main goal of this feature?", "header": "Goal"},
+        {"question": "Are there any constraints or dependencies?", "header": "Constraints"},
+        {"question": "What does success look like?", "header": "Success"}
+    ],
+    title="Requirements",
+    priority="high",  # MANDATORY for blocking tools
+    abstract="Gathering requirements before implementation planning."
+)
+# Returns: {"answers": {"Goal": "Add OAuth2 login", "Constraints": "Must use existing user table", "Success": "Users can log in with Google"}}
+```
+
+**Example - With Default Values**:
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "Target branch for the PR?", "header": "Branch", "default_value": "main"},
+        {"question": "Any additional reviewers?", "header": "Reviewers", "default_value": "none"},
+        {"question": "Release notes entry?", "header": "Notes"}
+    ],
+    priority="high",
+    title="PR Details"
+)
+# User hits Submit All without changes:
+# Returns: {"answers": {"Branch": "main", "Reviewers": "none", "Notes": ""}}
+```
+
+**When to use `ask_open_ended_batch()` vs `converse()`**:
+- **`converse()`**: Single question needing a detailed response
+- **`ask_open_ended_batch()`**: 2+ related questions that can be answered together
+
+**When to use `default_value`**:
+- Configuration questions with sensible defaults (branch names, timeouts, paths)
+- Follow-up questions where previous context suggests an answer
+- Optional fields where "none" or "skip" is a common response
+
 ---
 
 ## Project Auto-Detection
@@ -476,6 +544,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_yes_no()` | 300s (5 min) | 180-600s | Return `default` value |
 | `converse()` | 600s (10 min) | 300-900s | Return `response_default` |
 | `ask_multiple_choice()` | 300s (5 min) | 180-600s | Return first option or cancel |
+| `ask_open_ended_batch()` | 300s (5 min) | 180-600s | Return empty dict or timeout message |
 
 **Safe Default Principle**: When timeout occurs, choose the action that preserves data integrity and user control:
 - Commit decisions → default to "Cancel" (don't auto-commit)
@@ -644,6 +713,14 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)
+  - Updated version from v0.2.1 to v0.3.0
+  - Added `ask_open_ended_batch()` row to Available MCP Tools table (now 6 tools)
+  - Added full `### ask_open_ended_batch()` section with parameters, question object format, 2 examples, and usage guidance
+  - Added `default_value` documentation for pre-filling text inputs
+  - Added row to Timeout Handling table (now 4 blocking tools)
+  - Key insight: Use for gathering 2+ related answers on a single screen instead of sequential `converse()` calls
 
 - **2026.02.06**: Documented `ask_yes_no()` qualified comment feature (v0.2.1)
   - Updated version from v0.2.0 to v0.2.1

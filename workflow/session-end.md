@@ -30,10 +30,11 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
 
-**MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
+**MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 - `notify()`: Fire-and-forget (progress updates, completions)
 - `ask_yes_no()`: Binary yes/no decisions (response may include `[comment: ...]` qualifier - use `startswith("yes")` not `== "yes"`)
 - `ask_multiple_choice()`: Menu selections (commit approval, archive decision)
+- `ask_open_ended_batch()`: Batch open-ended questions (single screen, blocking)
 - `converse()`: Open-ended questions
 
 **Key Simplifications**:
