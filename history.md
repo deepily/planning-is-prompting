@@ -1,13 +1,33 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 63
+**RESUME HERE**: Session 64
 
-**Current Status**: Bug Fix Mode session
-**Last Session**: Session 63 - Bug Fix Mode
+**Current Status**: Plan file serialization directive implementation
+**Last Session**: Session 64 - Plan File Serialization
 
 ---
 
 ## February 2026
+
+### 2026.02.13 - Session 64 | Plan File Serialization Directive
+
+#### Checkpoint | 2026.02.13 22:00 | Plan file serialization: workflow, skill, R&D doc, CLAUDE.md directive, install docs
+
+**Accomplishments**:
+- Created canonical workflow `workflow/plan-serialization.md` (241 lines): full rationale, decision criteria, serialization patterns, naming examples
+- Created global skill `~/.claude/skills/plan-serialization/SKILL.md` (108 lines): trigger-activated guidance for any repo
+- Created R&D research document `src/rnd/2026.02.13-plan-file-serialization-recommendation.md` (94 lines): 169-file analysis, naming convention breakdown
+- Added PLAN FILE SERIALIZATION section to `~/.claude/CLAUDE.md` and `global/CLAUDE.md` (~20 lines each, verified identical)
+- Added Plan File Management subsection to `README.md` with links to workflow + R&D doc
+- Added [L] Plan Serialization catalog entry + menu item to `workflow/installation-wizard.md`
+- Added full installation section to `workflow/INSTALLATION-GUIDE.md` (before Meta-Workflow Tools)
+- Plan: src/rnd/2026.02.13-plan-file-serialization-recommendation.md
+
+**Files**: workflow/plan-serialization.md, src/rnd/2026.02.13-plan-file-serialization-recommendation.md, global/CLAUDE.md, README.md, workflow/installation-wizard.md, workflow/INSTALLATION-GUIDE.md
+**Commit**: b0f34ba
+
+### Session Summary
+(Will be completed at session close)
 
 ### 2026.02.09 - Session 63 | cosa-voice v0.3.0 Documentation
 
@@ -23,7 +43,7 @@
 - Updated `workflow/session-start.md` and `workflow/session-end.md`: tool bullet lists, version bumps
 
 **Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md, CLAUDE.md, README.md, workflow/claude-config-global.md, workflow/session-start.md, workflow/session-end.md
-**Commit**: b75d3fb
+**Commit**: abe6ae5
 
 ### Session Summary
 (Will be completed at session close)

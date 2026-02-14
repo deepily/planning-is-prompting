@@ -195,6 +195,10 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 **Prerequisites**: cosa-voice MCP server installed and configured. See [cosa-voice-integration.md](workflow/cosa-voice-integration.md).
 
+### Plan File Management
+- [**plan-serialization.md**](workflow/plan-serialization.md) - Behavioral directive for preserving non-trivial plan files with semantic names
+- [**Research: Plan File Serialization**](src/rnd/2026.02.13-plan-file-serialization-recommendation.md) - Data analysis backing the serialization recommendation (169 files, naming convention breakdown)
+
 ## Usage
 
 Each workflow file contains:

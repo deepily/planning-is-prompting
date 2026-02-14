@@ -328,6 +328,32 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Behavioral Directives (Optional)
+
+```json
+{
+  "id": "plan-serialization",
+  "name": "Plan Serialization",
+  "description": "Preserve non-trivial plan files with semantic names in src/rnd/",
+  "category": "optional",
+  "recommended": false,
+  "commands": [],
+  "behavioral_directive": true,
+  "installs_to": "CLAUDE.md section + global skill",
+  "dependencies": {
+    "files": ["src/rnd/ (directory)"],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    "CLAUDE.md section: PLAN FILE SERIALIZATION",
+    "~/.claude/skills/plan-serialization/SKILL.md (global, not project-local)"
+  ],
+  "notes": "No slash command - this is a practice directive, not a procedure. Adds behavioral mandate to serialize non-trivial plans from ~/.claude/plans/ to project src/rnd/ with semantic names."
+}
+```
+
 ### Utility Workflows (Optional)
 
 ```json
@@ -1026,12 +1052,23 @@ Available Workflows:
     Dependencies: None
     Note: Allows safe workflow removal with confirmation
 
+┌─────────────────────────────────────────────────────────┐
+│ BEHAVIORAL DIRECTIVES (Optional - practice directives)  │
+└─────────────────────────────────────────────────────────┘
+
+[L] Plan Serialization
+    Preserve non-trivial plan files with semantic names in src/rnd/
+    Behavioral directive: Adds PLAN FILE SERIALIZATION section to CLAUDE.md
+    Skills: Installs ~/.claude/skills/plan-serialization/ (global)
+    Dependencies: src/rnd/ directory
+    Note: No slash command - this is a practice directive, not a procedure
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I + J + K)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]

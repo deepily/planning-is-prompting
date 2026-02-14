@@ -1300,6 +1300,29 @@ Total: 65 passed, 2 failed, 1 skipped
 
 For complete details, algorithms, and implementation, see the canonical workflow document above.
 
+## PLAN FILE SERIALIZATION
+
+**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
+
+**The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
+
+**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+
+```
+~/.claude/plans/dreamy-wiggling-pretzel.md
+  → <project>/src/rnd/2026.02.07-runtime-args-whitelist-expeditor.md
+```
+
+**Naming**: `yyyy.mm.dd-descriptive-slug.md` (3-6 hyphenated words capturing the plan's SUBJECT)
+
+**Serialize when**: Architectural decisions, >30min development, needs cross-session recall, multi-step implementation.
+
+**Skip when**: Tiny plans (<1KB), abandoned plans, trivial fixes, session-specific only.
+
+**Detailed Reference**: See `~/.claude/skills/plan-serialization/SKILL.md`
+
+**Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
+
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 

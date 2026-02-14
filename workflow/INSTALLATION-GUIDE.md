@@ -1994,6 +1994,93 @@ Each wrapper configures different test script paths and scopes.
 
 ---
 
+## Plan Serialization
+
+### What It Does
+
+**Behavioral directive** to serialize non-trivial plan files from `~/.claude/plans/` to project `src/rnd/` with semantic names. Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, the plans directory becomes unsearchable. This directive formalizes an existing ad-hoc pattern of manually copying important plans to R&D directories.
+
+**Key difference**: This is a **practice directive**, not a procedure. There is no slash command — the behavior is triggered by awareness of the mandate during plan mode and session-end.
+
+### Install as CLAUDE.md Section
+
+Add this section to your project's CLAUDE.md (after HISTORY DOCUMENT MANAGEMENT, before Final instructions):
+
+```markdown
+## PLAN FILE SERIALIZATION
+
+**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
+
+**The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
+
+**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+
+\```
+~/.claude/plans/dreamy-wiggling-pretzel.md
+  → <project>/src/rnd/2026.02.07-runtime-args-whitelist-expeditor.md
+\```
+
+**Naming**: `yyyy.mm.dd-descriptive-slug.md` (3-6 hyphenated words capturing the plan's SUBJECT)
+
+**Serialize when**: Architectural decisions, >30min development, needs cross-session recall, multi-step implementation.
+
+**Skip when**: Tiny plans (<1KB), abandoned plans, trivial fixes, session-specific only.
+
+**Detailed Reference**: See `~/.claude/skills/plan-serialization/SKILL.md`
+
+**Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
+```
+
+### Install Global Skill
+
+Copy the skill to the global skills directory (this is a **global** skill, not project-local):
+
+```bash
+mkdir -p ~/.claude/skills/plan-serialization
+# Copy SKILL.md content from planning-is-prompting repository
+```
+
+The skill activates on trigger phrases: "serialize plan", "save plan", "archive plan", "plan to rnd", "preserve this plan", "keep this plan".
+
+### Dependencies
+
+| Dependency | Required? | Notes |
+|-----------|-----------|-------|
+| `src/rnd/` directory | Yes | Must exist in target project |
+| Session-end workflow | No | Integration point for reactive serialization |
+| history.md | No | Reference serialized file paths in session entries |
+
+### Decision Criteria
+
+| Serialize? | Criterion |
+|-----------|-----------|
+| Yes | Architectural decisions involved |
+| Yes | Plan took >30 minutes to develop |
+| Yes | Will need cross-session recall |
+| Yes | Multi-step implementation plan |
+| No | Trivial fix (<1KB) |
+| No | Abandoned or superseded plan |
+| No | Session-specific only |
+
+### Naming Format
+
+```
+yyyy.mm.dd-descriptive-slug.md
+```
+
+- **Date**: Plan creation or serialization date
+- **Slug**: 3-6 hyphenated words capturing the plan's SUBJECT
+- **Examples**:
+  - `dreamy-wiggling-pretzel.md` → `2026.02.07-runtime-args-whitelist-expeditor.md`
+  - `transient-bouncing-widget.md` → `2026.02.13-unified-smoke-test-verification.md`
+  - `gleaming-gathering-gem.md` → `2026.02.13-notification-api-reference-doc.md`
+
+### Canonical Workflow
+
+planning-is-prompting → workflow/plan-serialization.md
+
+---
+
 ## Meta-Workflow Tools
 
 ### Workflow Execution Audit
