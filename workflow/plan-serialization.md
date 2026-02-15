@@ -107,14 +107,15 @@ yyyy.mm.dd-descriptive-slug.md
 
 ### Quick Decision Flowchart
 
-```
-Plan created in plan mode
-  └── Is it >1KB? ─── No ──→ SKIP
-       └── Yes
-            └── Involves architectural decisions? ─── Yes ──→ SERIALIZE
-                 └── No
-                      └── Will need future recall? ─── Yes ──→ SERIALIZE
-                           └── No ──→ SKIP
+```mermaid
+flowchart TD
+    A[Plan created in plan mode] --> B{Size > 1KB?}
+    B -->|No| SKIP1[SKIP]
+    B -->|Yes| C{Architectural decisions?}
+    C -->|Yes| SER1[SERIALIZE]
+    C -->|No| D{Future recall needed?}
+    D -->|Yes| SER2[SERIALIZE]
+    D -->|No| SKIP2[SKIP]
 ```
 
 ---

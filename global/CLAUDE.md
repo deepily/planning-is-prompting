@@ -1210,17 +1210,16 @@ Which tests should I create?
 ### Progressive Adoption Pattern
 
 **Project Lifecycle**:
-```
-New Project:
-  └─> Smoke tests only (in __main__ blocks)
-        ↓
-Growing Project:
-  └─> Move smoke tests to src/tests/smoke/
-  └─> Add unit tests for complex logic
-        ↓
-Mature Project:
-  └─> Add integration tests for critical workflows
-  └─> Run all three tiers before major releases
+```mermaid
+flowchart TD
+    NP["New Project"] --> S["Smoke tests only<br>(in __main__ blocks)"]
+    S --> GP["Growing Project"]
+    GP --> G1["Move smoke tests to src/tests/smoke/"]
+    GP --> G2["Add unit tests for complex logic"]
+    G1 --> MP["Mature Project"]
+    G2 --> MP
+    MP --> M1["Add integration tests for critical workflows"]
+    MP --> M2["Run all three tiers before major releases"]
 ```
 
 **Decision Guide**:
@@ -1251,13 +1250,13 @@ pytest src/tests/ -v
 
 # Then provide summary table:
 Test Results Summary:
-┌─────────────────┬────────┬────────┬─────────┐
-│ Test Type       │ Passed │ Failed │ Skipped │
-├─────────────────┼────────┼────────┼─────────┤
-│ Smoke Tests     │   12   │    0   │    0    │
-│ Unit Tests      │   45   │    2   │    1    │
-│ Integration     │    8   │    0   │    0    │
-└─────────────────┴────────┴────────┴─────────┘
+
+| Test Type   | Passed | Failed | Skipped |
+|-------------|--------|--------|---------|
+| Smoke Tests |   12   |    0   |    0    |
+| Unit Tests  |   45   |    2   |    1    |
+| Integration |    8   |    0   |    0    |
+
 Total: 65 passed, 2 failed, 1 skipped
 ```
 
@@ -1322,6 +1321,33 @@ For complete details, algorithms, and implementation, see the canonical workflow
 **Detailed Reference**: See `~/.claude/skills/plan-serialization/SKILL.md`
 
 **Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
+
+## MERMAID DIAGRAMS
+
+**Purpose**: Use Mermaid syntax for all diagrams in markdown files across all projects.
+
+**MANDATE**: When creating or modifying any diagram in a markdown file, use Mermaid
+(` ```mermaid ` code blocks) instead of ASCII art or box-drawing characters.
+
+**Diagram Type Selection**:
+
+| Use Case | Mermaid Type |
+|----------|-------------|
+| Decision trees, process flows | `flowchart TD` |
+| State transitions | `stateDiagram-v2` |
+| Task/concept hierarchies | `mindmap` |
+| Schedules, phased roadmaps | `gantt` |
+| Chronological progressions | `timeline` |
+| Actor interactions | `sequenceDiagram` |
+
+**Exempt from Mermaid** (keep as-is):
+- Directory/file trees (`├── └──` notation) — no Mermaid equivalent
+- Terminal UI chrome (menu borders, section dividers) — structural formatting
+- Simple data tables — use standard markdown tables
+
+**Detailed Reference**: See `~/.claude/skills/mermaid-diagrams/SKILL.md`
+
+**Canonical Workflow**: planning-is-prompting → workflow/mermaid-diagrams.md
 
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:

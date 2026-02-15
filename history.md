@@ -1,13 +1,35 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 64
+**RESUME HERE**: Session 65
 
-**Current Status**: Plan file serialization directive implementation
-**Last Session**: Session 64 - Plan File Serialization
+**Current Status**: Mermaid diagram directive + full conversion complete
+**Last Session**: Session 65 - Mermaid Diagrams Directive
 
 ---
 
 ## February 2026
+
+### 2026.02.14 - Session 65 | Mermaid Diagrams Directive + Full Conversion
+
+**Accomplishments**:
+- Created canonical workflow `workflow/mermaid-diagrams.md` (~322 lines): directive, diagram type catalog (10 types), exemptions, conversion guide, before/after examples, anti-patterns
+- Created global skill `~/.claude/skills/mermaid-diagrams/SKILL.md` (~130 lines): trigger-activated guidance with quick reference and syntax patterns
+- Added MERMAID DIAGRAMS section to `~/.claude/CLAUDE.md` and `global/CLAUDE.md` (~25 lines each, verified identical)
+- Added [M] Mermaid Diagrams catalog entry + menu item to `workflow/installation-wizard.md`
+- Added full installation section to `workflow/INSTALLATION-GUIDE.md` (before Meta-Workflow Tools)
+- Converted 16 ASCII diagrams to Mermaid across 8 files (dogfooding the directive):
+  - `p-is-p-01-planning-the-work.md`: 8 diagrams (6 mindmaps, 1 flowchart, 1 gantt, 1 stateDiagram)
+  - `p-is-p-00-start-here.md`: 1 flowchart (visual workflow routing)
+  - `p-is-p-02-documenting-the-implementation.md`: 1 timeline (token growth progression)
+  - `plan-serialization.md`: 1 flowchart (serialize decision tree)
+  - `workflow-execution-audit.md`: 3 decision boxes → 1 combined flowchart
+  - `session-start.md`: 1 flowchart (session start execution flow)
+  - `global/CLAUDE.md`: 1 flowchart (test tier progression) + 1 markdown table (test results)
+- Correctly exempted directory trees (├── └──) and terminal UI chrome (┌───┐) per directive
+
+**Files**: workflow/mermaid-diagrams.md (new), workflow/p-is-p-01-planning-the-work.md, workflow/p-is-p-00-start-here.md, workflow/p-is-p-02-documenting-the-implementation.md, workflow/plan-serialization.md, workflow/workflow-execution-audit.md, workflow/session-start.md, global/CLAUDE.md, workflow/installation-wizard.md, workflow/INSTALLATION-GUIDE.md
+
+---
 
 ### 2026.02.13 - Session 64 | Plan File Serialization Directive
 
@@ -24,7 +46,7 @@
 - Plan: src/rnd/2026.02.13-plan-file-serialization-recommendation.md
 
 **Files**: workflow/plan-serialization.md, src/rnd/2026.02.13-plan-file-serialization-recommendation.md, global/CLAUDE.md, README.md, workflow/installation-wizard.md, workflow/INSTALLATION-GUIDE.md
-**Commit**: b0f34ba
+**Commit**: 54f938e
 
 ### Session Summary
 (Will be completed at session close)

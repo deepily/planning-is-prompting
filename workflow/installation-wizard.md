@@ -354,6 +354,30 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "mermaid-diagrams",
+  "name": "Mermaid Diagrams",
+  "description": "Use Mermaid syntax for all diagrams in markdown files",
+  "category": "optional",
+  "recommended": true,
+  "commands": [],
+  "behavioral_directive": true,
+  "installs_to": "CLAUDE.md section + global skill",
+  "dependencies": {
+    "files": [],
+    "workflows": [],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    "CLAUDE.md section: MERMAID DIAGRAMS",
+    "~/.claude/skills/mermaid-diagrams/SKILL.md (global, not project-local)"
+  ],
+  "notes": "No slash command - behavioral directive. Includes diagram type catalog, exemptions for directory trees and UI chrome, and conversion guide for existing ASCII diagrams."
+}
+```
+
 ### Utility Workflows (Optional)
 
 ```json
@@ -1063,12 +1087,19 @@ Available Workflows:
     Dependencies: src/rnd/ directory
     Note: No slash command - this is a practice directive, not a procedure
 
+[M] Mermaid Diagrams
+    Use Mermaid syntax for all diagrams in markdown files
+    Behavioral directive: Adds MERMAID DIAGRAMS section to CLAUDE.md
+    Skills: Installs ~/.claude/skills/mermaid-diagrams/ (global)
+    Dependencies: None
+    Note: Includes diagram type catalog, conversion guide, and exemption rules
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L + M)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L, M)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]

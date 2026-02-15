@@ -581,14 +581,16 @@ Recurring:         Pattern (reusable for other notifications)
 - Clear separation between active and completed work
 
 **Structure**:
-```
-Phase 1: Design & Planning [COMPLETED]
-Phase 2: Core Implementation [IN PROGRESS]
-  ├─ Task 2.1: Set up infrastructure
-  ├─ Task 2.2: Implement core logic
-  └─ Task 2.3: Add error handling
-Phase 3: Testing & Validation [PLANNED]
-Phase 4: Deployment & Documentation [PLANNED]
+```mermaid
+mindmap
+  root((Multi-Phase Implementation))
+    Phase 1: Design & Planning ✅
+    Phase 2: Core Implementation 🔄
+      Task 2.1: Set up infrastructure
+      Task 2.2: Implement core logic
+      Task 2.3: Add error handling
+    Phase 3: Testing & Validation ⏳
+    Phase 4: Deployment & Documentation ⏳
 ```
 
 **TodoWrite Pattern**:
@@ -614,14 +616,16 @@ Phase 4: Deployment & Documentation [PLANNED]
 - May lead to future implementation project
 
 **Structure**:
-```
-1. Define Research Questions
-2. Technology Evaluation
-   ├─ Option A: Evaluate and document
-   ├─ Option B: Evaluate and document
-   └─ Option C: Evaluate and document
-3. Proof-of-Concept Testing
-4. Findings & Recommendations
+```mermaid
+mindmap
+  root((Research & Exploration))
+    1. Define Research Questions
+    2. Technology Evaluation
+      Option A: Evaluate and document
+      Option B: Evaluate and document
+      Option C: Evaluate and document
+    3. Proof-of-Concept Testing
+    4. Findings & Recommendations
 ```
 
 **TodoWrite Pattern**:
@@ -648,15 +652,17 @@ Phase 4: Deployment & Documentation [PLANNED]
 - Acceptance criteria defined upfront
 
 **Structure**:
-```
-1. Requirements & Acceptance Criteria
-2. Design & Technical Planning
-3. Implementation
-   ├─ Backend changes
-   ├─ Frontend changes
-   └─ Integration
-4. Testing & Validation
-5. Documentation & Deployment
+```mermaid
+mindmap
+  root((Feature Development))
+    1. Requirements & Acceptance Criteria
+    2. Design & Technical Planning
+    3. Implementation
+      Backend changes
+      Frontend changes
+      Integration
+    4. Testing & Validation
+    5. Documentation & Deployment
 ```
 
 **TodoWrite Pattern**:
@@ -684,15 +690,17 @@ Phase 4: Deployment & Documentation [PLANNED]
 - Solution validation
 
 **Structure**:
-```
-1. Problem Statement & Reproduction
-2. Investigation & Hypothesis Testing
-   ├─ Hypothesis 1: Test and document
-   ├─ Hypothesis 2: Test and document
-   └─ Hypothesis 3: Test and document
-3. Root Cause Analysis
-4. Solution Implementation
-5. Validation & Prevention
+```mermaid
+mindmap
+  root((Problem Investigation))
+    1. Problem Statement & Reproduction
+    2. Investigation & Hypothesis Testing
+      Hypothesis 1: Test and document
+      Hypothesis 2: Test and document
+      Hypothesis 3: Test and document
+    3. Root Cause Analysis
+    4. Solution Implementation
+    5. Validation & Prevention
 ```
 
 **TodoWrite Pattern**:
@@ -720,16 +728,18 @@ Phase 4: Deployment & Documentation [PLANNED]
 - Long-term reference document
 
 **Structure**:
-```
-1. System Context & Requirements
-2. Architecture Options Analysis
-3. Component Design
-   ├─ Component A: Design and interfaces
-   ├─ Component B: Design and interfaces
-   └─ Component C: Design and interfaces
-4. Integration Patterns
-5. Decision Documentation
-6. Implementation Roadmap
+```mermaid
+mindmap
+  root((Architecture & Design))
+    1. System Context & Requirements
+    2. Architecture Options Analysis
+    3. Component Design
+      Component A: Design and interfaces
+      Component B: Design and interfaces
+      Component C: Design and interfaces
+    4. Integration Patterns
+    5. Decision Documentation
+    6. Implementation Roadmap
 ```
 
 **TodoWrite Pattern**:
@@ -765,31 +775,28 @@ Phase 4: Deployment & Documentation [PLANNED]
 - Have use case requirements that need mapping to technology capabilities
 
 **Structure**:
-```
-Phase 0: Research Synthesis [WEEK 1]
-  ├─ Gather input materials (docs, use cases, specs)
-  ├─ Extract capabilities, constraints, patterns
-  ├─ Map use cases to technology features
-  └─ Create synthesis summary document
-
-Phase 1: Architecture Design [WEEK 2-3]
-  ├─ Translate research findings → system components
-  ├─ Apply recommended patterns from research
-  ├─ Make design decisions informed by constraints
-  ├─ Document architecture (use p-is-p-02 Pattern B)
-  └─ Create decision rationale doc
-
-Phase 2: Implementation Planning [WEEK 3]
-  ├─ Derive implementation phases from architecture
-  ├─ Break down phases into concrete tasks
-  ├─ Identify dependencies and milestones
-  └─ Create implementation tracking docs (use p-is-p-02 Pattern A)
-
-Phase 3-N: Implementation Execution [WEEK 4+]
-  ├─ Execute phases using TodoWrite
-  ├─ Apply patterns extracted from research
-  ├─ Reference architecture and decisions
-  └─ Archive completed phases (maintain token budgets)
+```mermaid
+gantt
+    title Research-Driven Implementation
+    dateFormat YYYY-[W]WW
+    axisFormat Week %W
+    section Phase 0: Research Synthesis
+        Gather input materials           :p0a, 2026-W01, 1w
+        Extract capabilities/constraints :p0b, 2026-W01, 1w
+        Map use cases to features        :p0c, 2026-W01, 1w
+        Create synthesis summary         :p0d, 2026-W01, 1w
+    section Phase 1: Architecture Design
+        Translate findings to components :p1a, after p0d, 2w
+        Apply recommended patterns       :p1b, after p0d, 2w
+        Document architecture            :p1c, after p0d, 2w
+        Create decision rationale        :p1d, after p0d, 2w
+    section Phase 2: Implementation Planning
+        Derive phases from architecture  :p2a, after p1d, 1w
+        Break down into tasks            :p2b, after p1d, 1w
+        Create tracking docs             :p2c, after p1d, 1w
+    section Phase 3-N: Execution
+        Execute phases with TodoWrite    :p3a, after p2c, 4w
+        Archive completed phases         :p3b, after p2c, 4w
 ```
 
 **TodoWrite Pattern**:
@@ -853,28 +860,19 @@ Phase 3-N: Implementation Execution [WEEK 4+]
 
 Use this decision tree to select the right pattern:
 
-```
-START
-  |
-  ├─ Do you have existing research/docs to synthesize first?
-  |    YES → Pattern 6 (Research-Driven Implementation)
-  |    NO → Continue
-  |
-  ├─ Is this primarily research/exploration (doing new research)?
-  |    YES → Pattern 2 (Research & Exploration)
-  |    NO → Continue
-  |
-  ├─ Is this a problem investigation/debugging?
-  |    YES → Pattern 4 (Problem Investigation)
-  |    NO → Continue
-  |
-  ├─ Is this high-level architecture/system design?
-  |    YES → Pattern 5 (Architecture & Design)
-  |    NO → Continue
-  |
-  ├─ Does the work have 3+ distinct phases?
-  |    YES → Pattern 1 (Multi-Phase Implementation)
-  |    NO → Pattern 3 (Feature Development)
+```mermaid
+flowchart TD
+    Start([START]) --> Q1{Existing research/docs<br>to synthesize first?}
+    Q1 -->|Yes| P6[Pattern 6: Research-Driven Implementation]
+    Q1 -->|No| Q2{Primarily research/<br>exploration?}
+    Q2 -->|Yes| P2[Pattern 2: Research & Exploration]
+    Q2 -->|No| Q3{Problem investigation/<br>debugging?}
+    Q3 -->|Yes| P4[Pattern 4: Problem Investigation]
+    Q3 -->|No| Q4{High-level architecture/<br>system design?}
+    Q4 -->|Yes| P5[Pattern 5: Architecture & Design]
+    Q4 -->|No| Q5{3+ distinct phases?}
+    Q5 -->|Yes| P1[Pattern 1: Multi-Phase Implementation]
+    Q5 -->|No| P3[Pattern 3: Feature Development]
 ```
 
 **Hybrid Patterns**: You can combine patterns for complex work. For example:
@@ -978,14 +976,15 @@ Example (Pattern 1 - Multi-Phase Implementation):
 **Step 2: Decompose Each Phase into Tasks**
 
 For each phase, list 3-8 concrete tasks:
-```
-Phase 2: Core Implementation
-  ├─ Task 2.1: Set up project structure and dependencies
-  ├─ Task 2.2: Implement data models and schemas
-  ├─ Task 2.3: Build core business logic
-  ├─ Task 2.4: Add error handling and logging
-  ├─ Task 2.5: Create API endpoints
-  └─ Task 2.6: Write unit tests for core logic
+```mermaid
+mindmap
+  root((Phase 2: Core Implementation))
+    Task 2.1: Set up project structure and dependencies
+    Task 2.2: Implement data models and schemas
+    Task 2.3: Build core business logic
+    Task 2.4: Add error handling and logging
+    Task 2.5: Create API endpoints
+    Task 2.6: Write unit tests for core logic
 ```
 
 **Step 3: Define Completion Criteria for Each Task**
@@ -1260,10 +1259,13 @@ If using documentation patterns (from planning-is-prompting → workflow/history
 
 ### State Transitions
 
-```
-pending → in_progress → completed
-   ↑          ↓
-   └──────────┘ (if blocked, create new task to resolve blocker)
+```mermaid
+stateDiagram-v2
+    [*] --> pending
+    pending --> in_progress
+    in_progress --> completed
+    in_progress --> pending : blocked (create new task)
+    completed --> [*]
 ```
 
 ### State Definitions

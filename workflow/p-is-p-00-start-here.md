@@ -257,38 +257,14 @@ Pre-planning is optional but recommended when starting with ambiguity.
 
 ### Visual Flow
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  p-is-p-00-start-here.md (YOU ARE HERE)                     │
-│  "I have work to do, where do I start?"                     │
-└────────────────────────┬────────────────────────────────────┘
-                         ↓
-         ┌───────────────────────────────────┐
-         │ STEP 1: Planning the Work         │
-         │ p-is-p-01-planning-the-work.md    │
-         │                                   │
-         │ • Answer discovery questions      │
-         │ • Select pattern (1-5)            │
-         │ • Break down into tasks           │
-         │ • Create TodoWrite list           │
-         └───────────────┬───────────────────┘
-                         ↓
-            ┌────────────┴────────────┐
-            │                         │
-    Pattern 1, 2, 5            Pattern 3, 4
-    (Large/Complex)            (Small/Simple)
-            │                         │
-            ↓                         ↓
-  ┌──────────────────────┐   ┌──────────────────┐
-  │ STEP 2: Documenting  │   │ Skip to execution│
-  │ p-is-p-02-           │   │                  │
-  │ documenting-the-     │   │ Use history.md   │
-  │ implementation.md    │   │ for tracking     │
-  │                      │   │                  │
-  │ • Create doc struct  │   └──────────────────┘
-  │ • Set token budgets  │
-  │ • Establish archival │
-  └──────────────────────┘
+```mermaid
+flowchart TD
+    Start["p-is-p-00-start-here.md (YOU ARE HERE)<br><i>I have work to do, where do I start?</i>"]
+    Step1["STEP 1: Planning the Work<br>p-is-p-01-planning-the-work.md<br>• Answer discovery questions<br>• Select pattern 1-6<br>• Break down into tasks<br>• Create TodoWrite list"]
+    Start --> Step1
+    Step1 --> Branch{Pattern type?}
+    Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
+    Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip to execution<br>Use history.md for tracking"]
 ```
 
 ### Step 1: Planning the Work (Always Required)

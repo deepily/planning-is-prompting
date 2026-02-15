@@ -2081,6 +2081,104 @@ planning-is-prompting → workflow/plan-serialization.md
 
 ---
 
+## Mermaid Diagrams
+
+### What It Does
+
+**Behavioral directive** to use Mermaid syntax for all diagrams in markdown files across all projects. ASCII art diagrams are fragile (break on reflow), hard to maintain (manual spacing), and don't render as rich visuals. Mermaid provides a text-based diagramming standard that renders natively on GitHub, VSCode, Obsidian, and most markdown viewers.
+
+**Key difference**: This is a **practice directive**, not a procedure. There is no slash command — the behavior is triggered by awareness of the mandate whenever creating or modifying diagrams.
+
+### Install as CLAUDE.md Section
+
+Add this section to your project's CLAUDE.md (after PLAN FILE SERIALIZATION, before Final instructions):
+
+```markdown
+## MERMAID DIAGRAMS
+
+**Purpose**: Use Mermaid syntax for all diagrams in markdown files across all projects.
+
+**MANDATE**: When creating or modifying any diagram in a markdown file, use Mermaid
+(\` \`\`\`mermaid \` code blocks) instead of ASCII art or box-drawing characters.
+
+**Diagram Type Selection**:
+
+| Use Case | Mermaid Type |
+|----------|-------------|
+| Decision trees, process flows | \`flowchart TD\` |
+| State transitions | \`stateDiagram-v2\` |
+| Task/concept hierarchies | \`mindmap\` |
+| Schedules, phased roadmaps | \`gantt\` |
+| Chronological progressions | \`timeline\` |
+| Actor interactions | \`sequenceDiagram\` |
+
+**Exempt from Mermaid** (keep as-is):
+- Directory/file trees (\`├── └──\` notation) — no Mermaid equivalent
+- Terminal UI chrome (menu borders, section dividers) — structural formatting
+- Simple data tables — use standard markdown tables
+
+**Detailed Reference**: See \`~/.claude/skills/mermaid-diagrams/SKILL.md\`
+
+**Canonical Workflow**: planning-is-prompting → workflow/mermaid-diagrams.md
+```
+
+### Install Global Skill
+
+Copy the skill to the global skills directory (this is a **global** skill, not project-local):
+
+```bash
+mkdir -p ~/.claude/skills/mermaid-diagrams
+# Copy SKILL.md content from planning-is-prompting repository
+```
+
+The skill activates on trigger phrases: "mermaid diagram", "create diagram", "convert diagram", "convert to mermaid", "flowchart", "state diagram", "sequence diagram", "gantt chart", "mindmap", "timeline diagram".
+
+### Dependencies
+
+| Dependency | Required? | Notes |
+|-----------|-----------|-------|
+| None | — | No external dependencies |
+
+### Diagram Type Catalog
+
+| Use Case | Mermaid Type | Keyword |
+|----------|-------------|---------|
+| Decision trees, process flows | Flowchart | `flowchart TD` |
+| State transitions, lifecycle | State Diagram | `stateDiagram-v2` |
+| Task/concept hierarchies | Mind Map | `mindmap` |
+| Schedules, phased roadmaps | Gantt Chart | `gantt` |
+| Chronological progressions | Timeline | `timeline` |
+| Actor interactions | Sequence Diagram | `sequenceDiagram` |
+| Database relationships | ER Diagram | `erDiagram` |
+| Class/object relationships | Class Diagram | `classDiagram` |
+| Proportional data | Pie Chart | `pie` |
+| Git branching strategies | Git Graph | `gitGraph` |
+
+### Exemptions (Keep as ASCII)
+
+| Category | Example | Why Exempt |
+|----------|---------|-----------|
+| Directory/file trees | `├── └──` notation | No Mermaid equivalent |
+| Terminal UI chrome | Menu borders `┌───┐`, dividers | Structural formatting, not diagrams |
+| Simple tables | Markdown tables | Already well-supported |
+| Inline arrows | `A → B` in prose | Too simple for diagram blocks |
+
+### Conversion Guide
+
+When converting existing ASCII diagrams:
+
+1. **Identify purpose** — Decision flow? State machine? Hierarchy? Schedule?
+2. **Select Mermaid type** — Match from catalog above
+3. **Translate content** — Map nodes, edges, labels to Mermaid syntax
+4. **Test rendering** — GitHub preview, VSCode Mermaid extension, or Obsidian
+5. **Work bottom-to-top** — Preserves line numbers when converting multiple diagrams
+
+### Canonical Workflow
+
+planning-is-prompting → workflow/mermaid-diagrams.md
+
+---
+
 ## Meta-Workflow Tools
 
 ### Workflow Execution Audit
