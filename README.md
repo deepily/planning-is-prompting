@@ -7,6 +7,27 @@ Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation 
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
 </p>
 
+## What's New in v0.1.2
+
+### New Directives
+
+- **Mermaid Diagrams** - Behavioral directive mandating Mermaid syntax for all diagrams in markdown files. Includes diagram type selection guide and full ASCII-to-Mermaid conversion workflow. See [mermaid-diagrams.md](workflow/mermaid-diagrams.md).
+
+- **Plan File Serialization** - Behavioral directive for preserving non-trivial Claude Code plan files with semantic names (`yyyy.mm.dd-descriptive-slug.md`). Includes R&D analysis of 169 plan files backing the recommendation. See [plan-serialization.md](workflow/plan-serialization.md).
+
+### cosa-voice v0.3.0 Documentation
+
+- **`ask_open_ended_batch()`** - New MCP tool for asking multiple open-ended questions on a single screen. Much faster than sequential `converse()` calls when gathering 2+ related answers. Supports `default_value` pre-fill.
+
+- **`ask_yes_no()` Qualified Comments** - Users can now press **C** to attach a qualifying comment (300 char max) to yes/no answers. Responses return as `"yes [comment: ...]"` or `"no [comment: ...]"`.
+
+### Bug Fixes
+
+- **History management path bug** - `/plan-history-management` was hardcoded to Planning-is-Prompting paths; now documented as known bug with project-aware fix pending.
+- **Branch PR workflow gaps** - Notification safety improvements and workflow step refinements.
+
+---
+
 ## What's New in v0.1.1
 
 ### Major Features
