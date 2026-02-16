@@ -94,7 +94,7 @@ The `history.md` file uses an **adaptive archival strategy**:
 
 ### 4. Notification Integration
 
-All workflow steps use cosa-voice MCP tools (v0.2.0):
+All workflow steps use cosa-voice MCP tools (v0.3.0):
 ```python
 # Fire-and-forget (progress updates, completions)
 notify( "Message", notification_type="progress", priority="medium" )
@@ -102,6 +102,7 @@ notify( "Message", notification_type="progress", priority="medium" )
 # Response-required (approvals, decisions)
 ask_yes_no( "Proceed with changes?", default="no", timeout_seconds=300 )
 ask_multiple_choice( questions=[...] )  # AskUserQuestion-compatible format
+ask_open_ended_batch( questions=[...] )  # Batch open-ended questions (single screen)
 converse( "Which approach?", response_type="open_ended", timeout_seconds=600 )
 ```
 

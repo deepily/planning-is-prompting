@@ -1,6 +1,6 @@
 # cosa-voice MCP Integration
 
-Voice I/O bridge via cosa-voice MCP server v0.2.0. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
+Voice I/O bridge via cosa-voice MCP server v0.3.0. This replaces the deprecated `notify-claude-async` and `notify-claude-sync` bash commands.
 
 ---
 
@@ -113,9 +113,10 @@ NOTIFICATION VERIFICATION:
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
 | `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract, suppress_ding |
-| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract |
+| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract, job_id |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | questions (with optional default_value), timeout_seconds, priority, title, abstract |
 | `get_session_info()` | Session metadata (project, sender_id) | No | (none) |
 
 ---
@@ -203,9 +204,11 @@ notify( "Task complete", suppress_ding=True )
 
 Use blocking tools when you need user input before proceeding. All blocking tools support timeout with configurable defaults.
 
+**CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user. Without `high` priority, the notification will not be spoken aloud and may time out before the user notices.
+
 ### ask_yes_no()
 
-For simple binary yes/no decisions.
+For simple binary yes/no decisions. Users can optionally attach a qualifying comment to their answer.
 
 **Parameters**:
 
@@ -214,18 +217,71 @@ For simple binary yes/no decisions.
 | `question` | string | Yes | The yes/no question to ask |
 | `default` | string | No | Default on timeout: `yes` or `no` (default: `no`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
+| `job_id` | string | No | Agentic job ID for routing to job cards (e.g., `"dr-a1b2c3d4"`) |
+
+#### Response Format
+
+The response string can be one of four variants:
+
+| Response | Meaning |
+|----------|---------|
+| `"yes"` | Plain approval |
+| `"no"` | Plain rejection |
+| `"yes [comment: ...]"` | Approval with qualifying comment |
+| `"no [comment: ...]"` | Rejection with qualifying comment |
+
+**When checking responses**, use `startswith()` to handle both plain and commented variants:
+
+```python
+response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
+
+# ✅ CORRECT - handles both plain and commented responses
+if response.startswith( "yes" ):
+    proceed_with_commit()
+
+# ❌ WRONG - misses "yes [comment: only the docs]"
+if response == "yes":
+    proceed_with_commit()
+```
+
+#### Qualified Comments
+
+Users can attach a qualifying comment to their yes/no answer by pressing **C** to expand a comment input field. Comments provide additional context without changing the binary decision.
+
+**How it works**:
+- User presses **Y** or **N** for plain yes/no (immediate response)
+- User presses **C** to expand comment field (300 char max)
+- Comment field accepts voice input (mic button) or text input
+- Input guard prevents Y/N keys from triggering while typing in the comment field
+- After entering comment, user presses **Y** or **N** to submit with the comment attached
+
+**Example responses**:
+- `"yes"` - plain approval
+- `"yes [comment: only the March ones]"` - approval with context
+- `"no [comment: let me review the diff first]"` - rejection with explanation
 
 **Example**:
 
 ```python
-# Commit approval
+# Commit approval with comment handling
 response = ask_yes_no(
     question="Commit these 5 files to the repository?",
     default="no",
-    timeout_seconds=300
+    timeout_seconds=300,
+    priority="high"  # MANDATORY for blocking tools
 )
-# Returns: {"answer": "yes"} or {"answer": "no"}
+
+# Handle response (may include qualified comment)
+if response.startswith( "yes" ):
+    # Extract comment if present
+    if "[comment:" in response:
+        comment = response.split( "[comment: " )[1].rstrip( "]" )
+        # Use comment for commit message annotation, logging, etc.
+    proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
 ```
 
 ### converse()
@@ -240,7 +296,7 @@ For open-ended questions requiring text or voice response.
 | `response_type` | string | No | `open_ended` or `yes_no` (default: `open_ended`) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 600) |
 | `response_default` | string | No | Default response on timeout |
-| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `title` | string | No | Short title for the notification |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
@@ -252,6 +308,7 @@ response = converse(
     message="Which database migration approach should I use?",
     response_type="open_ended",
     timeout_seconds=600,
+    priority="high",  # MANDATORY for blocking tools
     response_default="defer to next session"
 )
 # Returns: {"response": "Use the incremental migration with rollback support"}
@@ -267,7 +324,7 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 |-----------|------|----------|-------------|
 | `questions` | array | Yes | Array of question objects (same format as AskUserQuestion) |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
-| `priority` | string | No | One of: `urgent`, `high`, `medium`, `low` (default: `medium`) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `title` | string | No | Short title for the notification |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
 
@@ -290,19 +347,22 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 
 ```python
 # Session-end commit decision
-response = ask_multiple_choice( questions=[
-    {
-        "question": "How would you like to proceed with the commit?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
-            {"label": "Commit and push", "description": "Create commit and push to remote"},
-            {"label": "Modify message", "description": "Edit the commit message before committing"},
-            {"label": "Cancel", "description": "Skip commit for now"}
-        ]
-    }
-] )
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "How would you like to proceed with the commit?",
+            "header": "Commit",
+            "multiSelect": False,
+            "options": [
+                {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
+                {"label": "Commit and push", "description": "Create commit and push to remote"},
+                {"label": "Modify message", "description": "Edit the commit message before committing"},
+                {"label": "Cancel", "description": "Skip commit for now"}
+            ]
+        }
+    ],
+    priority="high"  # MANDATORY for blocking tools
+)
 # Returns: {"answers": {"0": "Commit and push"}}
 ```
 
@@ -310,19 +370,89 @@ response = ask_multiple_choice( questions=[
 
 ```python
 # History management decision
-response = ask_multiple_choice( questions=[
-    {
-        "question": "History approaching token limit. How should we proceed?",
-        "header": "Archive",
-        "multiSelect": False,
-        "options": [
-            {"label": "Archive now", "description": "Create archive immediately"},
-            {"label": "Next session", "description": "Defer archival to next session"},
-            {"label": "Show details", "description": "Display token count and velocity analysis"}
-        ]
-    }
-] )
+response = ask_multiple_choice(
+    questions=[
+        {
+            "question": "History approaching token limit. How should we proceed?",
+            "header": "Archive",
+            "multiSelect": False,
+            "options": [
+                {"label": "Archive now", "description": "Create archive immediately"},
+                {"label": "Next session", "description": "Defer archival to next session"},
+                {"label": "Show details", "description": "Display token count and velocity analysis"}
+            ]
+        }
+    ],
+    priority="high"  # MANDATORY for blocking tools
+)
 ```
+
+### ask_open_ended_batch()
+
+For asking multiple open-ended questions at once on a single screen. Each question gets its own text input with mic button. User answers all questions and submits once — much faster than sequential `converse()` calls.
+
+**Parameters**:
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `questions` | array | Yes | Array of question objects (see format below) |
+| `timeout_seconds` | int | No | Seconds to wait (default: 300) |
+| `priority` | string | **Yes** | **MUST be `high`** for TTS alert |
+| `title` | string | No | Short title for the notification |
+| `abstract` | string | No | Supplementary context (markdown) shown in UI |
+
+**Question Object Format**:
+
+```python
+{
+    "question": "What topic would you like to research?",  # Displayed to user
+    "header": "Topic",                                      # Key used in response dict
+    "default_value": "quantum computing"                    # Optional: pre-fills text input
+}
+```
+
+The optional `default_value` key pre-fills the text input field so the user can accept defaults by simply hitting **Submit All** without typing. Omit the key for questions that have no sensible default.
+
+**Example - Requirements Gathering**:
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "What is the main goal of this feature?", "header": "Goal"},
+        {"question": "Are there any constraints or dependencies?", "header": "Constraints"},
+        {"question": "What does success look like?", "header": "Success"}
+    ],
+    title="Requirements",
+    priority="high",  # MANDATORY for blocking tools
+    abstract="Gathering requirements before implementation planning."
+)
+# Returns: {"answers": {"Goal": "Add OAuth2 login", "Constraints": "Must use existing user table", "Success": "Users can log in with Google"}}
+```
+
+**Example - With Default Values**:
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "Target branch for the PR?", "header": "Branch", "default_value": "main"},
+        {"question": "Any additional reviewers?", "header": "Reviewers", "default_value": "none"},
+        {"question": "Release notes entry?", "header": "Notes"}
+    ],
+    priority="high",
+    title="PR Details"
+)
+# User hits Submit All without changes:
+# Returns: {"answers": {"Branch": "main", "Reviewers": "none", "Notes": ""}}
+```
+
+**When to use `ask_open_ended_batch()` vs `converse()`**:
+- **`converse()`**: Single question needing a detailed response
+- **`ask_open_ended_batch()`**: 2+ related questions that can be answered together
+
+**When to use `default_value`**:
+- Configuration questions with sensible defaults (branch names, timeouts, paths)
+- Follow-up questions where previous context suggests an answer
+- Optional fields where "none" or "skip" is a common response
 
 ---
 
@@ -414,6 +544,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_yes_no()` | 300s (5 min) | 180-600s | Return `default` value |
 | `converse()` | 600s (10 min) | 300-900s | Return `response_default` |
 | `ask_multiple_choice()` | 300s (5 min) | 180-600s | Return first option or cancel |
+| `ask_open_ended_batch()` | 300s (5 min) | 180-600s | Return empty dict or timeout message |
 
 **Safe Default Principle**: When timeout occurs, choose the action that preserves data integrity and user control:
 - Commit decisions → default to "Cancel" (don't auto-commit)
@@ -582,6 +713,22 @@ response = ask_multiple_choice( questions=[
 ---
 
 ## Version History
+
+- **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)
+  - Updated version from v0.2.1 to v0.3.0
+  - Added `ask_open_ended_batch()` row to Available MCP Tools table (now 6 tools)
+  - Added full `### ask_open_ended_batch()` section with parameters, question object format, 2 examples, and usage guidance
+  - Added `default_value` documentation for pre-filling text inputs
+  - Added row to Timeout Handling table (now 4 blocking tools)
+  - Key insight: Use for gathering 2+ related answers on a single screen instead of sequential `converse()` calls
+
+- **2026.02.06**: Documented `ask_yes_no()` qualified comment feature (v0.2.1)
+  - Updated version from v0.2.0 to v0.2.1
+  - Added `job_id` parameter to `ask_yes_no()` parameter table and Available MCP Tools summary
+  - Added **Response Format** subsection with four return variants (plain and commented)
+  - Added **Qualified Comments** subsection (C key, 300 char max, voice/text input, input guard)
+  - Updated example to show `startswith()` response handling with comment parsing
+  - Key insight: Use `response.startswith( "yes" )` instead of `response == "yes"` to handle commented responses
 
 - **2026.01.25 (Session 49)**: Added `suppress_ding` parameter documentation
   - Added `suppress_ding` parameter to notify() parameter table

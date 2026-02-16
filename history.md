@@ -1,13 +1,136 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 59
+**RESUME HERE**: Session 65
 
-**Current Status**: In progress - Branch PR and merge workflow
-**Last Session**: Session 59 - Branch PR and Merge workflow implementation
+**Current Status**: Mermaid diagram directive + full conversion complete
+**Last Session**: Session 65 - Mermaid Diagrams Directive
 
 ---
 
 ## February 2026
+
+### 2026.02.14 - Session 65 | Mermaid Diagrams Directive + Full Conversion
+
+**Accomplishments**:
+- Created canonical workflow `workflow/mermaid-diagrams.md` (~322 lines): directive, diagram type catalog (10 types), exemptions, conversion guide, before/after examples, anti-patterns
+- Created global skill `~/.claude/skills/mermaid-diagrams/SKILL.md` (~130 lines): trigger-activated guidance with quick reference and syntax patterns
+- Added MERMAID DIAGRAMS section to `~/.claude/CLAUDE.md` and `global/CLAUDE.md` (~25 lines each, verified identical)
+- Added [M] Mermaid Diagrams catalog entry + menu item to `workflow/installation-wizard.md`
+- Added full installation section to `workflow/INSTALLATION-GUIDE.md` (before Meta-Workflow Tools)
+- Converted 16 ASCII diagrams to Mermaid across 8 files (dogfooding the directive):
+  - `p-is-p-01-planning-the-work.md`: 8 diagrams (6 mindmaps, 1 flowchart, 1 gantt, 1 stateDiagram)
+  - `p-is-p-00-start-here.md`: 1 flowchart (visual workflow routing)
+  - `p-is-p-02-documenting-the-implementation.md`: 1 timeline (token growth progression)
+  - `plan-serialization.md`: 1 flowchart (serialize decision tree)
+  - `workflow-execution-audit.md`: 3 decision boxes → 1 combined flowchart
+  - `session-start.md`: 1 flowchart (session start execution flow)
+  - `global/CLAUDE.md`: 1 flowchart (test tier progression) + 1 markdown table (test results)
+- Correctly exempted directory trees (├── └──) and terminal UI chrome (┌───┐) per directive
+
+**Files**: workflow/mermaid-diagrams.md (new), workflow/p-is-p-01-planning-the-work.md, workflow/p-is-p-00-start-here.md, workflow/p-is-p-02-documenting-the-implementation.md, workflow/plan-serialization.md, workflow/workflow-execution-audit.md, workflow/session-start.md, global/CLAUDE.md, workflow/installation-wizard.md, workflow/INSTALLATION-GUIDE.md
+
+---
+
+### 2026.02.13 - Session 64 | Plan File Serialization Directive
+
+#### Checkpoint | 2026.02.13 22:00 | Plan file serialization: workflow, skill, R&D doc, CLAUDE.md directive, install docs
+
+**Accomplishments**:
+- Created canonical workflow `workflow/plan-serialization.md` (241 lines): full rationale, decision criteria, serialization patterns, naming examples
+- Created global skill `~/.claude/skills/plan-serialization/SKILL.md` (108 lines): trigger-activated guidance for any repo
+- Created R&D research document `src/rnd/2026.02.13-plan-file-serialization-recommendation.md` (94 lines): 169-file analysis, naming convention breakdown
+- Added PLAN FILE SERIALIZATION section to `~/.claude/CLAUDE.md` and `global/CLAUDE.md` (~20 lines each, verified identical)
+- Added Plan File Management subsection to `README.md` with links to workflow + R&D doc
+- Added [L] Plan Serialization catalog entry + menu item to `workflow/installation-wizard.md`
+- Added full installation section to `workflow/INSTALLATION-GUIDE.md` (before Meta-Workflow Tools)
+- Plan: src/rnd/2026.02.13-plan-file-serialization-recommendation.md
+
+**Files**: workflow/plan-serialization.md, src/rnd/2026.02.13-plan-file-serialization-recommendation.md, global/CLAUDE.md, README.md, workflow/installation-wizard.md, workflow/INSTALLATION-GUIDE.md
+**Commit**: 54f938e
+
+### Session Summary
+(Will be completed at session close)
+
+### 2026.02.09 - Session 63 | cosa-voice v0.3.0 Documentation
+
+#### Checkpoint | 2026.02.09 13:00 | Document ask_open_ended_batch() MCP tool
+
+**Accomplishments**:
+- Documented new `ask_open_ended_batch()` tool across 8 files (v0.2.1 → v0.3.0)
+- Updated canonical `cosa-voice-integration.md`: new tools table row, full section with params/examples/default_value docs, timeout table row, version history
+- Updated `global/CLAUDE.md` and `~/.claude/CLAUDE.md`: tools table, condensed section with example, timeout table
+- Updated project `CLAUDE.md`: version bump, code examples block
+- Updated `README.md`: tool list parenthetical, version reference
+- Updated `workflow/claude-config-global.md`: tools table, version bump, "When to Send" guidance
+- Updated `workflow/session-start.md` and `workflow/session-end.md`: tool bullet lists, version bumps
+
+**Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md, CLAUDE.md, README.md, workflow/claude-config-global.md, workflow/session-start.md, workflow/session-end.md
+**Commit**: abe6ae5
+
+### Session Summary
+(Will be completed at session close)
+
+---
+
+### 2026.02.06 - Session 62 | cosa-voice v0.2.1 Documentation
+
+#### Checkpoint | 2026.02.06 | Document ask_yes_no() qualified comment feature
+
+**Accomplishments**:
+- Updated `cosa-voice-integration.md` (canonical): v0.2.0 → v0.2.1, added `job_id` param, new Response Format + Qualified Comments subsections, version history entry
+- Updated `global/CLAUDE.md` and `~/.claude/CLAUDE.md`: v0.2.1 version, updated ask_yes_no() return format documentation
+- Audited 4 workflow consumers: session-end.md, branch-pr-and-merge.md, bug-fix-mode.md, session-checkpoint.md - added `startswith("yes")` response handling notes at all ask_yes_no() response sites
+
+**Files**: workflow/cosa-voice-integration.md, global/CLAUDE.md, ~/.claude/CLAUDE.md, workflow/session-end.md, workflow/branch-pr-and-merge.md, workflow/bug-fix-mode.md, workflow/session-checkpoint.md
+**Commit**: bb6f9d3
+
+---
+
+### 2026.02.05 - Session 61 | Bug Triage
+
+**Accomplishments**:
+- Recorded bug: `/plan-history-management` is hardcoded to Planning-is-Prompting project paths - when invoked from Lupin it manages PiP's history.md instead of Lupin's
+- Added bug to `bug-fix-queue.md` (Queued section)
+- Updated `TODO.md` with bug description
+
+**Files Modified**: TODO.md, bug-fix-queue.md, history.md
+
+---
+
+### 2026.02.04 - Session 60 | Bug Fix Mode
+
+### Fixes
+
+**Fix 1-5**: Branch PR and Merge Workflow Gaps + Notification Safety
+
+- **Bug 1**: Branch PR and Merge workflow missing from installation wizard catalog
+  - Added JSON metadata block with `branch-pr-and-merge` workflow to `installation-wizard.md`
+  - Added menu entry `[H] Branch PR and Merge` with dependency validation (git, gh required)
+  - Re-lettered subsequent entries (I, J, K)
+
+- **Bug 2**: Branch deletion `default="yes"` is unsafe (destructive action)
+  - Changed to `default="no"` in `branch-pr-and-merge.md` Step 8
+
+- **Bug 3**: Blocking tools missing `priority="high"` mandate
+  - Updated global `~/.claude/CLAUDE.md` - added CRITICAL mandate and updated all examples
+  - Updated `workflow/cosa-voice-integration.md` - added mandate and updated examples
+  - Updated `workflow/branch-pr-and-merge.md` - all `ask_yes_no` and `ask_multiple_choice` calls now include `priority="high"`
+  - **Discovery**: `ask_yes_no()` MCP tool doesn't accept `priority` parameter (only `converse()` and `ask_multiple_choice()` do)
+
+- **Bug 4**: Release tag creation `default="yes"` is unsafe
+  - Changed to `default="no"` in `branch-pr-and-merge.md` Step 9
+
+- **Bug 5**: New branch name prompt timeout too short
+  - Doubled from default 300s to 600s (10 min) in `branch-pr-and-merge.md` Step 10
+
+- **Files**: workflow/installation-wizard.md, workflow/branch-pr-and-merge.md, workflow/cosa-voice-integration.md, ~/.claude/CLAUDE.md
+- **Tests**: Documentation validation PASS
+- **Commit**: b5aa3bd
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.02.04 - Session 59 | Feature Implementation
 

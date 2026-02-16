@@ -28,7 +28,7 @@
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0)
 
 The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows.
 
@@ -40,6 +40,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | `ask_yes_no()` | Binary yes/no decision | Yes |
 | `converse()` | Open-ended question | Yes |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes |
 
 ### Key Features
 
@@ -51,6 +52,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 
 - **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`
 - **Blocked/waiting**: Use `converse()` for open-ended questions
+- **Multiple related questions**: Use `ask_open_ended_batch()` for gathering 2+ answers at once
 - **Errors encountered**: Use `notify()` with `priority="urgent"`
 - **Task completion**: Use `notify()` with `priority="low"`
 - **Progress updates**: Use `notify()` with `notification_type="progress"`

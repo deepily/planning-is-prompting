@@ -34,30 +34,14 @@
 
 **Should I run workflow audit?** Use this decision tree:
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│ Q1: Did you just install workflows from canonical source?     │
-│     (via installation wizard or manual copy)                   │
-│                                                                 │
-│     YES → SKIP AUDIT (files are compliant by definition)       │
-│     NO  → Continue to Q2                                       │
-└────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────┐
-│ Q2: Are you checking existing workflows that may have been    │
-│     manually edited or created before version 1.0?             │
-│                                                                 │
-│     YES → RUN AUDIT (check for drift and compliance issues)    │
-│     NO  → Continue to Q3                                       │
-└────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────┐
-│ Q3: Are you developing new workflows and want to verify they  │
-│     follow execution protocol standards?                       │
-│                                                                 │
-│     YES → RUN AUDIT (verify your workflow follows standards)   │
-│     NO  → SKIP AUDIT (not needed)                             │
-└────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Q1{Q1: Just installed from<br>canonical source?} -->|Yes| SKIP1[SKIP AUDIT<br>Files compliant by definition]
+    Q1 -->|No| Q2{Q2: Checking existing workflows<br>manually edited or pre-v1.0?}
+    Q2 -->|Yes| RUN1[RUN AUDIT<br>Check for drift and compliance]
+    Q2 -->|No| Q3{Q3: Developing new workflows<br>and want to verify standards?}
+    Q3 -->|Yes| RUN2[RUN AUDIT<br>Verify workflow follows standards]
+    Q3 -->|No| SKIP2[SKIP AUDIT<br>Not needed]
 ```
 
 **Use Cases by Scenario**:

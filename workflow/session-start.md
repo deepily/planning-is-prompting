@@ -69,13 +69,14 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Three-Phase Pattern**: This workflow uses progress notifications during initialization, then a blocking question once ready.
 
-**MCP Tools**: cosa-voice MCP server (v0.2.0) - no bash commands needed
+**MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 
 **Available Tools**:
 - `notify()` - Fire-and-forget announcements (progress updates)
 - `ask_yes_no()` - Binary yes/no decisions
 - `converse()` - Open-ended questions
 - `ask_multiple_choice()` - Menu selections (blocking, mirrors AskUserQuestion)
+- `ask_open_ended_batch()` - Batch open-ended questions (single screen, blocking)
 
 **When to Send Notifications**:
 1. **Start Notification** (Preliminary step, before Step 0):
@@ -1201,23 +1202,15 @@ This prevents accidentally committing the session manifest.
 ## Quick Reference
 
 **Typical Session Start Flow**:
-```
-Preliminary: Send start notification (low priority)
-     ↓
-0. Create TodoWrite initialization checklist
-     ↓
-1. Notification System Overview (reference only)
-     ↓
-2. Load configs → Extract [PREFIX]
-     ↓
-3. Discover workflows → List slash commands
-     ↓
-4. Load history → Read last 3-7 days → Send progress notification (low priority)
-     ↓
-5. Find TODOs → ask_multiple_choice() with options (HIGH priority, BLOCKING)
-     └→ WAIT for user response
-     ↓
-6. Present context → Await work direction
+```mermaid
+flowchart TD
+    P["Preliminary: Send start notification (low)"] --> S0["0. Create TodoWrite checklist"]
+    S0 --> S1["1. Notification System Overview (ref only)"]
+    S1 --> S2["2. Load configs → Extract PREFIX"]
+    S2 --> S3["3. Discover workflows → List slash commands"]
+    S3 --> S4["4. Load history → Read last 3-7 days<br>Send progress notification (low)"]
+    S4 --> S5["5. Find TODOs → ask_multiple_choice()<br>HIGH priority, BLOCKING"]
+    S5 -->|WAIT for response| S6["6. Present context → Await work direction"]
 ```
 
 **Notification Timing**:

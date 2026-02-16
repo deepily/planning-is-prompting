@@ -429,7 +429,7 @@ source .venv/bin/activate  # Linux/Mac
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.2.0)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0)
 
 The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
 
@@ -441,6 +441,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
 | `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
 | `get_session_info()` | Session metadata | No | `get_session_info()` |
 
 ### Key Features
@@ -499,7 +500,7 @@ Use blocking tools when you need user input before proceeding. All blocking tool
 
 #### ask_yes_no()
 
-For simple binary yes/no decisions.
+For simple binary yes/no decisions. Users can press **C** to attach a qualifying comment (300 char max).
 
 ```python
 response = ask_yes_no(
@@ -508,7 +509,8 @@ response = ask_yes_no(
     timeout_seconds=300,
     abstract="**Staged files**:\n- src/auth.py (+45/-12)\n- tests/test_auth.py (+67/-0)"
 )
-# Returns: {"answer": "yes"} or {"answer": "no"}
+# Returns: "yes", "no", "yes [comment: ...]", or "no [comment: ...]"
+# Use response.startswith( "yes" ) to handle both plain and commented responses
 ```
 
 #### converse()
@@ -550,6 +552,26 @@ response = ask_multiple_choice(
 # Returns: {"answers": {"0": "Commit and push"}}
 ```
 
+#### ask_open_ended_batch()
+
+For asking multiple open-ended questions at once on a single screen. Much faster than sequential `converse()` calls when gathering 2+ related answers.
+
+```python
+response = ask_open_ended_batch(
+    questions=[
+        {"question": "What is the main goal?", "header": "Goal"},
+        {"question": "Any constraints?", "header": "Constraints"},
+        {"question": "Target branch?", "header": "Branch", "default_value": "main"}
+    ],
+    title="Requirements",
+    priority="high",  # MANDATORY for blocking tools
+    abstract="Gathering requirements before planning."
+)
+# Returns: {"answers": {"Goal": "Add OAuth2", "Constraints": "Use existing DB", "Branch": "main"}}
+```
+
+The optional `default_value` key pre-fills the text input so the user can accept defaults by hitting **Submit All**.
+
 ---
 
 ### Timeout Handling
@@ -561,6 +583,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_yes_no()` | 300s (5 min) | Return `default` value |
 | `converse()` | 600s (10 min) | Return `response_default` |
 | `ask_multiple_choice()` | 300s (5 min) | Return first option or cancel |
+| `ask_open_ended_batch()` | 300s (5 min) | Return empty dict or timeout message |
 
 **Safe Default Principle**: On timeout, choose actions that preserve data integrity:
 - Commit decisions → default to "Cancel"
@@ -1187,17 +1210,16 @@ Which tests should I create?
 ### Progressive Adoption Pattern
 
 **Project Lifecycle**:
-```
-New Project:
-  └─> Smoke tests only (in __main__ blocks)
-        ↓
-Growing Project:
-  └─> Move smoke tests to src/tests/smoke/
-  └─> Add unit tests for complex logic
-        ↓
-Mature Project:
-  └─> Add integration tests for critical workflows
-  └─> Run all three tiers before major releases
+```mermaid
+flowchart TD
+    NP["New Project"] --> S["Smoke tests only<br>(in __main__ blocks)"]
+    S --> GP["Growing Project"]
+    GP --> G1["Move smoke tests to src/tests/smoke/"]
+    GP --> G2["Add unit tests for complex logic"]
+    G1 --> MP["Mature Project"]
+    G2 --> MP
+    MP --> M1["Add integration tests for critical workflows"]
+    MP --> M2["Run all three tiers before major releases"]
 ```
 
 **Decision Guide**:
@@ -1228,13 +1250,13 @@ pytest src/tests/ -v
 
 # Then provide summary table:
 Test Results Summary:
-┌─────────────────┬────────┬────────┬─────────┐
-│ Test Type       │ Passed │ Failed │ Skipped │
-├─────────────────┼────────┼────────┼─────────┤
-│ Smoke Tests     │   12   │    0   │    0    │
-│ Unit Tests      │   45   │    2   │    1    │
-│ Integration     │    8   │    0   │    0    │
-└─────────────────┴────────┴────────┴─────────┘
+
+| Test Type   | Passed | Failed | Skipped |
+|-------------|--------|--------|---------|
+| Smoke Tests |   12   |    0   |    0    |
+| Unit Tests  |   45   |    2   |    1    |
+| Integration |    8   |    0   |    0    |
+
 Total: 65 passed, 2 failed, 1 skipped
 ```
 
@@ -1276,6 +1298,56 @@ Total: 65 passed, 2 failed, 1 skipped
 **Visual Storytelling**: Multiple archives per month = high-intensity period
 
 For complete details, algorithms, and implementation, see the canonical workflow document above.
+
+## PLAN FILE SERIALIZATION
+
+**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
+
+**The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
+
+**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+
+```
+~/.claude/plans/dreamy-wiggling-pretzel.md
+  → <project>/src/rnd/2026.02.07-runtime-args-whitelist-expeditor.md
+```
+
+**Naming**: `yyyy.mm.dd-descriptive-slug.md` (3-6 hyphenated words capturing the plan's SUBJECT)
+
+**Serialize when**: Architectural decisions, >30min development, needs cross-session recall, multi-step implementation.
+
+**Skip when**: Tiny plans (<1KB), abandoned plans, trivial fixes, session-specific only.
+
+**Detailed Reference**: See `~/.claude/skills/plan-serialization/SKILL.md`
+
+**Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
+
+## MERMAID DIAGRAMS
+
+**Purpose**: Use Mermaid syntax for all diagrams in markdown files across all projects.
+
+**MANDATE**: When creating or modifying any diagram in a markdown file, use Mermaid
+(` ```mermaid ` code blocks) instead of ASCII art or box-drawing characters.
+
+**Diagram Type Selection**:
+
+| Use Case | Mermaid Type |
+|----------|-------------|
+| Decision trees, process flows | `flowchart TD` |
+| State transitions | `stateDiagram-v2` |
+| Task/concept hierarchies | `mindmap` |
+| Schedules, phased roadmaps | `gantt` |
+| Chronological progressions | `timeline` |
+| Actor interactions | `sequenceDiagram` |
+
+**Exempt from Mermaid** (keep as-is):
+- Directory/file trees (`├── └──` notation) — no Mermaid equivalent
+- Terminal UI chrome (menu borders, section dividers) — structural formatting
+- Simple data tables — use standard markdown tables
+
+**Detailed Reference**: See `~/.claude/skills/mermaid-diagrams/SKILL.md`
+
+**Canonical Workflow**: planning-is-prompting → workflow/mermaid-diagrams.md
 
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:

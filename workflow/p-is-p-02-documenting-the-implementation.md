@@ -814,6 +814,21 @@ Examples:
 
 ### Evolution Timeline
 
+```mermaid
+timeline
+    title Document Token Growth & Restructuring
+    Week 1-2 : Single file, 3500 tokens
+             : Initial setup
+    Week 4   : Single file, 12400 tokens
+             : Growing steadily
+    Week 8   : Single file, 23847 tokens
+             : Needs reorganization
+    Week 8 Reorganized : Split to 5 files + archive
+                       : Active doc back to 8456 tokens
+    Week 12  : Project complete
+             : 6 files + 2 archives
+```
+
 **Week 1-2** (Initial setup):
 ```
 src/rnd/
