@@ -1,13 +1,28 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 65
+**RESUME HERE**: Session 66
 
-**Current Status**: Mermaid diagram directive + full conversion complete
-**Last Session**: Session 65 - Mermaid Diagrams Directive
+**Current Status**: v0.1.2 released, now on wip-v0.1.3 branch
+**Last Session**: Session 66 - Branch PR & Merge v0.1.2
 
 ---
 
 ## February 2026
+
+### 2026.02.16 - Session 66 | Branch PR & Merge v0.1.2
+
+**Accomplishments**:
+- Executed full branch PR & merge workflow for `wip-v0.1.2-2026.02.04-adhoc-development-and-bug-fixing`
+- Updated README.md "What's New" section: v0.1.1 → v0.1.2 with Mermaid diagrams, plan serialization, cosa-voice v0.3.0 docs, ask_yes_no qualified comments, bug fixes
+- Created PR #4 via `gh pr create`, merged to main (fast-forward, 22 files, +1635/-278)
+- Post-merge: synced local main, created next branch `wip-v0.1.3-2026.02.16-continued-development`
+- Skipped: old branch deletion and release tag v0.1.2 (user choice)
+
+**Files**: README.md
+**PR**: https://github.com/deepily/planning-is-prompting/pull/4
+**Commits**: 7 (6 from Sessions 61-65 + README update)
+
+---
 
 ### 2026.02.14 - Session 65 | Mermaid Diagrams Directive + Full Conversion
 
