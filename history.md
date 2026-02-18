@@ -1,13 +1,36 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 66
+**RESUME HERE**: Session 67
 
-**Current Status**: v0.1.2 released, now on wip-v0.1.3 branch
-**Last Session**: Session 66 - Branch PR & Merge v0.1.2
+**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Testing slash command templates added.
+**Last Session**: Session 67 - Testing Slash Command Portability Bug Fix
 
 ---
 
 ## February 2026
+
+### 2026.02.17 - Session 67 | Testing Slash Command Portability Bug Fix
+
+**Accomplishments**:
+- Fixed 3 Lupin test slash commands that had hardcoded planning-is-prompting config (`[PLAN]` prefix, wrong working dir, docs-only component classification)
+- Replaced `plan-test-baseline.md`, `plan-test-remediation.md`, `plan-test-harness-update.md` in Lupin with proper Lupin config: `[LUPIN]` prefix, smoke/unit/integration/websocket test types, 5 test scripts, health check, env vars, YAML component classification
+- Created `workflow/slash-command-templates/` directory with 3 parameterized templates using `{{PLACEHOLDER}}` syntax to prevent recurrence
+- Updated `workflow/INSTALLATION-GUIDE.md` with "Alternative: Use Templates" subsection in Testing Workflows section
+- Added 3 follow-up TODO items to Lupin's TODO.md (deprecate old commands, audit other repos, update install wizard)
+
+**Files Modified** (planning-is-prompting):
+- `workflow/slash-command-templates/plan-test-baseline-template.md` (new)
+- `workflow/slash-command-templates/plan-test-remediation-template.md` (new)
+- `workflow/slash-command-templates/plan-test-harness-update-template.md` (new)
+- `workflow/INSTALLATION-GUIDE.md` (updated)
+
+**Files Modified** (Lupin - cross-repo):
+- `.claude/commands/plan-test-baseline.md` (replaced)
+- `.claude/commands/plan-test-remediation.md` (replaced)
+- `.claude/commands/plan-test-harness-update.md` (replaced)
+- `TODO.md` (3 new items added)
+
+---
 
 ### 2026.02.16 - Session 66 | Branch PR & Merge v0.1.2
 

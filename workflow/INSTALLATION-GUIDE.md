@@ -1539,6 +1539,30 @@ I need you to install the testing workflow commands from the planning-is-prompti
 After installation, test with: `/plan-test-baseline` (dry-run to see what would execute)
 ```
 
+### Alternative: Use Templates
+
+Instead of copying the planning-is-prompting slash commands and manually customizing them, you can start from **parameterized templates** that make all project-specific values explicit:
+
+**Location**: `workflow/slash-command-templates/`
+
+| Template | Target Command |
+|----------|----------------|
+| `plan-test-baseline-template.md` | `.claude/commands/plan-test-baseline.md` |
+| `plan-test-remediation-template.md` | `.claude/commands/plan-test-remediation.md` |
+| `plan-test-harness-update-template.md` | `.claude/commands/plan-test-harness-update.md` |
+
+**How to use**:
+1. Copy the template to your project's `.claude/commands/` directory (remove `-template` from filename)
+2. Replace all `{{PLACEHOLDER}}` values with your project-specific configuration
+3. Remove the HTML comment block at the top
+4. Verify no placeholders remain: `grep '{{' .claude/commands/plan-test-*.md`
+
+Each template includes a **Customization Guide** at the bottom with examples for code projects vs. documentation projects.
+
+**When to use templates vs. copy-and-customize**:
+- **Templates**: Best when installing from scratch or when the planning-is-prompting commands don't match your project type
+- **Copy-and-customize**: Best when your project closely resembles an existing installation (e.g., another code project similar to Lupin)
+
 ### Expected Questions
 
 Claude will ask you to provide:

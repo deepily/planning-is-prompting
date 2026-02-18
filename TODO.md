@@ -1,10 +1,12 @@
 # TODO
 
-Last updated: 2026-02-16 (Session 66)
+Last updated: 2026-02-17 (Session 67)
 
 ## Pending
 
 - [ ] **BUG**: `/plan-history-management` is hardcoded to Planning-is-Prompting project paths - when invoked from Lupin it manages PiP's history.md instead of Lupin's. Slash command needs to be project-aware (use project root detection, not hardcoded paths)
+- [ ] Update install wizard (`workflow/installation-wizard.md`) to offer template-based installation for testing workflows (use `workflow/slash-command-templates/` instead of copying PiP commands verbatim)
+- [ ] Audit other repos (besides Lupin) for verbatim-copy slash command bug in testing commands
 - [ ] Verify testing-development skill activation in new Claude Code session
 - [ ] Consider extracting other large CLAUDE.md sections if needed (notifications, path management)
 - [ ] Test new token estimation on Lupin repo history.md after compaction
