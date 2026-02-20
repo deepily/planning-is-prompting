@@ -1,13 +1,45 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 67
+**RESUME HERE**: Session 70
 
-**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Testing slash command templates added.
-**Last Session**: Session 67 - Testing Slash Command Portability Bug Fix
+**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. CURL prohibition implemented globally.
+**Last Session**: Session 69 - Global CURL Prohibition
 
 ---
 
 ## February 2026
+
+### 2026.02.20 - Session 69 | Global CURL Prohibition for Testing
+
+**Accomplishments**:
+- Added `### CURL Prohibition` mandate to `~/.claude/CLAUDE.md` under TESTING section: absolute ban on curl for API testing, health checks, and test documentation across all projects
+- Replaced curl health check in `workflow/testing-baseline.md` with `python3 -c "import urllib.request; urllib.request.urlopen(…)"` one-liner
+- Replaced curl prerequisite in `workflow/skill-templates/testing-skill-template.md` with urllib equivalent
+- Updated `{{HEALTH_CHECKS}}` placeholder example in `workflow/slash-command-templates/plan-test-baseline-template.md` from curl to urllib
+- Added deprecation note to `src/rnd/2025.10.11-testing-workflows-abstraction.md` (historical content preserved)
+- Includes PROHIBITED/CORRECT code examples following existing `getattr()` prohibition pattern
+- Verification: zero curl references remaining in `workflow/` directory; only PROHIBITED examples in global CLAUDE.md
+
+**Files Modified** (planning-is-prompting):
+- `workflow/testing-baseline.md` (1 line replaced)
+- `workflow/skill-templates/testing-skill-template.md` (1 line replaced)
+- `workflow/slash-command-templates/plan-test-baseline-template.md` (1 line replaced)
+- `src/rnd/2025.10.11-testing-workflows-abstraction.md` (deprecation note added)
+
+**Files Modified** (global):
+- `~/.claude/CLAUDE.md` (~40 lines added: CURL Prohibition subsection)
+
+---
+
+### 2026.02.18 - Session 68 | Bug Fix Mode
+
+### Fixes
+(Individual fixes will be added here)
+
+### Session Summary
+(Will be completed at session close)
+
+---
 
 ### 2026.02.17 - Session 67 | Testing Slash Command Portability Bug Fix
 

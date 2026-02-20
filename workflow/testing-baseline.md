@@ -182,7 +182,7 @@ echo "Baseline collection timestamp: ${TIMESTAMP}"
 **If health_check_url is configured**:
 ```bash
 echo "=== System Health Check ==="
-if curl -s -f "{health_check_url}" >/dev/null 2>&1; then
+if python3 -c "import urllib.request; urllib.request.urlopen( '{health_check_url}' )" 2>/dev/null; then
     echo "✅ Server is healthy and responding at {health_check_url}"
 else
     echo "❌ Server health check failed at {health_check_url}"

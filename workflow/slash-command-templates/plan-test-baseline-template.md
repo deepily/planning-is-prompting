@@ -16,7 +16,7 @@
     {{REPORTS_DIRECTORY}}     - e.g., src/rnd/
     {{TEST_TYPES}}            - e.g., smoke, unit, integration, websocket
     {{TEST_SCRIPTS}}          - Multi-line list of test commands (see example below)
-    {{HEALTH_CHECKS}}         - e.g., curl http://localhost:8000/health, or "None required"
+    {{HEALTH_CHECKS}}         - e.g., python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')", or "None required"
     {{ENVIRONMENT_VARS}}      - e.g., PROJECT_ROOT, PYTHONPATH, or "No special environment variables needed"
     {{PROJECT_NOTE}}          - e.g., "Code project - tests include smoke, unit, integration"
     {{SMOKE_TEST_NOTE}}       - e.g., "actual test execution" or "document validation"
