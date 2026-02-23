@@ -1,13 +1,37 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 70
+**RESUME HERE**: Session 71
 
-**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. CURL prohibition implemented globally.
-**Last Session**: Session 69 - Global CURL Prohibition
+**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Change Impact Analysis for smart test recommendations.
+**Last Session**: Session 70 - Change Impact Analysis & Scoped Testing
 
 ---
 
 ## February 2026
+
+### 2026.02.23 - Session 70 | Change Impact Analysis & Scoped Testing
+
+**Accomplishments**:
+- Created `~/.claude/skills/testing-development/references/change-impact-analysis.md` — core reference with 9-category change classification taxonomy, 5-level blast radius algorithm, Mermaid decision tree, override/de-escalation conditions, language-specific patterns
+- Replaced "Always Offer Test Updates" with "Smart Test Recommendation" in `SKILL.md` (lines 94-127) — mandatory pre-analysis before recommending tests
+- Rewrote `example-interactions.md` with 4 impact-aware examples: Presentational (smoke only), Security Fix (full suite), New Utility (unit + smoke), Base Class Refactor (full suite)
+- Updated `~/.claude/CLAUDE.md` with compact Smart Recommendation section replacing blind "Always Offer" prompt
+- Updated `global/CLAUDE.md` template with full Smart Recommendation including taxonomy table and 2 examples
+- Added Step 3.0 (Change-Scoped Test Selection) to `workflow/testing-remediation.md`, version bumped to 1.1
+
+**Files Modified** (skill — `~/.claude/skills/testing-development/`):
+- `references/change-impact-analysis.md` (new, ~210 lines)
+- `SKILL.md` (section replaced + references updated)
+- `references/example-interactions.md` (full rewrite)
+
+**Files Modified** (global):
+- `~/.claude/CLAUDE.md` (lines 1007-1024 replaced)
+
+**Files Modified** (planning-is-prompting):
+- `global/CLAUDE.md` (lines 1132-1208 replaced)
+- `workflow/testing-remediation.md` (Step 3.0 added, version 1.0 → 1.1)
+
+---
 
 ### 2026.02.20 - Session 69 | Global CURL Prohibition for Testing
 

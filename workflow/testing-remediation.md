@@ -3,8 +3,8 @@
 **Purpose**: Verify system health after changes, identify regressions, systematically remediate issues
 **Mode**: Comparison analysis with targeted remediation
 **Principle**: Compare, Analyze, Fix, Validate
-**Version**: 1.0
-**Last Updated**: 2025.10.11
+**Version**: 1.1
+**Last Updated**: 2026.02.23
 
 ---
 
@@ -273,6 +273,24 @@ notify( "Post-change remediation STARTED ({scope}) - Comparing against baseline 
 **Task**: Run same tests as baseline, capture current state
 
 **Use exact same execution patterns as testing-baseline.md Step 3**, but with different log file naming (postchange_* instead of baseline_*).
+
+#### 3.0 Change-Scoped Test Selection (Optional)
+
+When a full re-run would take >5 minutes and changes are well-bounded, use Change Impact Analysis to scope the test run:
+
+1. **Classify** changed files using the 9-category taxonomy
+   (Documentation / Presentational / Config / Build / Utility / Business Logic / API / Data Layer / Security)
+2. **Compute blast radius** (fan-out level 1-5)
+3. **Scope decision**:
+   - If blast radius ≤ 3: Run only tests covering changed modules + full smoke suite
+   - If blast radius ≥ 4: Run full suite (skip this optimization)
+   - If all changes are Documentation: Skip testing entirely
+
+Document the scope decision in the comparison report (Step 4).
+
+**Reference**: See `~/.claude/skills/testing-development/references/change-impact-analysis.md` for the complete taxonomy, blast radius algorithm, and decision tree.
+
+**Note**: This step is an optimization. When in doubt, skip it and run the full suite.
 
 #### 3.1 Smoke Tests (Always Included)
 
@@ -1346,6 +1364,11 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 ---
 
 ## Version History
+
+**Version 1.1** (2026.02.23)
+- Added Step 3.0: Change-Scoped Test Selection (optional optimization)
+- Integrates Change Impact Analysis taxonomy for targeted test runs
+- References `~/.claude/skills/testing-development/references/change-impact-analysis.md`
 
 **Version 1.0** (2025.10.11)
 - Initial canonical workflow

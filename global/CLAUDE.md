@@ -1129,83 +1129,99 @@ pytest src/tests/                             # Everything
 pytest --cov=cosa.rest --cov-report=html src/tests/
 ```
 
-### CRITICAL WORKFLOW: Always Offer Test Updates
+### CRITICAL WORKFLOW: Smart Test Recommendation
 
-**When making ANY code changes, ALWAYS ask the user about test updates:**
+**After making code changes, ALWAYS analyze impact before recommending tests.**
 
-#### Trigger Conditions
-- Fixing a bug
-- Adding a new feature/capability
-- Expanding existing module functionality
-- Refactoring code
-- Changing APIs or interfaces
+#### Pre-Analysis Steps (Mandatory)
 
-#### What to Ask
+1. **Classify** changes into one of 9 categories:
 
-**Template**:
+| Category | Test Recommendation |
+|----------|---------------------|
+| Documentation (`*.md`, docstrings) | No tests needed |
+| Presentational (`*.html` layout, `*.css`) | Smoke only |
+| Configuration (`*.env`, `*.toml`, `settings.*`) | Smoke only |
+| Build/CI (`Dockerfile`, CI `*.yml`) | Smoke only |
+| Utility/Helper (`utils.*`, isolated functions) | Unit for that module + smoke |
+| Business Logic (domain models, services) | Unit + smoke |
+| API/Routes (`routes/*`, `views.*`) | Unit + integration + smoke |
+| Data Layer (`models/*`, `migrations/*`) | Full suite |
+| Security/Auth (`auth/*`, `middleware/*`) | Full suite |
+
+2. **Compute blast radius** (fan-out level 1-5):
+   - Level 1-2: Tests for changed files only
+   - Level 3: All tests in affected module
+   - Level 4-5: Full suite
+
+3. **Recommend** minimum effective scope: `final_scope = max( classification, blast_radius )`
+
+**Mixed-category commits escalate to the highest tier.**
+
+#### Smart Recommendation Template
+
 ```
-I've [fixed bug X / added feature Y / expanded module Z].
+I've [description of change].
 
-Would you like me to update the tests?
-1. ✓ Update smoke tests (quick_smoke_test() or src/tests/smoke/)
-2. ✓ Update unit tests (src/tests/unit/)
-3. ✓ Update integration tests (src/tests/integration/)
-4. ○ Skip testing for now
+**Change Impact Analysis**:
+- Files changed: [N] ([categories])
+- Classification: [highest category]
+- Blast radius: Level [N] — [label]
 
-Which tests should I create/update?
-```
+**Recommended**: [specific test scope]
+  ✓ [recommended tier(s)]
+  ○ [available but not recommended]
+  ○ Skip testing
 
-**Guidelines**:
-- **Always offer** - Never assume user wants or doesn't want tests
-- **List all three types** - Let user choose appropriate level
-- **Default to smoke tests** - Simplest option for quick validation
-- **Explain trade-offs** if user asks:
-  - Smoke: Fast, catches major breakage
-  - Unit: Thorough, catches edge cases
-  - Integration: Validates real workflows, requires infrastructure
-
-#### Example Interactions
-
-**Example 1 - Bug Fix**:
-```
-I've fixed the JWT token expiration bug in jwt_service.py:142.
-
-Would you like me to update the tests?
-1. ✓ Update smoke tests (test token refresh in quick_smoke_test())
-2. ✓ Add unit test (test_token_expiration_edge_case())
-3. ✓ Update integration test (test_token_refresh_flow())
-4. ○ Skip testing for now
-
-Which tests should I create/update?
+[Brief rationale]
+Accept recommendation, or choose differently?
 ```
 
-**Example 2 - New Feature**:
+#### Example: Presentational Change (Smoke Only)
+
 ```
-I've added password strength validation to the registration endpoint.
+I've repositioned buttons in profile.html and added a hover style in auth.css.
 
-Would you like me to create tests?
-1. ✓ Add smoke test (validate registration with weak/strong passwords)
-2. ✓ Add unit tests (test_password_strength_validator() with edge cases)
-3. ✓ Add integration test (test_registration_rejects_weak_passwords())
-4. ○ Skip testing for now
+**Change Impact Analysis**:
+- Files changed: 2 (profile.html, auth.css)
+- Classification: Presentational
+- Blast radius: Level 1 — Contained
 
-This is a new security feature, so I recommend at minimum unit tests.
-Which tests should I create?
+**Recommended**: Smoke tests only
+  ✓ Smoke tests (verify pages load)
+  ○ Unit tests — not applicable (no logic changed)
+  ○ Skip testing
+
+Purely visual changes with no logic or data impact.
 ```
 
-**Example 3 - Simple Project**:
-```
-I've created a new utility function parse_date_string() in util.py.
+#### Example: Security Fix (Full Suite)
 
-Would you like me to create tests?
-1. ✓ Add to smoke test (test a few date formats in quick_smoke_test())
-2. ✓ Create unit tests (comprehensive edge cases: invalid dates, timezones, etc.)
-3. ○ Skip integration tests (not needed for utility function)
-4. ○ Skip testing for now
-
-For early projects, smoke tests are usually sufficient.
-Which tests should I create?
 ```
+I've patched a JWT validation bypass in jwt_service.py and hardened auth middleware.
+
+**Change Impact Analysis**:
+- Files changed: 2 (auth/jwt_service.py, auth/middleware.py)
+- Classification: Security/Auth
+- Blast radius: Level 5 — System-wide
+
+**Recommended**: Full suite
+  ✓ Smoke + Unit + Integration
+  ○ Skip testing
+
+Security changes affect every authenticated request. Full coverage essential.
+```
+
+#### What NOT to Do
+
+- **NEVER** offer all three tiers equally for every change
+- **NEVER** run 1,500 unit tests for a CSS tweak
+- **NEVER** skip the pre-analysis step
+
+#### Detailed Reference
+
+For complete taxonomy, blast radius algorithm, and decision tree, see the **testing-development** skill:
+- `~/.claude/skills/testing-development/references/change-impact-analysis.md`
 
 ### Progressive Adoption Pattern
 
