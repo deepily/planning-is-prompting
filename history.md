@@ -1,13 +1,32 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 71
+**RESUME HERE**: Session 72
 
-**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Change Impact Analysis for smart test recommendations.
-**Last Session**: Session 70 - Change Impact Analysis & Scoped Testing
+**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Global CLAUDE.md reduced from 42.4k to 31.7k chars.
+**Last Session**: Session 71 - CLAUDE.md Size Reduction (Bug Fix)
 
 ---
 
 ## February 2026
+
+### 2026.02.24 - Session 71 | CLAUDE.md Size Reduction (Bug Fix)
+
+**Accomplishments**:
+- Reduced `~/.claude/CLAUDE.md` from 42,418 to 31,742 chars (-25.2%), eliminating the Claude Code performance warning
+- Created `~/.claude/skills/cosa-voice-notifications/SKILL.md` (9,121 chars) — extracted full API reference for all 6 cosa-voice MCP tools (parameters, examples, timeout handling, project auto-detection, deprecated commands migration)
+- Trimmed notification section in CLAUDE.md to compact stub: tools table, priority rule, "User Is NOT Watching" mental model, mandatory notification tables, prohibited anti-patterns, TodoWrite protocol
+- Trimmed TESTING section: replaced CURL Prohibition details and Smart Test Recommendation details with one-line MANDATEs + skill pointers
+- Trimmed MERMAID DIAGRAMS section: removed Diagram Type Selection table, kept MANDATE + exemptions + skill pointer
+- Trimmed PLAN FILE SERIALIZATION section: removed serialize-when/skip-when criteria, kept MANDATE + naming convention + skill pointer
+
+**Files Modified** (global — `~/.claude/`):
+- `CLAUDE.md` (4 sections trimmed, 42,418 → 31,742 chars)
+- `skills/cosa-voice-notifications/SKILL.md` (new, ~280 lines)
+
+**Files Modified** (planning-is-prompting):
+- `history.md` (this entry)
+
+---
 
 ### 2026.02.23 - Session 70 | Change Impact Analysis & Scoped Testing
 
