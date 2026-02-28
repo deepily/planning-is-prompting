@@ -818,6 +818,43 @@ For complete details, algorithms, and implementation, see the canonical workflow
 
 **Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
 
+### DOCUMENTATION-FIRST PROTOCOL
+
+**MANDATE**: After plan mode produces a plan that specifies documentation artifacts, those artifacts MUST be created BEFORE any code is written.
+
+**The Rule**: When a plan mentions documents to create (planning docs, tracking docs, architecture notes, research syntheses, implementation guides), treat documentation creation as **Phase 0** of implementation — a mandatory prerequisite that must complete before any code files are touched.
+
+**Sequence**:
+1. Plan is approved → exit plan mode
+2. **FIRST**: Create/serialize ALL documentation artifacts specified in the plan (`.md` files in `src/rnd/` or other locations the plan specifies)
+3. **THEN**: Confirm via cosa-voice before writing any code:
+   ```python
+   ask_yes_no(
+       "Documentation complete. Ready to begin code implementation?",
+       default="no",
+       priority="high",
+       abstract="**Documents created**:\n- [list each file]\n\nSay YES to begin coding, NO to revise documentation first."
+   )
+   ```
+4. **ONLY IF user says yes**: Begin writing code
+
+**ABSOLUTE PROHIBITIONS** (during documentation phase):
+
+| Action | Why It's Forbidden |
+|--------|-------------------|
+| **NEVER** write code files before documentation is complete | Documentation artifacts are the user's planning checkpoint |
+| **NEVER** assume documentation step can be skipped | If the plan mentions documents, they are required |
+| **NEVER** combine documentation and code in the same "step" | They are distinct phases with a gate between them |
+
+**FILE EXTENSION RULE** (during documentation phase):
+- `.md` files → ALLOWED (documentation artifact)
+- All other extensions → PROHIBITED until user confirms via `ask_yes_no()`
+
+**When this does NOT apply**:
+- Plans that specify NO documentation artifacts (pure code-only plans)
+- Trivial plans (<1KB) that don't mention any documents to create
+- When the user explicitly says "skip docs and start coding"
+
 ## MERMAID DIAGRAMS
 
 **MANDATE**: Use Mermaid (` ```mermaid ` code blocks) for all diagrams in markdown files. Exempt: directory trees, terminal UI chrome, simple data tables.
