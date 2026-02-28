@@ -1,13 +1,28 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 72
+**RESUME HERE**: Session 73
 
-**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Global CLAUDE.md reduced from 42.4k to 31.7k chars.
-**Last Session**: Session 71 - CLAUDE.md Size Reduction (Bug Fix)
+**Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
+**Last Session**: Session 72 - Global CLAUDE.md Reconciliation
 
 ---
 
 ## February 2026
+
+### 2026.02.27 - Session 72 | Global CLAUDE.md Reconciliation
+
+**Accomplishments**:
+- Reconciled `global/CLAUDE.md` with live `~/.claude/CLAUDE.md` — full replacement (1378 → 845 lines)
+- Verified files are byte-identical via `diff` (zero differences)
+- Confirmed new sections present: "Tool Usage for Manifest Operations", "CODEBASE ANALYSIS"
+- Confirmed stale content removed: expanded notification/testing/mermaid/serialization sections, Session Isolation Rules subsection
+- Investigated Session Isolation Rules coverage — confirmed content distributed across 4 workflow documents (session-start, bug-fix-mode, session-checkpoint, session-end), not lost
+- Added 2 new TODO items: plan serialization mandate, session isolation verification
+- Marked TODO #5 complete
+
+**Files Changed**: `global/CLAUDE.md`, `TODO.md`, `history.md`, `bug-fix-queue.md`
+
+---
 
 ### 2026.02.24 - Session 71 | CLAUDE.md Size Reduction (Bug Fix)
 
