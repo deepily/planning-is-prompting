@@ -425,6 +425,25 @@ source .venv/bin/activate  # Linux/Mac
 
 **CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user.
 
+### INTERACTIVE TOOL ROUTING (AskUserQuestion → cosa-voice)
+
+**MANDATE**: ALWAYS prefer cosa-voice MCP blocking tools over the built-in `AskUserQuestion` tool.
+
+**Rationale**: `AskUserQuestion` renders only in the terminal UI (no audio). The user is NOT watching the terminal. cosa-voice tools deliver audio alerts + UI, ensuring the user is always reached.
+
+**Routing Table**:
+
+| Scenario | Use This | NOT This |
+|----------|----------|----------|
+| Binary yes/no decision | `ask_yes_no()` | `AskUserQuestion` with 2 options |
+| Multiple choice (2-4 options) | `ask_multiple_choice()` | `AskUserQuestion` |
+| Open-ended clarification | `converse()` | `AskUserQuestion` with "Other" |
+| Multiple open-ended questions | `ask_open_ended_batch()` | Multiple `AskUserQuestion` calls |
+
+**Format compatibility**: `ask_multiple_choice()` accepts the same `questions` array format as `AskUserQuestion` — same `question`, `header`, `multiSelect`, and `options` fields.
+
+**Fallback**: If cosa-voice MCP server is unavailable (tool call errors), fall back to `AskUserQuestion`.
+
 ---
 
 ### CRITICAL: The User Is NOT Watching the Terminal

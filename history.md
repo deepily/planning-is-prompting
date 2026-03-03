@@ -1,9 +1,24 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 74
+**RESUME HERE**: Session 75
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 73 - Documentation-First Protocol
+**Last Session**: Session 74 - AskUserQuestion → cosa-voice Routing Mandate
+
+---
+
+## March 2026
+
+### 2026.03.02 - Session 74 | AskUserQuestion → cosa-voice Routing Mandate
+
+**Accomplishments**:
+- Added `### INTERACTIVE TOOL ROUTING (AskUserQuestion → cosa-voice)` subsection to `~/.claude/CLAUDE.md` inside the CLAUDE CODE NOTIFICATION SYSTEM section (~20 lines)
+- Mirrored identical change to `global/CLAUDE.md` (repo template stays in sync)
+- Added `## Interactive Tool Routing` section to `~/.claude/skills/cosa-voice-notifications/SKILL.md` with before/after examples for all 4 routing scenarios (~100 lines)
+- Routing mandate ensures cosa-voice MCP tools are always preferred over `AskUserQuestion` (which has no audio alert), with fallback to `AskUserQuestion` if MCP server unavailable
+
+**Files Changed**: `global/CLAUDE.md`, `~/.claude/CLAUDE.md`, `~/.claude/skills/cosa-voice-notifications/SKILL.md`
+**Plan**: `src/rnd/2026.03.02-askuserquestion-cosa-voice-routing-mandate.md`
 
 ---
 
