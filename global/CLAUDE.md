@@ -422,8 +422,47 @@ source .venv/bin/activate  # Linux/Mac
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
 | `get_session_info()` | Session metadata | No | `get_session_info()` |
+| `set_session_topic()` | Set session topic for stop hook context | No | `set_session_topic( "Bug Fix: WS queue crash" )` |
 
 **CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user.
+
+### MCP SESSION STARTUP PROTOCOL
+
+You MUST complete MCP initialization in two phases. This is NOT optional — skipping it is a session-start bug.
+
+**Phase A — Immediate (before reading history.md/TODO.md):**
+
+1. You MUST fetch cosa-voice MCP tool schemas via `ToolSearch` (tools are deferred — they cannot be called without this step)
+2. You MUST call `get_session_info()` to verify MCP server connectivity
+3. You MUST report MCP server status to the user (project, session_id, version, server_url)
+
+**Phase B — After context gathering:**
+
+4. You MUST call `set_session_topic()` once you know what the session is about — either from the user's first request, from reading history.md/TODO.md, or by asking the user
+
+**Rules:**
+- This applies in ALL modes including plan mode — MCP tools are **communication tools**, not code-changing tools
+- Phase A MUST complete before any file reading or session work begins
+- `set_session_topic()` MUST be called before any substantive work begins, but NOT before you have enough context to set a meaningful topic
+
+### SESSION TOPIC (Stop Hook Context)
+
+You **MUST** call `set_session_topic()` to provide context for "Continue Session?" notifications. This applies in ALL modes including plan mode.
+
+**When to call**:
+- After context gathering at session start (use the session title, e.g., "Session 369 | Bug Fix: WS queue crash")
+- After plan mode produces a plan (use the plan title)
+- When switching tasks mid-session (update to new task description)
+
+**Do NOT** call `set_session_topic()` until you know the session's focus — ask the user if unclear.
+
+**Why**: The stop hook "Continue Session?" notification shows the session topic in its abstract.
+Without it, the user can't tell which session is asking to continue.
+
+**Example**:
+```python
+set_session_topic( "CJ Flow Persistence — Phases 3-5" )
+```
 
 ### INTERACTIVE TOOL ROUTING (AskUserQuestion → cosa-voice)
 
@@ -891,11 +930,15 @@ For complete details, algorithms, and implementation, see the canonical workflow
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
-1. **Send a medium-priority notification** using the cosa-voice MCP server confirming your commitment:
-   ```
-   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "medium" )
-   ```
+0. **MCP Startup (Phase A)**: You MUST fetch cosa-voice MCP tool schemas via ToolSearch,
+   call `get_session_info()` to verify connectivity, and report MCP server status to the user.
+   This happens BEFORE steps 1-2. `set_session_topic()` comes later (Phase B), after you know the session focus.
 
-2. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+1. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
 
-3. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
+2. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
+
+Note: The SessionStart hook already sends a TTS notification when any session begins
+(including after context clears). A duplicate `notify()` call here is unnecessary and
+would produce a second notification with a potentially different sender_id after context
+clears. Rely on the hook's TTS notification as the single source of truth.

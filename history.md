@@ -1,13 +1,26 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 75
+**RESUME HERE**: Session 76
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 74 - AskUserQuestion → cosa-voice Routing Mandate
+**Last Session**: Session 75 - Global CLAUDE.md Reconciliation (MCP Startup Protocol)
 
 ---
 
 ## March 2026
+
+### 2026.03.24 - Session 75 | Global CLAUDE.md Reconciliation (MCP Startup Protocol)
+
+**Accomplishments**:
+- Reconciled `global/CLAUDE.md` with live `~/.claude/CLAUDE.md` — copied global to repo backup (901 → 944 lines)
+- Verified files are identical via `diff` (zero differences)
+- New sections synced: MCP SESSION STARTUP PROTOCOL (two-phase init), SESSION TOPIC (Stop Hook Context), `set_session_topic()` in tools table
+- Updated Final Instructions block (Step 0 MCP startup, removed duplicate `notify()`, SessionStart hook note)
+
+**Files Changed**: `global/CLAUDE.md`
+**Plan**: `~/.claude/plans/harmonic-napping-frost.md`
+
+---
 
 ### 2026.03.02 - Session 74 | AskUserQuestion → cosa-voice Routing Mandate
 
