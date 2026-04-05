@@ -1,9 +1,24 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 76
+**RESUME HERE**: Session 77
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 75 - Global CLAUDE.md Reconciliation (MCP Startup Protocol)
+**Last Session**: Session 76 - Global CLAUDE.md Reconciliation (Phase B Session Topic)
+
+---
+
+## April 2026
+
+### 2026.04.05 - Session 76 | Global CLAUDE.md Reconciliation (Phase B Session Topic)
+
+**Accomplishments**:
+- Reconciled `global/CLAUDE.md` with live `~/.claude/CLAUDE.md` (two incremental syncs, same session)
+- Sync 1: Added "cosa-voice tools NOT in deferred tools list" remediation block (12 lines) to MCP SESSION STARTUP PROTOCOL — surfaces the `install-cosa-voice.sh` fix when MCP server is missing from user-scope
+- Sync 2: Tightened Phase B Session Topic rules — reworded Phase B Step 4, added **Trigger** and **Self-check** subsections, rewrote Rules bullet to make `set_session_topic()` deferral by default a session-start bug
+- Verified files byte-identical via `diff` after each sync
+
+**Files Changed**: `global/CLAUDE.md`
+**Plan**: `~/.claude/plans/mossy-cooking-cake.md`
 
 ---
 

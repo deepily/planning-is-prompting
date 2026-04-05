@@ -398,6 +398,33 @@ python3 -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 ```
 
+## POST-EDIT VERIFICATION (Python)
+
+**MANDATE**: After editing ANY Python source file, verify it compiles before moving on.
+
+**Minimum verification** (after every `.py` edit):
+```bash
+python -c "import py_compile; py_compile.compile( 'path/to/file.py', doraise=True )"
+```
+
+**Import chain verification** (after editing files that are imported at startup):
+```bash
+PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')"
+```
+
+**When to use which**:
+
+| Situation | Verification |
+|-----------|-------------|
+| Edited a single `.py` file | `py_compile.compile()` on that file |
+| Fixed an import/NameError | Run the **same import line that failed** (e.g., the `main.py` import block) |
+| Edited multiple `.py` files | `py_compile.compile()` on each, then import chain if applicable |
+| Edited a module used at startup | Run the full startup import line from `main.py` |
+
+**Rationale**: Session 380b fixed a missing `Field` import in `podcast_generator.py` but missed the identical bug in `presentation_generator.py`. The server crashed again on restart. A single `python -c` call would have caught both files in one shot.
+
+**CRITICAL**: Do NOT skip this step. Do NOT declare a fix complete until verification passes. This applies even for "obvious" one-line import fixes.
+
 ## General Preferences
 
 - With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
@@ -438,12 +465,28 @@ You MUST complete MCP initialization in two phases. This is NOT optional — ski
 
 **Phase B — After context gathering:**
 
-4. You MUST call `set_session_topic()` once you know what the session is about — either from the user's first request, from reading history.md/TODO.md, or by asking the user
+4. You MUST call `set_session_topic()` as soon as you can write a meaningful 3-8 word session title — from the user's first message, from history.md/TODO.md, or from the approved plan. Skipping this is a session-start bug, not a minor oversight.
+
+**Trigger**: If the user's first message contains enough information to title the session (e.g., "I've got a new bug for you..."), call `set_session_topic()` IMMEDIATELY after Phase A — do not defer until later.
+
+**Self-check**: Before any substantive work (file reads, exploration, edits, planning), audit whether `set_session_topic()` has been called. If not, call it first. "After context gathering" means *as soon as the topic is knowable*, NOT "whenever I get around to it."
 
 **Rules:**
 - This applies in ALL modes including plan mode — MCP tools are **communication tools**, not code-changing tools
 - Phase A MUST complete before any file reading or session work begins
-- `set_session_topic()` MUST be called before any substantive work begins, but NOT before you have enough context to set a meaningful topic
+- Phase B MUST complete before any substantive work begins. The ONLY reason to defer Phase B past the first turn is if the user's opening message is too ambiguous to title (in which case, ASK).
+
+**If cosa-voice tools are NOT in the deferred tools list** (report as "MCP Status: unavailable"):
+The cosa-voice MCP server is likely missing from user-scope registration. Surface this remediation to the user:
+
+> cosa-voice is not registered at user scope. Run the idempotent installer to fix:
+> ```bash
+> bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh
+> ```
+> (resolves to `/mnt/DATA01/include/www.deepily.ai/projects/lupin/src/scripts/install-cosa-voice.sh`)
+> After it completes, restart the Claude Code session to pick up the newly-registered tools.
+
+Verify with `cd /tmp && claude mcp get cosa-voice` — expect `Scope: User config (available in all your projects)`.
 
 ### SESSION TOPIC (Stop Hook Context)
 
