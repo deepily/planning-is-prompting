@@ -1,13 +1,28 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 77
+**RESUME HERE**: Session 78
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 76 - Global CLAUDE.md Reconciliation (Phase B Session Topic)
+**Last Session**: Session 77 - Global CLAUDE.md Reconciliation (Documentation-First Simplification)
 
 ---
 
 ## April 2026
+
+### 2026.04.16 - Session 77 | Global CLAUDE.md Reconciliation (Documentation-First Simplification)
+
+**Accomplishments**:
+- Reconciled `global/CLAUDE.md` with live `~/.claude/CLAUDE.md` (drift was 14 lines, all inside `### DOCUMENTATION-FIRST PROTOCOL` subsection)
+- Removed the second `ask_yes_no()` gate between documentation and code — plan approval is now sufficient authorization to proceed from docs → code
+- Removed the `FILE EXTENSION RULE` sub-section (`.md` allowed, other extensions prohibited until confirm)
+- Removed the "skip docs and start coding" escape-hatch bullet
+- Tightened prohibition table "Why" column to match simplified semantics
+- Verified files byte-identical via `diff` after edits (both at 973 lines)
+
+**Files Changed**: `global/CLAUDE.md`
+**Plan**: `~/.claude/plans/start-a-new-bug-greedy-rocket.md`
+
+---
 
 ### 2026.04.05 - Session 76 | Global CLAUDE.md Reconciliation (Phase B Session Topic)
 
