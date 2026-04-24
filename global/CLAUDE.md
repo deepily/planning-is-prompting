@@ -222,148 +222,23 @@ Last updated: YYYY-MM-DD (Session N)
 
 ## INTERACTIVE REQUIREMENTS ELICITATION
 
-**Purpose**: When users arrive with vague or early-stage ideas, proactively engage in Socratic dialogue to refine requirements before invoking structured planning workflows. This pattern emerged organically and should be standardized.
+**Purpose**: When users arrive with vague or early-stage ideas, proactively offer Socratic dialogue to refine requirements BEFORE invoking structured planning workflows.
 
-### When to Trigger (Proactive Detection)
+**Trigger cues** (offer elicitation proactively when you detect any of these):
+- Vague phrasing: "I want to...", "I'm thinking about...", "Maybe we could..."
+- Short description (<3 sentences) with goals but no architecture/approach
+- Exploratory language: "Not sure exactly...", "Wondering if...", "What if..."
+- Plan mode active for design discussion
 
-Automatically offer interactive requirements elicitation when detecting:
-- **Vague phrasing**: "I want to...", "I'm thinking about...", "Maybe we could..."
-- **Short descriptions**: User description is <3 sentences
-- **Missing implementation details**: Goals mentioned but no architecture/approach
-- **Exploratory language**: "Not sure exactly...", "Wondering if...", "What if..."
-- **Plan mode active**: User explicitly entered plan mode for design discussion
+**Proactive offer** (first message when triggers detected):
+> "I notice you're in the early stages of thinking about this project. Before we dive into structured planning, would it be helpful if I asked some clarifying questions? I can also suggest common approaches based on your previous work and industry best practices."
 
-### Proactive Offer Template
+**Key behaviors** (full details in skill):
+- **Synthesize historical + best-practice options** with labeled provenance (📊 Historical / ✅ Best Practice / 🔄 Hybrid / 💡 Alternative) so user sees WHY each option was suggested.
+- **Track topics covered** during the conversation (✓ covered / ~ partial / ○ pending) so both sides see progress.
+- **Transition explicitly** — always ASK before jumping to `/p-is-p-01-planning`.
 
-When triggers detected, use this phrasing:
-```
-"I notice you're in the early stages of thinking about this project. Before we dive into
-structured planning, would it be helpful if I asked some clarifying questions? I can also
-suggest common approaches based on your previous work and industry best practices."
-
-[If user accepts]
-"Great! Let me ask a few questions to understand what you're envisioning..."
-```
-
-### Smart Defaults Algorithm (Historical + Best Practices)
-
-When offering suggestions or candidate answers, synthesize BOTH sources:
-
-**Step 1: Gather Historical Context** (from history.md in current project)
-- Last 3-5 planning patterns used (Pattern 1-6)
-- Typical project durations in this repository
-- Common technologies/frameworks mentioned in recent sessions
-- Previous TodoWrite structures and phase breakdowns
-- Recurring architectural patterns
-
-**Step 2: Gather Best Practices** (from general knowledge)
-- Industry standards for the work type mentioned
-- Common architectural patterns for similar projects
-- Standard approaches and proven methodologies
-- Typical timelines for this type of work
-
-**Step 3: Synthesize 3-4 Candidate Options**
-
-Present options with **labeled provenance** so user understands the reasoning:
-
-```
-Based on your description and recent work in this project, here are 4 possible directions:
-
-1. **[Approach Name]** (Pattern X)
-   📊 Historical: Matches your [recent project reference from history.md]
-   ⏱️ Timeline: [duration] based on your typical Pattern X projects
-
-2. **[Approach Name]** (Pattern Y)
-   ✅ Best Practice: Standard industry approach for [this type of work]
-   ⏱️ Timeline: [duration] industry average
-
-3. **[Hybrid Approach]** (Pattern X + Pattern Y)
-   🔄 Blend: Combines your typical [phase] with standard [methodology]
-   ⏱️ Timeline: [duration] based on synthesis
-
-4. **[Alternative Approach]** (Pattern Z)
-   💡 Alternative: Less common but might fit if [specific condition]
-   ⏱️ Timeline: [duration]
-
-Which direction resonates most? [1/2/3/4 or describe your own]
-```
-
-**Transparency Principle**: Always show WHY you suggested each option (historical pattern, best practice, or hybrid blend).
-
-### Socratic Questioning Examples
-
-Use clarifying questions to refine vague requirements:
-
-**Scope Questions**:
-- "Is this adding a new feature to an existing system, or building something from scratch?"
-- "Will this involve multiple components/services, or is it more self-contained?"
-- "Are you working alone, or will others need to understand/maintain this?"
-
-**Timeline Questions**:
-- "What's your target timeline? Days, weeks, or months?"
-- "Is there a specific deadline, or is this exploratory?"
-- "Do you need something working quickly, or can we take time to design it well?"
-
-**Constraint Questions**:
-- "Are there existing systems/APIs you need to integrate with?"
-- "Do you have preferences for technologies/frameworks?"
-- "Are there performance, security, or scalability requirements?"
-
-**Outcome Questions**:
-- "What does success look like for this project?"
-- "Who are the users, and what problems are you solving for them?"
-- "How will you know when it's ready to ship?"
-
-### Topic Tracking During Conversation
-
-As the conversation progresses, build and display a **topic list** showing what's been discussed:
-
-```
-Topics covered so far:
-✓ Project scope (adding email notifications to existing app)
-✓ Timeline (target 2 weeks)
-✓ Integration points (existing user management system)
-~ Tech stack (React preferred, but open to suggestions)
-○ Testing strategy (not yet discussed)
-○ Deployment approach (not yet discussed)
-
-Remaining clarifications needed: [...]
-```
-
-This helps both user and Claude track progress through the elicitation conversation.
-
-### Transition to Structured Planning
-
-Once requirements are sufficiently refined, transition explicitly:
-
-```
-"Based on our conversation, I now have a clear understanding of what you're building:
-
-[2-3 sentence summary of refined requirements]
-
-This looks like a good fit for [Pattern X - Name] based on [reasoning].
-
-Would you like me to use /p-is-p-01-planning to create a structured task breakdown?
-Or would you prefer to continue refining requirements first?"
-```
-
-**Key principle**: Always ASK before transitioning to workflow invocation. User might want more free-form discussion.
-
-### Integration with Planning is Prompting Workflows
-
-**Pre-Planning Conversation** (Interactive Requirements Elicitation)
-↓
-User approves transition
-↓
-**Invoke /p-is-p-01-planning** with refined requirements as input
-↓
-Workflow uses elicitation output to populate Phase 1 Discovery questions
-↓
-Continue structured planning process
-
-**References**:
-- **Detailed guidance**: See planning-is-prompting → workflow/p-is-p-00-start-here.md (Pre-Planning section)
-- **Pattern catalog**: See planning-is-prompting → workflow/p-is-p-01-planning-the-work.md (Patterns 1-6)
+**Detailed Reference**: See `~/.claude/skills/interactive-requirements-elicitation/SKILL.md` for trigger-phrase catalog, Smart Defaults algorithm, Socratic question bank (scope/timeline/constraint/outcome), topic-tracking template, and integration flow with Planning is Prompting workflows.
 
 ## Environment Configuration
 

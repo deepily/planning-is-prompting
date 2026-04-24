@@ -27,6 +27,12 @@
 
 **Files**: global/CLAUDE.md, workflow/claude-config-global.md, workflow/testing-baseline.md, workflow/testing-remediation.md, workflow/testing-harness-update.md, workflow/bug-fix-mode.md, README.md, TODO.md, src/rnd/2026.04.23-test-ownership-mandate.md (new)
 
+#### Checkpoint 2 | 2026.04.23 20:18 | CLAUDE.md size reclamation via skill extraction
+
+**Summary**: Extracted the INTERACTIVE REQUIREMENTS ELICITATION section (~145 lines, ~4.7k chars) from `~/.claude/CLAUDE.md` into a new skill at `~/.claude/skills/interactive-requirements-elicitation/SKILL.md`. Replaced inline section with a compact 18-line stub (purpose + trigger cues + key-behaviors summary + skill pointer). Mirrored to `global/CLAUDE.md` (byte-identical, diff-verified). Reclaims the post-MANDATE size regression: live CLAUDE.md now 38,297 chars vs 42,419 pre-extraction (-4,122), back under the 40k performance-warning threshold with ~1.7k headroom.
+
+**Files**: global/CLAUDE.md, TODO.md (repo-side); `~/.claude/CLAUDE.md`, `~/.claude/skills/interactive-requirements-elicitation/SKILL.md` (new, outside repo)
+
 ---
 
 ### 2026.04.16 - Session 77 | Global CLAUDE.md Reconciliation (Documentation-First Simplification)
