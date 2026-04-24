@@ -1,9 +1,9 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 78 (in progress)
+**RESUME HERE**: Session 79
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 78 - Test Ownership Mandate (in progress)
+**Last Session**: Session 78 - Test Ownership Mandate + CLAUDE.md size reclamation (2 checkpoints: 365b144, bfb9e55)
 
 ---
 
@@ -32,6 +32,13 @@
 **Summary**: Extracted the INTERACTIVE REQUIREMENTS ELICITATION section (~145 lines, ~4.7k chars) from `~/.claude/CLAUDE.md` into a new skill at `~/.claude/skills/interactive-requirements-elicitation/SKILL.md`. Replaced inline section with a compact 18-line stub (purpose + trigger cues + key-behaviors summary + skill pointer). Mirrored to `global/CLAUDE.md` (byte-identical, diff-verified). Reclaims the post-MANDATE size regression: live CLAUDE.md now 38,297 chars vs 42,419 pre-extraction (-4,122), back under the 40k performance-warning threshold with ~1.7k headroom.
 
 **Files**: global/CLAUDE.md, TODO.md (repo-side); `~/.claude/CLAUDE.md`, `~/.claude/skills/interactive-requirements-elicitation/SKILL.md` (new, outside repo)
+
+**Session Summary**:
+- 2 checkpoints: 365b144 (TEST OWNERSHIP MANDATE) + bfb9e55 (size reclamation)
+- 12 files touched across the session (10 in Checkpoint 1 + 3 in Checkpoint 2, one overlap)
+- New artifacts: `src/rnd/2026.04.23-test-ownership-mandate.md`, `~/.claude/skills/interactive-requirements-elicitation/SKILL.md`
+- Net CLAUDE.md size: 40,826 → 38,297 chars (-2,529 net, despite adding the MANDATE)
+- Key insight: the MANDATE + skill extraction is pareto-improvement — we added a high-leverage behavioral rule AND reduced the file. Pattern worth repeating for future additions that threaten to push CLAUDE.md over threshold.
 
 ---
 
