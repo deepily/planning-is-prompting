@@ -1,13 +1,33 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 78
+**RESUME HERE**: Session 78 (in progress)
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 77 - Global CLAUDE.md Reconciliation (Documentation-First Simplification)
+**Last Session**: Session 78 - Test Ownership Mandate (in progress)
 
 ---
 
 ## April 2026
+
+### 2026.04.23 - Session 78 | Test Ownership Mandate
+
+**Accomplishments**:
+- Embedded a new **TEST OWNERSHIP MANDATE** asserting role separation (human = designer/user; Claude = tester across the full pyramid) at 8 sites: `~/.claude/CLAUDE.md`, `global/CLAUDE.md` (byte-identical mirror), `workflow/claude-config-global.md` (portable template), preambles in `workflow/testing-baseline.md` / `testing-remediation.md` / `testing-harness-update.md`, rewritten Step 7 + new `## Autonomous Bug Capture` section in `workflow/bug-fix-mode.md`, reframed scope options in `workflow/testing-remediation.md`, cross-reference in `~/.claude/skills/testing-development/SKILL.md`
+- Removed the anti-sentiment language (`bug-fix-mode.md`'s "User prompted for additional tests" and `testing-remediation.md`'s "Present issues for user selection" in both doc and internal-logic spots)
+- Serialized plan to `src/rnd/2026.04.23-test-ownership-mandate.md` and linked from README.md
+- MANDATE uses the established CLAUDE.md house style (MANDATE + Operating-assumption + Role-separation table + PROHIBITED-phrases list + Required-behavior + Why + How-to-apply); preserves the user's scarcity-argument phrasing verbatim ("not enough time in the world")
+
+**Files Changed**: `global/CLAUDE.md`, `workflow/claude-config-global.md`, `workflow/testing-baseline.md`, `workflow/testing-remediation.md`, `workflow/testing-harness-update.md`, `workflow/bug-fix-mode.md`, `README.md`, `TODO.md`, `src/rnd/2026.04.23-test-ownership-mandate.md` (new)
+**Also changed (outside repo)**: `~/.claude/CLAUDE.md`, `~/.claude/skills/testing-development/SKILL.md`
+**Plan**: `src/rnd/2026.04.23-test-ownership-mandate.md`
+
+**Known follow-up**: `~/.claude/CLAUDE.md` grew to 42,419 chars (back over the 40k performance-warning threshold reclaimed in Session 71). TODO.md has a new item to extract one existing large section (INTERACTIVE REQUIREMENTS ELICITATION ~5.7k is the best candidate) to reclaim budget.
+
+#### Checkpoint 1 | 2026.04.23 20:02 | TEST OWNERSHIP MANDATE embedded across global config, portable template, and testing/bug-fix workflows
+
+**Files**: global/CLAUDE.md, workflow/claude-config-global.md, workflow/testing-baseline.md, workflow/testing-remediation.md, workflow/testing-harness-update.md, workflow/bug-fix-mode.md, README.md, TODO.md, src/rnd/2026.04.23-test-ownership-mandate.md (new)
+
+---
 
 ### 2026.04.16 - Session 77 | Global CLAUDE.md Reconciliation (Documentation-First Simplification)
 

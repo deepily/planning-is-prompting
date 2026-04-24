@@ -27,6 +27,24 @@ Claude Code's "plan to file → clear context → execute" pattern breaks histor
 
 ---
 
+## Autonomous Bug Capture
+
+Per the **TEST OWNERSHIP MANDATE** (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), bug capture is Claude's job — not the human's.
+
+When Claude discovers a bug during testing, exploration, or any other session activity:
+
+- Claude appends the bug to `bug-fix-queue.md` under `### Queued` with:
+  - A Claude-authored title (imperative, specific)
+  - Reproduction steps (or the observation that surfaced it)
+  - A short root-cause hypothesis if one is available
+  - The surface/file where it was observed
+- The human is **not asked** to remember, capture, or file the bug.
+- Triage from `Queued` to `In Progress` remains a separate, explicit action (taken by the human or a future session that claims the bug) — autonomous capture is about making sure the bug is recorded, not about starting work on it.
+
+**PROHIBITED**: "I noticed X might be a bug, let me know if you'd like me to file it." → Claude files it.
+
+---
+
 ## ⚠️ SESSION ISOLATION RULES (CRITICAL)
 
 **Multiple Claude sessions may run on the same repository simultaneously.** Each session has its own section in `.claude-session.md`. You **MUST** follow these rules to prevent data corruption:
@@ -569,6 +587,8 @@ Files to track include:
 
 ### Step 7: Test the Fix
 
+> **Test Ownership** (per TEST OWNERSHIP MANDATE in `~/.claude/CLAUDE.md`): Claude owns test scope and execution. Do NOT ask the human which additional tests to run — decide via change-impact analysis and execute proactively.
+
 **Run smoke test automatically:**
 
 ```bash
@@ -576,23 +596,25 @@ Files to track include:
 ./tests/run-smoke-tests.sh  # or equivalent
 ```
 
-**Ask about further testing:**
+**Autonomously extend the pyramid based on change-impact analysis** (see `~/.claude/skills/testing-development/references/change-impact-analysis.md`):
 
-```python
-ask_multiple_choice(
-    questions=[{
-        "question": "Which additional tests should we run?",
-        "header": "Tests",
-        "multiSelect": True,
-        "options": [
-            {"label": "Unit tests", "description": "Test affected modules"},
-            {"label": "Integration tests", "description": "End-to-end validation"},
-            {"label": "Skip", "description": "Smoke test sufficient"}
-        ]
-    }],
-    priority="medium",
-    abstract="**Smoke test**: [PASS/FAIL]\n\nSelect additional tests or skip."
-)
+1. Classify the fix (isolated / module-scoped / cross-surface) and compute blast radius.
+2. Based on the classification, Claude runs — without asking the human:
+   - **Always**: smoke (already run above).
+   - **Unit tests**: when the fix touches module-internal logic.
+   - **Integration tests**: when the fix crosses a collaboration surface (another module, an I/O boundary, an API).
+   - **E2E test**: when a runnable surface exists AND the fix affects user-observable behavior.
+3. If a tier genuinely cannot be automated (subjective feel, external-service gating), state the specific reason — do not silently defer to the human.
+
+**Report results in tabular form** so "tests were actually run" is visible at a glance:
+
+```markdown
+| Tier | Status | Notes |
+|------|--------|-------|
+| Smoke | PASS | 12/12 |
+| Unit (affected module) | PASS | 34/34 |
+| Integration | SKIPPED | No cross-surface change |
+| E2E | N/A | No user-observable surface |
 ```
 
 **Record test results for history entry.**
@@ -601,8 +623,9 @@ ask_multiple_choice(
 
 **Verification**:
 - [ ] Smoke test executed
-- [ ] User prompted for additional tests
-- [ ] All requested tests executed
+- [ ] Change-impact classification performed
+- [ ] All applicable tiers executed by Claude (not deferred to human)
+- [ ] Results reported in pass/fail table
 - [ ] Test results recorded (for history entry)
 - [ ] TodoWrite updated
 

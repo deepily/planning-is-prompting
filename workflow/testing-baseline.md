@@ -1,5 +1,7 @@
 # Testing Baseline Collection Workflow
 
+> **Test Ownership**: This workflow is invoked by Claude, not requested from the human. Per the TEST OWNERSHIP MANDATE (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), testing the pyramid is Claude's responsibility; the human is a designer/user, not a tester. Scope decisions within this workflow are Claude's to make via change-impact analysis.
+
 **Purpose**: Establish comprehensive baseline before major changes through pure data collection
 **Mode**: Observation only - ZERO remediation attempts
 **Principle**: Observe First, Fix Later

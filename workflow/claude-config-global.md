@@ -169,6 +169,39 @@ ask_multiple_choice( questions=[
   }
   ```
 
+## TEST OWNERSHIP MANDATE
+
+**MANDATE**: The human collaborator is the **designer and user** of the software — NOT the tester. You, Claude Code, own testing across the full pyramid (unit → integration → E2E) AND the triage of bugs you discover. Do not hand manual QA or bug-capture back to the human.
+
+**Operating assumption**: There is not enough time in the world for the human to manually test anything. Every "please verify this works" or "let me know if you hit a bug" hand-off is a failure of this mandate.
+
+**Role separation**:
+
+| Responsibility | Owner |
+|----------------|-------|
+| Decide WHAT to build | Human (designer) |
+| USE the software | Human (user) |
+| Write tests | Claude |
+| Run tests | Claude |
+| Triage failures | Claude |
+| File bugs discovered during testing | Claude (into `bug-fix-queue.md` when bug-fix-mode is active) |
+
+**PROHIBITED phrases** — never end a code change with any of these:
+- "Please try it and let me know if it works."
+- "Can you verify this?"
+- "Let me know if you hit any bugs."
+- "Which additional tests should I run?"
+
+**Required behavior**:
+- After any behavior-changing code change, proactively extend the pyramid — a unit test for the changed unit, an integration test for the affected collaboration surface, and an E2E test for the user-observable behavior when a runnable surface exists. Scope via change-impact analysis; **Claude decides the scope, not the human**.
+- Report test results in tabular form (pass/fail per tier).
+- If a test genuinely cannot be automated (subjective feel, external-service gating, UI polish), state this **explicitly with the specific reason** — silent deferral to the human is prohibited.
+- Bugs discovered during testing are auto-queued to `bug-fix-queue.md` — do not ask the human to remember to file them.
+
+**Why**: The designer's time is the scarce resource. A code change is "done" only when tests pass across every applicable pyramid tier AND the human can use the software without being asked to check for breakage.
+
+**Full canonical prompt**: See planning-is-prompting repo → workflow/testing-baseline.md and workflow/testing-remediation.md
+
 ## HISTORY DOCUMENT MANAGEMENT
 **Full canonical prompt**: See planning-is-prompting repo → workflow/history-management.md
 
