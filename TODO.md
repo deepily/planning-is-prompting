@@ -1,9 +1,14 @@
 # TODO
 
-Last updated: 2026-04-23 (Session 78 complete)
+Last updated: 2026-04-27 (Session 79 complete)
 
 ## Pending
 
+- [ ] **Plan-review dogfood test** - Run `/plan-review` (or the standalone `/plan-review-reuse`) against `src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md` itself as a Pattern 3 single-doc test. Goal: verify the gate catches any ownership-language drift introduced by the writing process AND surface any shape-fit issues (Pattern 3 doc-set vs. multi-doc Pattern A/B/C calibration). Findings fold back into `workflow/plan-review.md`.
+- [ ] **Plan-review fidelity readthrough** (`EXECUTOR: HUMAN` — design-review fidelity check) - Read `workflow/plan-review.md` end-to-end against the source `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/{05-,06-}-*.md` prompts. Confirm no signal was lost in the abstraction. The AI cannot validate "this captures the spirit of the original" against its own extraction.
+- [ ] **Plan-review Phase 3 (Lupin-side wrapper)** - In a Lupin-rooted session, create `<lupin>/.claude/skills/plan-review/SKILL.md` thin wrapper that auto-discovers docs in target dir, injects Lupin-specific tags (`EXECUTOR: AI/HUMAN`, `:7999`/`:8000` venues), and enforces Q-N decision-anchor format. Out of scope for this PIP-side change set; lives where projects own it.
+- [ ] **Lupin source-artifact header pointers** - Add a header note to `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/{05-,06-}-*.md` pointing at PIP's canonical `workflow/plan-review.md`. Don't replace with stubs (revisionist); leave as historical instances + cross-reference.
+- [ ] **Install wizard update for `/plan-review`** - Update `workflow/installation-wizard.md` to offer plan-review as a new installable workflow (entry [C.5]). Confirm the slash-command-template version matches the canonical wrapper's flag set.
 - [ ] **Verify Test Ownership Mandate uptake across repos** - Session 78 added the mandate to `~/.claude/CLAUDE.md` / `global/CLAUDE.md` / `workflow/claude-config-global.md`. Start fresh sessions in Lupin and other active repos; make a small code change; confirm Claude's post-change behavior is "write + run tests, report pass/fail table" rather than "please verify this works."
 - [ ] **Verify interactive-requirements-elicitation skill activation** - Start a fresh session and use vague phrasing ("I'm thinking about...", "Not sure exactly...") to confirm the skill fires and the compact stub behavior matches the previous inline section.
 - [ ] **BUG**: `/plan-history-management` is hardcoded to Planning-is-Prompting project paths - when invoked from Lupin it manages PiP's history.md instead of Lupin's. Slash command needs to be project-aware (use project root detection, not hardcoded paths)
