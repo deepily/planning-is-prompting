@@ -446,6 +446,27 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 
 ---
 
+### CONVERSATION MODE & TTS RESPONSE BREVITY MANDATE
+
+**Purpose**: When the cosa-voice session is in **conversation mode** (`get_session_info().conversation_mode_active=true`), every `notify(message=...)` call gets TTS-rendered to a user listening at a distance. The spoken payload must be **conversational prose**, NOT a verbatim copy of the markdown terminal reply.
+
+**Mandatory in conversation mode**:
+
+1. **Two channels, two shapes**: terminal reply stays markdown-rich for scrollback; the `notify()` payload is RE-CRAFTED for speech. Never pipe the terminal reply through `notify()` as-is.
+2. **Strip TTS-hostile syntax** from the spoken text: `#`/`##`/`###` headings, `**bold**`/`*italic*`, `-`/`*` bullet symbols, inline backticks, fenced code blocks, table syntax, file paths, line numbers, JSON snippets, hash literals, URLs.
+3. **Drop section labels and letter enumeration** ("A, B, C, D"). Use natural connectives: "and", "but", "so".
+4. **Length cap**: ~30 seconds of speech (~80–120 words) for routine work. Spoken closings are a **précis**, not a duplicate. Longer only when user explicitly asked for a deep readout.
+5. **Receipt acknowledgments at turn-start**: 1 sentence (e.g., "Looking into that now.").
+6. **Use the `abstract` parameter** to keep rich content (findings tables, diffs, catalogs) available terminal-side while voice carries only the gist.
+
+**Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
+
+**Rationale**: After ~1 week of real conversation-mode use (2026-05-04), verbose TTS-as-markdown-dump felt "like documentation read aloud." The terminal and voice channels have different ergonomics; treat them differently.
+
+**Full spec**: planning-is-prompting → `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ### Integration with TodoWrite
 
 **MANDATE**: Notifications are TIED to TodoWrite status changes.

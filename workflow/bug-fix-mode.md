@@ -14,6 +14,12 @@
 - `/plan-bug-fix-mode wrap` - Wrap up completed fix (document + commit)
 - `/plan-bug-fix-mode close` - End bug fix session for the day
 
+> **⚠️ Conversation Mode Awareness**: this workflow uses `converse()` for bug-id selection (a voice round-trip in conversation mode), and emits per-bug status `notify()` calls throughout the lifecycle. When `conversation_mode_active=true`, prefer `ask_open_ended_batch()` over sequential `converse()` calls to bundle related questions (e.g., bug-id + reproduction-steps) into a single voice prompt.
+>
+> **Voice persona disambiguation**: when multiple parallel bug-fix sessions are running, the assigned voice persona helps the user identify which session just finished a phase. Voice persona is server-side (`/api/cosa-voice/voice-persona/{session_id}`) and not currently in `get_session_info()` — accept user-provided persona names ("you are Rachel") rather than self-identifying.
+>
+> **Brevity mandate at status updates**: per-bug completion is "Bug N fixed, smoke tests green" — NOT the full diff or test log. The diff and log stay in the terminal reply and the `abstract` parameter. Use `priority="high"` on every blocking call. Full spec: `cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
 ---
 
 ## Overview

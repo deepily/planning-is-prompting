@@ -16,6 +16,8 @@
 - Intent-based activation via trigger-rich descriptions
 - Integration with Planning-is-Prompting workflows
 
+> **⚠️ Conversation Mode**: this workflow uses `ask_multiple_choice()` for skill selection and `notify()` for operations — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Skill catalogs/menus go to `abstract` parameter; speak the short prompt only.
+
 ---
 
 ## The Problem with Passive Documentation

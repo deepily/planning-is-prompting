@@ -4,6 +4,8 @@
 
 **Canonical Location**: planning-is-prompting → workflow/todo-management.md
 
+> **⚠️ Conversation Mode**: this workflow uses `notify()` and `ask_multiple_choice()` for todo operations — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Long todo lists go to `abstract`; speak the count and headline ("4 pending items, top one is the wizard wiring").
+
 ---
 
 ## Overview

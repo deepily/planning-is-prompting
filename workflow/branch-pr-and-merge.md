@@ -10,6 +10,18 @@
 
 **Entry Point**: `/plan-branch-pr-and-merge`
 
+> **⚠️ Conversation Mode Awareness**: this workflow has multiple destructive-or-shared-state gates (PR description approval, push approval, merge confirmation, post-merge tag prompt). When `conversation_mode_active=true` (check via `get_session_info()`), each gate is a voice gate.
+>
+> **Mandates in conversation mode**:
+> - All blocking calls MUST use `priority="high"`. Destructive operations (force-push) require **explicit voice confirmation** — never silent default.
+> - Consider grouping push + merge confirmation as one `ask_multiple_choice()` to reduce voice round-trips.
+> - **Brevity mandate**: speak the **PR title** aloud; full PR body, diff stats, and file list stay in the terminal reply and the `abstract` parameter. Don't read the changelog or commit list aloud.
+> - Receipt-acknowledge each user prompt before further tool work.
+>
+> **Brevity mandate (universal)**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers; cap at ~30 seconds of speech.
+>
+> **Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
 ---
 
 ## Overview

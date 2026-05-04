@@ -140,6 +140,8 @@ This guide provides copy-paste prompts to install workflow templates from the pl
 2. **Referenced directly** - Link to canonical workflow in project CLAUDE.md
 3. **Copied and customized** - Fork the workflow for heavy project-specific modifications
 
+> **⚠️ Conversation Mode Awareness**: many of the workflows installed by this guide use cosa-voice notifications (`notify()`, `ask_*()`, `converse()`). When the user's session is in conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules. Each individual workflow's documentation in this guide reinforces the mandate where relevant.
+
 ---
 
 ## Quick Start

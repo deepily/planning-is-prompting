@@ -91,6 +91,16 @@ ask_multiple_choice( questions=[
 
 **See**: planning-is-prompting → workflow/cosa-voice-integration.md
 
+### Conversation Mode + TTS Response Brevity Mandate
+
+The cosa-voice session has a **binary mode toggle**: notification mode (default, ding-and-selective-TTS) vs conversation mode (exclusive, all-TTS, one session at a time). Check `conversation_mode_active` from `get_session_info()` at session start.
+
+**TTS Brevity Mandate** (in conversation mode): the `notify(message=...)` payload is **conversational prose**, NOT a verbatim copy of the markdown terminal reply. Strip markdown structure (headings, bullets, bold/italic, inline code, fenced code blocks, tables); strip file paths, line numbers, JSON, URLs; drop section labels and letter enumeration; cap at ~30 seconds of speech (~80–120 words) for routine work. Use the `abstract` parameter for rich content. The terminal reply stays markdown-rich; the spoken version is a re-crafted précis. **Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()` — that's passive filtering; the mandate requires active re-shaping.
+
+**USER-ONLY INITIATION (HARD RULE)**: Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle.
+
+**Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md §Conversation Mode
+
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
 - **Indentation**: 4 spaces (not tabs)

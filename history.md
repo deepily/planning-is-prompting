@@ -1,13 +1,39 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 81
+**RESUME HERE**: Session 82
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 80 - Plan-Review fitness-first restructure + install-wizard wiring
+**Last Session**: Session 81 - Conversation-mode reinforcement across PIP + new TTS Brevity Mandate
 
 ---
 
 ## May 2026
+
+### 2026.05.04 - Session 81 | Conversation-Mode Reinforcement + TTS Brevity Mandate
+
+**Accomplishments** (continuation of Session 80 same date):
+
+- **Surfaced new global behavioral mandate**: after ~1 week of real conversation-mode use, user observed that spoken `notify(message=...)` responses were "verbose markdown dumps that feel like documentation read aloud." Promoted observation to a **TTS Response Brevity Mandate**: spoken payload is *conversational prose, re-crafted for the voice channel*, NOT a verbatim copy of the terminal reply. Strip markdown structure, paths, JSON, URLs, table syntax, section labels; cap at ~30s of speech (~80–120 words) for routine work; use `abstract` parameter aggressively for rich terminal-side content. The terminal reply stays markdown-rich; the spoken version is a précis.
+- **Hub-and-spoke documentation pattern** (25 files in scope, 31 actually touched after gap fixes):
+  - **Tier 1A (canonical hub, live + mirror)**: added new `### CONVERSATION MODE & TTS RESPONSE BREVITY MANDATE` subsection to `~/.claude/CLAUDE.md` inside `## CLAUDE CODE NOTIFICATION SYSTEM` (loaded into every Claude Code session globally). Re-synced repo `global/CLAUDE.md` from live (byte-identical, diff-verified). Same precedented sync pattern as Sessions 75/76/77/78/79.
+  - **Tier 1B (canonical hub, repo)**: added new `## Conversation Mode` top-level section (~700 words) to `workflow/cosa-voice-integration.md` between "CRITICAL: User Is NOT Watching the Terminal" and "MANDATORY Notification Requirements". Sub-sections: The Two Modes (with comparison table), Voice Persona, State Checking, Two-Turn Obligations, USER-ONLY INITIATION (HARD RULE), TTS Response Brevity Mandate (full spec, ~250 words), Priority="high" Mandate Intensified, Batch Over Sequential, Cross-Reference. Added Overview-level callout (3 lines) near top of doc pointing readers to the new section.
+  - **Tier 2 (session-lifecycle spokes)**: added "⚠️ Conversation Mode Awareness" callouts (~120 words each) to `workflow/session-start.md` (after Phase A check), `workflow/session-end.md` (before "Use Notification System Throughout"), `workflow/session-checkpoint.md` (top, before parallel-session safety). Each reinforces brevity at the specific call sites that matter (session-start summary spoken as 1-sentence orientation, session-end commit-message preview as 1-line subject only, etc.).
+  - **Tier 3 (multi-gate procedural spokes)**: added Conversation Mode callouts to `workflow/plan-review.md` (gates §6/§9/§11 — never read findings table aloud row-by-row), `workflow/bug-fix-mode.md` (bug-selection `converse()`, voice persona disambiguation note), `workflow/installation-wizard.md` (catalog selection — speak categories not full catalog), `workflow/branch-pr-and-merge.md` (push/merge gates — destructive ops require explicit voice confirmation).
+  - **Tier 4 (lighter-touch workflows, 7 files)**: added 1-paragraph callouts to `history-management.md`, `skills-management.md`, `todo-management.md`, `uninstall-wizard.md`, `testing-baseline.md`, `testing-remediation.md`, `testing-harness-update.md`. Each cross-references the hub and reinforces brevity at the relevant call sites.
+  - **Tier 5 (slash-command wrappers, 11 files)**: added compact "⚠️ Note" callouts to all relevant wrappers — `plan-session-{start,end,checkpoint}.md`, `plan-bug-fix-mode{,-start,-continue,-wrap,-close}.md`, `plan-review.md`, `plan-install-wizard.md`, `plan-branch-pr-and-merge.md`, `plan-skills-management.md`, `plan-todo.md`. Each cross-references the hub.
+  - **Gap fix (post-verification)**: added callouts to 3 additional files initially missed (`plan-skills-management.md`, `plan-todo.md`, `INSTALLATION-GUIDE.md`) and to `claude-config-global.md` (the template that ships to new projects via the install wizard).
+- **Memory persistence**: saved feedback memory to `~/.claude/projects/-mnt-DATA01-.../memory/feedback_tts_brevity.md` so the brevity mandate carries across context clears and into future sessions.
+- **Verification**: All four automated greps from the plan §Verification passed — hub presence (5 key terms found in cosa-voice-integration.md), spoke ref check (every workflow/slash-command file using cosa-voice tools references the hub), brevity mention check (every spoke mentions the brevity mandate), global drift check (`~/.claude/CLAUDE.md` and `global/CLAUDE.md` byte-identical).
+
+**Files Changed** (31 total): `~/.claude/CLAUDE.md` (live, outside repo), `global/CLAUDE.md`, `workflow/cosa-voice-integration.md`, `workflow/claude-config-global.md`, `workflow/INSTALLATION-GUIDE.md`, `workflow/session-start.md`, `workflow/session-end.md`, `workflow/session-checkpoint.md`, `workflow/plan-review.md`, `workflow/bug-fix-mode.md`, `workflow/installation-wizard.md`, `workflow/branch-pr-and-merge.md`, `workflow/history-management.md`, `workflow/skills-management.md`, `workflow/todo-management.md`, `workflow/uninstall-wizard.md`, `workflow/testing-baseline.md`, `workflow/testing-remediation.md`, `workflow/testing-harness-update.md`, `.claude/commands/plan-session-start.md`, `.claude/commands/plan-session-end.md`, `.claude/commands/plan-session-checkpoint.md`, `.claude/commands/plan-bug-fix-mode.md`, `.claude/commands/plan-bug-fix-mode-start.md`, `.claude/commands/plan-bug-fix-mode-continue.md`, `.claude/commands/plan-bug-fix-mode-wrap.md`, `.claude/commands/plan-bug-fix-mode-close.md`, `.claude/commands/plan-review.md`, `.claude/commands/plan-install-wizard.md`, `.claude/commands/plan-branch-pr-and-merge.md`, `.claude/commands/plan-skills-management.md`, `.claude/commands/plan-todo.md`. Plus memory file `~/.claude/projects/.../memory/feedback_tts_brevity.md` (new, outside repo).
+
+**Plan**: `~/.claude/plans/hey-i-have-a-sharded-alpaca.md` (approved via ExitPlanMode 2026-05-04)
+
+**Out of Scope (flagged for follow-up)**: cosa-voice MCP server change to surface voice-persona in `get_session_info()` response (currently only on `/api/cosa-voice/voice-persona/{session_id}` endpoint). Without this, workflows can't programmatically self-identify as Rachel/etc.; user must tell the AI its persona name. Recommend filing as cosa-voice MCP enhancement.
+
+**Key insight**: The brevity mandate emerged from real-use observation, not theoretical reasoning. After ~1 week of conversation-mode use, the user noticed the failure mode (verbatim markdown read aloud feels like documentation). Promoting the observation to a *global* mandate (in `~/.claude/CLAUDE.md` so it loads into every session) catches the regression before it propagates further. The hub-and-spoke pattern keeps PIP DRY: one canonical spec in `workflow/cosa-voice-integration.md`, lightweight cross-references everywhere else.
+
+---
 
 ### 2026.05.04 - Session 80 | Plan-Review Fitness-First Restructure + Install-Wizard Wiring
 

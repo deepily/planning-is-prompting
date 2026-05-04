@@ -8,6 +8,8 @@
 **Version**: 1.1
 **Last Updated**: 2026.02.23
 
+> **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for remediation scope decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Regression diff goes to `abstract`; speak the headline only ("two regressions: auth flow and websocket reconnect").
+
 ---
 
 ## When to Use This Workflow

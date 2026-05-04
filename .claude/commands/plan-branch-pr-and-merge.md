@@ -6,6 +6,10 @@
 
 ---
 
+> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications and has destructive-or-shared-state gates (push, merge, force-push). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate; the **TTS Brevity Mandate** applies — speak the PR title only, full body and diff stats stay in `abstract` and the terminal reply. Destructive operations require explicit voice confirmation, never silent default. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+
+---
+
 ## Instructions to Claude
 
 **On every invocation of this command:**

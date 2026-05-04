@@ -24,6 +24,21 @@ Claude Code's aggressive context clearing makes it important to checkpoint work 
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+The checkpoint commit gate (commit-message approval) becomes a voice gate when `conversation_mode_active=true` (check via `get_session_info()`).
+
+**Mandates in conversation mode**:
+- The blocking commit-approval call MUST use `priority="high"`.
+- **Brevity mandate**: speak the **1-line commit subject only**; full message body and file list stay in the terminal and the `abstract` parameter. Don't read the diff manifest aloud — say "wrapping up two commits across nine files" not the verbatim file enumeration.
+- Receipt-acknowledge the checkpoint trigger before tool work (1 sentence: "Running the checkpoint commit now.").
+
+**Brevity mandate (universal)**: in conversation mode, spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, section labels; cap at ~30 seconds of speech.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## ⚠️ PARALLEL SESSION SAFETY (v2.0)
 
 **Multiple Claude sessions may run on the same repository simultaneously.** This workflow uses the same `.claude-session.md` manifest as regular sessions for file tracking.

@@ -8,6 +8,8 @@
 **Version**: 1.0
 **Last Updated**: 2025.10.11
 
+> **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress (medium priority) — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Test pass/fail counts go in headline ("smoke 47 pass, unit 121 pass, 3 integration skipped"); full output stays in the terminal and `abstract`.
+
 ---
 
 ## When to Use This Workflow

@@ -6,6 +6,10 @@
 
 ---
 
+> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), the commit-approval gate is voice-driven; the **TTS Brevity Mandate** applies — speak the 1-line commit subject only, full body and file list stay in `abstract` and the terminal reply. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+
+---
+
 ## Related Commands
 
 - `/plan-session-start` - Initialize session (tracking, manifest)

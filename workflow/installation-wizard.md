@@ -29,6 +29,23 @@ Interactive first-time installation of planning-is-prompting workflows in a new 
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+This wizard has many user-decision gates: catalog selection (Step 2), dependency-warning gates (Step 3), config collection (Step 4), validation (Step 6), session-end offer (Step 8). When `conversation_mode_active=true` (check via `get_session_info()` at the start), **the entire wizard becomes voice-driven** — the user may not see the full ASCII catalog you render to the terminal.
+
+**Mandates in conversation mode**:
+- At the start, announce the wizard with a 1-sentence orientation: "Installation wizard starting — I'll voice each gate." (Then proceed.)
+- All `ask_*()` calls in this workflow MUST use `priority="high"`. Verify before each call — voice is the only channel reaching the user.
+- **Brevity mandate at the catalog gate (Step 2)**: NEVER read the full workflow catalog aloud row-by-row. Speak categories ("session, history, planning, testing, review — pick which you want") and put the detailed catalog in the `abstract` parameter for terminal display. Same for dependency warnings — speak the headline ("missing rsync, two options") and detail in `abstract`.
+- For multi-question phases (Step 4 config collection), prefer `ask_open_ended_batch()` over sequential `converse()` calls — each voice round-trip is friction.
+- Receipt-acknowledge each user prompt before further tool work.
+
+**Brevity mandate (universal)**: in conversation mode, spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, table syntax; cap at ~30 seconds of speech.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## Workflow Catalog Metadata
 
 This metadata drives the interactive menu generation in Step 2.

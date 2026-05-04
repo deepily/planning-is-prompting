@@ -23,6 +23,8 @@ Interactive workflow for removing installed planning-is-prompting slash commands
 2. Present catalog showing installed vs. uninstalled status
 3. Collect user selection (which workflows to remove)
 4. Show deletion candidates (list files to be deleted)
+
+> **⚠️ Conversation Mode**: this is a **destructive workflow** with `ask_multiple_choice()` confirmation gates — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **In conversation mode, never use a silent default for destructive confirmation** — the user MUST explicitly speak/type confirmation. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Speak "removing four workflows, will delete six files — confirm?" not the full file list (which goes to `abstract`).
 5. Get confirmation before deletion
 6. Delete slash command files only
 7. Offer optional CLAUDE.md cleanup

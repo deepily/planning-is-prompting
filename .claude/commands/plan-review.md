@@ -6,6 +6,10 @@
 
 ---
 
+> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications, AND has non-negotiable user-decision gates (Gate 1, Gate 2, Layer-3 Design Concerns). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate; the **TTS Brevity Mandate** applies — never read findings tables aloud row-by-row, speak the headline only and put detail in the `abstract` parameter. See `workflow/cosa-voice-integration.md` §Conversation Mode and `workflow/plan-review.md` Conversation Mode Awareness callout for full rules.
+
+---
+
 ## Instructions to Claude
 
 **On every invocation of this command:**

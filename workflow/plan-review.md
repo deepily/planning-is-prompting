@@ -6,6 +6,10 @@
 
 **Origin**: Pattern lifted from Lupin v0.1.7 CJ Flow async multi-lane milestone (`<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-` and `/06-`). Phases 1–3 of that milestone landed cleanly with no rework rounds attributable to ownership or completeness gaps in the design docs. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP swapped to Fitness→Adversarial — see §3 for the ordering rationale.
 
+> **⚠️ Conversation Mode Awareness**: this gate has **non-negotiable user-decision pauses** at §6 (Gate 1, post-Fitness), §9 (Gate 2, post-Adversarial), and §11 (Layer-3 Design Concerns). When `conversation_mode_active=true`, every pause is a voice gate.
+>
+> **Brevity mandate at gate sites**: NEVER read the findings table aloud row-by-row. The spoken `notify()` carries a 1–2 sentence headline ("Pass 1 found 7 fitness gaps, mostly around dispatcher routing — table is in your terminal"); the full table goes to the `abstract` parameter and the terminal reply. Same for Pass 2 ownership findings, and same for Layer-3 challenges (speak the headline, full justification stays in `abstract`). Use `priority="high"` on every blocking call — voice is the only channel reaching the user. Full spec: `cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
 ---
 
 ## 1. Hierarchy of Anchors

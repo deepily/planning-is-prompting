@@ -14,6 +14,8 @@ The cosa-voice MCP server provides real-time voice notifications and interactive
 - **Native MCP tool calls**: No bash command execution required
 - **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
 
+> **Note**: When the cosa-voice session is in **conversation mode** (binary toggle, exclusive — only one session at a time can hold the microphone), every `notify()` call becomes TTS, every user prompt arrives with `<voice-message from-distance="true">` metadata, and Claude must speak a re-crafted (NOT verbatim) closing turn via `notify()`. The spoken payload follows the **TTS Response Brevity Mandate**: stripped of markdown structure, conversational in tone, capped at ~30 seconds of speech even when the terminal reply runs long. See [§ Conversation Mode](#conversation-mode) below for full rules including voice persona, two-turn obligations, and the brevity mandate.
+
 ---
 
 ## CRITICAL: The User Is NOT Watching the Terminal
@@ -32,6 +34,73 @@ The cosa-voice MCP server provides real-time voice notifications and interactive
 | Terminal text output | SECONDARY - Detailed explanations | When user checks back |
 
 **Consequence**: If you complete work without notifying, the user has NO IDEA you finished. They will wonder if you're still working, stuck, or waiting for input.
+
+---
+
+## Conversation Mode
+
+The cosa-voice session has a session-level **binary mode toggle** that fundamentally changes how Claude communicates with the user.
+
+### The Two Modes
+
+| Mode | Default? | TTS behavior | When the user is… |
+|------|----------|--------------|-------------------|
+| **Notification mode** | Yes | Each `notify()` plays a "ding"; only `priority="high"`/`"urgent"` is rendered as TTS | At the terminal, watching scrollback |
+| **Conversation mode** | No (opt-in, **exclusive** — only one session at a time can hold the microphone) | EVERY `notify()` is rendered as TTS; user prompts arrive wrapped in `<voice-message from-distance="true" priority="high" suppress-ding="true">` metadata | At a distance, listening via TTS rather than reading the terminal |
+
+### Voice Persona
+
+Each Claude Code session is assigned a **unique voice persona** (TTS voice) at startup, used to disambiguate parallel sessions when the user has multiple sessions running. The persona is exposed via the server endpoint `/api/cosa-voice/voice-persona/{session_id}`. **Note**: not yet surfaced in the MCP `get_session_info()` response — that's a known gap. If a user names your session ("you are Rachel"), accept it; you cannot programmatically self-identify the persona without server-API access.
+
+### State Checking
+
+Read `conversation_mode_active` from `get_session_info()` at session start (Phase A of the MCP startup protocol in `~/.claude/CLAUDE.md`). Re-check after any user message that pattern-matches "enter/exit conversation mode" (the harness sends a system message confirming the toggle).
+
+### Two-Turn Obligations in Conversation Mode
+
+When `conversation_mode_active=true`:
+
+1. **Receipt acknowledgment BEFORE any tool work begins.** Every user prompt must be greeted with at minimum a brief `notify(message=<short ack>, suppress_ding=True, priority='high')` BEFORE you fire any tool calls. The acknowledgment can be one short sentence ("Looking into that now."). A turn that opens with tool calls and never speaks violates the contract — the user has no audible signal the prompt was received.
+2. **Closing turn must be spoken.** After tool work completes (or any turn that produces user-facing text), call `notify(message=<spoken précis>, suppress_ding=True, priority='high')`. The spoken payload follows the **TTS Response Brevity Mandate** below.
+
+### USER-ONLY INITIATION (HARD RULE)
+
+Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
+
+When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
+
+### TTS Response Brevity Mandate
+
+**Promoted from real-use observation (2026-05-04, after ~1 week of conversation-mode use)**: spoken responses that are verbatim copies of the markdown terminal reply feel "like documentation read aloud." That's the failure mode this mandate corrects.
+
+**Rule**: in conversation mode, the `notify(message=...)` payload must be **conversational, concise, and TTS-shaped** — actively re-crafted for the voice channel, NOT a verbatim copy of the markdown terminal reply.
+
+**Specifically**:
+
+- **Strip markdown structure**: no `#`/`##`/`###` headings; no `**bold**`/`*italic*` markers; no `-`/`*` bullet symbols; no inline code backticks (or speak the bare word, e.g., "git status" not `` `git status` ``); no fenced code blocks; no table syntax (tables are unreadable as speech — render as prose summaries).
+- **Strip technical density**: file paths, line numbers, function signatures, JSON snippets, hash literals, URLs all stay terminal-only. If a path is unavoidable, speak the human-readable name ("the install wizard catalog entry") not the raw path.
+- **Drop section labels and letter enumeration**: no "A, B, C, D"; no "section 3"; use natural connectives ("and", "but", "so").
+- **Aim for human speech patterns**: short sentences, no parenthetical asides cluttering flow.
+- **Length discipline**: spoken closing ≈ 1–3 short paragraphs MAX, even when the terminal reply is several screens. Cap at ~30 seconds of speech (~80–120 words) for routine work. The spoken version is a **précis** of the terminal reply, not a duplicate. The terminal still carries the rich content for when the user reads back.
+- **Use the `abstract` parameter aggressively**: keep findings tables, code diffs, catalogs, full PR bodies in `abstract` (terminal-side rich content) while voice carries only the gist.
+- **Acknowledge-then-summarize pattern**: receipt acks at turn-start are 1 sentence. Closing summaries cap at the length above; longer only when the user explicitly requested a deep readout.
+- **The terminal reply stays markdown-rich**. The `notify()` payload is RE-CRAFTED for speech, not a plain-text copy. Two channels with different ergonomics: terminal = scannable structure; voice = conversational prose.
+
+**Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
+
+### Priority="high" Mandate Intensified
+
+In notification mode, `priority="low"` `notify()` calls are silent — only the ding plays. In conversation mode, EVERY `notify()` becomes TTS, including low-priority. Workflows that emit frequent low-priority progress notifications should reconsider in conversation mode: either group them, suppress the dings (`suppress_ding=True`), or skip them entirely if they don't carry information the user needs spoken.
+
+All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`, `ask_open_ended_batch()`) MUST use `priority="high"` regardless of mode — but the rule is doubly important in conversation mode where audio is the only channel reaching the user.
+
+### Batch Over Sequential
+
+Each blocking tool call in conversation mode is a voice round-trip — the user must hear the prompt, formulate a response, and speak it back. Sequential `converse()` calls compound the latency. Prefer `ask_open_ended_batch()` to bundle related questions into a single screen with one voice prompt covering all of them.
+
+### Cross-Reference
+
+The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVERSATION MODE & TTS RESPONSE BREVITY MANDATE` (loaded into every Claude Code session globally). This canonical doc is the long form; the global config is the headline rule.
 
 ---
 

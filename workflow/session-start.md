@@ -10,6 +10,22 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+**Check at Phase A**: when the MCP startup protocol calls `get_session_info()`, capture the `conversation_mode_active` flag alongside `session_id` / `sender_id` / `server_url`. If `true`, the user is at a distance and listening via TTS — **every `notify()` call in this workflow becomes spoken**, including the low-priority "Starting session initialization..." ping below.
+
+**Mandates in conversation mode**:
+- The session-start summary spoken to the user is a **1-sentence orientation** ("Session N ready, last session was about X, two TODOs pending"), NOT a markdown digest of `history.md` / `TODO.md`. Rich content stays in the terminal reply; voice carries only the gist.
+- Step 5's work-direction `ask_multiple_choice()` MUST use `priority="high"` (verify before use).
+- Receipt-acknowledge user prompts before any tool work (1 sentence each: "Looking into that now.").
+- Reduce or group the per-step progress notifications — in conversation mode each one is a TTS event.
+
+**Brevity mandate**: in conversation mode, spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, and section labels; cap at ~30 seconds of speech. The spoken version is a précis.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## Preliminary: Send Start Notification
 
 **Purpose**: Immediately notify user that session initialization has begun

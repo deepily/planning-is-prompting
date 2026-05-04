@@ -26,6 +26,23 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+This wrap-up ritual has 5–7 user-decision gates (commit message approval, push approval, archive decision, etc.). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
+
+**Mandates in conversation mode**:
+- All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`) MUST use `priority="high"`. Some legacy calls in this workflow may not — verify before use.
+- **Brevity mandate**: spoken commit-message preview is the **1-line subject only**; full body stays in the terminal and the `abstract` parameter. Spoken end-of-session summary is conversational ("we wrapped up the wizard wiring and committed cleanly"), NOT a file-by-file enumeration.
+- Use the `abstract` parameter aggressively to keep the file-changed list, diff stats, and commit body terminal-side while voice carries only the gist.
+- Receipt-acknowledge each user prompt before further tool work (1 sentence: "Wrapping up — running the test suite first.").
+- Per-gate response parsing: `ask_yes_no()` may return `"yes [comment: ...]"` — use `response.startswith("yes")` not equality (voice input often includes qualifications).
+
+**Brevity mandate (universal)**: spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, section labels; cap at ~30 seconds of speech for routine work.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## 0) Use Notification System Throughout
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
