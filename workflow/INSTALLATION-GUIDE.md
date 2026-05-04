@@ -2018,6 +2018,119 @@ Each wrapper configures different test script paths and scopes.
 
 ---
 
+## Plan Review Gate Workflow
+
+### What It Does
+
+Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 (Fitness) enforces design-completeness — every step must be implementable by a competent-but-unfamiliar engineer without asking clarifying questions. Pass 2 (Adversarial) enforces ownership-language clarity — "done" is never claimed without AI-executed verification, and ownership is explicit (`EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`). A short REUSE pre-pass runs first to catch accidental reinvention of existing helpers.
+
+The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
+
+**Canonical Workflow**: planning-is-prompting → workflow/plan-review.md
+
+**Slash Commands**: `/plan-review` (full pipeline), `/plan-review-reuse` (standalone REUSE pre-pass for Pattern 3 plans)
+
+### Pass Ordering: Fitness Before Adversarial
+
+The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial).
+
+**Why fitness first**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted or redesigned at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Adversarial) then polishes the ownership language on text that is stable. See `workflow/plan-review.md` §3 for the full ordering rationale.
+
+### Modes
+
+- `/plan-review` — full pipeline (REUSE → Pass 1 Fitness → Pass 2 Adversarial)
+- `/plan-review --from=fitness` — skip REUSE; resume after REUSE fixes already applied
+- `/plan-review --from=adversarial` — skip REUSE and Pass 1; resume after Fitness fixes already applied
+- `/plan-review --doc-set=<path>` — target a specific milestone doc-set
+- `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
+- `/plan-review-reuse` — standalone REUSE pre-pass for Pattern 3 single-doc plans
+
+### Install as Slash Command
+
+```
+I need you to install the `/plan-review` slash command from the planning-is-prompting repository into this project.
+
+Steps:
+1. Read the canonical workflow from: planning-is-prompting → workflow/plan-review.md
+
+2. Copy slash command file:
+   - Source: planning-is-prompting/.claude/commands/plan-review.md
+   - Target: .claude/commands/plan-review.md
+   - Keep the filename as-is (plan-review.md)
+
+3. Customize the wrapper:
+   - Replace `[PLAN]` → User's project prefix (e.g., `[MYPROJ]`)
+   - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
+   - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
+   - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
+
+After installation, test it: `/plan-review`
+```
+
+**Alternative**: Run `/plan-install-wizard` and select "Plan Review Gate (N)" from the workflow catalog.
+
+### Expected Questions
+
+The wizard or installer may ask:
+- **Doc-set discovery**: "I found `src/rnd/v0.1.7/cj-flow-async-multi-lane/00-index.md`. Use this as the target doc-set?"
+- **TBD enumeration**: For Pass 1 (Fitness), the user is asked to enumerate currently-flagged `TBD` markers in the docs (these can't be auto-discovered reliably).
+- **Layer 2 anchor**: "Is there a `00-working-contract.md` in the doc-set?" (skip Layer 2 if absent)
+
+### Usage
+
+```bash
+# Full pipeline — REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial)
+/plan-review
+
+# Resume after REUSE fixes already applied — start at Pass 1 (Fitness)
+/plan-review --from=fitness
+
+# Resume after Pass 1 fixes already applied — start at Pass 2 (Adversarial)
+/plan-review --from=adversarial
+
+# Target a specific milestone
+/plan-review --doc-set=src/rnd/v0.1.7/cj-flow-async-multi-lane
+
+# Pattern 3 escape hatch (research-only plan)
+/plan-review --skip-with-reason "research-only plan, no executable work"
+
+# Standalone REUSE pre-pass on a Pattern 3 single-doc plan
+/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md
+```
+
+### Key Features
+
+- **Three-layer anchor stack**: Layer 1 (global rule, non-negotiable) → Layer 2 (project working-contract, non-negotiable when present) → Layer 3 (milestone decisions, challengeable via "Design concerns" lane)
+- **Non-negotiable gates**: Both Pass 1 and Pass 2 deliver findings only and wait for user confirmation — the AI never applies fixes pre-emptively
+- **Convergence re-grep**: After approved fixes, re-run the same greps and diff against the pre-fix baseline; "resolved" must be falsifiable, not self-reported
+- **Termination rule**: Loop terminates when 0 new structural findings remain OR after 2 full rounds (belt-and-suspenders against quality-vs-count gaming)
+- **Idempotency marker**: `00-index.md` carries `last-reviewed-at: YYYY-MM-DD (commit-hash)` so re-invocation knows whether docs have changed
+
+### Prerequisites
+
+- **Planning is Prompting Core** must be installed (`/p-is-p-02-documentation` produces the doc-set the gate reviews)
+- **Doc-set conventions** established per `workflow/p-is-p-02-documenting-the-implementation.md` §"Doc Conventions for Plan-Review Compatibility":
+  - Convention 1 — working-contract document (optional but recommended)
+  - Convention 2 — decision-anchor format (numbered + `FROZEN` dated)
+  - Convention 3 — `EXECUTOR: AI / HUMAN <reason>` tagging
+  - Convention 4 — `TBD` and `Open sub-question N:` markers
+  - Convention 5 — "Manual E2E" semantics ("not-yet-automated", NEVER "human does it")
+
+If a convention is missing, the review's greps return clean and report false confidence.
+
+### Integration with Planning is Prompting Workflows
+
+Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`) **must** invoke `/plan-review` before code begins. Pattern 3 plans **may** invoke `/plan-review-reuse` standalone (REUSE pre-pass only). Pattern 4 (Investigation) plans **skip** the gate entirely — the doc-set shape isn't there.
+
+The flow:
+
+1. `/p-is-p-01-planning` — classify work, select pattern, break down tasks
+2. `/p-is-p-02-documentation` — create doc structure (Pattern 1/2/5/6 only)
+3. `/plan-review` — **THIS GATE** — Fitness then Adversarial passes
+4. Code writing begins
+
+---
+
 ## Plan Serialization
 
 ### What It Does

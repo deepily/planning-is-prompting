@@ -397,7 +397,7 @@ src/rnd/{project-name}/
 
 ## Doc Conventions for Plan-Review Compatibility
 
-These conventions exist for one reason: the canonical [`workflow/plan-review.md`](plan-review.md) gate runs grep-driven adversarial and fitness review passes against your implementation docs **before code is written**. The greps are blind without these conventions. Tag your docs from the start; retrofitting at review time defeats the purpose.
+These conventions exist for one reason: the canonical [`workflow/plan-review.md`](plan-review.md) gate runs grep-driven fitness and adversarial review passes against your implementation docs **before code is written**. The greps are blind without these conventions. Tag your docs from the start; retrofitting at review time defeats the purpose.
 
 The five conventions: (1) optional working-contract document, (2) decision-anchor format, (3) `EXECUTOR` tagging, (4) `TBD` markers, (5) "Manual E2E" semantics.
 
@@ -407,7 +407,7 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **File**: `00-working-contract.md` (sibling to `00-index.md`).
 
-**What it does**: States the rules of engagement for the milestone. Pass 1 (adversarial review) treats it as the project-level anchor — every "done" claim is checked against it.
+**What it does**: States the rules of engagement for the milestone. Pass 2 (Adversarial review) treats it as the project-level anchor — every "done" claim is checked against it.
 
 **Required shape**:
 
@@ -430,12 +430,12 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **File**: `03-decisions.md` (or §3 of an over-arching design-review doc).
 
-**What it does**: Freezes the design decisions the milestone is built on. Pass 2 (fitness review) treats these as the milestone-level anchor — every design claim must trace back to one.
+**What it does**: Freezes the design decisions the milestone is built on. Pass 1 (Fitness review) treats these as the milestone-level anchor — every design claim must trace back to one.
 
 **Required shape**:
 
-1. **FROZEN-date header**: `**Status**: FROZEN YYYY-MM-DD`. Re-date when amended (don't silently edit; pass 2 catches drift between header date and last-edit date).
-2. **Numbered decisions**: `Q1`, `Q2`, ... or `D1`, `D2`, ... — format spec, not literal. Whatever format you pick, use it consistently across the doc-set so pass 2's grep can find them.
+1. **FROZEN-date header**: `**Status**: FROZEN YYYY-MM-DD`. Re-date when amended (don't silently edit; Pass 1 catches drift between header date and last-edit date).
+2. **Numbered decisions**: `Q1`, `Q2`, ... or `D1`, `D2`, ... — format spec, not literal. Whatever format you pick, use it consistently across the doc-set so Pass 1's grep can find them.
 3. **Per-decision structure**: each decision has four fields:
    - **Question** — the call that was made
    - **✅ Decision** — the answer (with the ✅ literal so it's grep-able)
@@ -445,7 +445,7 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **Example from CJ Flow**: `01-design-review.md` §3 (Q1–Q7, frozen 2026-04-23). §3a covers the two-path rate-limiter invariant; §3b covers the pre-flip audit checklist.
 
-**Anti-pattern**: bullet-list decisions without numbers ("we decided X, also Y, also Z"). Pass 2 cannot trace findings back to bullet-list items; numbering is what makes traceability work.
+**Anti-pattern**: bullet-list decisions without numbers ("we decided X, also Y, also Z"). Pass 1 cannot trace findings back to bullet-list items; numbering is what makes traceability work.
 
 ---
 
@@ -453,7 +453,7 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **Where**: every verification step in `04-testing-validation.md` and any execution-log files.
 
-**What it does**: Names who runs each step. Pass 1 enforces this — bare checkboxes in verification sections are flagged as ownership-language violations.
+**What it does**: Names who runs each step. Pass 2 enforces this — bare checkboxes in verification sections are flagged as ownership-language violations.
 
 **Required tags**:
 
@@ -467,8 +467,8 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
       query; assert math returns in <2s and both research jobs finish.
 - [ ] EXECUTOR: HUMAN (subjective UX) — Confirm the three "running" cards
       visually distinguish from the two "done" cards on /notifications.
-- [ ] Run unit regression                                  # ❌ no tag — Pass 1 flags this
-- [ ] EXECUTOR: HUMAN — verify the test passes             # ❌ no justification — Pass 1 flags this
+- [ ] Run unit regression                                  # ❌ no tag — Pass 2 flags this
+- [ ] EXECUTOR: HUMAN — verify the test passes             # ❌ no justification — Pass 2 flags this
 ```
 
 ---
@@ -477,12 +477,12 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **Where**: anywhere a decision is genuinely deferred.
 
-**What it does**: Makes unresolved questions explicit so pass 2 can demand proposed answers. Pass 2's grep finds these and the prompt requires a proposed answer per number.
+**What it does**: Makes unresolved questions explicit so Pass 1 can demand proposed answers. Pass 1's grep finds these and the prompt requires a proposed answer per number.
 
 **Markers**:
 
 - `TBD` — short open question inline in design prose
-- `Open sub-question N:` — numbered open questions that need their own attention block (the `N:` lets pass 2 enumerate and demand answers per-number)
+- `Open sub-question N:` — numbered open questions that need their own attention block (the `N:` lets Pass 1 enumerate and demand answers per-number)
 
 **Worked example**:
 
@@ -496,7 +496,7 @@ src/cosa/utils/ vs src/cosa/rest/ vs new location?
 Open sub-question 2: ApiResourceManager.acquire() sync vs async signature?
 ```
 
-**Anti-pattern**: silently deferring decisions by leaving prose vague ("we'll figure out the file location during implementation"). Pass 2 cannot grep this. Be explicit with `TBD` so the review can do its job.
+**Anti-pattern**: silently deferring decisions by leaving prose vague ("we'll figure out the file location during implementation"). Pass 1 cannot grep this. Be explicit with `TBD` so the review can do its job.
 
 ---
 
@@ -518,10 +518,10 @@ This is the convention most likely to be misread, so here's the rule with an ant
 
 # ❌ INCORRECT
 - [ ] Manual E2E — verify two-pane layout works    # this reads "human does it"
-- [ ] Manual test of the auth flow                  # ambiguous; Pass 1 flags
+- [ ] Manual test of the auth flow                  # ambiguous; Pass 2 flags
 ```
 
-**Why this matters**: Pass 1's grep `grep -rn "Manual\|manual"` flags every hit. Each one must be either (a) reframed as `EXECUTOR: AI` once automated, or (b) reframed as `EXECUTOR: HUMAN <reason>` if the human is genuinely required for judgment. The "Manual" label by itself is a signal that the convention hasn't been applied yet.
+**Why this matters**: Pass 2's grep `grep -rn "Manual\|manual"` flags every hit. Each one must be either (a) reframed as `EXECUTOR: AI` once automated, or (b) reframed as `EXECUTOR: HUMAN <reason>` if the human is genuinely required for judgment. The "Manual" label by itself is a signal that the convention hasn't been applied yet.
 
 ---
 
@@ -529,7 +529,7 @@ This is the convention most likely to be misread, so here's the rule with an ant
 
 These conventions are the prerequisites for [`workflow/plan-review.md`](plan-review.md). Without them, the review's greps return clean and report false confidence.
 
-**Skip-with-reason**: if your milestone genuinely cannot adopt one of these (e.g., a research-only Pattern 2 plan with no executable work), log the skip + reason in `00-index.md`'s status block. Pass 1 reads this and exempts the missing convention from its checks.
+**Skip-with-reason**: if your milestone genuinely cannot adopt one of these (e.g., a research-only Pattern 2 plan with no executable work), log the skip + reason in `00-index.md`'s status block. The affected pass reads this and exempts the missing convention from its checks.
 
 ---
 

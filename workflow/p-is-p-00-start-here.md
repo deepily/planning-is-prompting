@@ -265,12 +265,12 @@ flowchart TD
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
     Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip to execution<br>Use history.md for tracking"]
-    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Adversarial<br>• Pass 2: Fitness<br>(non-negotiable gates)"]
+    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Fitness<br>• Pass 2: Adversarial<br>(non-negotiable gates)"]
     Review --> Code["Code begins"]
     Skip --> Code
 ```
 
-**Gate: `/plan-review` (between Step 2 and Code)** — Pattern 1/2/5/6 plans must pass the two-pass review gate before code is written. Pattern 3 plans may invoke `/plan-review-reuse` standalone (REUSE pre-pass only) before code begins. Pattern 4 (Investigation) skips the gate entirely. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches ownership-language drift and design-completeness gaps **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
+**Gate: `/plan-review` (between Step 2 and Code)** — Pattern 1/2/5/6 plans must pass the two-pass review gate before code is written. Pattern 3 plans may invoke `/plan-review-reuse` standalone (REUSE pre-pass only) before code begins. Pattern 4 (Investigation) skips the gate entirely. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches design-completeness gaps and ownership-language drift **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
 
 ### Step 1: Planning the Work (Always Required)
 

@@ -195,6 +195,38 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+### Review Workflows (Optional)
+
+```json
+{
+  "id": "plan-review-gate",
+  "name": "Plan Review Gate",
+  "description": "Two-pass quality gate (Fitness + Adversarial) for implementation plans before any code is written",
+  "category": "review",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-review",
+      "description": "Full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial). Supports --from=reuse|fitness|adversarial for partial reruns"
+    },
+    {
+      "name": "/plan-review-reuse",
+      "description": "Standalone REUSE pre-pass for Pattern 3 single-doc plans (catches accidental reinvention of existing helpers)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["planning-is-prompting-core"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-review.md"
+  ],
+  "notes": "Mandatory for Pattern 1/2/5/6 plans (the patterns that fire /p-is-p-02-documentation); optional REUSE-only pre-pass available for Pattern 3 via /plan-review-reuse; Pattern 4 (Investigation) skips entirely. The gate is the doc-quality bar that DOCUMENTATION-FIRST PROTOCOL doesn't impose on its own. Depends on TEST OWNERSHIP MANDATE in ~/.claude/CLAUDE.md as Layer 1 anchor."
+}
+```
+
 ### Backup Workflows (Optional)
 
 ```json
@@ -1094,12 +1126,26 @@ Available Workflows:
     Dependencies: None
     Note: Includes diagram type catalog, conversion guide, and exemption rules
 
+┌─────────────────────────────────────────────────────────┐
+│ REVIEW WORKFLOWS (Optional - plan quality gate)         │
+└─────────────────────────────────────────────────────────┘
+
+[N] Plan Review Gate
+    Two-pass quality gate for implementation plans before any code is written
+    Commands:
+      • /plan-review - Full pipeline (REUSE → Fitness → Adversarial)
+      • /plan-review-reuse - Standalone REUSE pre-pass for Pattern 3 plans
+    Dependencies: Planning is Prompting Core (D); reads ~/.claude/CLAUDE.md
+                  TEST OWNERSHIP MANDATE as Layer 1 anchor
+    Note: Mandatory for Pattern 1/2/5/6 plans; REUSE-only available for
+          Pattern 3 via /plan-review-reuse; Pattern 4 skips entirely
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L + M)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L, M)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L + M + N)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L, M, N)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -1146,8 +1192,8 @@ ask_multiple_choice( questions=[
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I + J + K (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I, J, K")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I + J + K + L + M + N (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I, J, K, L, M, N")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -1297,6 +1343,21 @@ ask_multiple_choice( questions=[
    - Creates slash command for removing workflows later
    - No validation needed (always available)
    - Note: Can uninstall itself along with other workflows
+
+   **Plan Review Gate (N)**:
+   - Requires: Planning is Prompting Core (D) must also be selected (the gate fires between `/p-is-p-02-documentation` and code)
+   - If user selected N but not D, warn:
+     ```
+     ⚠️ Dependency Warning
+
+     Plan Review Gate (N) depends on Planning is Prompting Core (D).
+     The gate is the doc-quality bar that runs after `/p-is-p-02-documentation`.
+
+     [1] Yes, add Planning is Prompting Core (D)
+     [2] No, remove Plan Review Gate (N) from selection
+     [3] Cancel installation
+     ```
+   - Note: The gate also reads `~/.claude/CLAUDE.md` `TEST OWNERSHIP MANDATE` as the Layer 1 anchor; if absent, Pass 2 (Adversarial) loses its calibration target — surface this to the user as informational, not blocking
 
 3. **Confirm Selection**:
 
@@ -1705,6 +1766,20 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    Customize:
    - No customization needed (wizard is project-agnostic)
    - Note: This makes uninstall wizard available as `/plan-uninstall-wizard` for removing workflows
+
+   **Plan Review Gate (N)**:
+   ```bash
+   # Copy plan-review slash command wrapper
+   cp planning-is-prompting/.claude/commands/plan-review.md \
+      ./.claude/commands/plan-review.md
+   ```
+
+   Customize:
+   - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
+   - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
+   - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
+   - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
+   - Note: The wrapper supports `--from=reuse|fitness|adversarial` for partial reruns and a `/plan-review-reuse` sub-command for Pattern 3 single-doc plans; both are documented in the canonical workflow
 
 3. **Create or Update CLAUDE.md**:
 

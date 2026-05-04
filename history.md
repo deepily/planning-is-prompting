@@ -1,9 +1,30 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 80
+**RESUME HERE**: Session 81
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 79 - Plan-Review Gate (promote adversarial+fitness review pattern from Lupin to PIP) + history archival
+**Last Session**: Session 80 - Plan-Review fitness-first restructure + install-wizard wiring
+
+---
+
+## May 2026
+
+### 2026.05.04 - Session 80 | Plan-Review Fitness-First Restructure + Install-Wizard Wiring
+
+**Accomplishments**:
+- **Pass-ordering restructure** (canonical): rewrote `workflow/plan-review.md` to swap pass order from Adversarial→Fitness (Lupin originating order) to Fitness→Adversarial. Added new `§3 Pass Ordering: Fitness Before Adversarial` documenting rationale ("structural gaps invalidate ownership analysis — wording polish on text fitness-resolution is about to delete or restructure is wasted work"). Counter-argument considered + mitigation noted (ownership errors that pass a Fitness completeness check get caught by the subsequent Adversarial pass; the reverse failure has no mitigation in the alternative ordering). Origin-artifact note preserved that Lupin's order was Adversarial→Fitness.
+- **Section renumbering**: REUSE pre-pass moved to §4; new Pass 1 (Fitness) at §5; Gate 1 at §6; Resolution Loop generalized at §7 (now applies to both passes, with explicit per-pass grep enumeration); Pass 2 (Adversarial) at §8; Gate 2 at §9; Termination Rule §10; Layer-3 Design Concerns §11; Idempotency & Re-Invocation §12 with new flag set `--from=reuse|fitness|adversarial`; Anti-Patterns §13 (added "Running adversarial before fitness" entry); Cross-References §14.
+- **Wrapper sync**: `.claude/commands/plan-review.md` flag-set semantics swapped (`--from=fitness` now means "skip REUSE; start at Pass 1 Fitness"; `--from=adversarial` now means "skip REUSE+Pass 1; start at Pass 2"). Section cross-references updated (§6 Gate 1, §7 Resolution Loop, §9 Gate 2, §10 Termination, §12 Re-Invocation, §4 REUSE). Usage examples corrected.
+- **Downstream sync**: Mermaid flowchart in `workflow/p-is-p-00-start-here.md` (Pass 1: Fitness, Pass 2: Adversarial). Prose adjusted ("design-completeness gaps and ownership-language drift" — order matches new flow). Conventions section in `workflow/p-is-p-02-documenting-the-implementation.md` had 13 Pass references swapped (working-contract enforcement → Pass 2 Adversarial; decision-anchor traceability → Pass 1 Fitness; EXECUTOR tag enforcement → Pass 2; TBD/Open-sub-question demands → Pass 1; Manual-label flagging → Pass 2; skip-with-reason exemption → "the affected pass"). README [C.5] entry order swapped.
+- **Install-wizard wiring**: TODO item from Session 79 closed. Added `plan-review-gate` JSON catalog entry under "Review Workflows (Optional)" category (sibling to Planning Workflows). Step 2 menu adds new "REVIEW WORKFLOWS" visual section with `[N] Plan Review Gate` (chose append-as-N to avoid letter cascade through 9 existing entries; tradeoff: visual section ordering breaks letter-alphabetic flow but Plan Review Gate sits cleanly at end of catalog). Step 3 dependency validation block added (depends on `[D]` Planning is Prompting Core). Step 5 install instructions added with customization notes. Bulk-select strings updated to include N.
+- **INSTALLATION-GUIDE addition**: New "Plan Review Gate Workflow" section between Testing Workflows and Plan Serialization. Includes What-It-Does, Pass-Ordering rationale, Modes table, Install-as-Slash-Command block, Expected Questions, Usage examples, Key Features, Prerequisites (5 conventions enumerated), Integration with Planning is Prompting Workflows.
+- **Catalog/flag-set fidelity verified**: `--from=reuse|fitness|adversarial` consistent across canonical doc (§12), wrapper (lines 27-29), wizard catalog (line 210 description), and INSTALLATION-GUIDE.md (lines 2042-2046). Sub-command `/plan-review-reuse` documented in all four.
+
+**Files Changed**: `workflow/plan-review.md` (full rewrite), `workflow/p-is-p-00-start-here.md` (mermaid + prose), `workflow/p-is-p-02-documenting-the-implementation.md` (13 Pass references), `workflow/installation-wizard.md` (catalog entry + menu + Step 3 + Step 5 + bulk-select), `workflow/INSTALLATION-GUIDE.md` (new section), `.claude/commands/plan-review.md` (flag set + cross-refs + usage), `README.md` ([C.5] entry), `TODO.md`, `history.md`
+
+**Key insight**: User's "fitness before adversarial" intuition surfaced a real ordering tradeoff that the Session 79 lift inherited from Lupin without examining. Documenting the rationale in §3 (with explicit counter-argument + mitigation) means the question is settled in writing — future re-litigation of the choice has a starting point. The Lupin originating prompts (`05-adversarial-review-prompt.md` and `06-fitness-review-prompt.md`) are now §-numbered the opposite way from the canonical's Pass 1/Pass 2 — Origin Artifacts §13 calls this out so the historical artifacts don't read as canonical.
+
+**TODO follow-ups added**: Plan-review dogfood test should now also validate the new ordering. Plan-review fidelity readthrough should confirm the swap doesn't drop signal that Lupin's order carried. Lupin source-artifact header pointers should call out the order difference.
 
 ---
 
