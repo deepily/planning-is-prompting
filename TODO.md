@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-05-04 (Session 81 complete — conversation-mode reinforcement + TTS Brevity Mandate + asymmetry refinement + DOCUMENT VIEWER LINKS sync)
+Last updated: 2026-05-05 (Session 82 — TTS Brevity Mandate concision pass: tiered length cap + headline-don't-enumerate + no-justification)
 
 ## Pending
 
@@ -26,6 +26,7 @@ Last updated: 2026-05-04 (Session 81 complete — conversation-mode reinforcemen
 
 ## Completed (Recent)
 
+- [x] **TTS Brevity Mandate concision pass** (refinement of Session 81 mandate). Three new principles added to `workflow/cosa-voice-integration.md` and `~/.claude/CLAUDE.md`/`global/CLAUDE.md` headline: (1) **tiered length cap** — routine close-outs ≈ 60 words / 20s, substantive turns ≈ 80–120 words / 30s; (2) **headline, don't enumerate** — numbers, file lists, percentages live in `abstract` only; speak the verdict; (3) **no justification for non-actions in spoken line** — skip confidence statements, process meta, deferred-work rationale. **Anchor example** added to canonical doc memorializing a 190-word real-use case → 45-word tightening (76% reduction). Memory file `feedback_tts_brevity.md` updated with refinements - Session 82
 - [x] **Conversation-mode reinforcement across PIP** + new global **TTS Brevity Mandate**. Hub-and-spoke pattern: canonical spec in `workflow/cosa-voice-integration.md` (new §Conversation Mode with full TTS Brevity Mandate sub-section), live `~/.claude/CLAUDE.md` re-synced to `global/CLAUDE.md` with new headline rule, callouts added to 14 workflow files + 13 slash-command wrappers (31 files total). Verification clean: every spoke that uses cosa-voice tools references the hub AND mentions the brevity mandate; live + repo CLAUDE.md byte-identical. Memory persisted at `~/.claude/projects/.../memory/feedback_tts_brevity.md` - Session 81
 - [x] Wire `/plan-review` into install wizard (entry [N] under new "REVIEW WORKFLOWS" section in `workflow/installation-wizard.md`; Step 3 dependency validation block; Step 5 install instructions; bulk-select strings updated). Catalog/flag-set fidelity verified across canonical doc, wrapper, wizard, and INSTALLATION-GUIDE.md (`--from=reuse|fitness|adversarial` consistent in all four). Added "Plan Review Gate Workflow" section to INSTALLATION-GUIDE.md - Session 80
 - [x] Restructure `workflow/plan-review.md` to Fitness-first ordering (REUSE → Pass 1 Fitness → Pass 2 Adversarial). Added §3 Pass Ordering rationale. Synced wrapper, p-is-p-00 mermaid + prose, p-is-p-02 conventions section (13 Pass references swapped), README [C.5] entry. Origin-artifact note preserved that Lupin's order was Adversarial→Fitness - Session 80

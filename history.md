@@ -3,11 +3,36 @@
 **RESUME HERE**: Session 82
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 81 - Conversation-mode reinforcement across PIP + new TTS Brevity Mandate
+**Last Session**: Session 82 - TTS Brevity Mandate concision pass (tiered length + headline-not-inventory + no-justification)
 
 ---
 
 ## May 2026
+
+### 2026.05.05 - Session 82 | TTS Brevity Mandate Concision Pass
+
+**Accomplishments**:
+
+- **Refined the Session-81 TTS Brevity Mandate** after user feedback that a 190-word real-use spoken close-out was still too verbose. User confirmed they are "profoundly happy with the level of detail provided in the abstract" — voice should carry verdicts, abstract carries drill-down detail.
+- **Three new principles baked into both canonical and headline surfaces**:
+  - **Tiered length cap**: routine status close-outs ≈ 60 words / ~20s; substantive turns (architectural decisions, multi-fork outcomes, requested deep readouts) ≈ 80–120 words / ~30s. Old flat 80–120 cap is now the substantive ceiling, not the routine floor.
+  - **Headline, don't enumerate**: numbers, file lists, percentages, test counts, paths live in `abstract`, never in the spoken line. Speak the verdict ("tests are green," "two commits ready"); abstract carries the inventory.
+  - **No justification for non-actions in spoken line**: skip confidence statements ("structurally identical to X"), process meta ("documented in the log per the mandate"), and rationale for deferred work. The decision is the news; rationale belongs in `abstract` or terminal scrollback.
+- **Files touched**:
+  - `workflow/cosa-voice-integration.md` (+2,788 chars): replaced Length-discipline bullet with tiered version; inserted two new bullets between Length and Two-channel asymmetry; appended **Anchor example** memorializing the 190-word real-use case → 45-word tightening (76% reduction; zero loss because the abstract still carries full detail).
+  - `~/.claude/CLAUDE.md` (+522 chars, live, outside repo): modified item 4 → tiered cap; new item 5 (consolidated "Speak the verdict, not the inventory or rationale" covering both content rules); renumbered items 5/6 → 6/7. Live now at 42,519 chars (still over the 40k warning by ~2.5k; TODO has trim candidates).
+  - `global/CLAUDE.md`: re-synced from live (`cp` + `diff -q` clean), same precedent as Sessions 75/76/77/78/79/81.
+  - `~/.claude/projects/.../memory/feedback_tts_brevity.md` (outside repo): all three refinements added to bullet list with `2026-05-05 refinement` tags + Session 82 origin note in **Why**.
+- **Verification**: live ↔ global byte-identical post-sync; canonical doc has new bullets and anchor example present; git status clean of parallel-session interference (only my two repo files modified).
+
+#### Checkpoint | 2026.05.05 23:07 | TTS Brevity Mandate concision pass
+
+**Files**: `workflow/cosa-voice-integration.md`, `global/CLAUDE.md`
+**Commit**: [pending]
+
+**Plan**: ad-hoc refinement (no plan-mode invocation; user explicitly approved the three-principle proposal before edits began).
+
+---
 
 ### 2026.05.04 - Session 81 | Conversation-Mode Reinforcement + TTS Brevity Mandate
 

@@ -81,12 +81,26 @@ When the user toggles back to notification mode, Claude is explicitly informed v
 - **Strip technical density**: file paths, line numbers, function signatures, JSON snippets, hash literals, URLs all stay terminal-only. If a path is unavoidable, speak the human-readable name ("the install wizard catalog entry") not the raw path.
 - **Drop section labels and letter enumeration**: no "A, B, C, D"; no "section 3"; use natural connectives ("and", "but", "so").
 - **Aim for human speech patterns**: short sentences, no parenthetical asides cluttering flow.
-- **Length discipline**: spoken closing ≈ 1–3 short paragraphs MAX, even when the terminal reply is several screens. Cap at ~30 seconds of speech (~80–120 words) for routine work. The spoken version is a **précis** of the terminal reply, not a duplicate. The terminal still carries the rich content for when the user reads back.
+- **Length discipline (tiered)**: routine status close-outs cap at ~60 words / ~20 seconds; substantive turns (architectural decisions, multi-fork outcomes, deep readouts the user explicitly asked for) cap at ~80–120 words / ~30 seconds. The spoken version is a **précis** of the terminal reply, never a duplicate. The terminal still carries the rich content for when the user reads back.
+- **Headline, don't enumerate**: numbers, file lists, percentages, test counts, file paths, hash literals — all of these live in `abstract`, never in the spoken line. Speak the verdict ("tests are green," "two commits ready for review"), then let the abstract carry the inventory. Reciting numeric or file inventories aloud was the most common bloat source observed in real use (2026-05-05 follow-up to the original mandate).
+- **No justification for non-actions in the spoken line**: skip confidence statements ("structurally identical to the known-working path, so confidence is high"), process meta ("documented in the execution log per the test ownership mandate"), and rationale for deferred work. The decision is the news; the rationale belongs in the `abstract` or terminal scrollback. If the user wants the why, they'll drill into the abstract.
 - **Two-channel asymmetry — the `abstract` parameter STAYS richly formatted.** The brevity rules above apply to the SPOKEN `message` parameter ONLY — NEVER to `abstract`. The `abstract` (rendered into the UI/notification card and terminal scrollback) SHOULD be richly formatted with full markdown structure: headings, code blocks, tables, file paths, line numbers, JSON snippets, hash literals, URLs — all the technical detail Claude would normally put in a terminal reply. The two channels are **complementary, not duplicates**: voice carries conversational gist, `abstract` carries the rich written record. The same `notify()` call delivers both: keep `message` short, conversational, stripped; keep `abstract` long, structured, formatted. Examples of what belongs in `abstract`: findings tables, code diffs, catalogs, full PR bodies, error stack traces, command outputs, multi-file change lists.
 - **Acknowledge-then-summarize pattern**: receipt acks at turn-start are 1 sentence. Closing summaries cap at the length above; longer only when the user explicitly requested a deep readout.
 - **The terminal reply stays markdown-rich**. The `notify()` payload is RE-CRAFTED for speech, not a plain-text copy. Two channels with different ergonomics: terminal = scannable structure; voice = conversational prose.
 
 **Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
+
+**Anchor example** (real failure mode observed 2026-05-05; ~190 words → ~45 words):
+
+❌ **Bloated** — three failure modes: inventory recital, deferred-work justification, process meta:
+
+> "All phases done. Auto tier verification is 100 percent green — three nine five zero unit tests passing in the full regression, plus thirteen on the router, forty one on the wrap helper, ten on the M C P toggle round trip, and fifty out of fifty on the websocket smoke suite. The manual live verification on dev is the one thing I deferred — running it would require toggling off the conversation mode we're using to communicate right now, which would be self defeating. I documented that explicitly in the execution log per the test ownership mandate. The fix is structurally identical to the known working displace path so confidence is high. Two commits remain on your end whenever you're ready — the Lupin commit covering the doc directory plus the helper plus the two test files, and a separate CoSA commit for just the router file. I have not touched git in either repo. The E two E U I conversation mode test on the test server is the only follow up — submit it via the test suite endpoint when you have a clean slot."
+
+✅ **Tightened** — verdict-first, abstract carries the rest:
+
+> "All phases done. Auto-tier tests are green — counts in the abstract. I deferred the live manual check since running it would drop us out of conversation mode. Two commits are staged for your review whenever you're ready."
+
+What was cut: per-suite test counts (→ abstract), three-sentence justification of the deferred test, "documented in the log" process meta, file inventory of each commit, "I haven't touched git" assurance, follow-up test detail. Total reduction: ~76% fewer spoken words; zero loss in conveyed decision because the abstract still carries the full detail.
 
 ### Priority="high" Mandate Intensified
 
