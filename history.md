@@ -33,6 +33,16 @@
 
 **Key insight**: The brevity mandate emerged from real-use observation, not theoretical reasoning. After ~1 week of conversation-mode use, the user noticed the failure mode (verbatim markdown read aloud feels like documentation). Promoting the observation to a *global* mandate (in `~/.claude/CLAUDE.md` so it loads into every session) catches the regression before it propagates further. The hub-and-spoke pattern keeps PIP DRY: one canonical spec in `workflow/cosa-voice-integration.md`, lightweight cross-references everywhere else.
 
+#### Refinement (commit `15a24d1`) — Two-Channel Asymmetry
+
+User reviewed the initial mandate text and surfaced a clarification: the brevity rules apply to the SPOKEN `notify(message=...)` parameter ONLY — the `abstract` parameter (which renders into the UI/notification card and terminal scrollback) SHOULD remain richly formatted with full markdown, code blocks, headings, tables, file paths, line numbers, JSON snippets. The two channels are **complementary, not duplicates**: voice carries conversational gist, abstract carries the rich written record. The same `notify()` call delivers both — keep `message` short and stripped, keep `abstract` long and formatted.
+
+Rule #6 of the headline mandate was rewritten to make this asymmetry explicit so future sessions don't strip markdown from `abstract` too. Updated in 4 places: `~/.claude/CLAUDE.md` (live), `global/CLAUDE.md` (re-synced byte-identical), `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate", and `~/.claude/projects/.../memory/feedback_tts_brevity.md` (cross-session memory).
+
+**Files Changed (refinement)**: `global/CLAUDE.md`, `workflow/cosa-voice-integration.md` (2 files in repo + 2 outside).
+
+**Why it matters**: without the explicit asymmetry, the natural reading of "strip markdown for TTS" risks bleeding into `abstract` too — defeating the whole point of having a rich written record alongside the spoken précis. This is exactly the kind of clarification that's easy to lose if not codified in the canonical spec.
+
 ---
 
 ### 2026.05.04 - Session 80 | Plan-Review Fitness-First Restructure + Install-Wizard Wiring
