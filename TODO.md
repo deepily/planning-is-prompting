@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-05-04 (Session 81 complete — conversation-mode reinforcement + TTS Brevity Mandate + asymmetry refinement)
+Last updated: 2026-05-04 (Session 81 complete — conversation-mode reinforcement + TTS Brevity Mandate + asymmetry refinement + DOCUMENT VIEWER LINKS sync)
 
 ## Pending
 

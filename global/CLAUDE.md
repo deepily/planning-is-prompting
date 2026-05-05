@@ -467,6 +467,31 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 
 ---
 
+### DOCUMENT VIEWER LINKS
+
+**MANDATE**: When the user asks to view a project file (plan, doc, R&D note, README, history), respond with a `notify()` whose abstract contains a markdown link to the document viewer. **Never dump file contents into the chat.**
+
+**Pattern**:
+```python
+notify(
+    message           = "Sure! Here you go",
+    abstract          = "[Open: <filename>](/app/docs?path=<path>&scope=docs)",
+    notification_type = "custom",
+    priority          = "high",
+    suppress_ding     = True
+)
+```
+
+The notification UI auto-sanitizes the link, adds `target="_blank" rel="noopener noreferrer"`, and the popup's content-aware tier sizing handles rich abstracts.
+
+**Scope routing**:
+- `scope=io` (default — omit param) — agent artifacts under `io/` (research reports, podcast scripts, presentations, audio)
+- `scope=docs` — whitelisted project docs: root `*.md` (`CLAUDE.md`, `history.md`, `TODO.md`, `README.md`, `bug-fix-queue.md`) + prefixes `src/docs/`, `src/rnd/`, `src/workflow/`
+
+**Out-of-scope files** (e.g., `~/.claude/plans/*.md`, files outside the repo): ask the user to serialize into `src/rnd/` first per plan-serialization mandate, then send the viewer link.
+
+---
+
 ### Integration with TodoWrite
 
 **MANDATE**: Notifications are TIED to TodoWrite status changes.

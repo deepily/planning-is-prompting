@@ -43,6 +43,12 @@ Rule #6 of the headline mandate was rewritten to make this asymmetry explicit so
 
 **Why it matters**: without the explicit asymmetry, the natural reading of "strip markdown for TTS" risks bleeding into `abstract` too — defeating the whole point of having a rich written record alongside the spoken précis. This is exactly the kind of clarification that's easy to lose if not codified in the canonical spec.
 
+#### Follow-up sync — Document Viewer Links
+
+User added a new `### DOCUMENT VIEWER LINKS` subsection to `~/.claude/CLAUDE.md` after the initial session-end ritual completed: a mandate that when the user asks to view a project file, Claude responds with `notify()` carrying a markdown link to `/app/docs?path=...&scope=docs|io` instead of dumping file contents into chat. Includes scope routing rules (`scope=io` for agent artifacts under `io/`, `scope=docs` for whitelisted root `*.md` + `src/docs/`/`src/rnd/`/`src/workflow/` prefixes) and an out-of-scope rule (ask user to serialize to `src/rnd/` per plan-serialization mandate). Pulled into `global/CLAUDE.md` mirror; byte-identical via diff.
+
+**Files Changed (follow-up sync)**: `global/CLAUDE.md` (1 file in repo).
+
 ---
 
 ### 2026.05.04 - Session 80 | Plan-Review Fitness-First Restructure + Install-Wizard Wiring
