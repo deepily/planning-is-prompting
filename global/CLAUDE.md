@@ -457,7 +457,7 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 3. **Drop section labels and letter enumeration** ("A, B, C, D"). Use natural connectives: "and", "but", "so".
 4. **Length cap**: ~30 seconds of speech (~80–120 words) for routine work. Spoken closings are a **précis**, not a duplicate. Longer only when user explicitly asked for a deep readout.
 5. **Receipt acknowledgments at turn-start**: 1 sentence (e.g., "Looking into that now.").
-6. **Use the `abstract` parameter** to keep rich content (findings tables, diffs, catalogs) available terminal-side while voice carries only the gist.
+6. **Two-channel asymmetry — the `abstract` parameter STAYS richly formatted.** The brevity rules above apply to the SPOKEN `message` parameter ONLY, never to `abstract`. The `abstract` (rendered into the UI/notification card and terminal scrollback) SHOULD be richly formatted with full markdown structure: headings, code blocks, tables, file paths, line numbers, JSON snippets, hash literals, URLs — all the technical detail Claude would normally put in a terminal reply. The two channels are **complementary, not duplicates**: voice carries conversational gist; `abstract` carries the rich written record. Same `notify()` call delivers both: keep `message` short and stripped; keep `abstract` long and formatted.
 
 **Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
 
