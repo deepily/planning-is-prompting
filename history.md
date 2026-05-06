@@ -27,8 +27,8 @@
 
 #### Checkpoint | 2026.05.05 23:07 | TTS Brevity Mandate concision pass
 
-**Files**: `workflow/cosa-voice-integration.md`, `global/CLAUDE.md`
-**Commit**: [pending]
+**Files**: `workflow/cosa-voice-integration.md`, `global/CLAUDE.md`, `history.md`, `TODO.md`
+**Commit**: c48ba70
 
 **Plan**: ad-hoc refinement (no plan-mode invocation; user explicitly approved the three-principle proposal before edits began).
 
