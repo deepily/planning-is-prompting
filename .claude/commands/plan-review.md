@@ -46,6 +46,11 @@
    - When findings are returned, use `ask_yes_no()` or `ask_multiple_choice()` to get the user's decision on which to apply, never assume.
    - After fixes: re-run the same greps against the pre-fix baseline; confirm convergence per §7 of the canonical workflow.
 
+6. **MUST run the three passes strictly sequentially — NEVER in parallel**:
+   - Order: REUSE pre-pass (§4) → Pass 1 Fitness (§5) → Pass 2 Adversarial (§8). Each pass must fully close (findings delivered + user gate cleared + Resolution Loop convergence) before the next begins.
+   - **PROHIBITED**: spawning multiple `Agent` (subagent) tool calls in a single message that cover more than one pass; splitting passes across simultaneous sessions; any tool-call batch that fires two or more passes concurrently. The §6/§9 user gates only function in a serial pipeline — concurrent execution silently bypasses them.
+   - If you would have batched passes for wall-clock efficiency: don't. The §3 ordering rationale (canonical workflow) is load-bearing, and the user has explicitly observed parallel execution as a failure mode.
+
 6. **MUST update idempotency marker on success**:
    - On clean termination (per §10 of canonical), update `<doc-set>/00-index.md` `last-reviewed-at:` line to today's date + current commit hash.
 

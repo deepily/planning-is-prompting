@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-05-05 (Session 82 — TTS Brevity Mandate concision pass: tiered length cap + headline-don't-enumerate + no-justification)
+Last updated: 2026-05-06 (Session 83 — Plan Review Sequential Execution Mandate: forbid parallel pass execution)
 
 ## Pending
 

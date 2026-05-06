@@ -1,13 +1,34 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 82
+**RESUME HERE**: Session 83
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 82 - TTS Brevity Mandate concision pass (tiered length + headline-not-inventory + no-justification)
+**Last Session**: Session 83 - Plan Review Sequential Execution Mandate (forbid parallel pass execution)
 
 ---
 
 ## May 2026
+
+### 2026.05.06 - Session 83 | Plan Review Sequential Execution Mandate
+
+**Accomplishments**:
+
+- **Closed a process-loophole** the user observed in the wild: Claude Code ran the three plan-review passes (REUSE pre-pass, Pass 1 Fitness, Pass 2 Adversarial) **in parallel** by spawning concurrent `Agent` subagent calls in a single message, silently bypassing the §6 / §9 user gates (which only function in a serial pipeline). The canonical doc already specified the sequential order in §3 but never explicitly prohibited concurrent execution — the new mandate names the failure mode in language a future agent can't reasonably read past.
+- **Four additive hooks, all naming the same failure mode** ("spawn multiple `Agent` (subagent) tool calls in a single message"):
+  - `workflow/plan-review.md` line 9 — new top-of-doc **SEQUENTIAL EXECUTION MANDATE (NON-NEGOTIABLE)** banner, sibling to the existing Conversation Mode Awareness callout. Names parallel-`Agent`-spawning, simultaneous sessions, and tool-call batches; references §3 for rationale; ends with "If you find yourself about to issue a single message containing multiple `Agent` invocations covering more than one pass, **STOP** — that is the failure mode this mandate names."
+  - `workflow/plan-review.md` §3 line 51 — section title amended to "Fitness Before Adversarial — and Strictly Sequential". New paragraph defines "fully closed" (findings delivered + user gate cleared + Resolution Loop convergence re-grep returns zero new hits) and lists the prohibited dodges. Closing sentence: *"If a competent-but-impatient agent thinks it can save wall-clock time by parallelizing, the answer is no."*
+  - `workflow/plan-review.md` §13 line 343 — new Anti-Patterns row covering concurrent `Agent` calls, simultaneous sessions, and batched invocations, with the why ("REUSE may dissolve components Pass 1 was reviewing; Pass 1 may delete steps Pass 2 was wording-polishing") and the user-observed-it-in-practice attribution.
+  - `.claude/commands/plan-review.md` line 49 — new rule #6 in the slash-command's "MUST" list mirroring the canonical mandate, with the same PROHIBITED enumeration so the wrapper carries the constraint independently of canonical-doc reads.
+- **Why the wording matters**: §6/§9 user gates only function in a serial pipeline. A parallel run produces three findings tables simultaneously, none of which the user has had a chance to gate-clear, and the Resolution Loop's convergence re-grep is meaningless because none of the passes have stable post-fix baselines yet. The new wording makes the gate-bypass argument explicit so future agents can't rationalize parallelism as a wall-clock optimization.
+- **Verification**: grep confirms all four hooks present (`SEQUENTIAL EXECUTION MANDATE`, `Strictly sequential`, `Running passes in parallel`, `MUST run the three passes`). Doc structure intact — additive only, no removals, no rule conflicts with the existing Pass Ordering / Anti-Patterns content.
+
+**Files Changed**: `workflow/plan-review.md`, `.claude/commands/plan-review.md`, `history.md`, `TODO.md`
+
+**Plan**: ad-hoc tweak (no plan-mode invocation; user described the exact intent in the opening message — "make sure that this process runs in that order sequentially, and never in parallel").
+
+**Key insight**: The original §3 documented the *order* but treated sequentiality as implicit. In practice, "do A then B then C" doesn't preclude an agent from doing A, B, C in parallel and reading the order as merely a presentation choice. The new wording elevates the constraint from "the recommended order is..." to "concurrent execution is PROHIBITED" — closing the gap between author intent and reader inference. This is the same class of fix as the TTS Brevity Mandate (Session 81/82): an observed real-use failure promoted to an explicit, grep-able mandate.
+
+---
 
 ### 2026.05.05 - Session 82 | TTS Brevity Mandate Concision Pass
 

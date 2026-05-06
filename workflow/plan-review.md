@@ -6,6 +6,8 @@
 
 **Origin**: Pattern lifted from Lupin v0.1.7 CJ Flow async multi-lane milestone (`<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-` and `/06-`). Phases 1–3 of that milestone landed cleanly with no rework rounds attributable to ownership or completeness gaps in the design docs. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP swapped to Fitness→Adversarial — see §3 for the ordering rationale.
 
+> **⚠️ SEQUENTIAL EXECUTION MANDATE (NON-NEGOTIABLE)**: The three passes — REUSE pre-pass (§4), Pass 1 Fitness (§5), Pass 2 Adversarial (§8) — MUST run **strictly sequentially in that order**. Each pass must fully close (findings delivered, gate cleared, Resolution Loop converged) before the next pass begins. **Parallel execution is PROHIBITED**: do NOT spawn multiple `Agent` (subagent) tool calls in a single message to run two or three passes concurrently; do NOT split the prompts across simultaneous sessions; do NOT invoke them in any tool-call batch that fires them in parallel. The pass-ordering rationale in §3 is load-bearing — running them in parallel discards every benefit of the ordering and re-introduces the exact failure modes the gate was designed to prevent (wording polish on text fitness-resolution would have deleted; ownership analysis on a structural skeleton that REUSE would have dissolved). If you find yourself about to issue a single message containing multiple `Agent` invocations covering more than one pass, **STOP** — that is the failure mode this mandate names.
+>
 > **⚠️ Conversation Mode Awareness**: this gate has **non-negotiable user-decision pauses** at §6 (Gate 1, post-Fitness), §9 (Gate 2, post-Adversarial), and §11 (Layer-3 Design Concerns). When `conversation_mode_active=true`, every pause is a voice gate.
 >
 > **Brevity mandate at gate sites**: NEVER read the findings table aloud row-by-row. The spoken `notify()` carries a 1–2 sentence headline ("Pass 1 found 7 fitness gaps, mostly around dispatcher routing — table is in your terminal"); the full table goes to the `abstract` parameter and the terminal reply. Same for Pass 2 ownership findings, and same for Layer-3 challenges (speak the headline, full justification stays in `abstract`). Use `priority="high"` on every blocking call — voice is the only channel reaching the user. Full spec: `cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
@@ -42,9 +44,11 @@ If any convention is missing, the review is calibrated wrong: stop and amend the
 
 ---
 
-## 3. Pass Ordering: Fitness Before Adversarial
+## 3. Pass Ordering: Fitness Before Adversarial — and Strictly Sequential
 
 **The order is deliberate**: REUSE pre-pass → Pass 1 (Fitness, design completeness) → Pass 2 (Adversarial, ownership language).
+
+**Strictly sequential — never parallel**: each pass must fully close before the next begins. "Fully closed" means findings delivered, the user gate cleared, approved fixes applied, and the Resolution Loop's convergence re-grep returns zero new hits. **Spawning multiple `Agent` (subagent) tool calls in a single message to run two or three passes in parallel is PROHIBITED**, as is splitting the prompts across simultaneous sessions or any other concurrent-execution dodge. The user gates at §6 and §9 only function in a serial pipeline; running passes concurrently silently bypasses them. If a competent-but-impatient agent thinks it can save wall-clock time by parallelizing, the answer is no — the pass-ordering argument below explains why (and the user has explicitly observed this failure mode in practice).
 
 **Why this order**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted, redesigned, or substantively reworked at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Adversarial) then polishes the ownership language on text that is stable.
 
@@ -336,6 +340,7 @@ In addition to the gate-violations called out inline:
 | Re-reading the docs between Pass 1 and Pass 2 | Pass 2 explicitly says "use the context from the previous pass." Re-reading wastes the bundled-context advantage and risks divergence. |
 | Reading order ignored | "Do not skip. Do not skim." The anchor files (Layer 1/2) MUST be loaded before the docs being reviewed; otherwise either pass loses the anchor to compare against. |
 | Running adversarial before fitness | Wording polish on text that fitness-resolution is about to delete or restructure is wasted work. See §3 for the full ordering rationale. |
+| Running passes in parallel (concurrent `Agent` calls, simultaneous sessions, batched invocations) | The §3 ordering is load-bearing. Parallel execution discards every benefit of the order and silently bypasses the §6/§9 user gates (which only function in a serial pipeline). REUSE may dissolve components Pass 1 was reviewing; Pass 1 may delete steps Pass 2 was wording-polishing. The user has explicitly observed this failure mode — do not repeat it. |
 
 ---
 
