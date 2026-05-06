@@ -405,8 +405,21 @@ Comprehensive end-of-session ritual that:
 - Proposes commit message
 - Commits and optionally pushes changes (selective staging)
 - Sends notifications at each step
+- **Closes with a Day's Work Summary** — LoC delta by language with code/comment/docstring breakdown plus optional repo-baseline comparison
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-end.md
+
+### Day's Work Summary Prerequisite (Step 6)
+
+Step 6 (Day's Work Summary) renders a closing LoC-delta table as the **last visible/audible artifact** of every session. The rich path uses lupin's `BranchChangeAnalyzer` and `DirectoryAnalyzer` for code/comment/docstring breakdown per language.
+
+**Prerequisite for the rich path**: `LUPIN_ROOT` environment variable pointing to a lupin checkout with `src/cosa/repo/run_branch_analyzer.py` present. See `~/.claude/skills/codebase-analysis/SKILL.md` for the canonical analyzer reference.
+
+**If `LUPIN_ROOT` is not set**: Step 6 falls back gracefully to `git diff --shortstat` (line totals only, no language breakdown) and appends a one-line upgrade-path note. No setup is required for the fallback path; the summary still fires.
+
+**Slash-command flags** (default both ON):
+- `--no-summary` — skip Step 6 entirely (fast wrap-up)
+- `--no-baseline` — render the day's delta but skip the repo-composition comparison
 
 ### Parallel Session Safety
 

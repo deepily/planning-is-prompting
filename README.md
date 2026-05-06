@@ -222,6 +222,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**Research: Plan File Serialization**](src/rnd/2026.02.13-plan-file-serialization-recommendation.md) - Data analysis backing the serialization recommendation (169 files, naming convention breakdown)
 - [**Plan: Test Ownership Mandate**](src/rnd/2026.04.23-test-ownership-mandate.md) - Placement strategy and canonical language for the role-separation rule (human is designer/user; Claude owns the testing pyramid)
 - [**Plan: Plan-Review Gate**](src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md) - Promote the adversarial + fitness review pattern from Lupin's CJ Flow R&D into a canonical PIP workflow with convention-establishment in `p-is-p-02`
+- [**Plan: Day-of-Work Summary at Session-End**](src/rnd/2026.05.06-day-of-work-summary-at-session-end.md) - New session-end Step 6 closes each session with a LoC-delta table (code/comment/docstring per language) plus optional repo-baseline comparison; reuses lupin's `BranchChangeAnalyzer` and `DirectoryAnalyzer` via `LUPIN_ROOT`, falls back to `git diff --shortstat` when cosa is unavailable
 
 ## Usage
 

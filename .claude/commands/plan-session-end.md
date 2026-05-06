@@ -28,18 +28,28 @@
    - The canonical workflow contains: TodoWrite tracking list, token count check, history health check, history update, planning document updates, uncommitted changes summary, commit message proposal, and commit execution (with notifications throughout)
 
 3. **MUST execute the complete session-end ritual**:
-   - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-5)
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, or health checks)
+   - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-6)
+   - Do NOT skip any steps (including notifications, TodoWrite tracking, health checks, or the Day's Work Summary)
    - Do NOT substitute a shortened or summarized version
    - Do NOT commit without user approval
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
+
+4. **MUST honor the Day's Work Summary flags** (canonical §6):
+   - Parse `--summary` / `--no-summary` and `--baseline` / `--no-baseline` from the invocation arguments.
+   - **Defaults**: `--summary` ON, `--baseline` ON. The summary is the last visible/audible artifact of the session per the user's stated intent.
+   - `--no-summary` skips Step 6 entirely; proceed directly to Final Verification.
+   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection silently (it cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
+   - The spoken headline (passed to `notify(message=...)`) MUST follow the TTS Brevity Mandate — 1 sentence, conversational, no file paths or percentages. Full table goes to `abstract` only.
 
 ---
 
 ## Usage
 
 ```bash
-/plan-session-end
+/plan-session-end                          # default: full ritual including Day's Work Summary + baseline
+/plan-session-end --no-summary             # skip Step 6 entirely (fast wrap-up)
+/plan-session-end --no-baseline            # render summary without repo-baseline comparison
+/plan-session-end --no-summary --no-baseline  # equivalent to --no-summary alone
 ```
 
 Invoked when wrapping up a work session to ensure all documentation, history, and commits are properly managed.

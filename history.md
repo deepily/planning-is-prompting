@@ -1,13 +1,43 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 83
+**RESUME HERE**: Session 84
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 83 - Plan Review Sequential Execution Mandate (forbid parallel pass execution)
+**Last Session**: Session 84 - Day's Work Summary at session-end (Step 6, reuses lupin BranchChangeAnalyzer)
 
 ---
 
 ## May 2026
+
+### 2026.05.06 - Session 84 | Day's Work Summary at Session-End (Step 6)
+
+**Accomplishments**:
+
+- **Closed the user-stated gap** that session-end "trails off" without a closing artifact. Added new **Step 6: Day's Work Summary** to `workflow/session-end.md` between Step 5 (Backup Prompt) and Final Verification. Step 6 is now the LAST visible/audible artifact of every session per the user's intent.
+- **Reused lupin's existing analyzers, no new code**: the `BranchChangeAnalyzer` and `DirectoryAnalyzer` at `<lupin>/src/cosa/repo/` already produce LoC deltas with code/comment/docstring breakdown per language and emit JSON. Step 6 invokes them via `LUPIN_ROOT` env-var-gated `cd "$LUPIN_ROOT/src" && python -m cosa.repo.run_branch_analyzer ...` — same env-var-gated optional-tool pattern PIP already uses for `PLANNING_IS_PROMPTING_ROOT` in `backup-version-check.md` and `installation-wizard.md`.
+- **Graceful three-tier fallback chain** so the summary never blocks session-end:
+  1. **Rich path**: cosa Branch Analyzer with code/comment/docstring breakdown per language.
+  2. **Native fallback**: `git diff --shortstat $(git merge-base HEAD main)..HEAD` (line totals only) plus an upgrade-path note explaining how to enable the rich path via `LUPIN_ROOT`.
+  3. **Skip path**: orphan branches or empty branches emit a one-line "no diff data" note and continue to Final Verification.
+- **Real-world venv quirk caught at Tier-2 verification**: system Python lacks `PyYAML`, but the cosa-internal venv at `$LUPIN_ROOT/src/cosa/.venv/bin/python` has it (yaml 6.0.2). Updated §6.2 and §6.5 with a `$PYBIN` discovery shim — prefer cosa venv, fall back to lupin top-level venv, then system `python3`. If even that raises `ModuleNotFoundError`, treat as §6.2 failure and degrade to native git.
+- **TTS Brevity Mandate compliance baked in**: spoken `notify(message=...)` is a 1-sentence conversational headline ("Day's wrap: plus one-eighty-nine lines net across seven files, mostly Python") with explicit anti-pattern example showing the verbose format that's prohibited. Full markdown table goes to `abstract`. Headline-not-inventory and tiered-length-cap rules from Sessions 81/82 carry through.
+- **Slash-command flags**: `/plan-session-end` now accepts `--summary`/`--no-summary` and `--baseline`/`--no-baseline` (defaults: both ON). Power users get a fast wrap-up path; default behavior matches user's "very last thing" intent.
+- **Tier-1 grep verification**: all six greps returned matches (Step 6 header, LUPIN_ROOT references, BranchChangeAnalyzer/run_branch_analyzer references, slash-command flag parsing, INSTALLATION-GUIDE prerequisite section).
+- **Tier-2 live invocation against PIP itself**: ran the rich path against this branch (47 files, +4322/-2212 markdown lines since `main`). JSON output validates the documented shape: `overall.{total_added,total_removed,net_change,files_changed}` populated, `by_file_type[]` shows pure-markdown breakdown, `language_details` empty (analyzer only does code/comment/docstring split for python/javascript/typescript). PIP's markdown-heavy nature renders correctly in the table — `Code: 100%, Comment: —, Docstring: —` is the expected and informative result.
+
+**Files Changed**: `workflow/session-end.md` (~250 line addition for Step 6), `.claude/commands/plan-session-end.md` (new rule #4 + flag-set in Usage), `workflow/INSTALLATION-GUIDE.md` (new "Day's Work Summary Prerequisite" subsection + bullet in Session-End feature list), `README.md` (link to plan in Plan File Management section), `src/rnd/2026.05.06-day-of-work-summary-at-session-end.md` (serialized plan, 241 lines), `history.md`, `TODO.md`
+
+**Plan**: `~/.claude/plans/proud-watching-hanrahan.md` (approved via ExitPlanMode 2026-05-06), serialized to `src/rnd/2026.05.06-day-of-work-summary-at-session-end.md` per plan-serialization mandate. Plan file documents the full design including failure modes, design forks, and verification tiers.
+
+**Out of Scope (deferred)**: per-day rollup across multiple branches, persisting day's stats to a `.session-stats.md` log for velocity graphs, history.md auto-injection of the summary table, richer non-cosa fallback (per-language counts via `git diff --numstat` + extension classification). All YAGNI for the immediate ask; documented in the plan's "Out of scope" section.
+
+**Key insight**: The codebase-analysis SKILL.md at `~/.claude/skills/codebase-analysis/SKILL.md` says to run the analyzers with `python -m cosa.repo.run_branch_analyzer` but doesn't document the PyYAML dependency or the cosa venv. The Tier-2 verification surfaced this gap immediately — a manual one-liner that would have failed silently if Step 6 had shipped without live testing. Filed as a TODO follow-up to update the SKILL.md with the venv-selection guidance so other PIP-using projects don't hit the same `yaml` ModuleNotFoundError.
+
+#### Earlier Today | 2026.05.06 14:50 | Plan Review Sequential Execution Mandate (Session 83 wrap)
+
+Session 83 commit `79791b2` already documented above; that work is the predecessor to today's Session 84 feature.
+
+---
 
 ### 2026.05.06 - Session 83 | Plan Review Sequential Execution Mandate
 

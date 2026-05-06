@@ -1090,6 +1090,218 @@ If timeout occurs, default to Skip:
 - Continue to Final Verification
 
 
+## 6) Day's Work Summary
+
+**Purpose**: Close every session with a tangible artifact of the day's work — a LoC-delta table broken down by language and by code/comment/docstring, optionally compared against the repo's overall composition. This is **the last thing the user sees, hears, or finds in the notification card** before Final Verification.
+
+**When**: After Step 5 (Backup Prompt) regardless of whether a commit was made. Even on cancelled-commit sessions, the day's work on the working tree is worth summarizing.
+
+**Skip condition**: User passed `--no-summary` to the slash-command wrapper. Skip Step 6 entirely; proceed to Final Verification.
+
+---
+
+### 6.1) Resolve the Diff Scope
+
+**Default scope**: branch-since-`main` — the LoC delta from the merge-base of the current branch with `main` to `HEAD`. This matches the typical "what did I do on this branch" mental model and naturally captures multi-day, multi-session work.
+
+**Why not "calendar day"**: sessions cross midnight; a fixed calendar boundary cuts work in half.
+
+**Why not "session-only"**: granular but misses cross-session work; the summary is meant to aggregate the day's effort, not just one session's commits.
+
+**Pre-flight checks**:
+
+```bash
+# Confirm there's a main branch to diff against
+git rev-parse --verify main >/dev/null 2>&1 || { echo "no-main-branch"; }
+
+# Confirm there are commits on this branch since main
+git rev-list --count $(git merge-base HEAD main)..HEAD
+```
+
+If `git rev-parse --verify main` fails (orphan branch, fresh repo): skip Step 6 with the line *"Day's Work Summary: skipped — no `main` branch to diff against."*
+
+If commit count is `0`: skip Step 6 with the line *"Day's Work Summary: nothing to summarize — no commits on this branch since branching from main."*
+
+---
+
+### 6.2) Try the Lupin Branch Analyzer (Preferred Path)
+
+**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The analyzer scripts live at `$LUPIN_ROOT/src/cosa/repo/run_branch_analyzer.py` and `run_directory_analyzer.py`. They produce code/comment/docstring breakdown per language — this is the rich path.
+
+**Invocation**:
+
+```bash
+# Verify LUPIN_ROOT and the analyzer module
+[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_branch_analyzer.py" ] || skip_to_fallback
+
+# Pick the Python interpreter. The analyzer requires PyYAML, which the system
+# Python typically lacks. Prefer the cosa venv (verified to have yaml installed),
+# fall back to lupin's top-level venv, then the system python as last resort.
+PYBIN="$LUPIN_ROOT/src/cosa/.venv/bin/python"
+[ -x "$PYBIN" ] || PYBIN="$LUPIN_ROOT/.venv/bin/python"
+[ -x "$PYBIN" ] || PYBIN="python3"
+
+# Run from lupin's src/ so cosa is on PYTHONPATH
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_branch_analyzer \
+    --repo-path /absolute/path/to/current/project \
+    --base main \
+    --head HEAD \
+    --output json
+```
+
+**If the chosen interpreter raises `ModuleNotFoundError: No module named 'yaml'`**: treat as §6.2 failure and fall through to §6.3.
+
+The analyzer emits this JSON shape (verified in `<lupin>/src/cosa/repo/branch_analyzer/statistics_collector.py`):
+
+```json
+{
+  "base_branch": "main",
+  "head_branch": "wip-v0.1.3-...",
+  "repository": "/abs/path",
+  "statistics": {
+    "overall": {
+      "total_added": 342,
+      "total_removed": 89,
+      "net_change": 253,
+      "files_changed": 12
+    },
+    "by_file_type": [
+      { "file_type": "python", "added": 234, "removed": 45, "net": 189, "total": 279 }
+    ],
+    "language_details": {
+      "python": {
+        "code": 198, "comment": 36, "docstring": 0, "removed": 45,
+        "total_added": 234, "net": 189,
+        "percentages": { "code": 84.6, "comment": 15.4, "docstring": 0.0 }
+      }
+    }
+  }
+}
+```
+
+Parse and render per §6.4. If invocation fails (non-zero exit, JSON parse error, missing modules), fall back to §6.3.
+
+---
+
+### 6.3) Fallback: Native `git diff --shortstat`
+
+**When**: `LUPIN_ROOT` unset, analyzer modules missing, or §6.2 invocation fails.
+
+**Invocation**:
+
+```bash
+merge_base=$(git merge-base HEAD main)
+git diff --shortstat "$merge_base"..HEAD
+git diff --numstat  "$merge_base"..HEAD  # for per-file breakdown
+```
+
+This gives line totals and per-file counts but **no code/comment/docstring split**. Render a degraded summary per §6.4 and append the upgrade-path line:
+
+> *Upgrade: set `LUPIN_ROOT` to enable code/comment/docstring breakdown. See `~/.claude/skills/codebase-analysis/SKILL.md`.*
+
+---
+
+### 6.4) Render the Summary
+
+**Terminal output** (always, both paths):
+
+```markdown
+══════════════════════════════════════════════════════════
+Day's Work Summary
+══════════════════════════════════════════════════════════
+
+Branch: wip-v0.1.3-...  →  main
+Files changed: 7  |  Net: +189 lines
+
+| Language     | Added | Removed | Net  | Code | Comment | Docstring |
+|--------------|-------|---------|------|------|---------|-----------|
+| Python       | 234   | 45      | +189 | 84.6%| 15.4%   | 0.0%      |
+| Markdown     | 18    | 0       | +18  | 100% | —       | —         |
+```
+
+If the **Repo Baseline** section is enabled (default ON; see §6.5), append:
+
+```markdown
+### Repo Baseline (current composition)
+
+| Language     | Total LoC | Code | Comment | Docstring |
+|--------------|-----------|------|---------|-----------|
+| Python       | 12,403    | 78%  | 12%     | 10%       |
+| Markdown     | 4,221     | 100% | —       | —         |
+
+Today's contribution: +189 LoC against a 16,624-LoC base (≈1.1%)
+```
+
+**Notification** (always, both paths) — fire `notify()` with the headline in `message` (TTS-Brevity-Mandate-compliant) and the full table in `abstract`:
+
+```python
+notify(
+    message           = "Day's wrap: plus one-eighty-nine lines net across seven files, mostly Python.",
+    abstract          = "<full markdown table from above, including baseline if present>",
+    notification_type = "task",
+    priority          = "medium",
+    suppress_ding     = True
+)
+```
+
+**Spoken-headline mandate**: 1 sentence, conversational, **verdicts not inventory**. No file paths, percentages, or hash literals in the spoken line. Per `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+Examples of compliant spoken headlines:
+- *"Day's wrap: plus eighty-nine lines net, mostly markdown updates."*
+- *"Closing summary: light day — twelve lines added across two files."*
+- *"Day's work: net plus one-eighty-nine, Python-heavy with a markdown chaser."*
+
+Anti-pattern (DO NOT do this):
+- *"Day's wrap: plus 234 minus 45 in Python at 84.6 percent code 15.4 percent comment 0 percent docstring, plus 18 minus 0 in markdown at 100 percent code..."*
+
+---
+
+### 6.5) Repo Baseline (Optional)
+
+**Default**: ON. User can disable via `--no-baseline` slash-command flag.
+
+**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
+
+**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view):
+
+```bash
+# Reuse the same $PYBIN selection from §6.2
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_directory_analyzer \
+    --path /absolute/path/to/current/project \
+    --output json
+```
+
+Parse the same `statistics` shape from `<lupin>/src/cosa/repo/directory_analyzer/statistics_collector.py`. Compute `today_pct = overall.net_change / sum(language_details.*.code)` for the "≈1.1%" line.
+
+---
+
+### 6.6) Failure Handling
+
+| Failure | Behavior |
+|---------|----------|
+| `LUPIN_ROOT` unset | Fall through to §6.3 native fallback. |
+| `LUPIN_ROOT` set but analyzer scripts missing | Same as unset. |
+| §6.2 cosa invocation exits non-zero | Log stderr to terminal (not abstract); fall through to §6.3. |
+| §6.2 JSON parse error | Same. |
+| `git merge-base HEAD main` fails | Skip Step 6 with "no main branch" line. |
+| No commits since merge-base | Skip Step 6 with "nothing to summarize" line. |
+| `notify()` call fails | Terminal output still rendered; notification failure is non-fatal. |
+
+In all skip/fallback paths, **continue to Final Verification**. Step 6 is informational; it must never block session-end.
+
+---
+
+### 6.7) Cross-References
+
+- **Codebase-analysis skill**: `~/.claude/skills/codebase-analysis/SKILL.md` (canonical reference for analyzer CLI usage)
+- **Brevity mandate for spoken headline**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate"
+- **Env-var-gated invocation precedent**: `workflow/backup-version-check.md` (same `if env-var set, run; else degrade` pattern)
+- **Markdown table convention**: `workflow/branch-pr-and-merge.md` (file-type breakdown table format)
+
+---
+
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
