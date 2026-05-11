@@ -35,7 +35,7 @@ This wrap-up ritual has 5–7 user-decision gates (commit message approval, push
 - **Brevity mandate**: spoken commit-message preview is the **1-line subject only**; full body stays in the terminal and the `abstract` parameter. Spoken end-of-session summary is conversational ("we wrapped up the wizard wiring and committed cleanly"), NOT a file-by-file enumeration.
 - Use the `abstract` parameter aggressively to keep the file-changed list, diff stats, and commit body terminal-side while voice carries only the gist.
 - Receipt-acknowledge each user prompt before further tool work (1 sentence: "Wrapping up — running the test suite first.").
-- Per-gate response parsing: `ask_yes_no()` may return `"yes [comment: ...]"` — use `response.startswith("yes")` not equality (voice input often includes qualifications).
+- Per-gate response parsing: `ask_yes_no()` is **ternary** — returns `yes`/`no`/`neither` (each optionally suffixed with `[comment: ...]`). Use `response.startswith("yes" / "no" / "neither")` not equality. On `neither`, re-frame the gate question rather than treat as soft-no — see `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **Brevity mandate (universal)**: spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, section labels; cap at ~30 seconds of speech for routine work.
 
@@ -49,7 +49,7 @@ This wrap-up ritual has 5–7 user-decision gates (commit message approval, push
 
 **MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 - `notify()`: Fire-and-forget (progress updates, completions)
-- `ask_yes_no()`: Binary yes/no decisions (response may include `[comment: ...]` qualifier - use `startswith("yes")` not `== "yes"`)
+- `ask_yes_no()`: Ternary yes/no/neither decisions (response may include `[comment: ...]` qualifier on any value - use `startswith("yes" / "no" / "neither")`; on `neither`, re-frame rather than infer)
 - `ask_multiple_choice()`: Menu selections (commit approval, archive decision)
 - `ask_open_ended_batch()`: Batch open-ended questions (single screen, blocking)
 - `converse()`: Open-ended questions
@@ -292,12 +292,14 @@ Health: ✅ HEALTHY
    )
    ```
 
-   - **If YES** (response starts with "yes", may include `[comment: ...]`): Execute bug fix mode closure:
+   - **If YES** (`response.startswith("yes")`, may include `[comment: ...]`): Execute bug fix mode closure:
      1. Finalize history.md session entry with summary
      2. Archive completed bugs in queue (or clear queue)
      3. Send notification: `notify( "Bug fix session closed", notification_type="progress", priority="low" )`
 
-   - **If NO**: Skip closure, leave bug fix mode open for next session
+   - **If NO** (`response.startswith("no")`): Skip closure, leave bug fix mode open for next session
+
+   - **If NEITHER** (`response.startswith("neither")`): The closure question itself was ambiguous (e.g., user wants to close *some* bugs but not the session, or vice versa). Read the `[comment: ...]` qualifier, re-frame with a more specific question (e.g., `ask_multiple_choice()` offering "close session + archive all", "close session + leave queue", "archive completed only + leave session open"). Do NOT default to skip or close. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
    d. **If DIFFERENT session** (another session owns bug fix mode):
 
@@ -1048,7 +1050,7 @@ Tip: Dry-run first to preview, then execute."""
    )
    ```
 
-4. **If yes** (response starts with "yes", may include `[comment: ...]`) → execute actual backup:
+4. **If yes** (`response.startswith("yes")`, may include `[comment: ...]`) → execute actual backup:
    ```bash
    ./src/scripts/backup.sh --write
    ```
@@ -1057,10 +1059,12 @@ Tip: Dry-run first to preview, then execute."""
    notify( "Backup complete", notification_type="task", priority="low" )
    ```
 
-5. **If no** (response starts with "no") → notify and continue:
+5. **If no** (`response.startswith("no")`) → notify and continue:
    ```python
    notify( "Backup skipped after dry-run review", notification_type="progress", priority="low" )
    ```
+
+6. **If neither** (`response.startswith("neither")`) → the backup question was ambiguous. Read the `[comment: ...]` qualifier (typical re-frames: "which backup target?", "with or without LanceDB?", "what about the secrets dir?") and re-prompt with a narrower question (often `ask_multiple_choice()` over backup variants). Do NOT default to skip or execute. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If user selects "Run backup"**:
 

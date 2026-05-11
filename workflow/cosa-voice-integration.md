@@ -196,7 +196,7 @@ NOTIFICATION VERIFICATION:
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
 | `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract, suppress_ding |
-| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract, job_id |
+| `ask_yes_no()` | Ternary yes/no/neither decision (Neither = re-frame escape) | Yes | question, default, timeout_seconds, abstract, job_id |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | questions (with optional default_value), timeout_seconds, priority, title, abstract |
@@ -291,14 +291,14 @@ Use blocking tools when you need user input before proceeding. All blocking tool
 
 ### ask_yes_no()
 
-For simple binary yes/no decisions. Users can optionally attach a qualifying comment to their answer.
+For ternary yes/no/neither decisions. The third value, **Neither**, is a re-frame escape hatch: the user is signaling the question itself needs to be re-asked. Users can optionally attach a qualifying comment to any of the three answers.
 
 **Parameters**:
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `question` | string | Yes | The yes/no question to ask |
-| `default` | string | No | Default on timeout: `yes` or `no` (default: `no`) |
+| `default` | string | No | Default on timeout: `yes` or `no` only (default: `no`). **Neither is never a default** — it requires an explicit user click and cannot arrive via timeout |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
 | `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
@@ -306,44 +306,52 @@ For simple binary yes/no decisions. Users can optionally attach a qualifying com
 
 #### Response Format
 
-The response string can be one of four variants:
+The response string can be one of six variants:
 
 | Response | Meaning |
 |----------|---------|
 | `"yes"` | Plain approval |
 | `"no"` | Plain rejection |
+| `"neither"` | Re-frame signal — question needs to be re-asked more clearly |
 | `"yes [comment: ...]"` | Approval with qualifying comment |
 | `"no [comment: ...]"` | Rejection with qualifying comment |
+| `"neither [comment: ...]"` | Re-frame signal with explanation of what was ambiguous |
 
-**When checking responses**, use `startswith()` to handle both plain and commented variants:
+**When checking responses**, use `startswith()` to handle plain and commented variants of all three values. See `#### Handling Neither` below for the canonical ternary parser pattern.
 
 ```python
 response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
 
-# ✅ CORRECT - handles both plain and commented responses
+# ✅ CORRECT - ternary parser, handles all three values + commented variants
 if response.startswith( "yes" ):
     proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
+elif response.startswith( "neither" ):
+    # Re-frame — see #### Handling Neither for the full pattern
+    handle_neither( response )
 
-# ❌ WRONG - misses "yes [comment: only the docs]"
+# ❌ WRONG - misses neither entirely and misses "yes [comment: only the docs]"
 if response == "yes":
     proceed_with_commit()
 ```
 
 #### Qualified Comments
 
-Users can attach a qualifying comment to their yes/no answer by pressing **C** to expand a comment input field. Comments provide additional context without changing the binary decision.
+Users can attach a qualifying comment to any of the three answers (yes / no / neither) by pressing **C** to expand a comment input field. Comments provide additional context without changing the ternary decision.
 
 **How it works**:
-- User presses **Y** or **N** for plain yes/no (immediate response)
+- User presses **Y**, **N**, or the Neither button for plain ternary response (immediate)
 - User presses **C** to expand comment field (300 char max)
 - Comment field accepts voice input (mic button) or text input
-- Input guard prevents Y/N keys from triggering while typing in the comment field
-- After entering comment, user presses **Y** or **N** to submit with the comment attached
+- Input guard prevents Y/N/Neither keys from triggering while typing in the comment field
+- After entering comment, user submits with Y, N, or Neither — the comment attaches to whichever value is chosen
 
 **Example responses**:
 - `"yes"` - plain approval
 - `"yes [comment: only the March ones]"` - approval with context
 - `"no [comment: let me review the diff first]"` - rejection with explanation
+- `"neither [comment: which 'old backups' — March or April?]"` - re-frame request with the specific ambiguity
 
 **Example**:
 
@@ -365,7 +373,62 @@ if response.startswith( "yes" ):
     proceed_with_commit()
 elif response.startswith( "no" ):
     skip_commit()
+elif response.startswith( "neither" ):
+    # See #### Handling Neither below for the canonical re-frame pattern
+    handle_neither( response )
 ```
+
+#### Handling Neither — the Re-Frame Escape Hatch
+
+**Neither is NOT a soft no.** When the response starts with `neither`, the user is signaling that **the question itself needs re-framing** — they couldn't honestly answer yes OR no without misrepresenting their intent. Treating Neither as a silent skip, a deferred-yes, or a soft-no is the failure mode this escape hatch exists to prevent.
+
+**The canonical ternary parser pattern**:
+
+```python
+response = ask_yes_no(
+    question="Commit these 5 files to the repository?",
+    default="no",
+    timeout_seconds=300,
+    priority="high"  # MANDATORY for blocking tools
+)
+
+if response.startswith( "yes" ):
+    proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
+elif response.startswith( "neither" ):
+    # Extract the qualifying comment if present — it tells you what was ambiguous.
+    comment = ""
+    if "[comment:" in response:
+        comment = response.split( "[comment: " )[1].rstrip( "]" )
+    # Re-frame using the comment as the signal. Do NOT default to "no" and continue silently.
+    notify(
+        message  = f"Re-framing — your concern: {comment}" if comment else "Re-framing the question",
+        priority = "high"
+    )
+    # Then issue a more specific ask_yes_no() or ask_multiple_choice() — narrower, not the same question.
+```
+
+**Anti-patterns** (PROHIBITED):
+
+| Anti-pattern | Why it's wrong |
+|--------------|----------------|
+| Treat `neither` as `no` and silently skip the gate | The user explicitly said the question was ambiguous; skipping resolves nothing |
+| Treat `neither` as `yes` to keep momentum | Same failure mode in the other direction; potentially destructive |
+| Ignore the `[comment: ...]` qualifier on Neither | The comment is the user's signal for what to ask instead — read it |
+| Re-ask the *same* question after Neither | The question already failed once; ask something narrower |
+| Use `default="neither"` | Neither is never a default — the MCP contract rejects it |
+
+**When to expect Neither**:
+- The gate question conflates two decisions (e.g., "commit AND push?" — user wants to commit but not push)
+- The gate question's scope is unclear (e.g., "delete the old backups?" — which old ones?)
+- The user has new information that makes the question stale (something changed since the gate was framed)
+
+**Critical contexts (CRITICAL)**:
+
+For **destructive operations** (push, merge, tag, branch cleanup, file deletion, config rewrite), Neither MUST NOT proceed. Re-frame and re-prompt. The `default` parameter offers no fallback here because Neither requires an explicit user click — it cannot arrive via timeout. Treat Neither on a destructive op the same way you would treat a hard "no, but with reservations": **do not act, ask again with a narrower question.**
+
+**Reference for callsite docs**: Every `ask_yes_no()` callsite in PIP workflows should either inline the ternary parser above or cross-reference this section. See `workflow/session-end.md`, `workflow/branch-pr-and-merge.md`, `workflow/bug-fix-mode.md`, etc.
 
 ### converse()
 

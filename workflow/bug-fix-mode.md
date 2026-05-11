@@ -786,9 +786,11 @@ ask_yes_no(
 )
 ```
 
-**If yes** (response starts with "yes", may include `[comment: ...]`): User clears context manually, will use `/plan-bug-fix-mode continue`.
+**If yes** (`response.startswith("yes")`, may include `[comment: ...]`): User clears context manually, will use `/plan-bug-fix-mode continue`.
 
-**If no** (response starts with "no"): Loop back to Step 4 (bug selection) in same context.
+**If no** (`response.startswith("no")`): Loop back to Step 4 (bug selection) in same context.
+
+**If neither** (`response.startswith("neither")`): Re-frame — typical concerns: "I want to clear but pick a specific next bug", "keep context but pause for a break", "clear and switch to a different repo". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual options. Do NOT default to either branch. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TodoWrite Update**: Mark cycle complete.
 
@@ -1124,8 +1126,9 @@ ask_yes_no(
     abstract="**Warning**: Session manifest not found.\n\nThis could mean:\n- Bug fix mode wasn't properly initialized\n- Manifest was deleted\n\nContinuing will stage ALL modified files (risky if parallel sessions exist)."
 )
 ```
-If no (starts with "no"): Return to fix work, reinitialize manifest.
-If yes (starts with "yes", may include `[comment: ...]`): Use git status for file list (fallback mode).
+If no (`response.startswith("no")`): Return to fix work, reinitialize manifest.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Use git status for file list (fallback mode).
+If neither (`response.startswith("neither")`): Read the `[comment: ...]` qualifier — typically "I want to stage some files but not all of git status". Re-prompt with `ask_multiple_choice()` over (a) fallback to git status, (b) exit and reinitialize manifest properly, (c) commit only this session's known-touched files. **CRITICAL**: bug-fix commits should be atomic per-bug; do NOT silently default to staging everything. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If manifest section has no files**:
 ```python
@@ -1136,8 +1139,9 @@ ask_yes_no(
     abstract="**Warning**: Manifest section has no files.\n\nThis could mean:\n- You haven't made any changes yet\n- Files were edited before manifest was initialized\n\nContinuing will create an empty commit (history.md + queue only)."
 )
 ```
-If no (starts with "no"): Return to fix work.
-If yes (starts with "yes", may include `[comment: ...]`): Continue with documentation-only commit.
+If no (`response.startswith("no")`): Return to fix work.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Continue with documentation-only commit.
+If neither (`response.startswith("neither")`): The user wants an option beyond yes/no — typically "let me audit git status first" or "abort and restart bug fix mode". Read the `[comment: ...]` qualifier and re-prompt accordingly. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If current bug is ambiguous** (multiple bugs in queue):
 ```python
@@ -1672,8 +1676,9 @@ ask_yes_no(
 )
 ```
 
-If yes (starts with "yes", may include `[comment: ...]`): Execute session closure (Steps 15-17) - only affects YOUR session.
-If no (starts with "no"): Skip, leave your bug fix session open.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Execute session closure (Steps 15-17) - only affects YOUR session.
+If no (`response.startswith("no")`): Skip, leave your bug fix session open.
+If neither (`response.startswith("neither")`): The closure question is ambiguous — typical re-frames: "close session but keep queue open for other sessions", "archive my completed bugs but stay active", "wait — let me finish the in-progress one first". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual closure variants. **CRITICAL**: do NOT silently close — parallel sessions depend on the Active Sessions table state. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If YOUR session is NOT in Active Sessions table:**
 

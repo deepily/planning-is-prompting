@@ -37,7 +37,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | Tool | Purpose | Blocking |
 |------|---------|----------|
 | `notify()` | Fire-and-forget announcement | No |
-| `ask_yes_no()` | Binary yes/no decision | Yes |
+| `ask_yes_no()` | Yes/no/neither decision (Neither = re-frame escape) | Yes |
 | `converse()` | Open-ended question | Yes |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes |
@@ -50,7 +50,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 
 ### When to Send Notifications
 
-- **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`
+- **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`. `ask_yes_no()` returns `yes`/`no`/`neither` — on `neither` the user is signaling the question itself needs re-framing; re-ask with a narrower question, do NOT silently treat as soft-no
 - **Blocked/waiting**: Use `converse()` for open-ended questions
 - **Multiple related questions**: Use `ask_open_ended_batch()` for gathering 2+ answers at once
 - **Errors encountered**: Use `notify()` with `priority="urgent"`

@@ -506,6 +506,8 @@ Proceed with deletion of these 5 files? [y/n]
 ask_yes_no( "Proceed with deletion of selected workflows?", default="no", timeout_seconds=300 )
 ```
 
+**Response handling** (ternary): `yes` → proceed to Step 5 (deletion); `no` → abort. **`neither` → CRITICAL: do NOT delete.** Workflow file deletion is destructive. Typical re-frames: "delete some workflows but not all of the selection", "back up first", "rename to `.bak` instead of deleting". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over (a) per-file selection, (b) move to `.bak`, (c) cancel. **The `default="no"` offers no fallback** — Neither requires an explicit user click. See `workflow/cosa-voice-integration.md` → "Handling Neither".
+
 ---
 
 ### Step 5: Delete Slash Command Files

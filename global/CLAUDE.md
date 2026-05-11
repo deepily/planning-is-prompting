@@ -319,7 +319,7 @@ PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')
 | Tool | Purpose | Blocking | Example |
 |------|---------|----------|---------|
 | `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
-| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
+| `ask_yes_no()` | Yes/No/Neither decision (Neither = "the question needs re-framing") | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
 | `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
@@ -392,7 +392,7 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 
 | Scenario | Use This | NOT This |
 |----------|----------|----------|
-| Binary yes/no decision | `ask_yes_no()` | `AskUserQuestion` with 2 options |
+| Yes/no decision (with Neither re-frame escape) | `ask_yes_no()` | `AskUserQuestion` with 2 options |
 | Multiple choice (2-4 options) | `ask_multiple_choice()` | `AskUserQuestion` |
 | Open-ended clarification | `converse()` | `AskUserQuestion` with "Other" |
 | Multiple open-ended questions | `ask_open_ended_batch()` | Multiple `AskUserQuestion` calls |
@@ -435,7 +435,7 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 | Before significant code changes | `ask_yes_no()` | **MUST** get approval |
 | Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
 | Unclear requirements | `converse()` | **MUST** clarify - never assume |
-| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
+| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion. **CRITICAL**: on `neither`, do NOT proceed — re-frame and re-ask. See workflow/cosa-voice-integration.md → "Handling Neither" |
 
 **PROHIBITED Anti-Patterns** - **NEVER** do the following:
 1. **NEVER** complete a multi-step task without progress notifications

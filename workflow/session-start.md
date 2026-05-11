@@ -89,7 +89,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Available Tools**:
 - `notify()` - Fire-and-forget announcements (progress updates)
-- `ask_yes_no()` - Binary yes/no decisions
+- `ask_yes_no()` - Ternary yes/no/neither decisions (Neither = "the question needs re-framing"; see `workflow/cosa-voice-integration.md` → "Handling Neither")
 - `converse()` - Open-ended questions
 - `ask_multiple_choice()` - Menu selections (blocking, mirrors AskUserQuestion)
 - `ask_open_ended_batch()` - Batch open-ended questions (single screen, blocking)

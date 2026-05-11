@@ -575,6 +575,8 @@ ask_yes_no(
 )
 ```
 
+**Response handling** (ternary): `yes` → run integration tests; `no` → continue to PR creation without integration tests; `neither` → re-frame (typical: "which integration suite — db-only, full stack, smoke-integration?"). Re-prompt with `ask_multiple_choice()` over the available suites. Do NOT default to skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
+
 **TaskUpdate**: Mark Step 1.5 complete.
 
 **Verification**:
@@ -861,8 +863,9 @@ ask_yes_no(
 )
 ```
 
-- **If YES** (response starts with "yes", may include `[comment: ...]`): Continue to Step 7
-- **If NO** (response starts with "no"): Re-prompt or offer to cancel
+- **If YES** (`response.startswith("yes")`, may include `[comment: ...]`): Continue to Step 7
+- **If NO** (`response.startswith("no")`): Re-prompt or offer to cancel
+- **If NEITHER** (`response.startswith("neither")`): **CRITICAL — do NOT proceed to Step 7.** Merge-confirmation is a load-bearing gate. Typical re-frames: "merged with squash vs merge commit?", "merged into main vs another branch?", "still waiting on CI". Read the `[comment: ...]` qualifier, re-prompt with the narrower question, and only continue once a definite yes is received. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TaskUpdate**: Mark Step 6 complete.
 
@@ -932,7 +935,7 @@ ask_yes_no(
 )
 ```
 
-### If Yes (response starts with "yes", may include `[comment: ...]`)
+### If Yes (`response.startswith("yes")`, may include `[comment: ...]`)
 
 1. **Delete local branch**:
    ```bash
@@ -943,6 +946,10 @@ ask_yes_no(
    ```bash
    git push origin --delete [branch-name]
    ```
+
+### If Neither (`response.startswith("neither")`)
+
+**CRITICAL — do NOT delete.** Branch deletion is destructive (remote deletion especially). Typical re-frames: "delete local but keep remote", "delete remote but keep local for reference", "wait until I confirm CI ran on the merged main". Read the `[comment: ...]` qualifier, then re-prompt — usually `ask_multiple_choice()` over "delete both", "delete local only", "delete remote only", "keep both". Default ("no") is meaningless here: Neither requires an explicit user click. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ### Error Handling
 
@@ -998,12 +1005,16 @@ ask_yes_no(
 )
 ```
 
-### If Yes (response starts with "yes", may include `[comment: ...]`)
+### If Yes (`response.startswith("yes")`, may include `[comment: ...]`)
 
 ```bash
 git tag [version]
 git push origin [version]
 ```
+
+### If Neither (`response.startswith("neither")`)
+
+**CRITICAL — do NOT tag.** Tagging is irreversible on remote (`git push origin --delete tag <name>` works but git tag hygiene is fragile). Typical re-frames: "the extracted version is wrong", "this is a pre-release/RC", "tag locally but don't push", "use a different versioning scheme". Read the `[comment: ...]` qualifier, then re-prompt — usually `converse()` asking the user to type the exact tag string, or `ask_multiple_choice()` over the variant types. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ### Display
 

@@ -35,7 +35,7 @@
    - `--skip-with-reason "<reason>"` — Pattern 3 escape hatch; logs reason to `00-index.md` "Open follow-ups" and exits without running the gate
 
 4. **Auto-discovery**:
-   - If `--doc-set` not given: list `src/rnd/*/00-index.md`, pick most recent, confirm with user via `ask_yes_no()` before proceeding
+   - If `--doc-set` not given: list `src/rnd/*/00-index.md`, pick most recent, confirm with user via `ask_yes_no()` before proceeding. **On `neither`**: re-prompt with `ask_multiple_choice()` listing the available doc-sets so the user can pick explicitly. See `workflow/cosa-voice-integration.md` → "Handling Neither".
    - Auto-detect `{{PLAN_DOC_PATHS}}` by enumerating files in target dir matching `[0-9][0-9]-*.md` and `9[0-9]-*.md`
    - Auto-detect `{{ANCHOR_FILES}}`: always include `~/.claude/CLAUDE.md` (Layer 1); include `<doc-set>/00-working-contract.md` if present (Layer 2)
    - Auto-detect `{{DESIGN_ANCHOR_FILE}}`: prefer `<doc-set>/01-design-review.md` then `<doc-set>/03-decisions.md` then prompt user
@@ -43,7 +43,7 @@
 
 5. **MUST honor the gates**:
    - Gate 1 (after Pass 1 Fitness) and Gate 2 (after Pass 2 Adversarial) are non-negotiable. Deliver findings, wait for user confirmation, NEVER apply fixes pre-emptively.
-   - When findings are returned, use `ask_yes_no()` or `ask_multiple_choice()` to get the user's decision on which to apply, never assume.
+   - When findings are returned, use `ask_yes_no()` or `ask_multiple_choice()` to get the user's decision on which to apply, never assume. On `ask_yes_no()` returning `neither` at a gate, re-frame the gate question — do NOT silently skip the gate or apply fixes anyway. See `workflow/cosa-voice-integration.md` → "Handling Neither".
    - After fixes: re-run the same greps against the pre-fix baseline; confirm convergence per §7 of the canonical workflow.
 
 6. **MUST run the three passes strictly sequentially — NEVER in parallel**:

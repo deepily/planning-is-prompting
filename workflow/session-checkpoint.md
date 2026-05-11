@@ -132,8 +132,9 @@ ask_yes_no(
     abstract="**Warning**: Without session tracking, ALL modified files from git status will be staged.\n\nThis may include files from parallel sessions.\n\nRecommendation: Run /plan-session-start first to initialize tracking."
 )
 ```
-If no (starts with "no"): Exit with instructions to run session-start.
-If yes (starts with "yes", may include `[comment: ...]`): Use git status for file list (fallback mode).
+If no (`response.startswith("no")`): Exit with instructions to run session-start.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Use git status for file list (fallback mode).
+If neither (`response.startswith("neither")`): The user is signaling the fallback question itself is unclear (e.g., wants to stage some files but not all). Read the `[comment: ...]` qualifier and re-prompt with a narrower question — typically `ask_multiple_choice()` offering "stage all", "stage manifest-tracked only (if any exist)", or "let me select interactively". See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If no files tracked** (empty manifest section):
 ```python
@@ -144,8 +145,9 @@ ask_yes_no(
     abstract="**Note**: Your session has no tracked file modifications.\n\nCommit will include only:\n- history.md (checkpoint entry)\n- TODO.md (if modified)"
 )
 ```
-If no (starts with "no"): Exit, return to work.
-If yes (starts with "yes", may include `[comment: ...]`): Continue with documentation-only commit.
+If no (`response.startswith("no")`): Exit, return to work.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Continue with documentation-only commit.
+If neither (`response.startswith("neither")`): Re-frame — typical concern is "are there files I forgot to track?" Re-prompt with options to (a) audit git status before deciding, (b) commit docs-only now, (c) exit and run session-start to repopulate the manifest. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TaskUpdate**: Mark Step 1 complete.
 

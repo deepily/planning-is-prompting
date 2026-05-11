@@ -3485,6 +3485,8 @@ What would you like to do? [1/2]
 ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=300 )
 ```
 
+**Response handling** (ternary): `yes` → apply updates; `no` → skip; `neither` → re-frame (typical concerns: "apply some but not all of the diff", "show the diff in a different format", "wait — what does this overwrite?"). Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over per-file selection or a narrower diff view. Do NOT default to apply or skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
+
 ---
 
 #### Step 6: Apply Updates

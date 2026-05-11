@@ -1,13 +1,39 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 84
+**RESUME HERE**: Session 85
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 84 - Day's Work Summary at session-end (Step 6, reuses lupin BranchChangeAnalyzer)
+**Last Session**: Session 85 - Sync workflow language with `ask_yes_no()` Neither option (hub-and-spoke, 13 in-repo files + live global CLAUDE)
 
 ---
 
 ## May 2026
+
+### 2026.05.11 - Session 85 | `ask_yes_no()` Neither Response Language Sync
+
+**Accomplishments**:
+
+- **Closed a documentation-drift gap** opened when cosa-voice MCP `ask_yes_no()` gained a third "Neither" return value (re-frame escape hatch). PIP workflow docs and the live global `~/.claude/CLAUDE.md` still described the tool as **binary** with 4 response variants. This session swept the binary wording out across the repo + live global and replaced it with ternary language plus an explicit re-frame protocol.
+- **Hub-and-spoke pattern (same precedent as Session 81 TTS Brevity Mandate)**:
+  - **Tier 1 — canonical hub** `workflow/cosa-voice-integration.md`: new ~70-line `#### Handling Neither — the Re-Frame Escape Hatch` subsection between `#### Qualified Comments` and `### converse()`. Contains the canonical ternary parser pattern, an anti-pattern table (treat-as-no, treat-as-yes, ignore-qualifier, re-ask-same-question, use-default-neither), "When to expect Neither" guidance, and a **CRITICAL destructive-op rule** ("Neither MUST NOT proceed — re-frame and re-prompt; `default` offers no fallback because Neither requires an explicit user click and cannot arrive via timeout"). Response Format table expanded 4 → 6 rows (yes/no/neither × ±comment). Summary-table row at line 199 (`Binary yes/no decision` → `Ternary yes/no/neither decision`). Intro line at line 294 rewritten. Qualified Comments section updated to mention C-key works on all three values.
+  - **Tier 2 — global config sync pair**: live `~/.claude/CLAUDE.md` (outside repo) updated in two cells (routing table + destructive-ops table); `global/CLAUDE.md` repo mirror re-synced byte-identical via `diff -q`. Template `workflow/claude-config-global.md` updated in two places (tool-summary row + "Need approval" guidance paragraph). Same sync-pair precedent as Sessions 75/76/77/78/79/81/82.
+  - **Tier 3 — callsite spokes** (6 files, 14 callsites updated): `workflow/session-end.md` (2 callsites + 2 parser-hint lines at top), `workflow/session-checkpoint.md` (2 callsites — missing-manifest fallback + docs-only commit), `workflow/branch-pr-and-merge.md` (4 callsites — merge-confirmation, branch-cleanup, release-tagging, integration-tests; **destructive ops tagged CRITICAL inline**), `workflow/bug-fix-mode.md` (4 callsites — context-clear, no-manifest, empty-manifest, session-closure; atomic-commit safety preserved), `workflow/installation-wizard.md` (1 callsite), `workflow/uninstall-wizard.md` (1 callsite, **CRITICAL**).
+  - **Tier 4 — mention tweaks** (3 files): `workflow/session-start.md` line 92 description tweak (binary → ternary), `.claude/commands/plan-review.md` (2 mentions — doc-set picker + gate decisions), `.claude/commands/plan-skills-management.md` (deletion-confirmation **CRITICAL**).
+- **Verification (all 5 greps clean)**:
+  - A. Hub has `Handling Neither` subsection → 4 hits (1 header + 3 cross-refs).
+  - B. Hub Response Format table has 6 variants → 6 rows match.
+  - C. Stale "Binary yes/no" wording across workflow/ + global/ + CLAUDE.md → **0 hits** (zero — clean sweep).
+  - D. All 6 Tier-3 spokes reference Neither → 6/6 OK.
+  - E. `diff -q ~/.claude/CLAUDE.md global/CLAUDE.md` → clean (byte-identical).
+- **Plan serialized** to `src/rnd/2026.05.11-neither-response-language-sync.md` per plan-serialization mandate before any code/doc edits, per Documentation-First Protocol.
+
+**Files Changed**: `workflow/cosa-voice-integration.md` (hub surgery + Qualified Comments tweak), `global/CLAUDE.md` (2 cells), `workflow/claude-config-global.md` (template, 2 cells), `workflow/session-end.md` (2 callsites + 2 hints), `workflow/session-checkpoint.md` (2 callsites), `workflow/branch-pr-and-merge.md` (4 callsites + CRITICAL inline), `workflow/bug-fix-mode.md` (4 callsites), `workflow/installation-wizard.md` (1 callsite), `workflow/uninstall-wizard.md` (1 callsite + CRITICAL), `workflow/session-start.md` (1 line tweak), `.claude/commands/plan-review.md` (2 mentions), `.claude/commands/plan-skills-management.md` (1 mention + CRITICAL), `src/rnd/2026.05.11-neither-response-language-sync.md` (new plan), `history.md`, `TODO.md`. Plus `~/.claude/CLAUDE.md` (live, outside repo, 2 cells).
+
+**Plan**: `src/rnd/2026.05.11-neither-response-language-sync.md` (in-context plan, no `~/.claude/plans/` artifact since plan was drafted in conversation, not via plan mode).
+
+**Out of Scope (deferred to TODO follow-on)**: `~/.claude/skills/cosa-voice-notifications/SKILL.md` (Tier-5, outside repo — needs trigger-rich description update + progressive-disclosure body update with ternary parser + anchor example); `converse()` `response_type="yes_no"` parallel surface (separate decision, separate plan).
+
+**Key insight**: The Neither contract is **structurally identical** to the TTS Brevity Mandate spec from Session 81 — both involve a tool-level capability gain that needs a hub-and-spoke language sweep, both have destructive-op corner cases that justify CRITICAL callouts inline at the callsite (not just in the hub), and both follow the "live global + repo mirror byte-identical" sync pattern. The difference: TTS Brevity touched ~31 files; Neither touched ~14 because the spec is smaller (one tool, one new return value vs. a global mandate that affects every notify() call).
 
 ### 2026.05.06 - Session 84 | Day's Work Summary at Session-End (Step 6)
 
