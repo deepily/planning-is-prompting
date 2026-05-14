@@ -1,13 +1,49 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 85
+**RESUME HERE**: Session 86
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 85 - Sync workflow language with `ask_yes_no()` Neither option (hub-and-spoke, 13 in-repo files + live global CLAUDE)
+**Last Session**: Session 86 - Cross-Session Communication Doctrine + bug #2 stale notification-system.md refs
 
 ---
 
 ## May 2026
+
+### 2026.05.14 - Session 86 | Cross-Session Communication Doctrine
+
+#### Checkpoint | 2026.05.14 22:45 | Cross-session doctrine + bug #2 stale `notification-system.md` refs
+
+**Files**: workflow/cross-session-communication.md (NEW), workflow/claude-config-global.md, global/CLAUDE.md, workflow/cosa-voice-integration.md, README.md, src/rnd/2026.05.14-cross-session-communication-doctrine.md (NEW), CLAUDE.md, workflow/p-is-p-00-start-here.md (+ history.md, TODO.md)
+**Commit**: eb72575
+
+**Accomplishments**:
+
+- **Closed a doctrine gap** opened when Lupin shipped v0.1.7 Phase 1 (Claude↔Claude commons blackboard with 5 MCP tools — `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`) and Phase 2 (user→all-sessions broadcast with persona-aware `@PersonaName:` directives). User confirmed the broadcast feature works end-to-end after first pilot, but the global `~/.claude/CLAUDE.md` and every PIP-distributed workflow doc said nothing about either surface. Every Claude session had cross-session wiring with no behavioral doctrine. This session writes that doctrine.
+- **Plan-mode brainstorm in conversation, three decisions reached** (verbatim "That seems reasonable" from user × 3):
+  - **Q1 — Autonomy thresholds**: three-tier impact-based cut. Tier 1 (Read — `commons_who`, `commons_read`) always allowed. Tier 2 (Self-disclosure write — `commons_post` to `presence`/`incidents`) allowed at session initiative. Tier 3 (Attention-demanding — `commons_ask_*`, contested `coordination` claims) requires explicit user trigger OR clear coordination need (file collision, contested bug claim).
+  - **Q2 — Topic discipline**: reserved core (`presence`, `coordination`, `help-wanted`, `incidents`, `broadcasts`, `broadcast-acks`) + organic extension. Reserved topic names ARE the signaling protocol — couples Q1 with Q2 elegantly.
+  - **Q3 — Broadcast receipt contract**: original "interrupt vs queue" framing reframed (broadcasts inject as `<system-reminder>` between turns, not mid-tool-execution). Real axes are routing (persona match → ACT; other persona → ACK-ONLY; no persona → all ACT on default body) and voice (speakerphone ON → spoken ack via `notify(suppress_ding=True, priority='high')`; OFF → text-only ack). Mandatory `broadcast-acks` post is infrastructure.
+- **Four-layer signaling architecture** also accepted: (1) static doctrine in global CLAUDE.md + new workflow doc, (2) tier markers embedded in MCP tool descriptions (Lupin-side follow-up), (3) reserved topic names as peer-facing tier markers, (4) `notify()` to user when attention-demanding mode entered so cross-session dialogue is never invisible.
+- **Hub-and-spoke documentation pattern** (same precedent as Sessions 81/85):
+  - **Tier 1 — canonical hub** `workflow/cross-session-communication.md` NEW (1509 words, 7 sections, 1 mermaid routing diagram): Purpose + when-to-use, Two surfaces + quick MCP tool reference, Three-tier autonomy with examples, Reserved topic vocabulary with example bodies, Broadcast receipt rules (routing + voice), Anti-patterns (loop hazards, attention abuse, sensitive content), User-facing visibility mandate, Lupin-side follow-ups.
+  - **Tier 2 — global config sync pair**: `global/CLAUDE.md` and `workflow/claude-config-global.md` both gained new `## CROSS-SESSION COMMUNICATION` section (458 words, under the 800-word target) inserted after the cosa-voice notification system section.
+  - **Tier 3 — cross-link spoke**: `workflow/cosa-voice-integration.md` gained "Related: cross-session communication tools (`commons_*`)" subsection after the Available MCP Tools table.
+  - **Tier 4 — README index**: New `### Cross-Session Communication` subsection in Supporting Workflows + design-notes entry in Plan File Management.
+  - **Design notes**: `src/rnd/2026.05.14-cross-session-communication-doctrine.md` NEW (1311 words) — captures survey of Lupin infrastructure, all three Q1/Q2/Q3 decisions with rationale, conversation log, follow-ups.
+- **Bug #2 swept** (user said "that's the second bug you can look into after the first topic in hand" when I noted the discrepancy during planning): stale references to `workflow/notification-system.md` (renamed to `workflow/cosa-voice-integration.md` on 2026.01.06 per the file's own version-history) cleaned from live docs. `CLAUDE.md:30` (project directory tree) and `workflow/p-is-p-00-start-here.md:819` (integration list) both updated. Historical references in `history/2025-10-17-to-2026-01-31-history.md`, `src/rnd/2026.01.05-cosa-voice-mcp-migration-plan.md`, and the version-history line in `cosa-voice-integration.md` preserved as intentional migration record.
+- **Verification (all greps clean)**:
+  - A. Cross-references from new doctrine resolve → 4 hits (README, claude-config-global.md, cosa-voice-integration.md, global/CLAUDE.md).
+  - B. New `## CROSS-SESSION COMMUNICATION` section in CLAUDE.md template word count → 458 (under 800-word target).
+  - C. Mermaid routing diagram present in doctrine doc → 1.
+  - D. Stale `notification-system.md` refs remaining in live docs → 0 (only intentional historical/migration refs left).
+
+**Files Changed**: `workflow/cross-session-communication.md` (NEW canonical doctrine), `workflow/claude-config-global.md` (template +1 section, 458 words), `global/CLAUDE.md` (snapshot mirror +1 section), `workflow/cosa-voice-integration.md` (Related-cross-session-tools subsection added), `README.md` (Cross-Session Communication subsection + design-notes entry in Plan File Management), `src/rnd/2026.05.14-cross-session-communication-doctrine.md` (NEW design notes, promoted scratchpad → 🟢 FINAL), `CLAUDE.md` (bug #2: directory tree corrected + cross-session-communication.md added), `workflow/p-is-p-00-start-here.md` (bug #2: integration list corrected + new Cross-Session Communication entry), `history.md` (this entry), `TODO.md` (Session-86 progress noted on the Cosa-voice MCP commons tools TODO).
+
+**Plan**: `~/.claude/plans/recursive-sparking-floyd.md` (approved via ExitPlanMode 2026-05-14 after three "That seems reasonable" decisions in conversation), serialized to `src/rnd/2026.05.14-cross-session-communication-doctrine.md` per plan-serialization mandate.
+
+**Out of Scope (deferred to TODO follow-on)**: Lupin-side MCP tool description tier markers (`src/lupin_mcp/cosa_voice_mcp.py` registrations), Lupin Phase 3 push-mode for `commons_ask_async` reply injection (already designed at `<lupin>/src/rnd/v0.1.7/2026.05.09-inter-session-commons/04-phase3-push-mode-and-llm-fallback-design.md`), LLM-fallback persona matcher (stubbed in `commons_persona_matcher.py`), optional `cross-session-communication` Agent Skill (deferred — static doctrine in CLAUDE.md is sufficient initially).
+
+**Key insight**: The signaling design's third layer (reserved topic names ARE the tier marker) collapsed Q1 (autonomy thresholds) and Q2 (topic vocabulary) into one coupled answer. Once the topic name encodes the tier, the doctrine almost writes itself: post to `presence` and it's self-disclosure; post to `help-wanted` and you're flagging attention-demanding. No metadata field needed for tier — the topic IS the metadata.
 
 ### 2026.05.11 - Session 85 | `ask_yes_no()` Neither Response Language Sync
 

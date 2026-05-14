@@ -204,6 +204,14 @@ NOTIFICATION VERIFICATION:
 
 ---
 
+### Related: cross-session communication tools (`commons_*`)
+
+The cosa-voice MCP server also exposes five `commons_*` tools for Claude↔Claude blackboard communication: `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`. These are NOT covered in this document — they have their own behavioral doctrine governing when and how sessions may use them.
+
+**See**: planning-is-prompting → workflow/cross-session-communication.md for the three-tier autonomy rules, reserved topic vocabulary, broadcast receipt contract, and anti-patterns.
+
+---
+
 ## Fire-and-Forget Notifications
 
 Use `notify()` for progress updates, completions, alerts, and informational messages that don't require a response.

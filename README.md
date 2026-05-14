@@ -217,12 +217,18 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 **Prerequisites**: cosa-voice MCP server installed and configured. See [cosa-voice-integration.md](workflow/cosa-voice-integration.md).
 
+### Cross-Session Communication
+- [**cross-session-communication.md**](workflow/cross-session-communication.md) - Behavioral doctrine for user→all broadcasts and Claude↔Claude commons blackboards. Three-tier autonomy (read free / self-disclosure free / attention-demanding gated), reserved topic vocabulary (`presence`, `coordination`, `help-wanted`, `incidents`), broadcast routing + voice rules.
+
+**Prerequisites**: Lupin v0.1.7 broadcast endpoints and commons store (Phase 1+2). See workflow doc for full doctrine and Lupin-side follow-ups.
+
 ### Plan File Management
 - [**plan-serialization.md**](workflow/plan-serialization.md) - Behavioral directive for preserving non-trivial plan files with semantic names
 - [**Research: Plan File Serialization**](src/rnd/2026.02.13-plan-file-serialization-recommendation.md) - Data analysis backing the serialization recommendation (169 files, naming convention breakdown)
 - [**Plan: Test Ownership Mandate**](src/rnd/2026.04.23-test-ownership-mandate.md) - Placement strategy and canonical language for the role-separation rule (human is designer/user; Claude owns the testing pyramid)
 - [**Plan: Plan-Review Gate**](src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md) - Promote the adversarial + fitness review pattern from Lupin's CJ Flow R&D into a canonical PIP workflow with convention-establishment in `p-is-p-02`
 - [**Plan: Day-of-Work Summary at Session-End**](src/rnd/2026.05.06-day-of-work-summary-at-session-end.md) - New session-end Step 6 closes each session with a LoC-delta table (code/comment/docstring per language) plus optional repo-baseline comparison; reuses lupin's `BranchChangeAnalyzer` and `DirectoryAnalyzer` via `LUPIN_ROOT`, falls back to `git diff --shortstat` when cosa is unavailable
+- [**Plan: Cross-Session Communication Doctrine**](src/rnd/2026.05.14-cross-session-communication-doctrine.md) - Design notes for the cross-session doctrine: three-tier autonomy, reserved topic vocabulary, broadcast receipt routing, four-layer signaling architecture. Authored against Lupin v0.1.7 Phase 1+2 shipped broadcast and commons infrastructure
 
 ## Usage
 

@@ -816,8 +816,12 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 **Integration**: Commit completed phases with descriptive messages based on work from p-is-p-01 and p-is-p-02
 
 ### Notification System
-**File**: `notification-system.md`
+**File**: `cosa-voice-integration.md` (formerly `notification-system.md`, renamed 2026-01-06)
 **Integration**: Send notifications at key milestones (phase completion, blocker encountered, approval needed)
+
+### Cross-Session Communication
+**File**: `cross-session-communication.md`
+**Integration**: Behavioral doctrine for user→all broadcasts and Claude↔Claude commons blackboards (three-tier autonomy, reserved topic vocabulary, broadcast receipt routing)
 
 ---
 

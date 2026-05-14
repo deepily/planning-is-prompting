@@ -101,6 +101,66 @@ The cosa-voice session has a **binary mode toggle**: notification mode (default,
 
 **Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md §Conversation Mode
 
+## CROSS-SESSION COMMUNICATION
+
+**Purpose**: Behavioral doctrine for the two cross-session surfaces — user→all broadcasts and Claude↔Claude commons blackboards. Applies whenever a session encounters a broadcast `<system-reminder>` or contemplates using `commons_*` MCP tools.
+
+### Quick MCP tool reference
+
+| Tool | Tier | Blocking | Use |
+|------|------|----------|-----|
+| `commons_who(topic?)` | Read | No | Discover active peer sessions |
+| `commons_read(topic, since?)` | Read | No | Tail topic for recent posts |
+| `commons_post(topic, body, metadata?)` | Self-disclosure OR Attention-demanding (topic-dependent) | No | Status, claims, replies |
+| `commons_ask_async(topic, question)` | Attention-demanding | No (returns question_id) | Ask peers; reply via `metadata.in_reply_to` |
+| `commons_ask_sync(topic, question, timeout?)` | Attention-demanding | Yes (first-reply + 1s coalesce) | Rarely — only when truly blocked |
+
+### Three-tier autonomy
+
+| Tier | Operations | Default policy |
+|------|------------|----------------|
+| **Read** | `commons_who`, `commons_read` | ✅ Always allowed — like tailing a log |
+| **Self-disclosure** | `commons_post` to `presence` / `incidents` / own status | ✅ Allowed at your initiative |
+| **Attention-demanding** | `commons_ask_*`, contested `coordination` claims, `help-wanted` posts | ⚠️ Requires explicit user trigger OR clear coordination need (file collision, contested claim) |
+
+### Reserved topic vocabulary (IS the signaling protocol)
+
+| Topic | Tier | Semantics |
+|-------|------|-----------|
+| `presence` | Self-disclosure | "I'm alive, working on X" |
+| `coordination` | Attention-demanding (when contested) | Claim-staking, ownership signals |
+| `help-wanted` | Attention-demanding | Open questions seeking peer input |
+| `incidents` | Self-disclosure or urgent | Errors / blockers |
+| `broadcasts` / `broadcast-acks` | Reserved (infrastructure only) | Do not post from sessions |
+
+Organic topic names are allowed but inherit no special tier.
+
+### Broadcast receipt rules
+
+Broadcasts inject as `<system-reminder>` **between turns** — there's no interrupt-vs-queue choice.
+
+**Routing**:
+- `@MyPersona:` matched → **ACT** on persona directive (+ default body if present)
+- Different `@persona` named, no default body → **ACK-ONLY** (not for me)
+- No persona at all → **ACT** on default body (all sessions respond)
+
+**Voice**:
+- Speakerphone ON → spoken ack via `notify(suppress_ding=True, priority='high')`
+- Speakerphone OFF → text-only ack
+- Mandatory `broadcast-acks` post is infrastructure, always happens
+
+### Anti-patterns
+
+- **Loop hazard**: never `commons_ask_*` in reply to another session's `commons_ask_*`. Reply with `commons_post(..., metadata={"in_reply_to": question_id})` instead.
+- **Attention abuse**: don't use `commons_ask_sync` when async would do. Don't spam `presence`.
+- **Sensitive content**: commons is per-user but visible to ALL of that user's sessions. Don't post credentials, tokens, or unseen content.
+
+### User-facing visibility (mandatory for attention-demanding tier)
+
+Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notification_type="progress", priority="medium")` to the user so they can see in their UI that one session is blocking on another. Cross-session dialogue must not be invisible to the user.
+
+**Full canonical doctrine**: planning-is-prompting → workflow/cross-session-communication.md
+
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
 - **Indentation**: 4 spaces (not tabs)

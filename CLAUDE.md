@@ -27,7 +27,8 @@ planning-is-prompting/
 │   ├── testing-remediation.md            # Post-change verification and fixes
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
-│   ├── notification-system.md            # Notification usage patterns
+│   ├── cosa-voice-integration.md         # Notification usage patterns (cosa-voice MCP)
+│   ├── cross-session-communication.md    # Cross-session broadcast + commons doctrine
 │   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
 │   ├── todo-management.md                # Persistent TODO.md file management
 │   ├── branch-pr-and-merge.md            # Branch completion, PR, and merge workflow
