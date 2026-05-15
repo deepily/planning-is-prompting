@@ -1,13 +1,83 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 88
+**RESUME HERE**: Session 89
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 88 (Rio, `8ebced94`) — TTS Brevity Mandate self-violation recovery: 5-hook doctrine landing across 6 surfaces (MUST-audit gate, anchor example #2, doc-link reflex, Persona-First Mandate, Doc-Link Literacy + `doc_scope` discovery)
+**Last Session**: Session 89 (Rachel, `02f528ee`) — Plan-Review Pass 2 Rename: dropped "Adversarial" from PIP nomenclature after Mr. Rick reported session-level confabulation into OWASP threat-model semantics. Hard-break rename across 6 live files, 49 occurrences, with NOT A SECURITY REVIEW disambiguation banner and security/threat-model anti-pattern row.
 
 ---
 
 ## May 2026
+
+### 2026.05.15 - Session 89 | Plan-Review Pass 2 Rename: Drop "Adversarial" (Rachel)
+
+**Persona**: Rachel (cosa-voice session `02f528ee`, voice id `21m00Tcm4TlvDq8ikWAM`, icon 🕊️) — chorus mode, speakerphone-driven conversation with Mr. Rick.
+
+**Problem framed by Mr. Rick (voice, this session)**: Rio's Session 88 wrap-up summary verbalized Pass 2 of the plan-review workflow as *"what attacks does this enable, path traversal, manifest tampering, Unicode bypass"* — every example an OWASP threat-model category, none of them an ownership-language concern. Mr. Rick called the drift verbatim: *"that last pass was not supposed to be harkening the software against adversarial attacks. It was supposed to be an adversarial approach to finding gaps in the automation of testing... that binary check for who implements the AI or the user?"* Investigation confirmed: the **canonical doctrine has always been correct** (Pass 2 = ownership-language audit / executor-tagging / "user is never a tester"), and **the drift lived purely in session-level confabulation**. The word *adversarial* in software English defaults to attacker-mindset semantics, and Pass 2's prompt body used "hostile outsider" as a stance metaphor — both reinforcing the wrong reading. Mr. Rick's call: **eliminate the word entirely**.
+
+**Accomplishments**:
+
+- **Plan serialized to `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md`** per documentation-first protocol BEFORE any code/doc edits. 9 sections + status log covering problem, diagnosis (three reinforcing failure modes), nomenclature options considered, scope (6 live files + 44 occurrences), 6 phases, risks, approval checklist with §7 open sub-questions.
+- **Two decisions locked at §7 approval gate** (Mr. Rick, voice):
+  - **OSQ1**: NO adjective in title. Pass 2 renamed to **`Pass 2: Ownership-Language Audit`** (drops "Adversarial" entirely; "Audit" carries the auditor-stance weight without OWASP baggage).
+  - **OSQ2**: HARD BREAK on slash-command flag. `--from=adversarial` retired with NO backward-compat alias. Old scripts/aliases fail loudly.
+- **6 live files patched, 49 occurrences renamed**:
+
+| File | Adversarial occurrences before | After (intentional rename-callouts only) |
+|---|---|---|
+| `workflow/plan-review.md` | 21 | 7 (rename-callout text + Lupin filename ref) |
+| `workflow/INSTALLATION-GUIDE.md` | 10 | 3 (rename-callout text) |
+| `.claude/commands/plan-review.md` | 8 | 2 (rename-callout text) |
+| `workflow/installation-wizard.md` | 5 (post-fix discovery — initially missed in scope grep) | 3 (rename-callout text) |
+| `workflow/p-is-p-02-documenting-the-implementation.md` | 2 | 0 |
+| `workflow/p-is-p-00-start-here.md` | 1 | 0 (mermaid label updated) |
+| `README.md` | 2 | 1 (rename-callout text) |
+
+- **Hooks landed in canonical hub `workflow/plan-review.md`**:
+  - Doc title: `Plan Review (Fitness + Adversarial Gate)` → `Plan Review (Fitness + Ownership Gate)`.
+  - NEW top-of-doc disambiguation banner sibling to SEQUENTIAL EXECUTION MANDATE: "**⚠️ NOT A SECURITY REVIEW**: Pass 2 (Ownership-Language Audit) hunts ownership-language gaps and test-execution hand-offs — NOT a software-security review, threat model, or OWASP-style attack-surface audit. If you find yourself flagging path-traversal, manifest-tampering, Unicode-bypass, input-sanitization, or attack-surface findings, you are running the wrong pass."
+  - §3 title: `Fitness Before Adversarial — and Strictly Sequential` → `Fitness Before Ownership-Audit — and Strictly Sequential`.
+  - §8 section title: `Pass 2: Adversarial Review (Ownership Language)` → `Pass 2: Ownership-Language Audit`. Prompt body "ADVERSARIAL REVIEW" → "OWNERSHIP-LANGUAGE AUDIT" and "hostile outsider" → "forensic auditor". NEW in-prompt paragraph: *"This is NOT a security review. Do NOT flag path-traversal, input sanitization, manifest tampering, Unicode bypass, or any other attack-surface / threat-model concern. Software-vulnerability discovery is out of scope."*
+  - NEW §13 anti-pattern row: "Treating Pass 2 as a security/threat-model review (path traversal, manifest tampering, Unicode bypass, attack surface) → Pass 2's job is the binary `EXECUTOR: AI` vs `EXECUTOR: HUMAN` audit and the no-`Manual E2E` sweep. Software-vulnerability discovery is a SEPARATE concern, out of scope for this gate."
+  - §15 cross-refs line: `Pass 2 (Adversarial; "user is never a tester")` → `Pass 2 (Ownership-Language Audit; "user is never a tester")`.
+  - §15 Lupin filename references: preserved verbatim (`05-adversarial-review-prompt.md`) with descriptive callout explaining the PIP rename.
+- **Slash-command hard-break**: `--from=adversarial` → `--from=ownership` across 3 surfaces (`workflow/plan-review.md`, `.claude/commands/plan-review.md`, `workflow/INSTALLATION-GUIDE.md`, `workflow/installation-wizard.md`). No backward-compat alias.
+- **Historical content preserved verbatim**: `history.md` past entries, `src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md`, `src/rnd/2026.05.15-rachel-recent-work-summary.md`, and the Lupin `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` file. The Lupin file's `[DONE, DO NOT REEXECUTE]` header makes preservation safe; PIP-side header pointer to be added by Maria / next Lupin session (filed as TODO).
+- **Mid-execution scope correction**: original scope grep missed `workflow/installation-wizard.md` (5 occurrences across description strings, catalog text, install-flow note). Caught during Phase 5 verification re-grep; patched and re-verified clean before declaring Phase 5 complete. Documented in this entry so future scope checks include the installation-wizard surface.
+- **7 verification greps clean**:
+  - A. Stale "Pass 2 Adversarial" patterns in live docs → **0 hits**.
+  - B. New "Ownership-Language Audit" / "Ownership Audit" in `plan-review.md` → 15 hits.
+  - C. "NOT A SECURITY REVIEW" banner present → 2 hits (banner + anti-pattern callout).
+  - D. Security/threat-model anti-pattern row present → 1 hit.
+  - E. "forensic auditor" stance descriptor in prompt body → 1 hit.
+  - F. New `--from=ownership` flag across 3 surfaces → present in each.
+  - G. Historical "adversarial" preserved in `history.md` past entries → 7 hits (correct — these are intentional historical records).
+- **Cross-link to today's other Rachel artifact**: `src/rnd/2026.05.15-rachel-recent-work-summary.md` (morning broadcast deliverable summarizing Sessions 81-88). That doc deliberately retains "Pass 2 Adversarial" wording in its Session-83 section because it's historical narration of Session 83's work-as-of-that-date.
+
+**Files Changed**:
+
+| File | Change | Lines (est.) |
+|---|---|---|
+| `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` | NEW | +234 |
+| `workflow/plan-review.md` | Title + banner + §3 + §7 + §8 + §13 anti-pattern + §15 cross-refs + flag-set | +15 / -7 |
+| `workflow/INSTALLATION-GUIDE.md` | 6 occurrences renamed + rename-callout | +6 / -5 |
+| `.claude/commands/plan-review.md` | 8 occurrences renamed (replace_all + targeted edits) | +3 / -3 |
+| `workflow/installation-wizard.md` | 5 occurrences renamed | +3 / -3 |
+| `workflow/p-is-p-02-documenting-the-implementation.md` | 2 occurrences renamed | +2 / -2 |
+| `workflow/p-is-p-00-start-here.md` | Mermaid label update | +1 / -1 |
+| `README.md` | 2 occurrences renamed | +2 / -2 |
+| `history.md` | this entry | +N |
+| `TODO.md` | Lupin-side header pointer queued + Session-89 completion marker | +2 |
+| `.claude-session.md` | Rachel's section + touched files | +N |
+| `src/rnd/2026.05.15-rachel-recent-work-summary.md` | NEW (Rachel's recent-work summary, earlier this session) | +160 |
+
+**Plan**: `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` — status now 🟢 IMPLEMENTED.
+
+**Out of Scope (deferred)**: Phase 4 Lupin-side header pointer for `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` and `/06-fitness-review-prompt.md` — owner Maria / next Lupin session (filed as new TODO.md entry). Filename preservation (no rename of `05-adversarial-review-prompt.md`) per archival-fidelity rule.
+
+**Key insight**: The drift was reproducible-by-design — three reinforcing causes that all surface in software-English-fluent sessions: (a) the word *adversarial* in software contexts defaults to OWASP attacker-mindset; (b) the §8 prompt's "hostile outsider" metaphor reinforced the attacker reading via imagery; (c) milestone-context priming — sessions reviewing file-IO / serialization / input-handling work pre-activate OWASP categories. No grep across the canonical docs surfaced the drift because the drift lived only in spoken/in-context confabulation. The fix isn't "tighten the doctrine" (the doctrine was already correct); it's "rename so the doctrine is impossible to misread." Pass 2's job is the binary `EXECUTOR: AI vs HUMAN` audit and the no-`Manual E2E` sweep — the new name "Ownership-Language Audit" describes the subject directly and carries auditor weight without an ambiguous adjective. Adding the "NOT A SECURITY REVIEW" banner and the §13 security/threat-model anti-pattern row gives any future session that pattern-matches *adversarial* → *attacker* an immediate redirect at the doctrine surface, not just after-the-fact correction by the user.
+
+---
 
 ### 2026.05.15 - Session 88 | TTS Brevity Self-Violation Recovery + Persona-First Mandate (Rio)
 

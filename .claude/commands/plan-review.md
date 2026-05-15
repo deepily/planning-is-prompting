@@ -23,14 +23,14 @@
 
 2. **MUST read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/plan-review.md
-   - This is the ONLY authoritative source for the gate's structure (REUSE pre-pass, Pass 1 Fitness, Resolution Loop, Pass 2 Adversarial, gates, termination, anti-patterns)
+   - This is the ONLY authoritative source for the gate's structure (REUSE pre-pass, Pass 1 Fitness, Resolution Loop, Pass 2 Ownership-Language Audit, gates, termination, anti-patterns)
    - Do NOT proceed without reading this document in full
    - Pay particular attention to: §1 (Hierarchy of Anchors), §3 (Pass Ordering rationale: fitness-first), §6 (Gate 1) and §9 (Gate 2) — both are non-negotiable, §7 (Resolution Loop convergence re-grep), §12 (partial re-runs)
 
 3. **Parse invocation flags**:
-   - `--from=reuse` (default if no flag) — full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial)
+   - `--from=reuse` (default if no flag) — full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit)
    - `--from=fitness` — skip REUSE; start at Pass 1 (Fitness)
-   - `--from=adversarial` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Adversarial)
+   - `--from=ownership` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Ownership-Language Audit). **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired — there is NO backward-compat alias. Old scripts/aliases referencing `--from=adversarial` will fail loudly.
    - `--doc-set=<path>` — target doc directory; defaults to most-recent `src/rnd/<project>/` containing a `00-index.md`
    - `--skip-with-reason "<reason>"` — Pattern 3 escape hatch; logs reason to `00-index.md` "Open follow-ups" and exits without running the gate
 
@@ -42,12 +42,12 @@
    - Prompt user for `{{TBD_QUESTIONS}}` enumeration (these are per-milestone and cannot be auto-discovered reliably)
 
 5. **MUST honor the gates**:
-   - Gate 1 (after Pass 1 Fitness) and Gate 2 (after Pass 2 Adversarial) are non-negotiable. Deliver findings, wait for user confirmation, NEVER apply fixes pre-emptively.
+   - Gate 1 (after Pass 1 Fitness) and Gate 2 (after Pass 2 Ownership-Language Audit) are non-negotiable. Deliver findings, wait for user confirmation, NEVER apply fixes pre-emptively.
    - When findings are returned, use `ask_yes_no()` or `ask_multiple_choice()` to get the user's decision on which to apply, never assume. On `ask_yes_no()` returning `neither` at a gate, re-frame the gate question — do NOT silently skip the gate or apply fixes anyway. See `workflow/cosa-voice-integration.md` → "Handling Neither".
    - After fixes: re-run the same greps against the pre-fix baseline; confirm convergence per §7 of the canonical workflow.
 
 6. **MUST run the three passes strictly sequentially — NEVER in parallel**:
-   - Order: REUSE pre-pass (§4) → Pass 1 Fitness (§5) → Pass 2 Adversarial (§8). Each pass must fully close (findings delivered + user gate cleared + Resolution Loop convergence) before the next begins.
+   - Order: REUSE pre-pass (§4) → Pass 1 Fitness (§5) → Pass 2 Ownership-Language Audit (§8). Each pass must fully close (findings delivered + user gate cleared + Resolution Loop convergence) before the next begins.
    - **PROHIBITED**: spawning multiple `Agent` (subagent) tool calls in a single message that cover more than one pass; splitting passes across simultaneous sessions; any tool-call batch that fires two or more passes concurrently. The §6/§9 user gates only function in a serial pipeline — concurrent execution silently bypasses them.
    - If you would have batched passes for wall-clock efficiency: don't. The §3 ordering rationale (canonical workflow) is load-bearing, and the user has explicitly observed parallel execution as a failure mode.
 
@@ -60,7 +60,7 @@
 
 Standalone REUSE pre-pass for Pattern 3 plans (single-doc `src/rnd/yyyy.mm.dd-slug.md` files) or any pre-doc-creation reuse audit.
 
-- Skips Pass 1 (Fitness) and Pass 2 (Adversarial) entirely.
+- Skips Pass 1 (Fitness) and Pass 2 (Ownership-Language Audit) entirely.
 - Runs the REUSE prompt from §4 of the canonical workflow against the target doc and codebase.
 - Output: prior-art findings table, no gate (since there's only one pass).
 - User decides which findings to apply; appends "Prior art referenced" section to the target doc.
@@ -72,9 +72,9 @@ Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), 
 ## Usage
 
 ```bash
-/plan-review                                         # full pipeline (REUSE → Pass 1 Fitness → Pass 2 Adversarial)
+/plan-review                                         # full pipeline (REUSE → Pass 1 Fitness → Pass 2 Ownership-Language Audit)
 /plan-review --from=fitness                          # resume after REUSE fixes already applied
-/plan-review --from=adversarial                      # resume after Pass 1 (Fitness) fixes already applied
+/plan-review --from=ownership                        # resume after Pass 1 (Fitness) fixes already applied (renamed from --from=adversarial 2026-05-15)
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-...    # target a specific milestone
 /plan-review --skip-with-reason "research-only plan, no executable work"
 

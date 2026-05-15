@@ -397,7 +397,7 @@ src/rnd/{project-name}/
 
 ## Doc Conventions for Plan-Review Compatibility
 
-These conventions exist for one reason: the canonical [`workflow/plan-review.md`](plan-review.md) gate runs grep-driven fitness and adversarial review passes against your implementation docs **before code is written**. The greps are blind without these conventions. Tag your docs from the start; retrofitting at review time defeats the purpose.
+These conventions exist for one reason: the canonical [`workflow/plan-review.md`](plan-review.md) gate runs grep-driven Fitness and Ownership-Language Audit passes against your implementation docs **before code is written**. The greps are blind without these conventions. Tag your docs from the start; retrofitting at review time defeats the purpose.
 
 The five conventions: (1) optional working-contract document, (2) decision-anchor format, (3) `EXECUTOR` tagging, (4) `TBD` markers, (5) "Manual E2E" semantics.
 
@@ -407,7 +407,7 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
 
 **File**: `00-working-contract.md` (sibling to `00-index.md`).
 
-**What it does**: States the rules of engagement for the milestone. Pass 2 (Adversarial review) treats it as the project-level anchor — every "done" claim is checked against it.
+**What it does**: States the rules of engagement for the milestone. Pass 2 (Ownership-Language Audit) treats it as the project-level anchor — every "done" claim is checked against it.
 
 **Required shape**:
 

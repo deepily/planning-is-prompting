@@ -2037,7 +2037,7 @@ Each wrapper configures different test script paths and scopes.
 
 ### What It Does
 
-Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 (Fitness) enforces design-completeness — every step must be implementable by a competent-but-unfamiliar engineer without asking clarifying questions. Pass 2 (Adversarial) enforces ownership-language clarity — "done" is never claimed without AI-executed verification, and ownership is explicit (`EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`). A short REUSE pre-pass runs first to catch accidental reinvention of existing helpers.
+Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 (Fitness) enforces design-completeness — every step must be implementable by a competent-but-unfamiliar engineer without asking clarifying questions. Pass 2 (Ownership-Language Audit) enforces ownership-language clarity — "done" is never claimed without AI-executed verification, and ownership is explicit (`EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`). A short REUSE pre-pass runs first to catch accidental reinvention of existing helpers. **Pass 2 was renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15** because the old name pulled sessions into OWASP threat-model semantics; see `workflow/plan-review.md` top-of-doc "NOT A SECURITY REVIEW" banner and `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the rationale.
 
 The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
 
@@ -2045,17 +2045,17 @@ The gate fires **between `/p-is-p-02-documentation` and code writing** — it is
 
 **Slash Commands**: `/plan-review` (full pipeline), `/plan-review-reuse` (standalone REUSE pre-pass for Pattern 3 plans)
 
-### Pass Ordering: Fitness Before Adversarial
+### Pass Ordering: Fitness Before Ownership-Audit
 
-The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial).
+The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit).
 
-**Why fitness first**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted or redesigned at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Adversarial) then polishes the ownership language on text that is stable. See `workflow/plan-review.md` §3 for the full ordering rationale.
+**Why fitness first**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted or redesigned at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Ownership-Language Audit) then polishes the executor language on text that is stable. See `workflow/plan-review.md` §3 for the full ordering rationale.
 
 ### Modes
 
-- `/plan-review` — full pipeline (REUSE → Pass 1 Fitness → Pass 2 Adversarial)
+- `/plan-review` — full pipeline (REUSE → Pass 1 Fitness → Pass 2 Ownership-Language Audit)
 - `/plan-review --from=fitness` — skip REUSE; resume after REUSE fixes already applied
-- `/plan-review --from=adversarial` — skip REUSE and Pass 1; resume after Fitness fixes already applied
+- `/plan-review --from=ownership` — skip REUSE and Pass 1; resume after Fitness fixes already applied. **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired with no backward-compat alias.
 - `/plan-review --doc-set=<path>` — target a specific milestone doc-set
 - `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
 - `/plan-review-reuse` — standalone REUSE pre-pass for Pattern 3 single-doc plans
@@ -2094,14 +2094,14 @@ The wizard or installer may ask:
 ### Usage
 
 ```bash
-# Full pipeline — REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial)
+# Full pipeline — REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit, renamed from "Adversarial" 2026-05-15)
 /plan-review
 
 # Resume after REUSE fixes already applied — start at Pass 1 (Fitness)
 /plan-review --from=fitness
 
-# Resume after Pass 1 fixes already applied — start at Pass 2 (Adversarial)
-/plan-review --from=adversarial
+# Resume after Pass 1 fixes already applied — start at Pass 2 (Ownership-Language Audit)
+/plan-review --from=ownership
 
 # Target a specific milestone
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-async-multi-lane
@@ -2141,7 +2141,7 @@ The flow:
 
 1. `/p-is-p-01-planning` — classify work, select pattern, break down tasks
 2. `/p-is-p-02-documentation` — create doc structure (Pattern 1/2/5/6 only)
-3. `/plan-review` — **THIS GATE** — Fitness then Adversarial passes
+3. `/plan-review` — **THIS GATE** — Fitness then Ownership-Language Audit passes
 4. Code writing begins
 
 ---

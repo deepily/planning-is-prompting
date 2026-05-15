@@ -265,7 +265,7 @@ flowchart TD
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
     Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip to execution<br>Use history.md for tracking"]
-    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Fitness<br>• Pass 2: Adversarial<br>(non-negotiable gates)"]
+    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Fitness<br>• Pass 2: Ownership-Language Audit<br>(non-negotiable gates)"]
     Review --> Code["Code begins"]
     Skip --> Code
 ```

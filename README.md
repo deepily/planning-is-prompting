@@ -88,7 +88,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - ✅ **[A]** Session Management: `/plan-session-start`, `/plan-session-checkpoint`, `/plan-session-end`
 - ✅ **[B]** History Management: `/plan-history-management`
 - ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
-- ✅ **[C.5]** Plan Review Gate: `/plan-review` (fitness + adversarial review of implementation plans before code begins; mandatory for Pattern 1/2/5/6, REUSE-only available for Pattern 3 via `/plan-review-reuse`)
+- ✅ **[C.5]** Plan Review Gate: `/plan-review` (fitness + ownership-language audit of implementation plans before code begins; mandatory for Pattern 1/2/5/6, REUSE-only available for Pattern 3 via `/plan-review-reuse`)
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
 - ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
 - ✅ **[F]** Skills Management: `/plan-skills-management` (discover, create, edit, audit, delete Agent Skills)
@@ -226,7 +226,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**plan-serialization.md**](workflow/plan-serialization.md) - Behavioral directive for preserving non-trivial plan files with semantic names
 - [**Research: Plan File Serialization**](src/rnd/2026.02.13-plan-file-serialization-recommendation.md) - Data analysis backing the serialization recommendation (169 files, naming convention breakdown)
 - [**Plan: Test Ownership Mandate**](src/rnd/2026.04.23-test-ownership-mandate.md) - Placement strategy and canonical language for the role-separation rule (human is designer/user; Claude owns the testing pyramid)
-- [**Plan: Plan-Review Gate**](src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md) - Promote the adversarial + fitness review pattern from Lupin's CJ Flow R&D into a canonical PIP workflow with convention-establishment in `p-is-p-02`
+- [**Plan: Plan-Review Gate**](src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md) - Promote the ownership-language-audit + fitness review pattern from Lupin's CJ Flow R&D into a canonical PIP workflow with convention-establishment in `p-is-p-02` (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; see `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md`)
 - [**Plan: Day-of-Work Summary at Session-End**](src/rnd/2026.05.06-day-of-work-summary-at-session-end.md) - New session-end Step 6 closes each session with a LoC-delta table (code/comment/docstring per language) plus optional repo-baseline comparison; reuses lupin's `BranchChangeAnalyzer` and `DirectoryAnalyzer` via `LUPIN_ROOT`, falls back to `git diff --shortstat` when cosa is unavailable
 - [**Plan: Cross-Session Communication Doctrine**](src/rnd/2026.05.14-cross-session-communication-doctrine.md) - Design notes for the cross-session doctrine: three-tier autonomy, reserved topic vocabulary, broadcast receipt routing, four-layer signaling architecture. Authored against Lupin v0.1.7 Phase 1+2 shipped broadcast and commons infrastructure
 

@@ -1,14 +1,16 @@
-# Plan Review (Fitness + Adversarial Gate)
+# Plan Review (Fitness + Ownership Gate)
 
 **Purpose**: Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 enforces design-completeness (every step implementable by a competent-but-unfamiliar engineer without asking clarifying questions). Pass 2 enforces ownership-language clarity ("done" never claimed without AI-executed verification). A short REUSE pre-pass runs first to catch accidental redundancy.
 
 **When to use**: Mandatory for `/p-is-p-01-planning` Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`). Optional standalone REUSE pre-pass available for Pattern 3 plans (`/plan-review-reuse`). Pattern 4 (Investigation) skips entirely. The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
 
-**Origin**: Pattern lifted from Lupin v0.1.7 CJ Flow async multi-lane milestone (`<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-` and `/06-`). Phases 1–3 of that milestone landed cleanly with no rework rounds attributable to ownership or completeness gaps in the design docs. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP swapped to Fitness→Adversarial — see §3 for the ordering rationale.
+**Origin**: Pattern lifted from Lupin v0.1.7 CJ Flow async multi-lane milestone (`<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-` and `/06-`). Phases 1–3 of that milestone landed cleanly with no rework rounds attributable to ownership or completeness gaps in the design docs. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP swapped to Fitness→Ownership-Audit (renamed from "Adversarial" on 2026-05-15 — see §3 and the rename plan at `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md`).
 
-> **⚠️ SEQUENTIAL EXECUTION MANDATE (NON-NEGOTIABLE)**: The three passes — REUSE pre-pass (§4), Pass 1 Fitness (§5), Pass 2 Adversarial (§8) — MUST run **strictly sequentially in that order**. Each pass must fully close (findings delivered, gate cleared, Resolution Loop converged) before the next pass begins. **Parallel execution is PROHIBITED**: do NOT spawn multiple `Agent` (subagent) tool calls in a single message to run two or three passes concurrently; do NOT split the prompts across simultaneous sessions; do NOT invoke them in any tool-call batch that fires them in parallel. The pass-ordering rationale in §3 is load-bearing — running them in parallel discards every benefit of the ordering and re-introduces the exact failure modes the gate was designed to prevent (wording polish on text fitness-resolution would have deleted; ownership analysis on a structural skeleton that REUSE would have dissolved). If you find yourself about to issue a single message containing multiple `Agent` invocations covering more than one pass, **STOP** — that is the failure mode this mandate names.
+> **⚠️ SEQUENTIAL EXECUTION MANDATE (NON-NEGOTIABLE)**: The three passes — REUSE pre-pass (§4), Pass 1 Fitness (§5), Pass 2 Ownership-Language Audit (§8) — MUST run **strictly sequentially in that order**. Each pass must fully close (findings delivered, gate cleared, Resolution Loop converged) before the next pass begins. **Parallel execution is PROHIBITED**: do NOT spawn multiple `Agent` (subagent) tool calls in a single message to run two or three passes concurrently; do NOT split the prompts across simultaneous sessions; do NOT invoke them in any tool-call batch that fires them in parallel. The pass-ordering rationale in §3 is load-bearing — running them in parallel discards every benefit of the ordering and re-introduces the exact failure modes the gate was designed to prevent (wording polish on text fitness-resolution would have deleted; ownership analysis on a structural skeleton that REUSE would have dissolved). If you find yourself about to issue a single message containing multiple `Agent` invocations covering more than one pass, **STOP** — that is the failure mode this mandate names.
 >
-> **⚠️ Conversation Mode Awareness**: this gate has **non-negotiable user-decision pauses** at §6 (Gate 1, post-Fitness), §9 (Gate 2, post-Adversarial), and §11 (Layer-3 Design Concerns). When `conversation_mode_active=true`, every pause is a voice gate.
+> **⚠️ NOT A SECURITY REVIEW**: Pass 2 (Ownership-Language Audit) hunts ownership-language gaps and test-execution hand-offs — places where "done" could be claimed without AI-executed verification, or where work is silently snuck onto the user. It is **NOT** a software-security review, threat model, or OWASP-style attack-surface audit. If you find yourself flagging path-traversal, manifest-tampering, Unicode-bypass, input-sanitization, or attack-surface findings, you are running the wrong pass — software-vulnerability discovery is a separate, out-of-scope concern. The word "adversarial" was retired from this gate's nomenclature on 2026-05-15 precisely because it pulled sessions into OWASP threat-model semantics. See `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the rename rationale.
+>
+> **⚠️ Conversation Mode Awareness**: this gate has **non-negotiable user-decision pauses** at §6 (Gate 1, post-Fitness), §9 (Gate 2, post-Ownership-Audit), and §11 (Layer-3 Design Concerns). When `conversation_mode_active=true`, every pause is a voice gate.
 >
 > **Brevity mandate at gate sites**: NEVER read the findings table aloud row-by-row. The spoken `notify()` carries a 1–2 sentence headline ("Pass 1 found 7 fitness gaps, mostly around dispatcher routing — table is in your terminal"); the full table goes to the `abstract` parameter and the terminal reply. Same for Pass 2 ownership findings, and same for Layer-3 challenges (speak the headline, full justification stays in `abstract`). Use `priority="high"` on every blocking call — voice is the only channel reaching the user. Full spec: `cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
 
@@ -40,23 +42,23 @@ The review's greps are **blind without doc conventions**. Verify these before in
    - **Convention 4**: `TBD` and `Open sub-question N:` markers for explicit unresolved questions
    - **Convention 5**: "Manual E2E" semantics (means "not-yet-automated", NEVER "human does it")
 
-If any convention is missing, the review is calibrated wrong: stop and amend the docs first, or log a skip-with-reason in `00-index.md` so the affected pass exempts the missing convention. Convention 4 is what Pass 1 (Fitness) greps depend on; Conventions 3 and 5 are what Pass 2 (Adversarial) greps depend on.
+If any convention is missing, the review is calibrated wrong: stop and amend the docs first, or log a skip-with-reason in `00-index.md` so the affected pass exempts the missing convention. Convention 4 is what Pass 1 (Fitness) greps depend on; Conventions 3 and 5 are what Pass 2 (Ownership-Language Audit) greps depend on.
 
 ---
 
-## 3. Pass Ordering: Fitness Before Adversarial — and Strictly Sequential
+## 3. Pass Ordering: Fitness Before Ownership-Audit — and Strictly Sequential
 
-**The order is deliberate**: REUSE pre-pass → Pass 1 (Fitness, design completeness) → Pass 2 (Adversarial, ownership language).
+**The order is deliberate**: REUSE pre-pass → Pass 1 (Fitness, design completeness) → Pass 2 (Ownership-Language Audit, executor language).
 
 **Strictly sequential — never parallel**: each pass must fully close before the next begins. "Fully closed" means findings delivered, the user gate cleared, approved fixes applied, and the Resolution Loop's convergence re-grep returns zero new hits. **Spawning multiple `Agent` (subagent) tool calls in a single message to run two or three passes in parallel is PROHIBITED**, as is splitting the prompts across simultaneous sessions or any other concurrent-execution dodge. The user gates at §6 and §9 only function in a serial pipeline; running passes concurrently silently bypasses them. If a competent-but-impatient agent thinks it can save wall-clock time by parallelizing, the answer is no — the pass-ordering argument below explains why (and the user has explicitly observed this failure mode in practice).
 
-**Why this order**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted, redesigned, or substantively reworked at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Adversarial) then polishes the ownership language on text that is stable.
+**Why this order**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted, redesigned, or substantively reworked at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Ownership-Language Audit) then polishes the executor language on text that is stable.
 
 **Counter-argument considered**: ownership errors can also "invalidate" completeness analysis — a step saying "user verifies X" passes a completeness check when it shouldn't, because the step fundamentally violates Layer 1. The mitigation is that Pass 2 catches these as ownership violations after Pass 1 closes — they don't escape, they're just deferred to the pass specialized for that failure mode. The reverse failure (wording polish on text about to be deleted) has no such mitigation in the alternative ordering, which is why fitness-first wins on net.
 
-**REUSE stays first**: REUSE findings can dissolve entire "new" components, which would invalidate BOTH fitness AND adversarial analyses on those components. Cheapest, most-impactful filter first.
+**REUSE stays first**: REUSE findings can dissolve entire "new" components, which would invalidate BOTH fitness AND ownership analyses on those components. Cheapest, most-impactful filter first.
 
-**Empirical note**: the originating Lupin v0.1.7 milestone ran adversarial-first and landed cleanly. PIP swapped the order based on the structural-gaps argument above. Both orderings are defensible; if a future milestone shows the swap regresses signal, this rationale is the place to revisit.
+**Empirical note**: the originating Lupin v0.1.7 milestone ran what it called "adversarial-first" (its Pass 2 was the same ownership-language check now called Ownership-Language Audit in PIP) and landed cleanly. PIP swapped to Fitness-first based on the structural-gaps argument above, and on 2026-05-15 renamed Pass 2 from "Adversarial" → "Ownership-Language Audit" because the old name pulled sessions into OWASP threat-model semantics. Both orderings remain defensible on signal grounds; if a future milestone shows the swap regresses signal, this rationale is the place to revisit.
 
 ---
 
@@ -184,7 +186,7 @@ This is the single most-violated rule of the technique. The temptation to apply 
 
 ## 7. Resolution Loop
 
-The Resolution Loop runs after each pass's gate clears with approved fixes. It applies identically to Pass 1 (Fitness) and Pass 2 (Adversarial).
+The Resolution Loop runs after each pass's gate clears with approved fixes. It applies identically to Pass 1 (Fitness) and Pass 2 (Ownership-Language Audit).
 
 After the user approves specific fixes:
 
@@ -196,29 +198,35 @@ After the user approves specific fixes:
    - New hits should be zero. If a fix introduced a new flag (e.g., a Pass 1 fix added a new `TBD` marker, or a Pass 2 fix added an unjustified `EXECUTOR: HUMAN` line), the fix is incomplete — return to step 2.
 5. **Convergence check**: when the diff shows zero new hits AND every approved fix is reflected, the loop closes.
 6. Advance to the next stage:
-   - If Pass 1 (Fitness) just closed → proceed to Pass 2 (Adversarial).
-   - If Pass 2 (Adversarial) just closed → review complete; update idempotency marker per §12.
+   - If Pass 1 (Fitness) just closed → proceed to Pass 2 (Ownership-Language Audit).
+   - If Pass 2 (Ownership-Language Audit) just closed → review complete; update idempotency marker per §12.
 
 **Why this step matters**: without it, "resolved" is self-reported by the same agent that just generated the fixes — exactly the rubber-stamping failure mode the gates exist to prevent. The greps are cheap (seconds), objective, and falsifiable.
 
 ---
 
-## 8. Pass 2: Adversarial Review (Ownership Language)
+## 8. Pass 2: Ownership-Language Audit
 
-**What it hunts**: Every place "done" could be claimed without the AI having actually executed verification, or where a reader would default to thinking "the user will do this step."
+**What it hunts**: Every place "done" could be claimed without the AI having actually executed verification, or where a reader would default to thinking "the user will do this step." This is **NOT** a software-security audit — see the top-of-doc "NOT A SECURITY REVIEW" banner. The audit hunts ownership-language gaps, not vulnerabilities.
 
 **Context**: Pass 2 reuses Pass 1's working memory of the docs. Do NOT instruct the AI to re-read.
 
 **The prompt** (paste after Pass 1 + Resolution Loop converge):
 
 ```
-Now do an ADVERSARIAL REVIEW of the same docs you read in the previous
-pass. You do not need to re-read the docs — use the context from the
-previous pass. Read them as a hostile outsider whose goal is to find
-every place where you could plausibly claim "done" without having
-actually executed verification yourself, or where a reader would default
-to thinking "the user will do this step." {{ANCHOR_FILES}} are
+Now do an OWNERSHIP-LANGUAGE AUDIT of the same docs you read in the
+previous pass. You do not need to re-read the docs — use the context
+from the previous pass. Read them as a forensic auditor whose goal is
+to find every place where you could plausibly claim "done" without
+having actually executed verification yourself, or where a reader would
+default to thinking "the user will do this step." {{ANCHOR_FILES}} are
 authoritative; every other doc must conform to them.
+
+This is NOT a security review. Do NOT flag path-traversal, input
+sanitization, manifest tampering, Unicode bypass, or any other
+attack-surface / threat-model concern. Software-vulnerability discovery
+is out of scope. The audit hunts executor-tagging gaps and silent
+hand-offs to the user, period.
 
 For each finding, output one row in this table:
 
@@ -317,9 +325,9 @@ Plan-review is not a one-shot. As phases progress and docs evolve, the gate can 
 - If `last-reviewed-at` is current → AI prompts the user: *"Last review was on YYYY-MM-DD against commit X. Docs have not changed since. Re-run anyway?"*
 
 **Partial re-runs**: the bundled `/plan-review` command supports `--from=<phase>`:
-- `--from=reuse` (default if no flag) — full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial)
+- `--from=reuse` (default if no flag) — full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit)
 - `--from=fitness` — skip REUSE; start at Pass 1 (Fitness)
-- `--from=adversarial` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Adversarial)
+- `--from=ownership` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Ownership-Language Audit). **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired — there is NO backward-compat alias. Old scripts/aliases referencing `--from=adversarial` will fail loudly.
 
 Use partial re-runs only when the user explicitly asserts the skipped passes are still resolved. The default is full pipeline.
 
@@ -339,8 +347,9 @@ In addition to the gate-violations called out inline:
 | Skipping the convergence re-grep | Without it, "resolved" is self-reported. The greps are cheap; run them. |
 | Re-reading the docs between Pass 1 and Pass 2 | Pass 2 explicitly says "use the context from the previous pass." Re-reading wastes the bundled-context advantage and risks divergence. |
 | Reading order ignored | "Do not skip. Do not skim." The anchor files (Layer 1/2) MUST be loaded before the docs being reviewed; otherwise either pass loses the anchor to compare against. |
-| Running adversarial before fitness | Wording polish on text that fitness-resolution is about to delete or restructure is wasted work. See §3 for the full ordering rationale. |
+| Running Ownership-Language Audit before Fitness | Wording polish on text that fitness-resolution is about to delete or restructure is wasted work. See §3 for the full ordering rationale. |
 | Running passes in parallel (concurrent `Agent` calls, simultaneous sessions, batched invocations) | The §3 ordering is load-bearing. Parallel execution discards every benefit of the order and silently bypasses the §6/§9 user gates (which only function in a serial pipeline). REUSE may dissolve components Pass 1 was reviewing; Pass 1 may delete steps Pass 2 was wording-polishing. The user has explicitly observed this failure mode — do not repeat it. |
+| Treating Pass 2 as a security / threat-model review (path traversal, manifest tampering, Unicode bypass, attack surface) | Pass 2's job is the binary `EXECUTOR: AI` vs `EXECUTOR: HUMAN` audit and the no-`Manual E2E` sweep. Software-vulnerability discovery is a SEPARATE concern, out of scope for this gate. The word "adversarial" was retired from Pass 2's name on 2026-05-15 specifically because sessions confabulated it into OWASP attacker-mindset semantics. If you find yourself flagging input-sanitization, path-handling, serialization-safety, or attack-surface concerns, you are running the wrong pass. |
 
 ---
 
@@ -353,7 +362,7 @@ In addition to the gate-violations called out inline:
 - [`plan-serialization.md`](plan-serialization.md) — plan-review runs on serialized plan docs, not on draft `~/.claude/plans/` files
 
 **In `~/.claude/CLAUDE.md`**:
-- `TEST OWNERSHIP MANDATE` — Layer 1 anchor for Pass 2 (Adversarial; "user is never a tester")
+- `TEST OWNERSHIP MANDATE` — Layer 1 anchor for Pass 2 (Ownership-Language Audit; "user is never a tester")
 - `DOCUMENTATION-FIRST PROTOCOL` — the gap plan-review fills (docs before code, but no quality bar on the docs)
 
 **Per-project skill wrappers** (out of scope for this canonical doc; tracked separately):
@@ -385,7 +394,7 @@ Per-project skill wrappers at `<project>/.claude/skills/plan-review/SKILL.md` au
 
 The two source prompts in Lupin (kept as historical artifacts; canonical version is this file):
 
-- `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` — Pass 2 (Adversarial) instance
+- `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` — historical Lupin Pass-2 instance (filename preserved for archival fidelity; PIP renamed the equivalent pass to "Ownership-Language Audit" on 2026-05-15)
 - `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/06-fitness-review-prompt.md` — Pass 1 (Fitness) instance
 
-Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to that specific milestone. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP's canonical order is Fitness→Adversarial — see §3 for the rationale. This canonical doc is the abstract version; per-milestone wrappers fill in the slots.
+Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to that specific milestone. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP's canonical order is Fitness→Ownership-Audit — see §3 for the rationale and `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the 2026-05-15 rename. This canonical doc is the abstract version; per-milestone wrappers fill in the slots.

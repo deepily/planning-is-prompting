@@ -218,13 +218,13 @@ This metadata drives the interactive menu generation in Step 2.
 {
   "id": "plan-review-gate",
   "name": "Plan Review Gate",
-  "description": "Two-pass quality gate (Fitness + Adversarial) for implementation plans before any code is written",
+  "description": "Two-pass quality gate (Fitness + Ownership-Language Audit) for implementation plans before any code is written",
   "category": "review",
   "recommended": false,
   "commands": [
     {
       "name": "/plan-review",
-      "description": "Full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Adversarial). Supports --from=reuse|fitness|adversarial for partial reruns"
+      "description": "Full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit). Supports --from=reuse|fitness|ownership for partial reruns (Pass 2 renamed from Adversarial 2026-05-15; --from=adversarial retired with no alias)"
     },
     {
       "name": "/plan-review-reuse",
@@ -1150,7 +1150,7 @@ Available Workflows:
 [N] Plan Review Gate
     Two-pass quality gate for implementation plans before any code is written
     Commands:
-      • /plan-review - Full pipeline (REUSE → Fitness → Adversarial)
+      • /plan-review - Full pipeline (REUSE → Fitness → Ownership-Language Audit)
       • /plan-review-reuse - Standalone REUSE pre-pass for Pattern 3 plans
     Dependencies: Planning is Prompting Core (D); reads ~/.claude/CLAUDE.md
                   TEST OWNERSHIP MANDATE as Layer 1 anchor
@@ -1374,7 +1374,7 @@ ask_multiple_choice( questions=[
      [2] No, remove Plan Review Gate (N) from selection
      [3] Cancel installation
      ```
-   - Note: The gate also reads `~/.claude/CLAUDE.md` `TEST OWNERSHIP MANDATE` as the Layer 1 anchor; if absent, Pass 2 (Adversarial) loses its calibration target — surface this to the user as informational, not blocking
+   - Note: The gate also reads `~/.claude/CLAUDE.md` `TEST OWNERSHIP MANDATE` as the Layer 1 anchor; if absent, Pass 2 (Ownership-Language Audit) loses its calibration target — surface this to the user as informational, not blocking
 
 3. **Confirm Selection**:
 
@@ -1796,7 +1796,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
    - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
    - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
-   - Note: The wrapper supports `--from=reuse|fitness|adversarial` for partial reruns and a `/plan-review-reuse` sub-command for Pattern 3 single-doc plans; both are documented in the canonical workflow
+   - Note: The wrapper supports `--from=reuse|fitness|ownership` for partial reruns and a `/plan-review-reuse` sub-command for Pattern 3 single-doc plans; both are documented in the canonical workflow (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; the old `--from=adversarial` flag was retired with no backward-compat alias)
 
 3. **Create or Update CLAUDE.md**:
 
