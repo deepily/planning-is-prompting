@@ -26,11 +26,39 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
+## Preliminary 0: Phase A MCP Startup (MANDATORY — before ANY user-facing text)
+
+**Purpose**: Resolve session identity (persona) and link-building primitives (doc-scope envelope) BEFORE composing any user-facing text, including the first acknowledgment and the start-notification ping below.
+
+**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before TodoWrite creation, before reading any history/config files.
+
+**Steps (all MANDATORY, in order)**:
+
+1. **Fetch cosa-voice MCP tool schemas via `ToolSearch`** (tools are deferred — they cannot be called without this step).
+2. **Call `get_session_info()`** — single call resolves identity AND link primitives at once.
+3. **Extract `voice_persona.name` / `display_name`** from the response. You MUST know who you are by name before you respond.
+   - **Persona-First Response Mandate (2026-05-15)**: NEVER assume a default persona, NEVER respond as "Claude" or a placeholder when chorus mode is active, NEVER guess. If `voice_persona` is `None` (allocation failure), you MUST ask the user "Which persona am I?" via `converse()` before proceeding. The persona voice IS the disambiguator in chorus mode — responding persona-blind breaks the routing contract the user relies on.
+4. **Extract `doc_scope` envelope** — shape `{scope, base_url, allowed_prefixes, source}`.
+   - **Doc-Link Literacy Mandate (2026-05-15)**: a doc-link is a markdown anchor of shape `[Open: <filename>](/app/docs?path=<repo-relative-path>&scope=<scope-name>)`. You MUST use `doc_scope.scope` as the `scope=` query param. You MUST validate every `path=` against `doc_scope.allowed_prefixes` before emitting the anchor. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; speaking them verbalizes character-by-character.
+5. **Self-check before proceeding** — you MUST be able to articulate, in one sentence, BOTH (a) your assigned persona by name AND (b) the rule that doc-links belong only in `abstract`. If you cannot, you have skipped this Preliminary and MUST go back.
+
+**Why Preliminary 0 exists**: prior to 2026-05-15, sessions were observed responding to the user before reading `get_session_info()` — they had no idea what persona they were assigned, breaking chorus-mode disambiguation. They also emitted doc-viewer links in spoken channels, producing TTS-hostile URL recitations. Preliminary 0 codifies the user's verbatim rebuke: *"They must know who they are before they respond and if they can't find out who they are, they can ask me, but never assume."*
+
+**Anti-patterns**:
+- ❌ Sending the Preliminary start notification BEFORE calling `get_session_info()` (response-first, identity-after)
+- ❌ Calling `get_session_info()` later in the turn "for completeness" (by then the disambiguation contract has already been broken)
+- ❌ Emitting a doc-link in the `message=` parameter of any cosa-voice tool (URLs are TTS-hostile)
+- ❌ Assuming a default persona name when `voice_persona` is missing (must `converse()` and ask the user)
+
+**Reference**: `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL Phase A; `planning-is-prompting → workflow/cosa-voice-integration.md` § TTS Response Brevity Mandate; recovery plan at `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md`.
+
+---
+
 ## Preliminary: Send Start Notification
 
 **Purpose**: Immediately notify user that session initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
+**Timing**: Execute BEFORE creating TodoWrite list (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "Rio here, starting session initialization").
 
 **Command**:
 ```python

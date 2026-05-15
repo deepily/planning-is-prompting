@@ -332,15 +332,18 @@ PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')
 
 You MUST complete MCP initialization in two phases. This is NOT optional — skipping it is a session-start bug.
 
-**Phase A — Immediate (before reading history.md/TODO.md):**
+**Phase A — Immediate (before ANY user-facing text, including the first acknowledgment):**
 
 1. You MUST fetch cosa-voice MCP tool schemas via `ToolSearch` (tools are deferred — they cannot be called without this step)
-2. You MUST call `get_session_info()` to verify MCP server connectivity
-3. You MUST report MCP server status to the user (project, session_id, version, server_url)
+2. You MUST call `get_session_info()` to verify MCP server connectivity AND to resolve your session identity
+3. You MUST extract from the `get_session_info()` response — BEFORE composing any user-facing text:
+   - **(a) Your assigned `voice_persona`** — the `name`/`display_name` field. You MUST know who you are by name before you respond. **Persona-First Response Mandate (2026-05-15)**: NEVER assume a default persona, NEVER respond as "Claude" or a placeholder when chorus mode is active, NEVER guess. If `voice_persona` is `None` (allocation failure), you MUST ask the user "Which persona am I?" via `converse()` before proceeding. The persona voice IS the disambiguator in chorus mode — responding persona-blind breaks the routing contract the user relies on.
+   - **(b) Your `doc_scope` envelope** — the `{scope, base_url, allowed_prefixes, source}` field. This is the canonical startup-context lookup for building doc-viewer links from this session. **Doc-Link Literacy Mandate (2026-05-15)**: a doc-link is a markdown anchor of shape `[Open: <filename>](/app/docs?path=<repo-relative-path>&scope=<scope-name>)`. You MUST use `doc_scope.scope` as the `scope=` query param. You MUST validate every `path=` against `doc_scope.allowed_prefixes` before emitting the anchor. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; speaking them verbalizes the URL phonetically character-by-character. See § DOCUMENT VIEWER LINKS for the full mandate.
+4. You MUST report MCP server status to the user (project, session_id, version, server_url) AND name your resolved persona in the first acknowledgment.
 
 **Phase B — After context gathering:**
 
-4. You MUST call `set_session_topic()` as soon as you can write a meaningful 3-8 word session title — from the user's first message, from history.md/TODO.md, or from the approved plan. Skipping this is a session-start bug, not a minor oversight.
+5. You MUST call `set_session_topic()` as soon as you can write a meaningful 3-8 word session title — from the user's first message, from history.md/TODO.md, or from the approved plan. Skipping this is a session-start bug, not a minor oversight.
 
 **Trigger**: If the user's first message contains enough information to title the session (e.g., "I've got a new bug for you..."), call `set_session_topic()` IMMEDIATELY after Phase A — do not defer until later.
 
@@ -348,7 +351,9 @@ You MUST complete MCP initialization in two phases. This is NOT optional — ski
 
 **Rules:**
 - This applies in ALL modes including plan mode — MCP tools are **communication tools**, not code-changing tools
-- Phase A MUST complete before any file reading or session work begins
+- Phase A MUST complete before any file reading or session work begins — AND before any user-facing text including the first ack
+- **Persona-First Mandate**: You MUST know your assigned persona before composing your first response. Reading `get_session_info()` mid-turn or "for completeness" later is non-compliant — by then the disambiguation contract has already been broken
+- **Doc-Link Literacy Mandate**: You MUST know what a doc-link is (markdown anchor with `/app/docs?path=…&scope=…`) AND the rule that such links belong only in `abstract`, never in spoken channels. Hook 4 (persona resolution) and Hook 5 (doc-link construction) are COUPLED — one `get_session_info()` call resolves both
 - Phase B MUST complete before any substantive work begins. The ONLY reason to defer Phase B past the first turn is if the user's opening message is too ambiguous to title (in which case, ASK).
 
 **If cosa-voice tools are NOT in the deferred tools list** (report as "MCP Status: unavailable"):
@@ -470,7 +475,10 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 
 ### DOCUMENT VIEWER LINKS
 
-**MANDATE**: When the user asks to view a project file (plan, doc, R&D note, README, history), respond with a `notify()` whose abstract contains a markdown link to the document viewer. **Never dump file contents into the chat.**
+**MANDATE (two triggers, both MANDATORY)**:
+
+1. **User-ask trigger**: When the user asks to view a project file (plan, doc, R&D note, README, history), respond with a `notify()` whose abstract contains a markdown link to the document viewer. **Never dump file contents into the chat.**
+2. **Reference trigger (added 2026-05-15)**: When the abstract references a project file — audit findings, R&D-doc citations, file:line callouts, before/after diffs naming files, any structured payload that names a path — the abstract MUST contain a markdown viewer link to that file, scope-routed per the four-step priority below. A bare path or filename in the abstract without a viewer link is a violation. Links flow INTO the abstract from any file reference; **links MUST NOT appear in the spoken `message` parameter** (URLs are TTS-hostile — they verbalize as character-by-character gibberish). Doc-links belong ONLY in the `abstract` parameter of `notify()` and the body of `commons_post()`, NEVER in `message=...` of `notify()` / `converse()` / `ask_*()`.
 
 **Pattern**:
 ```python

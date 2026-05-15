@@ -1,13 +1,86 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 87
+**RESUME HERE**: Session 88
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 87 (Rachel, 4926c582) — Cross-repo doc viewer scope doctrine + per-repo pins + Lupin consumer-side TODO
+**Last Session**: Session 88 (Rio, `8ebced94`) — TTS Brevity Mandate self-violation recovery: 5-hook doctrine landing across 6 surfaces (MUST-audit gate, anchor example #2, doc-link reflex, Persona-First Mandate, Doc-Link Literacy + `doc_scope` discovery)
 
 ---
 
 ## May 2026
+
+### 2026.05.15 - Session 88 | TTS Brevity Self-Violation Recovery + Persona-First Mandate (Rio)
+
+**Persona**: Rio (cosa-voice session `8ebced94`, voice id `AZnzlk1XvdvUeBnXmlld`, icon ⚡) — chorus mode, speakerphone-driven conversation with Mr. Rick.
+
+**Problem framed by Mr. Rick (voice, mid-session)**: Rio's session-opening audit `notify()` (re cosa-voice "phone mode" vs "QUIET mode" surface drift) carried 175 spoken words of inventory: terminology in conflict, file:line callouts, recommended-fix rationale, ownership attribution. The card had the same content as a table but ZERO doc-viewer links. Mr. Rick called the violation verbatim: *"You yourself just violated 1 of the first mandates… All detail is supposed to be pushed into the abstract, along with working doc links."* Compounded with three follow-on voice asks (persona-first, doc-link literacy at startup, `get_session_info()` envelope discovery) and one language-tightening rebuke (*"Strike it… replace with MUST"*), the work crystallized as a 5-hook recovery plan landed in a single session.
+
+**Accomplishments**:
+
+- **Recovery plan serialized v1 → v2** at `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md` per documentation-first protocol (BEFORE any code/doctrine edits). v1 captured the 5 hooks with mixed soft/MUST phrasing; v2 stripped all advisory hedging and replaced with MANDATORY language after Mr. Rick's verbatim rebuke "we need to be more dictatorial about it." Final v2 carries 17 MUST/MANDATORY/PROHIBITED/VIOLATION occurrences across 7 sections, with top-of-doc LANGUAGE MANDATE banner closing the linguistic escape vector.
+- **Three failure modes diagnosed** (each gets its own hook):
+  - **(a) Inventory creep into spoken channel** — the audit `notify()` recited terminology + file paths + rationale (hooks 1, 2, 3).
+  - **(b) Persona-blind first response** — Rio observed compliant this session (called `get_session_info()` before first ack, named "Rio" in the spoken opener); but Mr. Rick reported the failure mode happening across other sessions: *"They must know who they are before they respond and if they can't find out who they are, they can ask me, but never assume."* (Hook 4.)
+  - **(c) Doc-link illiteracy at startup** — sessions emitting `(/app/docs?...)` URLs in spoken `message` parameters (TTS verbalizes character-by-character) AND missing that `get_session_info()` already returns the `doc_scope` envelope (`{scope, base_url, allowed_prefixes, source}`) as a same-call discovery primitive. (Hook 5, coupled to Hook 4 — one MCP call resolves both.)
+- **Five hooks across six surfaces** — all landed in this session:
+
+| Hook | What | Target file | Phase |
+|---|---|---|---|
+| 1 | Pre-`notify()` MUST-audit gate (new bullet § Brevity Rules) | `workflow/cosa-voice-integration.md` | B |
+| 2 | Anchor example #2 (175→22 words, ~87% reduction) — parallels Session 82's #1 (190→45) | same canonical hub | B |
+| 3 | Reference-trigger MANDATE: abstract referencing a file MUST link it; doc-links ONLY in `abstract` | `~/.claude/CLAUDE.md` (live) + `global/CLAUDE.md` (mirror) | C |
+| 4 | Persona-First Response Mandate — strengthened MCP STARTUP PROTOCOL Phase A | `~/.claude/CLAUDE.md`, `global/CLAUDE.md`, `workflow/claude-config-global.md`, `workflow/session-start.md` (new § Preliminary 0) | D |
+| 5 | Doc-Link Literacy + `doc_scope` envelope discovery — coupled with hook 4 in same Phase A | same four startup surfaces | D |
+
+- **Hub-and-spoke sync precedent honored** — same pattern as Sessions 75/76/77/78/79/81/82/85/86/87: `~/.claude/CLAUDE.md` (live, host-global) ↔ `global/CLAUDE.md` (repo mirror) kept byte-identical for the touched sections (verified clean for Phase A + DOCUMENT VIEWER LINKS). Pre-existing divergence at line 390+ (§ SPEAKERPHONE & TTS BEHAVIOR vs § INTERACTIVE TOOL ROUTING) noted as out-of-scope drift from an earlier session.
+- **Phase A startup quadruplet patched** with MUST language:
+  - Live `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL — Phase A expanded to 4 steps, step 3 now spells out (a) persona extraction with "Persona-First Response Mandate (2026-05-15)" sub-rule and (b) `doc_scope` envelope extraction with "Doc-Link Literacy Mandate (2026-05-15)" sub-rule.
+  - `global/CLAUDE.md` mirror identical patch.
+  - `workflow/claude-config-global.md` template gained new `### Persona-First & Doc-Link Literacy` section after the Conversation Mode block.
+  - `workflow/session-start.md` gained **new `## Preliminary 0: Phase A MCP Startup (MANDATORY — before ANY user-facing text)`** section as the FIRST section, before the existing Preliminary start notification. Preliminary 0 codifies the 5-step ritual: ToolSearch → `get_session_info()` → extract persona → extract doc_scope → self-check before proceeding. Anti-patterns memorialized (response-first/identity-after, mid-turn `get_session_info()` "for completeness," URL in `message=`, persona-default-assumption).
+- **Mr. Rick voice rebukes captured in status log** — all four verbatim asks preserved at `src/rnd/2026.05.15-...md` § 7 Status log, plus the v2 language-hardening directive: *"We need to be more dictatorial about it and replace it with MUST."*
+- **Phase E verification (greps clean)**:
+  - A. Hook 1+2 in canonical hub → 2 + 1 hits.
+  - B. Hook 3 in live + mirror → 1 + 1 hits.
+  - C. Hooks 4+5 across all four startup surfaces → 3 + 3 + 2 + 2 = 10 hits.
+  - D. New "Preliminary 0" section in session-start.md → 1 hit.
+  - E. Doc-link URLs in any `message=` kwarg across `workflow/` + `global/` + `~/.claude/CLAUDE.md` → **0 hits** (zero — clean sweep, validates Hook 5 hasn't been violated in canonical surfaces).
+  - F. Live ↔ mirror byte-identical for Phase A and DOCUMENT VIEWER LINKS sections → clean.
+- **Memory salience persisted** at `~/.claude/projects/-mnt-DATA01-.../memory/feedback_tts_brevity.md` (host-side, outside repo): added 2026-05-15 hardenings — MUST-audit gate, Doc-Link Literacy, Persona-First Response Mandate — plus cross-reference to this recovery plan. Future sessions will recall the hardened doctrine on session start.
+- **Self-correction in-session demonstrated**: Rio re-issued the original audit verdict per Hook 1's audit-gate rule — 175-word spoken inventory replaced with a 22-word verdict ("Home CLAUDE file is clean; the drift lives inside cosa-voice itself, May-14 evening reframe missed one surface"), and the abstract restored with 7 working doc-viewer links per Hook 3's reference-trigger MANDATE. The recovery plan's Anchor Example #2 memorializes this 87%-reduction failure-mode-and-fix pair.
+
+**Files Changed** (in PIP repo):
+
+| File | Change | Lines (est.) |
+|---|---|---|
+| `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md` | NEW (v2 final) | +396 |
+| `workflow/cosa-voice-integration.md` | Hook 1 bullet + Hook 2 anchor example sub-section | +23 |
+| `global/CLAUDE.md` | Hook 3 (DOCUMENT VIEWER LINKS) + Hooks 4+5 (Phase A) | +14 / -3 |
+| `workflow/claude-config-global.md` | new `### Persona-First & Doc-Link Literacy` section | +16 |
+| `workflow/session-start.md` | new `## Preliminary 0: Phase A MCP Startup` section | +27 / -2 |
+| `history.md` | this entry | +N |
+| `TODO.md` | deferred fresh-session dogfood entry | +1 |
+| `.claude-session.md` | new Session 88 section | +N |
+
+Plus out-of-repo (NOT committed): `~/.claude/CLAUDE.md` (live home global — mirrored from `global/CLAUDE.md`) and `~/.claude/projects/.../memory/feedback_tts_brevity.md` (memory salience).
+
+**Plan**: `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md` v2 — status now 🟢 IMPLEMENTED.
+
+**Out of Scope (deferred)**: Fresh-session dogfood verification of Preliminary 0 firing correctly in practice (requires a NEW Claude Code session — Mr. Rick's pending exit-and-restart). Also still deferred from earlier scope: the original Lupin-side cosa-voice surface drift fix (phone mode ≠ QUIET mode terminology in `cosa_voice_mcp.py` MCP startup blob) — owned by Maria / next Lupin session, untouched in this PIP-only commit.
+
+**Key insight**: The 5-hook landing exemplifies a triangle of failure-mode classes that all share a single startup-time root cause:
+- **Hook 1+2 (brevity)**: bloat in the spoken channel — root cause is drafting `message` + `abstract` in parallel as exec-summary + detail, rather than as verdict-only + inventory.
+- **Hook 4 (persona)**: identity-blind responses — root cause is skipping `get_session_info()` before composing user-facing text.
+- **Hook 5 (doc-link)**: URLs in spoken channels + manual scope guessing — root cause is missing that `get_session_info()` already returns the `doc_scope` envelope as a same-call primitive.
+
+Three failure modes, ONE root cause: **the first MCP call MUST be `get_session_info()`, and its return value MUST be fully unpacked (persona + doc_scope) BEFORE composing any user-facing text** — including the first acknowledgment, including in speakerphone mode. The session-start workflow's new "Preliminary 0" section is the codification of this single root-cause fix; everything else (the audit gate, the anchor example, the reference-trigger MANDATE) is downstream protection against the bloat patterns that emerge when the startup ritual is skipped.
+
+#### Checkpoint | 2026.05.15 10:48 | TTS brevity recovery — 5 hooks landed across 6 surfaces
+
+**Files**: `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md` (NEW), `workflow/cosa-voice-integration.md`, `global/CLAUDE.md`, `workflow/claude-config-global.md`, `workflow/session-start.md` (+ `history.md`, `TODO.md`, `.claude-session.md`)
+**Commit**: 428e023
+
+---
 
 ### 2026.05.14 - Session 87 | Cross-repo doc viewer scope doctrine (Rachel)
 
