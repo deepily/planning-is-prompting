@@ -385,3 +385,14 @@ This project follows the session-end ritual defined in planning-is-prompting →
 - **Repository**: Meta-knowledge base for Claude Code workflow patterns
 - **Primary Use**: Template source and canonical workflow reference
 - **Related Projects**: All projects using Claude Code should reference these workflows
+
+## Doc Viewer Scope
+
+When sending document viewer links from this repo, use:
+
+- **Scope name**: `planning-is-prompting`
+- **Allowed prefixes** (per Lupin INI): `src/`, `workflow/`, `docs/`
+- **Source of truth**: `lupin-app.ini` § `external repos`
+- **Runtime discovery**: inspect the `doc_scope` field returned by `mcp__cosa-voice__get_session_info()`
+
+Example: `/app/docs?path=src/rnd/2026.05.14-doc-link-scope-cross-repo.md&scope=planning-is-prompting`

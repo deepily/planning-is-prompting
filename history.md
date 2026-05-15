@@ -1,13 +1,69 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 86
+**RESUME HERE**: Session 87
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 86 - Cross-Session Communication Doctrine + bug #2 stale notification-system.md refs
+**Last Session**: Session 87 (Rachel, 4926c582) — Cross-repo doc viewer scope doctrine + per-repo pins + Lupin consumer-side TODO
 
 ---
 
 ## May 2026
+
+### 2026.05.14 - Session 87 | Cross-repo doc viewer scope doctrine (Rachel)
+
+**Persona**: Rachel (cosa-voice session `4926c582`) — speakerphone-driven design conversation with Rick.
+
+**Problem framed by Rick (voice)**: doc viewer links sent via `notify()` use a `scope` query param to identify which registered repo the path belongs to. The global doctrine in `~/.claude/CLAUDE.md` only documented two scopes (`docs`, `io` — both Lupin built-ins) and was silent about the 7 external scopes already registered in Lupin's `external repos` INI (`lupin`, `cosa-voice`, `planning-is-prompting`, `lupin-mobile`, `lookml`, `par-pacific`, `claude-plans`). Cross-repo sessions had no formal guidance for choosing the right scope — they guessed.
+
+**Accomplishments**:
+
+- **Multi-pass design conversation with two architecture pivots** (both Rick's calls, accepted):
+  - **Pivot 1** — original sketch was a standalone `get_doc_scope()` MCP tool. Rick pattern-matched the existing `voice_persona` field embedded in `get_session_info()` and proposed putting `doc_scope` in the same envelope. Accepted: zero new tool, zero extra round trip, self-discoverable on session-info inspection.
+  - **Pivot 2** — original sketch had cosa-voice re-parsing Lupin's INI directly. Rick flagged the ownership smell: the scope registry already lives on the Lupin side (`src/cosa/rest/routers/_scope_registry.py::build_scope_registry()`). Accepted: Lupin owns registry + exposes via API; cosa-voice consumes. Avoids duplicating reserved-name handling, missing-path skip logic, and prefix-trim semantics.
+- **R&D doc serialized** at `src/rnd/2026.05.14-doc-link-scope-cross-repo.md` (247 lines, 8 sections + status log) per documentation-first protocol. Covers: problem, current state with full registry table, 3-work-item solution, detailed design (doctrine text, per-repo pin template, `get_session_info()` extension spec), 5 phases, risks/open-questions, cross-references, approval checklist.
+- **Phase 2 (doctrine update) landed**:
+  - `~/.claude/CLAUDE.md` § DOCUMENT VIEWER LINKS — old 2-line scope routing block replaced with full routing rule (~20 lines): built-in vs external scope split, 4-step priority order for choosing the right scope, reference to `doc_scope` field in `get_session_info()` output.
+  - `planning-is-prompting/global/CLAUDE.md` — identical mirror update (canonical snapshot).
+- **Phase 3 (per-repo `## Doc Viewer Scope` pins) landed in 5 of 7 target repos**:
+  - `lupin/CLAUDE.md` — pin recommends built-ins (`docs`/`io`) over external `lupin` scope.
+  - `planning-is-prompting/CLAUDE.md` — `scope=planning-is-prompting`, prefixes `src/`, `workflow/`, `docs/`.
+  - `lupin-mobile/CLAUDE.md` — `scope=lupin-mobile`, wildcard prefixes.
+  - `google/lookml/CLAUDE.md` — `scope=lookml`, `src/`.
+  - `google/par-pacific.../CLAUDE.md` — `scope=par-pacific`, `src/`.
+  - **Deferred**: `cosa-voice` (repo not on host filesystem at expected mount path), `claude-plans` (flat plan dump at `~/.claude/plans/`, no CLAUDE.md convention) — both noted in R&D §4.2 and status log.
+- **Lupin TODO filed** (per Rick's clarification on ownership) at `lupin/TODO.md` under "🔗 NEW — `doc_scope` registry exposure for cosa-voice consumption" with 5 [LUPIN] checkboxes covering: exposure mechanism decision (recommended `GET /api/docs/scopes`), implementation, registry expansion to include built-ins, coordination with cosa-voice, smoke test.
+- **Documentation-first cadence honored**: R&D doc serialized BEFORE any code/doctrine edits; design pivots captured in the doc's status log so future readers see the reasoning chain.
+
+**Files Changed (cross-repo)**:
+
+| Repo | File | LoC (ins/del) |
+|---|---|---|
+| planning-is-prompting | `CLAUDE.md` (pin) | +11 / -0 |
+| planning-is-prompting | `global/CLAUDE.md` (doctrine mirror) | +19 / -3 |
+| planning-is-prompting | `src/rnd/2026.05.14-doc-link-scope-cross-repo.md` (NEW) | +247 |
+| lupin | `CLAUDE.md` (pin) | +12 / -0 |
+| lupin | `TODO.md` (consumer-side ownership entry) | +23 / -0 |
+| lupin-mobile | `CLAUDE.md` (pin) | +12 / -1 |
+| google/lookml | `CLAUDE.md` (pin) | +11 / -0 |
+| google/par-pacific... | `CLAUDE.md` (pin) | +11 / -0 |
+| ~/.claude (not a repo) | `CLAUDE.md` (live doctrine) | +19 / -3 |
+
+**Session totals**: 9 files across 5 repos + home global, **+365 insertions / -7 deletions** (net +358).
+
+**Commit scope (this session — planning-is-prompting only, per Rick's "@maria only lupin" broadcast)**:
+- `planning-is-prompting/CLAUDE.md` + `global/CLAUDE.md` + `src/rnd/2026.05.14-doc-link-scope-cross-repo.md` + `history.md` + (this entry).
+- **Out-of-repo edits intentionally left for owning sessions**: lupin (Maria), lupin-mobile (next mobile session), google/* (next session in those repos), `~/.claude/CLAUDE.md` (host-global, never committed).
+
+**Plan**: No `~/.claude/plans/` plan file (conversational design, not plan-mode). R&D doc serves as the canonical design record per documentation-first protocol.
+
+**Out of Scope (deferred)**:
+- Phase 4 — cosa-voice MCP `get_session_info()` extension. **Gated on Lupin landing the `/api/docs/scopes` exposure** (see Lupin TODO).
+- `cosa-voice` and `claude-plans` per-repo pins (host filesystem doesn't have a co-located CLAUDE.md target).
+- End-to-end spot-test from each repo (Phase 5) — needs Phase 4 first.
+
+**Key insight**: Both pivots tightened the design by aligning with existing infrastructure rather than building parallel. Pivot 1 reused the `voice_persona` envelope; Pivot 2 reused `_scope_registry.py`. The cleanest cross-repo design here is the one that adds the least new machinery — it embeds in existing data structures and respects existing ownership boundaries.
+
+---
 
 ### 2026.05.14 - Session 86 | Cross-Session Communication Doctrine
 

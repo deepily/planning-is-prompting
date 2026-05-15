@@ -486,10 +486,23 @@ notify(
 The notification UI auto-sanitizes the link, adds `target="_blank" rel="noopener noreferrer"`, and the popup's content-aware tier sizing handles rich abstracts.
 
 **Scope routing**:
-- `scope=io` (default — omit param) — agent artifacts under `io/` (research reports, podcast scripts, presentations, audio)
-- `scope=docs` — whitelisted project docs: root `*.md` (`CLAUDE.md`, `history.md`, `TODO.md`, `README.md`, `bug-fix-queue.md`) + prefixes `src/docs/`, `src/rnd/`, `src/workflow/`
 
-**Out-of-scope files** (e.g., `~/.claude/plans/*.md`, files outside the repo): ask the user to serialize into `src/rnd/` first per plan-serialization mandate, then send the viewer link.
+The `scope` query parameter identifies which registered repo the `path` is relative to. Built-in scopes route to Lupin only; external scopes route to other repos that Lupin has registered.
+
+- **Built-in scopes (Lupin only)**:
+  - `scope=io` — agent artifacts under Lupin's `io/` (research reports, podcast scripts, presentations, audio)
+  - `scope=docs` — whitelisted Lupin project docs: root `*.md` (`CLAUDE.md`, `history.md`, `TODO.md`, `README.md`, `bug-fix-queue.md`) + prefixes `src/docs/`, `src/rnd/`, `src/workflow/`
+
+- **External scopes** — name matches the registered repo name in Lupin's `external repos` INI key. Current registry: `lupin`, `cosa-voice`, `planning-is-prompting`, `lupin-mobile`, `lookml`, `par-pacific`, `claude-plans`. (Lupin INI is source of truth — `lupin-app.ini` § `external repos`.)
+
+**Choosing the right scope** (in order):
+
+1. If linking to a Lupin file → use `docs` or `io` (built-ins).
+2. If linking to a file in any other registered repo → use that repo's external scope name (e.g., `scope=cosa-voice` from the cosa-voice repo, `scope=planning-is-prompting` from this repo).
+3. To programmatically discover the correct scope for the current session: inspect the `doc_scope` field returned by `mcp__cosa-voice__get_session_info()`. Shape: `{scope, base_url, allowed_prefixes, source}`. Already in the session-init payload — no extra round trip needed.
+4. As a fallback, consult the current project's local `.claude/CLAUDE.md` § `Doc Viewer Scope`.
+
+**Out-of-scope files** (e.g., `~/.claude/plans/*.md` not yet serialized, files outside any registered repo, files in a registered repo but outside its `allowed_prefixes`): ask the user to serialize into the appropriate repo's `src/rnd/` first per plan-serialization mandate, then send the viewer link.
 
 ---
 
