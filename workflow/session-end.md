@@ -1128,35 +1128,112 @@ If commit count is `0`: skip Step 6 with the line *"Day's Work Summary: nothing 
 
 ---
 
-### 6.2) Try the Lupin Branch Analyzer (Preferred Path)
+### 6.2) Per-Day LoC Delta (Default Path)
 
-**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The analyzer scripts live at `$LUPIN_ROOT/src/cosa/repo/run_branch_analyzer.py` and `run_directory_analyzer.py`. They produce code/comment/docstring breakdown per language — this is the rich path.
+**Module**: `cosa.repo.git_loc_delta` (sister to `branch_analyzer` — same `cosa.repo` package). Where `branch_analyzer` answers "what does this whole branch change vs main", `git_loc_delta` answers **"what changed when"** with a per-day temporal axis. Critically, it writes a **stable per-branch CSV** that grows day-by-day across sessions, giving you a persistent artifact of the branch's progress.
 
-**Invocation**:
+**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The CLI lives at `$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py`.
+
+**Invocation** (two-pass — one for the persistent CSV, one for the renderer's structured data):
 
 ```bash
-# Verify LUPIN_ROOT and the analyzer module
-[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_branch_analyzer.py" ] || skip_to_fallback
+# Verify LUPIN_ROOT and the module
+[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py" ] || skip_to_fallback
 
-# Pick the Python interpreter. The analyzer requires PyYAML, which the system
-# Python typically lacks. Prefer the cosa venv (verified to have yaml installed),
-# fall back to lupin's top-level venv, then the system python as last resort.
+# Pick the Python interpreter. git_loc_delta itself has no PyYAML dep, but the
+# --rich opt-in (§6.2.alt) does, so the same PYBIN selection serves both paths.
+# Prefer the cosa venv, fall back to lupin's top-level venv, then system python.
 PYBIN="$LUPIN_ROOT/src/cosa/.venv/bin/python"
 [ -x "$PYBIN" ] || PYBIN="$LUPIN_ROOT/.venv/bin/python"
 [ -x "$PYBIN" ] || PYBIN="python3"
 
-# Run from lupin's src/ so cosa is on PYTHONPATH
+PROJECT_ROOT="$(git -C . rev-parse --show-toplevel)"
+REPO_NAME="$(basename "$PROJECT_ROOT")"
+BRANCH_SLUG="$(git -C "$PROJECT_ROOT" symbolic-ref --short HEAD)"
+CSV_PATH="$PROJECT_ROOT/io/git-loc-delta/${REPO_NAME}-${BRANCH_SLUG}-loc-delta.csv"
+mkdir -p "$PROJECT_ROOT/io/git-loc-delta"
+
+# Pass 1 — write the persistent per-branch CSV into the TARGET project's io/.
+# We must use --save-output explicitly because git_loc_delta's default path is
+# computed relative to cu.get_project_root() (i.e. LUPIN_ROOT), not relative to
+# --repo-path. Without --save-output, the CSV lands in $LUPIN_ROOT/io/, which
+# is wrong for the cross-repo "every session, every repo" use case.
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_git_loc_delta \
+    --repo-path "$PROJECT_ROOT" \
+    --branch \
+    --output csv \
+    --save-output "$CSV_PATH"
+
+# Pass 2 — emit JSON to stdout for §6.4 renderer (no disk side-effect)
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_git_loc_delta \
+    --repo-path "$PROJECT_ROOT" \
+    --branch \
+    --output json
+```
+
+**Outputs**:
+
+- **Persistent CSV** (Pass 1) at `{PROJECT_ROOT}/io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv` — tidy-long 6-column schema (`date,file_type,added,deleted,files_touched,commits`). Same filename across daily reruns; each call overwrites with the full branch-to-date snapshot.
+- **Structured JSON** (Pass 2) on stdout, consumed by §6.4 renderer.
+
+**JSON shape** (verified against `<lupin>/src/cosa/repo/git_loc_delta/report_formatter.py`):
+
+```json
+{
+  "since": "2026-05-14",
+  "until": null,
+  "branch": "wip-v0.1.3-...",
+  "rev_range": "main..wip-v0.1.3-...",
+  "repo_path": ".",
+  "summary": {
+    "total_added": 367,
+    "total_deleted": 49,
+    "total_files": 14,
+    "total_commits": 9,
+    "total_days": 3,
+    "net": 318
+  },
+  "days": [
+    {
+      "date": "2026-05-14",
+      "added": 88,
+      "deleted": 12,
+      "files_touched": 4,
+      "commits": 3,
+      "by_file_type": [
+        { "file_type": "markdown", "added": 88, "deleted": 12, "files_touched": 4, "commits": 3 }
+      ]
+    }
+  ]
+}
+```
+
+**If the chosen interpreter raises `ModuleNotFoundError`** or either pass exits non-zero: treat as §6.2 failure and fall through to §6.3. The CSV side-effect is best-effort — failure to write does not block session-end (see §6.6).
+
+---
+
+### 6.2.alt) Optional: Rich Language Breakdown (`--rich`)
+
+**When**: User passes `--rich` to the slash-command wrapper (e.g. `/plan-session-end --rich`). Off by default — the per-day table from §6.2 is the canonical day-end shape.
+
+**Purpose**: Adds the language × code/comment/docstring breakdown from `cosa.repo.run_branch_analyzer` as a secondary section appended to the closing `notify()` abstract. Useful when the branch is about to be PR'd and you want the rich language summary alongside the per-day trace.
+
+**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. Additionally, `branch_analyzer` requires PyYAML — the cosa venv has it; lupin's top-level venv may or may not. If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
+
+**Invocation**:
+
+```bash
 cd "$LUPIN_ROOT/src" && \
   "$PYBIN" -m cosa.repo.run_branch_analyzer \
-    --repo-path /absolute/path/to/current/project \
+    --repo-path "$PROJECT_ROOT" \
     --base main \
     --head HEAD \
     --output json
 ```
 
-**If the chosen interpreter raises `ModuleNotFoundError: No module named 'yaml'`**: treat as §6.2 failure and fall through to §6.3.
-
-The analyzer emits this JSON shape (verified in `<lupin>/src/cosa/repo/branch_analyzer/statistics_collector.py`):
+**JSON shape** (verified in `<lupin>/src/cosa/repo/branch_analyzer/statistics_collector.py`):
 
 ```json
 {
@@ -1184,7 +1261,7 @@ The analyzer emits this JSON shape (verified in `<lupin>/src/cosa/repo/branch_an
 }
 ```
 
-Parse and render per §6.4. If invocation fails (non-zero exit, JSON parse error, missing modules), fall back to §6.3.
+Parsed into the same `### Rich Language Breakdown` markdown sub-table at the bottom of §6.4's rendered output. Failure of this section is non-fatal — the per-day summary still ships; just log the stderr line and continue.
 
 ---
 
@@ -1208,7 +1285,7 @@ This gives line totals and per-file counts but **no code/comment/docstring split
 
 ### 6.4) Render the Summary
 
-**Terminal output** (always, both paths):
+**Terminal output** (all paths — §6.2 default per-day, §6.3 native fallback, with §6.2.alt and/or §6.5 appended when enabled):
 
 ```markdown
 ══════════════════════════════════════════════════════════
@@ -1216,12 +1293,27 @@ Day's Work Summary
 ══════════════════════════════════════════════════════════
 
 Branch: wip-v0.1.3-...  →  main
-Files changed: 7  |  Net: +189 lines
+Net: +318 lines  |  Files: 14  |  Days: 3  |  Commits: 9
 
-| Language     | Added | Removed | Net  | Code | Comment | Docstring |
-|--------------|-------|---------|------|------|---------|-----------|
-| Python       | 234   | 45      | +189 | 84.6%| 15.4%   | 0.0%      |
-| Markdown     | 18    | 0       | +18  | 100% | —       | —         |
+### Daily Totals
+
+| Date       | Added | Deleted | Net  | Files | Commits |
+|------------|-------|---------|------|-------|---------|
+| 2026-05-14 |    88 |      12 |  +76 |     4 |       3 |
+| 2026-05-15 |   145 |      28 | +117 |     6 |       4 |
+| 2026-05-16 |   134 |       9 | +125 |     6 |       2 |
+
+### By Date × File Type (top rows)
+
+| Date       | File Type | Added | Deleted | Files |
+|------------|-----------|-------|---------|-------|
+| 2026-05-14 | markdown  |    88 |      12 |     4 |
+| 2026-05-15 | python    |   110 |      18 |     4 |
+| 2026-05-15 | markdown  |    35 |      10 |     2 |
+| 2026-05-16 | python    |    94 |       3 |     3 |
+| 2026-05-16 | markdown  |    40 |       6 |     3 |
+
+CSV: io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv
 ```
 
 If the **Repo Baseline** section is enabled (default ON; see §6.5), append:
@@ -1234,30 +1326,50 @@ If the **Repo Baseline** section is enabled (default ON; see §6.5), append:
 | Python       | 12,403    | 78%  | 12%     | 10%       |
 | Markdown     | 4,221     | 100% | —       | —         |
 
-Today's contribution: +189 LoC against a 16,624-LoC base (≈1.1%)
+Today's contribution: +318 LoC against a 16,624-LoC base (≈1.9%)
 ```
 
-**Notification** (always, both paths) — fire `notify()` with the headline in `message` (TTS-Brevity-Mandate-compliant) and the full table in `abstract`:
+If `--rich` was passed (see §6.2.alt), append:
+
+```markdown
+### Rich Language Breakdown (branch-total)
+
+| Language     | Added | Removed | Net  | Code | Comment | Docstring |
+|--------------|-------|---------|------|------|---------|-----------|
+| Python       | 234   | 45      | +189 | 84.6%| 15.4%   | 0.0%      |
+| Markdown     | 163   | 28      | +135 | 100% | —       | —         |
+```
+
+**Notification** (always, all paths) — fire `notify()` with the headline in `message` (TTS-Brevity-Mandate-compliant) and the full table in `abstract`:
 
 ```python
 notify(
-    message           = "Day's wrap: plus one-eighty-nine lines net across seven files, mostly Python.",
-    abstract          = "<full markdown table from above, including baseline if present>",
+    message           = "Day's wrap: three days net plus three-eighteen across fourteen files. Mostly Python and markdown.",
+    abstract          = "<full markdown table from above, including baseline and/or rich breakdown if present, plus a doc-link to the persistent CSV>",
     notification_type = "task",
     priority          = "medium",
     suppress_ding     = True
 )
 ```
 
+The `abstract` SHOULD include a doc-viewer link to the persistent CSV:
+
+```markdown
+[Open: {repo}-{branch-slug}-loc-delta.csv](/app/docs?path=io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv&scope={project-scope})
+```
+
+(Resolve `{project-scope}` from the session's `doc_scope` envelope per `workflow/cosa-voice-integration.md` § Document Viewer Links.)
+
 **Spoken-headline mandate**: 1 sentence, conversational, **verdicts not inventory**. No file paths, percentages, or hash literals in the spoken line. Per `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
 
-Examples of compliant spoken headlines:
-- *"Day's wrap: plus eighty-nine lines net, mostly markdown updates."*
-- *"Closing summary: light day — twelve lines added across two files."*
-- *"Day's work: net plus one-eighty-nine, Python-heavy with a markdown chaser."*
+Examples of compliant spoken headlines (per-day shape):
+- *"Day's wrap: three sessions, net plus three-eighteen, Python-heavy with a markdown chaser."*
+- *"Closing summary: light day — net plus twelve across two files of markdown."*
+- *"Day's work: five days on the branch, net plus four-fifty across forty files."*
 
 Anti-pattern (DO NOT do this):
 - *"Day's wrap: plus 234 minus 45 in Python at 84.6 percent code 15.4 percent comment 0 percent docstring, plus 18 minus 0 in markdown at 100 percent code..."*
+- *"CSV written to io slash git dash loc dash delta slash..."* (URLs and file paths are TTS-hostile)
 
 ---
 
@@ -1286,9 +1398,12 @@ Parse the same `statistics` shape from `<lupin>/src/cosa/repo/directory_analyzer
 | Failure | Behavior |
 |---------|----------|
 | `LUPIN_ROOT` unset | Fall through to §6.3 native fallback. |
-| `LUPIN_ROOT` set but analyzer scripts missing | Same as unset. |
-| §6.2 cosa invocation exits non-zero | Log stderr to terminal (not abstract); fall through to §6.3. |
-| §6.2 JSON parse error | Same. |
+| `LUPIN_ROOT` set but `run_git_loc_delta.py` missing | Same as unset. |
+| §6.2 Pass 1 (CSV write) exits non-zero or disk full / permission denied | Log stderr to terminal (not abstract); attempt Pass 2 anyway. If Pass 2 succeeds, render summary without the CSV doc-link. If Pass 2 also fails, fall through to §6.3. **Non-fatal**. |
+| §6.2 Pass 2 (JSON) exits non-zero or JSON parse error | Log stderr to terminal; fall through to §6.3. |
+| §6.2 `ModuleNotFoundError` | Log stderr to terminal; fall through to §6.3. |
+| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table silently; per-day summary still ships. **Non-fatal**. |
+| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table silently. **Non-fatal**. |
 | `git merge-base HEAD main` fails | Skip Step 6 with "no main branch" line. |
 | No commits since merge-base | Skip Step 6 with "nothing to summarize" line. |
 | `notify()` call fails | Terminal output still rendered; notification failure is non-fatal. |
@@ -1299,7 +1414,10 @@ In all skip/fallback paths, **continue to Final Verification**. Step 6 is inform
 
 ### 6.7) Cross-References
 
-- **Codebase-analysis skill**: `~/.claude/skills/codebase-analysis/SKILL.md` (canonical reference for analyzer CLI usage)
+- **Git LoC Delta module README** (canonical reference for `git_loc_delta` CLI usage and CSV schema): `<lupin>/src/cosa/repo/git_loc_delta/README.md`
+- **Git LoC Delta R&D plan** (design rationale, acceptance criteria, reuse audit): `<lupin>/src/cosa/rnd/2026.05.16-daily-loc-delta-tool.md`
+- **Session-end integration plan** (this rewrite's plan-of-action): `src/rnd/2026.05.16-git-loc-delta-session-end-integration.md`
+- **Codebase-analysis skill** (canonical reference for all three analyzer CLIs + decision rule): `~/.claude/skills/codebase-analysis/SKILL.md`
 - **Brevity mandate for spoken headline**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate"
 - **Env-var-gated invocation precedent**: `workflow/backup-version-check.md` (same `if env-var set, run; else degrade` pattern)
 - **Markdown table convention**: `workflow/branch-pr-and-merge.md` (file-type breakdown table format)

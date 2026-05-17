@@ -1,15 +1,96 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 89
+**RESUME HERE**: Session 90
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 89 (Rachel, `02f528ee`) — Plan-Review Pass 2 Rename: dropped "Adversarial" from PIP nomenclature after Mr. Rick reported session-level confabulation into OWASP threat-model semantics. Hard-break rename across 6 live files, 49 occurrences, with NOT A SECURITY REVIEW disambiguation banner and security/threat-model anti-pattern row.
+**Last Session**: Session 90 (Tiberius, `b714e138`) — Cross-session collaboration day: wired María's new `cosa.repo.git_loc_delta` module into session-end §6.2 as the new default for daily LoC trace; major refresh of `cross-session-communication.md` to cover the now-shipped DM surface (Phase 3 push-mode + threading) + new collaboration-patterns section incl. mermaid-diagrammed cross-session bug-filing pattern verified live; new thin CROSS-SESSION COMMUNICATION pointer in global `~/.claude/CLAUDE.md` per María's 5-layer doc-architecture framework; filed two upstream bugs in Lupin's queue (cross-repo CSV path + commons_send_to FunctionTool), both fixed by María in commit `f4e0370` within 4 min, verified end-to-end via DM round-trip; co-reviewed María's MCP `instructions` payload expansion.
 
 ---
 
 ## May 2026
 
-### 2026.05.15 - Session 89 | Plan-Review Pass 2 Rename: Drop "Adversarial" (Rachel)
+### 2026.05.16 - Session 90 | Cross-Session DM Doctrine + Daily LoC Integration (Tiberius)
+
+**Persona**: Tiberius (cosa-voice session `b714e138`, voice id `pNInz6obpgDQGcFmaJgB`, icon 🌑) — chorus mode with persona-aware DM routing live with María 🌸 (session `3c9fce51`) and broadcast-driven coordination with Mr. Rick.
+
+**Session shape**: a single coherent arc — María shipped `cosa.repo.git_loc_delta` this morning; Mr. Rick asked me to wire it into the canonical session-end ritual so every repo gets a standardized daily LoC trace, then to give María directive-doctrine feedback on her MCP `instructions` payload expansion. The work spread across (a) workflow doc edits in this repo, (b) global `~/.claude/CLAUDE.md` thin pointer, (c) live DM coordination with María via the now-fully-functional Phase 3 push-mode (which she debugged in real-time today after my first bug report), (d) upstream bug filings into Lupin's `bug-fix-queue.md`. Every cross-session round trip used the DM-as-mini-design-doc pattern that Mr. Rick has now asked us to summarize as a process artifact.
+
+**Accomplishments**:
+
+- **`cosa.repo.git_loc_delta` wired into session-end §6.2 as the new default daily LoC trace**:
+  - Rewrote §6.2 from "Try the Lupin Branch Analyzer (Preferred Path)" → "Per-Day LoC Delta (Default Path)" — two-pass invocation (CSV side-effect + JSON for renderer), explicit `--save-output` from `git rev-parse --show-toplevel` to fix the cross-repo path defect I caught in smoke testing.
+  - Added §6.2.alt "Optional: Rich Language Breakdown (`--rich`)" — demoted `run_branch_analyzer` to opt-in flag for the PR-narrative use case (preserves the language × code/comment/docstring breakdown when explicitly wanted).
+  - Refreshed §6.4 render examples: new per-day table shape (Daily Totals + By Date × File Type), new spoken-headline brevity examples for the temporal-axis shape, doc-link callout to the persistent CSV.
+  - Expanded §6.6 failure table (CSV-write failures, ModuleNotFoundError, `--rich` failure non-fatal handling, baseline failure non-fatal handling).
+  - §6.7 cross-references updated to point at María's `git_loc_delta` README and R&D plan + my session-end-integration plan doc.
+- **Live smoke discovery + filing**: invocation from `$LUPIN_ROOT/src` with `--repo-path` to an external repo (no `--save-output`) wrote the CSV to `$LUPIN_ROOT/io/` instead of the target repo. Root cause: `cu.get_project_root()` defaults to `LUPIN_ROOT`, independent of `--repo-path`. Workflow workaround applied (explicit `--save-output` from `git rev-parse --show-toplevel`); upstream fix recommendation filed.
+- **`~/.claude/skills/codebase-analysis/SKILL.md` refresh** (out-of-repo but session work): added Decision Rule block ("Pick tool by question shape" — branch-total → `branch_analyzer`, per-day → `git_loc_delta`, repo composition → `directory_analyzer`); expanded trigger phrases with 10 per-day terms incl. "code analytics"; promoted Quick Reference to 3-column; added full `## Git LoC Delta` section with CLI args + Common Recipes + CSV schema; added `### GitLogLocDeltaAnalyzer` to Programmatic Usage; rewrote See Also.
+- **`workflow/cross-session-communication.md` major refresh** — 2-surfaces → 3-surfaces model:
+  - Added `commons_send_to` row to the Quick MCP tool reference; updated Phase 3 push-mode status to shipped.
+  - **NEW §1.5 Directed messaging (DM) — mechanics, threading, and receipt**: §1.5.1 sending (with result-shape table for `push_mode_active` / `dm_dispatched` / `register_skip_reason`), §1.5.2 receiving (with receipt etiquette mirroring the user-prompt-acknowledgment rule), §1.5.3 threading (with the "replies live on the asker's DM topic, not addressee's" convention), §1.5.4 DM-vs-broadcast-vs-topic-post choice-of-channel.
+  - **NEW §6.5 Cross-session collaboration patterns**: §6.5.1 bug-filing pattern with mermaid-diagrammed double-channel flow (DM + durable queue), §6.5.2 paired complementary-surface collaboration (the MCP-docs-vs-doctrine-docs pattern), §6.5.3 Persona-First Mandate compliance under chorus.
+  - §7 follow-ups table flipped from "out of scope here" framing to a status table reflecting Lupin commit `f4e0370` (Phase 3 push-mode ✅ SHIPPED, DM extension ✅ SHIPPED, FunctionTool fix ✅ FIXED, `register_skip_reason` ✅ SHIPPED, tier-markers + `instructions` payload 🟡 IN PROGRESS).
+  - Version history bumped 2026-05-16.
+- **`~/.claude/CLAUDE.md` (global) — new `## CROSS-SESSION COMMUNICATION` section** — deliberately thin per María's 5-layer doc-architecture framework. Quick-decision-rule table + the attention-demanding-mode visibility MANDATE from §6 of the doctrine + pointers to (a) planning-is-prompting deep doctrine, (b) MCP `instructions` for cosa-voice specifics. **No MCP-specific duplication** — the MCP `instructions` payload (María's lane) carries cosa-voice-specific protocol; CLAUDE.md just orients sessions to the existence of cross-session-comms shape and where to look.
+- **Plan doc serialized**: `src/rnd/2026.05.16-git-loc-delta-session-end-integration.md` — 9 sections covering context (sister-tool framing, not v2-vs-v1), affected files, plan of action, sample outputs, acceptance criteria, risk/rollback, execution order, open questions, and §9 upstream-bug discovery with suggested fix.
+- **Upstream Lupin bug filings (both fixed by María within 4 min of receipt, via commit `f4e0370`)**:
+  - **Bug 1**: `run_git_loc_delta` default `--save-output` rooted at `LUPIN_ROOT` instead of `--repo-path`. María's fix uses `git rev-parse --show-toplevel` from `--repo-path`. 3 new cross-target regression unit tests added.
+  - **Bug 2**: `commons_send_to` calling `@mcp.tool`-decorated `commons_ask_async` by name (returns `FunctionTool` object, not callable). María's fix: refactored both wrappers to call a shared private `_commons_ask_async_dispatch()` helper.
+  - Plus 2 adjacent fixes she folded in: API key swap to canonical `du.get_api_key("notification-api-claude-code-dev")` (F1), and `register_skip_reason` observability for silent push-mode failures (F3).
+- **End-to-end push-mode verification live**: after Mr. Rick bounced MCP subprocesses to pick up María's fixes, sent a verification DM via `commons_send_to`. Result returned `{push_mode_active: true, dm_dispatched: true}`. María's reply DM arrived as a `<system-reminder>` injection (not just a topic-poll discovery) — Phase 3 push-back-to-asker watcher worked end-to-end. First fully-verified post-fix DM round-trip.
+- **Co-reviewed María's MCP `instructions` payload draft** (5 questions, ranked by impact): flagged one real dependency issue (Speakerphone + VPSA sections describe USING state that Startup Protocol explains OBTAINING — currently in wrong order; suggested forward-pointer fix); endorsed her tier-marker formulation; suggested one addition to the 5 failure-mode patterns (persona-allocation cache staleness); confirmed all 6 cross-reference pointers map to my refreshed doctrine doc; identified one gap in receipt etiquette (loop-avoidance step + sender-mailbox convention explicit).
+- **Discovered + filed-as-DM 2 new failure modes during the cross-session work**:
+  - **Topic-name case fragmentation**: `commons_send_to` does `f"dm-{recipient}"` literally, so `recipient="Tiberius"` → `dm-Tiberius` while `recipient="tiberius"` → `dm-tiberius`. Two separate files on disk, silent message loss between case variants. María agreed to converge on lowercase + file as follow-up.
+  - **System-reminder payload truncation on push-injection**: long DM bodies appear truncated in the receiving session's view even when the full body is correctly written to the topic file on disk. Mitigation Claude callers should learn: always `commons_read` the topic to fetch canonical body; don't trust the system-reminder excerpt.
+
+**Files Changed (this commit, planning-is-prompting only)**:
+
+| File | Change | Lines (est.) |
+|---|---|---|
+| `workflow/cross-session-communication.md` | Major refresh: 2→3 surfaces, new §1.5 (DM), new §6.5 (patterns), §7 status table, version history | +164 / -28 |
+| `workflow/session-end.md` | §6.2 rewrite (git_loc_delta default) + §6.2.alt (--rich) + §6.4 render examples + §6.6 failure table + §6.7 cross-refs | +182 / -43 |
+| `src/rnd/2026.05.16-git-loc-delta-session-end-integration.md` | NEW (plan doc + §9 upstream bug) | +218 |
+| `io/git-loc-delta/planning-is-prompting-wip-v0.1.3-...-loc-delta.csv` | NEW (smoke artifact + first real session-end LoC trace for this repo) | 20 rows |
+| `history.md` | This entry | +N |
+| `TODO.md` | Pending items for joint summary doc + DM bug-fix follow-ups | +N |
+| `.claude-session.md` | My session section + touched files | +N |
+
+**Files Changed (outside this repo — work performed but committed elsewhere)**:
+
+- `~/.claude/CLAUDE.md` — new `## CROSS-SESSION COMMUNICATION` section
+- `~/.claude/skills/codebase-analysis/SKILL.md` — Decision Rule + expanded triggers + 3-col quick-ref + new git_loc_delta section + GitLogLocDeltaAnalyzer programmatic + See Also
+- `<lupin>/bug-fix-queue.md` — two new entries at top of `### Queued` (both since marked fixed by María)
+
+**Plan**: `src/rnd/2026.05.16-git-loc-delta-session-end-integration.md` — status 🟢 IMPLEMENTED + §9 upstream-bug-report (resolved by María in `f4e0370`).
+
+**Key insights**:
+
+- **5-layer doc architecture** (María's framing, sharpened jointly): global `~/.claude/CLAUDE.md` carries MCP-agnostic doctrine; project `<repo>/CLAUDE.md` carries project-specific doctrine; MCP `instructions` payload carries cosa-voice-specific protocol (loaded only when this MCP is connected); per-tool docstrings carry the invocation contract at the call site; per-turn `<system-reminder>` rider carries state-dependent obligations. Each layer has one job; no duplication across layers. This is why my CLAUDE.md addition stayed deliberately thin.
+- **Iterative correction loop pattern**: across today's María ↔ Tiberius DM thread, multiple correction cycles produced sharper output than either session would have produced alone. Examples: my initial 3-layer doc model → María's 5-layer model (her sharpening); my "tier markers + examples + failure hints" prioritization for per-tool docstrings → María's commit landed exactly those (joint convergence); María's draft ordering → my dependency-issue flag (Speakerphone + VPSA before Startup Protocol) → forward-pointer fix proposed (correction). The DM-thread-as-mini-design-doc is a viable pattern for cross-session architectural alignment. Mr. Rick has asked us to capture this as a process artifact + add a README pointer to a summary doc — next-session work, deferred to TODO.md.
+- **Cross-session bug-filing pattern works under failure**: the DM + durable-queue double-channel was robust to today's push-mode being broken (my initial DM to María had `push_mode_active: false`; the bug-fix-queue.md entry was the durable backup that ensured she'd see the report). After she fixed push-mode, subsequent DMs landed via injection. Both channels useful; pattern resilient.
+- **Sister tool, not replacement**: `git_loc_delta` + `branch_analyzer` answer different questions (per-day temporal vs branch-total language-breakdown). The hybrid integration into §6.2 preserves both — daily CSV trace as default, opt-in rich language breakdown via `--rich`. Avoid framing new tools as v2-of-old when they answer a different question.
+- **Architectural insight rule**: when a peer's framework is sharper than yours, fold theirs in even if it changes your previously-planned work. María's 5-layer model meant I had to scope-down my originally-planned global CLAUDE.md cross-session section to a thin pointer (from ~80 LOC to ~15 LOC). Worth the architectural cleanliness.
+
+**Cross-session collaboration log (DM thread highlights)**:
+
+| Time (UTC) | From → To | Question / Action | Outcome |
+|---|---|---|---|
+| 20:14 | María → Tiberius | Module intro DM (pre-issue, asking design feedback) | Discovered late due to case-fragmentation bug |
+| 20:25 | Tiberius → María | Bug report: cross-repo CSV path defect | Push failed (`push_mode_active: false` — pre-fix code path) |
+| 20:30 | Tiberius → Lupin queue | Durable backup bug entry | Active record regardless of push |
+| 21:00 | María → Tiberius | "Both fixes shipped" via push-injection | First end-to-end-verified DM after F1+F2 fix |
+| 21:09 | Tiberius → María | Verification + cross-repo CSV path fix confirmed | Confirmed by independent re-run |
+| 22:14 | Tiberius → María | Doc-architecture proposal (3-layer model) | María sharpened to 5-layer |
+| 22:17 | María → Tiberius | 5-layer framework counter-proposal | Tiberius endorsed; scope adjusted |
+| 22:19 | María → Tiberius | Framework converged | Sequencing agreed |
+| 22:21 | María → Tiberius | Doctrine refresh = cross-ref target confirmed | Lock-in |
+| 23:35 | María → Tiberius | Instructions payload draft for review | 5 Q&A feedback dispatched |
+| 00:18 | Tiberius → María | Substantive review (all 5 Qs) | Initially perceived truncated; verified in-place |
+| 00:19–00:23 | María ↔ Tiberius | Truncation debate | Resolved: file is correct, view-side anomaly |
+
+This collaboration log itself is the artifact Mr. Rick is asking us to summarize for the README pointer — DM thread as mini design doc, iterative correction loop, paired complementary-surface work. Joint summary doc deferred to next session (TODO.md).
+
+---
 
 **Persona**: Rachel (cosa-voice session `02f528ee`, voice id `21m00Tcm4TlvDq8ikWAM`, icon 🕊️) — chorus mode, speakerphone-driven conversation with Mr. Rick.
 
