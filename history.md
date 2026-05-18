@@ -71,6 +71,57 @@
 
 ---
 
+### 2026.05.18 - Session 92 (continued) — V2 Polish Bundle (María + Tiberius + 4 workers)
+
+**Persona**: María 🌸 (cosa-voice session `4ee3e0c1`) — doctrine consultant + documentation owner for PIP-side. Coordinated with Tiberius 🌑 (Manager) for cross-repo commit prep. Workers: Mr. Radio 🦉 (Item #4), Rachel 🕊️ (Item #3), Arnold 🪨 (Items #2 + #5), Rio ⚡ (Item #1).
+
+**Session continuation shape**: Mr. Rick directed the 5 v2 polish improvements identified in postmortem §10.8 to be implemented by the loaded team via divide-and-conquer (Tiberius as Manager-coordinator; the 4 workers as implementers). Cross-repo work — PIP-side items (#2, #4, #5) for doctrine fixes; Lupin-side items (#1, #3) for code fixes (cosa-voice MCP + heartbeat daemon extension).
+
+**Process pattern (new — folded into postmortem as Lesson 12)**: **manager-funnel inverted for proposals-up**. Workers posted proposals to a single commons topic; Tiberius aggregated all 5 into ONE bundled `ask_yes_no` ratification ask to Mr. Rick; Mr. Rick approved the bundle (vs per-proposal). Saved ~7 user-attention units vs per-proposal pattern. Meta-validation: Tiberius's second ratification ask led with the recommendation in spoken voice — Item #2's doctrine working in real-time before its codified implementation landed.
+
+**v2 polish accomplishments (PIP-side, this session-continuation)**:
+
+- **Item #2 (Arnold 🪨)** — Spoken-headline contract added to playbook §Escalation Taxonomy Template. All 7 trigger sub-sections gained `**Spoken headline template**: ...` line above the `**Abstract template**:` (label promotion). 6 ACs grep-verified. Doctrine fix for the Run-2 `neither: "what's your recommendation?"` symptom.
+- **Item #5 (Arnold 🪨)** — Cluster-bundling promoted from informally-optional to playbook default. §6.2 paragraph + §DM-Subset Heuristics Rule 5 + worked-examples table row. Per Run-2 evidence (5 re-lit rounds all closed first-round verbatim using bundled DMs).
+- **Item #4 (Mr. Radio 🦉)** — Persona 2 Author rubric point 9 added: `Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)`. Stage-0 pre-emption of an anti-pattern Pass 2 was repeatedly catching at re-litigation cost. Run 2 hit this 3× (A's AC2/OSQ6, B's AC2/OSQ4(a), B's AC4/OSQ4(b)).
+
+**v2 polish accomplishments (Lupin-side, documented for cross-repo continuity)**:
+
+- **Item #1 (Rio ⚡)** — `ask_multiple_choice` MCP tool gained `default` parameter (parallel to `ask_yes_no`'s existing behavior). Run 2 lost ~10 min when an AFK timeout returned `expired_no_default`. 13 new unit tests + 42/42 regression suite green. **Operational note**: MCP subprocess restart required for new behavior in active sessions (parallel to the truncation-fix episode earlier today).
+- **Item #3 (Rachel 🕊️)** — Per-section message-count budget tracker bolted onto the cascade heartbeat daemon as side-task. ~90 lines daemon + ~140 lines new unit tests (5 passing). 2 new CLI args (`--budget-threshold` default 25; `--section-glob` default `cascaded-prototype-section-*.md`). Backward-compatible.
+
+**Files Changed (this session-continuation, PIP-only)**:
+
+| File | Change | Notes |
+|---|---|---|
+| `workflow/plan-review-cascaded.md` | Items #2 + #5 doctrine (Arnold); version-history bump | 608→644 lines (+36 net) |
+| `workflow/plan-review-cascaded-personas.md` | Item #4 rubric point 9 (Mr. Radio); version-history bump | rubric 8→9 items |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | §10.13 Lesson 12 added (manager-funnel inverted for proposals-up) + v2-bundle telemetry | +60 lines |
+| `history.md` | This entry | +N |
+
+**Files Changed (outside this repo — Lupin)**:
+
+- `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` — Item #3 (Rachel)
+- `<lupin>/src/tests/unit/test_cascade_budget_tracker.py` — NEW (Rachel)
+- Lupin cosa-voice MCP code (Item #1, Rio) — Tiberius prepping commit details
+
+**Documentation process insights (folded into postmortem §10.13)**:
+
+- **Manager-funnel inverts for proposals-up** — same save-user-attention principle as findings-up. Generalizable pattern beyond cascade scope.
+- **Meta-validation in real time** — Tiberius's ratification ask demonstrated Item #2's doctrine BEFORE the codified implementation landed. The doctrine principle is correct independent of codified form.
+- **Prep-don't-commit pattern under cross-repo bundles** — María + Tiberius prep history.md + commit messages + version-history bumps + worker sign-offs; Mr. Rick fires the actual `git commit` per CLAUDE.md `feedback_never_auto_commit_push.md`. Single user-attention point (ratification ask) authorizes both repos' commits.
+- **Worker-free post-completion** — workers post `kind: v2_improvement_complete` entries to the commons topic with full diff/AC/design details. Topic IS the audit trail; commit messages cite it; no retrospective documentation from workers.
+
+**Cross-repo commit coordination** (in progress at session-checkpoint time):
+- María drafts PIP commit prep (this entry + version-history bumps + §10.13 + commit message) + worker sign-off pings (Arnold + Mr. Radio)
+- Tiberius drafts Lupin commit prep + worker sign-off pings (Rio + Rachel)
+- Tiberius fires consolidated ratification ask to Mr. Rick covering both repos
+- On yes: each fires `git commit` with cross-referenced SHAs; Mr. Rick fires `git push` per repo
+
+**Reason this is a continuation segment, not a fresh session entry**: same calendar date (2026.05.18); same persona (María); same session ID (`4ee3e0c1`); direct continuation of the v2 work that the original checkpoint entry teed up.
+
+---
+
 ### 2026.05.17 - Session 91 | Cascaded Plan-Review Pipeline — Design + v1 Scaffolding (María)
 
 **Persona**: María (cosa-voice session `3e0c6e15`, voice id `kcQkGnn0HAT2JRDQ4Ljp`, icon 🌸) — chorus mode, no peer sessions observed today.

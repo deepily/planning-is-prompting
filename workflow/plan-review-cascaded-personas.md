@@ -108,8 +108,9 @@ When producing a section, the author should self-check against the independence 
 6. **Convention 3 (EXECUTOR tags)**: every verification step tagged `EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`
 7. **Convention 4 (TBD markers)**: every unresolved question marked with `TBD` or `Open sub-question N:`
 8. **Convention 5 (Manual E2E semantics)**: if used, "Manual E2E" means "not-yet-automated", NEVER "human does it"
+9. **Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)**: if an `EXECUTOR: AI` tag sits on a verification step whose mechanism is deferred to an Open sub-question, surface the dependency in-line (e.g., `EXECUTOR: AI (executability conditional on OSQ-N resolution)` or an equivalent same-line conditionality note) — or split the AC into a tag-clean piece + an OSQ-gated piece. A bare `EXECUTOR: AI` tag whose mechanism is TBD is structurally rubric-compliant but functionally hollow; Pass 2 (Ownership-Language Audit) would round-trip the finding.
 
-If the author cannot answer "yes" to all eight, the section needs to be split, dependencies need to be made explicit, or conventions need to be applied before handoff to stage 1.
+If the author cannot answer "yes" to all nine, the section needs to be split, dependencies need to be made explicit, or conventions need to be applied before handoff to stage 1.
 
 **Worked example — well-formed vs. tangled section**:
 
@@ -131,6 +132,34 @@ Use a good JWT library. Generate tokens. Test it.
 ```
 
 The well-formed version gives the viability reviewer enough to evaluate Conv 4 markers, gives the ownership reviewer enough to evaluate Conv 3 tags, and gives the usability reviewer something concrete enough to grep for reuse.
+
+**Worked example — Convention-3-tag-vs-Convention-4-deferral (Run-2 evidence)**:
+
+Run 2 of the cascaded review prototype (toy-input email-verification fixture) surfaced this anti-pattern on 3 acceptance criteria across 2 sections. In each case, Stage 3 Ownership review flagged the tag-vs-deferred-infrastructure mismatch; the close pattern was identical.
+
+*Section A AC2 — schema migration verification*:
+
+Before (Stage 0 author_draft):
+
+> `EXECUTOR: AI` — schema migration applies cleanly against a fresh test database; rolled-back migration restores prior state byte-equivalent
+
+OSQ6 deferred the migration-tool name + byte-equivalent comparison procedure. AC carried `EXECUTOR: AI` but the verification mechanism was unspecified — Claude couldn't execute it end-to-end.
+
+After (Stage 3 F1 close):
+
+> `EXECUTOR: AI` — schema migration applies cleanly against a fresh test database; rolled-back migration restores prior state byte-equivalent. **Executability conditional on Open sub-question 6 resolution**: `applies cleanly` = chosen migration tool returns exit code 0 (per the tool named in OSQ6); `byte-equivalent` = comparison procedure named in OSQ6 (e.g., `pg_dump --schema-only | sha256sum`, or `diff` over two full dumps). Until OSQ6 closes, AC2's `EXECUTOR: AI` tag carries a same-line dependence note — once OSQ6 resolves, AC2 is fully Claude-executable.
+
+*Section B AC2 + AC4 — paired Playwright + Manual-E2E*:
+
+Same anti-pattern, mirrored on two ACs. AC2's `EXECUTOR: AI` depended on OSQ4(a) (CI test SMTP collector — Mailhog / aiosmtpd / custom — TBD); AC4's `EXECUTOR: AI` depended on OSQ4(b) (production-like SMTP monitoring endpoint — TBD). Both ACs closed with the same `Executability conditional on OSQ4-(a)/(b) resolution + same-line dependence note + executability transition clause` shape.
+
+**Close pattern (across all 3 instances)**:
+
+- Keep the `EXECUTOR: AI` tag
+- Append a `**Executability conditional on Open sub-question N resolution**:` clause naming concrete example mechanisms
+- Include a transition clause: "Until OSQ-N closes, AC-X's `EXECUTOR: AI` tag carries this same-line dependence note"
+
+**Lesson**: surfacing this dependency at Stage 0 author self-check pre-empts a full Pass 2 round-trip. The cost is one line of in-AC text per affected AC; the savings are a Stage 3 finding + a Round 1 revision cycle per instance.
 
 ---
 
@@ -351,3 +380,4 @@ Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen
 
 - **2026.05.17** — Initial creation. 5 persona briefs and 4 rubrics. Rubric language references the existing `/plan-review` phases (REUSE / Fitness / test-perspective) for doctrine continuity; the rubrics will be refined further during Phase B/C as the manager prompt and review formats are tightened.
 - **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
+- **2026.05.18 (v2 polish bundle post-Run-2)** — Item #4 from postmortem §10.8 v2 roadmap shipped by Mr. Radio 🦉 (Lupin CC session 72e91319) per Mr. Rick's bundled ratification: Persona 2 Author rubric extended with new point 9 — `Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)`. Names the anti-pattern (a bare `EXECUTOR: AI` tag whose mechanism is deferred to an Open sub-question is structurally rubric-compliant but functionally hollow); offers same-line conditionality escape hatch (`EXECUTOR: AI (executability conditional on OSQ-N resolution)`) or AC-split; embeds Pass-2 cross-reference inline. Closing line `all eight` → `all nine`. Worked example appended citing Run 2's 3 instances (Section A AC2/OSQ6, Section B AC2/OSQ4(a), Section B AC4/OSQ4(b)). Stage-0 pre-emption of an anti-pattern Pass 2 was repeatedly catching at re-litigation cost. Full topic record + diff details at commons `v2-improvements-complete-2026-05-18` (Mr. Radio's `kind: v2_improvement_complete` entry 21:56:58 UTC).

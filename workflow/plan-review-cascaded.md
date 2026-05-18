@@ -190,6 +190,8 @@ When an inconsistency-severity finding requires re-opening upstream, the manager
 
 Rule: include the author whenever the finding touches the original design; include any prior reviewer whose decision is directly affected by the new finding. Manager picks the smallest viable subset.
 
+**Cluster-bundling default** (ratified 2026-05-18 post-Run-2): when multiple findings on the same author land in the same stage-close, bundle them into ONE re-litigation DM rather than firing per-finding DMs. The bundled DM enumerates all findings together; the author responds with a single bundled revision. Per-finding classification posts (§6.1) still happen one-per-finding for telemetry — the bundling applies only to the author-DM step.
+
 ### 6.3 Vote management
 
 When manager calls a vote per §5 turn cap:
@@ -365,9 +367,17 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 
 ### Escalation Taxonomy Template
 
-When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice__notify()` with `priority="high"` (do NOT suppress ding — escalations are attention-demanding). The spoken `message` is a one-to-two-sentence conversational verdict; the rich detail goes in the `abstract` per the per-trigger templates below.
+When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice__notify()` (or `ask_multiple_choice`/`ask_yes_no` when the user response gates pipeline progression) with `priority="high"` (do NOT suppress ding — escalations are attention-demanding).
+
+**Spoken-headline contract** (ratified 2026-05-18 post-Run-2): the spoken `message` (or `question` for blocking tools) MUST lead with the manager's recommendation in the form: `"Recommendation: option [X] because [Y]. Approve?"` — a one-to-two-sentence verdict the user can act on by voice without inspecting the abstract. The recommendation appears FIRST; supporting rationale and the option enumeration go in the `abstract`.
+
+**Why** (Run 2 evidence): Run 2's first escalation hit a `neither: "what's your recommendation?"` response when the spoken question was scope-only ("what should we do about Section A finding F1+F2?"). Surfacing the recommendation as the spoken headline removes the user's need to read the abstract before making a voice decision — voice→voice round-trip latency stays low.
 
 #### Trigger 1 — Foundational finding
+
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: re-open Section [X] at Stage [N] because [reason]. Approve?`
+
+**Abstract template**:
 
 ```markdown
 **ESCALATION**: Foundational finding in Section [X], Stage [N]
@@ -385,6 +395,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 
 #### Trigger 2 — Cross-section conflict
 
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: [option Y, e.g. Convention 4 markers] over restructure because [reason]. Approve?`
+
+**Abstract template**:
+
 ```markdown
 **ESCALATION**: Cross-section conflict — no single chain can resolve
 
@@ -397,6 +411,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 
 #### Trigger 3 — Consensus failure after vote (foundational severity)
 
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: I have no preference between the [N] positions; I need your judgment on [foundational issue].`
+
+**Abstract template**:
+
 ```markdown
 **ESCALATION**: Vote deadlocked on foundational severity
 
@@ -408,6 +426,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 ```
 
 #### Trigger 4 — Scope expansion
+
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: [approve/reject/defer] the proposed expansion because [reason]. Approve?`
+
+**Abstract template**:
 
 ```markdown
 **ESCALATION**: Author proposes scope expansion in Section [X]
@@ -424,6 +446,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 
 #### Trigger 5 — Resource blocker
 
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: pause Section [X] pending [resource]; alternate work continues. Approve?`
+
+**Abstract template**:
+
 ```markdown
 **ESCALATION**: Pipeline blocked on external resource
 
@@ -434,6 +460,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 
 #### Trigger 6 — Hard contradiction with user's prior explicit decision
 
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: hold the line on your prior decision [citation]; group's proposal does not override. Confirm?`
+
+**Abstract template**:
+
 ```markdown
 **ESCALATION**: Group proposing something that contradicts your prior decision
 
@@ -443,6 +473,10 @@ When any of the 7 escalation triggers fires, the manager calls `mcp__cosa-voice_
 ```
 
 #### Trigger 7 — Pipeline stall (phantom session)
+
+**Spoken headline template** (per Spoken-headline contract above): `Recommendation: [re-launch / re-assign / park] [stalled persona] because [reason]. Approve?`
+
+**Abstract template**:
 
 ```markdown
 **ESCALATION**: Phantom session detected — pipeline stalled
@@ -471,6 +505,7 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 2. **Always include the author when their design is touched**: any finding suggesting the section's original design choice should be revisited pulls in the author. The author is the only persona who can revise the section.
 3. **Include the directly-affected reviewer**: if a phase-4 ownership finding says "the viability reviewer's accepted approach is untestable", include the viability reviewer.
 4. **Exclude upstream reviewers whose decisions are NOT affected**: if a phase-4 ownership finding only touches the author's section content (not any reviewer's accepted decisions), pull in only the author. Other phases' time is not consumed.
+5. **Cluster-bundle multi-finding stage-closes** (default behavior post-Run-2): when a stage-close produces multiple findings classified inconsistency-or-higher AND all touch the same author, fire ONE bundled re-litigation DM enumerating all findings rather than per-finding DMs. The author's single bundled revision is more efficient (one read, one write) and closes faster (Run 2 evidence: 5/5 bundled rounds closed in 1 round, all verbatim-accepted). Per-finding classification posts still happen one-per-finding for §6.1 telemetry; only the author-DM step is bundled.
 
 **Worked examples**:
 
@@ -480,6 +515,7 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 | Phase 4 ownership on Section A: "the architectural choice from phase-2 viability makes integration testing infeasible" | Author + viability reviewer | Viability's decision being challenged; usability (phase 1) is NOT pulled in |
 | Phase 3 viability on Section C: "the reuse-pattern accepted by usability doesn't fit the constraints" | Author + usability reviewer | Both upstream decisions implicated |
 | Phase 2 viability on Section D: "this assumes infrastructure the author hasn't named" | Author only | No reviewer's accepted decision yet to challenge |
+| Phase 2 viability on Section A producing 2 inconsistencies (e.g. body-vs-TBD inconsistency + cross-section-constraint inconsistency) | Author only, ONE bundled DM | Cluster-bundled default — both findings touch the same author's section text; one read + one bundled revision beats two round-trips. Run 2 evidence: A's F1+F2 closed Round 1 verbatim. |
 
 **Output format** (manager posts to the affected section's discussion topic):
 
@@ -606,3 +642,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
   - **§Manager Behavior → Manager System Prompt** — added "Universal step zero" mandate (disk-read every active topic on every wake event) and a 5-step self-audit checklist before composing any response (Lessons 6 + 11)
   - **§Manager Behavior → Heartbeat Handling** — REWRITTEN as external-scheduler integration spec (Lessons from postmortem §4.2 + §6.B)
   - **Defaults `phantom_detection_mode`** — REMOVED legacy `heartbeat_ping` option (incompatible with turn-based-CC); new default `heartbeat_handling_via_external_scheduler` with `commons_freshness` as the no-scheduler fallback
+- **2026.05.18 (v2 polish bundle post-Run-2)** — Items #2 + #5 from postmortem §10.8 v2 roadmap shipped by Arnold 🪨 (Lupin CC session 919e3269) per Mr. Rick's bundled ratification:
+  - **Item #2 — Spoken-headline contract** for §Manager Behavior → §Escalation Taxonomy Template. Preamble rewritten naming the contract (ratified 2026-05-18 post-Run-2); all 7 trigger sub-sections gained a `**Spoken headline template** (per Spoken-headline contract above): ...` line above the now-label-promoted `**Abstract template**:` block. Recommendation MUST lead the spoken question in form `"Recommendation: option [X] because [Y]. Approve?"` so the user hears the verdict first. Doctrine fix per postmortem §10.7 Finding 13 — Mr. Rick reached for `neither: "what's your recommendation?"` in Run 2 when the recommendation was buried in the abstract.
+  - **Item #5 — Cluster-bundling default** for §6.2 + §Manager Behavior → §DM-Subset Selection Heuristics. New `**Cluster-bundling default**` paragraph in §6.2 calling out §6.1 telemetry-preserved scope; new Rule 5 (`**Cluster-bundle multi-finding stage-closes**`) appended to the existing 4 heuristics; new worked-examples table row covering Run-2-A's F1+F2 bundled-DM case. Promotes cluster-bundling from informally-optional to playbook default per postmortem §10.7 Run 2 evidence (5 re-litigation rounds all closed first-round verbatim using bundled DMs).
+  - File 608→644 lines (+36 net). All 6 ACs grep-verified clean. Zero scope expansion. Full topic record + diff details at commons `v2-improvements-complete-2026-05-18` (Arnold's `kind: v2_improvement_complete` entry 21:57:57 UTC).
