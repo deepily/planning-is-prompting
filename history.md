@@ -1,13 +1,57 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 90
+**RESUME HERE**: Session 91
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 90 (Tiberius, `b714e138`) — Cross-session collaboration day: wired María's new `cosa.repo.git_loc_delta` module into session-end §6.2 as the new default for daily LoC trace; major refresh of `cross-session-communication.md` to cover the now-shipped DM surface (Phase 3 push-mode + threading) + new collaboration-patterns section incl. mermaid-diagrammed cross-session bug-filing pattern verified live; new thin CROSS-SESSION COMMUNICATION pointer in global `~/.claude/CLAUDE.md` per María's 5-layer doc-architecture framework; filed two upstream bugs in Lupin's queue (cross-repo CSV path + commons_send_to FunctionTool), both fixed by María in commit `f4e0370` within 4 min, verified end-to-end via DM round-trip; co-reviewed María's MCP `instructions` payload expansion.
+**Last Session**: Session 91 (María, `3e0c6e15`) — Designed + scaffolded the **cascaded multi-persona plan-review pipeline** (`/plan-review-cascaded`): 5 concurrent CC sessions wrapping `/plan-review` (1 author + 3 reviewers + 1 manager-as-filter) to save user attention on ≥2-section plans. Walked 6 worries + 3 open design questions one-by-one via structured UI; 4 user overrides flagged (most important: config home must travel WITH the workflow, not in lupin-app.ini — caught mid-flow). Pattern 3 implementation: 4 new workflow files (~920 lines), full manager behavior spec (~530 lines), 4 reviewer rubrics aligned with `/plan-review`'s REUSE / Fitness / Ownership-Audit phases. README catalog + `/plan-review` cross-reference shipped. Phase D (prototype run) deferred to dedicated session.
 
 ---
 
 ## May 2026
+
+### 2026.05.17 - Session 91 | Cascaded Plan-Review Pipeline — Design + v1 Scaffolding (María)
+
+**Persona**: María (cosa-voice session `3e0c6e15`, voice id `kcQkGnn0HAT2JRDQ4Ljp`, icon 🌸) — chorus mode, no peer sessions observed today.
+
+**Session shape**: a single long arc with Mr. Rick. Started as `/p-is-p-00-start-here` for an exploratory design conversation about a novel cascaded multi-persona plan-review pipeline. Walked through 6 worries one-by-one (coordination cost, backflow protocol, manager calibration, phantom-session resilience, section-decomposition meta-plan, plus consensus-turn-cap rolled in) and 3 open design questions (architecture / prototype-scope / persona-casting) via `ask_multiple_choice` batches with my recommended defaults pre-filled. User overrode 4 defaults — most important caught mid-flow: workflow defaults must travel WITH the planning-is-prompting workflow (markdown), NOT live in `lupin-app.ini` (consumer runtime). Design doc rewritten to segregated-markdown-defaults pattern, implementation footprint simplified dramatically (no INI / splainer / `configuration_manager` interaction). Pivoted through `/p-is-p-01-planning` (Pattern 3, no Step 2 docs) into Phase A-E execution; 18 of 21 implementation tasks completed; Phase D (prototype run) needs ≥5 CC sessions + real-time user — deferred to a dedicated session.
+
+**Accomplishments**:
+
+- **Design conversation (pre-planning)**: walked through 6 worries + 3 open design questions, all via structured-UI multi-choice batches with my recommendations pre-flagged. Produced 22 configuration defaults, 3-tier severity taxonomy (cosmetic / inconsistency / foundational), 7-trigger escalation taxonomy.
+- **Design doc serialized**: `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` — created at ~280 lines, then updated 7 times across the session as design evolved. Final doc covers problem statement + mermaid pipeline diagram, 8 design decisions, full 22-key defaults table with override mechanism, user-overrides table, phased v1/v2 implementation plan, open items, references.
+- **4 user overrides flagged in design doc §5**: (a) `persona_activation = all_hot` (vs my proposed `hybrid`), (b) `budget_threshold = 25` (vs proposed `50`), (c) `phantom_reassignment = park_and_escalate` (vs `respawn` — platform reality: can't spawn new CC sessions), (d) **`prototype_scope ≥ 2 sections`** (vs `1` — parallelism is N≥2 by definition), and the structural correction (e) **config home = planning-is-prompting workflow** (vs `lupin-app.ini` — portability across consuming projects).
+- **Phase A — 4 workflow files scaffolded** (~920 lines): `workflow/plan-review-cascaded-defaults.md` (22 keys × 7 categories with allowed-values discipline + 2-flavor override mechanism + worked resolution example); `workflow/plan-review-cascaded-personas.md` (5 persona briefs + 4 rubrics); `workflow/plan-review-cascaded.md` (manager's playbook — Steps 1-8 + facilitation duties); `.claude/commands/plan-review-cascaded.md` (slash command wrapper, dynamically picked up by Claude Code as soon as written).
+- **Phase B — manager behavior spec** (~530 lines added to playbook §Manager Behavior): system prompt with 5 meta-rules, severity classification heuristics with worked examples per tier, escalation taxonomy template with all 7 triggers fully spelled out, DM-subset selection heuristics with 4 worked-example rows, vote mechanics spec (commons topic format + tally + tiebreaker), heartbeat ping protocol (cadence + timeout-interpretation table).
+- **Phase C — reviewer rubric refinements** (4 rubrics in personas doc): refactored to align cleanly with existing `/plan-review` phases — usability/reuse → REUSE pre-pass, viability/gap → Pass 1 Fitness, testing → Pass 2 Ownership-Language Audit (NOT generic test coverage). Each rubric now includes `/plan-review` phase mapping, Conventions 1-5 grep responsibility, three-layer anchor stack awareness, concrete examples, anti-patterns. **Open flag**: "Testing Reviewer" role name kept as conversational shorthand from our discussion; rubric is actually Pass 2 Ownership-Language Audit. Rename pending user decision (would touch 3 files).
+- **Phase E — doctrine integration**: README.md gets `[C.6]` Cascaded Plan Review entry in the workflow catalog; `workflow/plan-review.md` gets "For large plans (≥2 sections)" callout pointing to `/plan-review-cascaded` with the wrapper-around-`/plan-review` framing.
+- **3 memories saved** at `~/.claude/projects/-mnt-DATA01-…/memory/`: `feedback_ask_via_structured_ui.md` (in speakerphone/chorus mode, ALL questions go through structured UI — even meta ones like "ready to move on?"); `feedback_workflow_defaults_travel_with_workflow.md` (planning-is-prompting workflow defaults must live in `workflow/` markdown, NEVER in a consumer-project runtime INI); `project_cascaded_plan_review_pipeline.md` (project context anchor for future sessions). MEMORY.md index updated.
+
+**Files Changed (this commit, planning-is-prompting only)**:
+
+| File | Change | Lines (est.) |
+|---|---|---|
+| `workflow/plan-review-cascaded-defaults.md` | NEW — 22 keys + 2-flavor override mechanism + worked example | +280 |
+| `workflow/plan-review-cascaded-personas.md` | NEW — 5 personas + 4 refined rubrics + worked examples + anti-patterns | +390 |
+| `workflow/plan-review-cascaded.md` | NEW — manager playbook + full §Manager Behavior spec | +820 |
+| `.claude/commands/plan-review-cascaded.md` | NEW — slash command wrapper | +65 |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | NEW — design doc (created + updated 7 times across the session) | +400 |
+| `README.md` | Added `[C.6]` Cascaded Plan Review entry to the workflow catalog | +1 / -1 |
+| `workflow/plan-review.md` | Added "For large plans" callout pointing to `/plan-review-cascaded` | +2 |
+| `history.md` | This entry | +N |
+| `TODO.md` | Added Phase D (prototype) items + Testing-Reviewer role-name decision item | +N |
+
+**Files Changed (outside this repo — memory work)**:
+
+- `~/.claude/projects/-mnt-DATA01-include-www-deepily-ai-projects-planning-is-prompting/memory/feedback_ask_via_structured_ui.md` — new
+- `~/.claude/projects/.../memory/feedback_workflow_defaults_travel_with_workflow.md` — new
+- `~/.claude/projects/.../memory/project_cascaded_plan_review_pipeline.md` — new
+- `~/.claude/projects/.../memory/MEMORY.md` — index updated with 3 new entries
+
+**Deferred to dedicated session (Phase D — prototype run)**: pick a ≥2-section input plan (NOT the cascaded-pipeline plan itself — dogfooding loop risk); define telemetry hooks (intervention count, message count, wall-clock, per-stage breakdown); run prototype with 5 CC sessions in 5 tmux panes; baseline-compare against serial `/plan-review` on same input; write findings memo into design doc §10.
+
+**Process insight worth capturing**: the structured-UI multi-choice batch pattern with my recommendations pre-flagged turned the design conversation into a high-throughput dialogue — user confirmed/overrode my picks rapidly without me having to defend each one. Several user overrides were sharper than my recommendations (especially `prototype_scope ≥ 2 sections` correcting my N=1 framing — parallelism cannot be validated on a single item; and the `lupin-app.ini` → `workflow/` correction that simplified the whole implementation). The "all questions go through the UI" feedback rule (saved as memory) was load-bearing — once it landed, the pacing got dramatically smoother.
+
+---
 
 ### 2026.05.16 - Session 90 | Cross-Session DM Doctrine + Daily LoC Integration (Tiberius)
 
