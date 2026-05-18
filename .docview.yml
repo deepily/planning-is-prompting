@@ -1,0 +1,32 @@
+version: 1
+
+# Doc-viewer scope manifest for planning-is-prompting.
+#
+# This file makes root-level Markdown tracking files (TODO.md, history.md, etc.)
+# doc-link-eligible via the /app/docs endpoint. Without it, the gate falls back
+# to the Lupin INI's directory-prefix-only `allowed prefixes` and root files 404.
+#
+# Read at lupin-rest-dev FastAPI startup. After editing, bounce:
+#   docker restart lupin-rest-dev
+#
+# Reference: Lupin design doc src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md
+# URL form:  /app/docs?path=planning-is-prompting/<rel>   (legacy ?scope= is ignored)
+
+allowed_prefixes:
+  - src/
+  - workflow/
+  - docs/
+
+allowed_root_files:
+  # Always part of PIP doctrine surface
+  - README.md
+  - CHANGELOG.md
+  - TODO.md
+  - history.md
+  - CLAUDE.md
+  # Bug-fix-mode artifact — file present only when bug-fix-mode is installed,
+  # but listing is harmless when absent (gate is whitelist-only;
+  # filesystem check happens at request time, returns clean 404).
+  - bug-fix-queue.md
+
+extra_blocklist: []

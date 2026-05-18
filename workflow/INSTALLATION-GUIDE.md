@@ -153,6 +153,46 @@ Before installing workflows, ensure:
 - You've defined a `[SHORT_PROJECT_PREFIX]` for your project (e.g., `[AUTH]`, `[LUPIN]`, `[WS]`)
 - Your global `~/.claude/CLAUDE.md` is configured with notification settings
 
+### Doc Viewer Readiness (`.docview.yml`)
+
+If your project will use cosa-voice notifications with doc-viewer links (the `[Open: …](/app/docs?path=…)` pattern in `notify()` abstracts), drop a `.docview.yml` manifest at your repo root. Without it, root-level tracking files (`TODO.md`, `history.md`, `README.md`, `CLAUDE.md`, `bug-fix-queue.md`) will 404 when linked.
+
+**Why**: the doc-viewer gate's directory-prefix-only `allowed_prefixes` (configured via Lupin INI `external repos`) does not cover individual root files. The `.docview.yml` manifest's `allowed_root_files` whitelist supplies the per-file granularity — and overrides the INI prefixes when present per Q2-C semantics.
+
+**Template** (canonical PIP-shipped — copy as-is, then trim or extend for project-specific needs):
+
+```yaml
+version: 1
+
+allowed_prefixes:
+  - src/
+  - workflow/
+  - docs/
+
+allowed_root_files:
+  # Always part of PIP doctrine surface
+  - README.md
+  - CHANGELOG.md
+  - TODO.md
+  - history.md
+  - CLAUDE.md
+  # Bug-fix-mode artifact — file present only when bug-fix-mode is installed,
+  # but listing is harmless when absent (gate is whitelist-only;
+  # filesystem check happens at request time, returns clean 404).
+  - bug-fix-queue.md
+
+extra_blocklist: []
+```
+
+**Notes**:
+- Entries pointing at non-existent files are silently OK at startup — the manifest loader does no filesystem validation. A view request for an absent listed file gets a clean 404 from the file resolver (not a 400 from the gate).
+- **Adjust `allowed_prefixes` per project** — most code projects also want `src/cosa/`, `src/lupin_mcp/`, etc.
+- **URL form** (canonical post-2026.05.15 unification): `/app/docs?path=<project>/<rel>` — first path segment names the project. The legacy `?scope=` query param is ignored.
+- After dropping the file or editing it, bounce the doc-viewer backend (e.g., `docker restart lupin-rest-dev`) to pick it up. Manifests are read once at FastAPI startup.
+- Design background: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`.
+
+**Verification**: hit `/api/docs/health?scope=<project>&path=TODO.md` — should report `exists=true`. Or open `/app/docs?path=<project>/TODO.md` in a browser.
+
 ### Slash Command Naming Convention
 
 **IMPORTANT**: When installing workflow wrappers from planning-is-prompting, **keep the source repository's prefix** (`plan-`):

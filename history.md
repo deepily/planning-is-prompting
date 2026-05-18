@@ -1,13 +1,75 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 91
+**RESUME HERE**: Session 92 (checkpoint mid-session; Run 3 + v2 improvements in flight)
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 91 (María, `3e0c6e15`) — Designed + scaffolded the **cascaded multi-persona plan-review pipeline** (`/plan-review-cascaded`): 5 concurrent CC sessions wrapping `/plan-review` (1 author + 3 reviewers + 1 manager-as-filter) to save user attention on ≥2-section plans. Walked 6 worries + 3 open design questions one-by-one via structured UI; 4 user overrides flagged (most important: config home must travel WITH the workflow, not in lupin-app.ini — caught mid-flow). Pattern 3 implementation: 4 new workflow files (~920 lines), full manager behavior spec (~530 lines), 4 reviewer rubrics aligned with `/plan-review`'s REUSE / Fitness / Ownership-Audit phases. README catalog + `/plan-review` cross-reference shipped. Phase D (prototype run) deferred to dedicated session.
+**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end**. Cascade design hypothesis VALIDATED. Postmortem (with Tiberius's collaborative manager-side input) → §10 findings memo into design doc with both runs' data + 5 actionable v2 recommendations + visual-contrast diagrams (old serial baseline vs new cascade). 5 workflow doctrine updates landed pre-Run-2 (playbook §6.4 rewrite, manager system prompt with universal-step-zero + self-audit, briefing template dual-delivery, manager-classification audit trail, severity schema 6-field expansion). Heartbeat-daemon (`<lupin>/src/scripts/cascade_heartbeat_scheduler.py`) shipped by Tiberius + smoke-tested + ran through Run 2 with zero phantoms. `.docview.yml` infrastructure added at repo root + Doc Viewer Scope doctrine (via Tiberius's Rio-fix collaboration). Mr. Rick currently dividing v2 polish across the team for Run 3.
 
 ---
 
 ## May 2026
+
+### 2026.05.18 - Session 92 — checkpoint (María, `4ee3e0c1`) — IN PROGRESS
+
+**Persona**: María 🌸 (cosa-voice session `4ee3e0c1`, voice id `kcQkGnn0HAT2JRDQ4Ljp`) — chorus mode, doctrine consultant role across two prototype runs. Tiberius 🌑 as Manager (`4e724860`); Mr. Radio 🦉 (Author), Rachel 🕊️ (Usability), Arnold 🪨 (Viability), Rio ⚡ (Ownership) as workers.
+
+**Session shape**: 1 long arc spanning ~7 hours. Started as continuation of Session 91. Walked through doc-link infrastructure fix → 5 workflow doctrine updates → Run 1 prototype (partial, abandoned mid-cascade after 3 cross-section foundational escalations) → Run 1 postmortem (with Tiberius's collaborative review) → heartbeat-daemon spec + Tiberius's daemon-ship + smoke-test → Run 2 prototype (COMPLETE end-to-end, ~49 min wall-clock, 21 findings, 1 escalation, 100% severity-proposed match) → §10 findings memo into design doc → visual-contrast diagrams.
+
+**Accomplishments (checkpoint scope)**:
+
+- **Doc-link infrastructure**: `.docview.yml` at repo root (Tiberius's grouped template with `allowed_root_files` for TODO.md, history.md, README.md, CLAUDE.md, bug-fix-queue.md, CHANGELOG.md); PIP `CLAUDE.md` "Doc Viewer Scope" section rewritten with canonical URL form (`/app/docs?path=<scope>/<rel>`, legacy `?scope=` ignored); `workflow/INSTALLATION-GUIDE.md` gained "Doc Viewer Readiness" subsection under Prerequisites with full template + bounce-and-verify steps.
+
+- **Ownership Reviewer rename** (Session 91 carryover): renamed "Testing Reviewer" → "Ownership Reviewer" across 3 files (personas + playbook + design doc); 13 surgical edits + 4 cleanup (Test-perspective subsection → Verification observability, stage-3 label, vote tally, `TestingPedant` → `OwnershipAuditor`); provenance paragraph rewritten; version history entries added; substantive design-doc correction (dropped spurious 4th "Test-perspective evaluation" phase that doesn't exist in `/plan-review`).
+
+- **Run 1 cascaded prototype (partial)**: ran ~14:55-15:50 UTC with 5 sessions (Tiberius Manager + Mr. Radio Author + Rachel Usability + Arnold Viability + Rio Ownership) on synthesized toy email-verification plan. Surfaced 12 findings; 9 absorbed by manager; 3 cross-section foundational escalated (schema contradiction, AC mis-scoping, missing interface). Abandoned mid-cascade due to compound dormancy + read-truncation failure modes.
+
+- **Run 1 postmortem** (`src/rnd/2026.05.18-cascaded-prototype-postmortem.md`): 3 failure modes documented (write truncation pre-existing, read-side truncation NEW, turn-based-CC limitation LOAD-BEARING), 11 operational lessons, 3-tier recommendations (cheap/medium/heavy), proposed rerun protocol. Tiberius's collaborative manager-side input doc (`postmortem-tiberius-input.md`) provided Q1-Q5 answers + 6 additional manager-seat lessons + 5 schema additions; folded into main postmortem before finalization.
+
+- **5 workflow doctrine updates** (pre-Run-2 v2 doctrine tightening, all in `workflow/plan-review-cascaded.md` + `plan-review-cascaded-defaults.md`): (1) §6.4 Heartbeat REWRITTEN as external-scheduler-driven (acknowledges turn-based-CC limitation); (2) Manager System Prompt + Universal Step Zero + 5-step self-audit checklist; (3) Briefing template ack-format clarification ("acknowledge Manager's DM specifically, not doctrine consultant's") + dual-delivery doctrine (DM + topic post); (4) Manager-classification posts required at every stage-close (worker-facing audit trail); (5) Severity-tag metadata schema expanded with 6 fields (severity, cross_section, closure_action, parent_finding, rounds_used, votes_called) with two-stamp convention. `phantom_detection_mode` default flipped to `heartbeat_handling_via_external_scheduler`; legacy `heartbeat_ping` REMOVED.
+
+- **Heartbeat daemon shipped (Tiberius)**: `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` + wrapper `start-cascade-heartbeat.sh`. Python daemon chosen over `/schedule` skill (per-tick cost analysis: skill spawns CC session per tick = ~$0.50 over 30-min cascade; daemon = sub-second + zero per-tick cost). Spec adherence: zero divergence from postmortem §6.B (manager-only scope, 2-3 min active / 5+ idle, 3-strikes dead-man's-switch). Smoke-tested live + ran through Run 2 with zero phantoms. Cascade-complete signal via `kind: "cascade_complete"` on input-plan topic; daemon exits cleanly on next tick. Bug found + fixed mid-smoke: size-based new-content scoping (initial detection-by-grep matched historical Run-1 cascade_complete post).
+
+- **Run 2 cascaded prototype (COMPLETE end-to-end)**: ran 19:12:30 → 20:03:30 UTC = 49m 18s. All 8 stages closed cleanly. 21 findings (12 cosmetic / 8 inconsistency / 1 foundational). 5 re-litigation rounds, ALL single-round verbatim accepts. 1 escalation (Section B Arnold F1 plan-decomposition gap, user-ratified `documented_for_telemetry`). 100% `severity_proposed` → manager-final match rate. 4 cross-section findings. 0 votes called, 0 phantoms detected. Pre-ack rate 0/4 (Lesson 5 fix HELD vs Run 1's 3/4). Detection-delay negligible (heartbeat daemon + universal-step-zero WORKED). Cascade value proposition VALIDATED.
+
+- **§10 findings memo** (in design doc `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`): 12 sub-sections covering executive summary, both runs' detailed data, run-1-vs-run-2 deltas table, 3 failure modes with final status, 11 operational lessons with validation status, 4 new Run-2 findings (Findings 12-15: ask_multiple_choice default param missing, recommendation-as-headline doctrine fix, per-section message-count tracking gap, Convention 3 anti-pattern), top 5 actionable recommendations, v2 roadmap, references, verdict.
+
+- **Visual-contrast diagrams** (§10.12 Visual contrast): two mermaid diagrams added — (a) OLD serial baseline showing user as sole gate / attention sink with every finding flowing through; (b) NEW cascade showing Manager filter, parallel sections, heartbeat daemon, doctrine consultant. Color-coded for sharp visual contrast. Demonstrates measured Run-2 outcome: 21 findings → 20 absorbed in-group → 1 escalated to user (vs old serial pattern where every finding consumes user attention).
+
+- **v2 improvement bundle divide-and-conquer spec**: Mr. Rick directed me to chunk the 5 v2 improvements across the loaded team (Tiberius stays Manager-coordinator; the 4 workers become implementers). Drafted full spec for each item (scope, files, acceptance, effort, suggested casting); DM'd Tiberius for collaborative casting + dispatch. Implementation in flight at checkpoint time.
+
+**Files Changed (this checkpoint, planning-is-prompting only)**:
+
+| File | Change | Notes |
+|---|---|---|
+| `.docview.yml` | NEW | Tiberius's grouped template at repo root |
+| `CLAUDE.md` | Doc Viewer Scope section rewritten | new URL form + allowed_root_files enumerated |
+| `workflow/INSTALLATION-GUIDE.md` | NEW Doc Viewer Readiness subsection under Prerequisites | |
+| `workflow/plan-review-cascaded.md` | §6.4 REWRITTEN + Manager System Prompt updates + §Step 4 ack-format + §6.1 manager-classification + briefing dual-delivery + version history | doctrine bundle |
+| `workflow/plan-review-cascaded-personas.md` | Ownership Reviewer rename + Test-perspective → Verification observability + provenance paragraph rewrite + version history | |
+| `workflow/plan-review-cascaded-defaults.md` | NEW Severity-tag metadata schema (6 fields) + phantom_detection_mode default update + version history | |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | §10 findings memo (12 subsections incl. visual-contrast diagrams) + cascade-doc minor edits | |
+| `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` | NEW | Run 1 postmortem with Tiberius input folded in |
+| `src/rnd/2026.05.18-cascaded-prototype-postmortem-tiberius-input.md` | NEW | Tiberius's manager-side companion input |
+| `src/rnd/2026.05.18-toy-input-plan-email-verification.md` | NEW | Synthesized 2-section toy plan used for both runs |
+
+**Files Changed (outside this repo — Lupin)**:
+- `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` (NEW — Tiberius's daemon)
+- `<lupin>/src/scripts/start-cascade-heartbeat.sh` (NEW — wrapper)
+- `<lupin>/src/cosa/config/docview_manifest.py` etc (Rio's truncation fix per his investigation)
+
+**Process insights worth capturing**:
+
+- **Iterative-correction-loop with peer session via DM thread** (continued from Session 90): Tiberius's manager-side input doc on the Run-1 postmortem added 6 lessons + 5 schema fields + the load-bearing turn-based-CC insight I missed. Run 2 succeeded because of joint-iteration on the Run-1 lessons. Same pattern that worked with Cross-Session DM Doctrine the day before.
+
+- **Run-2-vs-Run-1 was a controlled experiment with shared fixture**: same toy plan, same casting, same workflow doctrine (with 5 fixes layered in). The deltas measured ARE the doctrine improvements' effects, not noise. Pre-ack rate 3/4 → 0/4 is the cleanest single-variable result.
+
+- **Heartbeat-daemon-as-external-clock**: the load-bearing v2 insight from Run 1 was that CC sessions are turn-based. The architectural fix was an external scheduler ticking the manager. Run 2 proved this works in practice — zero phantoms, detection-delay negligible, daemon exits cleanly on cascade-complete signal. Generalizable pattern for any cascade-shaped CC workflow.
+
+- **Divide-and-conquer is the right shape for v2 polish**: the 5 v2 improvements identified in §10 are all small (15 min to 2 hr each) and mostly independent. Distributing across the loaded team (Tiberius Manager + 4 workers in implementer role) lets us ship Run-3-ready in ~2-3 hours wall-clock vs sequential ~3-5 hours from a single session. Mr. Rick's directive on this was sharp.
+
+**Checkpoint reason**: Mr. Rick requested mid-session checkpoint to push the §10 diagrams to GitHub for remote viewing. Session is NOT over — v2 improvement implementation is in flight; Run 3 follows after v2 complete.
+
+---
 
 ### 2026.05.17 - Session 91 | Cascaded Plan-Review Pipeline — Design + v1 Scaffolding (María)
 

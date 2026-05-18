@@ -67,11 +67,33 @@ The agent (Claude) is the configuration consumer. The workflow rules in `plan-re
 | `vote_tiebreaker_policy` | `severity_dependent` | What happens on a tied vote. Allowed: `severity_dependent` (manager breaks tie on cosmetic/inconsistency, escalates on foundational), `manager_always_breaks_tie`, `always_escalate_to_user`. |
 | `vote_electorate` | `four_substantive_personas` | Who casts votes when discussion deadlocks. Allowed: `four_substantive_personas` (author + 3 reviewers; manager arbitrates), `all_five_including_manager`, `disputants_only` (author + objecting reviewer). |
 
+### Severity-tag metadata schema (added 2026-05-18 post-Run-1)
+
+When the manager classifies a finding (per playbook §6.1) and posts a `kind: "manager_classification"` entry to a section topic, the post's `metadata` field MUST carry the following keys:
+
+| Field | Type | Required | Purpose |
+|-------|------|----------|---------|
+| `severity` | enum: `cosmetic` \| `inconsistency` \| `foundational` | ✓ | Primary classification tier; drives the §6.1 routing |
+| `cross_section` | bool | ✓ | Orthogonal to severity — captures whether the finding's resolution touches more than the section the finding originated in |
+| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
+| `parent_finding` | string (finding-id) | optional | When a downstream stage's finding sharpens an upstream finding (e.g., Arnold's F4 sharpens Rachel's earlier cross-section coupling note), link them so the lineage is preserved |
+| `rounds_used` | int | ✓ | Re-litigation rounds consumed (0 if no re-litigation needed) |
+| `votes_called` | int | ✓ | Votes invoked for this finding (>0 means contentious) |
+
+**Two-stamp convention**:
+- Reviewers stamp `severity_proposed` on their original finding posts (their best guess at severity)
+- Manager stamps the authoritative `severity` + the rest of the fields at classification time
+- Both visible for proposed-vs-final comparison in post-run telemetry
+
+**Telemetry consumption**: the postmortem-style scrape reads the cumulative metadata to produce: severity distribution, cross-section finding rate, re-litigation depth distribution (mean/p95 rounds), and vote-call rate.
+
+**See also**: `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` §7.8 for the consuming telemetry plan; playbook §6.1 for the classification routing that triggers the post.
+
 ### Phantom session resilience
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `phantom_detection_mode` | `heartbeat_ping` | How the manager detects dead/stalled persona sessions. Allowed: `heartbeat_ping` (periodic DM with no-op), `commons_freshness` (poll `commons_who` for stale `last_post_ts`), `bridge_file_mtime`. |
+| `phantom_detection_mode` | `heartbeat_handling_via_external_scheduler` | How the manager detects dead/stalled persona sessions. Allowed: `heartbeat_handling_via_external_scheduler` (default, post-2026-05-18 — external scheduler pokes the manager every 2-3 min; manager applies universal-step-zero disk-read on each poke to detect stale workers — see playbook §6.4), `commons_freshness` (manager polls `commons_who` for stale `last_post_ts` on each wake event — fallback when no external scheduler is configured), `bridge_file_mtime`. The legacy `heartbeat_ping` (manager fires periodic pings to peers) was REMOVED 2026-05-18 — it was incompatible with turn-based-CC and unrecoverable without an autonomous tick source. |
 | `stall_threshold_minutes` | `10` | Time without persona response before declaring phantom. |
 | `phantom_reassignment_policy` | `park_and_escalate` | What happens when a persona is declared phantom. Allowed: `park_and_escalate` (section pauses, user decides — *required under current platform: manager cannot spawn new CC sessions*), `respawn_same_persona` (manager spawns fresh — **requires v2 bounded-job infrastructure**), `swap_to_alternate_persona`. |
 | `phantom_recovery_context` | `commons_log_recent_discussions` | What context a respawned persona inherits. Currently moot under `park_and_escalate`; activated if bounded-job respawn is enabled in v2. Allowed: `commons_log_recent_discussions`, `manager_summary_brief`, `fresh_start_no_context`. |
@@ -169,5 +191,9 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.18 (post-Run-1 doctrine update)** — Two changes per the Run-1 postmortem (full doc at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`):
+  1. **NEW §Severity-tag metadata schema** — manager-classification posts now carry 6 metadata fields (severity, cross_section, closure_action, parent_finding, rounds_used, votes_called). Two-stamp convention (reviewer stamps `severity_proposed`; manager stamps authoritative `severity` + rest) enables proposed-vs-final telemetry comparison. Per Tiberius's Q4 input on the postmortem.
+  2. **`phantom_detection_mode` default REPLACED** — legacy `heartbeat_ping` removed (incompatible with turn-based CC sessions, which cannot fire autonomous pings). New default: `heartbeat_handling_via_external_scheduler` (external scheduler pokes manager; manager applies universal-step-zero disk-read on each poke). `commons_freshness` retained as fallback when no scheduler is configured. See playbook §6.4 for the integration spec.
 
 - **2026.05.17** — Initial creation. 22 keys captured from the pre-planning conversation that produced `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`. Four keys reflect user overrides on my initial proposals (`persona_activation`, `budget_enforcement_threshold`, `phantom_reassignment_policy`, `prototype_scope`).

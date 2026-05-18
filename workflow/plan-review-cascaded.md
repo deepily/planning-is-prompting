@@ -21,6 +21,18 @@ Before invoking this workflow:
 1. **5 Claude Code sessions launched** (typically 5 tmux panes). Each session is a peer; the cosa-voice MCP server allocates a persona to each (María, Tiberius, etc.)
 2. **The user designates one session as the manager** by invoking `/plan-review-cascaded` in that session — that session becomes the manager and drives this playbook
 3. **The user provides an input plan** to be reviewed (a path to a markdown plan, or pasted content)
+4. **External heartbeat scheduler running** (added 2026-05-18 post-Run-1 doctrine): a scheduler outside CC pokes the manager every 2-3 min during active cascade to compensate for turn-based-CC's lack of autonomous ticks. See §6.4 for the integration spec. If no scheduler is running, the cascade can still execute but will accumulate significant detection-delay; for production runs the scheduler is mandatory.
+
+## Briefing delivery (optional doctrine consultant pattern)
+
+When a doctrine consultant (a separate CC session whose role is to explain the workflow + observe telemetry) participates in the run, the orientation briefing **must be delivered both ways**:
+
+1. **As a direct DM to the Manager session** — this is the canonical handoff that establishes the manager's GO signal. Without it, the manager doesn't know the briefing has been issued.
+2. **As a topic post on the briefing topic** (e.g., `cascaded-prototype-briefing`) — this is the workers' reference for context. Workers should read but NOT ack this post.
+
+Both deliveries are required because the Manager doesn't auto-subscribe to the briefing topic; workers benefit from the topic post's persistence and shareability. Without the direct DM, the GO signal can be lost — Run 1 hit exactly this gap and required a hand-DM rescue from the doctrine consultant.
+
+If the run has no doctrine consultant, the Manager reads the playbook + defaults + personas docs at workflow launch and proceeds directly to Step 1 without orientation.
 
 ---
 
@@ -70,11 +82,16 @@ If the user rejects the decomposition, ask via `converse()` for redirection (dif
 Per `persona_casting_strategy = user_assigns_at_launch`, the user has already chosen which 4 other sessions participate. The manager:
 
 1. Identifies the 4 peer sessions via `mcp__cosa-voice__commons_who()`
-2. DMs each session a role assignment (one of: author, usability/reuse reviewer, viability/gap reviewer, testing reviewer)
-3. Each role DM includes a pointer to the persona's brief in `plan-review-cascaded-personas.md`
-4. Each persona acknowledges by posting to a launch confirmation topic; manager waits for all 4 acks before proceeding
+2. DMs each session a role assignment (one of: author, usability/reuse reviewer, viability/gap reviewer, ownership reviewer)
+3. Each role DM includes:
+   - The persona's role name and stage number
+   - A pointer to the persona's brief in `plan-review-cascaded-personas.md`
+   - **Explicit ack instruction** (post-Run-1 doctrine tightening): "Acknowledge **this DM** specifically (not any prior briefing from the doctrine consultant) by replying with `ready, [role name]`. Wait for this DM as the formal launch signal before posting anything else."
+4. Each persona acknowledges by replying to the role-assignment DM; manager waits for all 4 acks before proceeding
 
 If a peer session does not ack within 2 minutes, escalate to user (the launch is the most fragile moment; failure here means re-launch).
+
+**Doctrine note** (added 2026-05-18 post-Run-1): Run 1 showed that 3 of 4 workers pre-acked the doctrine consultant's orientation briefing using the prescribed `ready, [role]` format, before Tiberius's role-assignment DM had even fired. The format was meant for the Manager's DM specifically. Explicit instruction text above prevents the ambiguity. Workers can still read the doctrine consultant's briefing for context; they just shouldn't ack it.
 
 ---
 
@@ -88,7 +105,7 @@ Author writes section A
     → (concurrently) Author begins section B
   → Section A enters Stage 2 (viability)
     → (concurrently) Section B enters Stage 1, Author begins section C
-  → Section A enters Stage 3 (testing)
+  → Section A enters Stage 3 (ownership)
     → (concurrently) Section B enters Stage 2, Section C enters Stage 1, Author begins section D
   → Section A complete (push status per `manager_push_frequency`)
   → Pipeline continues for remaining sections
@@ -150,7 +167,18 @@ Every finding posted to a stage-handoff topic gets classified by the manager:
 - **Inconsistency** (within section) — author contradicts themselves or a prior stage's decision. Pull the relevant subset of upstream chain (per `upstream_dm_scope = manager_picks_subset`) into a re-litigation DM thread.
 - **Foundational** — load-bearing assumption is invalidated, or the finding implies cross-section impact. Escalate to user immediately per `escalation_form = notify_immediate`.
 
-Worked examples and heuristics: see Phase B6 spec (to be drafted; lives in this playbook §Manager Behavior).
+**Manager-classification post requirement** (added 2026-05-18 post-Run-1 doctrine): at every stage-close (when the manager has classified all findings from a single reviewer's review), the manager MUST post a `kind: "manager_classification"` entry to the affected section topic with the following fields stamped via `metadata`:
+
+- `severity`: one of `cosmetic` / `inconsistency` / `foundational`
+- `cross_section`: bool (orthogonal to severity — does this finding's resolution touch another section?)
+- `closure_action`: one of `ignore` / `documented` / `revised` / `escalated` / `voted`
+- `parent_finding`: optional finding-id when this classification sharpens an upstream finding
+- `rounds_used`: int (re-litigation rounds consumed; 0 if none)
+- `votes_called`: int (votes invoked for this finding; 0 if none)
+
+This gives every worker visibility into how their findings were classified WITHOUT the manager having to DM each one. Works as an audit trail; drives the telemetry severity-distribution + cross-section-finding-rate metrics for post-run analysis.
+
+Worked examples and heuristics: see §Manager Behavior → Severity Classification Heuristics.
 
 ### 6.2 DM-subset selection for re-litigation
 
@@ -170,12 +198,46 @@ When manager calls a vote per §5 turn cap:
 - Apply `vote_tiebreaker_policy`
 - Post result back to discussion thread + handoff topic
 
-### 6.4 Heartbeat ping
+### 6.4 Heartbeat handling (external-scheduler driven)
 
-Every `stall_threshold_minutes / 2` minutes (5 min by default), manager DMs a no-op ping to each peer session. Silence beyond `stall_threshold_minutes = 10` triggers phantom-session detection:
-- Manager applies `phantom_reassignment_policy = park_and_escalate`
-- Section in the dead persona's pipeline pauses
-- User notified immediately per escalation taxonomy
+**Updated 2026.05.18 after Run 1 postmortem**: the original draft assumed the manager could autonomously tick on a cadence and fire heartbeat pings to peers. **Claude Code sessions are turn-based** — they only process on inbound events. The manager cannot fire a periodic ping without itself being woken first. The §6.4 protocol is now external-scheduler-driven:
+
+- **An external scheduler** (a Python daemon, cron, systemd timer, or scheduled remote agent — runs outside CC) periodically pokes the manager with a no-op heartbeat DM via `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)`
+- **Cadence**: 2-3 min during active cascade, 5+ min when cascade is idle / awaiting user
+
+**Reference implementation** (chosen 2026-05-18; ships in Lupin as the canonical example): a Python daemon at `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` with a wrapper at `<lupin>/src/scripts/start-cascade-heartbeat.sh`. **The Python-daemon shape was preferred over the `/schedule` skill** because `/schedule` spawns a fresh CC session per tick (5s cold start + Claude API call per tick = ~$0.50 of compute over a 30-min cascade with 20 ticks); a sleep-loop daemon is sub-second per tick with zero per-tick cost — order-of-magnitude better fit for sub-3-min cadence.
+
+**Launch invocation** (one-liner; canonical Lupin path):
+
+```bash
+nohup python /mnt/DATA01/include/www.deepily.ai/projects/lupin/src/scripts/cascade_heartbeat_scheduler.py \
+  --manager <manager_persona> \
+  --cadence-active 180 \
+  --cadence-idle 300 \
+  --strikes 3 \
+  --input-plan-topic <input-plan-topic-name> \
+  > /tmp/cascade-heartbeat.log 2>&1 &
+```
+
+Or via the ergonomic wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager_persona>` (uses defaults for the other args).
+
+**State machine**:
+- `ACTIVE` (default at launch): daemon ticks at `--cadence-active` (default 180s); each tick fires `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)` then disk-reads `io/commons/<input-plan-topic>.md` to check for cascade-complete signal
+- `IDLE` (set when cascade in user-pause): daemon ticks at `--cadence-idle` (default 300s) — same action, lower frequency
+- `TERMINATED` (set when cascade-complete signal found): daemon exits cleanly
+
+**Cascade-complete signal**: the manager posts an entry with `metadata.kind == "cascade_complete"` to the input-plan topic at end-of-pipeline summary (per §8). Daemon detects this on its next tick's disk-read and exits.
+- **On each heartbeat received**: manager applies the §Manager Behavior universal-step-zero discipline — disk-read every active topic (section topics + DM topics + briefing topic), check for new worker posts that arrived since the last wake, check for any worker whose last activity is past `stall_threshold_minutes`
+- **Phantom detection**: if a worker who was expected to post (per current pipeline state) hasn't posted within `stall_threshold_minutes = 10`, the manager:
+  - First sends a targeted DM probe to that worker ("are you available?")
+  - If no response within 2 more minutes, declares phantom
+  - Applies `phantom_reassignment_policy = park_and_escalate`
+  - Pauses the section in the dead persona's pipeline
+  - Escalates to user via Trigger 7
+
+**Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without doctrine consultant intervention.
+
+**See also**: §Heartbeat Handling in the detailed Manager Behavior section below for the integration pattern with the external scheduler.
 
 ### 6.5 Status pushes
 
@@ -224,7 +286,7 @@ For the prototype phase (Phase D), this summary feeds into the telemetry analysi
 
 ## Manager Behavior (detailed)
 
-The manager's behavior is governed by the system prompt below, the severity classification heuristics, the escalation taxonomy template, the DM-subset selection heuristics, the vote mechanics spec, and the heartbeat ping protocol. These six sub-specs together define everything the manager does that is not directly orchestration of stage handoffs.
+The manager's behavior is governed by the system prompt below, the severity classification heuristics, the escalation taxonomy template, the DM-subset selection heuristics, the vote mechanics spec, and the heartbeat handling protocol. These six sub-specs together define everything the manager does that is not directly orchestration of stage handoffs.
 
 ### Manager System Prompt
 
@@ -247,6 +309,18 @@ The manager session loads this preamble at workflow launch (before reading the r
 > **Identity drift guard**: throughout the workflow you may be asked or tempted to take substantive positions on plan content. Resist. If a reviewer or author tries to defer a decision to you ("Manager, what do you think?"), respond by structuring the discussion (call a vote, surface the disagreement, identify the upstream stakeholder), not by taking a side.
 >
 > **Persona voice**: your `notify()` pushes use your own assigned persona voice. In chorus mode the user identifies you by voice. Maintain this voice consistently.
+>
+> **Universal step zero** (added 2026-05-18 post-Run-1 doctrine): on **every** wake event — whether triggered by a worker DM, a scheduler heartbeat, a user response, or anything else — your first action is to **disk-read every active topic** (section topics, DM topics, the briefing topic). This is non-negotiable. The read-side `commons_read` API can truncate long entries; the disk version is always authoritative. Run 1 lost ~30+ min of detection-delay by relying on `commons_read` and missing reviewer posts that were intact on disk. Disk-read first, then act.
+>
+> **Self-audit checklist** (added 2026-05-18 post-Run-1 doctrine): before composing any response, run the following internal check:
+>
+> 1. Did I disk-read all active topics this turn? If no, do it before responding.
+> 2. Did I check each worker's last activity against `stall_threshold_minutes`? Any worker past threshold gets a probe DM.
+> 3. Is there a new worker post since my last wake? If yes, advance the pipeline per Step 5.
+> 4. Is there a stage-close I haven't classified yet? If yes, classify + post `kind: "manager_classification"` to the section topic.
+> 5. Is the cascade complete (all sections done + escalations resolved)? If yes, post `kind: "cascade_complete"` to the input-plan topic so the scheduler can transition out of active state.
+>
+> Failure to perform step zero or the self-audit was the load-bearing operational failure of Run 1. Treat both as mandatory pre-flight.
 
 ### Severity Classification Heuristics
 
@@ -265,7 +339,7 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 **Inconsistency (within section) — substantive but localized. DM upstream subset; re-litigate.**
 
 *Examples*:
-- Testing reviewer surfaces that the author's section-A acceptance criteria contradict the design choices that section-A's viability reviewer already accepted
+- Ownership reviewer surfaces that the author's section-A acceptance criteria contradict the design choices that section-A's viability reviewer already accepted
 - Viability reviewer surfaces that the author's section-B time estimate ignores a constraint the author themselves stated in section-B's prerequisites
 - Usability reviewer surfaces that the author's section-C proposal reinvents a pattern the author themselves used in section-A
 
@@ -274,7 +348,7 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 **Foundational / cross-section — load-bearing or pipeline-wide. Escalate to user.**
 
 *Examples*:
-- Testing reviewer on section A surfaces that the architectural assumption underpinning sections B and C is untestable
+- Ownership reviewer on section A surfaces that the architectural assumption underpinning sections B and C is untestable
 - Viability reviewer on section B surfaces that the prerequisite for section D's work cannot be met within the stated constraints
 - Usability reviewer on section C surfaces that the plan as a whole reinvents an existing system the user just shipped last quarter
 - Any reviewer surfaces a finding that contradicts a previous explicit user decision recorded in CLAUDE.md or history.md
@@ -395,15 +469,15 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 
 1. **Hard upper bound**: at phase N, the upstream chain has N−1 personas. Phase 2 conflict → at most 1 upstream. Phase 3 → at most 2. Phase 4 → at most 3.
 2. **Always include the author when their design is touched**: any finding suggesting the section's original design choice should be revisited pulls in the author. The author is the only persona who can revise the section.
-3. **Include the directly-affected reviewer**: if a phase-4 testing finding says "the viability reviewer's accepted approach is untestable", include the viability reviewer.
-4. **Exclude upstream reviewers whose decisions are NOT affected**: if a phase-4 testing finding only touches the author's section content (not any reviewer's accepted decisions), pull in only the author. Other phases' time is not consumed.
+3. **Include the directly-affected reviewer**: if a phase-4 ownership finding says "the viability reviewer's accepted approach is untestable", include the viability reviewer.
+4. **Exclude upstream reviewers whose decisions are NOT affected**: if a phase-4 ownership finding only touches the author's section content (not any reviewer's accepted decisions), pull in only the author. Other phases' time is not consumed.
 
 **Worked examples**:
 
 | Trigger | Pulled in | Reasoning |
 |---------|-----------|-----------|
-| Phase 4 testing on Section B: "success criterion is unverifiable as written" | Author only | No upstream reviewer's decision affected; the criterion is the author's wording |
-| Phase 4 testing on Section A: "the architectural choice from phase-2 viability makes integration testing infeasible" | Author + viability reviewer | Viability's decision being challenged; usability (phase 1) is NOT pulled in |
+| Phase 4 ownership on Section B: "success criterion is unverifiable as written" | Author only | No upstream reviewer's decision affected; the criterion is the author's wording |
+| Phase 4 ownership on Section A: "the architectural choice from phase-2 viability makes integration testing infeasible" | Author + viability reviewer | Viability's decision being challenged; usability (phase 1) is NOT pulled in |
 | Phase 3 viability on Section C: "the reuse-pattern accepted by usability doesn't fit the constraints" | Author + usability reviewer | Both upstream decisions implicated |
 | Phase 2 viability on Section D: "this assumes infrastructure the author hasn't named" | Author only | No reviewer's accepted decision yet to challenge |
 
@@ -430,7 +504,7 @@ When an author↔reviewer discussion exceeds `discussion_turn_cap` rounds withou
 
 **The question**: [one-sentence; binary or trinary; no leading wording]
 **Options**: [2-3 mutually exclusive choices]
-**Electorate**: [per `vote_electorate = four_substantive_personas`: author, usability/reuse reviewer, viability/gap reviewer, testing reviewer]
+**Electorate**: [per `vote_electorate = four_substantive_personas`: author, usability/reuse reviewer, viability/gap reviewer, ownership reviewer]
 **Voting window**: 5 minutes from this post
 **Response format**: post to this topic with `{persona_name}: [option] [optional one-sentence qualifier]`
 ```
@@ -444,7 +518,7 @@ When an author↔reviewer discussion exceeds `discussion_turn_cap` rounds withou
 *Example responses*:
 
 ```markdown
-author: option_B  — I can see the testing reviewer's point, willing to refactor
+author: option_B  — I can see the ownership reviewer's point, willing to refactor
 usability_reviewer: option_A  — original approach reuses existing pattern; refactor introduces divergence
 ```
 
@@ -463,42 +537,50 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 **VOTE RESULT** on Section [X] finding [F]
 
 **Outcome**: [winning option]
-**Tally**: author: X | usability: Y | viability: Z | testing: W
+**Tally**: author: X | usability: Y | viability: Z | ownership: W
 **Tiebreaker applied**: [none | manager-cast on cosmetic | escalated to user on foundational]
 **Action**: [what happens next]
 ```
 
 **Quorum**: 3 of 4 substantive personas must vote within the window. Fewer = manager extends window once by 5 minutes; if still under quorum, escalate via Trigger 7 (pipeline stall — at least one persona is phantom).
 
-### Heartbeat Ping Protocol
+### Heartbeat Handling (external-scheduler integration)
 
-The manager pings each peer persona on a cadence to detect phantoms before they stall the pipeline.
+**Rewritten 2026.05.18 after Run 1 postmortem.** The original draft (manager-fires-its-own-pings) was fundamentally incompatible with Claude Code's turn-based runtime model — sessions cannot autonomously tick. The doctrine now centers on an **external scheduler** that pokes the manager on a cadence, and the **manager's response discipline** on each poke.
 
-**Cadence**: every `stall_threshold_minutes / 2` minutes. With default `stall_threshold_minutes = 10` → ping every 5 minutes.
+**Scheduler shape** (lives outside CC; integration spec only here):
 
-**Ping format** (manager DMs each peer via `commons_send_to`):
+- Implementation: cron, scheduled remote agent via the `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
+- Per-tick action: `commons_send_to(recipient=<manager_persona>, body="heartbeat", expect_reply=False)`
+- Cadence: 2-3 min during active cascade; 5+ min during idle / user-paused states
+- Scope: manager-only (workers are pull-driven by manager DMs; pokes to workers add noise without value)
+- State machine: scheduler tracks `cascade-active` vs `cascade-complete`, driven by manager posting `kind: "cascade_complete"` to the input-plan topic at end-of-pipeline
+- Failure handling: if manager produces no commons activity within 1 min of poke for **3 consecutive pokes**, scheduler fires `notify()` to user as the dead-man's-switch
 
-```markdown
-[manager_persona]: heartbeat-ping <sequence_number>
-```
+**Manager-side response discipline on each heartbeat received**:
 
-The sequence number is a monotonic integer the manager tracks. Recipients respond with:
+1. Apply §Manager Behavior universal-step-zero: disk-read every active topic
+2. Check each active worker's last post timestamp against `stall_threshold_minutes`
+3. For any worker past threshold whose section is expected to be in flight:
+   - Send targeted DM probe (`"are you available?"`)
+   - If no response in 2 min, declare phantom; apply `phantom_reassignment_policy = park_and_escalate` (Trigger 7)
+4. If new worker posts arrived since last wake (a Section completion, a vote response, a re-litigation reply), advance the pipeline accordingly
+5. If nothing to do, return idle silently; the next heartbeat will wake the manager again
 
-```markdown
-[peer_persona]: heartbeat-ack <sequence_number>
-```
+**Suppression during user-pause states**: when cascade is in user-pause (escalation awaiting Mr. Rick's decision), workers are correctly idle. Manager still processes heartbeats but takes no advancement action — just checks no worker has gone phantom while everyone waits.
 
-**Timeout interpretation**:
+**Logging**: the manager keeps a topic-indexed log of heartbeat-handling events for the end-of-pipeline summary. Useful for the per-stage detection-delay telemetry metric (added in Run-2-prep §7.8 of the postmortem) — how long between worker post and manager detection.
 
-| Window since last ack | Manager action |
-|----------------------|----------------|
-| Within `stall_threshold_minutes` | No concern — persona may be mid-thinking |
-| Past `stall_threshold_minutes`, recent commons activity | Borderline — send one targeted DM ("are you available?"); if no ack within 2 more minutes, declare phantom |
-| Past `stall_threshold_minutes`, NO recent commons activity | Declare phantom; apply `phantom_reassignment_policy = park_and_escalate` (Trigger 7) |
+**Why this works in turn-based CC**: the scheduler is the only autonomous-clock component; the manager is purely reactive. As long as the scheduler keeps firing, the manager keeps waking. The scheduler dead-man's-switch covers the failure case where the manager itself is dormant beyond push-mode recovery.
 
-**Suppression during user-pause states**: if the pipeline is currently waiting for a user response (escalation in flight), the manager pauses heartbeats — peers are correctly idle. Resume on user response.
+**Cross-reference**: postmortem at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` §4.2 (turn-based-CC limitation as load-bearing finding) and §6.B (full scheduler spec with cadence + scope + failure handling).
 
-**Logging**: the manager keeps a sequence-number-indexed log of pings/acks for the end-of-pipeline summary (used to detect false-positive phantoms in the prototype telemetry).
+**Reference implementation** (lives in Lupin per 2026-05-18 design decision):
+- Daemon: `<lupin>/src/scripts/cascade_heartbeat_scheduler.py`
+- Wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager>`
+- Launch invocation: see §6.4 above for the full one-liner with all args
+- Rationale for Python-daemon over `/schedule` skill: per-tick cost (sleep loop is ~free; `/schedule` is fresh CC session per tick = ~$0.50 over a 30-min cascade). See §6.4 above for full reasoning.
+- Spec adherence: zero divergence from postmortem §6.B (manager-only scope, 2-3 min active / 5+ min idle, 3-strikes dead-man's-switch → `notify()` user)
 
 ---
 
@@ -515,3 +597,12 @@ The sequence number is a monotonic integer the manager tracks. Recipients respon
 ## Version History
 
 - **2026.05.17** — Initial creation. Structural skeleton (Steps 1-8 + facilitation duties). Manager behavior sub-specs (§Manager Behavior) are stubs to be drafted in Phase B (tasks #14-#19). Reviewer rubrics are in `plan-review-cascaded-personas.md`.
+- **2026.05.18** — Rename: "testing reviewer" → "ownership reviewer" throughout (role-assignment list, severity-tier examples, DM-subset selection heuristics, vote-call electorate, vote-result tally, stage-3 label). Companion personas doc renamed Persona 5 and its rubric; design doc updated likewise. The rubric content was always the Ownership-Language Audit from `/plan-review` Pass 2; the role name now matches.
+- **2026.05.18 (post-Run-1 doctrine update)** — Run 1 of the Phase D cascaded prototype surfaced three failure modes (`commons_read` body-display truncation, turn-based-CC limitation, push-mode wake unreliability) and 11 operational lessons; full postmortem at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`. This revision lands the doctrine portion of the Run-1 → Run-2 update bundle:
+  - **§Prerequisites** — added external heartbeat scheduler as a prerequisite for production runs; added "Briefing delivery" doctrine documenting the DM + topic-post dual delivery pattern (Lesson 3)
+  - **§Step 4** — added explicit ack-format instruction in role-assignment DMs ("Acknowledge THIS DM specifically — not any prior briefing") to fix Run-1 ambiguity (Lesson 5)
+  - **§6.1 Severity classification** — added Manager-classification-post requirement: at every stage-close, manager posts a `kind: "manager_classification"` entry to the section topic with full metadata (severity, cross_section, closure_action, parent_finding, rounds_used, votes_called) — works as worker-facing audit trail (Lesson 9)
+  - **§6.4 Heartbeat handling** — REWRITTEN. Original draft assumed manager autonomously ticks; that's incompatible with turn-based-CC. New protocol is external-scheduler driven: scheduler outside CC pokes manager every 2-3 min via no-op DM; manager applies universal-step-zero on each poke; scheduler has 3-consecutive-poke dead-man's-switch to user.
+  - **§Manager Behavior → Manager System Prompt** — added "Universal step zero" mandate (disk-read every active topic on every wake event) and a 5-step self-audit checklist before composing any response (Lessons 6 + 11)
+  - **§Manager Behavior → Heartbeat Handling** — REWRITTEN as external-scheduler integration spec (Lessons from postmortem §4.2 + §6.B)
+  - **Defaults `phantom_detection_mode`** — REMOVED legacy `heartbeat_ping` option (incompatible with turn-based-CC); new default `heartbeat_handling_via_external_scheduler` with `commons_freshness` as the no-scheduler fallback

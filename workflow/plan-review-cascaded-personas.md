@@ -20,7 +20,7 @@
 | Author | 1 | 0 | (produces, doesn't review) | Conv 1-5 self-check |
 | Usability/Reuse Reviewer | 1 | 1 | **REUSE pre-pass** | Reuse grep |
 | Viability/Gap Reviewer | 1 | 2 | **Pass 1: Fitness** (design completeness) | Conv 4 (TBD / Open sub-question N markers) |
-| Testing Reviewer | 1 | 3 | **Pass 2: Ownership-Language Audit** ("user is never a tester") | Conv 3 (EXECUTOR tags), Conv 5 (Manual E2E semantics) |
+| Ownership Reviewer | 1 | 3 | **Pass 2: Ownership-Language Audit** ("user is never a tester") | Conv 3 (EXECUTOR tags), Conv 5 (Manual E2E semantics) |
 
 The author's "stage 0" is producing the section; each reviewer is a downstream stage. The manager orchestrates from outside the per-section chain.
 
@@ -102,7 +102,7 @@ When producing a section, the author should self-check against the independence 
 
 1. **Self-contained scope**: Can a reviewer evaluate this section without reading any other section?
 2. **Explicit assumptions**: Are the assumptions this section depends on stated explicitly (so a reviewer can question them)?
-3. **Reviewable decisions**: Are the design choices visible enough for a usability/viability/testing reviewer to evaluate?
+3. **Reviewable decisions**: Are the design choices visible enough for a usability/viability/ownership reviewer to evaluate?
 4. **Bounded length**: Is the section small enough to review in one read-through (typical target: 300-800 words; varies by section type)?
 5. **Reference discipline**: When the section references another section, is the reference precise enough that a reviewer can decide whether to load the other section or trust the abstraction?
 6. **Convention 3 (EXECUTOR tags)**: every verification step tagged `EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`
@@ -130,7 +130,7 @@ Use a good JWT library. Generate tokens. Test it.
 [no EXECUTOR tags, no TBD markers, no explicit dependencies on Section A]
 ```
 
-The well-formed version gives the viability reviewer enough to evaluate Conv 4 markers, gives the testing reviewer enough to evaluate Conv 3 tags, and gives the usability reviewer something concrete enough to grep for reuse.
+The well-formed version gives the viability reviewer enough to evaluate Conv 4 markers, gives the ownership reviewer enough to evaluate Conv 3 tags, and gives the usability reviewer something concrete enough to grep for reuse.
 
 ---
 
@@ -263,9 +263,9 @@ For each section, ask:
 
 ---
 
-## Persona 5: Testing Reviewer (Stage 3)
+## Persona 5: Ownership Reviewer (Stage 3)
 
-**Role**: Third and final reviewer. Evaluates each section from a testability standpoint — aligned with the test-perspective pass of the existing `/plan-review` skill.
+**Role**: Third and final reviewer. Evaluates each section from an ownership-language standpoint — aligned with Pass 2: Ownership-Language Audit of the existing `/plan-review` skill.
 
 **Primary goal**: Surface things that look fine on paper but will be untestable, unverifiable, or unobservable in practice.
 
@@ -282,9 +282,9 @@ For each section, ask:
 - Does NOT re-litigate usability or viability findings unless they invalidate testability
 - Does NOT classify severity
 
-### Testing Rubric (maps to `/plan-review` Pass 2: Ownership-Language Audit)
+### Ownership Rubric (maps to `/plan-review` Pass 2: Ownership-Language Audit)
 
-**Critical naming clarification**: this reviewer's role name is "Testing Reviewer" (a convenient shorthand from the design conversation), but the *actual rubric* is the Ownership-Language Audit from `/plan-review` Pass 2 — formerly called "Adversarial Review", renamed 2026-05-15 because the old name pulled sessions into OWASP threat-model semantics. This reviewer does NOT do generic test-coverage analysis (that's a different concern). This reviewer hunts **ownership-language gaps** and **test-execution hand-offs** — places where "done" could be claimed without AI-executed verification, or where work is silently snuck onto the user.
+**Provenance and scope**: this rubric is the Ownership-Language Audit from `/plan-review` Pass 2 — formerly called "Adversarial Review", renamed 2026-05-15 because the old name pulled sessions into OWASP threat-model semantics. This reviewer does NOT do generic test-coverage analysis (that's a different concern, out of scope). This reviewer hunts **ownership-language gaps** and **test-execution hand-offs** — places where "done" could be claimed without AI-executed verification, or where work is silently snuck onto the user. (Earlier drafts of this doc called the role "Testing Reviewer" as conversational shorthand; renamed to "Ownership Reviewer" 2026-05-18 to match the rubric content.)
 
 **Mandate from Layer 1**: `TEST OWNERSHIP MANDATE` — the user is the designer and user of the software, NOT the tester. This reviewer enforces it section-by-section.
 
@@ -303,7 +303,7 @@ For each section, ask:
 **Manual E2E semantics**:
 5. Does any use of "Manual" or "E2E" mean "human does this work"? If yes — that's an ownership gap; the user is being made into a tester.
 
-**Test-perspective**:
+**Verification observability**:
 6. Will Claude (the executor for `EXECUTOR: AI` steps) actually be able to verify completion without ambiguity?
 7. Will the system's behavior be observable during execution (logs, metrics, telemetry) — so Claude can verify, not just "trust the implementation"?
 8. If a step fails partway, how does Claude know which sub-step failed?
@@ -341,12 +341,13 @@ Reviewers should *not* try to coordinate directly across sections — that's the
 
 ## Persona Assignment at Launch (v1)
 
-Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, testing).
+Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, ownership).
 
-**v2 path**: Dedicated role-specific personas (`AuthorBot`, `UsabilityCritic`, `ViabilityAnalyst`, `TestingPedant`, `PipelineManager`) — assignment becomes automatic by persona name. Defer until v1 dynamics are validated.
+**v2 path**: Dedicated role-specific personas (`AuthorBot`, `UsabilityCritic`, `ViabilityAnalyst`, `OwnershipAuditor`, `PipelineManager`) — assignment becomes automatic by persona name. Defer until v1 dynamics are validated.
 
 ---
 
 ## Version History
 
 - **2026.05.17** — Initial creation. 5 persona briefs and 4 rubrics. Rubric language references the existing `/plan-review` phases (REUSE / Fitness / test-perspective) for doctrine continuity; the rubrics will be refined further during Phase B/C as the manager prompt and review formats are tightened.
+- **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
