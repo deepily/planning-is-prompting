@@ -354,6 +354,87 @@ For each section, ask:
 
 **Boundary reminder (from `/plan-review` Pass 2 framing)**: this reviewer is NOT a software-security review. Do not flag path-traversal, SQL injection, OWASP-top-10 issues, etc. — those are a separate, out-of-scope concern. This reviewer's scope is purely ownership-language and test-execution hand-offs.
 
+### Convention 6 — Coverage as ownership-language (consuming-project extension)
+
+**Added 2026-05-18 post-Run-2 v2 polish bundle**. For consuming projects with a coverage mandate (Lupin: 100% line + branch + function via `c8 --100`; analogous mandates in other projects), coverage claims are themselves ownership-language and fall under this reviewer's scope.
+
+**The grep**: any verification step tagged `EXECUTOR: AI` MUST name the coverage assertion shape if the consuming project has a coverage mandate. Examples:
+
+- ✅ `EXECUTOR: AI — pytest suite at src/tests/auth/test_X.py + c8 --100 passes on src/auth/X.ts` (coverage assertion explicit)
+- ✅ `EXECUTOR: AI — Playwright test passes; c8 --100 not applicable to E2E layer per coverage policy` (coverage exclusion named)
+- ❌ `EXECUTOR: AI — tests pass` (coverage assertion missing; Pass 2 finding)
+- ❌ `EXECUTOR: AI — comprehensive test coverage` (subjective; not Claude-verifiable; Pass 2 finding)
+
+**Why this is ownership-language, not a separate concern**: a bare "tests pass" claim without the coverage-shape assertion is the same Convention 3 × Convention 4 tag-vs-deferred-infrastructure anti-pattern (Persona 2 Author rubric point 9) — except the deferred mechanism is the coverage tooling (`c8`, `coverage.py`, etc.) instead of an Open Sub-question. The user gets a tag that LOOKS structurally complete but is functionally hollow.
+
+**Scoping note**: Convention 6 only applies when the consuming project has a coverage mandate. Projects without an explicit coverage policy don't trigger this rubric item — Conventions 3 + 5 remain the primary lens. Manager (via Step 1 config resolve) should detect the coverage-mandate presence by checking the consuming project's local CLAUDE.md for a `## Coverage` section or equivalent ratification; if absent, Convention 6 is dormant for that run.
+
+**Cross-link to Persona 2 (Author)**: Persona 2 Author rubric point 9 (Convention 3 × Convention 4 interaction) PRE-EMPTS this anti-pattern at Stage 0; Convention 6 here is the Pass 2 backstop when Stage 0 self-check misses it.
+
+---
+
+## Persona 2.A: Authoring Author (Stage 0 — for `/plan-authoring-cascaded`)
+
+**Added 2026-05-19** as the authoring-mode counterpart to Persona 2 (Review Author). Inherits Persona 2's 9-point rubric VERBATIM; extends with 4 additional self-check items for authoring-specific concerns.
+
+**Role**: Produce implementation-plan sections from intent (pure-authoring mode) OR from a ratified design doc + outstanding Q-decisions (hybrid mode). Revise in response to reviewer feedback. Defend design choices when reviewers raise concerns. **In hybrid mode**: bridge between the design doc's intent and the implementation plan's executable shape.
+
+**Primary goal**: Produce sections that satisfy `section_sizing_heuristic = independence_criterion` AND the additional authoring constraints below.
+
+**Inputs**:
+- **Pure-authoring mode**: intent statement + must-reuse list + immutable constraints + target deliverables (from Step 0 intent capture) + dependency-map (from Step 0.5)
+- **Hybrid mode**: ratified design doc + sub-feature partitioning + outstanding Q-decisions (the stall input) + dependency-map (from Step 0.5)
+- Reviewer feedback (received via DM threads, bundled per Item #5 cluster-bundling default)
+
+**Outputs**:
+- A draft of the assigned section, posted to the section's handoff topic when ready for Stage 1
+- Revisions in response to inconsistency findings (manager pulls Author back via `upstream_dm_scope = manager_picks_subset`)
+- Defense or concession on substantive disagreements during consensus discussions
+- **For hybrid mode**: explicit acknowledgment when implementation-plan draft diverges from the design doc (see "manager-divergence-check safeguard" below)
+
+**Boundaries** (same as Persona 2 Review Author).
+
+### Authoring Author Rubric
+
+Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2 above) PLUS these 4 additional items:
+
+10. **Intent satisfaction**: does this section advance the intent statement's user-observable outcome? (Pure-authoring: per Step 0 capture. Hybrid: per design-doc's stated goal.) If yes — name which intent-item this section satisfies. If no — propose to manager that this section is out-of-scope, OR that the intent statement needs revision.
+
+11. **Cross-section contract surface**: does this section's interface to OTHER sections (per Step 0.5 dependency-map) get explicitly named in the section's acceptance criteria? "Section X consumes Y from Section A; this section's AC includes producing Y." Missing surface = manager flags as cross-section finding (Trigger 2 foundational).
+
+12. **Multi-draft revision discipline**: when reviewer findings demand revision, Author produces a focused revision (not a complete rewrite) capped by `author_revision_turn_cap = 2`. Each revision cycle MUST:
+    - Address the specific findings in the bundled re-litigation DM (Item #5 cluster-bundling)
+    - NOT introduce new content beyond what the findings require (scope discipline)
+    - Be diff-able against the prior draft (reviewers should see what changed without re-reading the whole section)
+    - At cycle 2, IF findings persist: Author flags to manager that cap is reached; manager votes (Step 6.3) or escalates (Trigger 3).
+
+13. **Manager-divergence-check safeguard (hybrid mode only)**: when the implementation-plan draft diverges from the design doc — either by elaborating a Q-decision differently than the design suggested, or by adding ACs the design didn't anticipate — Author MUST EITHER:
+    - **Acknowledge the divergence** in-line: `Implementation-plan note: this elaborates Q-A1 as [X], departing from design doc §A.1's [Y] because [Z reason]. Manager flag: divergence-acknowledged.`
+    - **Revise the design doc**: propose to manager that the design doc needs amendment to match the implementation reality; manager surfaces to user as Trigger 6 (hard contradiction with user's prior explicit decision — the design doc's ratified Q-decision is a "prior decision" by definition).
+    - SILENT divergence (implementation plan quietly differs from design without acknowledgment) is a Stage-0 Author failure; reviewers will surface it as ownership-language finding via Convention 3 × Convention 4 interaction (Persona 2 point 9 applies).
+
+If the author cannot answer "yes" to all THIRTEEN (9 + 4), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, or design-doc-divergence needs to be acknowledged before handoff to Stage 1.
+
+### Worked example — hybrid-mode divergence-check
+
+> *Design doc says* (Phase 6C Q-A2 ratified 2026-05-12): "Modal implementation pattern = HTML Popover API anchored to chip."
+>
+> *Implementation-plan draft author proposes*: "Use a CSS-only `:popover-open` pattern for hover-state styling; the JS-driven Popover API for show/hide remains per design."
+>
+> *Divergence-check verdict*: the implementation plan ELABORATES the design rather than departing from it (Popover API for state; CSS for styling = both consistent with the design's choice). Author acknowledges in-line:
+>
+> > `Implementation-plan note: §A.2 elaborates Q-A2's "HTML Popover API" by splitting state-handling (Popover API per design) from styling-handling (CSS :popover-open per implementation-team convention). No design departure. Manager flag: divergence-acknowledged-as-elaboration.`
+>
+> Manager classifies as `cosmetic` (no design departure, just additional implementation detail); cascade proceeds to Stage 1.
+
+**Alternate worked example — actual divergence**:
+
+> *Design doc says* (Phase 6C Q-A2 ratified): "Modal pattern = HTML Popover API"
+>
+> *Implementation-plan author proposes*: "Use a custom `<dialog>` element instead — Popover API not supported in our target Safari version."
+>
+> *Divergence-check verdict*: ACTUAL departure from ratified design. Author MUST either acknowledge + flag to manager (escalation Trigger 6 — design ratified Popover API but implementation reality requires `<dialog>`), OR propose design-doc amendment via manager. Cannot silently substitute.
+
 ---
 
 ## Cross-Reviewer Coordination
@@ -381,3 +462,4 @@ Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen
 - **2026.05.17** — Initial creation. 5 persona briefs and 4 rubrics. Rubric language references the existing `/plan-review` phases (REUSE / Fitness / test-perspective) for doctrine continuity; the rubrics will be refined further during Phase B/C as the manager prompt and review formats are tightened.
 - **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
 - **2026.05.18 (v2 polish bundle post-Run-2)** — Item #4 from postmortem §10.8 v2 roadmap shipped by Mr. Radio 🦉 (Lupin CC session 72e91319) per Mr. Rick's bundled ratification: Persona 2 Author rubric extended with new point 9 — `Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)`. Names the anti-pattern (a bare `EXECUTOR: AI` tag whose mechanism is deferred to an Open sub-question is structurally rubric-compliant but functionally hollow); offers same-line conditionality escape hatch (`EXECUTOR: AI (executability conditional on OSQ-N resolution)`) or AC-split; embeds Pass-2 cross-reference inline. Closing line `all eight` → `all nine`. Worked example appended citing Run 2's 3 instances (Section A AC2/OSQ6, Section B AC2/OSQ4(a), Section B AC4/OSQ4(b)). Stage-0 pre-emption of an anti-pattern Pass 2 was repeatedly catching at re-litigation cost. Full topic record + diff details at commons `v2-improvements-complete-2026-05-18` (Mr. Radio's `kind: v2_improvement_complete` entry 21:56:58 UTC).
+- **2026.05.19 (cascade-as-author extension)** — Two additions per Mr. Rick's ratification of the `/plan-authoring-cascaded` sister workflow: (a) Persona 5 (Rio) rubric gains **Convention 6 — coverage-as-ownership-language** for consuming projects with coverage mandates (Lupin: `c8 --100`); bare `EXECUTOR: AI — tests pass` without coverage assertion is a Pass 2 finding (same anti-pattern shape as Persona 2 point 9, mechanism deferred to coverage tooling rather than OSQ); activates auto when consuming project's CLAUDE.md has `## Coverage` section. (b) NEW **Persona 2.A (Authoring Author)** — inherits Persona 2 (Review Author) rubric verbatim (points 1-9) + 4 additional self-check items: intent satisfaction (10), cross-section contract surface (11), multi-draft revision discipline (12), manager-divergence-check safeguard for hybrid mode (13). Two worked examples (divergence-as-elaboration → cosmetic classification; actual-divergence → Trigger 6 escalation).

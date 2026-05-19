@@ -1,9 +1,9 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 92 (checkpoint mid-session; Run 3 + v2 improvements in flight)
+**RESUME HERE**: Session 92 (third continuation; cascade-as-author doctrine shipped; Phase 6C cascade dispatch imminent)
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end**. Cascade design hypothesis VALIDATED. Postmortem (with Tiberius's collaborative manager-side input) → §10 findings memo into design doc with both runs' data + 5 actionable v2 recommendations + visual-contrast diagrams (old serial baseline vs new cascade). 5 workflow doctrine updates landed pre-Run-2 (playbook §6.4 rewrite, manager system prompt with universal-step-zero + self-audit, briefing template dual-delivery, manager-classification audit trail, severity schema 6-field expansion). Heartbeat-daemon (`<lupin>/src/scripts/cascade_heartbeat_scheduler.py`) shipped by Tiberius + smoke-tested + ran through Run 2 with zero phantoms. `.docview.yml` infrastructure added at repo root + Doc Viewer Scope doctrine (via Tiberius's Rio-fix collaboration). Mr. Rick currently dividing v2 polish across the team for Run 3.
+**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end + v2 polish bundle shipped + cascade-as-author doctrine extension shipped**. Cascade design hypothesis VALIDATED. Postmortem → §10 findings memo (with §10.13 Lesson 12 manager-funnel-inverted-for-proposals-up + §10.14 cognitive-workload prediction for Run 3). 5 v2 polish improvements shipped via divide-and-conquer across the loaded team (Rio's MCP `ask_multiple_choice` default param + Arnold's spoken-headline + cluster-bundling default + Mr Radio's Convention 3 author self-check + Rachel's per-section budget tracker). Heartbeat-daemon + Doc Viewer Scope doctrine. **NEW 2026-05-19**: `/plan-authoring-cascaded` sister workflow + extracted `plan-review-cascaded-common.md` shared doctrine doc + Persona 2.A Authoring Author + Persona 5 Convention 6 (coverage-as-ownership-language). Phase 6C planning cascade dispatch pending Mr. Rick's final go.
 
 ---
 
@@ -68,6 +68,59 @@
 - **Divide-and-conquer is the right shape for v2 polish**: the 5 v2 improvements identified in §10 are all small (15 min to 2 hr each) and mostly independent. Distributing across the loaded team (Tiberius Manager + 4 workers in implementer role) lets us ship Run-3-ready in ~2-3 hours wall-clock vs sequential ~3-5 hours from a single session. Mr. Rick's directive on this was sharp.
 
 **Checkpoint reason**: Mr. Rick requested mid-session checkpoint to push the §10 diagrams to GitHub for remote viewing. Session is NOT over — v2 improvement implementation is in flight; Run 3 follows after v2 complete.
+
+---
+
+### 2026.05.19 - Session 92 (third continuation) — Cascade-as-Author Doctrine Extension (María + Tiberius)
+
+**Persona**: María 🌸 (cosa-voice session `4ee3e0c1`) — doctrine consultant continuing the v2 polish bundle ship into the cascade-as-author extension. Tiberius 🌑 as Manager-coordinator (still session `4e724860`). Workers (Mr. Radio, Rachel, Arnold, Rio) free since v2 bundle ratified at 23:09 UTC 2026-05-18; cascade-as-author doctrine work done by María + Tiberius alone per the agreed doc-spec coordination contract.
+
+**Session continuation shape**: Mr. Rick raised a meta-design question post-dinner: stalled Phase 6C (multiplexer implementation planning) suffers from the EXACT serialized-Q-decision attention-killer pattern the cascade was built to replace. How would we adapt the cascade for plan AUTHORING (not just review)? Iterated with Tiberius via DM during dinner gap; converged on β sister-workflow shape (`/plan-authoring-cascaded`) with shared-doctrine extraction (`plan-review-cascaded-common.md`). Tiberius's hybrid framing — review-of-design + author-of-implementation-plan + cascade-resolve-Q-decisions — sharpened the proposal materially. Discovered Phase 6C design doc EXISTS, authored by Rachel 🕊️ 2026-05-12 (`10-phase6c-persona-focus-recorder-design.md`, 279 lines, 4 sub-features 6c-A/B/C/D, ~30 outstanding Q-decisions at stall point) — Rachel is the natural Author for the implementation-plan cascade (Mr. Rick's hint about "one of your four workers" lands cleanly). Mr. Rick ratified the full bundle (casting + sister workflow + Convention 6 + multi-draft + dep-map + goal-coverage matrix + cluster-bundled cascade-resolve) at ~01:13 UTC; handed me the doc-spec authoring; Tiberius drove pitch composition + ratification ask per Item #2 spoken-headline doctrine.
+
+**Accomplishments (cascade-as-author doc-spec bundle)**:
+
+- **§10.14 added to design doc** — pre-experiment cognitive-workload prediction for Run 3 / Phase 6C: serial baseline ~70-80 Q's to user vs cascade hybrid ~7-9 user-attention points = ~10× count reduction, ~15× attention-time reduction. Post-Run-3 actuals fold into third row of comparison table. 3 caveats documented (5% escalation rate is single-observation; hybrid framing trade-offs; Convention 6 contribution).
+
+- **NEW `workflow/plan-authoring-cascaded.md`** sister workflow (~270 lines): two activation modes (pure authoring + hybrid design-to-implementation); Step 0 intent-capture (skip in hybrid); Step 0.5 dependency-map DAG with commons-topic posting + user-gate ratification; Step 5 extended with multi-draft author loop bounded by `author_revision_turn_cap = 2`; Step 6 extended with dependency-map maintenance protocol + goal-coverage matrix maintenance protocol; Phase 6C as canonical hybrid example with full casting + activation specs; new configuration keys table (7 authoring-specific defaults).
+
+- **NEW `workflow/plan-review-cascaded-common.md`** shared-doctrine extraction (~330 lines, ~60% of original playbook): §Step 1 config resolution, §Step 3 user-approval gate pattern with spoken-headline contract, §Manager System Prompt with universal-step-zero + self-audit checklist + manager-funnel-both-directions doctrine, §Severity Classification with 6-field metadata schema, §Escalation Taxonomy with 7 triggers + cluster-bundling default, §DM-Subset Selection Heuristics with cluster-bundle rule, §Vote Mechanics, §Heartbeat Handling external-scheduler integration with daemon reference, §Briefing Delivery dual-pattern, §Worker Acknowledgment Format. Backwards-compat note: review-cascaded.md retains full text of shared sections for v1; future v3+ revisions should consolidate.
+
+- **MOD `workflow/plan-review-cascaded.md`** — header note added naming sister workflow + flagging shared-doctrine extraction; version-history bump. No content removal (preserves v1 backwards-compat).
+
+- **MOD `workflow/plan-review-cascaded-personas.md`** — TWO additions: (a) Convention 6 paragraph appended to Persona 5 (Ownership Reviewer) rubric — coverage-as-ownership-language for consuming projects with coverage mandates; activates auto when consuming project's CLAUDE.md has `## Coverage` section; cross-links to Persona 2 point 9. (b) NEW Persona 2.A (Authoring Author) section — inherits Persona 2 rubric verbatim (points 1-9) + 4 new self-check items (intent satisfaction; cross-section contract surface; multi-draft revision discipline; manager-divergence-check safeguard for hybrid mode); two worked examples (divergence-as-elaboration vs actual-divergence). Version-history bump.
+
+- **MOD `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`** — §10.14 cognitive-workload prediction added (per above). Brings the §10 memo to 14 sub-sections total covering both Run 1 + Run 2 + the v2 polish bundle Lesson 12 + the Run-3 pre-experiment prediction.
+
+- **Coordination pattern (cross-session)**: dinner-gap DM iteration produced the consolidated pitch (Tiberius's hybrid framing + my cognitive-workload math + casting reshape per Phase 6C find + Convention 6 extension). Tiberius drove the ratification ask per Item #2 spoken-headline doctrine; Mr. Rick voice-confirmed "yes" at ~01:13 UTC. Same divide-and-conquer + manager-funnel-inverted-for-proposals-up pattern that worked for the v2 polish bundle, re-applied to doctrine extension.
+
+**Files Changed (this continuation segment, planning-is-prompting only)**:
+
+| File | Change | Notes |
+|---|---|---|
+| `workflow/plan-authoring-cascaded.md` | NEW | Sister workflow ~270 lines |
+| `workflow/plan-review-cascaded-common.md` | NEW | Shared-doctrine extraction ~330 lines |
+| `workflow/plan-review-cascaded.md` | MOD | Header note + version-history bump |
+| `workflow/plan-review-cascaded-personas.md` | MOD | Convention 6 paragraph + NEW Persona 2.A + version-history bump |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | MOD | §10.14 cognitive-workload prediction |
+| `history.md` | MOD | This entry |
+
+**Files Changed (outside this repo)**: None this continuation segment. Pure PIP doctrine work.
+
+**Process insights captured**:
+
+- **Manager-funnel inverts both directions** — Lesson 12 from v2 polish bundle cycle (proposals-up bundling) re-applied successfully for the cascade-as-author doctrine ratification. Tiberius bundled the full β shape + casting + Convention 6 + multi-draft + dep-map + goal-coverage matrix + Phase 6C-specific Step-0 skip into a SINGLE `ask_yes_no` to Mr. Rick. Single user-attention point ratified the entire doctrine extension. Same pattern as the v2 polish bundle, validated again on a higher-stakes ratification.
+- **Hybrid framing is the load-bearing simplification** — Tiberius's reframe from "pure authoring" to "hybrid review-of-design + author-of-implementation-plan + cascade-resolve-Q-decisions" reduced the new-doctrine surface significantly. Most of the cascade-as-review doctrine carries over verbatim; only Persona 2.A (Author) materially changes; reviewers 3/4/5 inherit their rubrics; manager system prompt gains a one-paragraph addendum.
+- **Cross-session DM during dinner-gap is the right cadence for doctrine iteration** — both Run 2 postmortem cycle and the cascade-as-author doctrine cycle leveraged the same pattern: user-poses-question + AI-iterates-via-peer-DM-during-gap + AI-presents-consolidated-pitch-on-return. Saves multiple round-trips of user attention; user only weighs in on the SYNTHESIZED proposal, not the iteration deltas.
+- **Doc-discovery as prep-work** — finding Rachel's existing Phase 6C design doc via `find` spelunk in Lupin's src/rnd materially reshaped the casting recommendation (Rachel as Author vs Mr. Radio cycling). The Phase 6C-specific shortcut (skip Step 0 because design + partitioning exist) only emerged because we read the actual artifact, not just talked about it abstractly. Pattern worth codifying: when adapting a workflow to a specific project case, READ the project's relevant artifacts before drafting the adaptation.
+
+**Doc-spec ratification flow (per agreed contract)**:
+1. María authors doc-spec (this entry's accomplishments) — DONE
+2. María DMs Tiberius with topic-link to drafts when ready — NEXT
+3. Tiberius fires consolidated ratification `ask_yes_no` to Mr. Rick per Item #2 doctrine
+4. On Rick's yes: María commits to PIP per prep-don't-commit pattern; Mr. Rick fires `git push`
+5. MCP restart (Mr. Rick's call when convenient) + Phase 6C cascade dispatch
+
+**Cumulative Session 92 wall-clock so far**: ~14 hours across three continuation segments (cascade prototype Runs 1 + 2 + v2 polish bundle + cascade-as-author doctrine extension). Productive day.
 
 ---
 
