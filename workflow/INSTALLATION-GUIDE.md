@@ -855,6 +855,20 @@ Session initialization routine:
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-start.md
 
+### Optional: Per-Repo Default Persona via Env Var
+
+The cosa-voice MCP server's SessionStart hook honors a per-project preferred-persona environment variable, so each repo lands on its canonical persona automatically (no `/plan-session-start <name>` arg needed every session). Add to `~/.bashrc` / `~/.zshrc`:
+
+```bash
+# cosa-voice per-repo default personas (read by SessionStart hook)
+export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
+export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
+# Pattern: COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER> (hyphens → underscores)
+# Conflict (held by another session, invalid name): falls back to random + notify
+```
+
+Details: planning-is-prompting → workflow/session-start.md § Preliminary -1, plan doc `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`.
+
 ### Install as Slash Command
 
 **Copy-paste this prompt into Claude Code:**

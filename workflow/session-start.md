@@ -26,6 +26,86 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
+## Preliminary -1: Preferred-Persona Env Var (CONDITIONAL — fires at SessionStart hook, not in assistant turn)
+
+**Purpose**: Allow a repo to declare its canonical default persona via environment variable, so cosa-voice's SessionStart hook allocates that persona deterministically instead of choosing randomly. This is what restores cross-day and cross-repo narrative continuity: opening a fresh Claude Code session in `<project>` should consistently land on the same persona, without the user having to type a slash command.
+
+**When this applies**: When `COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>` is set in the user's shell environment AND the project the session is allocated to matches `<PROJECT_UPPER>`. If the env var is unset for the current project, skip this Preliminary entirely — random allocation stands as before, and Preliminary 0.5 (the slash-command swap path) remains the only persona-override mechanism.
+
+**Why this exists**: prior to this feature, the only way to claim a specific persona was the per-session slash-command path (`/plan-session-start María` → Preliminary 0.5 swap). That required the user to remember the command AND the arg on every fresh session — high friction, easy to forget. The env-var path makes the preference **declarative and persistent**: once exported in `~/.bashrc`, every new Claude Code session in that repo claims the preferred persona automatically.
+
+**Important**: this Preliminary describes a step performed by **cosa-voice's SessionStart hook**, not by the assistant. The hook fires before the assistant's first turn. By the time Preliminary 0 (`get_session_info()`) runs, the env-var path has already either succeeded (persona is on the bridge as the preferred one) or failed gracefully (random fallback was allocated and a conflict-notify was queued). The assistant's only obligation is to honor the persona returned by Preliminary 0 — same contract as before.
+
+---
+
+### Naming pattern
+
+```
+COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>
+```
+
+- Prefix `COSA_VOICE_*` — the allocator lives in cosa-voice (the MCP server), not in any consumer project. The env var is read there, not in this workflow's slash command.
+- Suffix `__<PROJECT_UPPER>` — the cosa-voice session bridge already knows the project name from session creation (visible in `get_session_info()` → `project`). Suffixing the env var with the project lets one universal lookup pattern serve every repo.
+- Project name normalization: lowercase → UPPER, hyphens → underscores. So project `plan` → `__PLAN`, project `cosa-voice` → `__COSA_VOICE`.
+
+### Example shell-rc setup
+
+```bash
+# cosa-voice per-repo default personas — add to ~/.bashrc or ~/.zshrc
+export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
+export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
+export COSA_VOICE_PREFERRED_PERSONA__COSA_VOICE=Rio
+# Add more as new repos are added to the workflow
+```
+
+### Conflict behavior
+
+When the env var is set but the requested persona cannot be allocated, the SessionStart hook **does NOT block, prompt, or queue-and-wait**. Behavior:
+
+| Situation | Hook action | What the assistant sees |
+|---|---|---|
+| Preferred persona unallocated | Allocate it; no notify | `get_session_info()` returns the preferred persona |
+| Preferred persona held by another live session | Allocate a random unallocated persona; queue a `notify( priority="high" )` describing the conflict ("María is held by session abc12345 — allocated Rio instead. Kill that session to free María, restart this one.") | `get_session_info()` returns the random persona; the notify fires shortly after MCP tools surface |
+| Preferred persona name is invalid (typo, not in pool) | Allocate a random unallocated persona; queue a `notify( priority="high" )` listing the available pool | Same as above |
+| Env var unset for this project | Existing random-allocation behavior; no notify | Same as pre-feature |
+
+**Rationale for notify-only conflict UX**: the SessionStart hook fires before the assistant exists, so it cannot run an interactive prompt (no `ask_multiple_choice` surface yet). The user is expected to resolve the conflict asynchronously: kill the holding session, restart, and the next attempt will succeed cleanly. This is intentionally lower-touch than Preliminary 0.5 (which CAN prompt interactively because the assistant is alive at that point).
+
+### Relationship to Preliminary 0.5 (slash-command swap)
+
+The two paths are **complementary, not redundant**:
+
+| Mechanism | Surface | When it fires | Conflict UX |
+|---|---|---|---|
+| **Preliminary -1** (env var) | `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` in shell rc | At SessionStart hook, before assistant turn | Notify-only, async resolution by user |
+| **Preliminary 0.5** (slash command) | `/plan-session-start María` arg | After Preliminary 0, before first ack | Interactive prompt via `ask_multiple_choice` |
+
+**Composition**: Preliminary -1 sets the per-repo declarative default. Preliminary 0.5 overrides per-session when the user wants a different persona for a specific work session (e.g., narrative-continuity reasons across days). The slash-command arg always wins over the env var; if both are absent, random allocation stands.
+
+### `/clear` semantics — Path A (locked 2026-05-19)
+
+The env-var path fires **only on fresh allocation** — when no persona is currently on the session bridge. Once a persona has been claimed (via env var, via Preliminary 0.5 slash-command swap, or via random fallback), `/clear` preserves that persona regardless of env-var state. The post-allocation contract is intentionally immutable.
+
+**Rationale**: a mid-session persona flip caused by `/clear` re-reading the env var would break chorus-mode disambiguation — the user expects the same voice across the same session. Path A keeps the persona stable until session-end.
+
+**Practical implication**: when the user exports a new `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` value, the change takes effect on the **NEXT fresh Claude Code session launch**, NOT on `/clear` of an existing session. To force a re-allocation in an existing session, the user must either kill the session and restart, or use Preliminary 0.5 (`/plan-session-start <name>`) to explicitly swap.
+
+### Anti-patterns
+
+- ❌ Defining the env var with a `P_IS_P_*` or other consumer-project prefix. The allocator lives in cosa-voice; the env var must be prefixed `COSA_VOICE_*` so it travels with the workflow when installed in another repo.
+- ❌ Treating env-var conflict as a hard error. The hook MUST fall back to random allocation + notify; blocking session start is worse than landing on a non-preferred persona.
+- ❌ Reading the env var from within the assistant (Preliminary 0 or Preliminary 0.5). The env-var path is hook-time only. The assistant just consumes whatever's on the bridge by the time `get_session_info()` returns.
+- ❌ Setting `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` to a persona that the project's narrative does not want as the canonical author. The commit attribution that follows from this allocation will carry that persona forward in `git log` Co-Authored-By lines.
+
+### Reference
+
+- **Plan document**: `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`
+- **Server allocator**: `src/cosa/rest/voice_persona_helpers.py` — function `pick_preferred_persona_from_env(project)` + extended `allocate_persona_for_session()`
+- **Server tests**: `src/tests/unit/test_voice_persona_request.py` — class `TestPreferredPersonaFromEnv` (7 tests)
+- **Workflow defaults rationale**: memory entry `feedback_workflow_defaults_travel_with_workflow.md` — *why* the prefix is `COSA_VOICE_*` and not `P_IS_P_*`
+
+---
+
 ## Preliminary 0: Phase A MCP Startup (MANDATORY — before ANY user-facing text)
 
 **Purpose**: Resolve session identity (persona) and link-building primitives (doc-scope envelope) BEFORE composing any user-facing text, including the first acknowledgment and the start-notification ping below.
@@ -54,11 +134,137 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ---
 
+## Preliminary 0.5: Persona-Request Swap (CONDITIONAL — only if slash command received an arg)
+
+**Purpose**: Honor an optional persona-request argument passed to the session-start slash command (e.g., `/plan-session-start María`), swapping the randomly-allocated persona for the requested one **BEFORE the first user-facing acknowledgment**.
+
+**When this applies**: ONLY when the slash-command invocation includes an arg (`$ARGS` non-empty). If the user invoked `/plan-session-start` with no arg, skip this Preliminary entirely — Preliminary 0's random allocation stands.
+
+**Why this exists**: Preliminary 0 resolves whatever persona the SessionStart hook allocated (random by default). If the user wanted a specific persona for cross-day narrative continuity (e.g., "yesterday I was reviewing as Rachel, today I want to be Rachel again"), they pass that name as the slash-command arg. Without Preliminary 0.5, the first acknowledgment would name the random persona, then the workflow would swap mid-session, producing a "Rio here — actually scratch that, I'm María now" audible flip in chorus mode. Preliminary 0.5 makes the swap happen BEFORE the first ack, so the user hears the correct persona on turn 1.
+
+**Timing**: Execute AFTER Preliminary 0 (persona + doc-scope resolved) and BEFORE the Preliminary "Send Start Notification" ping below. The first user-facing acknowledgment in this turn MUST name the post-swap persona, not the pre-swap one.
+
+---
+
+### Step 0.5.A: Detect the slash-command arg
+
+The slash-command shim (`.claude/commands/plan-session-start.md`) passes the optional arg via `$ARGS`. The assistant inspects `$ARGS`:
+
+- **`$ARGS` empty or absent** → skip Preliminary 0.5 entirely; proceed to "Send Start Notification".
+- **`$ARGS` non-empty** → treat the first whitespace-delimited token as the requested persona name. Match is case-insensitive and tolerates display-name spacing (e.g., "maria" / "María" / "MARIA" all resolve; "mr radio" / "Mr. Radio" / "mr.radio" all resolve).
+
+### Step 0.5.B: Fire the swap request
+
+Call the cosa-voice server's `/allocate` endpoint with the requested name:
+
+```
+POST /api/cosa-voice/voice-persona/{session_id}/allocate
+  ?requested_persona_name=<arg>
+  &previous_persona_name=<current persona name from Preliminary 0>
+```
+
+The `previous_persona_name` query param suppresses the "Voice re-assigned: X → Y" announcement when X == Y (idempotent request), and tags the swap announcement when X != Y.
+
+### Step 0.5.C: Handle the response
+
+| HTTP | Meaning | Action |
+|---|---|---|
+| **200** `swapped: True` | Atomic swap succeeded; bridge now reflects requested persona | Re-call `get_session_info()` to pick up new `voice_persona` envelope, then compose first ack as the new persona ("María here, starting session initialization...") |
+| **200** `swapped: False, newly_allocated: False` | Request matched existing allocation (idempotent — user requested the persona they already have) | No re-fetch needed; first ack proceeds with the persona from Preliminary 0 |
+| **409** | Requested persona is held by another live session | Interactive conflict resolution (Step 0.5.D below) |
+| **422** | Requested name is not in the pool (typo / wrong name) | Interactive conflict resolution (Step 0.5.D below) |
+| **500** | Bridge write or other server failure | Escalate to the user via `notify( priority="urgent" )` + halt the session-start ritual; do not silently degrade |
+
+### Step 0.5.D: Interactive conflict resolution (409 / 422)
+
+When the swap fails with 409 (held) or 422 (invalid name), the workflow MUST handle the conflict interactively. **Do NOT silently fall back to the random allocation from Preliminary 0** — the user explicitly named a persona; silent fallback violates that intent and produces "wait, why am I talking to Rio?" confusion in chorus mode.
+
+The response body for both 409 and 422 includes a `detail` envelope with the available persona list:
+
+```json
+{
+  "detail": {
+    "message"            : "<human-readable reason>",
+    "requested"          : "<the name the user passed>",
+    "available"          : ["<unallocated persona names>"],
+    "holding_persona_name": "<only for 409 — who currently holds the requested persona>",
+    "holding_session_id" : "<only for 409 — the holding session>"
+  }
+}
+```
+
+**Interactive handler pattern** (the assistant MUST follow this shape):
+
+1. **Notify the user verbally** with the conflict reason:
+   ```python
+   if status == 409:
+       msg = f"{detail['requested']} is currently held by {detail['holding_persona_name']}. Would you like an alternative?"
+   else:  # 422
+       msg = f"{detail['requested']} is not a known persona. Available options coming up — which would you like?"
+
+   notify(
+       message  = msg,
+       abstract = f"Available: {', '.join( detail['available'] )}",
+       priority = "high",
+       suppress_ding = True
+   )
+   ```
+
+2. **Offer up to 3 alternatives** via `ask_multiple_choice` (3 is the canonical cap — fits the `AskUserQuestion` 2-4 range and is an ergonomic TTS spread):
+   ```python
+   alternatives = detail['available'][:3]
+   answer = ask_multiple_choice(
+       questions = [{
+           "question"   : "Which persona instead?",
+           "header"     : "Persona",
+           "multiSelect": False,
+           "options"    : [ { "label": name, "description": "" } for name in alternatives ]
+       }],
+       priority = "high"
+   )
+   chosen = answer["answers"]["Persona"]
+   ```
+
+3. **Re-fire the swap** with the chosen alternative:
+   ```python
+   # Re-POST /allocate with requested_persona_name=<chosen>
+   # On 200 success: re-call get_session_info(), proceed to first ack with new persona
+   # On rare second-conflict: repeat Step 0.5.D once more; if still failing, escalate via notify(priority="urgent")
+   ```
+
+4. **If the user picks "Other"** (free-form input via the `AskUserQuestion` escape hatch), re-fire with that name and loop back through Step 0.5.C. If they decline entirely (no answer / cancellation), proceed with the Preliminary 0 random allocation as a fallback — but ONLY after the user has been given a clear interactive opportunity to choose.
+
+**Anti-patterns explicitly NOT to do**:
+
+- ❌ Silently fall back to the random Preliminary 0 allocation on 409/422 without surfacing the conflict to the user.
+- ❌ Compose the first user-facing acknowledgment with the pre-swap persona, then re-announce mid-turn ("Rio here... actually María now").
+- ❌ Loop the conflict-resolution prompt indefinitely; cap retries at 2 rounds, then escalate.
+- ❌ Use `AskUserQuestion` instead of `ask_multiple_choice` when speakerphone is on — `AskUserQuestion` renders to terminal only, which is invisible to a listening user.
+
+---
+
+### `/clear` semantics
+
+The persona REQUEST is one-shot: it is consumed at session-start (or via this Preliminary's swap path) to drive the bridge-file allocation. After fulfillment, the request is gone. The ALLOCATION persists across `/clear` via the existing context-preservation logic at `register_session.py:761-769` — no separate request-TTL is needed. A user who wants to change persona after `/clear` must re-invoke `/plan-session-start <new-name>`.
+
+### Persona-and-voice binding
+
+Persona name and voice ID are **bound by design** — they are a 5-tuple `(name, voice_id, icon, color, profile)` in the pool definition. There is no "María persona with Rio's voice" decoupling — voice IS persona identity in chorus mode. If the user wants ear-rest from a particular voice, they request a different persona, not a re-skin.
+
+### Reference
+
+- **Server endpoint**: `POST /api/cosa-voice/voice-persona/{session_id}/allocate?requested_persona_name=<name>&previous_persona_name=<optional>` (Lupin)
+- **Server helpers**: `src/cosa/rest/voice_persona_helpers.py` — `pick_requested_persona`, `allocate_requested_persona_for_session`, `_find_persona_in_pool`
+- **Tests**: `src/tests/unit/test_voice_persona_request.py` (42 tests covering helpers + route paths + Pydantic validation + bridge-write failures + push tolerance)
+- **Slash-command shim**: `.claude/commands/plan-session-start.md` (project-scope) — passes `$ARGS` through to this Preliminary
+
+---
+
 ## Preliminary: Send Start Notification
 
 **Purpose**: Immediately notify user that session initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "Rio here, starting session initialization").
+**Timing**: Execute BEFORE creating TodoWrite list (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
 
 **Command**:
 ```python
@@ -1524,6 +1730,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.05.19 (Session 93)**: **Added Preliminary -1 (Preferred-Persona Env Var) + Preliminary 0.5 (Persona-Request Swap)** — two complementary conditional sections for persona selection at session start. Preliminary -1 documents the declarative env-var path (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` read by cosa-voice's SessionStart hook); Preliminary 0.5 documents the interactive slash-command swap path (`$ARGS` arg routed to `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` with atomic-swap flow + 200/409/422/500 response handling + ask_multiple_choice conflict resolution capped at 3 alternatives). Both paths preserve narrative continuity across days/sessions/`/clear` (Path A locked: allocation is immutable after first claim; only fresh allocation re-reads the env var). Updated the existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality. ~220 lines added across both Preliminaries. Paired with cosa-voice's server-side env-var allocator + `requested_persona_name` route handler.
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now supports multiple concurrent sessions with independent tracking sections. Added: automatic v1.0→v2.0 migration, session search by ID, context clear recovery, stale session detection, Last Activity timestamps. Each session gets its own `## Session: {ID}` section. Enables true parallel session safety with conflict detection at commit time (~200 lines rewritten).
 - **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety with `.claude-session.md` manifest file (v1.0). Creates persistent file-based tracking of all Edit/Write operations. Survives context clears. Documented manifest lifecycle and tracking mandate (~120 lines added).
 - **2026.01.07 (Session 42)**: Expanded to 6-option support (from 4). Cases D/E/F now use single MCP call for 3/4/5 TODOs respectively. Progressive disclosure (Case G) only needed for 6+ TODOs. Updated Lupin notification model to allow 2-6 options. Case F uses "Other..." as unified escape hatch (~70 lines added).

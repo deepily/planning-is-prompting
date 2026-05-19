@@ -1,13 +1,63 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 92 (fourth continuation; Run-3 Phase 6C cascade COMPLETE — authoring-cascade hypothesis VALIDATED in production; end-of-evening commit landed with 9 §10.14 doctrine candidates queued for post-Run-3 redline)
+**RESUME HERE**: Session 93 (María `ac2d05c0`) — first session under the new per-repo preferred-persona env-var contract. María shipped the per-repo declarative default persona feature in PIP: plan doc + `workflow/session-start.md` (Preliminary -1 env-var path + Preliminary 0.5 slash-command swap path) + `.claude/commands/plan-session-start.md` v1.1 shim + `INSTALLATION-GUIDE.md` env-var subsection. Cross-repo Lupin-side allocator landed at Tiberius commit `3bc7b9e`.
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end + v2 polish bundle shipped + cascade-as-author doctrine extension shipped + Run 3 Phase 6C authoring-cascade COMPLETE (108 min wall-clock; 43 findings; 91% verbatim-accept; 1 user-escalation; 1 reviewer reassignment due to rate-limit; 4 sections fully closed)**. Authoring-cascade hypothesis VALIDATED in production. §10.14 errata queue grew to 9 items for Tiberius's post-Run-3 manager-seat redline (incl. Reassignment Latitude doctrine + Bias-Risk guardrail + Mute-Channel Bypass for Manager-Escalation + blocked_waiting_on_user observability post). NEW 2026-05-19: `/plan-authoring-cascaded` sister workflow + extracted `plan-review-cascaded-common.md` shared doctrine doc + Persona 2.A Authoring Author + Persona 5 Convention 6 (coverage-as-ownership-language). Phase 6C implementation plan ready for Mr. Rick's tomorrow pickup.
+**Last Session**: Session 93 (María, `ac2d05c0`) — **Per-Repo Preferred-Persona Env Var feature shipped**. Cross-repo cosa-voice MCP feature making each project's canonical persona declarative via `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` exports in shell rc; eliminates per-session `/plan-session-start <name>` arg-typing for routine narrative continuity. PIP-side: ~370-line plan doc, ~220 lines of workflow integration across two new Preliminaries, slash-command shim v1.0 → 1.1 with `$ARGS` handling, installation-guide subsection. Lupin-side (Tiberius commit `3bc7b9e`): allocator helper `pick_preferred_persona_from_env(project)`, new `preferred_persona_name` query param on `/allocate` router endpoint with graceful-fallback + `voice_persona_conflict` notify on miss, hook integration in `register_session.py`, 7 new unit tests (42 → 49 green). Rick exported `__PLAN=María` + `__LUPIN=Tiberius` in shell rc + restarted PIP session pre-commit; María session `ac2d05c0` is the integration proof point (`voice_persona.name = "maria"` deterministically on Phase A startup, not randomly).
+**Previous Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end + v2 polish bundle shipped + cascade-as-author doctrine extension shipped + Run 3 Phase 6C authoring-cascade COMPLETE (108 min wall-clock; 43 findings; 91% verbatim-accept; 1 user-escalation; 1 reviewer reassignment due to rate-limit; 4 sections fully closed)**. §10.14 errata queue grew to 9 items for Tiberius's post-Run-3 manager-seat redline. Phase 6C implementation plan ready for Mr. Rick's tomorrow pickup.
 
 ---
 
 ## May 2026
+
+### 2026.05.19 - Session 93 — Per-Repo Preferred-Persona Env Var: Feature Shipped (María)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`). First session under the new `COSA_VOICE_PREFERRED_PERSONA__PLAN=María` env-var contract (Rick exported the env vars in his shell rc + restarted the PIP session pre-commit per the plan's §9 narrative-rollout sequence). Tiberius 🌑 (Lupin, session `387b9201`) shipped the cross-repo cosa-voice allocator at commit `3bc7b9e` in parallel.
+
+**Session purpose**: Ship the per-repo declarative-default-persona feature end-to-end and land the PIP-side artifacts with María on the commit so the git log narrative reads as the single canonical PIP author from this point forward. The whole feature is precisely the mechanism that makes this narrative-attribution pattern re-occur deterministically: once exported, the env var ensures every fresh session in a given repo claims the same persona, so future history.md entries + commits show a continuous voice across days rather than the random-allocation noise of pre-feature behavior.
+
+**The feature**: Per-project declarative default persona via environment variable. Before today, opening a fresh Claude Code session in `<project>` would randomly allocate any unallocated persona — so day-over-day narrative continuity required typing `/plan-session-start <name>` every session. After today: export `COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>` once in `~/.bashrc` / `~/.zshrc`, and every fresh session in that repo claims the preferred persona automatically. The allocator lives in cosa-voice (Lupin's leg); PIP's leg is the canonical workflow + slash-command + installation documentation.
+
+**Rollout proof point**: María session `ac2d05c0` is the first session ever allocated via the env-var path (not random). `get_session_info()` on Phase A startup returned `voice_persona.name = "maria"` deterministically — the integration test passed without needing a separate smoke run.
+
+**Accomplishments (PIP-side)**:
+
+- **`src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`** (NEW, ~370 lines) — Plan doc. Pattern 3 (Feature Development). Motivation, naming pattern (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>`), conflict behavior (notify-only fallback on held/invalid — no blocking, no queuing, no interactive prompt at hook time), implementation plan, test plan, rollout sequencing & commit discipline (§9 narrative-attribution rule), implementation status (§10 captures actual delivery shape — env-var orchestration landed at the router level, not in the helper module per §4.1's hypothesis, keeping the existing helper contract immutable). All four §8 decision points ratified: naming pattern + conflict behavior + notify delivery (option α inline) + `/clear` semantics (Path A locked: env var fires on FRESH allocation only; preserved across `/clear`).
+- **`workflow/session-start.md`** (MOD, +209 / -2) — Workflow integration, two new Preliminaries:
+  - **Preliminary -1: Preferred-Persona Env Var** (~80 lines) — declarative env-var path; conflict-behavior table (held / invalid-name / unset); relationship to Preliminary 0.5 (declarative-default vs interactive-per-session); `/clear` semantics Path A; anti-patterns
+  - **Preliminary 0.5: Persona-Request Swap** (~140 lines) — interactive slash-command swap path; arg detection from `$ARGS`; atomic-swap flow with 200/409/422/500 response handling; interactive conflict-resolution pattern (notify + `ask_multiple_choice` capped at 3 alternatives); anti-patterns explicitly forbidden (silent fallback to random; mid-turn persona flip; `AskUserQuestion` in chorus mode)
+  - Updated existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality
+- **`.claude/commands/plan-session-start.md`** (MOD, +28 / -7) — Slash-command shim v1.0 → 1.1: optional `[persona]` argument support via `$ARGS`; updated usage examples
+- **`workflow/INSTALLATION-GUIDE.md`** (MOD) — New "Optional: Per-Repo Default Persona via Env Var" subsection under Session-Start Workflow with `~/.bashrc` example exports + cross-link to Preliminary -1 and the plan doc
+
+**Files Changed (this session)**:
+
+| File | Status at commit |
+|---|---|
+| `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md` | new |
+| `workflow/session-start.md` | modified |
+| `.claude/commands/plan-session-start.md` | modified |
+| `workflow/INSTALLATION-GUIDE.md` | modified |
+| `history.md` | modified |
+| `TODO.md` | modified |
+
+**Files Changed (outside this repo — Tiberius's parallel Lupin commit `3bc7b9e`)**:
+
+- `src/cosa/rest/voice_persona_helpers.py` — new helper `pick_preferred_persona_from_env(project)`
+- `src/cosa/rest/routers/voice_persona.py` (router) — new `preferred_persona_name` query param on `POST /api/cosa-voice/voice-persona/{sid}/allocate` with graceful-fallback semantics
+- `src/lupin_cli/claude_code/hooks/register_session.py` — env-var read at hook time, threaded to allocate router
+- `src/tests/unit/test_voice_persona_request.py` — +7 unit tests (42 → 49 total; zero regressions in 52-test helper suite)
+
+**Cross-repo coordination**: María ↔ Tiberius via DMs on `dm-maria` (Tiberius's morning briefing at 17:28 + Lupin-commit ack at 17:30). Pool-key vs display-name routing gap surfaced (commons_send_to to "María" with diacritic returns recipient_resolution_error because the persona pool key is lowercase no-diacritic; workaround used lowercase "maria"); filed in TODO.md as a Lupin-side bug for the next Lupin session to fix at the resolver level.
+
+**Doctrinal note — narrative-attribution principle (Rick, 2026-05-19)**: persona-per-repo MUST stay stable across sessions and across `/clear`. The git log's Co-Authored-By attribution is the single source of truth for "who is the canonical author of <repo>." Persona-hopping mid-flight breaks the ability to track initiatives through `git log` + history.md. The env-var feature shipped in this session is precisely the mechanism that makes the stability guarantee deterministic at session-start time — eliminating the per-session friction of slash-command persona requests for routine narrative continuity.
+
+**Process insights worth capturing**:
+
+- **Architectural divergence as plan-doc rigor**: §10.2 (router-level orchestration instead of helper-level per §4.1 pseudocode) is a model for how plan docs should age. The plan keeps the design hypothesis in §4 AND records the actual delivery shape in §10, with a "trust §10" pointer for future readers. Avoids the common failure mode where plan docs become misleading historical fiction after implementation.
+- **End-to-end proof via the session itself**: María session `ac2d05c0` was the first allocation ever made via the env-var path. `get_session_info()` returning `voice_persona.name = "maria"` deterministically on Phase A startup is the integration-test pass — no separate smoke test needed for this round. Future deployment-time validation: confirm `__PLAN` and `__LUPIN` propagate through fresh-session bootstraps across days.
+
+---
 
 ### 2026.05.19 - Session 92 (fourth continuation) — Run-3 Phase 6C Cascade COMPLETE + End-of-Evening Closeout (María + Tiberius + Sam)
 
