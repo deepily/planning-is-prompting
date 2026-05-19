@@ -75,7 +75,7 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 |-------|------|----------|---------|
 | `severity` | enum: `cosmetic` \| `inconsistency` \| `foundational` | ✓ | Primary classification tier; drives the §6.1 routing |
 | `cross_section` | bool | ✓ | Orthogonal to severity — captures whether the finding's resolution touches more than the section the finding originated in |
-| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` \| `hard_verification_gate` \| `manager_unilateral_ratify_by_concurrence` \| `reassigned_due_to_rate_limit` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
+| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` \| `hard_verification_gate` \| `manager_unilateral_ratify_by_concurrence` \| `reassigned_due_to_rate_limit` \| `implementation_handoff_ready` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
 | `parent_finding` | string (finding-id) | optional | When a downstream stage's finding sharpens an upstream finding (e.g., Arnold's F4 sharpens Rachel's earlier cross-section coupling note), link them so the lineage is preserved |
 | `rounds_used` | int | ✓ | Re-litigation rounds consumed (0 if no re-litigation needed) |
 | `votes_called` | int | ✓ | Votes invoked for this finding (>0 means contentious) |
@@ -97,6 +97,12 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 | `manager_unilateral_ratify_by_concurrence` | Author + reviewer + manager all concur with no foundational implications; user-ratification skipped to save attention (the bar: manager would have escalated if there were any chance user-input would change the outcome) | Section D Q-D1 Path A ratified by manager-concurrence without firing a user `ask_yes_no` |
 | `reassigned_due_to_rate_limit` | Reviewer rate-limited (Anthropic per-account quota or equivalent); manager reassigned the stage to another peer per Manager Reassignment Latitude doctrine (see `plan-review-cascaded-common.md` §Reviewer Reassignment) | Section B Mr-Radio → Arnold post-Anthropic-rate-limit |
 
+**Closure-action value added 2026-05-19 (Step 9 doctrine)** — one new value codifies the Step 9 closure state:
+
+| Value | When to use | Anchor |
+|---|---|---|
+| `implementation_handoff_ready` | Cascade has cleared Step 9: artifacts produced per mode-specific spec + Manager self-administered cold-context test passed + light-review gate passed (thumbs-up OR post-1-revision thumbs-up). Distinct from `cascade_complete` (Step 8 closure state); a cascade can be `cascade_complete` without being `implementation_handoff_ready` during the Step 9 work window. | Run 3 retrofit: Manager Tiberius ad-hoc'd 1,225 LOC of post-cascade synthesis work in absence of Step 9 doctrine; Step 9 codifies this as required. See `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the closure flow + 5-question cold-context-test rubric + 5-criterion light-review rubric. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. |
+
 ### Commons post `kind` enumeration (added 2026-05-19)
 
 Manager and worker posts to commons topics use the `kind` metadata field to disambiguate post-types. The cascade workflow recognizes:
@@ -112,6 +118,8 @@ Manager and worker posts to commons topics use the `kind` metadata field to disa
 | `reviewer_reassigned` | manager | Manager Reassignment Latitude doctrine post — names original/substitute reviewer + trigger + bias-mitigation choice | 2026-05-19 (Run-3) |
 | `blocked_waiting_on_user` | manager | Manager paused awaiting user input >5 min — observer-disambiguation signal (see common.md §Manager System Prompt self-audit item 6) | 2026-05-19 (Run-3) |
 | `cosmetic_cluster_family` | reviewer (Persona 5) | Stage-3 cluster-recognition family post enumerating ≥3 cosmetic findings sharing closure shape (see `plan-review-cascaded-personas.md` §Persona 5 Stage-3 Cosmetic-Cluster Recognition) | 2026-05-19 (Run-3) |
+| `step_9_light_review` | reviewer (cascade-participant chosen by Manager) | Light-review gate output on Step 9 synthesis artifacts — thumbs-up OR list of synthesis gaps; posted to cascade's parent topic or sister `cascade-step-9-review` topic | 2026-05-19 (Step 9) |
+| `implementation_handoff_ready` | manager | Step 9 closure state-flip post — declares the cascade artifacts have passed cold-context test + light-review gate and are ready for implementer pickup | 2026-05-19 (Step 9) |
 
 Workers post their findings using free-form metadata; manager classifies + posts the authoritative `kind: manager_classification` entry with the 6-field metadata schema above.
 
@@ -138,7 +146,15 @@ Workers post their findings using free-form metadata; manager classifies + posts
 |-----|---------|-------------|
 | `persona_casting_strategy` | `user_assigns_at_launch` | How roles map to voice personas. Allowed: `user_assigns_at_launch` (v1 default — roles decoupled from voice identity), `role_specific_personas` (v2 — dedicated personas like `AuthorBot`, `UsabilityCritic`, etc.), `fixed_role_to_persona_mapping`. |
 
-**Total: 22 default keys.**
+### Step 9 — Implementation-Handoff Synthesis (added 2026-05-19)
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `synthesizer_authorship_policy` | `manager_default` | Who authors Step 9 artifacts. Allowed: `manager_default` (v1 — Manager extends their facilitation role into synthesis), `designated_synthesizer` (v3 escape hatch — a Persona 6 takes the synthesis duty, reserved for large-N cascades where Manager-bandwidth blows up). |
+| `light_review_required` | `true` | Whether Step 9 requires a light-review pass by a cascade-participant reviewer. v1 default is REQUIRED based on Run-3 empirical evidence (2 cascade-design gaps leaked into the handoff package without external review). Allowed: `true` (v1 default), `false` (Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit). |
+| `cold_context_test_mode` | `self_administered` | How the cold-context test is performed at Step 9 closure. Allowed: `self_administered` (v1 default — Manager-as-synthesizer reads the 3 artifacts end-to-end as if cold, answers the 5-question rubric; ~15 min), `external_administered` (v2 future — a peer session who didn't participate in the cascade reads the artifacts cold; higher confidence but higher cost; reserved for v2 if v1 self-administration proves to leak). |
+
+**Total: 25 default keys** (22 baseline + 3 added 2026-05-19 for Step 9).
 
 ---
 
@@ -217,6 +233,11 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — Three extensions:
+  1. `closure_action` enum gained `implementation_handoff_ready` value (now 9 enum values total). Distinct from `cascade_complete`; denotes Step 9 has cleared (artifacts produced + cold-context test passed + light-review gate cleared). Worked-example sub-table added.
+  2. `kind` enumeration gained 2 new values: `step_9_light_review` (reviewer output on Step 9 artifacts) + `implementation_handoff_ready` (manager state-flip post). Total enum: 11 values.
+  3. NEW §Step 9 — Implementation-Handoff Synthesis config section with 3 keys: `synthesizer_authorship_policy` (default `manager_default`), `light_review_required` (default `true`), `cold_context_test_mode` (default `self_administered`). Total config keys: 22 → 25. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`; shared acceptance criteria in `plan-review-cascaded-common.md` §Step 9.
 
 - **2026.05.19 (Run-3 doctrine fold)** — Two extensions to §Severity-tag metadata schema:
   1. **`closure_action` enum expanded** from 5 → 8 values: added `hard_verification_gate` (Section B AC-B15 supersession of post-cascade-fold), `manager_unilateral_ratify_by_concurrence` (Section D Q-D1 Path A), `reassigned_due_to_rate_limit` (Section B Mr-Radio→Arnold). New worked-example table documents each value's anchor.

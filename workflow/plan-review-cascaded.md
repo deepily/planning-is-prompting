@@ -286,6 +286,49 @@ This summary is `notify()`-ed to the user and also posted to a `pipeline-summary
 
 For the prototype phase (Phase D), this summary feeds into the telemetry analysis (intervention count, message count, wall-clock vs. baseline `/plan-review`).
 
+**Step 8 is NOT cascade-done**: per Step 9 doctrine (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Revision-Handoff Synthesis) artifact lands + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
+
+---
+
+## Step 9: Revision-Handoff Synthesis (NEW — added 2026-05-19 post-Run-3)
+
+**Purpose**: bridge the gap between cascade-complete and revision-implementer-ready. The review-cascade's input plan came in from outside the cascade; the cascade produces a ratified revision package, not a from-scratch implementation plan. But the cold-context test still applies — the original author of the input plan (or a new implementer applying the revisions) shouldn't have to re-read N section topic files to know what to revise.
+
+**Trigger**: fires AFTER Step 8 cascade-complete signal, BEFORE handing back to original-author (or implementer) for revision-application.
+
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (5-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap).
+
+**Full requirements anchor**: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (§3 covers the review-cascade flavor specifically).
+
+### 9.1 The single artifact (review-cascade)
+
+The review-cascade flavor has a **lighter handoff** than authoring-cascade (the input plan IS the design; no parent-design-doc amendment needed; no execution-plan needed because revisions are amendments to an existing plan). One artifact produced at a canonical path next to the input plan:
+
+**Artifact — Revision-handoff doc (`NN-cascade-revision-handoff.md`)**
+
+Single canonical handoff doc consolidating the cascade's revision package. Required content:
+
+- §1 Purpose + cross-ref to input plan
+- §2 Cascade telemetry (same shape as authoring-cascade synthesis §2: closure metrics, per-section findings, verbatim-accept rates, escalation counts)
+- §3 **Per-section revision summary** — one §3.X subsection per cascade section, each containing:
+  - Findings closed (severity-by-severity tabular: foundational / inconsistency / cosmetic)
+  - Verbatim revisions accepted (with author-revision line-refs to cascade artifacts)
+  - Documented-not-revised stragglers (cap-preserved)
+  - User escalations + manager-unilateral ratifications inline-cited
+  - Impact on input-plan ACs (which ACs amended; which remain unchanged)
+- §4 Cross-section ratification summary (which inputs survived cascade; which were retired)
+- §5 Post-cascade fold bundle
+- §6 Doctrine candidates brief index (cross-ref to PIP-side deep redline) — **REQUIRED**, not optional
+- §7 Hand-off statement (input-plan author revises plan with cascade outcomes folded in; OR implementer implements input plan as cascade-revised)
+
+**Acceptance**: cold-context test — original author or implementer can read this doc and know exactly what to revise / implement without back-referencing the cascade topic files.
+
+### 9.2 Authorship + Step 9 closure flow
+
+Same as authoring-cascade (see `plan-authoring-cascaded.md` §9.2 + §9.3): Manager-default authorship; Manager self-administers cold-context test; Manager DMs cascade-participant reviewer with the 1 artifact + light-review rubric; reviewer responds within ~10-15 min; thumbs-up flips state to `implementation_handoff_ready`; gaps trigger 1-revision-turn cap then re-test.
+
+The single-artifact flavor's cold-context test cost is lighter (~5-10 min vs ~15 min for the 3-artifact flavor); light-review cost is similar (the focused rubric is the same 5 pass criteria).
+
 ---
 
 ## Manager Behavior (detailed)
@@ -653,3 +696,5 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
   - **No content removal in this revision** — all existing review-mode content stays intact. Shared sections in common.md are duplicates of the corresponding sections here. The mode-specific `plan-authoring-cascaded.md` references common.md directly rather than back-referencing this doc, so authoring-mode is the cleaner consumer.
 
 - **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings) integrated into `plan-review-cascaded-common.md` (authoritative shared-doctrine home), `plan-review-cascaded-personas.md` (rubric extensions), and `plan-review-cascaded-defaults.md` (severity schema + commons `kind` enumeration). This file's shared sections are **NOT updated in this revision** to avoid divergence with common.md — the doctrine in this file's duplicated shared sections is now stale relative to common.md, but kept in place for v1 backwards-compat. Future v3 consolidation will reduce this file to its review-specific bits + `[SHARED — see common.md]` references; at that point the duplication ends. **For Run-3 fold detail, read `plan-review-cascaded-common.md` Version History.** Out-of-scope items filed elsewhere: Phase-6C-specific CSS-var visible-text safety (Lupin design doc); ask_multiple_choice Path-B subprocess-restart cost (operational footnote); Mute-Channel Bypass for Manager-Escalation (Lupin/cosa-voice MCP feature request).
+
+- **2026.05.19 (Step 9 — Revision-Handoff Synthesis doctrine)** — NEW §Step 9: Revision-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). Review-cascade flavor: single-artifact spec (revision-handoff doc with 7 required sections including REQUIRED §6 doctrine candidates index); Manager-default authorship; cold-context-test (~5-10 min) + light-review gate (~10-15 min, 5-criterion focused rubric) + 1-revision-turn cap; cascade state flips from `cascade_complete` → `implementation_handoff_ready` on Step 9 close. Step 8 explicitly NOT cascade-done. Shared acceptance criteria in `plan-review-cascaded-common.md` §Step 9; sister 3-artifact spec for authoring-cascade in `plan-authoring-cascaded.md` §Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.

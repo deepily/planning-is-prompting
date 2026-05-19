@@ -292,6 +292,74 @@ Run 1 evidence: 3 of 4 workers pre-acked the doctrine consultant's briefing usin
 
 ---
 
+## §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) [SHARED]
+
+**Added 2026-05-19 post-Run-3** based on Rick's broadcast `d3a89a21` catch: the cascade workflow as ratified through Run 3 ends at the **cascade-complete signal**, but that's not handoff-ready. An implementer picking up cold faces a synthesis-archeology task because the cascade artifacts are spread across N section topic files + the pipeline summary + the parent design doc (which is still in DRAFT state). Run 3's Manager (Tiberius) ad-hoc'd ~1,225 LOC of post-cascade synthesis work to close the gap; the implementer (Roscoe) STILL surfaced 2 cascade-design gaps in his first 30 min of pre-flight. **Synthesis is not packaging — it is a quality gate.**
+
+Step 9 codifies the implementation-handoff phase that was missing from v1 doctrine. The mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact spec) and `plan-review-cascaded.md` §Step 9 (1-artifact revision-handoff spec). This common subsection holds the **shared acceptance criteria**: cold-context test + light-review gate + state-flip semantics.
+
+**Full requirements anchor**: `planning-is-prompting/src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (Tiberius's requirements draft; the workflow-doc redline below is the codification track).
+
+### Cold-context test (Manager self-administered, 5-question rubric)
+
+After producing the Step 9 artifacts, the Manager reads them end-to-end **as if cold** (no back-reference to cascade topic files, DM threads, or pipeline summary) and answers all 5 questions:
+
+1. Can I describe the implementation path section-by-section without back-referencing the cascade topic files?
+2. Do all Recon items have a clear resolution path? Each must be one of: `RETIRED` / `RESCOPED` / `CARRIED with caveat` / `RESOLVED` / `NEW with conditional-executability`.
+3. Are all cross-section dependencies explicit? An implementer doesn't need to infer what section X needs from section Y.
+4. Are standing doctrine memories that affect implementer work explicitly listed (coverage mandates, commit discipline, test-venue routing, never-auto-commit-push, etc.)?
+5. Are there ZERO "TBD at code-write" / "verify on the wire" items WITHOUT either (a) explicit conditional-executability tags with documented resolution branches, or (b) escalation to user / manager-unilateral resolution BEFORE Step 9 closes?
+
+If all 5 answer "yes": cold-context test passes. If any answer is "no": revise the affected artifact and re-test.
+
+**Self-administration cost**: ~15 min Manager-time for the 3-artifact authoring-cascade flavor; ~5-10 min for the 1-artifact review-cascade flavor.
+
+### Light-review gate (cascade-participant reviewer; focused rubric)
+
+The Manager-as-synthesizer has a blind spot: after a long cascade, their cognitive frame is "compile what was ratified" not "challenge the cascade assumptions." Run-3 evidence: 2 conditional-Recon gaps (mic_monopoly wire field + `conversation_mode_changed` type-rename) leaked into the handoff package and surfaced at implementer pre-flight instead of synthesis-time. The light-review gate is the safety belt.
+
+**Reviewer selection** (Manager judgment for v1; algorithmic specification deferred to v2 if Manager-judgment proves to leak):
+
+- **Default**: one of the 4 cascade reviewers (Persona 3 / 4 / 5), preferably the reviewer with **freshest context on the most-impacted section** (section with most findings, longest revision trail, or most cross-section dependencies)
+- **Alternative**: the doctrine consultant if a 6th cascade participant ran in that role; doctrine-aware-fresh-eyes is a useful synthesis check even though the persona isn't section-anchored
+- **Escape hatch**: if no cascade participant has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit; quality risk is real but bounded
+
+**Light-review rubric** (NOT a full Persona-3/4/5 review — 5-criterion focused pass):
+
+1. **External-system assumptions check**: any Recon item still unresolved that touches an external system (server wire, infra, third-party API) is either (a) resolved before Step 9 closes, (b) explicitly escalation-worthy AT Step 9 (synthesizer surfaces as "this needs user ratification before implementer pre-flight"), or (c) explicitly tagged as conditional-executability with documented branches
+2. **AC conditionality check**: any AC that's conditionally-executable on something the synthesis didn't pin down — synthesis explicitly lists the condition + the resolution path (per Persona 2 point 9 + Persona 5 §Convention 6 doctrine)
+3. **Cross-section contract check**: any cross-section dependency mentioned in the synthesis matches the dependency mentioned in the execution plan (no drift between docs)
+4. **Hard-verification gate check**: any hard-verification gate introduced in the cascade (e.g., AC-B15 in Run 3) is reified into the execution plan's cross-cutting gates section
+5. **Standing doctrine memory check**: standing doctrine memories that affect implementer work are explicitly listed in the execution plan's global-standing-rules section
+
+**Output**: thumbs-up OR list of specific synthesis gaps to address before handoff. Posted as `kind: "step_9_light_review"` entry on the cascade's parent topic (or a sister `cascade-step-9-review` topic if the parent is congested).
+
+**Cost**: ~10-15 min reviewer-time.
+
+### Manager response to light-review findings (1-revision-turn cap)
+
+If reviewer thumbs-up: cascade flips to `implementation_handoff_ready` (new closure_action enum; see `plan-review-cascaded-defaults.md` §Severity-tag metadata schema).
+
+If reviewer finds gaps:
+- Manager addresses gaps in synthesis-doc / execution-plan / design-doc amendments
+- **Capped at 1 revision turn** — this is a single-pass refinement, NOT a full cascade re-open. No Round-2 cap-extending.
+- Manager re-runs self-administered cold-context test post-fix
+- Reviewer thumbs-up on the revision → cascade flips to `implementation_handoff_ready`
+- If reviewer finds MORE gaps after Manager revision: escalate to user (rare case; suggests synthesis quality problem worth user-attention)
+
+### `implementation_handoff_ready` state semantics
+
+`implementation_handoff_ready` is a new `closure_action` enum value (see defaults.md §Severity-tag metadata schema for the full enum). It denotes the cascade has cleared:
+
+1. All sections cap-locked at `cascade_complete`
+2. Step 9 artifacts produced per mode-specific spec
+3. Manager-self-administered cold-context test passed
+4. Light-review gate passed (thumbs-up OR post-1-revision thumbs-up)
+
+A cascade can be `cascade_complete` without being `implementation_handoff_ready` (intermediate state during Step 9 work). Once `implementation_handoff_ready`, the cascade is shippable to an implementer cold.
+
+---
+
 ## §Cascade-Learning-Loop Sub-patterns [SHARED]
 
 **Added 2026-05-19 post-Run-3** based on Section A→C→D→B finding-count compression telemetry: 6 → 8 → 4 → 8 Stage-2 findings across 4 sections in cascade-launch order.
@@ -342,6 +410,8 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 ---
 
 ## Version History
+
+- **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — New §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) subsection. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). Includes: cold-context test 5-question rubric (Manager self-administered, ~15 min cost); light-review gate with reviewer-selection guidance + 5-criterion focused rubric + ~10-15 min reviewer-time cost; 1-revision-turn cap on Manager response to light-review findings; `implementation_handoff_ready` state semantics. Mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact: synthesis doc + parent design-doc amendments + execution plan) and `plan-review-cascaded.md` §Step 9 (1-artifact: revision-handoff doc). Full requirements anchor at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Empirical anchor: Run-3 Manager solo-authored 1,225 LOC of post-cascade synthesis work that wasn't in workflow Steps 1-8; implementer (Roscoe) surfaced 2 cascade-design gaps in his first 30 min that a light-review would have caught at synthesis time.
 
 - **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation) integrated into this canonical shared-doctrine doc. Additions:
   - **§Manager System Prompt self-audit** — new item 6: `blocked_waiting_on_user` post for observer disambiguation

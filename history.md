@@ -1,6 +1,6 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 93 (María `ac2d05c0`) continuation — Run-3 doctrine fold complete. §10.14 redline integrated 12 doctrine candidates + 3 Rick-voice catches into the 4 canonical cascade workflow docs + design doc §10.15 third-row empirical telemetry (37× count reduction vs 10× predicted = 3-4× better than the §10.14 pre-experiment prediction). Cross-repo paired with Tiberius's Lupin-side Phase 6C consolidation track.
+**RESUME HERE**: Session 93 (María `ac2d05c0`) second continuation — Step 9 (Implementation-Handoff Synthesis) doctrine ratified + codified post-Rick broadcast `d3a89a21`. The cascade workflow's previous done-defined ("cascade-complete signal + post-cascade fold bundle") was load-bearing incomplete — Run-3 Manager (Tiberius) ad-hoc'd 1,225 LOC of post-cascade synthesis work AND the implementer (Roscoe) still surfaced 2 cascade-design gaps in his first 30 min that a light-review would have caught. Step 9 codifies the gap: 3-artifact spec for authoring-cascade (synthesis doc + design-doc amendments + execution plan), 1-artifact for review-cascade (revision-handoff doc), Manager-default authorship, cold-context test + light-review gate before cascade flips to new `implementation_handoff_ready` state.
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
 **Last Session**: Session 93 (María, `ac2d05c0`) — **Per-Repo Preferred-Persona Env Var feature shipped**. Cross-repo cosa-voice MCP feature making each project's canonical persona declarative via `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` exports in shell rc; eliminates per-session `/plan-session-start <name>` arg-typing for routine narrative continuity. PIP-side: ~370-line plan doc, ~220 lines of workflow integration across two new Preliminaries, slash-command shim v1.0 → 1.1 with `$ARGS` handling, installation-guide subsection. Lupin-side (Tiberius commit `3bc7b9e`): allocator helper `pick_preferred_persona_from_env(project)`, new `preferred_persona_name` query param on `/allocate` router endpoint with graceful-fallback + `voice_persona_conflict` notify on miss, hook integration in `register_session.py`, 7 new unit tests (42 → 49 green). Rick exported `__PLAN=María` + `__LUPIN=Tiberius` in shell rc + restarted PIP session pre-commit; María session `ac2d05c0` is the integration proof point (`voice_persona.name = "maria"` deterministically on Phase A startup, not randomly).
@@ -9,6 +9,62 @@
 ---
 
 ## May 2026
+
+### 2026.05.19 - Session 93 (second continuation) — Step 9 (Implementation-Handoff Synthesis) Doctrine (María + Tiberius)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`) — workflow-doc codification track. Tiberius 🌑 (Lupin, session `387b9201`) — requirements doc authoring track. Roscoe 🤠 (Lupin parallel) — Phase 6C implementation continuing through Node D / B during the meta-thread.
+
+**Session purpose**: Bridge the gap Rick caught in broadcast `d3a89a21`: the `/plan-authoring-cascaded` workflow ends at `cascade-complete signal + post-cascade fold bundle filed` — but that's **not handoff-ready**. An implementer picking up cold faces synthesis-archeology because the cascade artifacts are spread across N section topic files + a pipeline summary + a parent design doc still in DRAFT state. Tiberius today (in Run-3 post-cascade work) ad-hoc'd ~1,225 LOC of synthesis-and-handoff work that wasn't in the workflow doctrine, and Roscoe still surfaced 2 cascade-design gaps in his first 30 min of pre-flight. Both empirical signals demonstrate that v1's done-defined was wrong. Rick's ask: design the doctrine that makes the NEXT cascade run produce a handoff-ready plan without a manual extra pass.
+
+**Convergent independent drafts**: Tiberius and María each drafted framings of the gap within 16 seconds of each other (21:57:39 UTC + 21:57:55 UTC). Same diagnosis ("both omission AND unfinished; omission is load-bearing"); same 3-artifact spec for authoring-cascade (synthesis doc + parent design-doc amendments + execution plan); same state-enum name (`implementation_handoff_ready`); same Manager-default authorship. Differences resolved cleanly: "Step 9" wins over "Phase 6" for workflow-doc-numbering consistency; Manager-extension wins over new-Persona-6 (cast-cost stability); BOTH modes get a Step 9 with mode-specific artifact spec. The convergence is itself evidence that the doctrine framing is on solid ground.
+
+**Sharpening added in iteration**: synthesis-light-review gate as a v1-required safety belt. Tiberius's manager-seat experience today (2 conditional-Recon gaps leaked into handoff package because the synthesizer was in "faithful synthesis" mode not "challenge cascade assumptions" mode) is the killer empirical anchor. **Synthesis is not packaging — it is a quality gate.**
+
+**Accomplishments (PIP-side)**:
+
+- **`src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`** (NEW, 312 lines, Tiberius-authored) — Pattern 3 (Feature Development) requirements doc. 7 sections: motivation + diagnosis + Run-3 empirical evidence; 3-artifact spec for authoring-cascade; 1-artifact spec for review-cascade; Manager-default authorship + `implementation_handoff_ready` state enum + cold-context test (option (a) self-administered); light-review gate spec with 5-criterion focused rubric + 1-revision-turn cap; 6 open questions with Tiberius's leans (all 6 resolved in DM iteration before codification started).
+
+- **`workflow/plan-authoring-cascaded.md`** (MOD, +~140 lines, María-coded) — NEW §Step 9: Implementation-Handoff Synthesis section between Step 8 and Manager Behavior. 3-artifact spec with per-artifact required content + acceptance criteria. Step 9 closure flow (Manager produces → self-administers cold-context test → DMs light-reviewer → reviewer thumbs-up or 1-revision-turn fix → cascade flips to `implementation_handoff_ready`). Step 8 explicitly NOT cascade-done. Version-history entry.
+
+- **`workflow/plan-review-cascaded.md`** (MOD, +~50 lines, María-coded) — NEW §Step 9: Revision-Handoff Synthesis section between Step 8 and Manager Behavior. 1-artifact spec (revision-handoff doc with 7 required sections including REQUIRED §6 doctrine candidates index). Shared closure flow per common.md. Step 8 explicitly NOT cascade-done. Version-history entry.
+
+- **`workflow/plan-review-cascaded-common.md`** (MOD, +~80 lines, María-coded) — NEW §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) subsection between §Worker Acknowledgment Format and §Cascade-Learning-Loop Sub-patterns. Cold-context test 5-question rubric. Light-review gate with reviewer selection guidance + 5-criterion focused rubric + 1-revision-turn cap on Manager response. `implementation_handoff_ready` state semantics. Mode-specific artifact specs cross-linked to `plan-authoring-cascaded.md` §Step 9 / `plan-review-cascaded.md` §Step 9. Version-history entry.
+
+- **`workflow/plan-review-cascaded-personas.md`** (MOD, +~10 lines, María-coded) — Persona 1 (Manager) Outputs section extended with Step 9 implementation-handoff artifacts (3-artifact for authoring; 1-artifact for review). Cross-links to playbook §Step 9 + common.md §Step 9. Version-history entry.
+
+- **`workflow/plan-review-cascaded-defaults.md`** (MOD, +~50 lines, María-coded) — Three extensions:
+  - `closure_action` enum: added `implementation_handoff_ready` (now 9 enum values)
+  - `kind` enumeration: added `step_9_light_review` + `implementation_handoff_ready` (now 11 kinds)
+  - NEW §Step 9 — Implementation-Handoff Synthesis config section with 3 keys: `synthesizer_authorship_policy = manager_default`, `light_review_required = true`, `cold_context_test_mode = self_administered`. Total config keys: 22 → 25.
+
+- **`src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`** (MOD, +~75 lines, María-coded) — NEW §10.16 "Step 9 retrofit — the synthesis-and-handoff gap" anchoring the meta-lesson. Subsections: empirical evidence (1,225 LOC Manager ad-hoc + 2 implementer pre-flight gaps); doctrine fix (Step 9 spec summary); load-bearing v1 retrofit framing.
+
+**Files Changed (this continuation segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` | NEW | Tiberius-authored requirements doc (312 lines) |
+| `workflow/plan-authoring-cascaded.md` | modified | NEW §Step 9 (~140 lines) + version-history |
+| `workflow/plan-review-cascaded.md` | modified | NEW §Step 9 (~50 lines) + version-history |
+| `workflow/plan-review-cascaded-common.md` | modified | NEW §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) (~80 lines) + version-history |
+| `workflow/plan-review-cascaded-personas.md` | modified | Persona 1 Outputs extended + version-history |
+| `workflow/plan-review-cascaded-defaults.md` | modified | 3 enum/keys extensions + version-history |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | modified | NEW §10.16 (~75 lines) |
+| `history.md` | modified | this entry |
+| `TODO.md` | modified | Step 9 doctrine marked complete |
+
+**Cross-repo coordination**: María ↔ Tiberius via 4 DMs on `dm-tiberius` and `dm-maria`. DM thread served as the design conversation surface (per the cross-session DM doctrine validated in Session 90); no separate design document or commons topic needed. Roscoe (Phase 6C implementer) continued heads-down on Node D / Node B in parallel, not blocking on this meta-thread.
+
+**Doctrine highlight — DM-as-design-doc validated AGAIN**: the synthesis-and-handoff doctrine was designed entirely in a 4-DM thread between María and Tiberius. Same pattern as Session 90 Cross-Session DM Doctrine, Session 92 v2 polish bundle, and Session 92 cascade-as-author extension. The 4-DM cycle structure: (1) propose; (2) cross-strawman; (3) close-on-divergences; (4) requirements-doc-handoff-to-codification. ~30-40 min wall-clock for the design phase; ~45-60 min for the codification phase; ~80 min total ratification-ready time vs the alternative of a separate design doc + multi-session review cycle.
+
+**Process insights worth capturing**:
+
+- **The omission framing is sharper than the unfinished framing**: "the doctrine doesn't have a phase for this" beats "we didn't finish it last night" because it forces a structural fix, not a one-time patch. Tiberius's "both, omission is load-bearing" formulation captures the asymmetry correctly: if the doctrine had a Step 9, the Manager would have done it; without one, the Manager either ad-hocs or skips. Codification beats memory.
+- **Convergent independent drafts are a quality signal**: 16-second posting delta between Tiberius and María's framings (with all the major shape decisions matching) is empirical evidence that the diagnosis is on solid ground. The pattern is reusable: when 2 sessions need to design something together, have both draft strawmen independently before exchanging — convergent drafts ratify; divergent drafts surface the interesting design questions.
+- **Light-review-as-blind-spot-corrector**: the Manager-solo-synthesis has a structural blind spot (cognitive frame from facilitating the cascade differs from cognitive frame for challenging cascade assumptions). The light-review gate is the empirical-evidence-driven correction. Cost: ~10-15 min reviewer-time + 1 revision turn cap on Manager response. Benefit: catches the conditional-Recon gaps the Manager-as-synthesizer carried forward verbatim.
+- **Step 8 is NOT cascade-done — explicit doctrine statement**: making it explicit in both playbook docs (authoring + review) prevents the confusion that v1 created. Future readers see "Step 8 is the last step before Step 9" not "Step 8 is the done state."
+
+---
 
 ### 2026.05.19 - Session 93 (continued) — §10.14 Run-3 Doctrine Fold + §10.15 Empirical Telemetry (María)
 

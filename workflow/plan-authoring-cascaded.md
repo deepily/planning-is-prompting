@@ -178,6 +178,96 @@ All `/plan-review-cascaded` Step 8 fields apply (telemetry, finding count, escal
 - **Per-section draft count** (1 = clean first-draft; 2 = one revision; 3 = at-cap, voted/escalated)
 - **Hybrid-mode-specific**: count of original Q-decisions resolved (target: 100% — either ratified or downgraded to TBD/Open-sub-question with explicit owning-section)
 
+**Step 8 is NOT cascade-done**: per Step 9 doctrine (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Implementation-Handoff Synthesis) artifacts land + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
+
+---
+
+## Step 9: Implementation-Handoff Synthesis (NEW — added 2026-05-19 post-Run-3)
+
+**Purpose**: bridge the gap between cascade-complete and implementer-ready. The cascade artifacts (N section topic files + pipeline summary + parent design doc in DRAFT) are not a contract an implementer can pick up cold. Step 9 produces 3 artifacts that constitute the handoff package.
+
+**Trigger**: fires AFTER Step 8 cascade-complete signal, BEFORE any implementer is dispatched.
+
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (5-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap on Manager response).
+
+**Full requirements anchor**: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.
+
+### 9.1 The three artifacts (authoring-cascade)
+
+The authoring-cascade flavor produces 3 artifacts at canonical paths next to the parent design doc:
+
+**Artifact 1 — Synthesis doc (`NN-cascade-synthesis.md`)** — the "why anchor"
+
+Single canonical contract derived from all section artifacts. Implementer (and future readers) read this to understand WHAT was ratified and WHY. Required content:
+
+- §1 Purpose statement + sister-doc cross-refs (parent design doc, execution plan)
+- §2 Cascade telemetry (closure metrics, per-section findings count, verbatim-accept rates, escalation counts, hard-verification-gate count, doctrine-candidate count)
+- §3 **Per-section ratified synthesis** — one §3.X subsection per cascade section, each containing:
+  - Cluster Q-decisions ratified (verbatim verdicts; user escalations + manager-unilateral ratifications inline-cited)
+  - Final acceptance criteria (full AC table; verbatim text per AC; EXECUTOR column)
+  - Execution steps (final revised text)
+  - Pre-flight Recon items (final list including retired/rescoped/added)
+  - Files affected inventory (NEW vs EDITED)
+  - Reused functions / utilities (pre-surfaced reuse map)
+  - Cross-section dependencies (E-edge identifiers + contract surface)
+  - Stage findings closure trail (Stages 1/2/3)
+- §4 Cross-section dependency map (mermaid graph + edges table)
+- §5 Post-cascade fold bundle (items deferred to documentation polish; NOT new code work)
+- §6 Doctrine candidates brief index (cross-ref to PIP-side deep redline) — **REQUIRED**, not optional
+- §7 Sequencing recommendation for implementation
+- §8 Open items + hand-off to design-doc amendment + execution plan
+
+**Artifact 2 — Parent design-doc amendments (in-place edits)** — the "reference of record"
+
+The parent design doc was created at design-mode time as the canonical reference. After the cascade ratifies the design, the design doc must reflect that ratified state. No new file; edits land in-place on the existing parent design doc. Required edits:
+
+- **Status header**: flip from "DRAFT" (or equivalent) to "🟢 CASCADE-RATIFIED YYYY-MM-DD" + sister-doc cross-refs (synthesis + execution plan paths)
+- **Cascade closure metadata**: brief paragraph in the header table — wall-clock, sections-closed, findings totals, verbatim-accept rate, user escalations, manager-unilateral ratifications, reviewer reassignments, hard-verification gates, doctrine candidates filed
+- **Per-cluster ratification markers**: each Cluster N section gains a "✅ FULLY RATIFIED (X/Y) YYYY-MM-DD (Run N cascade)" line + brief closure paragraph
+- **Per-Q ratification markers**: each Q that had a user escalation or manager-unilateral ratification gains a dedicated marker with cascade-closure narrative inline
+- **AC tables**: replace DRAFT AC tables with final ratified per-section AC tables (OR cross-ref synthesis doc §3.X; keep legacy DRAFT below for historical context)
+- **Files-affected section**: replace rough inventory with definitive per-section inventory (OR cross-ref synthesis + execution plan)
+
+**Artifact 3 — Execution plan (`NN+1-execution-plan.md`)** — the "what + how"
+
+Implementer's handoff doc. Anyone picking this up cold ships section-by-section without re-deriving cascade context. Structure per implementer's framing preference (DAG-first is the Run-3 canonical example; workflow leaves shape flexible). Required content:
+
+- §1 DAG / sequencing graph (mermaid; per-edge rationale; concurrency options)
+- §2 Global standing rules — doctrine memories that apply across all nodes (coverage mandate, commit discipline, test-venue routing); test pyramid required at every node; code style invariants
+- §3 **Per-node deliverables** (in DAG order), each containing:
+  - Provides / Depends-on / Coordinates-with (cross-node)
+  - Synthesis cross-ref (to §3.X of synthesis doc — the why-anchor)
+  - Files to write (NEW) — path + purpose + size budget
+  - Files to edit (EDITED) — path + what changes
+  - Function signatures (key public surface)
+  - Step-by-step sequence (must-run-in-order)
+  - Pre-flight Recon (verify at code-write time)
+  - Acceptance criteria cross-ref to synthesis §3.X
+  - Done-defined for this node (tabular pass/fail per tier)
+- §4 Cross-cutting gates (hard-verification gates, full coverage gate, regression schedule, boot handshake)
+- §5 Done-defined for the overall Phase
+- §6 Post-cascade fold bundle items (cosmetic-polish; mostly already folded by synthesis or amendments)
+- §7 Implementer coordination surface (escalation paths, manager/synthesizer contact, parallel-track owners)
+
+### 9.2 Authorship — Manager-default (escape hatch documented)
+
+Step 9 authorship is the **Manager's** responsibility by default. Rationale:
+- Manager has freshest cross-section context (facilitated all closures, ratified all findings, witnessed all escalations)
+- Manager already maintains the manager-classification thread across the cascade — synthesis is a natural extension
+- Avoids cast expansion (no new Persona 6 to allocate)
+
+**Escape hatch for future v3**: workflow doctrine may add a "designated synthesizer" role if cascades grow large enough that synthesis becomes its own full-time job. Run 3 (N=4 sections, 43 findings, 1,225 LOC synthesis output, ~80 min Manager wall-clock) is at the edge of Manager-solo feasibility. N=8 cascades may warrant the split. For v1, default = Manager; escape hatch documented but not invoked.
+
+### 9.3 Step 9 closure flow
+
+1. Manager produces 3 artifacts per §9.1
+2. Manager self-administers cold-context test (common.md §Step 9 5-question rubric)
+3. Manager DMs a chosen cascade-participant reviewer with the 3 artifacts + light-review rubric (common.md §Step 9 light-review gate)
+4. Reviewer responds within ~10-15 min with thumbs-up OR specific gap list, posting as `kind: "step_9_light_review"` to the cascade's parent topic
+5. If thumbs-up: Manager posts `kind: "implementation_handoff_ready"` to the parent topic; cascade enters `implementation_handoff_ready` state
+6. If gaps: Manager addresses gaps in artifacts (capped at 1 revision turn); re-tests; re-asks reviewer
+7. If 2nd reviewer pass finds more gaps: escalate to user (Trigger 1 foundational — synthesis quality issue worth user-attention)
+
 ---
 
 ## Manager Behavior (mostly SHARED — see common.md)
@@ -250,6 +340,8 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 ---
 
 ## Version History
+
+- **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — NEW §Step 9: Implementation-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). The cascade was previously "done" at Step 8 cascade-complete signal; in practice this left ~1,225 LOC of synthesis work as Manager ad-hoc post-cascade (Run-3 Tiberius), AND let 2 cascade-design gaps leak into the handoff package that the implementer (Roscoe) surfaced at pre-flight. Step 9 introduces: (a) the 3-artifact spec — synthesis doc + parent design-doc amendments + execution plan (with required-content per artifact); (b) Manager-default authorship with v3 escape hatch for designated-synthesizer at large N; (c) Step 9 closure flow with cold-context test + light-review gate + 1-revision-turn cap; (d) new `implementation_handoff_ready` closure state distinct from `cascade_complete`. Step 8 explicitly NOT cascade-done; handoff-ready requires Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Companion edits in `plan-review-cascaded-common.md` (shared acceptance criteria) + `plan-review-cascaded-personas.md` (Persona 1 Manager outputs) + `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys) + `plan-review-cascaded.md` (sister §Step 9 with 1-artifact spec).
 
 - **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata redline integrated post-Run-3 cascade-complete (Phase 6C, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation). Run-3 surfaced 12 doctrine candidates (plus 3 Rick-voice catches) filed in the `pipeline-summary-20260519` commons topic; this revision folds the cascade-shared subset into the canonical homes:
   - `plan-review-cascaded-common.md`: new §Reviewer Reassignment (Manager Latitude 5-element doctrine + Bias Risk Guardrail + Rate-Limit failure-mode entry); new §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy

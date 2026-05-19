@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-05-19 (Session 93 — §10.14 redline of cascade workflow docs, María)
+Last updated: 2026-05-19 (Session 93 second continuation — Step 9 Synthesis-and-Handoff doctrine, María + Tiberius)
 
 ## Pending
 
@@ -54,6 +54,8 @@ Last updated: 2026-05-19 (Session 93 — §10.14 redline of cascade workflow doc
 - [ ] Consider similar split for other argument-based commands
 
 ## Completed (Recent)
+
+- [x] **Step 9 (Implementation-Handoff Synthesis) doctrine — María + Tiberius, Session 93 second continuation**. Codifies the implementation-handoff phase that v1 cascade doctrine omitted per Rick's broadcast `d3a89a21`. Requirements doc at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (Tiberius-authored, 312 lines). Workflow codification across 5 files (María-coded): `plan-authoring-cascaded.md` §Step 9 (3-artifact spec: synthesis doc + parent design-doc amendments + execution plan); `plan-review-cascaded.md` §Step 9 (1-artifact spec: revision-handoff doc); `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) with 5-question cold-context test + 5-criterion light-review gate + 1-revision-turn cap; `plan-review-cascaded-personas.md` Persona 1 (Manager) outputs extended; `plan-review-cascaded-defaults.md` closure_action enum + kind enum + 3 new config keys (`synthesizer_authorship_policy`, `light_review_required`, `cold_context_test_mode`). NEW `implementation_handoff_ready` state distinct from `cascade_complete`. Design doc §10.16 anchors the meta-lesson with Run-3 empirical evidence (Tiberius's 1,225 LOC of post-cascade ad-hoc work + Roscoe's 2 pre-flight gaps). DM-thread-as-design-doc pattern validated again (4-DM cycle, 16-second convergent-independent-draft posting delta between María and Tiberius). — Session 93 (María + Tiberius)
 
 - [x] **§10.14 redline of cascade workflow docs — Run-3 doctrine fold (María, Session 93)** — Folded the 12 doctrine candidates from Tiberius's Run-3 §8 pipeline summary (+ 3 Rick-voice catches: Manager Reassignment Latitude, Reassignment Bias Risk Guardrail, Mute-Channel Bypass) into the canonical cascade workflow docs. Edits across 4 files:
   - `workflow/plan-review-cascaded-common.md`: NEW §Reviewer Reassignment with Manager Latitude 5-element doctrine + Bias Risk Guardrail + Rate-Limit failure-mode entry; NEW §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy
