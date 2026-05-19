@@ -1,13 +1,96 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 92 (third continuation; cascade-as-author doctrine shipped; Phase 6C cascade dispatch imminent)
+**RESUME HERE**: Session 92 (fourth continuation; Run-3 Phase 6C cascade COMPLETE — authoring-cascade hypothesis VALIDATED in production; end-of-evening commit landed with 9 §10.14 doctrine candidates queued for post-Run-3 redline)
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
-**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end + v2 polish bundle shipped + cascade-as-author doctrine extension shipped**. Cascade design hypothesis VALIDATED. Postmortem → §10 findings memo (with §10.13 Lesson 12 manager-funnel-inverted-for-proposals-up + §10.14 cognitive-workload prediction for Run 3). 5 v2 polish improvements shipped via divide-and-conquer across the loaded team (Rio's MCP `ask_multiple_choice` default param + Arnold's spoken-headline + cluster-bundling default + Mr Radio's Convention 3 author self-check + Rachel's per-section budget tracker). Heartbeat-daemon + Doc Viewer Scope doctrine. **NEW 2026-05-19**: `/plan-authoring-cascaded` sister workflow + extracted `plan-review-cascaded-common.md` shared doctrine doc + Persona 2.A Authoring Author + Persona 5 Convention 6 (coverage-as-ownership-language). Phase 6C planning cascade dispatch pending Mr. Rick's final go.
+**Last Session**: Session 92 (María, `4ee3e0c1`) — Phase D cascaded plan-review prototype: **Run 1 partial + Run 2 complete end-to-end + v2 polish bundle shipped + cascade-as-author doctrine extension shipped + Run 3 Phase 6C authoring-cascade COMPLETE (108 min wall-clock; 43 findings; 91% verbatim-accept; 1 user-escalation; 1 reviewer reassignment due to rate-limit; 4 sections fully closed)**. Authoring-cascade hypothesis VALIDATED in production. §10.14 errata queue grew to 9 items for Tiberius's post-Run-3 manager-seat redline (incl. Reassignment Latitude doctrine + Bias-Risk guardrail + Mute-Channel Bypass for Manager-Escalation + blocked_waiting_on_user observability post). NEW 2026-05-19: `/plan-authoring-cascaded` sister workflow + extracted `plan-review-cascaded-common.md` shared doctrine doc + Persona 2.A Authoring Author + Persona 5 Convention 6 (coverage-as-ownership-language). Phase 6C implementation plan ready for Mr. Rick's tomorrow pickup.
 
 ---
 
 ## May 2026
+
+### 2026.05.19 - Session 92 (fourth continuation) — Run-3 Phase 6C Cascade COMPLETE + End-of-Evening Closeout (María + Tiberius + Sam)
+
+**Persona**: María 🌸 (PIP, session `4ee3e0c1`) — doctrine consultant in observer mode driven by external heartbeat daemon (PID 615764). Tiberius 🌑 (Lupin, session `4e724860`) as Manager-coordinator throughout Run 3 + Lupin-side closeout. Sam 🎙️ (CoSA, session `b987b7b6`) joining for CoSA closeout per Mr. Rick's late-night addition to the coordination chain.
+
+**Session continuation shape**: Phase 6C authoring-cascade Run 3 launched at 02:28 UTC; ran 108 min to cascade-complete at 04:16 UTC. María in pure observer mode with tick-based universal-step-zero (3-min cadence via external heartbeat daemon, second instance launched mid-cascade to address turn-based-CC limitation applying to consultant role too). Mr. Rick fatigued post-3am; authorized María + Tiberius + Sam to autonomously close out all three repos (PIP / Lupin / CoSA) with commit-only, no-push, no-backup, stretched-day LoC Delta semantics, and history-update protocols so pickup-tomorrow is friction-free.
+
+**Run-3 Phase 6C cascade — final tally (per Tiberius's §8 pipeline summary)**:
+
+- **Wall-clock**: 108 min (02:28 → 04:16 UTC); well under §10.14's 2-3 hr prediction
+- **Sections**: 4/4 fully closed (A 6c-A modal, B 6c-B focus tray, C 6c-C audio recorder, D 6c-D conversation-mode pin); all cap-locked at 2/2 multi-draft rounds
+- **Findings**: 43 total across all sections (11 A / 14 C / 9 D / 9 B); 39/43 verbatim-accept (91%) + 4 documented-not-revised (cap-preserved)
+- **User-attention events**: 1 substantive escalation (Section C F2 foundational, ratified-yes) + 1 ask_yes_no for reviewer reassignment (Mr. Radio→Arnold) = **2 user-touches** vs §10.14's predicted 7-9 (3-4× better than prediction)
+- **Manager-unilateral ratifications**: 1 (Q-D1 Path A by-concurrence)
+- **Votes called**: 0 (all re-litigation closed via single-round verbatim accept)
+- **Reviewer reassignment**: 1 (Mr. Radio rate-limited 80+ min on Section B Stage 1; Tiberius midstream-reassigned to Arnold per Mr. Rick's voice endorsement of manager-authority-margin)
+- **Hard-verification-gate**: 1 introduced (Section B AC-B15 grep-gate supersedes post-cascade-fold pattern)
+- **Cumulative-findings dividend** (per Rio's observation): 11 A → 14 C → 9 D — Section D's lower count validates **cascade-learning-loop as first-order workflow asset** (proactively-doctrine-loaded sections produce fewer findings)
+
+**§10.14 errata queue grew to 9 items** for Tiberius's post-Run-3 manager-seat redline:
+
+| # | Item | Source | Status |
+|---|---|---|---|
+| 1 | Persona 2.A point 14 — doctrine-sweep on ANY revision-mechanism change | Rio (Run-3) | queued |
+| 2 | §6.4 phantom-probe instrumentation | Run-1+2 carry | queued |
+| 3 | New §6.5 manager-side rate-limit decision branch | Run-3 | queued |
+| 4 | §8 cascade-complete new status enum `partial_closed_rate_limit_block` | Run-3 | queued |
+| 5 | Investigate why Run-3 tripped rate-limit (concurrent count vs Anthropic capacity) | Run-3 | queued |
+| 6 | Manager posts `kind: "blocked_waiting_on_user"` for observer disambiguation | Tiberius (Run-3) | queued |
+| 7 | Manager Reassignment Latitude (5-element doctrine; Rick voice catch) | Run-3 | **queued — Option B (Tiberius redline)** |
+| 8 | Reassignment Bias Risk guardrail (single-reviewer-multi-stage; Rick catch) | Run-3 | queued |
+| 9 | Mute-Channel Bypass for Manager-Escalation (Rick lesson — muting Tiberius cost 14 min) | Run-3 | queued |
+
+Tiberius additionally surfaced 12 doctrine candidates from his manager-seat in the §8 pipeline summary; total post-Run-3 redline material is rich (the 9 above are a subset of the broader bundle).
+
+**End-of-evening coordination (Mr. Rick gone to bed at ~04:14 UTC)**:
+
+- Mr. Rick's directive: PIP + Lupin + CoSA each commit batches in their own repo; **commit-only — NO push, NO backup**; history.md updated; LoC Delta with stretched-day boundary `2026-05-18T00:00 → 2026-05-19T05:00`; pickup-tomorrow ready
+- María (PIP) ↔ Tiberius (Lupin) coordination DM established same-playbook agreement at 04:15-04:16 UTC
+- Sam (CoSA) added to chain at 04:17 UTC per Mr. Rick's late directive: sequencing is Lupin commit → Tiberius pings Sam → Sam runs CoSA ritual independently (addresses Tiberius's cosa-edit-vs-manage-git restriction)
+- Sam acked playbook at 04:18:12 UTC; standing by for Tiberius's post-Lupin-commit ping
+
+**Accomplishments (PIP-side, this continuation segment)**:
+
+- **Observer-mode telemetry**: 26 ticks of universal-step-zero observation across the Run-3 cascade; 11 substantive notifies to Mr. Rick covering disk-state deltas, worker activity heatmap, stall-vs-block disambiguation, doctrine carry-item captures, and reassignment coordination
+- **Doctrine catches** (Items #7, #8, #9 above): Manager Reassignment Latitude draft (5-element doctrine), Reassignment Bias Risk guardrail, Mute-Channel Bypass for Manager-Escalation — all queued for Tiberius's post-Run-3 manager-seat redline per Mr. Rick's Option B selection
+- **End-of-evening closeout coordination**: DMs to Tiberius (4 substantive DMs) + Sam (1 onboarding DM) covering playbook, stretched-day timestamps, sequencing, and pickup-tomorrow contract
+- **`history.md` updated** (this entry)
+- **LoC Delta CSV regenerated** with stretched-day window (per stretched-day boundary)
+
+**Files Changed (this continuation segment, planning-is-prompting only)**:
+
+| File | Change | Notes |
+|---|---|---|
+| `history.md` | MOD | This entry — Session 92 fourth continuation |
+| `io/git-loc-delta/planning-is-prompting-wip-v0.1.3-2026.02.16-continued-development-loc-delta.csv` | MOD | Regenerated via `--branch` per session-end ritual |
+
+**Files Changed (outside this repo — Lupin)**:
+
+- Cascade section topic files (4): `<lupin>/io/commons/cascaded-prototype-phase-6c-section-{A,B,C,D}.md` — closed at 967/1426/1152/1080 lines respectively (Tiberius's repo to commit)
+- `<lupin>/history.md` — Tiberius's Phase 6C cascade Run 3 entry (his repo to commit)
+
+**Process insights worth capturing**:
+
+- **Turn-based-CC limitation applies to consultant role**: María's mid-cascade observation gap (Mr. Rick's "How are you observing if your console shows no activity?" catch) forced launching a second heartbeat daemon instance for the consultant. Generalizes the doctrine: **ALL cascade CC roles need external scheduler ticks, not just Manager**.
+- **Manager-authority-margin as positive signal**: Tiberius's midstream Mr. Radio→Arnold reassignment without user pre-ratification (only ratify-after-decision) was endorsed by Mr. Rick as "Nice midstream recalibration... glad that Tiberius had the latitude and the ability to improvise on the fly." Codified as §10.14 Errata Item #7 (Manager Reassignment Latitude doctrine).
+- **Bias-risk guardrails as paired doctrine**: Item #7 (latitude) needs Item #8 (bias-risk guardrail) — when reassignment puts the same reviewer on multiple stages of the same section (Arnold doing both Stage 1 + Stage 2 on Section B), anchoring/echo-chamber/confirmation-bias risks need explicit acknowledgment + mitigation choice. Doctrine pair queued for Tiberius's manager-seat redline.
+- **Mute-channel deadlock**: Item #9 — user-level mute on a critical-path persona (manager) creates a single point of failure when that persona needs to escalate. Mr. Rick muted Tiberius for chatter relief; Tiberius's urgent escalation request waited 14 min for time-out because urgent didn't bypass mute. Three doctrine candidates: (a) default rule never mute manager, (b) priority-threshold mute-bypass via separate channel, (c) tool feature request for `bypass_user_mute=true` flag.
+- **Cross-repo closeout choreography**: PIP/Lupin/CoSA coordinated via DM-only with sequencing (Lupin→CoSA per CoSA-edit-vs-manage-git constraint). María maintains cross-repo coherence via stretched-day LoC Delta boundary (`2026-05-18T00:00 → 2026-05-19T05:00`) and shared playbook (commit-only, no-push, no-backup). Pattern generalizes to any multi-repo closeout where one persona can't manage another's git context.
+
+**Reason this is a continuation segment, not a fresh session entry**: same calendar arc (May 18 evening into May 19 early morning); same persona (María); same session ID (`4ee3e0c1`); direct continuation of the Run-3 Phase 6C dispatch teed up by the third-continuation cascade-as-author doctrine extension entry.
+
+**Cumulative Session 92 wall-clock**: ~17+ hours across four continuation segments. Productive cascade-doctrine-validation-and-extension arc.
+
+**Pickup-tomorrow ready (for Mr. Rick)**:
+1. PIP repo: 1 commit at end-of-evening (history.md + LoC Delta CSV); no push (manual when convenient)
+2. Lupin repo: Tiberius's commit (his repo, his content); no push
+3. CoSA repo: Sam's commit OR "CoSA clean, nothing to commit" confirmation
+4. §10.14 errata sweep (9 items, with #6-9 from Run 3) awaits Tiberius's post-Run-3 manager-seat redline + María's incorporation pass
+5. §10 third-row telemetry awaits María's write-up (predicted vs actual table for Run-3)
+6. Phase 6C implementation plan now exists in commons section files (A/B/C/D) — ready for Rachel's pickup into a single consolidated implementation doc when Mr. Rick gives the next-step nod
+
+---
 
 ### 2026.05.18 - Session 92 — checkpoint (María, `4ee3e0c1`) — IN PROGRESS
 
