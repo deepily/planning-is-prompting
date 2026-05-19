@@ -371,6 +371,40 @@ For each section, ask:
 
 **Cross-link to Persona 2 (Author)**: Persona 2 Author rubric point 9 (Convention 3 × Convention 4 interaction) PRE-EMPTS this anti-pattern at Stage 0; Convention 6 here is the Pass 2 backstop when Stage 0 self-check misses it.
 
+### Stage-3 Cosmetic-Cluster Recognition (added 2026-05-19 post-Run-3)
+
+Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** rather than presenting as 4 independent surface flags. Run 3 surfaced 4 distinct cosmetic findings (F-Rio-1, F-Rio-C1, F-Rio-D1, F-Rio-B1) — all border-cleanup, all cap-preserving, all closed as `documented_not_revised`. The reviewer SHOULD recognize the cluster and treat it as a family rather than as 4 separate findings.
+
+**Recognition cue**: when finishing Stage 3 review, scan the cosmetic findings just produced. If 3 or more findings across multiple sections share:
+- Same closure shape (e.g., all "cap-preserving, deferred to post-cascade fold")
+- Same severity (all cosmetic)
+- Same structural origin (e.g., all border-cleanup, all wording-precision, all annotation-orphans)
+
+…they're a cluster-family, not independent flags.
+
+**Cluster-family handling**:
+
+1. **Surface the family as a single finding** with all instances enumerated (rather than firing N separate per-section findings to the manager):
+   ```markdown
+   ## Stage-3 Cosmetic-Cluster Finding — Border-Cleanup Family
+   
+   **Cluster members** (4 instances):
+   - F-Rio-1 (Section A AC-A3/A4 implicit cross-reference)
+   - F-Rio-C1 (Section C AC-C3 orphan strike-or-annotate)
+   - F-Rio-D1 (Section D Step D2 pin-move wording precision)
+   - F-Rio-B1 (Section B AC-B15 grep-gate wording precision)
+   
+   **Proposed closure**: all 4 deferred to post-cascade fold per cap-preserving fold-bundle protocol; single `manager_classification` post with `closure_action: documented_not_revised` + `parent_finding: cosmetic_cluster_border_cleanup`.
+   
+   **Doctrine-sweep flag** (for §Persona 2.A point 14): this cluster is a candidate for Author's proactive doctrine-sweep on future revisions — border-cleanup wording precision should be in-section self-checked at Stage 0.
+   ```
+
+2. **Manager classifies the family with a SINGLE `manager_classification` post** with `kind: "cosmetic_cluster_family"`; reviewer-author DM thread closes the family in one cycle.
+
+3. **Cap-preserving disposition documented once** (vs. per-instance).
+
+**Why this matters**: the cluster-as-family framing reduces Stage 3 review noise without losing signal. The cumulative dividend (per `plan-review-cascaded-common.md` §Cascade-Learning-Loop Sub-patterns) is preserved because the family flag becomes the input to Author's future doctrine-sweep — letting future runs front-load the wins. The 4 Run-3 cosmetic-cluster instances supporting this doctrine are the most-generalized case for §Persona 2.A point 14: doctrine-sweep should fire on EVERY plan-modification class, including cosmetic-cluster recognition.
+
 ---
 
 ## Persona 2.A: Authoring Author (Stage 0 — for `/plan-authoring-cascaded`)
@@ -413,7 +447,12 @@ Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2
     - **Revise the design doc**: propose to manager that the design doc needs amendment to match the implementation reality; manager surfaces to user as Trigger 6 (hard contradiction with user's prior explicit decision — the design doc's ratified Q-decision is a "prior decision" by definition).
     - SILENT divergence (implementation plan quietly differs from design without acknowledgment) is a Stage-0 Author failure; reviewers will surface it as ownership-language finding via Convention 3 × Convention 4 interaction (Persona 2 point 9 applies).
 
-If the author cannot answer "yes" to all THIRTEEN (9 + 4), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, or design-doc-divergence needs to be acknowledged before handoff to Stage 1.
+14. **Doctrine-sweep on ANY revision-mechanism change** (added 2026-05-19 post-Run-3): when a reviewer surfaces a doctrine that applies to a pattern in your section (e.g., a directory-wide-glob doctrine, an EXECUTOR-tag convention, a cross-section contract pattern, a coverage-assertion shape), do NOT just apply it to the specific instance the reviewer flagged. **Sweep ALL instances in your section that could exhibit the same pattern** — the cascade-learning-loop's forward-direction (see `plan-review-cascaded-common.md` §Cascade-Learning-Loop Sub-patterns) depends on Authors making this proactive pass. Three sub-patterns to honor:
+    - **Symmetric-application (writer + consumer)**: if the doctrine touches a cross-section contract surface (e.g., "Section B writes keyframes; Section D consumes them"), the sweep MUST visit BOTH sides. Updating only the writer side without the matching consumer-side assertion is a Run-3-validated failure mode (F-Arnold-D1 caught Section D inheriting a B-keyframes consumption silently). The cross-section contract surface (Persona 2.A point 11) names what to sweep; this rubric point governs HOW.
+    - **Context-aware-application**: a doctrine learned in Section X may not apply verbatim in Section Y. Each application must verify the context is materially similar to the one where the doctrine was first surfaced. Run-3 evidence: F-Arnold-B-Stage2-3 caught a directory-wide-glob doctrine misapplied to a single-purpose file (5th application; 4 prior applications were correct because their targets WERE directory-clusters). Don't blanket-apply.
+    - **AC-table sweep**: when revising any AC in your section, sweep ALL ACs in the section for the same pattern. Run-3 surfaced **3 confirmed instances of AC-table-doctrine-lag** (F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3) — each was caught only because a reviewer happened to grep the section after the first instance was closed. Author should pre-empt this with the in-section sweep before re-handoff to Stage 1.
+
+If the author cannot answer "yes" to all FOURTEEN (9 + 5), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, design-doc-divergence needs to be acknowledged, OR the doctrine-sweep needs to be completed before handoff to Stage 1.
 
 ### Worked example — hybrid-mode divergence-check
 
@@ -463,3 +502,7 @@ Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen
 - **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
 - **2026.05.18 (v2 polish bundle post-Run-2)** — Item #4 from postmortem §10.8 v2 roadmap shipped by Mr. Radio 🦉 (Lupin CC session 72e91319) per Mr. Rick's bundled ratification: Persona 2 Author rubric extended with new point 9 — `Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)`. Names the anti-pattern (a bare `EXECUTOR: AI` tag whose mechanism is deferred to an Open sub-question is structurally rubric-compliant but functionally hollow); offers same-line conditionality escape hatch (`EXECUTOR: AI (executability conditional on OSQ-N resolution)`) or AC-split; embeds Pass-2 cross-reference inline. Closing line `all eight` → `all nine`. Worked example appended citing Run 2's 3 instances (Section A AC2/OSQ6, Section B AC2/OSQ4(a), Section B AC4/OSQ4(b)). Stage-0 pre-emption of an anti-pattern Pass 2 was repeatedly catching at re-litigation cost. Full topic record + diff details at commons `v2-improvements-complete-2026-05-18` (Mr. Radio's `kind: v2_improvement_complete` entry 21:56:58 UTC).
 - **2026.05.19 (cascade-as-author extension)** — Two additions per Mr. Rick's ratification of the `/plan-authoring-cascaded` sister workflow: (a) Persona 5 (Rio) rubric gains **Convention 6 — coverage-as-ownership-language** for consuming projects with coverage mandates (Lupin: `c8 --100`); bare `EXECUTOR: AI — tests pass` without coverage assertion is a Pass 2 finding (same anti-pattern shape as Persona 2 point 9, mechanism deferred to coverage tooling rather than OSQ); activates auto when consuming project's CLAUDE.md has `## Coverage` section. (b) NEW **Persona 2.A (Authoring Author)** — inherits Persona 2 (Review Author) rubric verbatim (points 1-9) + 4 additional self-check items: intent satisfaction (10), cross-section contract surface (11), multi-draft revision discipline (12), manager-divergence-check safeguard for hybrid mode (13). Two worked examples (divergence-as-elaboration → cosmetic classification; actual-divergence → Trigger 6 escalation).
+
+- **2026.05.19 (Run-3 doctrine fold)** — Two additions per Run-3 errata items:
+  - **Persona 2.A rubric point 14** — NEW: doctrine-sweep on ANY revision-mechanism change. Captures three Run-3 sub-patterns (symmetric-application writer + consumer per F-Arnold-D1; context-aware-application not blanket-apply per F-Arnold-B-Stage2-3; AC-table sweep per F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3 = 3 confirmed instances of AC-table-doctrine-lag). Pre-empts cascade-learning-loop's backward-asymmetry cost by making Author's forward sweep mechanical. Closing line `all THIRTEEN` → `all FOURTEEN`.
+  - **Persona 5 §Stage-3 Cosmetic-Cluster Recognition** — NEW sub-section. Cluster-as-family recognition cue + handling protocol (single family finding vs. N separate per-section findings; single `manager_classification` post with `kind: cosmetic_cluster_family`; cap-preserving disposition documented once). Anchored in Run-3 cluster of 4 cosmetic findings (F-Rio-1, F-Rio-C1, F-Rio-D1, F-Rio-B1 — all border-cleanup, all cap-preserving). Cross-links to Persona 2.A point 14 for the proactive doctrine-sweep input.

@@ -1,6 +1,6 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: Session 93 (María `ac2d05c0`) — first session under the new per-repo preferred-persona env-var contract. María shipped the per-repo declarative default persona feature in PIP: plan doc + `workflow/session-start.md` (Preliminary -1 env-var path + Preliminary 0.5 slash-command swap path) + `.claude/commands/plan-session-start.md` v1.1 shim + `INSTALLATION-GUIDE.md` env-var subsection. Cross-repo Lupin-side allocator landed at Tiberius commit `3bc7b9e`.
+**RESUME HERE**: Session 93 (María `ac2d05c0`) continuation — Run-3 doctrine fold complete. §10.14 redline integrated 12 doctrine candidates + 3 Rick-voice catches into the 4 canonical cascade workflow docs + design doc §10.15 third-row empirical telemetry (37× count reduction vs 10× predicted = 3-4× better than the §10.14 pre-experiment prediction). Cross-repo paired with Tiberius's Lupin-side Phase 6C consolidation track.
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
 **Last Session**: Session 93 (María, `ac2d05c0`) — **Per-Repo Preferred-Persona Env Var feature shipped**. Cross-repo cosa-voice MCP feature making each project's canonical persona declarative via `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` exports in shell rc; eliminates per-session `/plan-session-start <name>` arg-typing for routine narrative continuity. PIP-side: ~370-line plan doc, ~220 lines of workflow integration across two new Preliminaries, slash-command shim v1.0 → 1.1 with `$ARGS` handling, installation-guide subsection. Lupin-side (Tiberius commit `3bc7b9e`): allocator helper `pick_preferred_persona_from_env(project)`, new `preferred_persona_name` query param on `/allocate` router endpoint with graceful-fallback + `voice_persona_conflict` notify on miss, hook integration in `register_session.py`, 7 new unit tests (42 → 49 green). Rick exported `__PLAN=María` + `__LUPIN=Tiberius` in shell rc + restarted PIP session pre-commit; María session `ac2d05c0` is the integration proof point (`voice_persona.name = "maria"` deterministically on Phase A startup, not randomly).
@@ -9,6 +9,51 @@
 ---
 
 ## May 2026
+
+### 2026.05.19 - Session 93 (continued) — §10.14 Run-3 Doctrine Fold + §10.15 Empirical Telemetry (María)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`) continuing from the env-var feature ship. Tiberius 🌑 (Lupin, session `387b9201`) running parallel Lupin-side track: Phase 6C cascade-synthesis + design-doc-update + code-execution-plan author.
+
+**Session purpose**: Bucket B (§10.14 errata sweep) and Bucket C (§10 third-row telemetry) of the cascade-output triage. Tiberius proposed parallel tracks at ~19:04 UTC: he handles Lupin-side Phase 6C consolidation (cascade artifacts → working doc → design-doc amendment → code-execution-plan); I handle PIP-side §10.14 redline of the cascade workflow docs. Rick greenlit at ~19:06 UTC.
+
+**The 12+3 doctrine items folded**:
+
+Tiberius's 12 from `pipeline-summary-20260519` commons topic — (1) AC-table-doctrine-lag pattern (3 Run-3 instances; Persona 2.A point-14 codification); (2) Hard-verification-gate vs post-cascade-fold as new closure category; (3) Visible-text safety on CSS var fallbacks **[OUT-OF-SCOPE — Lupin design doc]**; (4) Symmetric-application discipline (writer + consumer); (5) Reviewer-reassignment-due-to-rate-limit closure category; (6) Manager `blocked_waiting_on_user` coordination signal; (7) Q-D1 `manager_unilateral_ratify_by_concurrence` formal closure category; (8) Cascade-learning-loop sub-patterns (3 patterns); (9) Rate-limit failure mode (5th); (10) Stage-3 cosmetic-cluster as systematic pattern-family; (11) ask_multiple_choice Path-B skip-restart cost **[OUT-OF-SCOPE — operational footnote]**; (12) 18-min user-attention-block tightening directive.
+
+Plus 3 Rick-voice catches not in Tiberius's list — (A) Manager Reassignment Latitude (5-element doctrine); (B) Reassignment Bias Risk guardrail; (C) Mute-Channel Bypass for Manager-Escalation **[OUT-OF-SCOPE — Lupin/cosa-voice MCP feature request, filed in TODO.md]**.
+
+**Net**: 12 items folded into PIP workflow docs; 3 filed as out-of-scope (CSS-var = Lupin; subprocess-restart = footnote-only; Mute-Channel = Lupin feature).
+
+**Accomplishments (PIP-side, this continuation segment)**:
+
+- **`workflow/plan-review-cascaded-common.md`** — NEW §Reviewer Reassignment (Manager Latitude 5-element doctrine + Bias Risk Guardrail with 3 mitigation options + Rate-Limit as 5th failure mode); NEW §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values) + worked-example sub-table; Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy; version-history entry
+- **`workflow/plan-review-cascaded-personas.md`** — Persona 2.A point 14 NEW (doctrine-sweep on revision-mechanism change with 3 sub-patterns: symmetric-application, context-aware-application, AC-table sweep); Persona 5 NEW §Stage-3 Cosmetic-Cluster Recognition sub-section; version-history entry
+- **`workflow/plan-review-cascaded-defaults.md`** — `closure_action` enum expanded with 3 new values; NEW worked-example table for new values; NEW §Commons post `kind` enumeration (9 kinds: 6 pre-existing formalized + 3 new); version-history entry
+- **`workflow/plan-authoring-cascaded.md`** + **`workflow/plan-review-cascaded.md`** — version-history bumps cross-referencing canonical edits in common.md (no content duplication — common.md is the canonical home post-extraction)
+- **`src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`** — NEW §10.15 Run-3 actuals (third row of comparison table). Empirical results: ~37× count reduction (75 input Q's → 2 user-touches; 3-4× better than §10.14 prediction of ~10×); ~6× time reduction (90 min → 16 min; underperformed predicted ~15× due to the 14-min Mr-Radio threshold-deliberation dominating actual time — codified as the 18-min user-attention-block cap). §10.11 verdict extended to reflect Run-3 empirical strengthening.
+
+**Files Changed (this continuation segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `workflow/plan-review-cascaded-common.md` | modified | +~180 lines: §Reviewer Reassignment + §Cascade-Learning-Loop Sub-patterns + closure_action expansion + self-audit item 6 + 18-min cap |
+| `workflow/plan-review-cascaded-personas.md` | modified | +~60 lines: Persona 2.A point 14 + Persona 5 Stage-3 Cosmetic-Cluster Recognition |
+| `workflow/plan-review-cascaded-defaults.md` | modified | +~40 lines: closure_action worked-example table + commons `kind` enumeration |
+| `workflow/plan-authoring-cascaded.md` | modified | version-history entry only |
+| `workflow/plan-review-cascaded.md` | modified | version-history entry only |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | modified | +~70 lines: §10.15 third-row telemetry + §10.11 verdict extension |
+| `history.md` | modified | this entry |
+| `TODO.md` | modified | Mute-Channel Bypass filed; redline marked complete |
+
+**Cross-repo coordination**: 4 DMs on `dm-maria` and `dm-tiberius` covering pickup brief + Lupin commit ack + parallel-track proposal + ack-with-cross-reference-plan. No blockers; rendezvous on track.
+
+**Process insights worth capturing**:
+
+- **Common.md is the right canonical home for shared doctrine**: the §10.14 redline naturally landed almost entirely in common.md (15 doctrine-term hits) rather than in either sister playbook. Confirms the post-Run-2 common.md extraction was structurally right; future v3 consolidation can safely reduce review-cascaded.md to its review-specific bits without losing the shared edits.
+- **Cluster-bundling beats per-item ratification at the redline level too**: 12+3 doctrine items folded in a single redline pass with a single rendezvous to Tiberius (vs. per-item ratification or per-item DMs). Same `manager-funnel-inverted-for-proposals-up` pattern from the v2 polish bundle, re-applied to doctrine integration work. ~60-90 min wall-clock for the full pass.
+- **Empirical actuals strengthen the design doc's case more than predictions ever could**: §10.14 had pre-experiment predictions; §10.15 lands the actuals with a 3-4× over-performance on count reduction. The third row also surfaces a genuine learning (time-reduction underperformance) that became its own doctrine fix (18-min cap). The pattern of "predict, measure, codify the residual" is reusable for future cascade-driven workflow experiments.
+
+---
 
 ### 2026.05.19 - Session 93 — Per-Repo Preferred-Persona Env Var: Feature Shipped (María)
 

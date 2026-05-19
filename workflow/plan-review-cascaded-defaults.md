@@ -75,7 +75,7 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 |-------|------|----------|---------|
 | `severity` | enum: `cosmetic` \| `inconsistency` \| `foundational` | ✓ | Primary classification tier; drives the §6.1 routing |
 | `cross_section` | bool | ✓ | Orthogonal to severity — captures whether the finding's resolution touches more than the section the finding originated in |
-| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
+| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` \| `hard_verification_gate` \| `manager_unilateral_ratify_by_concurrence` \| `reassigned_due_to_rate_limit` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
 | `parent_finding` | string (finding-id) | optional | When a downstream stage's finding sharpens an upstream finding (e.g., Arnold's F4 sharpens Rachel's earlier cross-section coupling note), link them so the lineage is preserved |
 | `rounds_used` | int | ✓ | Re-litigation rounds consumed (0 if no re-litigation needed) |
 | `votes_called` | int | ✓ | Votes invoked for this finding (>0 means contentious) |
@@ -88,6 +88,32 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 **Telemetry consumption**: the postmortem-style scrape reads the cumulative metadata to produce: severity distribution, cross-section finding rate, re-litigation depth distribution (mean/p95 rounds), and vote-call rate.
 
 **See also**: `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` §7.8 for the consuming telemetry plan; playbook §6.1 for the classification routing that triggers the post.
+
+**Closure-action values added 2026-05-19 (Run-3 doctrine fold)** — three new values codify Run-3 closure shapes:
+
+| Value | When to use | Anchor (Run-3 evidence) |
+|---|---|---|
+| `hard_verification_gate` | Cap-locked section where reopening for fold-bundle deferral isn't possible; close via a grep-style verification AC that enforces the gate at code-write time | Section B AC-B15: cross-section keyframes SSOT enforced via mechanical grep; supersedes post-cascade-fold pattern |
+| `manager_unilateral_ratify_by_concurrence` | Author + reviewer + manager all concur with no foundational implications; user-ratification skipped to save attention (the bar: manager would have escalated if there were any chance user-input would change the outcome) | Section D Q-D1 Path A ratified by manager-concurrence without firing a user `ask_yes_no` |
+| `reassigned_due_to_rate_limit` | Reviewer rate-limited (Anthropic per-account quota or equivalent); manager reassigned the stage to another peer per Manager Reassignment Latitude doctrine (see `plan-review-cascaded-common.md` §Reviewer Reassignment) | Section B Mr-Radio → Arnold post-Anthropic-rate-limit |
+
+### Commons post `kind` enumeration (added 2026-05-19)
+
+Manager and worker posts to commons topics use the `kind` metadata field to disambiguate post-types. The cascade workflow recognizes:
+
+| `kind` value | Producer | Purpose | Added |
+|---|---|---|---|
+| `author_draft` | author | Section draft submission ready for stage 1 | 2026-05-17 |
+| `stage_close` | manager | Stage handoff complete | 2026-05-17 |
+| `manager_classification` | manager | Authoritative severity stamp + closure-action per finding | 2026-05-18 |
+| `cascade_complete` | manager | Pipeline complete; scheduler should exit | 2026-05-18 |
+| `dependency_map_update` | manager | Authoring-mode dependency-map delta (see `plan-authoring-cascaded.md` §6.6) | 2026-05-19 |
+| `goal_coverage_update` | manager | Authoring-mode goal-coverage matrix snapshot (see `plan-authoring-cascaded.md` §6.7) | 2026-05-19 |
+| `reviewer_reassigned` | manager | Manager Reassignment Latitude doctrine post — names original/substitute reviewer + trigger + bias-mitigation choice | 2026-05-19 (Run-3) |
+| `blocked_waiting_on_user` | manager | Manager paused awaiting user input >5 min — observer-disambiguation signal (see common.md §Manager System Prompt self-audit item 6) | 2026-05-19 (Run-3) |
+| `cosmetic_cluster_family` | reviewer (Persona 5) | Stage-3 cluster-recognition family post enumerating ≥3 cosmetic findings sharing closure shape (see `plan-review-cascaded-personas.md` §Persona 5 Stage-3 Cosmetic-Cluster Recognition) | 2026-05-19 (Run-3) |
+
+Workers post their findings using free-form metadata; manager classifies + posts the authoritative `kind: manager_classification` entry with the 6-field metadata schema above.
 
 ### Phantom session resilience
 
@@ -191,6 +217,11 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.19 (Run-3 doctrine fold)** — Two extensions to §Severity-tag metadata schema:
+  1. **`closure_action` enum expanded** from 5 → 8 values: added `hard_verification_gate` (Section B AC-B15 supersession of post-cascade-fold), `manager_unilateral_ratify_by_concurrence` (Section D Q-D1 Path A), `reassigned_due_to_rate_limit` (Section B Mr-Radio→Arnold). New worked-example table documents each value's anchor.
+  2. **NEW §Commons post `kind` enumeration** — formalizes the `kind` metadata field on commons posts. Six pre-existing values (`author_draft`, `stage_close`, `manager_classification`, `cascade_complete`, `dependency_map_update`, `goal_coverage_update`) + three new Run-3 values (`reviewer_reassigned`, `blocked_waiting_on_user`, `cosmetic_cluster_family`).
+  Cross-references: `plan-review-cascaded-common.md` §Reviewer Reassignment for the latitude doctrine driving `reassigned_due_to_rate_limit` + `reviewer_reassigned`; common.md §Manager System Prompt self-audit item 6 for `blocked_waiting_on_user`; `plan-review-cascaded-personas.md` §Persona 5 Stage-3 Cosmetic-Cluster Recognition for `cosmetic_cluster_family`.
 
 - **2026.05.18 (post-Run-1 doctrine update)** — Two changes per the Run-1 postmortem (full doc at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`):
   1. **NEW §Severity-tag metadata schema** — manager-classification posts now carry 6 metadata fields (severity, cross_section, closure_action, parent_finding, rounds_used, votes_called). Two-stamp convention (reviewer stamps `severity_proposed`; manager stamps authoritative `severity` + rest) enables proposed-vs-final telemetry comparison. Per Tiberius's Q4 input on the postmortem.

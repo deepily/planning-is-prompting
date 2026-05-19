@@ -1,8 +1,10 @@
 # TODO
 
-Last updated: 2026-05-19 (Session 93 — Per-Repo Preferred-Persona Env Var checkpoint, María)
+Last updated: 2026-05-19 (Session 93 — §10.14 redline of cascade workflow docs, María)
 
 ## Pending
+
+- [ ] **Lupin/cosa-voice feature — Mute-Channel Bypass for Manager-Escalation** (Session 93, María — Run-3 §10.14 errata Item C, Rick's catch). When the user mutes a critical-path persona (manager) for chatter relief, the manager's `urgent`-priority `notify()` escalations should bypass the mute via a separate channel. Run-3 evidence: Rick muted Tiberius; Tiberius's urgent escalation request waited 14 min for time-out because `priority="urgent"` didn't bypass mute. Three design candidates: (a) default rule never mute manager (workflow-level fix; doesn't need MCP change); (b) priority-threshold mute-bypass via separate channel (cosa-voice MCP change — `priority="urgent"` triggers a separate auditory channel that mute doesn't suppress); (c) tool feature request — new `bypass_user_mute=True` flag on `notify()`. Owner: Tiberius or next Lupin session. Out-of-scope for PIP-side cascade doctrine; filed here as cross-reference because it surfaced as a Run-3 cascade observation. Refs: `pipeline-summary-20260519` commons topic; `workflow/plan-review-cascaded.md` Version History 2026-05-19 Run-3 doctrine fold entry (named as out-of-scope item).
 
 - [ ] **Lupin-side bug — `commons_send_to` recipient pool-key vs display-name routing gap** (Session 93, María — surfaced by Tiberius DM 2026-05-19T17:28). `commons_send_to(recipient="María", ...)` returns `recipient_resolution_error` because the persona pool key is lowercase no-diacritic ("maria"), but display-name variants ("María", "MARIA", "Maria") are what callers naturally write. Tiberius's workaround for now: lowercase + strip diacritics before passing to `recipient`. Proper fix: the resolver should accept any case + diacritic variant and normalize to the pool key before lookup. Owner: Tiberius or next Lupin session. Filed as Lupin bug. Same root-cause family as the topic-name case-fragmentation bug already on this list (Session 90); consider a single resolver-normalization pass that fixes both.
 
@@ -52,6 +54,14 @@ Last updated: 2026-05-19 (Session 93 — Per-Repo Preferred-Persona Env Var chec
 - [ ] Consider similar split for other argument-based commands
 
 ## Completed (Recent)
+
+- [x] **§10.14 redline of cascade workflow docs — Run-3 doctrine fold (María, Session 93)** — Folded the 12 doctrine candidates from Tiberius's Run-3 §8 pipeline summary (+ 3 Rick-voice catches: Manager Reassignment Latitude, Reassignment Bias Risk Guardrail, Mute-Channel Bypass) into the canonical cascade workflow docs. Edits across 4 files:
+  - `workflow/plan-review-cascaded-common.md`: NEW §Reviewer Reassignment with Manager Latitude 5-element doctrine + Bias Risk Guardrail + Rate-Limit failure-mode entry; NEW §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy
+  - `workflow/plan-review-cascaded-personas.md`: Persona 2.A point 14 (doctrine-sweep on revision-mechanism change with 3 sub-patterns); Persona 5 §Stage-3 Cosmetic-Cluster Recognition sub-section
+  - `workflow/plan-review-cascaded-defaults.md`: closure_action worked-example table; new commons `kind` enumeration (3 new + 6 pre-existing formalized)
+  - `workflow/plan-authoring-cascaded.md` + `workflow/plan-review-cascaded.md`: version-history bumps cross-referencing the canonical edits in common.md
+  - `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`: NEW §10.15 Run-3 actuals (third row of comparison table — 37× count reduction vs 10× predicted, 3-4× better than prediction); §10.11 verdict extended to reflect Run-3 empirical strengthening
+  - Cross-repo paired with Tiberius's Lupin-side Phase 6C consolidation track. Mute-Channel Bypass filed as Lupin/cosa-voice feature request (above on this list); CSS-var visible-text safety + ask_multiple_choice Path-B subprocess-restart cost noted as out-of-scope. — Session 93 (María)
 
 - [x] **Per-Repo Preferred-Persona Env Var (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>`)** — Feature shipped end-to-end. PIP-side (María): plan doc `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`, workflow integration via new `workflow/session-start.md` Preliminary -1 (env-var path) + Preliminary 0.5 (slash-command swap path), slash-command shim `.claude/commands/plan-session-start.md` v1.0 → v1.1 ($ARGS handling), `workflow/INSTALLATION-GUIDE.md` "Optional: Per-Repo Default Persona via Env Var" subsection. Cross-repo Lupin allocator at Tiberius commit `3bc7b9e` (49/49 tests green). Rollout (plan §9) executed end-to-end: Rick exported `__PLAN=María` + `__LUPIN=Tiberius`, restarted PIP session, María session `ac2d05c0` is the proof point (`voice_persona.name=maria` deterministically on Phase A startup). Path A locked on `/clear` semantics: env var fires on FRESH allocation only; preserved across `/clear`. — Session 93 (María)
 

@@ -56,13 +56,14 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Universal step zero** (mandatory post-Run-1): on **every** wake event — whether triggered by a worker DM, a scheduler heartbeat, a user response, or anything else — your first action is to **disk-read every active topic** (section topics, DM topics, the briefing topic). The read-side `commons_read` API can truncate long entries (FIXED post-2026-05-18 by Rio's commit, but disk-read remains defense-in-depth); disk-read first, then act.
 >
-> **Self-audit checklist** (mandatory post-Run-1): before composing any response, run the following internal check:
+> **Self-audit checklist** (mandatory post-Run-1; item 6 added post-Run-3): before composing any response, run the following internal check:
 >
 > 1. Did I disk-read all active topics this turn? If no, do it before responding.
 > 2. Did I check each worker's last activity against `stall_threshold_minutes`? Any worker past threshold gets a probe DM.
 > 3. Is there a new worker post since my last wake? If yes, advance the pipeline.
 > 4. Is there a stage-close I haven't classified yet? If yes, classify + post `kind: "manager_classification"` to the section topic.
 > 5. Is the cascade complete? If yes, post `kind: "cascade_complete"` to the input-plan topic so the scheduler can transition out of active state.
+> 6. **Am I blocked waiting on user for >5 min?** If yes, post `kind: "blocked_waiting_on_user"` to the input-plan topic so observer sessions (doctrine consultant) can disambiguate scenario-not-yet-actioned from scenario-user-asked from disk-read alone, without requiring a probe DM. Run-3 evidence: María's observer-mode telemetry caught two scenarios that were ambiguous from disk-state alone; the `blocked_waiting_on_user` post would have closed the disambiguation gap.
 >
 > **Spoken-headline contract** (Item #2 doctrine): for any user-facing escalation `notify()` or `ask_*` blocking tool, the spoken message MUST lead with the recommendation: `"Recommendation: option [X] because [Y]. Approve?"`. Bury detail in the abstract.
 >
@@ -99,10 +100,18 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 |---|---|---|---|
 | `severity` | enum | ✓ | `cosmetic` / `inconsistency` / `foundational` |
 | `cross_section` | bool | ✓ | Orthogonal to severity |
-| `closure_action` | enum | ✓ | `ignore` / `documented` / `revised` / `escalated` / `voted` |
+| `closure_action` | enum | ✓ | `ignore` / `documented` / `revised` / `escalated` / `voted` / `hard_verification_gate` / `manager_unilateral_ratify_by_concurrence` / `reassigned_due_to_rate_limit` |
 | `parent_finding` | string | optional | For downstream sharpenings of upstream findings |
 | `rounds_used` | int | ✓ | Re-litigation rounds consumed |
 | `votes_called` | int | ✓ | Votes invoked for this finding |
+
+**Closure-action values added 2026-05-19 (Run-3 doctrine fold)** — see also `plan-review-cascaded-defaults.md` §Severity-tag metadata schema for the worked-example table:
+
+| New value | When to use | Anchor |
+|---|---|---|
+| `hard_verification_gate` | Cap-locked section where reopening for fold-bundle isn't possible; close via grep-style verification AC | Section B AC-B15 (Run 3) |
+| `manager_unilateral_ratify_by_concurrence` | Author + reviewer + manager all concur with no foundational implications; user-ratification skipped to save attention | Section D Q-D1 (Run 3) |
+| `reassigned_due_to_rate_limit` | Reviewer rate-limited; manager reassigned per Manager Reassignment Latitude doctrine (see §Reviewer Reassignment below) | Section B Mr-Radio → Arnold (Run 3) |
 
 **Two-stamp convention**: reviewers stamp `severity_proposed` on their finding posts; manager stamps authoritative `severity` + the rest at classification time.
 
@@ -127,6 +136,14 @@ Per `escalation_form = notify_immediate`, manager escalates by calling `mcp__cos
 **Cluster-bundling default** (Item #5 doctrine, Lesson 8): when multiple findings on the same author/section land in the same stage-close, bundle them into a single re-litigation DM (intra-cascade) or single user-escalation (cross-cascade). Run 2 evidence: 5 re-litigation rounds all closed first-round verbatim using bundled DMs.
 
 **Cluster-bundling applies to proposals-up too** (Lesson 12): if multiple workers need user ratification, bundle into single `ask_yes_no` or `ask_multiple_choice` rather than firing per-worker asks. v2 polish bundle cycle measured: 3 user interactions to ratify 5 proposals vs ~10 under per-item pattern.
+
+**18-minute user-attention-block cap** (added 2026-05-19 post-Run-3): for multi-option escalations (e.g., reviewer reassignment with N substitute candidates, or scope-expansion proposals with multiple paths), if user deliberation exceeds **18 minutes without response**, manager simplifies the question:
+
+1. Reduce the option count (typically to 2 — the manager's recommendation + 1 alternative)
+2. Re-fire the escalation with the tightened option set + a sharper recommendation-leads spoken headline
+3. Document the simplification in the manager-classification `metadata`: `{tightening_reason: "18min_threshold", original_option_count: N, simplified_option_count: 2}`
+
+**Empirical anchor**: Run 3's longest single user-attention event was 18 min on the Mr-Radio threshold-escalation. Tighter framing on the first ask (recommendation-leads + 2-option tighten) would have closed faster. The 18-min mark codifies the empirical threshold beyond which the cascade is paying compounding user-attention cost vs. landing a tighter ask.
 
 After escalation, manager pauses the affected work (re-opens section, parks pipeline) and waits for user's direction.
 
@@ -163,6 +180,54 @@ When an author↔reviewer discussion exceeds `discussion_turn_cap` rounds withou
    - 2-2 tie + severity = foundational → escalate to user (Trigger 3)
 
 **Quorum**: 3 of 4 substantive personas must vote within the window. Fewer = manager extends window once by 5 minutes; if still under quorum, escalate via Trigger 7 (pipeline stall — at least one persona is phantom).
+
+---
+
+## §Reviewer Reassignment — Manager Latitude with Bias Guardrails [SHARED]
+
+**Added 2026-05-19 post-Run-3** based on Section B Mr-Radio→Arnold reassignment incident (Anthropic per-account rate-limit, 78+ min block). Three paired doctrines codify the manager prerogative + the empirical bias-mitigation evidence + the new failure mode.
+
+### Manager Reassignment Latitude (5-element doctrine)
+
+Mid-cascade reviewer reassignment is a **manager prerogative**, not a user-gated decision. When a reviewer is rate-limited, dormant, or has dropped, the manager MAY unilaterally reassign their stage to another peer **without pre-ratification** — provided all 5 elements are present:
+
+1. **Trigger**: reviewer demonstrably unable to complete stage (rate-limit confirmed via API error code; >`stall_threshold_minutes` without response; explicit drop signal)
+2. **Substitute available**: another peer session is hot AND rubric-capable (cross-reference `plan-review-cascaded-personas.md` for rubric coverage)
+3. **Cascade-critical**: section blocks downstream OR cascade-complete; reassignment is the unblock
+4. **Documented**: manager posts `kind: "reviewer_reassigned"` to the section topic with `metadata`: `{original_reviewer, substitute_reviewer, trigger, justification, bias_mitigation_chosen}`
+5. **Reversible**: if the original reviewer recovers before stage close, manager may roll back OR keep the substitute (manager's call)
+
+**User ratification is post-decision, not pre-decision.** Manager fires a `notify()` at reassignment time announcing the decision (recommendation-leads spoken headline per Item #2 doctrine; abstract carries the 5-element justification). If user objects, manager can roll back. Default state: "decision sticks unless user vetoes."
+
+**Empirical validation (Run 3)**: Mr-Radio rate-limited at ~03:06 UTC on Section B Stage 1. Manager (Tiberius) reassigned to Arnold at ~03:32 UTC after a ~14-min user-ratification window. Outcome: 4 substantive findings caught + 1 hard-verification-gate introduced (AC-B15); cascade closed cleanly without Mr-Radio. Rick's voice endorsement codifies the latitude: *"Nice midstream recalibration… glad that Tiberius had the latitude and the ability to improvise on the fly."*
+
+### Reassignment Bias Risk Guardrail
+
+When reassignment puts the **same reviewer on multiple stages of the same section** (e.g., Arnold doing both Stage 1 Usability AND Stage 2 Viability on Section B), anchoring/echo-chamber/confirmation-bias risks need explicit acknowledgment + a mitigation choice.
+
+**The risk**: a reviewer who passes a section through Stage 1 with their Usability rubric is anchored to that section's content. When the same reviewer subsequently runs Stage 2 with their Viability rubric, they may rubber-stamp closures their Stage 1 self had already made — losing the rubric-differential value of having two independent reviewers.
+
+**Mitigation choice (manager picks at reassignment time)**:
+
+| Option | Mechanism | When to use |
+|---|---|---|
+| **Rubric-differential discipline** | Reviewer applies the DOWNSTREAM rubric strictly; explicitly re-checks the section content as if first-pass; manager grep-verifies for findings that contradict upstream Stage closures | Default; cheapest; relies on reviewer discipline |
+| **Cooling-off period** | Manager delays the second stage by 5+ min; reviewer rebuilds context; reduces anchoring | Section is complex OR upstream Stage had many close decisions |
+| **Two-reviewer cross-check** | Manager pulls in a third reviewer to grade the dual-stage closures; expensive but bias-proof | Foundational severity; high-stakes sections |
+
+**Empirical validation (Run 3, Section B)**: Arnold ran both Stage 1 (Persona 3 Usability) and Stage 2 (Persona 4 Viability). Manager chose rubric-differential discipline. Outcome: Arnold's canonical Persona 4 Viability at Stage 2 caught **3 fitness gaps his Persona 3 Usability closures had rubber-stamped** — validates rubric-differential as bias-mitigation mechanism. Rio's fresh-eyes Stage 3 concurred + caught one final cosmetic.
+
+### Reviewer-Reassignment-Due-to-Rate-Limit — 5th Failure Mode
+
+The cascade workflow now formally recognizes **5 distinct failure modes** (4 documented pre-Run-3 + 1 added post-Run-3):
+
+1. **Worker dormancy** (Run 1 carry): peer session stops posting; addressed by `stall_threshold_minutes` + universal-step-zero disk-read
+2. **Read-side truncation** (Run 1 NEW): `commons_read` API truncates long entries; addressed by disk-read defense-in-depth + Rio's fix in Lupin
+3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by external scheduler daemon
+4. **Write-side commons truncation** (Run 1 carry): long `commons_post` bodies truncated on disk; addressed by Rio's fix
+5. **Anthropic rate-limit on reviewer** (Run 3 NEW): single-account hits per-Anthropic-account quota; reviewer stuck >78 min; addressed by Manager Reassignment Latitude doctrine above — reassign to peer rather than partial-close
+
+The architectural answer to failure mode #5 is **reassignment, not partial-close**: a partially-closed cascade leaves cap-lock telemetry ambiguous and may strand downstream sections.
 
 ---
 
@@ -227,6 +292,40 @@ Run 1 evidence: 3 of 4 workers pre-acked the doctrine consultant's briefing usin
 
 ---
 
+## §Cascade-Learning-Loop Sub-patterns [SHARED]
+
+**Added 2026-05-19 post-Run-3** based on Section A→C→D→B finding-count compression telemetry: 6 → 8 → 4 → 8 Stage-2 findings across 4 sections in cascade-launch order.
+
+The **cascade-learning-loop** is the cumulative dividend the cascade produces beyond per-section review value: lessons learned in earlier sections proactively apply to later sections, reducing both the cardinality of findings AND the per-finding cost. The loop is **first-order workflow asset**, not a serendipitous byproduct — proactively-doctrine-loaded sections produce fewer findings (Section D's 4 findings vs. Section A's 6, when D had 4 prior-section doctrines to carry forward).
+
+The loop manifests in **3 distinct sub-patterns**, each with its own implication:
+
+### Forward-only-asymmetry
+
+The forward-loop works **mechanically** via Author's autonomous lesson carry: Rachel's Section D draft proactively applied F-Arnold-1's directory-wide-glob doctrine (surfaced in Section A Stage 2) → ~50% reduction in Section D Stage-2 finding count vs. Section A.
+
+The backward-loop does NOT work mechanically: F-Arnold-C3 (Section C Stage 2) **reproduced** F-Arnold-1 because C's Round-1 pre-dated A's lesson chronologically. The cascade cannot retroactively apply a lesson to a section already in flight; that's the cost of asymmetry.
+
+**Implication for manager**: at cascade-launch, section-dispatch order matters. Manager SHOULD dispatch sections with **higher cross-section coupling first** so their lessons accrue forward to later sections. The dependency map (authoring-mode Step 0.5) provides the coupling signal; in review mode, infer from the input plan's section-reference density.
+
+### Symmetric-application
+
+Doctrine carry-forwards should apply to BOTH **writer + consumer** sections. Run 3 evidence: when Section D was revised to consume Section B's keyframes (per AC-B15 hard-gate), the writer side (Section B) was updated; the consumer side (Section D) silently inherited the dependency without the matching consumption assertion. F-Arnold-D1 caught the asymmetry.
+
+**Implication for Persona 2.A**: see `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 — doctrine-sweep on ANY revision-mechanism change must visit BOTH writer + consumer of the affected contract surface, not just the side the reviewer flagged.
+
+### Context-aware-application
+
+A doctrine learned in Section X may NOT apply verbatim in Section Y. Run 3 evidence: Rachel applied F-Arnold-1's directory-wide-glob doctrine 4 times across the cascade; F-Arnold-B-Stage2-3 caught the 5th application where the doctrine **shouldn't** have applied because Section B's context differed materially (the glob target was a single-purpose file, not a directory-cluster).
+
+**Implication for Persona 2.A**: doctrine-sweeps are pre-emptive checks, not blanket apply-everywhere passes. Each application must verify the context is materially similar to the one where the doctrine was first surfaced. The Persona 2.A point 14 rubric calls out this verification step explicitly.
+
+### Why this loop is a first-order workflow asset
+
+The Run 3 finding-count compression (6 → 8 → 4 → 8) is the empirical evidence: 4th-cascade-dispatched Section B benefited from 4 prior-section doctrines, but the residual 8 findings include catches of all 3 sub-pattern failures (F-Arnold-B-Stage2-3 context-aware misapplication; F-Arnold-D1 asymmetric writer-only update; F-Arnold-C3 backward-loop asymmetry). The cascade isn't just running reviews; it's **accumulating reviewable doctrine** that future cascades inherit. Capturing the sub-patterns formally lets future runs front-load the wins.
+
+---
+
 ## §Mode-Specific Cross-References
 
 For the **mode-specific** doctrine (Steps 0, 0.5 for authoring; Steps 2, 5, 8 with mode variations; Persona 2 vs Persona 2.A rubrics; per-mode configuration knobs), consult the mode-specific playbooks:
@@ -243,5 +342,14 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 ---
 
 ## Version History
+
+- **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation) integrated into this canonical shared-doctrine doc. Additions:
+  - **§Manager System Prompt self-audit** — new item 6: `blocked_waiting_on_user` post for observer disambiguation
+  - **§Severity Classification** — `closure_action` enum expanded with 3 new values: `hard_verification_gate` (Section B AC-B15), `manager_unilateral_ratify_by_concurrence` (Section D Q-D1), `reassigned_due_to_rate_limit` (Section B Mr-Radio→Arnold). Worked-example table added.
+  - **§Escalation Taxonomy** — new 18-minute user-attention-block cap rule (multi-option escalations tighten to 2 options + recommendation-leads after 18 min without response)
+  - **NEW §Reviewer Reassignment — Manager Latitude with Bias Guardrails** — three paired doctrines: (a) 5-element Manager Reassignment Latitude (Rick's voice endorsement codified); (b) Reassignment Bias Risk Guardrail with rubric-differential discipline as default mitigation + cooling-off + two-reviewer cross-check options; (c) Reviewer-reassignment-due-to-rate-limit as 5th failure mode (extends 4-mode list to 5)
+  - **NEW §Cascade-Learning-Loop Sub-patterns** — three sub-patterns codified: forward-only-asymmetry (dispatch order matters), symmetric-application (writer + consumer), context-aware-application (not blanket apply-everywhere). First-order workflow asset.
+  - Cross-reference to `plan-review-cascaded-personas.md` §Persona 2.A point 14 (new doctrine-sweep rubric item) + §Persona 5 Stage-3 cosmetic-cluster recognition (new sub-section)
+  - Cross-reference to `plan-review-cascaded-defaults.md` for the closure_action worked-example table + new commons `kind` enumeration
 
 - **2026.05.19** — Initial extraction from `plan-review-cascaded.md` v1 single-doc playbook. Pulls the ~60% of doctrine that's identical between review-mode and authoring-mode cascade workflows: Step 1 config resolution, Step 3 user-approval gate pattern with spoken-headline contract, Manager System Prompt with universal-step-zero + self-audit, severity classification with 6-field metadata schema, escalation taxonomy with cluster-bundling default, DM-subset selection heuristics, vote mechanics, heartbeat handling (external-scheduler integration with daemon reference), briefing delivery dual-pattern, worker acknowledgment format. Mode-specific bits stay in `plan-review-cascaded.md` and `plan-authoring-cascaded.md`. Backwards-compat: review-cascaded.md retains full text of shared sections; future v3+ revisions should consolidate so common.md is sole source of truth.

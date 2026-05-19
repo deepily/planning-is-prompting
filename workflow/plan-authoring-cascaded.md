@@ -251,4 +251,11 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 
 ## Version History
 
+- **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata redline integrated post-Run-3 cascade-complete (Phase 6C, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation). Run-3 surfaced 12 doctrine candidates (plus 3 Rick-voice catches) filed in the `pipeline-summary-20260519` commons topic; this revision folds the cascade-shared subset into the canonical homes:
+  - `plan-review-cascaded-common.md`: new §Reviewer Reassignment (Manager Latitude 5-element doctrine + Bias Risk Guardrail + Rate-Limit failure-mode entry); new §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy
+  - `plan-review-cascaded-personas.md`: Persona 2.A point 14 (doctrine-sweep on revision-mechanism change with 3 sub-patterns); Persona 5 §Stage-3 Cosmetic-Cluster Recognition
+  - `plan-review-cascaded-defaults.md`: closure_action worked-example table; new commons `kind` enumeration (3 new values added; 6 pre-existing formalized)
+  - This file (`plan-authoring-cascaded.md`): version-history-only entry; the new doctrine applies via the shared-doctrine references already in place
+  - Out-of-scope items (filed elsewhere): Phase-6C-specific CSS-var visible-text safety (Lupin design doc, not cascade doctrine); ask_multiple_choice Path-B subprocess-restart cost (operational footnote, no doctrine entry needed); Mute-Channel Bypass for Manager-Escalation (Lupin/cosa-voice MCP feature request — Lupin TODO)
+
 - **2026.05.19** — Initial creation post-Mr. Rick's ratification of the cascade-as-author shape (broadcast `69cffa07` for v2 polish + dinner-conversation ratification for authoring extension). Sister workflow alongside `/plan-review-cascaded` per the β shape (vs α flag-on-existing). Shared doctrine via `plan-review-cascaded-common.md` extraction. New: Step 0 intent capture, Step 0.5 dependency map, multi-draft author loop, goal-coverage matrix manager artifact, Persona 2.A Authoring Author with Convention 6 cross-link + manager-divergence-check safeguard for hybrid mode. Phase 6C as canonical hybrid example.
