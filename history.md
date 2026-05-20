@@ -1,6 +1,6 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 93 day-summary** (María `ac2d05c0`) — productive cross-repo day. Six PIP commits + 1 Lupin commit. PIP: env-var feature (`2e423e1`) + §10.14 Run-3 doctrine fold + §10.15 telemetry (`28e84c7`) + Step 9 Implementation-Handoff Synthesis doctrine (`6a8084c`) + day-summary (`907e597`) + Step 9 light-review criterion 6 (`0ae9aba`) + Step 0 Cascade Preparation doctrine (pending). Lupin: Phase 6C cascade synthesis + design-doc amendments + execution plan (`3c870fb`). The Step 0 + Step 9 codification together closes the cascade workflow doctrine's end-to-end shape — full lifecycle is now `raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`. Both load-bearing v1 retrofits emerged from the same empirical pattern (Manager ad-hoc'd doctrine that should be codified): Step 9 from Tiberius's post-cascade synthesis work; Step 0 from Tiberius's verbal brief to Mr Radio.
+**RESUME HERE**: **Session 93 Run 4 cascade-CLOSED — Step 0 + Step 9 doctrine first-application validated STRONG** (María `ac2d05c0`, 2026-05-20T03:30:47 UTC). Phase 7a cascade closed in 1h 30 min wall-clock (01:55:34 → 03:30:47 UTC). **First cascade-run with zero user touches** — Rick AFK + asleep for the entire duration, by his explicit pre-cascade directive. T1/T2 silent execution = 100%, zero T3 escalations, zero T4 wake-ups — Tier discipline doctrine validated under explicit unavailable-user constraint. **Step 0 doctrine validated STRONG**: pre-cascade Recon eliminated 6 browser-API archaeology items upstream; 3 reviewers (Rachel/Krishna/Rio) each independently surfaced Recon-Item-N quotes in their stage outputs. **Step 9 doctrine validated STRONG with empirical bonus**: dual-administer cold-context test is ADDITIVE not redundant — Krishna's 7-min light-review caught 2 additional friction points beyond Tiberius's self-administered 3. Net: 5 cold-context observations from 2 independent administrations. **§10.18 retrofit row composed** in `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` (four-row comparison table extension + Step 0/9 validation evidence + monotonically-decreasing-stage-wall-clock pattern 38→33→21 min as first cascade-learning-loop forward-asymmetry empirical anchor + cap utilization 57% with 50%+ headroom + failure mode #6 `signal-density-obscures-needle` catalog + 5 v1.1 doctrine candidates promoted + 1 placeholder). v1.1 codification coordination with Tiberius scheduled per his availability. Six PIP commits earlier this day + 1 Lupin commit; Run 4 close adds the fourth-run empirical anchor that strengthens the §10.11 verdict. Observer daemon stood down. Push held per Rick's "end of day" directive; commits-only.
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
 **Last Session**: Session 93 (María, `ac2d05c0`) — **Per-Repo Preferred-Persona Env Var feature shipped**. Cross-repo cosa-voice MCP feature making each project's canonical persona declarative via `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` exports in shell rc; eliminates per-session `/plan-session-start <name>` arg-typing for routine narrative continuity. PIP-side: ~370-line plan doc, ~220 lines of workflow integration across two new Preliminaries, slash-command shim v1.0 → 1.1 with `$ARGS` handling, installation-guide subsection. Lupin-side (Tiberius commit `3bc7b9e`): allocator helper `pick_preferred_persona_from_env(project)`, new `preferred_persona_name` query param on `/allocate` router endpoint with graceful-fallback + `voice_persona_conflict` notify on miss, hook integration in `register_session.py`, 7 new unit tests (42 → 49 green). Rick exported `__PLAN=María` + `__LUPIN=Tiberius` in shell rc + restarted PIP session pre-commit; María session `ac2d05c0` is the integration proof point (`voice_persona.name = "maria"` deterministically on Phase A startup, not randomly).
@@ -9,6 +9,82 @@
 ---
 
 ## May 2026
+
+### 2026.05.20 - Session 93 (fourth continuation, late evening) — Run 4 Phase 7a Cascade CLOSED — Step 0 + Step 9 Doctrine First-Application Validated STRONG (María)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`). Observer mode through full cascade; cascade-close-acknowledgment DM-thread closed with Tiberius 🌑.
+
+**Cascade window**: 2026-05-20T01:55:34 → 03:30:47 UTC = **1h 30 min wall-clock**. Cascade-complete signal fired @ 03:30:47 UTC, posted by Tiberius (Manager) to commons topic `cascaded-prototype-input-plan`.
+
+**The headline outcome**: **first cascade-run with zero user touches** — Rick AFK + volume-off + asleep for the duration per his explicit pre-cascade directive. T1/T2 silent execution = 100%, zero T3 escalations, zero T4 wake-ups. The Tier discipline doctrine works as designed under the explicit unavailable-user constraint; this is the cleanest cascade-close-protocol demonstration of the workflow's central value proposition (user-attention-cost minimization at the limit).
+
+**Doctrine validation outcomes** (both load-bearing v1 retrofits validated on first application):
+
+1. **Step 0 (Cascade Preparation) doctrine — STRONG empirical concurrence from 3 reviewers**:
+   - Pre-cascade Recon doc (Tiberius's `14-phase7a-telemetry-pre-cascade-recon.md`) eliminated **6 browser-API archaeology items upstream** that would otherwise have spawned Stage-1 cycles.
+   - Q→F→S→D recon shape was empirically clean across all 21 standing-memory items the self-audit table enumerated.
+   - Three reviewers (Rachel, Krishna, Rio) each independently surfaced **Recon-Item-N notation references** in their stage outputs — direct evidence the recon artifact functioned as the cold-cast onboarding contract Step 0 doctrine specifies.
+   - OTel package selection (Recon item §6.3, pre-resolved `@opentelemetry/api` vs `@grafana/faro-web-tracing` axis) was the highest-leverage single example: 4 minutes pre-cascade reading prevented a multi-turn Stage 1+2 user-escalation cycle.
+   - Minor v2 candidate surfaced: Persona-conventions sub-section of Recon checklist not formalized (current cast seasoned so non-blocking).
+
+2. **Step 9 (Implementation-Handoff Synthesis) doctrine — STRONG with empirical bonus (catalytic finding)**:
+   - **The dual-administer cold-context test is ADDITIVE, not redundant.**
+   - Tiberius's Manager self-administered cold-context test: named **3 friction points** in synthesis doc.
+   - Krishna's 7-min cascade-participant external light-review: named **2 ADDITIONAL friction points** Tiberius's self-test missed:
+     - **F-LR-1**: smoke test file name/path/scope drift between synthesis (`websocket_smoke/test_telemetry_handshake.py`) and design doc (`smoke/test_multiplexer_phase7a_smoke.py`).
+     - **F-LR-2**: `auth/AuthManager.ts` canonical-directory drift (synthesis named `api/AuthManager.ts` vs design doc's `auth/AuthManager.ts`).
+   - Both T1 line-edits applied in 1/1 cap-state revision turn = clean discipline.
+   - **Implication for v1.1**: empirical bar for promoting `light_review_required = true` (current default) to HARD requirement may be met after Run 5+6 if this additive ratio holds.
+
+**Cascade telemetry highlights**:
+
+| Stage | Effective wall-clock | Active findings | Findings density |
+|---|---|---|---|
+| Step 0 light-review (pre-cascade) | ~5 min | 6/6 rubric pass | — |
+| Stage 1 (Rachel, Usability/Reuse) | ~38 min | 3 active + 5 reuse confirms | 0.66/min on 444 LOC |
+| Stage 2 (Krishna, Risk/Anti-pattern) | ~33 min effective (+13 min Manager phantom-lag) | 9 active + 1 cosmetic + 4 quibbles | 0.27/min (denser-grained) |
+| Stage 3 (Rio, Ownership/Convention) | ~21 min effective | 4 active + 1 withdrawn + 1 cosmetic | 0.19/min |
+| Manager synthesis pass | ~25 min | 1 synthesis doc | — |
+| Step 9 light-review (Krishna) | ~7 min | 2 friction points (F-LR-1 + F-LR-2) + 1 candidate-6 placeholder | — |
+
+**Monotonically-decreasing-stage-wall-clock pattern (38 → 33 → 21 min effective)** is the first empirical anchor for **cascade-learning-loop forward-asymmetry** as a first-order workflow asset. Hypothesis: downstream reviewers benefit from upstream stage outputs (compressed context, foreshadowed clusters, ratified vocabulary) in a way that accelerates the work even as substrate complexity stays constant. Worth charting across Runs 5+6+7 to confirm.
+
+**Inverse density-vs-doctrine correlation observation**: Rio's lower findings-per-minute correlated with HIGHER doctrine-refinement contribution (multi-surface footer-ratification 7th-surface refinement landed in his stage). Krishna's contribution was the catalytic catch (Q-1..Q-4 doctrine-sweep pattern). Suggests a wisdom-vs-volume curve worth tracking.
+
+**Cap utilization (final)**: 8 of 14 possible revision turns used = **57% net utilization**. 50%+ headroom preserved across every cap surface. No force-closes; no cap-saturation events.
+
+**Failure mode #6 discovered (`signal-density-obscures-needle`)**:
+- Manager-perceptual surface issue captured for `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` §10.14 failure-mode catalog.
+- Symptom: Stage 2 Manager-perception 13-min phantom-lag — heartbeat-tick injections obscured peer-DM injections when system-reminder density was high. Manager continued working on Stage-1 close-out while Krishna's Stage-2 first-cycle output sat unread.
+- Surfacing: María (Observer) probe at minute 13 cleared via `commons_who()` + `commons_read('coordination')`.
+- 3 mitigation surfaces enumerated in Tiberius synthesis doc §5 candidate #3; primary recommendation = Manager-behavior proactive-read every N ticks (demonstrated effective in second half of run).
+
+**v1.1 doctrine candidates surfaced** (5 promoted + 1 placeholder, full table in §10.18.8):
+1. Heartbeat-daemon kickoff codification (Rick's catch from Run 4 prep).
+2. 4-tier clarification doctrine (T1/T2/T3/T4) — demonstrated live in Stages 2+3.
+3. Heartbeat-tick-vs-peer-DM signal-density mitigation (failure mode #6).
+4. Author-side grep-sweep checklist (Persona 2.A point 14 empirical anchor #2; Krishna's Q-1..Q-4 catch).
+5. Multi-surface footer-ratification close protocol with non-adjacent + synthesis-doc 7th-surface refinement (7 cross-cascade instances; Rio's catalytic catch).
+6. Explicit closure-context markers `[CLOSURE: …]` (placeholder — Run 5+6 evidence-gathering needed).
+
+**Observer-side additions** (María): observer-blind-spot (notify() to user invisible from observer's commons-only view); re-evaluate `light_review_required = true` (default) → HARD requirement after Run 5+6.
+
+**Files Changed (this continuation segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | modified | §10.18 retrofit row added (~110 lines): four-row comparison table + Step 0/9 doctrine validation evidence + monotonic-decreasing-wall-clock pattern + cap utilization + failure mode #6 + v1.1 doctrine candidates + Tier discipline outcome + final verdict-strengthener |
+| `history.md` | modified | this entry + RESUME HERE update |
+| `TODO.md` | modified | v1.1 doctrine codification candidate item + Run-4-prep items moved to Completed |
+| `.claude-session.md` | modified | manifest updates (gitignored) |
+
+**Coordination + next steps**:
+- v1.1 doctrine codification with Tiberius: pending his availability signal. Same hub-and-spoke pattern as Step 0 + Step 9 codification (common.md + personas.md + defaults.md co-edits).
+- Push held per Rick's "no push necessary until end of day" directive — commits-only.
+- Observer daemon: stood down on universal-step-zero tick after cascade-complete signal.
+- Rick's morning post-run rap recap: composed in this entry + the §10.18 retrofit row; ready for his morning check-in.
+
+**Doctrine meta-observation**: Run 4 strengthened the §10.11 verdict with a fourth-run empirical anchor. The cascade-learning-loop's "predict-measure-codify" pattern (§10.14 → §10.15 → §10.18) is itself now a 3-run pattern — the workflow has a meta-property of refining its own doctrine surface as it executes. Step 0 + Step 9 codification was the post-Run-3 + post-Mr-Radio-onboarding closure of the v1 design loop; Run 4 was the first cascade to ratify both doctrines empirically.
 
 ### 2026.05.20 - Session 93 (fourth continuation) — Run 4 Doctrine-Observer Prep (María)
 
