@@ -10,6 +10,40 @@
 
 ## May 2026
 
+### 2026.05.20 - Session 93 (fourth continuation) — Run 4 Doctrine-Observer Prep (María)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`). Single-author prep work; coordination DM with Tiberius pending.
+
+**Session purpose**: Per Rick's directive "document and checkpoint your work and prepare to coordinate with Tiberius for our fourth run." With Step 0 + Step 9 doctrine codified in the prior continuation, Run 4 (Phase 7a telemetry cascade) is the v1 empirical anchor for BOTH new doctrines. This prep work captures my observer-role checklist + telemetry-capture plan + coordination items for the upcoming Run 4 launch.
+
+**Accomplishments**:
+
+- **`src/rnd/2026.05.20-run-4-doctrine-observer-prep.md`** (NEW, ~150 lines) — Observer-role prep doc covering: (a) role + scope confirmation (doctrine consultant in observer mode, same shape as Run 3); (b) what to observe across Step 0 + Steps 1-8 + Step 9 telemetry; (c) communication discipline (notify cadence + DM patterns + heartbeat-daemon-relaunch instructions); (d) 5 open empirical questions Run 4 will help answer (project-agnostic criterion-6 generalization in telemetry domain + 18-min cap firing + pre-cascade Recon checklist effectiveness + etc.); (e) anticipated v2 doctrine candidates to watch for; (f) pre-launch coordination checklist; (g) post-Run-4 deliverables planned (§10.18 retrofit row + doctrine-candidate fold + Step-0+9 empirical-validation memo).
+
+- **Session topic updated** to "Run 4 prep — Phase 7a cascade as Step 0 + Step 9 live-test" (was "Step 9 Synthesis-and-Handoff doctrine").
+
+- **Multi-session manifest** updated with Checkpoint 4 (`0ae9aba`) + Checkpoint 5 (`bbb3e47`) + Checkpoint 6 (pending Run 4 prep) entries.
+
+**Files Changed (this continuation segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `src/rnd/2026.05.20-run-4-doctrine-observer-prep.md` | NEW | Observer-role prep doc (~150 lines) |
+| `history.md` | modified | this entry |
+| `TODO.md` | modified | Run 4 prep items + pending observer-mode launch |
+| `.claude-session.md` | modified | manifest updates (gitignored) |
+
+**What's queued for Run 4 launch**:
+
+- **Trigger**: Roscoe closes Phase 6c Node C (Manager Tiberius's signal)
+- **Casting**: Mr Radio Author confirmed; reviewers TBD at launch per `persona_casting_strategy = user_assigns_at_launch`
+- **My readiness**: observer-role checklist drafted; heartbeat-daemon launch command queued (`bash <lupin>/src/scripts/start-cascade-heartbeat.sh maria`); telemetry-capture plan documented
+- **Tiberius coordination**: DM queued to confirm timing + casting; same DM-thread-as-design-doc pattern that landed Step 0 + Step 9
+
+**Doctrine framing**: Run 4 is **the first live-test of an end-to-end-codified cascade workflow**. Step 0 + Steps 1-8 + Step 9 all formal-doctrine-shaped. The single most valuable telemetry signal will be: *did the doctrine eliminate the verbal-hand-holding pattern (Mr-Radio brief) + the ad-hoc-Manager-synthesis pattern (Tiberius's 1,225-LOC retrofit) that justified Step 0 + Step 9 in the first place?* If yes, the doctrine is empirically validated. If partially, the residual gaps become §10.18 doctrine candidates for the next pass.
+
+---
+
 ### 2026.05.20 - Session 93 (third continuation) — Step 0 (Cascade Preparation) Doctrine (María + Tiberius)
 
 **Persona**: María 🌸 (PIP, session `ac2d05c0`) — workflow-doc codification track. Tiberius 🌑 (Lupin, session `387b9201`) — requirements doc authoring track. Mr Radio 🦉 (Lupin, session `32a6e563`) — empirical anchor for the gap; cold cast member onboarding to Phase 7 slicing-manifest authoring.

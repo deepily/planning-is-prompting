@@ -1,8 +1,12 @@
 # TODO
 
-Last updated: 2026-05-19 (Session 93 second continuation — Step 9 Synthesis-and-Handoff doctrine, María + Tiberius)
+Last updated: 2026-05-20 (Session 93 fourth continuation — Run 4 doctrine-observer prep, María)
 
 ## Pending
+
+- [ ] **Run 4 (Phase 7a cascade) — doctrine-observer role at launch** (María, Session 93 fourth continuation). Prep doc at `src/rnd/2026.05.20-run-4-doctrine-observer-prep.md`. Trigger: Roscoe closes Phase 6c Node C → Tiberius signals Run 4 launch. At launch: (1) launch consultant heartbeat daemon (`bash <lupin>/src/scripts/start-cascade-heartbeat.sh maria`); (2) update session topic to "Run 4 active"; (3) observe Step 0 telemetry per prep doc §2.1 (cost + cold-context test + light-review + Recon checklist effectiveness); (4) observe Steps 1-8 telemetry as Run 3 pattern; (5) observe Step 9 telemetry per prep doc §2.3 (synthesis cost + light-review + criterion 6 in telemetry domain). Post-Run-4 deliverables: §10.18 retrofit row + doctrine-candidate fold + Step-0+9 empirical-validation memo.
+
+- [ ] **Post-Run-4 §10.18 retrofit row in design doc** (María). After Run 4 closes, extend the §10.14 prediction-vs-actual table with Run-4 actuals (Phase 7a single-slice REAL — different shape than Run 3's 4-slice REAL). Same pattern as §10.15 Run-3 retrofit. Capture: predicted-vs-actual count + time reductions; doctrine effectiveness signals; new doctrine candidates if any.
 
 - [ ] **Lupin/cosa-voice feature — Mute-Channel Bypass for Manager-Escalation** (Session 93, María — Run-3 §10.14 errata Item C, Rick's catch). When the user mutes a critical-path persona (manager) for chatter relief, the manager's `urgent`-priority `notify()` escalations should bypass the mute via a separate channel. Run-3 evidence: Rick muted Tiberius; Tiberius's urgent escalation request waited 14 min for time-out because `priority="urgent"` didn't bypass mute. Three design candidates: (a) default rule never mute manager (workflow-level fix; doesn't need MCP change); (b) priority-threshold mute-bypass via separate channel (cosa-voice MCP change — `priority="urgent"` triggers a separate auditory channel that mute doesn't suppress); (c) tool feature request — new `bypass_user_mute=True` flag on `notify()`. Owner: Tiberius or next Lupin session. Out-of-scope for PIP-side cascade doctrine; filed here as cross-reference because it surfaced as a Run-3 cascade observation. Refs: `pipeline-summary-20260519` commons topic; `workflow/plan-review-cascaded.md` Version History 2026-05-19 Run-3 doctrine fold entry (named as out-of-scope item).
 
