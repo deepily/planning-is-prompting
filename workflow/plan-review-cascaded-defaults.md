@@ -128,6 +128,9 @@ Manager and worker posts to commons topics use the `kind` metadata field to disa
 | `implementation_handoff_ready` | manager | Step 9 closure state-flip post — declares the cascade artifacts have passed cold-context test + light-review gate and are ready for implementer pickup | 2026-05-19 (Step 9) |
 | `step_0_light_review` | reviewer (cascade-cast member chosen by Manager) | Light-review gate output on Step 0 cascade-preparation artifacts — thumbs-up OR list of preparation gaps; posted to cascade's parent topic or sister `cascade-step-0-review` topic | 2026-05-20 (Step 0) |
 | `cascade_input_ready` | manager | Step 0 closure state-flip post — declares the cascade-prep artifacts have passed cold-context test + light-review gate + pre-cascade Recon checklist and Step 1 can fire | 2026-05-20 (Step 0) |
+| `manager_self_audit_sweep` | manager | Step 9 cold-context test rubric Q#6 output — enumerates any moves Manager made during the cascade that weren't pre-codified, each filed as a doctrine-gap candidate with one-line empirical-anchor citation. Failure-mode-shaped gaps cross-link to design-doc §10.x failure-mode catalog at filing time. Posted to cascade's parent topic. | 2026-05-20 post-Run-4 (v1.1) |
+| `observer_probe_unblocked` | observer | Observer-mode probe-as-mitigation output — fires when a routine probe (cadence per `observer_probe_cadence_*`) surfaces an unread peer-DM or cross-channel signal that Manager attention buried. Body documents what was unblocked + how long the message had been queued. Empirical anchor: Run-4 Stage-2 minute-13 probe that cleared the 13-min Manager phantom-lag (failure mode #6). | 2026-05-20 post-Run-4 (v1.1) |
+| `multi_surface_footer_ratification` | manager | Multi-surface footer-ratification close protocol post — enumerates which surfaces (adjacent + non-adjacent + Step 9 synthesis doc as 7th surface) the close protocol visited for the affected cascade event. Anchored in 7 cross-cascade instances (6 Phase 7a + Run 3 Section B); refinements include Tiffany-rename-pass non-adjacent revert + F-LR-1 + F-LR-2 synthesis→design drift catches. | 2026-05-20 post-Run-4 (v1.1) |
 
 Workers post their findings using free-form metadata; manager classifies + posts the authoritative `kind: manager_classification` entry with the 6-field metadata schema above.
 
@@ -170,7 +173,18 @@ Workers post their findings using free-form metadata; manager classifies + posts
 | `step_0_light_review_required` | `true` | Whether Step 0 requires a light-review pass by a cascade-cast member. v1 default is REQUIRED based on 2026-05-20 Mr Radio onboarding empirical anchor (~1500-word verbal brief should have been a single read). Allowed: `true` (v1 default), `false` (Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit). |
 | `pre_cascade_recon_checklist_required` | `true` | Whether the pre-cascade Recon checklist (standing memories + persona conventions + project-specific rules) must be produced and verified at Step 0 closure. v1 default REQUIRED based on the same Mr Radio empirical anchor — without it, cold-cast members re-derive or skip. |
 
-**Total: 28 default keys** (22 baseline + 3 added 2026-05-19 for Step 9 + 3 added 2026-05-20 for Step 0).
+### Cascade-execution observability (added 2026-05-20 post-Run-4)
+
+These keys codify the v1.1 doctrine candidates surfaced during Run 4's post-cascade retrospective (María ↔ Tiberius DM thread, 2 rounds, ratified 2026-05-20). Empirical anchors are in `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` §10.18.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `heartbeat_daemon_kickoff_policy` | `dual_independent` | At cascade launch, how heartbeat daemons are kicked off. Allowed: `dual_independent` (v1.1 default — Manager AND Observer each launch their own daemon independently; codifies Run-4 pre-cascade procedure where Rick caught that both daemons needed to be launched but the doctrine didn't say so), `manager_only` (legacy pre-v1.1 — Manager-only heartbeat; brittle when Observer joins late or runs independently), `centralized_orchestrator` (v3 escape hatch — single orchestrator session launches all daemons; reserved for ≥3-daemon cascades). See `plan-review-cascaded-common.md` §Heartbeat Handling for the kickoff procedure. |
+| `observer_probe_cadence_default` | `4` | Observer-probe cadence as M:1 multiplier on heartbeat ticks. M=4 means Observer probes once per 4 heartbeat ticks (~10 min on a 2.5-min heartbeat). Probe action: `commons_who()` + `commons_read('coordination')` to surface anything unread by Manager. See `plan-review-cascaded-common.md` §Observer-mode Probe Protocol. |
+| `observer_probe_cadence_stage_0` | `8` | Observer-probe cadence DURING Step 0 (cascade-preparation phase). Sparser (M=8 = ~20-min interval) because Step 0 has lower signal-density traffic. Saves Observer cycles when there's little to monitor. |
+| `observer_probe_cadence_stage_2` | `2` | Observer-probe cadence DURING Stage 2 (Risk/Anti-pattern review). Denser (M=2 = ~5-min interval) — Stage 2 was the empirical-anchor site for failure mode #6 (`signal-density-obscures-needle`) in Run 4 (Manager 13-min phantom-lag cleared by Observer probe). Override `observer_probe_cadence_default` only for Stage 2 unless project tuning has surfaced different stages as signal-density-heavy. |
+
+**Total: 32 default keys** (22 baseline + 3 added 2026-05-19 for Step 9 + 3 added 2026-05-20 for Step 0 + 4 added 2026-05-20 post-Run-4 for cascade-execution observability).
 
 ---
 
@@ -249,6 +263,13 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.20 (Run-4 v1.1 doctrine fold)** — Four extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
+  1. **NEW §Cascade-execution observability config section** — 4 new keys: `heartbeat_daemon_kickoff_policy` (default `dual_independent` — codifies Run-4 prep procedure of launching Manager + Observer daemons independently), `observer_probe_cadence_default` (default `4` — M:1 multiplier on heartbeat ticks), `observer_probe_cadence_stage_0` (default `8` — sparser for low-signal-density Step 0), `observer_probe_cadence_stage_2` (default `2` — denser for high-signal-density Stage 2 where Run-4 failure mode #6 fired). Total config keys: 28 → 32.
+  2. **`kind` enumeration gained 3 new values**: `manager_self_audit_sweep` (Step 9 cold-context rubric Q#6 output — Manager's enumeration of cascade improvisations as doctrine-gap candidates with failure-mode-catalog cross-link), `observer_probe_unblocked` (Observer-mode probe-as-mitigation output when a routine probe surfaces unread peer-DM that Manager attention buried — Run-4 minute-13 anchor), `multi_surface_footer_ratification` (close protocol post enumerating surfaces visited for the cascade event — 7 cross-cascade instances anchor). Total kind enum: 13 → 16 values.
+  3. **§Cascade-Learning-Loop Sub-patterns cross-link** to design-doc §10.18.12 (pre-committed re-evaluation gates) — Run 5/6 controlled-slot experiment + Run 7 forward-asymmetry re-evaluation + Run 7 `light_review_required` HARD-promotion gate + Run 5/6 failure-mode-#6 mitigation validation. Gates locked in writing to prevent doctrine drift into "wait one more run."
+  4. **No changes to closure_action enum** — `manager_self_audit_sweep`, `observer_probe_unblocked`, and `multi_surface_footer_ratification` are new POST kinds (procedural artifacts) rather than finding-closure actions. Closure_action enum remains at 10 values (post-Step-0).
+  Empirical anchors: design-doc §10.18 (Run 4 retrofit row). v1.1 promotion: 5 candidates originally surfaced + 2 added in the Tiberius DM retrospective (Manager close-out self-audit sweep + Observer-probe-as-mitigation channel) + 1 placeholder ([CLOSURE: ...] markers gated on Run 5+6 evidence per Krishna's FILE-not-FOLD recommendation).
 
 - **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — Three extensions:
   1. `closure_action` enum gained `cascade_input_ready` value (now 10 enum values total). Distinct from `cascade_complete` + `implementation_handoff_ready`; denotes Step 0 has cleared (cascade-prep artifacts produced + cold-context test passed + light-review gate cleared + pre-cascade Recon checklist verified).

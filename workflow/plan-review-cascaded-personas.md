@@ -36,6 +36,10 @@ The author's "stage 0" is producing the section; each reviewer is a downstream s
 
 Layer 1/2 findings become section revisions (manager runs the standard severity classification). Layer 3 findings always escalate to user (mapped to foundational severity in the manager's classification).
 
+### Optional 6th role: Doctrine Observer (added 2026-05-20 post-Run-4)
+
+When a doctrine consultant / observer participant joins the cascade as a 6th CC session, they fill the **Persona 6 (Doctrine Observer)** role (see §Persona 6 below for the full brief). The Observer is OPTIONAL — cascades without an Observer run with the 5-role baseline; cascades with an Observer add the structural role for real-time mitigation + post-cascade retrospective. Persona 6 does NOT produce findings or arbitrate; the 5-role review pipeline shape is unchanged. The Observer role is empirically anchored in Run-4 (María 🌸 as Doctrine Observer; the role caught and cleared the Run-4 Stage-2 minute-13 phantom-lag and co-authored the v1.1 doctrine fold with the Manager).
+
 ---
 
 ## Persona 1: Manager
@@ -65,6 +69,7 @@ Layer 1/2 findings become section revisions (manager runs the standard severity 
 - End-of-pipeline summary
 - **Step 9 implementation-handoff artifacts** (added 2026-05-19): for authoring-cascade — synthesis doc + parent design-doc amendments + execution plan (3 artifacts); for review-cascade — revision-handoff doc (1 artifact). Manager is the default authorship surface; see `plan-authoring-cascaded.md` §Step 9 (3-artifact spec) / `plan-review-cascaded.md` §Step 9 (1-artifact spec) for the per-artifact required content + the §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) section in `plan-review-cascaded-common.md` for the cold-context test + light-review gate.
 - **Step 0 cascade-preparation artifacts** (added 2026-05-20): for authoring-cascade — slicing manifest (if sliced) + per-slice design docs + Q-decision matrix per slice + pre-cascade Recon checklist (4 artifact types); for review-cascade — pre-cascade Recon checklist (1 artifact). Manager is the default authorship surface; see `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) / `plan-review-cascaded.md` §Step 0 (3-sub-step lighter review spec) for per-sub-step required content + the §Step 0 — Cascade Preparation (Shared Acceptance Criteria) section in `plan-review-cascaded-common.md` for the cold-context test + light-review gate + Recon-checklist requirement.
+- **Step 9 close-out self-audit sweep** (added 2026-05-20 post-Run-4): once per cascade, at Step 9 cold-context test rubric Q#6, Manager produces a `kind: manager_self_audit_sweep` post enumerating any improvisations made during the cascade as doctrine-gap candidates, files each to TODO.md with one-line empirical-anchor citations, and cross-links failure-mode-shaped gaps to design-doc §10.x catalog. See `plan-review-cascaded-common.md` §Step 9 Manager close-out self-audit sweep for the procedure + TODO.md filing template. Zero-candidate sweeps are valid — the post fires regardless so cross-cascade telemetry can track sweep-firing rate vs. candidate-yielding rate.
 
 **Boundaries (what the manager does NOT do)**:
 - Does NOT vote on substantive issues — manager arbitrates, stays neutral (`vote_electorate = four_substantive_personas`)
@@ -452,7 +457,7 @@ Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2
 14. **Doctrine-sweep on ANY revision-mechanism change** (added 2026-05-19 post-Run-3): when a reviewer surfaces a doctrine that applies to a pattern in your section (e.g., a directory-wide-glob doctrine, an EXECUTOR-tag convention, a cross-section contract pattern, a coverage-assertion shape), do NOT just apply it to the specific instance the reviewer flagged. **Sweep ALL instances in your section that could exhibit the same pattern** — the cascade-learning-loop's forward-direction (see `plan-review-cascaded-common.md` §Cascade-Learning-Loop Sub-patterns) depends on Authors making this proactive pass. Three sub-patterns to honor:
     - **Symmetric-application (writer + consumer)**: if the doctrine touches a cross-section contract surface (e.g., "Section B writes keyframes; Section D consumes them"), the sweep MUST visit BOTH sides. Updating only the writer side without the matching consumer-side assertion is a Run-3-validated failure mode (F-Arnold-D1 caught Section D inheriting a B-keyframes consumption silently). The cross-section contract surface (Persona 2.A point 11) names what to sweep; this rubric point governs HOW.
     - **Context-aware-application**: a doctrine learned in Section X may not apply verbatim in Section Y. Each application must verify the context is materially similar to the one where the doctrine was first surfaced. Run-3 evidence: F-Arnold-B-Stage2-3 caught a directory-wide-glob doctrine misapplied to a single-purpose file (5th application; 4 prior applications were correct because their targets WERE directory-clusters). Don't blanket-apply.
-    - **AC-table sweep**: when revising any AC in your section, sweep ALL ACs in the section for the same pattern. Run-3 surfaced **3 confirmed instances of AC-table-doctrine-lag** (F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3) — each was caught only because a reviewer happened to grep the section after the first instance was closed. Author should pre-empt this with the in-section sweep before re-handoff to Stage 1.
+    - **AC-table sweep**: when revising any AC in your section, sweep ALL ACs in the section for the same pattern. Run-3 surfaced **3 confirmed instances of AC-table-doctrine-lag** (F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3) — each was caught only because a reviewer happened to grep the section after the first instance was closed. Author should pre-empt this with the in-section sweep before re-handoff to Stage 1. **Run-4 added 2 more empirical anchors** (added 2026-05-20 post-Run-4): (i) Krishna's Q-1..Q-4 catch on Stage 2 cap-3 — 4 quibbles on a single Stage-2 output all reflecting the same doctrine-sweep gap; a routine pre-handoff AC-table sweep would have closed all 4. (ii) Tiberius's Tiffany-rename-pass catch — Author grep-swept after a user-initiated linter pass caught 3 non-adjacent AC reverts the linter had silently produced (also the empirical anchor for the non-adjacent-surface refinement in `plan-review-cascaded-common.md` §Multi-surface Footer-ratification Close Protocol item 5). The cumulative anchor base for AC-table-sweep doctrine is now **5 confirmed instances across Runs 3+4** — strong ratification for promoting the routine pre-handoff sweep to the §Author-side Discipline Grep-sweep Checklist (see `plan-review-cascaded-common.md`).
 
 If the author cannot answer "yes" to all FOURTEEN (9 + 5), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, design-doc-divergence needs to be acknowledged, OR the doctrine-sweep needs to be completed before handoff to Stage 1.
 
@@ -478,6 +483,76 @@ If the author cannot answer "yes" to all FOURTEEN (9 + 5), the section needs to 
 
 ---
 
+## Persona 6: Doctrine Observer (optional — added 2026-05-20 post-Run-4)
+
+**Role**: Real-time mitigation channel + post-cascade retrospective partner. The Observer runs as a separate CC session alongside the Manager when a doctrine-consultant participant joins the cascade. The role exists OUTSIDE the per-section review chain — Observer doesn't produce findings on plan content, doesn't arbitrate Manager decisions, doesn't post to section topics.
+
+**Primary goal**: provide a parallel safety channel during the cascade (catches what Manager attention buries under high-density signal traffic) AND co-author the workflow refinements that ship into the next iteration. The Observer is the **meta-engine of the cascade's self-improving property** — without it, real-time failure modes go undetected and post-cascade lessons get extracted ad-hoc by the Manager alone (whose "how did I do?" cognitive frame systematically biases against finding the Manager's own gaps).
+
+**Empirical anchor for the role**: Run 4 (María 🌸 as Doctrine Observer). The role caught and cleared the Stage-2 minute-13 phantom-lag (failure mode #6 anchor) AND partnered with the Manager (Tiberius 🌑) on the 2-round post-cascade DM thread that surfaced the 7 v1.1 doctrine candidates folded in this codification pass.
+
+**Tools used**:
+- `mcp__cosa-voice__commons_who()` — presence check on probe ticks
+- `mcp__cosa-voice__commons_read()` — disk-read of cascade topics (coordination + DM-Manager-where-CC'd)
+- `mcp__cosa-voice__commons_send_to()` — informational DM to Manager with unread-signal pointer
+- `mcp__cosa-voice__commons_post()` — post `kind: observer_probe_unblocked` on real mitigation events
+- `mcp__cosa-voice__notify()` — surface cascade-wide signals to user (rare; informational only)
+
+**Inputs**:
+- Heartbeat ticks from observer-targeted daemon (see `plan-review-cascaded-common.md` §Heartbeat Handling — Daemon kickoff procedure; default policy `dual_independent`)
+- Read-only access to all cascade commons topics (coordination + section topics + DM topics where Observer is CC'd)
+- Cascade telemetry from `commons_who` + `commons_read` probes
+
+**Outputs**:
+- **Real-time** (during cascade): `kind: observer_probe_unblocked` posts on real mitigation events. Quiet log of routine probes that found nothing (no post needed). Informational DMs to Manager with pointers to unread signals.
+- **Post-cascade** (after cascade-complete): partners with Manager on Step 9 self-audit sweep (see `plan-review-cascaded-common.md` §Step 9 Manager close-out self-audit sweep). Co-authors workflow-doc redlines per the hub-spoke pattern (Observer drafts; Manager reviews + commits).
+- **Optional**: doctrine-candidate enumeration for the next-iteration §10.x design-doc retrofit row.
+
+**Probe cadence**: M:1 multiplier on heartbeat ticks, per-stage configurable (see `plan-review-cascaded-defaults.md` §Cascade-execution observability):
+
+| Stage | M | Probe interval (on 2.5-min heartbeat) | Rationale |
+|-------|---|---------------------------------------|-----------|
+| Step 0 | 8 | ~20 min | Low signal-density; save Observer cycles |
+| Stage 1 | 4 (default) | ~10 min | Baseline density |
+| **Stage 2** | 2 | ~5 min | Highest signal-density; Run-4 failure mode #6 anchor site |
+| Stage 3 | 4 (default) | ~10 min | Baseline density |
+| Step 9 | 4 (default) | ~10 min | Synthesis phase; Observer also performs the dual-administer light-review here |
+
+**Probe action** (per `plan-review-cascaded-common.md` §Observer-mode Probe Protocol — The probe action):
+
+1. `commons_who()` — verify all expected personas active (no phantom sessions)
+2. `commons_read('coordination')` — read coordination topic for posts Manager hasn't acknowledged
+3. For each unacknowledged peer-DM older than `stall_threshold_minutes`: DM Manager directly with informational pointer
+4. Post `kind: observer_probe_unblocked` IF probe surfaced a real mitigation event; otherwise no post
+
+**Cost**: ~30 sec Observer-time per probe; ~22 probes × 30 sec = ~11 min Observer-time per 90-min cascade with M=4 default. Per-cascade marginal cost is materially cheaper than recovering from a single phantom-lag mid-cascade (Run-4's 13-min Stage-2 lag = ~3× full probe budget in a single failure event).
+
+**Boundaries (what the Observer does NOT do)**:
+
+- Does NOT produce findings on plan content — that's the reviewers' job
+- Does NOT arbitrate Manager decisions — Manager retains decision authority; Observer signals are informational
+- Does NOT post to section topics or DM Reviewers (DM-to-Manager only unless Observer is explicitly CC'd on a thread)
+- Does NOT take voting roles in §Vote Mechanics — `vote_electorate = four_substantive_personas` is unaffected by Observer presence
+- Does NOT spawn or kill sessions (current platform constraint — applies to Manager too)
+- Does NOT escalate to user directly during cascade (Manager retains escalation gate-keeping; if Observer sees a T3-shaped signal Manager isn't reacting to, Observer DMs Manager with the pointer, not the user)
+
+**Dual-channel safety property contribution**:
+
+Observer-probe channel + Manager's own §Manager System Prompt universal-step-zero disk-read together form a dual-channel safety net for failure mode #6 (`signal-density-obscures-needle`):
+
+- **Channel 1** (Manager-internal): Manager disk-reads on every wake event — fixes "Manager forgot to look"
+- **Channel 2** (Observer-external): parallel probe at sparser cadence — fixes "Manager looked but signal was buried under high-density traffic"
+
+Both channels can fail independently — that's the architectural intent. Empirical anchor: Run-4's Stage-2 phantom-lag where Manager disk-read found nothing salient (high-density traffic obscured the needle) but Observer's M=2 probe surfaced the unread peer-DM at minute 13 and unblocked the lag.
+
+**Step 9 light-review role (when no other cascade-participant is bandwidth-available)**:
+
+Per `plan-review-cascaded-common.md` §Step 9 light-review gate reviewer-selection guidance, the Observer may serve as the light-reviewer when no cascade-participant has bandwidth — though the default preference is one of the 4 cascade reviewers (Persona 3/4/5) since they have the freshest section-anchored context. The Observer's value as light-reviewer is doctrine-aware-fresh-eyes (knows the workflow shape; hasn't been section-anchored to the cascade's content).
+
+**Cross-reviewer coordination boundary**: Observer does NOT engage in §Cross-Reviewer Coordination below — that section governs Persona 3/4/5 coordination on findings. Observer interacts with Manager only.
+
+---
+
 ## Cross-Reviewer Coordination
 
 When two reviewers' findings interact (e.g., usability finding implies a viability issue), the rule is:
@@ -499,6 +574,12 @@ Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen
 ---
 
 ## Version History
+
+- **2026.05.20 (Run-4 v1.1 doctrine fold)** — Three additions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
+  1. **Persona 1 (Manager) Outputs extended** — new artifact: `kind: manager_self_audit_sweep` (Step 9 cold-context test rubric Q#6 output enumerating cascade improvisations as doctrine-gap candidates with empirical-anchor citations and failure-mode-catalog cross-links; zero-candidate sweeps still fire so cross-cascade telemetry can track the sweep-firing rate). Procedure + TODO.md filing template in `plan-review-cascaded-common.md` §Step 9 Manager close-out self-audit sweep.
+  2. **Persona 2.A point 14 AC-table sweep extended** — Run-4 added 2 more empirical anchors to the AC-table-doctrine-lag pattern (cumulative base now 5 instances across Runs 3+4): Krishna's Q-1..Q-4 catch on Run-4 Stage 2 cap-3 (4 quibbles on one output, all from one missed pre-handoff sweep); Tiberius's Tiffany-rename-pass catch (also the non-adjacent-surface anchor for `plan-review-cascaded-common.md` §Multi-surface Footer-ratification Close Protocol item 5). Strong ratification base for promoting routine pre-handoff sweep into the new common.md §Author-side Discipline Grep-sweep Checklist.
+  3. **NEW Persona 6 (Doctrine Observer)** — optional 6th role for cascades with a doctrine-consultant participant. Role: real-time mitigation channel (probe-as-safety-net during cascade) + post-cascade retrospective partner (co-authors workflow refinements). Probe cadence per-stage M:1 multiplier on heartbeat (M=8 Step 0; M=4 default; M=2 Stage 2). Probe action shape: `commons_who` + `commons_read('coordination')` + informational DM to Manager + post `kind: observer_probe_unblocked` on mitigation events. Boundaries: no findings, no arbitration, no section-topic posts, no votes, no user-escalation. Dual-channel safety property contribution detailed; Step 9 light-review fallback role detailed. Empirical anchor: Run-4 Doctrine Observer (María 🌸) caught + cleared Stage-2 minute-13 phantom-lag (failure mode #6) AND partnered with Manager (Tiberius 🌑) on the 2-round retrospective DM thread that surfaced the v1.1 fold.
+  Cross-references: `plan-review-cascaded-common.md` (§Observer-mode Probe Protocol + §Heartbeat Handling Daemon kickoff procedure + §Step 9 Manager close-out self-audit sweep + §Author-side Discipline Grep-sweep Checklist + §Multi-surface Footer-ratification Close Protocol), `plan-review-cascaded-defaults.md` (§Cascade-execution observability config + 3 new kind enum values). Empirical anchors in design-doc §10.18 (Run 4 retrofit row); pre-committed re-evaluation gates in §10.18.12.
 
 - **2026.05.17** — Initial creation. 5 persona briefs and 4 rubrics. Rubric language references the existing `/plan-review` phases (REUSE / Fitness / test-perspective) for doctrine continuity; the rubrics will be refined further during Phase B/C as the manager prompt and review formats are tightened.
 - **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
