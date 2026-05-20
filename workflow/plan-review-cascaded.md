@@ -38,6 +38,54 @@ If the run has no doctrine consultant, the Manager reads the playbook + defaults
 
 ---
 
+## Step 0: Cascade Preparation (NEW — added 2026-05-20)
+
+**Purpose**: lighter than the authoring-cascade Step 0 — review-cascade's input is already a pre-existing parent input plan, so much of the cascade-preparation work (slicing manifest authoring, per-slice design docs, Q-decision matrix extraction) is unnecessary. What review-cascade STILL needs from Step 0 doctrine: a **pre-cascade Recon checklist** for cold-cast onboarding + a **light-review gate** on the input plan's cascade-readiness before Step 1 fires.
+
+**Trigger**: a parent input plan (intended for review) is received by the Manager + cascade has not yet fired.
+
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria) for the cold-context test analog + light-review gate + pre-cascade Recon checklist requirement.
+
+**Full requirements anchor**: `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`.
+
+### Step 0 review-cascade flow (3 sub-steps; lighter than authoring-cascade's 6)
+
+**Step 0.1 — Input plan intake + reviewability assessment**
+
+Manager reads the parent input plan end-to-end; identifies sections; assesses whether the plan IS in fact reviewable as cascade-shaped (≥2 sections; section-independence holds). If single-section or non-independent, fall back to plain `/plan-review` (sequential) rather than cascade.
+
+**Step 0.2 — Pre-cascade Recon checklist verification**
+
+Manager produces (or verifies inheritance from a prior cascade) the pre-cascade Recon checklist — standing memories that apply during review; persona conventions; project-specific rules. See common.md §Step 0 pre-cascade Recon checklist for required content.
+
+**Step 0.3 — Cascade-readiness gate (state flip)**
+
+Manager runs the **Step 0 light-review gate** with the review-cascade rubric (6-criterion focused pass per common.md §Step 0 light-review gate, narrowed to the input-plan-as-reviewable shape).
+
+On thumbs-up + Recon-checklist-verified: Manager posts `kind: "cascade_input_ready"`; state flips. Cascade Step 1 can fire.
+
+### Authorship — Manager-default
+
+Same Manager-default as authoring-cascade. The Manager who will run the review-cascade is the natural Step 0 preparer.
+
+### Step 0 + Step 9 lifecycle completion (review-cascade)
+
+```
+parent_input_plan_received → (Step 0 lite) → cascade_input_ready
+                                                 ↓
+                                             (Steps 1-8)
+                                                 ↓
+                                            cascade_complete
+                                                 ↓
+                                              (Step 9 lite)
+                                                 ↓
+                                     implementation_handoff_ready
+```
+
+Review-cascade's lighter Step 0 + Step 9 (single-artifact each) make the full lifecycle workable for plan-review even though authoring-cascade has more artifact production at both ends.
+
+---
+
 ## Step 1: Resolve Effective Configuration
 
 The manager session reads three sources at workflow launch:
@@ -696,5 +744,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
   - **No content removal in this revision** — all existing review-mode content stays intact. Shared sections in common.md are duplicates of the corresponding sections here. The mode-specific `plan-authoring-cascaded.md` references common.md directly rather than back-referencing this doc, so authoring-mode is the cleaner consumer.
 
 - **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings) integrated into `plan-review-cascaded-common.md` (authoritative shared-doctrine home), `plan-review-cascaded-personas.md` (rubric extensions), and `plan-review-cascaded-defaults.md` (severity schema + commons `kind` enumeration). This file's shared sections are **NOT updated in this revision** to avoid divergence with common.md — the doctrine in this file's duplicated shared sections is now stale relative to common.md, but kept in place for v1 backwards-compat. Future v3 consolidation will reduce this file to its review-specific bits + `[SHARED — see common.md]` references; at that point the duplication ends. **For Run-3 fold detail, read `plan-review-cascaded-common.md` Version History.** Out-of-scope items filed elsewhere: Phase-6C-specific CSS-var visible-text safety (Lupin design doc); ask_multiple_choice Path-B subprocess-restart cost (operational footnote); Mute-Channel Bypass for Manager-Escalation (Lupin/cosa-voice MCP feature request).
+
+- **2026.05.20 (Step 0 — Cascade Preparation doctrine, review-cascade flavor)** — NEW §Step 0: Cascade Preparation section added before §Step 1. Lighter than authoring-cascade's Step 0 (review-cascade input is already a parent input plan; no slicing manifest authoring + no per-slice design doc authoring + no Q-decision matrix extraction). 3 sub-steps: 0.1 input-plan intake + reviewability assessment + 0.2 pre-cascade Recon checklist verification + 0.3 cascade-readiness gate (state flip to `cascade_input_ready`). Shares the common.md acceptance criteria with authoring-cascade Step 0 (cold-context test + light-review gate with 6-criterion focused rubric + pre-cascade Recon checklist REQUIRED for state-flip). Manager-default authorship. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape for both modes.
 
 - **2026.05.19 (Step 9 — Revision-Handoff Synthesis doctrine)** — NEW §Step 9: Revision-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). Review-cascade flavor: single-artifact spec (revision-handoff doc with 7 required sections including REQUIRED §6 doctrine candidates index); Manager-default authorship; cold-context-test (~5-10 min) + light-review gate (~10-15 min, 5-criterion focused rubric) + 1-revision-turn cap; cascade state flips from `cascade_complete` → `implementation_handoff_ready` on Step 9 close. Step 8 explicitly NOT cascade-done. Shared acceptance criteria in `plan-review-cascaded-common.md` §Step 9; sister 3-artifact spec for authoring-cascade in `plan-authoring-cascaded.md` §Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.

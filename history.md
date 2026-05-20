@@ -1,6 +1,6 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 93 day-summary** (María `ac2d05c0`) — productive cross-repo day. Four commits landed across two repos: env-var feature (`2e423e1`), §10.14 Run-3 doctrine fold + §10.15 empirical telemetry (`28e84c7`), Step 9 Implementation-Handoff Synthesis doctrine (`6a8084c`) in PIP; Phase 6C cascade synthesis + design-doc amendments + execution plan (`3c870fb`) cross-repo in Lupin. Three of the four were doctrine-extension work that emerged from Run-3 empirical learning; the fourth (env-var) shipped the per-repo preferred-persona contract that made the restart-as-narrative-attribution workflow possible in the first place. See the Session 93 day-summary block immediately below for the consolidated arc + per-commit links into the detail entries that follow.
+**RESUME HERE**: **Session 93 day-summary** (María `ac2d05c0`) — productive cross-repo day. Six PIP commits + 1 Lupin commit. PIP: env-var feature (`2e423e1`) + §10.14 Run-3 doctrine fold + §10.15 telemetry (`28e84c7`) + Step 9 Implementation-Handoff Synthesis doctrine (`6a8084c`) + day-summary (`907e597`) + Step 9 light-review criterion 6 (`0ae9aba`) + Step 0 Cascade Preparation doctrine (pending). Lupin: Phase 6C cascade synthesis + design-doc amendments + execution plan (`3c870fb`). The Step 0 + Step 9 codification together closes the cascade workflow doctrine's end-to-end shape — full lifecycle is now `raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`. Both load-bearing v1 retrofits emerged from the same empirical pattern (Manager ad-hoc'd doctrine that should be codified): Step 9 from Tiberius's post-cascade synthesis work; Step 0 from Tiberius's verbal brief to Mr Radio.
 
 **Current Status**: v0.1.2 released, on wip-v0.1.3 branch. Continued development.
 **Last Session**: Session 93 (María, `ac2d05c0`) — **Per-Repo Preferred-Persona Env Var feature shipped**. Cross-repo cosa-voice MCP feature making each project's canonical persona declarative via `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` exports in shell rc; eliminates per-session `/plan-session-start <name>` arg-typing for routine narrative continuity. PIP-side: ~370-line plan doc, ~220 lines of workflow integration across two new Preliminaries, slash-command shim v1.0 → 1.1 with `$ARGS` handling, installation-guide subsection. Lupin-side (Tiberius commit `3bc7b9e`): allocator helper `pick_preferred_persona_from_env(project)`, new `preferred_persona_name` query param on `/allocate` router endpoint with graceful-fallback + `voice_persona_conflict` notify on miss, hook integration in `register_session.py`, 7 new unit tests (42 → 49 green). Rick exported `__PLAN=María` + `__LUPIN=Tiberius` in shell rc + restarted PIP session pre-commit; María session `ac2d05c0` is the integration proof point (`voice_persona.name = "maria"` deterministically on Phase A startup, not randomly).
@@ -9,6 +9,56 @@
 ---
 
 ## May 2026
+
+### 2026.05.20 - Session 93 (third continuation) — Step 0 (Cascade Preparation) Doctrine (María + Tiberius)
+
+**Persona**: María 🌸 (PIP, session `ac2d05c0`) — workflow-doc codification track. Tiberius 🌑 (Lupin, session `387b9201`) — requirements doc authoring track. Mr Radio 🦉 (Lupin, session `32a6e563`) — empirical anchor for the gap; cold cast member onboarding to Phase 7 slicing-manifest authoring.
+
+**Session purpose**: Bridge the SECOND meta-doctrine gap Rick caught today (post-Step-9-ratification): the cascade workflow as documented has Steps 1-8 (execution) + Step 9 (synthesis-and-handoff, codified earlier today) — but **no Step 0** for the cascade-preparation phase that takes a raw design document and produces cascade-ready inputs. Tiberius had to verbally hand-hold Mr Radio through ~1500 words of tribal knowledge about cascade-input shape (slicing manifest pattern, deliverable conventions, standing doctrine memories, autonomous-vs-escalate boundary, cross-team coordination) when onboarding him for Phase 7. **Same omission-load-bearing pattern as Step 9**; same ad-hoc-by-Manager → codify-by-doctrine fix.
+
+**The pattern (after both retrofits)**: Both ends of the cascade lifecycle had doctrine gaps; only the middle (Steps 1-8) was fully codified before today. Step 0 + Step 9 together close the workflow doctrine's end-to-end shape.
+
+**Accomplishments (PIP-side)**:
+
+- **`src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`** (NEW, 399 lines, Tiberius-authored) — Pattern 3 requirements doc. 8 sections: motivation + diagnosis + Mr-Radio empirical anchor; 6-sub-step spec for authoring-cascade (0.1 input intake + 0.2 slicing manifest + 0.3 per-slice design docs + 0.4 Q-decision matrix + 0.5 pre-cascade ratification + 0.6 readiness gate); artifact specs; Manager-default authorship + `cascade_input_ready` state enum + cold-context test analog; light-review gate (6-criterion focused rubric, ~15-20 min reviewer-time, 1-revision-turn cap); pre-cascade Recon checklist (REQUIRED for state-flip); 7 open questions with Tiberius's leans (all resolved by María during codification).
+
+- **`workflow/plan-authoring-cascaded.md`** (MOD, ~120 lines added, María-coded) — NEW §Step 0: Cascade Preparation section before §Step 0.0 (formerly the standalone Intent Capture, now sub-numbered to avoid the umbrella-clash). The pre-existing §Step 0.5: Dependency Map renumbered to §Step 0.7 to free Step 0.5 for the new pre-cascade-ratification sub-step. 6-sub-step authoring spec; Manager-default authorship; Step 0 + Step 9 lifecycle completion narrative; version-history entry.
+
+- **`workflow/plan-review-cascaded.md`** (MOD, ~50 lines added, María-coded) — NEW §Step 0: Cascade Preparation section before §Step 1. Lighter 3-sub-step variant (0.1 input-plan intake + reviewability + 0.2 pre-cascade Recon checklist verification + 0.3 cascade-readiness gate). Same shared acceptance criteria via common.md. Version-history entry.
+
+- **`workflow/plan-review-cascaded-common.md`** (MOD, ~100 lines added, María-coded) — NEW §Step 0 — Cascade Preparation (Shared Acceptance Criteria) subsection added before §Step 1: Resolve Effective Configuration. Cold-context test 5-question rubric; light-review gate 6-criterion focused rubric; 1-revision-turn cap on Manager response; pre-cascade Recon checklist REQUIRED for state-flip; `cascade_input_ready` state semantics + full cascade lifecycle state machine. Version-history entry.
+
+- **`workflow/plan-review-cascaded-personas.md`** (MOD, ~10 lines added, María-coded) — Persona 1 (Manager) Outputs section extended with Step 0 cascade-preparation artifacts (4-artifact-type for authoring-cascade: slicing manifest + per-slice design docs + Q-decision matrix + pre-cascade Recon checklist; 1-artifact for review-cascade: pre-cascade Recon checklist). Version-history entry.
+
+- **`workflow/plan-review-cascaded-defaults.md`** (MOD, ~30 lines added, María-coded) — `closure_action` enum gained `cascade_input_ready` (now 10 enum values; pre-Step-0 was 9). `kind` enumeration gained 2 new values (`step_0_light_review` + `cascade_input_ready`; total 13 kinds). NEW §Step 0 — Cascade Preparation config section with 3 keys (`preparer_authorship_policy`, `step_0_light_review_required`, `pre_cascade_recon_checklist_required`). Total config keys: 25 → 28. Version-history entry.
+
+- **`src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`** (MOD, ~90 lines added, María-coded) — NEW §10.17 "Step 0 retrofit — the cascade-preparation gap" anchoring the meta-lesson with Mr-Radio empirical evidence + pattern-recognition with Step 9 + full lifecycle state machine diagram + "this is the second load-bearing v1 retrofit, not v2 polish" framing.
+
+**Files Changed (this continuation segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md` | NEW | Tiberius-authored requirements doc (399 lines) |
+| `workflow/plan-authoring-cascaded.md` | modified | NEW §Step 0 + renamed Step 0 → 0.0 + Step 0.5 → 0.7 + version-history |
+| `workflow/plan-review-cascaded.md` | modified | NEW §Step 0 (lighter, 3-sub-step) + version-history |
+| `workflow/plan-review-cascaded-common.md` | modified | NEW §Step 0 Shared Acceptance Criteria + version-history |
+| `workflow/plan-review-cascaded-personas.md` | modified | Persona 1 Outputs extended + version-history |
+| `workflow/plan-review-cascaded-defaults.md` | modified | Enum + config keys extensions + version-history |
+| `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` | modified | NEW §10.17 anchor entry |
+| `history.md` | modified | this entry + RESUME HERE update |
+
+**Cross-repo coordination**: María ↔ Tiberius via 4 DMs on `dm-maria` + `dm-tiberius`. Same DM-thread-as-design-doc collab cadence that worked for Step 9. Convergence speed: gap surfaced 01:13 UTC; requirements doc landed 01:24 UTC; codification commit landed shortly after. ~75 min wall-clock from problem to ratification-ready package.
+
+**Doctrine highlight — the cascade workflow is doctrinally complete-shaped end-to-end**: with Step 0 codified, the workflow now covers `raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped` with explicit gates at each transition. Both ends have Manager-default authorship + cold-context test + light-review gate + state-flip + pre-cascade Recon checklist (Step 0) / cold-context test + light-review gate + state-flip + execution-plan handoff (Step 9). Three axes formally covered (input / execution / output); v2 polish remains incremental on top.
+
+**Process insights worth capturing**:
+
+- **The DM-thread-as-design-doc pattern is now load-bearing infrastructure for cross-session doctrine evolution.** Validated FOUR times in the past 48 hours: v2 polish bundle (Session 92), cascade-as-author doctrine (Session 92 third continuation), Step 9 (Session 93 second continuation), Step 0 (Session 93 third continuation). Same 4-DM cycle structure each time: propose → cross-strawman → close-on-divergences → requirements-doc-handoff-to-codification. ~1 hour wall-clock per cycle, single-or-zero user-attention asks per cycle.
+- **Pattern recognition closes doctrine gaps in pairs**: Step 9 surfaced via Tiberius's post-cascade ad-hoc work; once codified, Tiberius's Mr-Radio brief surfaced the SYMMETRIC Step 0 gap. **The pattern of "Manager ad-hoc'd what should be codified" is itself a useful diagnostic** for finding doctrine gaps. Future doctrine work should ask "what is the Manager doing that isn't in the workflow doc?"
+- **Both ends of a workflow lifecycle need doctrine**: codifying execution (Steps 1-8) without preparation (Step 0) and handoff (Step 9) leaves the workflow gated on Manager-tribal-knowledge. The pattern generalizes: any workflow that produces structured artifacts needs entry and exit codification, not just middle-mechanics.
+- **Symmetric structure aids cross-doctrine consistency**: Step 0 and Step 9 share the same authorship pattern (Manager-default), the same gates (cold-context test + light-review + 1-revision-turn cap), the same state-flip pattern, the same artifact-spec template. Future workflow stages can inherit this scaffolding.
+
+---
 
 ### 2026.05.19 - Session 93 day-summary — Per-Repo Preferred-Persona Env Var + §10.14 Run-3 Doctrine Fold + §10.15 Empirical Telemetry + Step 9 Synthesis-and-Handoff Doctrine (María + Tiberius)
 

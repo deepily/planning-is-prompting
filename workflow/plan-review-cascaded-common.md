@@ -8,6 +8,97 @@
 
 ---
 
+## §Step 0 — Cascade Preparation (Shared Acceptance Criteria) [SHARED]
+
+**Added 2026-05-20** based on Rick's catch surfaced via Mr Radio's onboarding for Phase 7 slicing-manifest authoring: when a manager has to verbally hand-hold a cold cast member through the cascade-input shape (~1500 words of tribal knowledge), that's an undocumented workflow phase. Step 0 codifies the cascade-preparation phase that takes a raw design document and produces cascade-ready inputs.
+
+**Pattern recognition**: Step 9 closed the post-cascade synthesis gap (codified 2026-05-19); Step 0 closes the pre-cascade preparation gap. **Both ends of the cascade lifecycle had doctrine gaps; only the middle (Steps 1-8) was fully codified.** Step 0 + Step 9 together close the doctrine's end-to-end shape.
+
+Mode-specific Step 0 specs live in `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) and `plan-review-cascaded.md` §Step 0 (lighter — review-cascade input is already a parent input plan). This common subsection holds the **shared acceptance criteria**: cold-context test analog + light-review gate + state-flip semantics + pre-cascade Recon checklist requirement.
+
+**Full requirements anchor**: `planning-is-prompting/src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`.
+
+### Cold-context test analog at 0.5 (Manager self-administered, 5-question rubric)
+
+Manager (or designated preparer) reads the Step 0 outputs (per-slice design doc + Q-decision matrix + slicing manifest if applicable) **as if cold** — as if they were the cascade Stage-0 Author about to draft the section. Passes if:
+
+1. Can identify the scope of the slice without back-referencing the raw design doc?
+2. Can identify what PROPOSED Q-decisions to carry forward into Stage-0 verbatim?
+3. Can identify which Recon items need verification at code-write time?
+4. Can identify cross-slice dependencies without inferring them?
+5. Are standing doctrine memories that affect the slice's implementation listed (via the §6 pre-cascade Recon checklist below)?
+
+If all 5 answer "yes": cold-context test passes. If any "no": revise the affected artifact and re-test.
+
+**Self-administration cost**: ~10-15 min Manager-time.
+
+### Light-review gate (cascade-cast reviewer; focused rubric)
+
+Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "construct the inputs" mode, not "challenge the input assumptions" mode. A fresh-eyes reviewer pivots to challenge-mode and flags input-shape gaps before cascade Stage 0 fires.
+
+**Reviewer selection** (Manager judgment for v1):
+
+- **Default**: one of the cascade-cast members assigned to the upcoming run — preferably someone OTHER than the Manager. Ideal: the Persona 4 reviewer (Viability/Gap) whose rubric most closely matches "is this design cascade-ready?"
+- **Alternative**: doctrine consultant if a 6th participant runs in that role
+- **Escape hatch**: if no cast member has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit
+
+**Light-review rubric** (NOT a full Persona 3/4/5 review — 6-criterion focused pass):
+
+1. **Slice independence check**: each slice's "independence" claim holds; cross-slice dependencies are explicit in both directions (provider AND consumer documented)
+2. **Q-decision completeness check**: every Q has a PROPOSED stance + alternatives + recommendation; no hidden conditionals
+3. **Recon item resolvability check**: every Recon item names where the verification happens (code-write, integration test, manual recon)
+4. **Source citation check**: every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements with no provenance)
+5. **Sequencing soundness check**: recommended order respects all stated cross-slice dependencies (no cycles; no out-of-order dependencies)
+6. **Author-onboarding completeness check**: standing doctrine memories applicable to the slice are listed in the §6 pre-cascade Recon checklist
+
+**Output**: thumbs-up OR list of specific Step 0 gaps to address before cascade Stage 0 fires. Posted as `kind: "step_0_light_review"` to the cascade's parent topic.
+
+**Cost**: ~15-20 min reviewer-time.
+
+### Manager response to light-review findings (1-revision-turn cap)
+
+If reviewer thumbs-up: cascade state flips to `cascade_input_ready` (new closure_action enum value; see defaults.md).
+
+If reviewer finds gaps: Manager addresses gaps in slicing manifest / per-slice design doc / Q-decision matrix updates. **Capped at 1 revision turn** — single-pass refinement; no Round-2 cap-extending. If reviewer finds MORE gaps after Manager revision: escalate to user (rare case; suggests preparation-quality issue worth user-attention).
+
+### Pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state)
+
+This is the load-bearing piece for cold-cast onboarding. Codifies the standing-doctrine knowledge that the Manager would otherwise have to verbally walk a fresh cast member through.
+
+**Required content** — author-onboarding checklist embedded in the slicing manifest §1 cadence OR as a sister "Step 0 onboarding pointer" doc:
+
+- **Standing feedback memories that apply** (project-wide list — see consuming project's CLAUDE.md / memory directory for the full inventory; the slicing manifest enumerates which ones gate THIS cascade's authoring)
+- **Persona conventions** (project-specific — available personas + current role assignments + signing convention)
+- **Standing project-specific rules** (test venue routing, commit posture, doc-viewer link routing, coverage mandates, etc.)
+
+**Acceptance**: light-reviewer at the §5 gate verifies all applicable standing memories are listed (no missing memory that would cause friction during cascade); persona conventions match current project state; project-specific rules accurate for THIS cascade's context.
+
+### `cascade_input_ready` state semantics
+
+`cascade_input_ready` is a new `closure_action` enum value (see defaults.md §Severity-tag metadata schema for the full enum). It denotes Step 0 has completed all 6 sub-steps: input intake + slicing decision + slicing manifest (if sliced) + per-slice design docs + Q-decision matrices + user ratification + light-review pass + pre-cascade Recon checklist verified. Cascade Step 1 can fire.
+
+**Full cascade lifecycle state machine** (post-Step-0 + post-Step-9 codification):
+
+```
+raw_design_received → (Step 0) → cascade_input_ready
+                                      ↓
+                                  (Steps 1-8)
+                                      ↓
+                                 cascade_complete
+                                      ↓
+                                   (Step 9)
+                                      ↓
+                          implementation_handoff_ready
+                                      ↓
+                                (implementation)
+                                      ↓
+                                    shipped
+```
+
+Both ends of the cascade lifecycle now have explicit closure states + gates. The middle (Steps 1-8) keeps its existing closure mechanics.
+
+---
+
 ## §Step 1: Resolve Effective Configuration [SHARED]
 
 The manager session reads three sources at workflow launch:
@@ -411,6 +502,8 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 ---
 
 ## Version History
+
+- **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — NEW §Step 0 — Cascade Preparation (Shared Acceptance Criteria) subsection added before §Step 1: Resolve Effective Configuration. Codifies the pre-cascade preparation phase that v1 doctrine omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding; Manager Tiberius had to verbally hand-hold a cold cast member through ~1500 words of tribal-knowledge cascade-input shape). Includes: cold-context test 5-question rubric (Manager self-administered, ~10-15 min); light-review gate with reviewer-selection guidance + 6-criterion focused rubric + ~15-20 min reviewer-time cost; 1-revision-turn cap on Manager response; pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state); `cascade_input_ready` state semantics + full cascade lifecycle state machine (`raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`). Mode-specific Step 0 specs live in `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) and `plan-review-cascaded.md` §Step 0 (lighter — review-cascade input is already a parent input plan). Full requirements anchor at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape.
 
 - **2026.05.19 (Step 9 light-review rubric — criterion 6 added)** — §Step 9 light-review rubric extended from 5 criteria to 6: new **Cross-component shared-state interaction check** (Tiberius's §6.7 candidate, ratified by Rick post-discussion). Anchored in Roscoe's Node B closure: SenderStore dual-emission + NotificationsListRenderer's `replaceWith` wiped `data-focus-hidden` — a class of bug unit tests structurally cannot catch (each component tested in isolation) but synthesis-time enumeration of cross-component interaction pairs would have flagged the watch-pair. Generalization to "cross-component shared-state" makes the criterion project-agnostic (DOM is one instance; same pattern applies to Redux store / event bus / file system / database tables / any mutable-state-sharing surface). Tiberius's requirements doc §6.7 entry preserves the empirical anchor + the v2-vs-v1 debate for future doctrine-curators.
 

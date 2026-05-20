@@ -30,7 +30,86 @@ All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designat
 
 ---
 
-## Step 0: Intent Capture (NEW — pure-authoring mode only; SKIP in hybrid mode)
+## Step 0: Cascade Preparation (NEW — added 2026-05-20)
+
+**Purpose**: bridge the gap between a raw design document (parent design doc, roadmap entry, design-mode artifact) and cascade-ready inputs that the cascade's Stage-0 Author can pick up cold.
+
+**Trigger**: a raw design document lands on the Manager's desk + the cascade has not yet fired (no `cascade_input_ready` state declared).
+
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria) for the cold-context test analog + light-review gate + pre-cascade Recon checklist requirement.
+
+**Full requirements anchor**: `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`.
+
+### Step 0.1 — Input intake + slice-ability assessment
+
+Manager reads the raw design doc end-to-end; identifies scope boundaries; assesses slice-ability (does this naturally decompose into N sub-features, OR is it one cohesive surface?); cross-references against any pre-existing slicing manifest precedent.
+
+**Decision**: sliced (N≥2 sub-slices) OR unsliced (single design + single cascade run).
+
+**Output**: a written decision (one paragraph) declaring sliced vs unsliced, with rationale.
+
+**Escalation**: if slice-ability is ambiguous, Manager surfaces to user via `ask_multiple_choice` with pros/cons + recommendation.
+
+### Step 0.2 — Slicing manifest (if sliced; SKIP if unsliced)
+
+Manager authors a slicing manifest at `<repo>/src/rnd/<path>/NN-phaseX-slicing-manifest.md` (or equivalent canonical R&D path; pattern follows existing project precedents).
+
+**Required content per slice**: scope (function names, file paths, AC sketches); source citations (where the requirement comes from); dependencies (prior-phase artifacts consumed; library/API versions); independence claim; per-slice out-of-scope.
+
+**Manifest-level content**: recommended order with rationale; permanently out of scope across all slices; per-slice file naming convention; per-slice acceptance.
+
+### Step 0.3 — Per-slice design docs
+
+Author extends the raw design doc into one or more cascade-ready design docs at `<repo>/src/rnd/<path>/NN-phaseX{a,b,c,d}-design.md`.
+
+**Cascade-ready means**: scope statement per slice (verbatim from slicing manifest); Q-decisions enumerated + PROPOSED stance per Q (not yet ratified — that's 0.5); pre-flight Recon items enumerated; reuse map (functions / utilities / patterns); files affected — rough inventory; acceptance criteria — draft; out-of-scope confirmation.
+
+### Step 0.4 — Q-decision matrix per slice
+
+Author extracts or refines the Q-decisions into a per-slice matrix. Per Q: Q-number (e.g., Q-A1); question statement; PROPOSED stance; alternatives walked (1-2 lines each); recommendation; conditional-executability flag if PROPOSED depends on a Recon item.
+
+### Step 0.5 — Pre-cascade user ratification (Q-decision matrix)
+
+Manager surfaces the Q-decision matrix to user via `ask_multiple_choice` or `converse`. Per cluster: walk user through Q-decisions in cluster-batches (per sequential plan-review discipline); user ratifies PROPOSED stance OR flips to alternative OR opens a sub-discussion; ratifications captured as "✅ RATIFIED YYYY-MM-DD" markers.
+
+**Skip-or-streamline option**: for low-stakes slices where all PROPOSED stances are obviously correct, Manager may bundle ratification into a single `ask_yes_no` per slice. Use sparingly.
+
+### Step 0.6 — Cascade-readiness gate (state flip)
+
+Manager runs the **Step 0 light-review gate** (see common.md §Step 0 light-review gate — single cascade-cast reviewer, 6-criterion focused rubric, ~15-20 min). Then runs the **Pre-cascade Recon checklist** (see common.md §Step 0 pre-cascade Recon checklist — REQUIRED for state-flip).
+
+**On thumbs-up + Recon-checklist-verified**: Manager posts `kind: "cascade_input_ready"` to the parent topic; cascade state flips to `cascade_input_ready`. Cascade Step 1 (Stage 0 Author draft) can fire.
+
+**On reviewer-finds-gaps**: Manager addresses (capped at 1 revision turn) + re-tests + re-asks reviewer. If 2nd pass finds more gaps: escalate to user.
+
+### Authorship — Manager-default
+
+By default the Manager (the persona who will run the cascade) authors Step 0 outputs. Rationale: same cross-section visibility that justifies Step 9 Manager-default authorship; carrying design context end-to-end reduces handoff cost across the cascade lifecycle.
+
+**Escape hatch for future v3**: workflow doctrine may allow a "designated preparer" role if a Manager is over-committed or if the parent-design-doc author IS the natural Step 0 preparer.
+
+### Step 0 + Step 9 lifecycle completion
+
+Step 0 and Step 9 together close the cascade workflow doctrine's end-to-end shape. The full lifecycle:
+
+```
+raw_design_received → (Step 0) → cascade_input_ready
+                                      ↓
+                                  (Steps 1-8)
+                                      ↓
+                                 cascade_complete
+                                      ↓
+                                   (Step 9)
+                                      ↓
+                          implementation_handoff_ready
+```
+
+---
+
+## Step 0.0: Intent Capture (Pure-Authoring Mode Only — SKIP in hybrid mode)
+
+**Renamed 2026-05-20**: this section was previously the standalone "Step 0: Intent Capture" — restructured to be Step 0.0, the pure-authoring-mode entry sub-step within the broader Step 0 (Cascade Preparation) framework. Hybrid mode skips Step 0.0 and enters the cascade-prep flow at Step 0.1 (Input intake + slice-ability assessment) with the raw design doc as input.
+
 
 **Purpose**: capture the bounded set of user-supplied inputs so the cascade has a stable target.
 
@@ -48,7 +127,7 @@ All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designat
 
 ---
 
-## Step 0.5: Dependency Map (NEW — both modes)
+## Step 0.7: Dependency Map (NEW — both modes; renumbered from Step 0.5 on 2026-05-20 to avoid clash with the new Step 0.5 pre-cascade-ratification sub-step)
 
 **Purpose**: surface cross-section coupling BEFORE authors write, not as a Stage-2 viability finding.
 
@@ -340,6 +419,8 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 ---
 
 ## Version History
+
+- **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — NEW §Step 0: Cascade Preparation section added before §Step 0.0 (formerly standalone "Step 0: Intent Capture"; renamed to Step 0.0 to avoid clash with the new Step 0 umbrella). The pre-existing §Step 0.5: Dependency Map renumbered to §Step 0.7 to free Step 0.5 for the new pre-cascade-ratification sub-step. Step 0 codifies the cascade-preparation phase that v1 doctrine omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding 2026-05-20). 6 sub-steps: 0.1 input intake + slice-ability + 0.2 slicing manifest (if sliced) + 0.3 per-slice design docs + 0.4 Q-decision matrix + 0.5 pre-cascade user ratification + 0.6 cascade-readiness gate (state flip to `cascade_input_ready`). Manager-default authorship; cold-context test analog + light-review gate (6-criterion focused rubric) + pre-cascade Recon checklist (REQUIRED for state-flip). Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Companion edits in `plan-review-cascaded.md` (lighter 3-sub-step Step 0 for review-cascade flavor), `plan-review-cascaded-common.md` (shared acceptance criteria), `plan-review-cascaded-personas.md` (Persona 1 Manager outputs extended), `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys).
 
 - **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — NEW §Step 9: Implementation-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). The cascade was previously "done" at Step 8 cascade-complete signal; in practice this left ~1,225 LOC of synthesis work as Manager ad-hoc post-cascade (Run-3 Tiberius), AND let 2 cascade-design gaps leak into the handoff package that the implementer (Roscoe) surfaced at pre-flight. Step 9 introduces: (a) the 3-artifact spec — synthesis doc + parent design-doc amendments + execution plan (with required-content per artifact); (b) Manager-default authorship with v3 escape hatch for designated-synthesizer at large N; (c) Step 9 closure flow with cold-context test + light-review gate + 1-revision-turn cap; (d) new `implementation_handoff_ready` closure state distinct from `cascade_complete`. Step 8 explicitly NOT cascade-done; handoff-ready requires Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Companion edits in `plan-review-cascaded-common.md` (shared acceptance criteria) + `plan-review-cascaded-personas.md` (Persona 1 Manager outputs) + `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys) + `plan-review-cascaded.md` (sister §Step 9 with 1-artifact spec).
 

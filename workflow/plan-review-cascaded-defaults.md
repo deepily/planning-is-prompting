@@ -75,7 +75,7 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 |-------|------|----------|---------|
 | `severity` | enum: `cosmetic` \| `inconsistency` \| `foundational` | ✓ | Primary classification tier; drives the §6.1 routing |
 | `cross_section` | bool | ✓ | Orthogonal to severity — captures whether the finding's resolution touches more than the section the finding originated in |
-| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` \| `hard_verification_gate` \| `manager_unilateral_ratify_by_concurrence` \| `reassigned_due_to_rate_limit` \| `implementation_handoff_ready` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
+| `closure_action` | enum: `ignore` \| `documented` \| `revised` \| `escalated` \| `voted` \| `hard_verification_gate` \| `manager_unilateral_ratify_by_concurrence` \| `reassigned_due_to_rate_limit` \| `implementation_handoff_ready` \| `cascade_input_ready` | ✓ | What the manager did with the finding; enables % breakdowns + telemetry |
 | `parent_finding` | string (finding-id) | optional | When a downstream stage's finding sharpens an upstream finding (e.g., Arnold's F4 sharpens Rachel's earlier cross-section coupling note), link them so the lineage is preserved |
 | `rounds_used` | int | ✓ | Re-litigation rounds consumed (0 if no re-litigation needed) |
 | `votes_called` | int | ✓ | Votes invoked for this finding (>0 means contentious) |
@@ -103,6 +103,12 @@ When the manager classifies a finding (per playbook §6.1) and posts a `kind: "m
 |---|---|---|
 | `implementation_handoff_ready` | Cascade has cleared Step 9: artifacts produced per mode-specific spec + Manager self-administered cold-context test passed + light-review gate passed (thumbs-up OR post-1-revision thumbs-up). Distinct from `cascade_complete` (Step 8 closure state); a cascade can be `cascade_complete` without being `implementation_handoff_ready` during the Step 9 work window. | Run 3 retrofit: Manager Tiberius ad-hoc'd 1,225 LOC of post-cascade synthesis work in absence of Step 9 doctrine; Step 9 codifies this as required. See `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the closure flow + 5-question cold-context-test rubric + 5-criterion light-review rubric. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. |
 
+**Closure-action value added 2026-05-20 (Step 0 doctrine)** — one new value codifies the Step 0 closure state:
+
+| Value | When to use | Anchor |
+|---|---|---|
+| `cascade_input_ready` | Step 0 has completed all sub-steps: input intake + slicing decision + slicing manifest (if sliced) + per-slice design docs + Q-decision matrices + user ratification + Step 0 light-review pass + pre-cascade Recon checklist verified. Cascade Step 1 can fire. Distinct from `cascade_complete` (Step 8 closure state) and `implementation_handoff_ready` (Step 9 closure state). | 2026-05-20 retrofit: Manager Tiberius ad-hoc'd ~1500-word verbal brief to Mr Radio for Phase 7 onboarding (slicing-manifest authoring) in absence of Step 0 doctrine; Step 0 codifies this as required. See `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria) for the closure flow + cold-context test + 6-criterion light-review rubric + pre-cascade Recon checklist. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. |
+
 ### Commons post `kind` enumeration (added 2026-05-19)
 
 Manager and worker posts to commons topics use the `kind` metadata field to disambiguate post-types. The cascade workflow recognizes:
@@ -120,6 +126,8 @@ Manager and worker posts to commons topics use the `kind` metadata field to disa
 | `cosmetic_cluster_family` | reviewer (Persona 5) | Stage-3 cluster-recognition family post enumerating ≥3 cosmetic findings sharing closure shape (see `plan-review-cascaded-personas.md` §Persona 5 Stage-3 Cosmetic-Cluster Recognition) | 2026-05-19 (Run-3) |
 | `step_9_light_review` | reviewer (cascade-participant chosen by Manager) | Light-review gate output on Step 9 synthesis artifacts — thumbs-up OR list of synthesis gaps; posted to cascade's parent topic or sister `cascade-step-9-review` topic | 2026-05-19 (Step 9) |
 | `implementation_handoff_ready` | manager | Step 9 closure state-flip post — declares the cascade artifacts have passed cold-context test + light-review gate and are ready for implementer pickup | 2026-05-19 (Step 9) |
+| `step_0_light_review` | reviewer (cascade-cast member chosen by Manager) | Light-review gate output on Step 0 cascade-preparation artifacts — thumbs-up OR list of preparation gaps; posted to cascade's parent topic or sister `cascade-step-0-review` topic | 2026-05-20 (Step 0) |
+| `cascade_input_ready` | manager | Step 0 closure state-flip post — declares the cascade-prep artifacts have passed cold-context test + light-review gate + pre-cascade Recon checklist and Step 1 can fire | 2026-05-20 (Step 0) |
 
 Workers post their findings using free-form metadata; manager classifies + posts the authoritative `kind: manager_classification` entry with the 6-field metadata schema above.
 
@@ -154,7 +162,15 @@ Workers post their findings using free-form metadata; manager classifies + posts
 | `light_review_required` | `true` | Whether Step 9 requires a light-review pass by a cascade-participant reviewer. v1 default is REQUIRED based on Run-3 empirical evidence (2 cascade-design gaps leaked into the handoff package without external review). Allowed: `true` (v1 default), `false` (Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit). |
 | `cold_context_test_mode` | `self_administered` | How the cold-context test is performed at Step 9 closure. Allowed: `self_administered` (v1 default — Manager-as-synthesizer reads the 3 artifacts end-to-end as if cold, answers the 5-question rubric; ~15 min), `external_administered` (v2 future — a peer session who didn't participate in the cascade reads the artifacts cold; higher confidence but higher cost; reserved for v2 if v1 self-administration proves to leak). |
 
-**Total: 25 default keys** (22 baseline + 3 added 2026-05-19 for Step 9).
+### Step 0 — Cascade Preparation (added 2026-05-20)
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `preparer_authorship_policy` | `manager_default` | Who authors Step 0 artifacts. Allowed: `manager_default` (v1 — Manager who will run the cascade authors the preparation), `designated_preparer` (v3 escape hatch — a separate persona authors the slicing manifest + per-slice design docs + Q-decision matrix while the cascade Manager picks up at Step 1). |
+| `step_0_light_review_required` | `true` | Whether Step 0 requires a light-review pass by a cascade-cast member. v1 default is REQUIRED based on 2026-05-20 Mr Radio onboarding empirical anchor (~1500-word verbal brief should have been a single read). Allowed: `true` (v1 default), `false` (Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit). |
+| `pre_cascade_recon_checklist_required` | `true` | Whether the pre-cascade Recon checklist (standing memories + persona conventions + project-specific rules) must be produced and verified at Step 0 closure. v1 default REQUIRED based on the same Mr Radio empirical anchor — without it, cold-cast members re-derive or skip. |
+
+**Total: 28 default keys** (22 baseline + 3 added 2026-05-19 for Step 9 + 3 added 2026-05-20 for Step 0).
 
 ---
 
@@ -233,6 +249,12 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — Three extensions:
+  1. `closure_action` enum gained `cascade_input_ready` value (now 10 enum values total). Distinct from `cascade_complete` + `implementation_handoff_ready`; denotes Step 0 has cleared (cascade-prep artifacts produced + cold-context test passed + light-review gate cleared + pre-cascade Recon checklist verified).
+  2. `kind` enumeration gained 2 new values: `step_0_light_review` (reviewer output on Step 0 cascade-prep artifacts) + `cascade_input_ready` (manager state-flip post). Total enum: 13 values.
+  3. NEW §Step 0 — Cascade Preparation config section with 3 keys: `preparer_authorship_policy` (default `manager_default`), `step_0_light_review_required` (default `true`), `pre_cascade_recon_checklist_required` (default `true`). Total config keys: 25 → 28.
+  Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`; shared acceptance criteria in `plan-review-cascaded-common.md` §Step 0. Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape (lifecycle: `raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`).
 
 - **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — Three extensions:
   1. `closure_action` enum gained `implementation_handoff_ready` value (now 9 enum values total). Distinct from `cascade_complete`; denotes Step 9 has cleared (artifacts produced + cold-context test passed + light-review gate cleared). Worked-example sub-table added.
