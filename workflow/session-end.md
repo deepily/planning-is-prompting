@@ -1094,13 +1094,25 @@ If timeout occurs, default to Skip:
 - Continue to Final Verification
 
 
-## 6) Day's Work Summary
+## 6) LoC Delta Summary (Day's Work)
 
 **Purpose**: Close every session with a tangible artifact of the day's work — a LoC-delta table broken down by language and by code/comment/docstring, optionally compared against the repo's overall composition. This is **the last thing the user sees, hears, or finds in the notification card** before Final Verification.
 
+> **Vocabulary note**: this step is referred to verbally as the **"LoC delta summarizer"** / **"daily LoC summary"** / **"branch progress closer"**. The historical section name was "Day's Work Summary" (preserved in the heading as a parenthetical anchor for backward-compat); the canonical name as of 2026-05-21 is **LoC Delta Summary**.
+
 **When**: After Step 5 (Backup Prompt) regardless of whether a commit was made. Even on cancelled-commit sessions, the day's work on the working tree is worth summarizing.
 
-**Skip condition**: User passed `--no-summary` to the slash-command wrapper. Skip Step 6 entirely; proceed to Final Verification.
+### MANDATE — Step 6 is not optional under default invocation
+
+**Three obligations that MUST be satisfied on every session-end where `--no-summary` was NOT passed**:
+
+1. **MUST fire**: Step 6 must execute. Soft-skip ("we're wrapping up, let's not bother") is a violation, not a judgment call. The only valid skip paths are: (a) explicit `--no-summary` flag; (b) the documented preflight failures in §6.1 (no `main` branch / no commits since merge-base) which produce explicit skip lines, NOT silent omission.
+2. **MUST surface the table**: the rendered markdown table (per §6.4) MUST land in the closing `notify()`'s `abstract` parameter — not just terminal scrollback. The user is often at-a-distance with speakerphone on; terminal-only delivery means invisible delivery.
+3. **MUST speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter MUST include a single short LoC verdict so the user gets the signal aurally even if they never read the abstract. Compliant forms (≈8-15 words): *"Branch is at +560 net since main"*, *"Day's wrap: light day, plus 12 net"*, *"Branch close: 4 days, plus 318 net across 14 files"*. **The verdict replaces the generic "session ended" sign-off, it doesn't add to it** — net spoken word count stays under the routine ~60-word cap.
+
+**Skip condition** (the only valid one): User passed `--no-summary` to the slash-command wrapper. Skip Step 6 entirely; proceed to Final Verification. In every other case, Step 6 fires.
+
+**Failure mode this MANDATE exists to prevent** (the empirical anchor for the 2026-05-21 promotion): prior soft-language ("Skip condition: …") allowed agents under wrap-up pressure to interpret Step 6 as "optional if the session is short / time is short / context is full." Users reported the summary not running consistently AND not being visibly surfaced when it did run — both heads of a two-headed failure that this MANDATE addresses jointly.
 
 ---
 
@@ -1122,9 +1134,9 @@ git rev-parse --verify main >/dev/null 2>&1 || { echo "no-main-branch"; }
 git rev-list --count $(git merge-base HEAD main)..HEAD
 ```
 
-If `git rev-parse --verify main` fails (orphan branch, fresh repo): skip Step 6 with the line *"Day's Work Summary: skipped — no `main` branch to diff against."*
+If `git rev-parse --verify main` fails (orphan branch, fresh repo): skip Step 6 with the line *"LoC Delta Summary: skipped — no `main` branch to diff against."*
 
-If commit count is `0`: skip Step 6 with the line *"Day's Work Summary: nothing to summarize — no commits on this branch since branching from main."*
+If commit count is `0`: skip Step 6 with the line *"LoC Delta Summary: nothing to summarize — no commits on this branch since branching from main."*
 
 ---
 
@@ -1289,7 +1301,7 @@ This gives line totals and per-file counts but **no code/comment/docstring split
 
 ```markdown
 ══════════════════════════════════════════════════════════
-Day's Work Summary
+LoC Delta Summary (Day's Work)
 ══════════════════════════════════════════════════════════
 
 Branch: wip-v0.1.3-...  →  main
@@ -1340,7 +1352,7 @@ If `--rich` was passed (see §6.2.alt), append:
 | Markdown     | 163   | 28      | +135 | 100% | —       | —         |
 ```
 
-**Notification** (always, all paths) — fire `notify()` with the headline in `message` (TTS-Brevity-Mandate-compliant) and the full table in `abstract`:
+**Notification** (always, all paths — **MANDATED per the Step 6 obligations above**) — fire `notify()` with the LoC verdict in `message` (TTS-Brevity-Mandate-compliant, ≈8-15 words) and the full table in `abstract`:
 
 ```python
 notify(
@@ -1352,24 +1364,25 @@ notify(
 )
 ```
 
-The `abstract` SHOULD include a doc-viewer link to the persistent CSV:
+The `abstract` MUST include a doc-viewer link to the persistent CSV (per the canonical link grammar at `workflow/doc-viewer-links.md`):
 
 ```markdown
-[Open: {repo}-{branch-slug}-loc-delta.csv](/app/docs?path=io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv&scope={project-scope})
+[Open: {repo}-{branch-slug}-loc-delta.csv](/app/docs?path={project}/io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv)
 ```
 
-(Resolve `{project-scope}` from the session's `doc_scope` envelope per `workflow/cosa-voice-integration.md` § Document Viewer Links.)
+Resolve `{project}` from `get_session_info().project` (single string field — see `workflow/doc-viewer-links.md § Discovering Your Scope at Runtime`). The legacy two-param form with `&scope=` query param is dead syntax; emit the path-only form only.
 
-**Spoken-headline mandate**: 1 sentence, conversational, **verdicts not inventory**. No file paths, percentages, or hash literals in the spoken line. Per `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+**Spoken-verdict mandate** (intensified per the Step 6 obligations): 1 sentence, conversational, **verdicts not inventory**. No file paths, percentages, or hash literals in the spoken line. The LoC verdict is REQUIRED — it is the aural signal that Step 6 actually fired. Per `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
 
-Examples of compliant spoken headlines (per-day shape):
+Examples of compliant spoken verdicts (per-day shape):
 - *"Day's wrap: three sessions, net plus three-eighteen, Python-heavy with a markdown chaser."*
 - *"Closing summary: light day — net plus twelve across two files of markdown."*
-- *"Day's work: five days on the branch, net plus four-fifty across forty files."*
+- *"Branch close: five days on the branch, net plus four-fifty across forty files."*
 
-Anti-pattern (DO NOT do this):
-- *"Day's wrap: plus 234 minus 45 in Python at 84.6 percent code 15.4 percent comment 0 percent docstring, plus 18 minus 0 in markdown at 100 percent code..."*
-- *"CSV written to io slash git dash loc dash delta slash..."* (URLs and file paths are TTS-hostile)
+Anti-patterns (DO NOT do any of these):
+- *"Day's wrap: plus 234 minus 45 in Python at 84.6 percent code 15.4 percent comment 0 percent docstring..."* — inventory recital, the brevity mandate violation
+- *"CSV written to io slash git dash loc dash delta slash..."* — URLs and file paths are TTS-hostile
+- Closing turn with NO LoC verdict at all (generic "session ended" sign-off without the LoC headline) — silent omission, the accountability mandate violation
 
 ---
 
@@ -1427,6 +1440,18 @@ In all skip/fallback paths, **continue to Final Verification**. Step 6 is inform
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
+
+### Step-6 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
+
+Before sending the final close-out notification, audit:
+
+- [ ] **Did Step 6 fire?** — unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line, Step 6 MUST have run. Silent omission is a violation.
+- [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
+- [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
+- [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
+- [ ] **If a blocking-tool ask was made during this session-end** (commit approval, archive decision, etc.) — does each such ask's abstract include pros/cons + recommendation per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`?
+
+If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 if needed; re-issue the closing notification with the missing elements added.
 
 ## Project-Specific Context
 

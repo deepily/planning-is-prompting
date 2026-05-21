@@ -29,17 +29,24 @@
 
 3. **MUST execute the complete session-end ritual**:
    - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-6)
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, health checks, or the Day's Work Summary)
+   - Do NOT skip any steps (including notifications, TodoWrite tracking, health checks, or the **LoC Delta Summary** — canonical §6)
    - Do NOT substitute a shortened or summarized version
    - Do NOT commit without user approval
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
-4. **MUST honor the Day's Work Summary flags** (canonical §6):
+4. **MUST honor the LoC Delta Summary MANDATE** (canonical §6 — renamed from "Day's Work Summary" 2026-05-21; the three obligations are non-optional):
+   - **MUST fire**: Step 6 runs unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line. Soft-skip ("we're wrapping up") is a violation.
+   - **MUST surface the table**: the rendered markdown table (per §6.4) lands in the closing `notify()`'s `abstract` parameter — not terminal-only.
+   - **MUST speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter includes a single short LoC verdict (≈8-15 words) replacing the generic "session ended" sign-off.
    - Parse `--summary` / `--no-summary` and `--baseline` / `--no-baseline` from the invocation arguments.
-   - **Defaults**: `--summary` ON, `--baseline` ON. The summary is the last visible/audible artifact of the session per the user's stated intent.
-   - `--no-summary` skips Step 6 entirely; proceed directly to Final Verification.
-   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection silently (it cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
-   - The spoken headline (passed to `notify(message=...)`) MUST follow the TTS Brevity Mandate — 1 sentence, conversational, no file paths or percentages. Full table goes to `abstract` only.
+   - **Defaults**: `--summary` ON, `--baseline` ON.
+   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection silently (cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
+   - The CSV doc-link in `abstract` MUST use canonical path-only URL form (`/app/docs?path={project}/io/git-loc-delta/...`); the legacy `&scope=` two-param form is dead syntax per `workflow/doc-viewer-links.md`.
+
+5. **MUST clear the Step-6 Accountability Checklist** before declaring session-end complete:
+   - Did Step 6 fire? Did the table land in abstract? Did the spoken message carry a LoC verdict? Does the CSV doc-link use canonical URL form?
+   - Full checklist: canonical workflow doc § Final Verification → Step-6 Accountability Checklist
+   - If any checkbox unchecked: re-fire Step 6, re-issue the closing notify() with the missing elements added.
 
 ---
 

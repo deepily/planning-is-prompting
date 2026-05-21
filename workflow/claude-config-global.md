@@ -57,6 +57,10 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 - **Task completion**: Use `notify()` with `priority="low"`
 - **Progress updates**: Use `notify()` with `notification_type="progress"`
 
+### Recommendation Mandate for Blocking-Tool Asks (2026-05-21)
+
+Every `ask_multiple_choice()` / `ask_yes_no()` / `converse()` call that frames a decision between alternatives MUST include in its `abstract` parameter: (a) pros AND cons per option, AND (b) an explicit recommendation with rationale. The spoken `message` stays short; the abstract carries the decision-support so the user can either accept the recommendation or override it with full context. **Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks.
+
 ### Notification Examples
 
 ```python

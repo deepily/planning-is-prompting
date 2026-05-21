@@ -187,9 +187,11 @@ NOTIFICATION VERIFICATION:
 □ Did I use blocking tools when I needed decisions?
 □ Did I notify about any errors encountered?
 □ Will the user know I'm finished?
+□ If I made a blocking-tool ask, does the abstract carry pros/cons + recommendation
+  per the Recommendation Mandate for Blocking-Tool Asks above?
 ```
 
-**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
+**If ANY checkbox is unchecked**: Send the missing notification(s) NOW, or re-issue the blocking-tool ask with the missing decision-support added.
 
 ---
 
@@ -313,6 +315,93 @@ notify( "Task complete", suppress_ding=True )
 Use blocking tools when you need user input before proceeding. All blocking tools support timeout with configurable defaults.
 
 **CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user. Without `high` priority, the notification will not be spoken aloud and may time out before the user notices.
+
+### Recommendation Mandate for Blocking-Tool Asks (2026-05-21)
+
+**MANDATE**: every `ask_multiple_choice()`, `ask_yes_no()`, and `converse()` call that frames a decision between alternatives MUST include in its `abstract` parameter: (a) pros AND cons per option, AND (b) an explicit recommendation with rationale.
+
+**Why this exists**: when a blocking-tool ask presents N options as a neutral menu, the user has to do the synthesis work the agent should be doing. The agent has all the context (just-completed analysis, file reads, prior conversation); the user is often at-a-distance, listening, and lacks the on-screen context. **Forcing the agent to commit to a position is a tax that buys the user faster, better decisions** — and surfaces the agent's reasoning so the user can either accept the recommendation or override it with their own judgment.
+
+**Why "abstract" not "message"**: the spoken `message` parameter stays short (≈60 words routine, 80-120 substantive — TTS Brevity Mandate). Pros/cons/recommendation is structural detail that belongs in the UI card the user reads on-demand. The spoken line names the question; the abstract carries the decision-support.
+
+#### Per-tool shape
+
+| Tool | What the `abstract` MUST contain |
+|------|----------------------------------|
+| `ask_multiple_choice` (2+ options) | One "Pros" sub-list + one "Cons" sub-list **per option**, followed by a "Recommendation" paragraph naming the recommended option AND the rationale (what trade-off you weighed, why this option wins). Mark the recommended option in the option's `description` field too (e.g. prefix "Recommended: …" or end with "← my recommendation"). |
+| `ask_yes_no` (with non-trivial framing) | Reasoning for the yes-path (what happens, what risk, what cost) AND reasoning for the no-path AND a recommendation (default-yes vs default-no) with the rationale that explains which trade-off dominated. The `default` parameter should match the recommendation. |
+| `converse` (open-ended, with framed alternatives) | Same shape as `ask_multiple_choice` if the prompt enumerates alternatives. For unframed open-ended ("what would you like to do?") the mandate doesn't apply — no alternatives to weigh. |
+| `ask_open_ended_batch` | Same as `converse` per-question. |
+
+#### Worked example — anti-pattern vs canonical
+
+❌ **Anti-pattern** (neutral menu, user does the synthesis):
+
+```python
+ask_multiple_choice(
+    questions = [{
+        "question": "How should we sequence the work?",
+        "header"  : "Sequencing",
+        "options" : [
+            {"label": "Bundle both",        "description": "One commit, both tracks."},
+            {"label": "Meta-doctrine first", "description": "Two commits, doctrine first."},
+            {"label": "Step 6 first",        "description": "Two commits, bug fix first."}
+        ]
+    }],
+    abstract = "Three sequencing options. Pick one."
+)
+```
+
+✅ **Canonical** (decision-support carried by abstract):
+
+```python
+ask_multiple_choice(
+    questions = [{
+        "question": "How should we sequence the work?",
+        "header"  : "Sequencing",
+        "options" : [
+            {"label": "Bundle both (Recommended)", "description": "One commit, both tracks. Fastest path."},
+            {"label": "Meta-doctrine first",       "description": "Two commits. Pedagogically cleaner."},
+            {"label": "Step 6 first",              "description": "Two commits. Ships bug fix first."}
+        ]
+    }],
+    abstract = """## Sequencing decision — pros/cons + recommendation
+
+### Option A: Bundle both ⭐ My Recommendation
+**Pros**: single commit, single review, no cross-deps between tracks, fastest to land both
+**Cons**: compound commit message; if one track breaks in review the other waits
+
+### Option B: Meta-doctrine first
+**Pros**: pedagogically cleaner; Step-6 conforms by construction; cleaner git log
+**Cons**: doubles your review attention cost; bug fix waits one commit cycle
+
+### Option C: Step 6 first
+**Pros**: fastest path to closing the surfaced bug
+**Cons**: same review cost as B without the pedagogical benefit; doctrine deferred
+
+### Recommendation
+A. Zero cross-dependencies between tracks + bounded diffs make bundling strictly cheaper for your attention budget. B and C both cost two reviews; A captures both in one. Pick B if git-log surgical clarity is load-bearing; pick C if shipping the bug-fix urgently outweighs the doctrine ship."""
+)
+```
+
+**Notice**: the canonical version makes the recommendation explicit, justifies it, AND tells the user when each non-recommended option would actually be the right call. The user reads, agrees, and clicks — or overrides with full context.
+
+#### Anti-patterns (PROHIBITED)
+
+| Anti-pattern | Why it's wrong |
+|--------------|----------------|
+| Listing options without pros/cons | User has to derive the trade-offs themselves; agent isn't paying its way |
+| Listing pros/cons but no recommendation | Agent ducks the commit; this is the "I won't pick a side" failure mode |
+| Recommendation without rationale | Recommendation is a number, rationale is the reasoning — user can't override intelligently without it |
+| Marking ALL options as "good in their own way" | Every option is recommended = no option is recommended; this is recommendation-laundering |
+| Putting pros/cons in the spoken `message` | TTS-hostile; the spoken line names the question, abstract carries the decision-support |
+| Skipping the mandate for "trivial" asks | If the ask is genuinely trivial, you probably don't need a blocking tool — use `notify()` instead and proceed |
+
+#### When the mandate doesn't apply
+
+- **Pure information-gathering** `converse()` calls ("what is the project name?", "where does X live?") — no alternatives to weigh, nothing to recommend.
+- **Pure confirmation** `ask_yes_no()` for routine acks ("ready to proceed?", "checkpoint OK?") — the framing is genuinely binary and the agent has no asymmetric preference. Borderline cases: lean toward including reasoning anyway (it's cheap to write, costly to omit).
+- **Repeated identical asks within a session** — first ask carries the full mandate; subsequent re-asks with same options can reference back ("same pros/cons as before; recommendation unchanged unless you redirect").
 
 ### ask_yes_no()
 
