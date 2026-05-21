@@ -1,6 +1,8 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 94 third bundle LANDED — Cross-repo LoC delta rollup R&D doc** (María `d66169f2`, 2026-05-21 late afternoon, post-Rick-meeting continuation). New PIP-side R&D doc `src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md` (~400 lines) serializing the converged design for a global cross-repo daily LoC snapshot. Hub-spoke architecture: PIP owns workflow + `/plan-loc-delta-global` slash command (forthcoming); cosa owns new `cosa.repo.run_git_loc_delta_global` aggregator CLI (Rachel CoSA-side, in flight); Lupin INI is repo-list source-of-truth. Phase 1: ad-hoc slash command for on-demand invocation; Phase 2 (deferred): testing-server scheduled cron for daily push. Schema v2 (`repo` + `branch` columns + sidecar JSON with `csv_schema_version: 2` + 6 metadata keys) ratified via 3-round María ↔ Rachel DM thread on `dm-maria` (qids `5a340f1a` → `535c8d8c` → `0e9ff290` + close-out) + Rick voice greenlight "EXPAND FULL" while in his meeting. Companion R&D doc on cosa-side (`<cosa>/rnd/2026.05.21-cross-repo-loc-delta-aggregator-cli.md`) pending Rachel's authorship once she's pinged. README.md updated with link. **Cross-session collaboration anchor**: DM-thread-as-design-doc + iterative-correction-loop pattern (previously codified for cascaded plan-review) reapplied here with Rachel; converged in 3 round-trips below the ping-discipline ceiling. Rachel's principled push-backs (sidecar JSON instead of per-row SHA denormalization; declining derived-state sidecar keys on maintenance-trap argument) folded in cleanly; both personas opinionated, neither rubber-stamping the other. 5 open questions captured in the R&D doc §7 for the upcoming doc-walk-through with Rachel before either of us writes implementation code.
+**RESUME HERE**: **Session 94 fourth bundle LANDED — Cross-repo LoC rollup PIP wrappers shipped** (María `d66169f2`, 2026-05-21 evening). Phase 1 closes on the PIP side with: NEW `workflow/loc-delta-global.md` (~200 lines, canonical workflow doc covering discovery via recently-active mtime heuristic, aggregator CLI invocation, surfacing pattern, full failure-mode table); NEW `.claude/commands/plan-loc-delta-global.md` (slash wrapper invoking the workflow). Rick locked Option A on discovery shape (mtime heuristic with PROJECTS_ROOT env-var-with-hardcoded-fallback, 14-day window narrowed by `--since`, no Lupin INI lookup per his earlier "defer-INI-indefinitely" direction). Cross-session collaboration: Rachel CoSA-side already shipped aggregator CLI (`cosa.repo.run_git_loc_delta_global`) earlier this session + demoed end-to-end with Rick ("looks great" approval) — 7 days × 3 repos, 161 commits, +47,436 net LoC, library-shape plotter working, schema-v1 backward compat working. DM round-trip with Rachel on the 3 diverged open questions from PIP R&D doc §7: §7.3 branch-aware → ✅ accepting her most-recent-CSV heuristic (simpler than my current-branch + `--all-branches`); §7.4 default window → 🤔 leaning today-default per her offer (asked her to add the today-default in CLI OR I'll handle in wrapper); §7.5 author filter → ⏸ deferred per her non-implementation. **Phase 1 effectively complete across both repos** — slash command discoverable as `/plan-loc-delta-global` skill. Phase 2 (testing-server scheduled cron) is deferred future work.
+
+**Previously**: **Session 94 third bundle LANDED — Cross-repo LoC delta rollup R&D doc** (María `d66169f2`, 2026-05-21 late afternoon, post-Rick-meeting continuation). New PIP-side R&D doc `src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md` (~400 lines) serializing the converged design for a global cross-repo daily LoC snapshot. Hub-spoke architecture: PIP owns workflow + `/plan-loc-delta-global` slash command (forthcoming); cosa owns new `cosa.repo.run_git_loc_delta_global` aggregator CLI (Rachel CoSA-side, in flight); Lupin INI is repo-list source-of-truth. Phase 1: ad-hoc slash command for on-demand invocation; Phase 2 (deferred): testing-server scheduled cron for daily push. Schema v2 (`repo` + `branch` columns + sidecar JSON with `csv_schema_version: 2` + 6 metadata keys) ratified via 3-round María ↔ Rachel DM thread on `dm-maria` (qids `5a340f1a` → `535c8d8c` → `0e9ff290` + close-out) + Rick voice greenlight "EXPAND FULL" while in his meeting. Companion R&D doc on cosa-side (`<cosa>/rnd/2026.05.21-cross-repo-loc-delta-aggregator-cli.md`) pending Rachel's authorship once she's pinged. README.md updated with link. **Cross-session collaboration anchor**: DM-thread-as-design-doc + iterative-correction-loop pattern (previously codified for cascaded plan-review) reapplied here with Rachel; converged in 3 round-trips below the ping-discipline ceiling. Rachel's principled push-backs (sidecar JSON instead of per-row SHA denormalization; declining derived-state sidecar keys on maintenance-trap argument) folded in cleanly; both personas opinionated, neither rubber-stamping the other. 5 open questions captured in the R&D doc §7 for the upcoming doc-walk-through with Rachel before either of us writes implementation code.
 
 **Previously**: **Session 94 second bundle LANDED — Step 6 reliability fix + Recommendation Mandate codification** (María `d66169f2`, 2026-05-21 afternoon, post-lunch continuation). Two complementary tracks committed together. **Track 1 (Step 6 reliability)**: §6 renamed "Day's Work Summary" → "LoC Delta Summary (Day's Work)" matching Rick's verbal vocabulary; soft-skip language promoted to MANDATE with three obligations (MUST fire / MUST surface table in abstract / MUST speak one-line LoC verdict in spoken message); Final Verification section expanded with a 5-checkbox Step-6 Accountability Checklist; `/plan-session-end` slash wrapper got stiffened invocation language naming all three obligations; `~/.claude/skills/codebase-analysis/SKILL.md` trigger phrases extended with session-end vocabulary (`session end`, `LoC delta closer`, `Step 6`, `daily LoC summarizer`). Bonus fix: §6.4 CSV doc-link URL form upgraded from legacy two-param (`&scope=`) to canonical path-only — bringing this section into compliance with the morning's doc-link doctrine reconciliation. **Track 2 (Recommendation Mandate)**: new `### Recommendation Mandate for Blocking-Tool Asks` sub-section in `workflow/cosa-voice-integration.md § Blocking Decisions` — mandates pros AND cons per option + explicit recommendation with rationale in every `ask_multiple_choice` / `ask_yes_no` / `converse` abstract; includes per-tool shape table, worked anti-pattern vs canonical example, prohibited-anti-pattern catalog, and explicit "when the mandate doesn't apply" carve-outs (pure information-gathering, pure confirmation, repeated identical asks). Short headline callout added to `workflow/claude-config-global.md` pointing at canonical hub. Notification Accountability Checkpoint extended with a sixth checkbox tying the mandate to the self-audit gate. **Failure-mode addressed**: prior soft-language allowed agents to interpret Step 6 as optional under wrap-up pressure (the "never fired" head) AND to deliver the table to terminal-only without abstract/spoken-verdict surfacing (the "fired invisibly" head). MANDATE addresses both heads jointly. **Live empirical anchor**: this very session demonstrated the Recommendation Mandate in action — pre-lunch sequencing question shipped with full pros/cons + recommendation, Rick selected "Bundle both" per the recommended option.
 
@@ -18,6 +20,61 @@
 ---
 
 ## May 2026
+
+### 2026.05.21 - Session 94 (evening continuation) — Cross-Repo LoC Rollup PIP Wrappers (María + Rachel cross-session continuation)
+
+**Persona**: María 🌸 (PIP session `d66169f2`; chorus mode; fourth continuation segment of the day) + Rachel 🕊️ (CoSA session `e13fed4f`) cross-session via `dm-maria`.
+
+**Session purpose**: Rick asked how to ad-hoc test Rachel's schema-v2 changes before commit. Mid-question, Rachel's DM arrived with the full Phase 1 strawman already built AND demoed end-to-end with Rick ("looks great" approval). Pivot: from "test Rachel's changes" to "ship PIP-side wrappers since cosa-side is already built and validated."
+
+**Decisions ratified this segment**:
+
+1. **Test pivot**: Rachel's end-to-end demo (7 days × 3 repos, 161 commits, +47,436 net LoC, library-shape plotter working with `group_by="repo"`, schema-v1 backward compat loading PIP CSV transparently) is strictly broader coverage than the per-repo Option A test I'd proposed. Rick reviewed the demo and approved; per-repo test would be redundant. Pivoted to PIP-side wrappers.
+
+2. **Default repo-discovery shape**: Rick locked **Option A — recently-active mtime heuristic** (per `ask_multiple_choice` with full pros/cons + recommendation per the Recommendation Mandate). Implementation: glob `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv`; filter by mtime within last 14 days OR narrower if `--since` is smaller; extract repo names from `Path(csv).parents[2].name`; pass explicit `--repos` to Rachel's CLI (keeps her CLI honest-explicit per her contract). `PROJECTS_ROOT` env-var-with-hardcoded-fallback. No Lupin INI lookup per Rick's earlier "defer-INI-indefinitely" direction.
+
+3. **3 diverged open-question resolutions** (per R&D doc §7, sent via DM to Rachel):
+   - **§7.3 Branch-aware** ✅ accepting her most-recent-CSV-per-repo heuristic (simpler than my current-branch + `--all-branches`; rolling-overwrite means "most-recent" ≈ "current" in practice)
+   - **§7.4 Default window** 🤔 leaning today-default fallback per her "easy to add if you ratify" offer; concrete proposal (bare → today; `--since` alone → until-as-now; `--until` alone → since-as-today; both explicit → as-is); CLI-level OR wrapper-level both work, lean CLI
+   - **§7.5 Author filter** ⏸ deferred per her non-implementation (Phase 1 doesn't need it; surface as Phase 1.5 if Rick asks for self-vs-others filtering)
+
+**Accomplishments**:
+
+1. **New canonical workflow doc** `workflow/loc-delta-global.md` (~200 lines). 5-step structure: (1) discovery via mtime heuristic; (2) cosa-aggregator CLI invocation with explicit `--repos`; (3) summary render with terminal markdown table + `notify()` with spoken verdict + abstract carrying full table + doc-links to consolidated CSV and plot PNG; (4) failure-handling table (8 failure modes); (5) persistent artifact convention (`<lupin>/io/loc-delta-global/global-<since>_to_<until>-{csv,plot.png}`). Cross-refs to doc-viewer-links, Recommendation Mandate, TTS Brevity Mandate, Rachel's companion R&D doc, PIP R&D doc.
+
+2. **New slash command** `.claude/commands/plan-loc-delta-global.md`. Mandates 7 obligations on every invocation: project config + PROJECTS_ROOT/LUPIN_ROOT resolution; MUST read canonical workflow doc; MUST execute discovery before invoking aggregator; MUST honor flag semantics; MUST surface via `notify()` with TTS-brevity-compliant spoken verdict + rich abstract; MUST handle failures per canonical Step 4; MUST follow Recommendation Mandate if any blocking-tool ask arises. Slash command now discoverable as a skill in Claude Code (system surfaced it in the skills list immediately after creation).
+
+3. **DM round-trip with Rachel** on the 3 diverged open questions (qid `1c7e222e`). §7.3 accepted; §7.4 leaning her offer-to-add today-default; §7.5 deferred. `expect_reply=False`.
+
+**Cross-session collaboration anchor — fourth confirmation of the pattern**: DM-thread-as-design-doc + iterative-correction-loop pattern reapplied successfully across Session 94's afternoon arc. María-PIP shipped R&D doc + workflow + slash command; Rachel-CoSA shipped companion R&D doc + aggregator CLI + plotter; both opinionated; both shipped real-data demo of the integration; converged via DM round-trips below the ping-discipline ceiling. Phase 1 closes across BOTH repos in a single session-day.
+
+**Files Changed (this segment)**:
+
+| File | Status | Notes |
+|---|---|---|
+| `workflow/loc-delta-global.md` | NEW | Canonical workflow doc (~200 lines) |
+| `.claude/commands/plan-loc-delta-global.md` | NEW | Slash command wrapper (~70 lines) |
+| `history.md` | modified | RESUME HERE + this entry |
+| `.claude-session.md` | modified | manifest 4th-bundle section (gitignored) |
+
+**Phase 1 status — CLOSED**:
+- ✅ Cosa: aggregator CLI built + demoed + companion R&D doc shipped (Rachel)
+- ✅ PIP: R&D doc + workflow doc + slash command shipped (María)
+- ✅ Cross-references between PIP R&D doc and Cosa companion doc established
+- ⏸ Rachel's §7.4 today-default implementation: pending her response (small addition; expect within next session)
+- ⏸ Phase 2 (testing-server scheduled cron): deferred future work
+
+**Total Session 94 work**:
+- 4 commits across the day
+- 1 NEW canonical hub doc (doc-viewer-links.md)
+- 1 NEW canonical workflow doc (loc-delta-global.md)
+- 1 NEW slash command (plan-loc-delta-global.md)
+- 1 NEW R&D doc (~400 lines, cross-repo-loc-delta-rollup.md)
+- 6 modified existing workflow/config files (claude-config-global, cosa-voice-integration, INSTALLATION-GUIDE, session-end.md, plan-session-end slash wrapper, README)
+- 1 out-of-repo skill update (codebase-analysis)
+- Cross-session collaboration with Rachel (CoSA): 6 DMs total + 1 demo handshake; converged 2 new doctrines (doc-link, Recommendation Mandate) + 1 new feature (cross-repo LoC rollup Phase 1)
+
+---
 
 ### 2026.05.21 - Session 94 (late afternoon continuation) — Cross-Repo LoC Delta Rollup R&D Doc (María + Rachel cross-session)
 
