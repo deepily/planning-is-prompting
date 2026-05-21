@@ -56,18 +56,32 @@
 
 7. **MUST follow Recommendation Mandate** if any blocking-tool ask arises during invocation (e.g. ambiguous repo selection): pros/cons + recommendation in abstract per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`.
 
+8. **MUST run the Step 1.5 confirmation gate before invoking the aggregator** (default behavior):
+   - After Step 1 discovery resolves a non-empty list, fire `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked as options, with mtime context in each option's description
+   - **MUST pass `default={"Repos": discovered_repos}`** — timeout returns all-checked (graceful degradation; rollup ships even if user is AFK; this is load-bearing per Rick's 2026-05-21 specification)
+   - **Timeout**: 120 seconds (tunable per the workflow doc Step 1.5 if usage data warrants)
+   - **"Other" free-text handling**: resolve as `{PROJECTS_ROOT}/{value}` first, fall back to treating as absolute path, warn-and-skip if neither resolves; pass the resolved repo to Rachel's aggregator with the rest
+   - **Bypass paths**: skip Step 1.5 entirely when `--no-confirm` flag is passed OR explicit `--repos REPO1 REPO2 ...` is provided
+   - **Per Recommendation Mandate**: abstract MUST explain why each repo was discovered (CSV path + mtime hint) AND include a recommendation paragraph ("Recommended: accept all auto-discovered with one click; use Other to add missed repos")
+
 ---
 
 ## Usage
 
 ```bash
-/plan-loc-delta-global                                    # default: 14-day mtime window, all discovered repos
-/plan-loc-delta-global --since 2026-05-21                # today only (or narrower window)
-/plan-loc-delta-global --since 2026-05-01 --until 2026-05-15  # explicit date range
-/plan-loc-delta-global --repos lupin cosa                # override discovery; explicit subset
-/plan-loc-delta-global --plot                             # default window + plot PNG
-/plan-loc-delta-global --since 2026-05-21 --plot --verbose  # today + plot + verbose stderr
+/plan-loc-delta-global                                    # default: 14-day mtime window + Step 1.5 confirmation gate
+/plan-loc-delta-global --no-confirm                       # default discovery, skip confirmation gate (fast path)
+/plan-loc-delta-global --since 2026-05-21                # today only (still gated unless --no-confirm)
+/plan-loc-delta-global --since 2026-05-01 --until 2026-05-15  # explicit date range (still gated)
+/plan-loc-delta-global --repos lupin cosa                # explicit subset; bypasses discovery + gate
+/plan-loc-delta-global --plot                             # default window + plot PNG (still gated)
+/plan-loc-delta-global --no-confirm --plot --verbose      # fast path + plot + verbose stderr
 ```
+
+**Gate behavior** (Step 1.5 confirmation):
+- Default invocations show the discovered repos as a multi-select checkbox group; all pre-checked; "Other" for adding missed repos
+- Timeout (120s) returns all-checked → rollup ships gracefully even if you AFK
+- Bypass with `--no-confirm` (skip gate, use all discovered) or `--repos REPO1 REPO2 ...` (skip discovery entirely)
 
 Invoked ad-hoc throughout the day for cross-repo LoC progress snapshots. Phase 2 (testing-server scheduled cron) is a separate future workflow.
 

@@ -73,10 +73,67 @@ active_repos = sorted( {
 
 **Failure mode — no active repos discovered**:
 
-If `active_repos` is empty (no CSV in window): skip Step 2/3, render a single message in spoken `message` + `abstract`:
+If `active_repos` is empty (no CSV in window): skip Step 1.5/2/3, render a single message in spoken `message` + `abstract`:
 
 - Spoken: *"Nothing to roll up — no repos have run session-end Step 6 in the last 14 days."*
 - Abstract: brief diagnostic with hint to invoke `/plan-session-end` in at least one repo first, or override with `--repos REPO1 ...` if testing.
+
+---
+
+## Step 1.5) Confirmation gate (default ON, user-visible review of discovered repos)
+
+**Purpose**: discovery is automatic but **lossy** — a repo the user wants in the rollup may not have a CSV yet (fresh repo, repo where session-end §6 hasn't fired, repo with stale mtime > 14 days). The confirmation gate gives the user one click to accept the auto-discovery AND a free-text "Other" surface to add missed repos before the aggregator runs.
+
+**Mechanism**: fire `ask_multiple_choice` after discovery resolves a non-empty list:
+
+```python
+discovered_repos = [...]  # from Step 1
+
+ask_multiple_choice(
+    questions = [{
+        "question"    : "Confirm repos for the cross-repo LoC roll-up. All discovered repos are pre-checked; uncheck any you want to exclude; use Other to add repos that weren't auto-discovered (e.g. repos without a CSV yet).",
+        "header"      : "Repos",
+        "multiSelect" : True,
+        "options"     : [
+            {"label": repo_name, "description": f"CSV at {csv_path}, mtime {mtime_hint}"}
+            for repo_name, csv_path, mtime_hint in discovered_with_metadata
+        ]
+    }],
+    priority        = "high",
+    timeout_seconds = 120,
+    default         = {"Repos": discovered_repos},   # CRITICAL: timeout returns all-checked
+    abstract        = "...explanation of why each repo discovered + Recommendation Mandate compliance..."
+)
+```
+
+### Default-on-timeout semantics (load-bearing)
+
+The `default` parameter is **mandatory** and MUST be the full discovered list. Rationale: the slash command is designed for ad-hoc curiosity invocations where the user might fire it and walk away. If the gate hangs indefinitely, the rollup never ships. With timeout-default = all-discovered, the rollup ships gracefully even if the user is AFK — same outcome as if they had hit submit with everything checked.
+
+**Timeout value**: 120 seconds. Long enough for a returning user to review the list; short enough not to block other work. Tunable in the workflow if data shows otherwise.
+
+### "Other" handling (missed-repo additions)
+
+When the user enters a repo name (or path) in "Other":
+
+1. Treat as repo name first: if `{PROJECTS_ROOT}/{other_value}` exists, use it
+2. Treat as absolute path if the first interpretation fails: if `{other_value}` exists as a directory, use it
+3. If neither: warn in the rendered summary ("Other repo `{other_value}` not found at expected paths; skipped")
+
+The added repo does NOT need to have an existing CSV — Rachel's aggregator CLI's §7.2 report-as-stale handling will mark it as "no data" in the summary if no CSV is present. This is the user-visible signal that the repo should run `/plan-session-end` first to generate the CSV.
+
+### Bypass paths (skip Step 1.5 entirely)
+
+The confirmation gate is bypassed when:
+
+- **`--no-confirm` flag** is passed on the slash command (explicit fast-path opt-out for routine invocations)
+- **`--repos REPO1 REPO2 ...`** is passed explicitly (user has already specified the list; no discovery + no gate)
+
+In both bypass cases, Step 1.5 is skipped entirely — proceed directly to Step 2.
+
+### Recommendation Mandate compliance
+
+Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `CSV exists at PATH, mtime N days ago`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
 
 ---
 
@@ -113,7 +170,9 @@ cd "$LUPIN_ROOT/src" && \
 | Aggregator CLI module missing | Hard error — surface with hint about cosa-side commit status |
 | Cosa venv missing | Falls through to lupin venv → system python3 (same selection as session-end §6.2) |
 | Aggregator exits non-zero | Capture stderr; surface in abstract with the partial output (if any) |
-| Per-repo CSV missing (subset of discovered repos) | Aggregator handles internally — reports as stale in summary tag per §7.2 resolution |
+| Per-repo CSV missing (subset of discovered repos OR added via Other in Step 1.5) | Aggregator handles internally — reports as stale in summary tag per §7.2 resolution |
+| Step 1.5 confirmation gate times out | `default={"Repos": discovered_repos}` returns all-checked; proceed as if user accepted (graceful degradation) |
+| Step 1.5 user adds "Other" repo that doesn't resolve | Warn in summary: "Other repo `X` not found at expected paths; skipped"; continue with the rest of the list |
 
 ---
 
@@ -241,4 +300,5 @@ Both files are included in the closing `notify()` abstract as doc-viewer links.
 
 ## Version History
 
-- **2026-05-21**: Initial canonical workflow doc. Implements the converged Phase 1 design (PIP wrapper invoking Rachel's cosa-side aggregator CLI). Discovery: recently-active mtime heuristic (14-day window, narrowed by `--since`), PROJECTS_ROOT env var with hardcoded fallback. No INI lookup per Rick's "defer-INI-indefinitely" direction. Drafted by María (PIP session `d66169f2`); cosa-side aggregator demoed + reviewed by Rick same session.
+- **2026-05-21 (evening)**: Added Step 1.5 confirmation gate (default ON, fast-path opt-out via `--no-confirm` or explicit `--repos`). Addresses Rick's UX concern: auto-discovery is lossy when a repo the user wants doesn't yet have a CSV (fresh repo, session-end §6 hasn't fired, stale mtime). Gate uses `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked, "Other" free-text for adding missed repos. **Critical default-on-timeout semantics** (Rick's addition): `default={"Repos": discovered_repos}` so timeout returns all-checked → rollup ships even if user is AFK. Timeout = 120 seconds. Added Step 1.5 to failure-handling table with 2 new failure modes.
+- **2026-05-21 (afternoon)**: Initial canonical workflow doc. Implements the converged Phase 1 design (PIP wrapper invoking Rachel's cosa-side aggregator CLI). Discovery: recently-active mtime heuristic (14-day window, narrowed by `--since`), PROJECTS_ROOT env var with hardcoded fallback. No INI lookup per Rick's "defer-INI-indefinitely" direction. Drafted by María (PIP session `d66169f2`); cosa-side aggregator demoed + reviewed by Rick same session.
