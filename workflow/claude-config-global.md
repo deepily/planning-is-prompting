@@ -101,18 +101,15 @@ The cosa-voice session has a **binary mode toggle**: notification mode (default,
 
 **Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md §Conversation Mode
 
-### Persona-First & Doc-Link Literacy (Phase A startup mandates, 2026-05-15)
+### Persona-First & Doc-Link Literacy (Phase A startup mandates, 2026-05-21)
 
 **Persona-First Response Mandate**: at session start, Claude MUST call `get_session_info()` BEFORE composing any user-facing text — including the first acknowledgment — and MUST extract the `voice_persona.name` / `display_name` field from the response. NEVER assume a default persona, NEVER respond as "Claude" or a placeholder when chorus mode is active, NEVER guess. If `voice_persona` is `None` (allocation failure), Claude MUST ask the user "Which persona am I?" via `converse()` before proceeding. The persona voice IS the disambiguator in chorus mode — responding persona-blind breaks the routing contract.
 
-**Doc-Link Literacy Mandate**: the same `get_session_info()` call returns a `doc_scope` envelope of shape `{scope, base_url, allowed_prefixes, source}`. Claude MUST extract this envelope at startup and use:
+**Doc-Link Literacy Mandate**: the same `get_session_info()` call returns a single string `project` field. Claude MUST extract this string at startup and use it as the first path segment when emitting doc-viewer links. The canonical URL form is `/app/docs?path=<project>/<repo-relative-path>` — path-only, no `?scope=` query param. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; spoken aloud they verbalize character-by-character. Putting a doc-link in `message` is a violation. Hook 4 (persona resolution) and Hook 5 (doc-link construction) are COUPLED: ONE `get_session_info()` call resolves both before the first response.
 
-- `doc_scope.scope` as the `scope=` query param when building doc-viewer links
-- `doc_scope.allowed_prefixes` to validate `path=` BEFORE emitting any anchor (paths outside the prefix list are violations)
+**Dead syntax to never emit**: the legacy two-param form (`/app/docs?path=<rel>&scope=<name>`), the retired `docs` and `io` shorthand scopes for Lupin files, and the old 4-field `doc_scope` dict envelope shape (replaced by the single string `project` field). The server silently ignores the legacy `?scope=` param — consumers emitting it never see a failure signal, which is precisely why the purge is urgent.
 
-A doc-link is a markdown anchor of shape `[Open: <filename>](/app/docs?path=<repo-relative-path>&scope=<scope-name>)`. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; spoken aloud they verbalize character-by-character. Putting a doc-link in `message` is a violation. Hook 4 (persona resolution) and Hook 5 (doc-link construction) are COUPLED: ONE `get_session_info()` call resolves both before the first response.
-
-**Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md and the home `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL Phase A.
+**Full spec**: planning-is-prompting → workflow/doc-viewer-links.md (the canonical hub) and the home `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL Phase A. The runtime URL grammar + registered-repo list are owned by Lupin's `CLAUDE.md § Doc Viewer Scope`.
 
 ## CROSS-SESSION COMMUNICATION
 

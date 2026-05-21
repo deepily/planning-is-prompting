@@ -157,7 +157,9 @@ Before installing workflows, ensure:
 
 If your project will use cosa-voice notifications with doc-viewer links (the `[Open: …](/app/docs?path=…)` pattern in `notify()` abstracts), drop a `.docview.yml` manifest at your repo root. Without it, root-level tracking files (`TODO.md`, `history.md`, `README.md`, `CLAUDE.md`, `bug-fix-queue.md`) will 404 when linked.
 
-**Why**: the doc-viewer gate's directory-prefix-only `allowed_prefixes` (configured via Lupin INI `external repos`) does not cover individual root files. The `.docview.yml` manifest's `allowed_root_files` whitelist supplies the per-file granularity — and overrides the INI prefixes when present per Q2-C semantics.
+> **Canonical doc-link grammar lives at `workflow/doc-viewer-links.md`** — that hub teaches the URL form, the registered-repo discovery contract, the `abstract`-only-never-`message` rule, and the purge inventory of dead syntax (`?scope=` query param, retired `docs`/`io` shorthand scopes, old `doc_scope` dict envelope). The installer guidance below is purely about the `.docview.yml` whitelist manifest; for everything else, defer to the hub.
+
+**Why the manifest is needed**: the doc-viewer gate's directory-prefix-only `allowed_prefixes` (configured via Lupin INI `external repos`) does not cover individual root files. The `.docview.yml` manifest's `allowed_root_files` whitelist supplies the per-file granularity — and overrides the INI prefixes when present per Q2-C semantics.
 
 **Template** (canonical PIP-shipped — copy as-is, then trim or extend for project-specific needs):
 
@@ -187,7 +189,7 @@ extra_blocklist: []
 **Notes**:
 - Entries pointing at non-existent files are silently OK at startup — the manifest loader does no filesystem validation. A view request for an absent listed file gets a clean 404 from the file resolver (not a 400 from the gate).
 - **Adjust `allowed_prefixes` per project** — most code projects also want `src/cosa/`, `src/lupin_mcp/`, etc.
-- **URL form** (canonical post-2026.05.15 unification): `/app/docs?path=<project>/<rel>` — first path segment names the project. The legacy `?scope=` query param is ignored.
+- **URL form**: `/app/docs?path=<project>/<rel>` (path-only). For the full canonical grammar + dead-syntax purge inventory, see `workflow/doc-viewer-links.md`.
 - After dropping the file or editing it, bounce the doc-viewer backend (e.g., `docker restart lupin-rest-dev`) to pick it up. Manifests are read once at FastAPI startup.
 - Design background: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`.
 

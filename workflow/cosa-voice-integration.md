@@ -50,7 +50,7 @@ The cosa-voice session has a session-level **binary mode toggle** that fundament
 
 ### Voice Persona
 
-Each Claude Code session is assigned a **unique voice persona** (TTS voice) at startup, used to disambiguate parallel sessions when the user has multiple sessions running. The persona is exposed via the server endpoint `/api/cosa-voice/voice-persona/{session_id}`. **Note**: not yet surfaced in the MCP `get_session_info()` response — that's a known gap. If a user names your session ("you are Rachel"), accept it; you cannot programmatically self-identify the persona without server-API access.
+Each Claude Code session is assigned a **unique voice persona** (TTS voice) at startup, used to disambiguate parallel sessions when the user has multiple sessions running. The persona is surfaced in the MCP `get_session_info()` response as a `voice_persona` dict (`{name, display_name, voice_id, icon, color, ...}`), and is also exposed via the server endpoint `/api/cosa-voice/voice-persona/{session_id}`. Extracting `voice_persona.name` / `display_name` at Phase A startup is mandatory under the Persona-First Response Mandate — see `workflow/claude-config-global.md § Persona-First & Doc-Link Literacy`.
 
 ### State Checking
 
@@ -115,7 +115,7 @@ A session opening report for a cosa-voice hook-language audit dumped the full au
 
 > "Home CLAUDE file is clean; the drift lives inside cosa-voice itself, May-14 evening reframe missed one surface."
 
-What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file locations (`cosa_voice_mcp.py`, `hook_common.py`), the surface count, the recommended-fix rationale, the ownership note (Maria / next Lupin session), the yesterday-recap inventory (Sessions 86/87 by-name). All of it lives in the abstract — with working `/app/docs?path=…&scope=…` viewer links to every file referenced (per the doc-link reflex extension, hook 3 of the recovery plan). Total reduction: ~87% fewer spoken words; zero loss because the abstract carries the full detail AND clickable navigation.
+What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file locations (`cosa_voice_mcp.py`, `hook_common.py`), the surface count, the recommended-fix rationale, the ownership note (Maria / next Lupin session), the yesterday-recap inventory (Sessions 86/87 by-name). All of it lives in the abstract — with working `/app/docs?path=<project>/<rel>` viewer links to every file referenced (per the doc-link reflex extension, hook 3 of the recovery plan; canonical link grammar at `workflow/doc-viewer-links.md`). Total reduction: ~87% fewer spoken words; zero loss because the abstract carries the full detail AND clickable navigation.
 
 **Why this anchor is worth memorializing alongside #1**: the 2026-05-04 anchor (#1) targeted **inventory recital** as the dominant failure mode. The 2026-05-15 anchor (#2) targets **terminology recital** — the violation pattern where audit findings, doctrinal terms, or terms-in-conflict get spoken aloud rather than tabled in the abstract. Both share the same root cause (the author drafted spoken + abstract in parallel instead of treating speech as verdict-only headline), but they differ in surface: #1's bloat is *numbers and counts*, #2's bloat is *named concepts and file paths*. The MUST-audit gate above closes both at once: ANY noun overlap between channels is a violation.
 
