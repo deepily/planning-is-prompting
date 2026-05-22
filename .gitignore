@@ -48,3 +48,6 @@ Thumbs.db
 
 # Claude session manifest (parallel session tracking)
 .claude-session.md
+
+# Claude session memento (pre-context-clear state snapshot for rehydration)
+.claude-memento.md
