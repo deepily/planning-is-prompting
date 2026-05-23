@@ -131,6 +131,8 @@ Manager and worker posts to commons topics use the `kind` metadata field to disa
 | `manager_self_audit_sweep` | manager | Step 9 cold-context test rubric Q#6 output — enumerates any moves Manager made during the cascade that weren't pre-codified, each filed as a doctrine-gap candidate with one-line empirical-anchor citation. Failure-mode-shaped gaps cross-link to design-doc §10.x failure-mode catalog at filing time. Posted to cascade's parent topic. | 2026-05-20 post-Run-4 (v1.1) |
 | `observer_probe_unblocked` | observer | Observer-mode probe-as-mitigation output — fires when a routine probe (cadence per `observer_probe_cadence_*`) surfaces an unread peer-DM or cross-channel signal that Manager attention buried. Body documents what was unblocked + how long the message had been queued. Empirical anchor: Run-4 Stage-2 minute-13 probe that cleared the 13-min Manager phantom-lag (failure mode #6). | 2026-05-20 post-Run-4 (v1.1) |
 | `multi_surface_footer_ratification` | manager | Multi-surface footer-ratification close protocol post — enumerates which surfaces (adjacent + non-adjacent + Step 9 synthesis doc as 7th surface) the close protocol visited for the affected cascade event. Anchored in 7 cross-cascade instances (6 Phase 7a + Run 3 Section B); refinements include Tiffany-rename-pass non-adjacent revert + F-LR-1 + F-LR-2 synthesis→design drift catches. | 2026-05-20 post-Run-4 (v1.1) |
+| `implementation_done` | implementer | Implementer-keep-alive workstream finished — signals a watching `HeartbeatPokerJob` to clean-exit. A `termination_signal_kind` for the implementer-keep-alive use case of the generic heartbeat poker (design doc §4). | 2026-05-22 (heartbeat-poker) |
+| `implementation_blocked` | implementer | Implementer-keep-alive workstream hit a hard block and cannot continue — signals a watching `HeartbeatPokerJob` to clean-exit; the block itself is surfaced separately to the user/manager. A `termination_signal_kind` for the implementer-keep-alive use case of the generic heartbeat poker (design doc §4). | 2026-05-22 (heartbeat-poker) |
 
 Workers post their findings using free-form metadata; manager classifies + posts the authoritative `kind: manager_classification` entry with the 6-field metadata schema above.
 
@@ -263,6 +265,8 @@ The manager holds these resolved values in its working context. When the workflo
 ---
 
 ## Version History
+
+- **2026.05.22 (heartbeat-poker abstraction)** — `kind` enumeration gained 2 new values: `implementation_done` + `implementation_blocked` — the termination-signal kinds for the implementer-keep-alive use case of the generic `HeartbeatPokerJob` (design doc `lupin/src/rnd/v0.1.7/2026.05.20-generic-heartbeat-poker-abstraction-design.md` §4; task I5). Total kind enum: 16 → 18 values. No config-key or `closure_action` changes.
 
 - **2026.05.20 (Run-4 v1.1 doctrine fold)** — Four extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
   1. **NEW §Cascade-execution observability config section** — 4 new keys: `heartbeat_daemon_kickoff_policy` (default `dual_independent` — codifies Run-4 prep procedure of launching Manager + Observer daemons independently), `observer_probe_cadence_default` (default `4` — M:1 multiplier on heartbeat ticks), `observer_probe_cadence_stage_0` (default `8` — sparser for low-signal-density Step 0), `observer_probe_cadence_stage_2` (default `2` — denser for high-signal-density Stage 2 where Run-4 failure mode #6 fired). Total config keys: 28 → 32.

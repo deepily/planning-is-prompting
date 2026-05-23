@@ -533,6 +533,24 @@ These conventions are the prerequisites for [`workflow/plan-review.md`](plan-rev
 
 ---
 
+## Structuring for Cascaded Review
+
+The conventions above make a plan **grep-compatible** with the serial [`workflow/plan-review.md`](plan-review.md) gate. This section is their sibling for the **cascaded** gate ([`workflow/plan-review-cascaded.md`](plan-review-cascaded.md)): it makes the *documentation set itself* **decomposition-compatible** — so a multi-file plan can be sliced into independently-reviewable cascade sections without a separate reshaping pass.
+
+**When this applies**: only when the plan will be cascade-reviewed (≥ 2-section plans, reviewer-attention-bound). For serially-reviewed or unreviewed plans, skip it.
+
+**The doc-set is already half-shaped for this.** The numbered-file structures (Pattern A / B / C above) create natural divisions: a cascade section can map cleanly onto a single doc file, or onto a coherent group of files. Lean on that — let the file boundaries *be* the section boundaries wherever possible.
+
+**Apply the independence criterion to doc sections.** The load-bearing property from the p-is-p-01 *Cascade-Readiness* guidance applies here too: a cascade reviewer should be able to review one doc-section having loaded only that section plus the shared anchors (`00-index.md`, the decision log). If reviewing `03-component-design.md` requires first reading `02-architecture-overview.md` in full to make sense of it, the split is not clean — either move the shared context into a shared anchor both sections cite, or re-cut the file boundary.
+
+**Make cross-file dependencies explicit and acyclic.** Mirror the p-is-p-01 guidance: where one doc file depends on another, state it — provider and consumer direction — with `00-index.md` as the natural home for the dependency map. The dependency graph across files must be a valid DAG; a cycle between two doc files has no review ordering and must be broken before the doc-set is cascade-ready.
+
+**Boundary**: as in p-is-p-01, the doc author produces a *sliceable* doc-set — the cascade's Step 0 still assembles the formal slicing manifest. Do not produce that manifest here.
+
+**Skip-with-reason**: same precedent as the conventions above — if a plan is genuinely single-document and cannot be decomposed, log the skip and its reason in `00-index.md`'s status block.
+
+---
+
 ## Creating Your Documentation Structure
 
 ### Step 1: Determine Project Name and Location
@@ -1189,6 +1207,7 @@ grep -o '](.*\.md' 01-implementation-current.md | \
 
 ## Version History
 
+- **2026.05.22**: Added "Structuring for Cascaded Review" section — sibling of the plan-review-compatibility conventions; guidance for shaping the documentation set so it decomposes cleanly into independently-reviewable `/plan-review-cascaded` sections
 - **2025.10.14**: Added context-aware decision section that analyzes pattern from p-is-p-01 and suggests appropriate documentation structure (Pattern A/B/C)
 - **2025.10.04**: Renamed from implementation-documentation.md to p-is-p-02-documenting-the-implementation.md for "Planning is Prompting" grouping
 - **2025.10.04**: Initial workflow created, companion to p-is-p-01-planning-the-work.md

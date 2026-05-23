@@ -428,6 +428,7 @@ Both daemons run independently — each ticks the receiver's session via `common
 
 **Manager-side response discipline on each heartbeat received**:
 
+0. Parse the poke body per §Poke-body envelope below — confirm `kind` is `"heartbeat"`, and if this session runs more than one role, dispatch on `poke_body.role`.
 1. Apply universal-step-zero: disk-read every active topic
 2. Check each active worker's last post timestamp against `stall_threshold_minutes`
 3. For any worker past threshold whose section is expected to be in flight: send targeted DM probe; if no response in 2 min, declare phantom; apply `phantom_reassignment_policy = park_and_escalate`
@@ -437,6 +438,22 @@ Both daemons run independently — each ticks the receiver's session via `common
 **Suppression during user-pause states**: when cascade is in user-pause (escalation awaiting user), workers are correctly idle. Manager still processes heartbeats but takes no advancement action.
 
 **Logging**: manager keeps a topic-indexed log of heartbeat-handling events for end-of-pipeline summary. Useful for per-stage detection-delay telemetry metric.
+
+### Poke-body envelope — generic HeartbeatPokerJob compatibility (added 2026-05-22)
+
+The legacy `cascade_heartbeat_scheduler.py` sends a bare poke — `body="heartbeat"`, a plain string. The generic Lupin `HeartbeatPokerJob` (the `AgenticJobBase` abstraction that supersedes the shell-script daemon — see `lupin/src/rnd/v0.1.7/2026.05.20-generic-heartbeat-poker-abstraction-design.md`) instead sends a **structured `poke_body` JSON envelope**:
+
+```json
+{ "kind": "heartbeat", "workstream": "<cascade-id-or-impl-id>", "role": "manager|observer|watcher" }
+```
+
+**Recipient discipline — every Layer-2 protocol (Manager-mode, Observer-mode, Watcher-mode) consumes the poke the same way:**
+
+1. **Parse the poke body.** If it is JSON, read `kind` / `workstream` / `role`. If it is the bare legacy string `"heartbeat"`, treat it as `{kind: "heartbeat", workstream: null, role: <this session's sole role>}` — backward-compatible with the shell-script daemon during the Q3 co-existence window.
+2. **Dispatch on `role`.** `role` selects which Layer-2 doctrine handles the tick. A session running ONE role ignores it (single handler). A session running **two roles at once** — the same-session-two-pokers pattern, e.g. Manager of a cascade AND Watcher of an implementer, each driven by its own independent poker — MUST route each tick to the role-handler named by `poke_body.role`, and key its per-tick state (last-post timestamps, phase counters) by `workstream` so the two streams never cross-contaminate.
+3. **The poker never branches on `role`.** `role` is opaque passthrough stamped by the poker from per-recipient config; all dispatch is recipient-side (the structural insight of the heartbeat-poker design §2).
+
+This makes the Manager-mode discipline above and the Observer-mode Probe Protocol below forward-compatible with the generic poker — the per-tick *behaviour* of each protocol is unchanged; only how the tick is recognised and routed is specified.
 
 ---
 
@@ -462,6 +479,8 @@ Probe cadence is configured as M:1 multiplier on the heartbeat tick. Defaults ar
 Stage 3 falls back to `observer_probe_cadence_default` unless project tuning has surfaced it as a higher-density stage; same for any stage not explicitly keyed. Manager-judgment override is always available — Manager can post `kind: observer_probe_cadence_override` to the parent topic if mid-cascade signal-density warrants a temporary M-change.
 
 ### The probe action
+
+Under the generic `HeartbeatPokerJob` the probe tick arrives as a structured `poke_body` envelope carrying `role: "observer"` — the Observer parses it and dispatches per §Poke-body envelope (in §Heartbeat Handling above); an Observer session that also runs a second role keys its probe state by `poke_body.workstream`. The legacy shell-script daemon's bare `"heartbeat"` string remains accepted during co-existence.
 
 On each scheduled probe tick (M-th heartbeat tick), the Observer performs:
 
