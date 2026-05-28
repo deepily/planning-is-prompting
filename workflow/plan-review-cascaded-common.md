@@ -236,6 +236,24 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 
 **Two-stamp convention**: reviewers stamp `severity_proposed` on their finding posts; manager stamps authoritative `severity` + the rest at classification time.
 
+### Cluster-family pattern (added 2026-05-28 post-`cascade-notif-sync`)
+
+**Recognition criteria** — promote a set of findings to a cross-section **cluster-family** when ALL THREE hold:
+
+1. **≥ 3 finding-instances** sharing the same root pattern (across sections). Empirical anchor: `cascade-notif-sync` had 4 findings (F-Krishna-A1 / B3 / D1 / D2) sharing the wire-contracts-asserted-but-only-fabricated-tested root pattern.
+2. **Shared fix pattern** — the same remediation applies to every instance (ground wire contracts against authoritative server source OR mandated live capture; never hand-authored fixture as contract proxy).
+3. **NOT a cross-section conflict** — each section's application of the fix is independent; sections don't need to agree on a single contract that crosses their boundary.
+
+**Mechanism — reviewer recommends, Manager ratifies**:
+
+1. The reviewer who notices the pattern across sections **recommends** cluster-family treatment in their finding post: *"Recommend Manager ratify as cluster-family; same root pattern in F-X-A1, F-X-B3, F-X-D1, F-X-D2."*
+2. Manager evaluates the 3 criteria above. If all hold, Manager posts `kind: "manager_classification"` with `metadata.cluster_family_id` set, naming each member finding.
+3. Author applies the shared fix **uniformly** across the affected sections in a single revision turn (not one revision per section).
+
+**Why this matters**: a naïve cascade routes each of the cluster's findings independently — 4× the work for the Author, 4× the chance of inconsistent application. The cluster-family approach is faster AND produces a more consistent result. Empirical anchor: Tiffany's 4-for-4 uniform application of the wire-contract pattern in `cascade-notif-sync` (zero re-litigation rounds; Section C correctly excluded because it had no raw-wire exposure).
+
+**Cluster-family closure_action**: `cluster_family_ratify` (new value, added 2026-05-28). Member findings reference the cluster via `parent_finding = <cluster_family_id>`; the cluster itself is the closure unit.
+
 ---
 
 ## §Escalation Taxonomy [SHARED]
@@ -337,6 +355,105 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 - **Run 4 Tiberius Tiffany-rename-pass**: Tiberius's own grep-sweep after a user-initiated linter pass caught 3 non-adjacent AC reverts the linter had silently produced — empirical anchor for the non-adjacent surface refinement (see §Multi-surface Footer-ratification Close Protocol below).
 
 **Cross-link**: Persona 2.A rubric point 14 in `plan-review-cascaded-personas.md` governs the REVISION-MECHANISM case (pattern surfaced by reviewer during cascade); this checklist governs the PRE-HANDOFF case (Author's routine self-check at Stage 0). Both are part of the same author-side discipline surface; this section is the bilateral codification.
+
+### Forward-sweep + downstream-confirm-the-sweep (added 2026-05-28 post-`cascade-notif-sync`)
+
+**The pattern** (cascade-learning-loop forward-direction working as designed):
+
+When a finding closes on Section §X with a reviewer-confirmed remediation, the Author can **forward-sweep** the same pattern into not-yet-reviewed sections §Y, §Z, ... before those sections reach the stage where the same finding would otherwise surface. This compresses finding counts in later sections AND reduces the per-finding cost.
+
+**Empirical anchor**: in `cascade-notif-sync` Run 2026-05-22, Tiffany folded:
+- F-Tib-A1 (canonical test-file home) into Section B's draft at Stage 1 (before Tiberius reviewed §B)
+- F-Krishna-A2 (observation-mechanism via `@visibleForTesting` getter) into Section B at Stage 2 (before Krishna reviewed §B)
+
+Both forward-sweeps were endorsed by the downstream reviewers when they reached §B.
+
+**Downstream-confirm-the-sweep** (the companion rule — added 2026-05-28):
+
+When a downstream reviewer encounters a forward-sweep in the section they're reviewing, the reviewer **MUST explicitly confirm** (or flag) the sweep in their review output. Confirmations are part of the cascade-learning-loop, not just corrections.
+
+- **Confirm post template** (in the reviewer's stage output): *"Confirmed: forward-sweep of F-X-A1 into §B is correctly applied; no additional findings on this pattern in §B."*
+- **Flag post template** (if the sweep was misapplied): *"Forward-sweep of F-X-A1 into §B was attempted but misapplied at §B AC-B3; recommend Author re-apply with the correct context."*
+
+**Why downstream-confirm matters**: without it, the cascade-learning-loop is one-way — Author forward-sweeps, but downstream reviewers can't tell whether a finding was correctly pre-empted or simply not present in the section. Confirm posts close that loop; the cascade telemetry can then count both finding counts AND forward-sweep success rate.
+
+**Cross-link to Persona 2.A point 14**: the forward-sweep is the Author's responsibility per Persona 2.A point 14 (`plan-review-cascaded-personas.md`); the downstream-confirm is the Reviewer's responsibility per their stage rubric (added 2026-05-28 — sub-point in each Persona 3/4/5 rubric).
+
+### Cold-cast fork with 4 explicit criteria (added 2026-05-28 post-`cascade-notif-sync`)
+
+**Context**: there are now two operative interpretations of "cold" for cast members:
+
+- **Strict cold-cast**: full `/clear` → genuinely fresh persona, no surviving conversation context. The safe default per PG-1.
+- **Orthogonal-context-acceptable**: a reviewer carrying context unrelated to the review subject is "cold-enough" without a `/clear`. The pragmatic Manager-judgment call when no fresh reviewer is available.
+
+Both have defensible cases. The fork was implicit prior to 2026-05-28 — risk of Manager-arbitrary drift.
+
+**The rule (post-`cascade-notif-sync` post-game §2.3)**: strict `/clear` is the **default**; the Manager may invoke an "orthogonal-context-acceptable" judgment subject to **four explicit context-distance criteria**:
+
+| # | Criterion | Test |
+|---|---|---|
+| **a** | **Orthogonal repository** | Reviewer's prior context is in a different repo than the review subject |
+| **b** | **Orthogonal feature surface** | Reviewer's prior context touches a different feature surface (different bloc / different UI / different service) |
+| **c** | **No overlapping recent commits** | Reviewer's prior context did not touch the files under review |
+| **d** | **Narrow-scope reviews ONLY** | Orthogonal-context-acceptable is allowed only for `reviewer_context_scope = narrow` reviews; broad-scope reviews still require `/clear` |
+
+**ALL FOUR criteria must hold** for the Manager to invoke orthogonal-context-acceptable. If any one fails → fall back to strict `/clear`.
+
+**Empirical anchor**: `cascade-notif-sync` Run 2026-05-22 — Rachel correctly recused from Stage 1 citing PG-1 cold-cast practice (she was the rehydrated Run-5 Manager carrying heavy prior-cascade context); Manager Mr. Radio re-sourced Tiberius for Stage 1 on an "orthogonal-context-acceptable" judgment (Tiberius had been doing unrelated implementation work; context was orthogonal to a notification-bloc plan review). All 4 criteria met. Call worked cleanly.
+
+**Subject to existing Reassignment Bias-Risk Guardrail** (rubric-differential discipline / cooling-off / cross-check) — see §Reviewer Reassignment below.
+
+**Sub-direction worth exploring** (Mr. Radio's suggestion): a **cold-reviewer pool** — pre-`/clear`'d sessions standing by for cascade work — and/or a **self-clear mechanism** so the user is not the bottleneck on a `/clear`. Tracked for future cascade workflow iteration.
+
+### Accept-and-flag-precondition (added 2026-05-28 post-`cascade-notif-sync`)
+
+**The rule (post-`cascade-notif-sync` post-game §2.4)**: **participants accept assigned roles**. They may flag preconditions for doing the role well (need a `/clear`, scope confirmation, cooling-off vs prior seat); they do NOT *decline*. The Manager handles preconditions.
+
+**Why the framing matters**: a cast participant who *declines* signals "unavailable / source someone else", which triggers a Manager re-cast or a user escalation. A cast participant who *accepts with preconditions* signals "I'm in; here's what I need to do the role well", which keeps the cast composition stable and routes the precondition to Manager workflow.
+
+**Empirical anchor**: `cascade-notif-sync` Run 2026-05-22 — Rachel's recusal *substance* was correct (PG-1 cold-cast practice required `/clear` she couldn't get), but the *framing* leaned "unavailable / source someone else." Rick escalated: *"she cannot decline a job; they may suggest that I clear their memory, but they cannot decline."* The accept-and-flag-precondition framing addresses this.
+
+**Worked example**:
+
+| Old framing (decline) | New framing (accept + flag precondition) |
+|---|---|
+| *"I can't take Stage 1 — I'm carrying heavy Run-5 Manager context; need someone else."* | *"Accepting Stage 1. Precondition: need a `/clear` before I can review cold; otherwise my Run-5 Manager context contaminates the review. Can you schedule the `/clear`?"* |
+
+The Manager then handles the precondition (re-cast OR schedule a `/clear` OR document a cooling-off accommodation). The cast composition stays stable; the Manager's workflow absorbs the precondition.
+
+**Workflow Steward enforcement**: if the Steward observes a cast member declining (vs accepting with precondition), the Steward flags it synchronously via DM to the Manager.
+
+**Cross-link**: this is the participant-side companion to the **user-tap reviewer override** rule in `plan-review-cascaded.md` §Step 4 (the user-side mandate that a tapped persona MUST accept). Both rules share the same underlying principle: cast composition is stable; preconditions are handled, not used as exit ramps.
+
+### Plan-slice-pointer pilot mode (added 2026-05-28 post-`cascade-notif-sync`)
+
+**Context**: prior to 2026-05-28 every section required a full Stage-0 `author_draft` re-post to its section topic, even when the input plan was already serialized and well-structured. Empirical cost: in `cascade-notif-sync`, Tiffany's Stage-0 reposts took ~7 minutes × 4 sections ≈ ~28 minutes of re-formatting per cascade.
+
+**The pilot mode (`author_input_mode = plan_slice_pointer`)** — opt-in config knob added in `plan-review-cascaded-defaults.md`:
+
+When the input plan is already well-structured with explicit per-section scoping (e.g. Tiffany's §0.1 mapped each section to a plan §Phase), the Author may post a **plan-slice pointer** instead of a full draft re-post:
+
+```
+kind: author_draft (plan-slice-pointer mode)
+metadata:
+  plan_path: <repo-relative path to the planning doc>
+  plan_phase: §Phase X (the planning doc section this cascade-section maps to)
+  commit_sha: <commit identifying the plan version under review>
+  scope_sentence: "Reviewing the REST endpoint contracts portion of Phase 1: §A."
+```
+
+Reviewers read the plan slice directly. Revisions are diffs against the plan, not against the section topic post.
+
+**When this fires**: opt-in via `author_input_mode = plan_slice_pointer` config knob. Default remains `author_input_mode = full_repost` (preserves v1 behavior).
+
+**When NOT to use it**:
+- Input plan is not serialized into a versioned file (no commit SHA → no review anchor)
+- Plan sections are not cleanly mapped to cascade sections
+- Plan is currently being edited by a parallel session (race condition risk)
+
+**Expected savings on success**: ~25 min per cascade on the cascade-notif-sync-shape (4 sections × ~7-min savings per section).
+
+**Pilot validation requirement**: the first 3 cascades using `author_input_mode = plan_slice_pointer` log their Stage-0 wall-clock + any reviewer confusion incidents. If reviewer confusion is zero across 3 pilots, promote the mode to safe-default for plans with cascade-shaped serialized input.
 
 ---
 

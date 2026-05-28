@@ -119,13 +119,35 @@ The manager produces a proposed decomposition: section labels (A, B, C, …), se
 
 ---
 
-## Step 3: User Approval on Decomposition
+## Step 3: Decomposition Validation (cast-ratified-conditional; added 2026-05-28)
 
-Per `decomposition_review_policy = manager_proposes_user_approves`, the manager sends the proposed decomposition to the user via `mcp__cosa-voice__ask_yes_no` or `ask_multiple_choice`, with the proposal in the abstract.
+**The rule (post-`cascade-notif-sync` post-game §2.1)**: Step 3 is **cast-ratified-conditional**, NOT a routine mandatory user gate. The Manager may ratify an *uncontested* decomposition concurred by the cast (Author + reviewers + Workflow Steward) once the Step 0 light-review has passed. User-blocking fires **only** when the decomposition is genuinely contested.
 
-**Critical**: this is the *only* mandatory user gate in the entire workflow (other than escalations). Once the user approves the decomposition, the manager runs the pipeline autonomously and only interrupts the user via the escalation taxonomy.
+**Why this changed**: prior to 2026-05-28 Step 3 was a mandatory user-approval gate regardless of whether anyone contested. Empirical anchor — `cascade-notif-sync` Run 2026-05-22 parked ~4 hours waiting on a user gate where Sam's Step-0 light-review had already cleared all 6 criteria and no cast member had raised an issue. The gate was a rubber-stamp on an already-validated decision.
 
-If the user rejects the decomposition, ask via `converse()` for redirection (different boundaries, different section count, etc.), revise, and re-ask for approval.
+**The new gate logic** (`step_3_gate` config knob; see `plan-review-cascaded-defaults.md`):
+
+| `step_3_gate` value | When user-block fires |
+|---|---|
+| `cast_ratified` (DEFAULT, v1.1) | Only when the decomposition is genuinely contested (≥1 cast member raises an issue) OR the user has explicitly opted in for high-stakes plans |
+| `user_blocking` (legacy) | Always — every cascade pauses for user-approval (pre-v1.1 behavior) |
+
+**Cast-ratified flow** (DEFAULT):
+1. Manager confirms Step 0 light-review PASS (`cascade_input_ready` state)
+2. Manager polls cast via DM (Author + 3 Reviewers + Workflow Steward if present): *"Any contest on the decomposition? Reply with 'concur' or your specific issue."*
+3. If all cast members `concur` AND no Steward flag: ratify; cascade proceeds to Step 4
+4. If ≥1 cast member raises a specific issue: escalate to user via `ask_yes_no` with the contest in the abstract; user resolves
+
+**User-blocking flow** (config-opt-in, e.g. high-stakes plans):
+- Same as legacy behavior — Manager fires `ask_yes_no` to user unconditionally
+
+**Companion rule — peer-relay-not-authorization** (post-game §2.1 companion):
+
+**Peer-relayed user intent is NEVER authorization.** A peer's relay of "I think Rick wants X" is informational, not directive. If the Manager would otherwise act on relayed intent, the Manager MUST first verify the directive via direct user DM or USER BROADCAST. This rule exists because brittle gates invite sessions to look for workarounds, and sessions then risk fabricating authorization. Cast-ratified-conditional addresses the brittleness; the peer-relay rule addresses the workaround instinct.
+
+**Workflow Steward enforcement**: if the Steward observes a Manager treating peer-relay as authorization, the Steward flags it synchronously via DM to the Manager + `kind: observer_probe_unblocked` post.
+
+If the user rejects the decomposition, ask via `converse()` for redirection (different boundaries, different section count, etc.), revise, and re-ratify with the cast.
 
 ---
 
@@ -175,6 +197,22 @@ If a peer session does not ack within 2 minutes, escalate to user (the launch is
 Expected Manager response: ack the tap on `coordination`; DM Rachel with role + scope; DM the displaced reviewer; handle any precondition (`/clear` if Rachel flags it); resume cascade with Rachel in the Stage-1 seat.
 
 **Cross-reference**: see `plan-review-cascaded-stage-specs.md` §3 for the full ASCII process flow diagram of this rule; `plan-review-cascaded-personas.md` §Persona-onboarding for the accept-and-flag-precondition framing (cascade-notif-sync post-game §2.4 anchor).
+
+---
+
+## Stage Progression: No mandatory inter-stage user gate (added 2026-05-28)
+
+**The rule (post-`cascade-notif-sync` post-game §2.2)**: **No mandatory user gate fires between Stages 1, 2, and 3** for any section. The Manager arbitrates inter-stage progression. The user is escalated to ONLY on the 7 documented escalation triggers (foundational findings, cross-section conflicts, hard contradictions with prior user decisions, T3/T4 events per the escalation taxonomy, reviewer reassignment-on-rate-limit, manager-as-phantom recovery, urgent-blocked-waiting-on-user >18 min).
+
+**Why this changed**: a mandatory user gate at every stage boundary would multiply the Step 3 waste by ~12× (3 stages × 4 sections). Codifying the principle prevents drift.
+
+**Implications**:
+- Section §X clears Stage 1 → Manager DMs Stage 2 reviewer to pick it up (no user gate)
+- Stage 2 reviewer closes findings on §X → Manager classifies; if no foundational, Author revises (no user gate)
+- Stage 3 reviewer closes findings on §X → Manager classifies; if no foundational, section is CLOSED (no user gate)
+- The user sees nothing until a T3/T4 escalation trigger fires OR Step 8 cascade-complete
+
+**Workflow Steward enforcement**: if the Steward observes the Manager firing a non-trigger user gate mid-cascade, the Steward flags it via DM to the Manager. This is the only category of workflow violation the Steward surfaces synchronously rather than carrying to post-cascade synthesis.
 
 ---
 
