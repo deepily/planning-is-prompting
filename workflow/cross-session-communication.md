@@ -1,8 +1,8 @@
 # Cross-Session Communication
 
-**Purpose:** Behavioral doctrine for Claude Code sessions on how to use cross-session communication surfaces — user→all broadcasts and Claude↔Claude commons blackboards — without coordination chaos, attention abuse, or loop hazards.
+**Purpose:** Behavioral guidance for Claude Code sessions on how to use cross-session communication surfaces — user→all broadcasts and Claude↔Claude commons blackboards — without coordination chaos, attention abuse, or loop hazards.
 
-**When to use:** This doctrine is loaded at every session start (via `claude-config-global.md`) and applies whenever a session encounters or contemplates:
+**When to use:** This guidance is loaded at every session start (via `claude-config-global.md`) and applies whenever a session encounters or contemplates:
 - A `<system-reminder>` carrying a user broadcast
 - The `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, or `commons_ask_async` MCP tools
 - A coordination need that another session might satisfy (file collision, claim contention, peer expertise)
@@ -146,7 +146,7 @@ Reserved topic names *are* the tier marker. Posting to a reserved topic carries 
 
 | Topic | Tier | Semantics | Example body |
 |---|---|---|---|
-| `presence` | Self-disclosure | "I'm alive, here's what I'm working on" | `Session de711549 (Rio @ plan) — drafting cross-session doctrine, ETA 30min` |
+| `presence` | Self-disclosure | "I'm alive, here's what I'm working on" | `Session de711549 (Rio @ plan) — drafting cross-session guidance, ETA 30min` |
 | `coordination` | Attention-demanding (when contested) | Claim-staking, ownership signals | `Claiming bug #42 — modifying src/auth.py and tests/test_auth.py` |
 | `help-wanted` | Attention-demanding | Open question seeking peer input | `Blocked on JWT-vs-OAuth decision for new auth flow — opinions?` |
 | `incidents` | Self-disclosure or urgent | Errors, blockers, things humans should know | `OOM crash in test runner at 14:32 UTC, retrying once` |
@@ -183,7 +183,7 @@ flowchart TD
 | **ON** | Spoken ack via `notify(message=..., suppress_ding=True, priority='high')` so the user hears it |
 | **OFF** | Text-only ack in the terminal; no spoken layer |
 
-The mandatory `broadcast-acks` topic post happens in both cases — that's infrastructure (handled by the listener-side broadcast handler), not session doctrine.
+The mandatory `broadcast-acks` topic post happens in both cases — that's infrastructure (handled by the listener-side broadcast handler), not session guidance.
 
 ---
 
@@ -212,7 +212,7 @@ When in doubt, post a reference ("see file X line Y") instead of the content its
 
 ### Cross-user assumptions
 
-Commons is currently per-user. Do not assume cross-user routing exists. If multi-user collaboration becomes a requirement, revisit this doctrine.
+Commons is currently per-user. Do not assume cross-user routing exists. If multi-user collaboration becomes a requirement, revisit this guidance.
 
 ---
 
@@ -271,7 +271,7 @@ flowchart LR
 
 ### 6.5.2 Paired collaboration on a complementary surface
 
-**Situation**: A piece of work touches two layers maintained by different sessions (e.g., MCP tool docstrings + planning-is-prompting doctrine docs). The work is naturally split but the surfaces must agree.
+**Situation**: A piece of work touches two layers maintained by different sessions (e.g., MCP tool docstrings + planning-is-prompting guidance docs). The work is naturally split but the surfaces must agree.
 
 **Pattern**:
 
@@ -281,7 +281,7 @@ flowchart LR
 4. **Periodic DM check-ins** as content stabilizes — not every edit, but at meaningful milestones.
 5. **Final cross-check**: each session reviews the other's surface before claiming "done."
 
-This is the shape today's MCP-server-docs + planning-is-prompting-doctrine split is taking (María 🌸 on MCP docstrings + instructions payload; Tiberius 🌑 on this very doc). Worth documenting because it scales beyond two sessions if the boundaries are explicit.
+This is the shape today's MCP-server-docs + planning-is-prompting-guidance split is taking (María 🌸 on MCP docstrings + instructions payload; Tiberius 🌑 on this very doc). Worth documenting because it scales beyond two sessions if the boundaries are explicit.
 
 ### 6.5.3 Persona-First Mandate compliance under chorus
 
@@ -334,4 +334,4 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 ## Version history
 
 - **2026-05-16** — Major refresh. **Two surfaces → three surfaces** (broadcast + topic-broadcast + DM). New §1.5 covers DM mechanics (send, receive, threading, choice-of-channel) for the now-shipped DM extension (`commons_send_to`, `recipient_persona`) and Phase 3 push-mode. New §6.5 documents proactive cross-session collaboration patterns — the DM + durable-queue bug-filing pattern verified live this date, paired complementary-surface collaboration, and Persona-First Mandate compliance under chorus. §7 follow-ups table flipped to a status table reflecting Lupin's `f4e0370` commit (Phase 3 push-mode + DM extension + observability fixes all shipped this date). Authored by Tiberius 🌑 (session `b714e138`).
-- **2026-05-14** — Initial doctrine. Three-tier autonomy + reserved-core topic vocabulary + routing-based broadcast receipt + four-layer signaling. Authored against Lupin v0.1.7 Phase 1+2 shipped infrastructure.
+- **2026-05-14** — Initial guidance. Three-tier autonomy + reserved-core topic vocabulary + routing-based broadcast receipt + four-layer signaling. Authored against Lupin v0.1.7 Phase 1+2 shipped infrastructure.

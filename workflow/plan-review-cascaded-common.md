@@ -1,6 +1,6 @@
-# Cascaded Plan-Review/Authoring — Shared Doctrine (Common)
+# Cascaded Plan-Review/Authoring — Shared Workflow Guidance (Common)
 
-**Purpose**: shared doctrine extracted from `plan-review-cascaded.md` post-2026.05.18 v2 polish bundle. Both `/plan-review-cascaded` (review-mode) and `/plan-authoring-cascaded` (authoring-mode, hybrid + pure) reference this doc for the ~60% of doctrine that's identical across modes.
+**Purpose**: shared workflow guidance extracted from `plan-review-cascaded.md` post-2026.05.18 v2 polish bundle. Both `/plan-review-cascaded` (review-mode) and `/plan-authoring-cascaded` (authoring-mode, hybrid + pure) reference this doc for the ~60% of workflow guidance that's identical across modes.
 
 **When to read this doc**: when implementing or extending either cascade-sibling workflow. The mode-specific playbooks (`plan-review-cascaded.md`, `plan-authoring-cascaded.md`) cite sections here by name (e.g., "see common.md §Manager System Prompt").
 
@@ -12,7 +12,7 @@
 
 **Added 2026-05-20** based on Rick's catch surfaced via Mr Radio's onboarding for Phase 7 slicing-manifest authoring: when a manager has to verbally hand-hold a cold cast member through the cascade-input shape (~1500 words of tribal knowledge), that's an undocumented workflow phase. Step 0 codifies the cascade-preparation phase that takes a raw design document and produces cascade-ready inputs.
 
-**Pattern recognition**: Step 9 closed the post-cascade synthesis gap (codified 2026-05-19); Step 0 closes the pre-cascade preparation gap. **Both ends of the cascade lifecycle had doctrine gaps; only the middle (Steps 1-8) was fully codified.** Step 0 + Step 9 together close the doctrine's end-to-end shape.
+**Pattern recognition**: Step 9 closed the post-cascade synthesis gap (codified 2026-05-19); Step 0 closes the pre-cascade preparation gap. **Both ends of the cascade lifecycle had workflow-guidance gaps; only the middle (Steps 1-8) was fully codified.** Step 0 + Step 9 together close the workflow's end-to-end shape.
 
 Mode-specific Step 0 specs live in `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) and `plan-review-cascaded.md` §Step 0 (lighter — review-cascade input is already a parent input plan). This common subsection holds the **shared acceptance criteria**: cold-context test analog + light-review gate + state-flip semantics + pre-cascade Recon checklist requirement.
 
@@ -26,7 +26,7 @@ Manager (or designated preparer) reads the Step 0 outputs (per-slice design doc 
 2. Can identify what PROPOSED Q-decisions to carry forward into Stage-0 verbatim?
 3. Can identify which Recon items need verification at code-write time?
 4. Can identify cross-slice dependencies without inferring them?
-5. Are standing doctrine memories that affect the slice's implementation listed (via the §6 pre-cascade Recon checklist below)?
+5. Are standing memory guidance that affect the slice's implementation listed (via the §6 pre-cascade Recon checklist below)?
 
 If all 5 answer "yes": cold-context test passes. If any "no": revise the affected artifact and re-test.
 
@@ -39,7 +39,7 @@ Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "cons
 **Reviewer selection** (Manager judgment for v1):
 
 - **Default**: one of the cascade-cast members assigned to the upcoming run — preferably someone OTHER than the Manager. Ideal: the Persona 4 reviewer (Viability/Gap) whose rubric most closely matches "is this design cascade-ready?"
-- **Alternative**: doctrine consultant if a 6th participant runs in that role
+- **Alternative**: Workflow Steward if a 6th participant runs in that role
 - **Escape hatch**: if no cast member has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit
 
 **Light-review rubric** (NOT a full Persona 3/4/5 review — 6-criterion focused pass):
@@ -49,7 +49,7 @@ Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "cons
 3. **Recon item resolvability check**: every Recon item names where the verification happens (code-write, integration test, manual recon)
 4. **Source citation check**: every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements with no provenance)
 5. **Sequencing soundness check**: recommended order respects all stated cross-slice dependencies (no cycles; no out-of-order dependencies)
-6. **Author-onboarding completeness check**: standing doctrine memories applicable to the slice are listed in the §6 pre-cascade Recon checklist
+6. **Author-onboarding completeness check**: standing memory guidance applicable to the slice are listed in the §6 pre-cascade Recon checklist
 
 **Output**: thumbs-up OR list of specific Step 0 gaps to address before cascade Stage 0 fires. Posted as `kind: "step_0_light_review"` to the cascade's parent topic.
 
@@ -63,7 +63,7 @@ If reviewer finds gaps: Manager addresses gaps in slicing manifest / per-slice d
 
 ### Pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state)
 
-This is the load-bearing piece for cold-cast onboarding. Codifies the standing-doctrine knowledge that the Manager would otherwise have to verbally walk a fresh cast member through.
+This is the load-bearing piece for cold-cast onboarding. Codifies the standing-memory knowledge that the Manager would otherwise have to verbally walk a fresh cast member through.
 
 **Required content** — author-onboarding checklist embedded in the slicing manifest §1 cadence OR as a sister "Step 0 onboarding pointer" doc:
 
@@ -121,7 +121,7 @@ The manager session reads three sources at workflow launch:
 
 Per `decomposition_review_policy = manager_proposes_user_approves`, the manager sends a `mcp__cosa-voice__ask_yes_no` or `ask_multiple_choice` to the user with the proposal in the abstract.
 
-**Spoken-headline contract** (Item #2 doctrine, ratified 2026-05-18 post-Run-2): the spoken `message` (or `question` for blocking tools) MUST lead with the manager's recommendation in the form: `"Recommendation: option [X] because [Y]. Approve?"` — a one-to-two-sentence verdict the user can act on by voice without inspecting the abstract. The rich detail goes in the abstract.
+**Spoken-headline contract** (Item #2 rule, ratified 2026-05-18 post-Run-2): the spoken `message` (or `question` for blocking tools) MUST lead with the manager's recommendation in the form: `"Recommendation: option [X] because [Y]. Approve?"` — a one-to-two-sentence verdict the user can act on by voice without inspecting the abstract. The rich detail goes in the abstract.
 
 **Critical**: gates of this shape are the only user-attention costs of the cascade (other than escalations). Once approved, manager runs the pipeline autonomously and only interrupts the user via the escalation taxonomy below.
 
@@ -154,12 +154,12 @@ The manager session loads this preamble at workflow launch (before reading the r
 > 3. Is there a new worker post since my last wake? If yes, advance the pipeline.
 > 4. Is there a stage-close I haven't classified yet? If yes, classify + post `kind: "manager_classification"` to the section topic.
 > 5. Is the cascade complete? If yes, post `kind: "cascade_complete"` to the input-plan topic so the scheduler can transition out of active state.
-> 6. **Am I blocked waiting on user for >5 min?** If yes, post `kind: "blocked_waiting_on_user"` to the input-plan topic so observer sessions (doctrine consultant) can disambiguate scenario-not-yet-actioned from scenario-user-asked from disk-read alone, without requiring a probe DM. Run-3 evidence: María's observer-mode telemetry caught two scenarios that were ambiguous from disk-state alone; the `blocked_waiting_on_user` post would have closed the disambiguation gap.
-> 7. **Post-cascade close-out (Step 9 cold-context test rubric Q#6) — added 2026-05-20 post-Run-4**: During Step 9 self-administered cold-context test, sweep the cascade for any moves you made that aren't in the playbook documents. Each is a doctrine-gap candidate. File each to TODO.md with a one-line empirical-anchor citation; if the gap is failure-mode-shaped, cross-link to design-doc §10.x failure-mode catalog at filing time. The pattern "Manager ad-hoc'd what should be codified" is itself a doctrine-gap signal (3 validated instances: Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure-mode #6 + observer-probe candidate post-Run-4). See §Step 9 — Synthesis & Handoff cold-context test Q#6 below for the full rubric question and §Manager close-out self-audit sweep sub-section for the procedure.
+> 6. **Am I blocked waiting on user for >5 min?** If yes, post `kind: "blocked_waiting_on_user"` to the input-plan topic so observer sessions (Workflow Steward) can disambiguate scenario-not-yet-actioned from scenario-user-asked from disk-read alone, without requiring a probe DM. Run-3 evidence: María's observer-mode telemetry caught two scenarios that were ambiguous from disk-state alone; the `blocked_waiting_on_user` post would have closed the disambiguation gap.
+> 7. **Post-cascade close-out (Step 9 cold-context test rubric Q#6) — added 2026-05-20 post-Run-4**: During Step 9 self-administered cold-context test, sweep the cascade for any moves you made that aren't in the playbook documents. Each is a workflow-guidance-gap candidate. File each to TODO.md with a one-line empirical-anchor citation; if the gap is failure-mode-shaped, cross-link to design-doc §10.x failure-mode catalog at filing time. The pattern "Manager ad-hoc'd what should be codified" is itself a workflow-guidance-gap signal (3 validated instances: Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure-mode #6 + observer-probe candidate post-Run-4). See §Step 9 — Synthesis & Handoff cold-context test Q#6 below for the full rubric question and §Manager close-out self-audit sweep sub-section for the procedure.
 >
-> **Spoken-headline contract** (Item #2 doctrine): for any user-facing escalation `notify()` or `ask_*` blocking tool, the spoken message MUST lead with the recommendation: `"Recommendation: option [X] because [Y]. Approve?"`. Bury detail in the abstract.
+> **Spoken-headline contract** (Item #2 rule): for any user-facing escalation `notify()` or `ask_*` blocking tool, the spoken message MUST lead with the recommendation: `"Recommendation: option [X] because [Y]. Approve?"`. Bury detail in the abstract.
 >
-> **Manager-funnel applies BOTH directions** (Lesson 12 from v2 polish bundle cycle): findings-up (workers → manager → user) AND proposals-up (workers → manager → user) both bundle through the manager. Per-item ratification is forbidden; cluster-bundle by Lesson 8 doctrine.
+> **Manager-funnel applies BOTH directions** (Lesson 12 from v2 polish bundle cycle): findings-up (workers → manager → user) AND proposals-up (workers → manager → user) both bundle through the manager. Per-item ratification is forbidden; cluster-bundle by Lesson 8 rule.
 >
 > **Persona voice**: your `notify()` pushes use your own assigned persona voice. In chorus mode the user identifies you by voice. Maintain this voice consistently.
 >
@@ -186,7 +186,7 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 *Examples*: load-bearing assumption invalidated; cross-section ownership gap; finding contradicts user's prior explicit decision.
 *Test*: does this finding invalidate an assumption that ANY section other than the current one depends on? If yes → foundational. When uncertain, escalate.
 
-**Manager-classification post requirement** (Lesson 9 doctrine): at every stage-close, manager MUST post a `kind: "manager_classification"` entry to the affected section topic with `metadata` carrying:
+**Manager-classification post requirement** (Lesson 9 rule): at every stage-close, manager MUST post a `kind: "manager_classification"` entry to the affected section topic with `metadata` carrying:
 
 | Field | Type | Required | Purpose |
 |---|---|---|---|
@@ -197,13 +197,13 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 | `rounds_used` | int | ✓ | Re-litigation rounds consumed |
 | `votes_called` | int | ✓ | Votes invoked for this finding |
 
-**Closure-action values added 2026-05-19 (Run-3 doctrine fold)** — see also `plan-review-cascaded-defaults.md` §Severity-tag metadata schema for the worked-example table:
+**Closure-action values added 2026-05-19 (Run-3 workflow fold)** — see also `plan-review-cascaded-defaults.md` §Severity-tag metadata schema for the worked-example table:
 
 | New value | When to use | Anchor |
 |---|---|---|
 | `hard_verification_gate` | Cap-locked section where reopening for fold-bundle isn't possible; close via grep-style verification AC | Section B AC-B15 (Run 3) |
 | `manager_unilateral_ratify_by_concurrence` | Author + reviewer + manager all concur with no foundational implications; user-ratification skipped to save attention | Section D Q-D1 (Run 3) |
-| `reassigned_due_to_rate_limit` | Reviewer rate-limited; manager reassigned per Manager Reassignment Latitude doctrine (see §Reviewer Reassignment below) | Section B Mr-Radio → Arnold (Run 3) |
+| `reassigned_due_to_rate_limit` | Reviewer rate-limited; manager reassigned per Manager Reassignment Latitude rule (see §Reviewer Reassignment below) | Section B Mr-Radio → Arnold (Run 3) |
 
 **Two-stamp convention**: reviewers stamp `severity_proposed` on their finding posts; manager stamps authoritative `severity` + the rest at classification time.
 
@@ -225,7 +225,7 @@ Per `escalation_form = notify_immediate`, manager escalates by calling `mcp__cos
 6. **Hard contradiction** — group proposing something conflicting with user's prior explicit decision
 7. **Pipeline stall** — phantom session detected (per §6.4)
 
-**Cluster-bundling default** (Item #5 doctrine, Lesson 8): when multiple findings on the same author/section land in the same stage-close, bundle them into a single re-litigation DM (intra-cascade) or single user-escalation (cross-cascade). Run 2 evidence: 5 re-litigation rounds all closed first-round verbatim using bundled DMs.
+**Cluster-bundling default** (Item #5 rule, Lesson 8): when multiple findings on the same author/section land in the same stage-close, bundle them into a single re-litigation DM (intra-cascade) or single user-escalation (cross-cascade). Run 2 evidence: 5 re-litigation rounds all closed first-round verbatim using bundled DMs.
 
 **Cluster-bundling applies to proposals-up too** (Lesson 12): if multiple workers need user ratification, bundle into single `ask_yes_no` or `ask_multiple_choice` rather than firing per-worker asks. v2 polish bundle cycle measured: 3 user interactions to ratify 5 proposals vs ~10 under per-item pattern.
 
@@ -258,11 +258,11 @@ Each in-cascade decision resolves at exactly one of four tiers, with each tier e
 
 - Reviewer flags a cosmetic-cluster of 4 border-cleanup findings → **T1** (Manager classifies as `cosmetic_cluster_family` and documents; no cross-persona DM needed)
 - Stage 2 finding sharpens Stage 1 inconsistency → **T2** (Manager re-opens Stage 1 with bundled re-litigation DM per §DM-Subset Selection Heuristics)
-- Reviewer rate-limited, substitute available → **T2** (Manager applies Reassignment Latitude doctrine per §Reviewer Reassignment; post-decision `notify()` is informational, not gating)
+- Reviewer rate-limited, substitute available → **T2** (Manager applies Reassignment Latitude rule per §Reviewer Reassignment; post-decision `notify()` is informational, not gating)
 - Cross-section foundational finding → **T3** (Manager fires `notify()` with recommendation-leads spoken headline per §Step 3 User Approval Gate)
 - Anthropic infrastructure-wide outage detected → **T4** (Manager fires urgent `notify()`)
 
-**The empirical lesson from Run 4 (zero user touches)**: 100% T1/T2 silent execution = 0 T3 escalations + 0 T4 wake-ups. This is the Tier discipline doctrine working as designed under the explicit unavailable-user constraint. Cascade-close-protocol's central value proposition (user-attention minimization at the limit) is empirically observed when the tier discipline holds.
+**The empirical lesson from Run 4 (zero user touches)**: 100% T1/T2 silent execution = 0 T3 escalations + 0 T4 wake-ups. This is the Tier discipline practice working as designed under the explicit unavailable-user constraint. Cascade-close-protocol's central value proposition (user-attention minimization at the limit) is empirically observed when the tier discipline holds.
 
 **Anti-pattern: tier inflation** — when a Manager classifies a T1/T2 decision as T3 "to be safe," they're undermining the cascade's value proposition. The cost of one extra T3 ask is real (user attention is the scarce resource). When in doubt, apply meta-rule 4 from §Manager System Prompt: if uncertain whether something is foundational, treat as foundational and escalate — but do NOT inflate cosmetic/inconsistency findings into T3 user-escalations. The 7 escalation triggers in §Escalation Taxonomy are the exclusive T3 surface.
 
@@ -286,7 +286,7 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 
 ## §Author-side Discipline — Grep-sweep Checklist [SHARED]
 
-**Added 2026-05-20 post-Run-4** based on Krishna's Q-1..Q-4 catch in Stage 2 of Run 4 — Author had drift in 4 acceptance criteria within a single output that a simple grep-sweep would have caught at draft-time. This is the SECOND empirical anchor for the AC-table-doctrine-lag pattern (first anchor: Rachel's proactive AC-sweep in Run 3 Section D; third anchor: Tiberius's Tiffany-rename-pass catch in Run 4). Companion to `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 (which governs Author's doctrine-sweep on revision-mechanism changes); this section codifies the routine **pre-handoff** grep-sweep.
+**Added 2026-05-20 post-Run-4** based on Krishna's Q-1..Q-4 catch in Stage 2 of Run 4 — Author had drift in 4 acceptance criteria within a single output that a simple grep-sweep would have caught at draft-time. This is the SECOND empirical anchor for the AC-table-sweep-lag pattern (first anchor: Rachel's proactive AC-sweep in Run 3 Section D; third anchor: Tiberius's Tiffany-rename-pass catch in Run 4). Companion to `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 (which governs Author's forward-sweep on revision-mechanism changes); this section codifies the routine **pre-handoff** grep-sweep.
 
 **When this fires**: BEFORE Author posts `kind: author_draft` to the section's handoff topic at Stage 0 — the section's last pre-handoff self-check.
 
@@ -295,7 +295,7 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 1. **Identifier-coherence grep**: every named function / file / variable referenced in ACs is named consistently within the section. (No `validateToken` in AC1 and `validate_token` in AC3 — that's a finding the section's own Author can pre-empt with a 30-second grep.)
 2. **EXECUTOR-tag grep**: every verification step has an `EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>` tag (Convention 3). Bare verification verbs without a tag are findings.
 3. **Coverage-assertion grep** (when consuming project has a coverage mandate per Persona 5 Convention 6): every `EXECUTOR: AI` verification names the coverage assertion shape. Bare "tests pass" without coverage-shape is a finding.
-4. **Doctrine-application coverage grep**: for any doctrine the cascade-learning-loop has surfaced in PRIOR sections (track via running notes), grep this section for instances where the doctrine should apply. Skipping the grep means relying on the downstream reviewer to catch what you could have pre-empted — see §Cascade-Learning-Loop Sub-patterns §Forward-only-asymmetry for why this matters.
+4. **Pattern-application coverage grep**: for any pattern the cascade-learning-loop has surfaced in PRIOR sections (track via running notes), grep this section for instances where the pattern should apply. Skipping the grep means relying on the downstream reviewer to catch what you could have pre-empted — see §Cascade-Learning-Loop Sub-patterns §Forward-only-asymmetry for why this matters.
 5. **Cross-section reference grep**: every reference to another section (by section letter or by AC-id) actually exists in the named target. (No "per Section C AC-C7" when Section C only has ACs C1-C6 — that's a same-cascade hallucination the Author can catch.)
 6. **TBD / Open sub-question completeness grep**: every `TBD` or `Open sub-question N` marker has a paired resolution path elsewhere in the section OR an explicit Conditional-Executability tag (per `plan-review-cascaded-personas.md` §Persona 2 rubric point 9).
 
@@ -303,11 +303,11 @@ When an inconsistency-severity finding requires re-opening upstream (per `backfl
 
 **Empirical anchors** (cross-cascade — 3 confirmed instances now constitute the ratification base for codifying this as routine):
 
-- **Run 4 Krishna Q-1..Q-4 (Stage 2 cap-3)**: 4 quibbles on a single Stage-2 output that all reflected the SAME doctrine-sweep gap. Single-Author grep-sweep at Stage 0 would have closed all 4 pre-handoff.
-- **Run 3 Rachel Section D AC-sweep**: Rachel proactively grep-swept her Section D draft for the F-Arnold-1 directory-wide-glob doctrine; ~50% reduction in Stage-2 finding count vs. Section A (first cross-section empirical signal of the value).
+- **Run 4 Krishna Q-1..Q-4 (Stage 2 cap-3)**: 4 quibbles on a single Stage-2 output that all reflected the SAME forward-sweep gap. Single-Author grep-sweep at Stage 0 would have closed all 4 pre-handoff.
+- **Run 3 Rachel Section D AC-sweep**: Rachel proactively grep-swept her Section D draft for the F-Arnold-1 directory-wide-glob pattern; ~50% reduction in Stage-2 finding count vs. Section A (first cross-section empirical signal of the value).
 - **Run 4 Tiberius Tiffany-rename-pass**: Tiberius's own grep-sweep after a user-initiated linter pass caught 3 non-adjacent AC reverts the linter had silently produced — empirical anchor for the non-adjacent surface refinement (see §Multi-surface Footer-ratification Close Protocol below).
 
-**Cross-link**: Persona 2.A rubric point 14 in `plan-review-cascaded-personas.md` governs the REVISION-MECHANISM case (doctrine surfaced by reviewer during cascade); this checklist governs the PRE-HANDOFF case (Author's routine self-check at Stage 0). Both are part of the same author-side discipline surface; this section is the bilateral codification.
+**Cross-link**: Persona 2.A rubric point 14 in `plan-review-cascaded-personas.md` governs the REVISION-MECHANISM case (pattern surfaced by reviewer during cascade); this checklist governs the PRE-HANDOFF case (Author's routine self-check at Stage 0). Both are part of the same author-side discipline surface; this section is the bilateral codification.
 
 ---
 
@@ -333,9 +333,9 @@ When an author↔reviewer discussion exceeds `discussion_turn_cap` rounds withou
 
 ## §Reviewer Reassignment — Manager Latitude with Bias Guardrails [SHARED]
 
-**Added 2026-05-19 post-Run-3** based on Section B Mr-Radio→Arnold reassignment incident (Anthropic per-account rate-limit, 78+ min block). Three paired doctrines codify the manager prerogative + the empirical bias-mitigation evidence + the new failure mode.
+**Added 2026-05-19 post-Run-3** based on Section B Mr-Radio→Arnold reassignment incident (Anthropic per-account rate-limit, 78+ min block). Three paired rules codify the manager prerogative + the empirical bias-mitigation evidence + the new failure mode.
 
-### Manager Reassignment Latitude (5-element doctrine)
+### Manager Reassignment Latitude (5-element rule)
 
 Mid-cascade reviewer reassignment is a **manager prerogative**, not a user-gated decision. When a reviewer is rate-limited, dormant, or has dropped, the manager MAY unilaterally reassign their stage to another peer **without pre-ratification** — provided all 5 elements are present:
 
@@ -345,7 +345,7 @@ Mid-cascade reviewer reassignment is a **manager prerogative**, not a user-gated
 4. **Documented**: manager posts `kind: "reviewer_reassigned"` to the section topic with `metadata`: `{original_reviewer, substitute_reviewer, trigger, justification, bias_mitigation_chosen}`
 5. **Reversible**: if the original reviewer recovers before stage close, manager may roll back OR keep the substitute (manager's call)
 
-**User ratification is post-decision, not pre-decision.** Manager fires a `notify()` at reassignment time announcing the decision (recommendation-leads spoken headline per Item #2 doctrine; abstract carries the 5-element justification). If user objects, manager can roll back. Default state: "decision sticks unless user vetoes."
+**User ratification is post-decision, not pre-decision.** Manager fires a `notify()` at reassignment time announcing the decision (recommendation-leads spoken headline per Item #2 rule; abstract carries the 5-element justification). If user objects, manager can roll back. Default state: "decision sticks unless user vetoes."
 
 **Empirical validation (Run 3)**: Mr-Radio rate-limited at ~03:06 UTC on Section B Stage 1. Manager (Tiberius) reassigned to Arnold at ~03:32 UTC after a ~14-min user-ratification window. Outcome: 4 substantive findings caught + 1 hard-verification-gate introduced (AC-B15); cascade closed cleanly without Mr-Radio. Rick's voice endorsement codifies the latitude: *"Nice midstream recalibration… glad that Tiberius had the latitude and the ability to improvise on the fly."*
 
@@ -373,7 +373,7 @@ The cascade workflow now formally recognizes **5 distinct failure modes** (4 doc
 2. **Read-side truncation** (Run 1 NEW): `commons_read` API truncates long entries; addressed by disk-read defense-in-depth + Rio's fix in Lupin
 3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by external scheduler daemon
 4. **Write-side commons truncation** (Run 1 carry): long `commons_post` bodies truncated on disk; addressed by Rio's fix
-5. **Anthropic rate-limit on reviewer** (Run 3 NEW): single-account hits per-Anthropic-account quota; reviewer stuck >78 min; addressed by Manager Reassignment Latitude doctrine above — reassign to peer rather than partial-close
+5. **Anthropic rate-limit on reviewer** (Run 3 NEW): single-account hits per-Anthropic-account quota; reviewer stuck >78 min; addressed by Manager Reassignment Latitude rule above — reassign to peer rather than partial-close
 
 The architectural answer to failure mode #5 is **reassignment, not partial-close**: a partially-closed cascade leaves cap-lock telemetry ambiguous and may strand downstream sections.
 
@@ -381,7 +381,7 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
 
 ## §Heartbeat Handling — External Scheduler Integration [SHARED]
 
-**Architectural premise** (post-Run-1 doctrine): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first. The heartbeat protocol is **external-scheduler-driven**.
+**Architectural premise** (post-Run-1 workflow update): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first. The heartbeat protocol is **external-scheduler-driven**.
 
 **Scheduler shape** (lives outside CC):
 - Implementation: cron, scheduled remote agent via `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
@@ -403,7 +403,7 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
 
 **Daemon kickoff procedure (Manager + Observer dual-independent, added 2026-05-20 post-Run-4)**:
 
-Run 4 prep surfaced a doctrine gap that Rick caught: when both a Manager and a doctrine-consultant Observer participate in a cascade, BOTH need their own heartbeat daemon launched independently. v1 doctrine documented only the Manager-daemon launch; the Observer-daemon launch was tribal knowledge. v1.1 now formalizes the dual-independent kickoff.
+Run 4 prep surfaced a workflow-guidance gap that Rick caught: when both a Manager and a Workflow Steward Observer participate in a cascade, BOTH need their own heartbeat daemon launched independently. v1 workflow documented only the Manager-daemon launch; the Observer-daemon launch was tribal knowledge. v1.1 now formalizes the dual-independent kickoff.
 
 **Default policy** (per `plan-review-cascaded-defaults.md` § Cascade-execution observability: `heartbeat_daemon_kickoff_policy = dual_independent`):
 
@@ -420,7 +420,7 @@ Both daemons run independently — each ticks the receiver's session via `common
 
 **When to apply each policy variant**:
 
-- Cascade has a doctrine-consultant / observer participant → `dual_independent` (v1.1 default)
+- Cascade has a Workflow Steward / observer participant → `dual_independent` (v1.1 default)
 - Cascade has Manager only (no Observer participant) → `manager_only` override is sufficient
 - ≥3 daemon-needing personas → consider `centralized_orchestrator` policy (v3 escape hatch)
 
@@ -450,7 +450,7 @@ The legacy `cascade_heartbeat_scheduler.py` sends a bare poke — `body="heartbe
 **Recipient discipline — every Layer-2 protocol (Manager-mode, Observer-mode, Watcher-mode) consumes the poke the same way:**
 
 1. **Parse the poke body.** If it is JSON, read `kind` / `workstream` / `role`. If it is the bare legacy string `"heartbeat"`, treat it as `{kind: "heartbeat", workstream: null, role: <this session's sole role>}` — backward-compatible with the shell-script daemon during the Q3 co-existence window.
-2. **Dispatch on `role`.** `role` selects which Layer-2 doctrine handles the tick. A session running ONE role ignores it (single handler). A session running **two roles at once** — the same-session-two-pokers pattern, e.g. Manager of a cascade AND Watcher of an implementer, each driven by its own independent poker — MUST route each tick to the role-handler named by `poke_body.role`, and key its per-tick state (last-post timestamps, phase counters) by `workstream` so the two streams never cross-contaminate.
+2. **Dispatch on `role`.** `role` selects which Layer-2 rule handles the tick. A session running ONE role ignores it (single handler). A session running **two roles at once** — the same-session-two-pokers pattern, e.g. Manager of a cascade AND Watcher of an implementer, each driven by its own independent poker — MUST route each tick to the role-handler named by `poke_body.role`, and key its per-tick state (last-post timestamps, phase counters) by `workstream` so the two streams never cross-contaminate.
 3. **The poker never branches on `role`.** `role` is opaque passthrough stamped by the poker from per-recipient config; all dispatch is recipient-side (the structural insight of the heartbeat-poker design §2).
 
 This makes the Manager-mode discipline above and the Observer-mode Probe Protocol below forward-compatible with the generic poker — the per-tick *behaviour* of each protocol is unchanged; only how the tick is recognised and routed is specified.
@@ -461,7 +461,7 @@ This makes the Manager-mode discipline above and the Observer-mode Probe Protoco
 
 **Added 2026-05-20 post-Run-4** based on the Run-4 Stage-2 minute-13 phantom-lag mitigation event — María's parallel probe surfaced an unread peer-DM that Manager attention had buried, clearing a 13-min Manager phantom-lag (the empirical anchor for new failure mode #6: `signal-density-obscures-needle`). This section codifies the Observer's role into the formal playbook + designs the dual-channel safety property as an explicit architectural goal.
 
-**The role**: An Observer (the doctrine-consultant variant of the cascade cast) runs as a separate CC session alongside the Manager throughout the cascade. The Observer does NOT participate in reviews — does not produce findings, does not arbitrate, does not take Manager decisions. The Observer's value is two-fold:
+**The role**: An Observer (the Workflow Steward variant of the cascade cast) runs as a separate CC session alongside the Manager throughout the cascade. The Observer does NOT participate in reviews — does not produce findings, does not arbitrate, does not take Manager decisions. The Observer's value is two-fold:
 
 1. **Real-time mitigation channel** (during the cascade): probes the shared message-board on a regular cadence as a parallel safety net for cases where Manager attention is buried by high-density signal traffic (failure mode #6).
 2. **Post-cascade retrospective partner** (after cascade-complete): co-authors workflow refinements that ship into the next iteration — partners with the Manager on the Step 9 self-audit sweep (see §Step 9 Manager close-out self-audit sweep below).
@@ -518,16 +518,16 @@ Both channels can fail independently — that's the architectural intent. The em
 
 ---
 
-## §Briefing Delivery — Doctrine Consultant Pattern [SHARED]
+## §Briefing Delivery — Workflow Steward Pattern [SHARED]
 
-When a doctrine consultant (separate CC session whose role is to explain the workflow + observe telemetry) participates in a cascade run, the orientation briefing **must be delivered both ways** (Lesson 3 from v2 polish bundle):
+When a Workflow Steward (separate CC session whose role is to explain the workflow + observe telemetry) participates in a cascade run, the orientation briefing **must be delivered both ways** (Lesson 3 from v2 polish bundle):
 
 1. **As a direct DM to the Manager session** — establishes the manager's GO signal. Without it, the manager doesn't know the briefing has been issued.
 2. **As a topic post on the briefing topic** (e.g., `cascaded-prototype-briefing`) — workers' reference for context. Workers should read but NOT ack this post.
 
 Without the direct DM, the GO signal can be lost — Run 1 hit exactly this gap. Without the topic post, workers lose the persistent reference doc.
 
-**If no doctrine consultant participates**: Manager reads the playbook + defaults + personas docs at workflow launch and proceeds to Step 1 without orientation. Authoring-mode requires intent-capture + dependency-map artifacts; manager guides user through those without consultant.
+**If no Workflow Steward participates**: Manager reads the playbook + defaults + personas docs at workflow launch and proceeds to Step 1 without orientation. Authoring-mode requires intent-capture + dependency-map artifacts; manager guides user through those without consultant.
 
 ---
 
@@ -537,9 +537,9 @@ When the manager DMs each peer their role assignment (Step 4), each role DM incl
 
 - The persona's role name and stage number
 - A pointer to the persona's brief in `plan-review-cascaded-personas.md`
-- **Explicit ack instruction** (Lesson 5 doctrine post-Run-1): "Acknowledge **this DM** specifically (not any prior briefing from the doctrine consultant) by replying with `ready, [role name]`. Wait for this DM as the formal launch signal before posting anything else."
+- **Explicit ack instruction** (Lesson 5 rule post-Run-1): "Acknowledge **this DM** specifically (not any prior briefing from the Workflow Steward) by replying with `ready, [role name]`. Wait for this DM as the formal launch signal before posting anything else."
 
-Run 1 evidence: 3 of 4 workers pre-acked the doctrine consultant's briefing using the prescribed format, before the Manager's role-assignment DM had fired. Run 2 (with the explicit "this DM specifically" doctrine): 0 of 4 pre-acks. Validated fix.
+Run 1 evidence: 3 of 4 workers pre-acked the Workflow Steward's briefing using the prescribed format, before the Manager's role-assignment DM had fired. Run 2 (with the explicit "this DM specifically" rule): 0 of 4 pre-acks. Validated fix.
 
 ---
 
@@ -547,7 +547,7 @@ Run 1 evidence: 3 of 4 workers pre-acked the doctrine consultant's briefing usin
 
 **Added 2026-05-19 post-Run-3** based on Rick's broadcast `d3a89a21` catch: the cascade workflow as ratified through Run 3 ends at the **cascade-complete signal**, but that's not handoff-ready. An implementer picking up cold faces a synthesis-archeology task because the cascade artifacts are spread across N section topic files + the pipeline summary + the parent design doc (which is still in DRAFT state). Run 3's Manager (Tiberius) ad-hoc'd ~1,225 LOC of post-cascade synthesis work to close the gap; the implementer (Roscoe) STILL surfaced 2 cascade-design gaps in his first 30 min of pre-flight. **Synthesis is not packaging — it is a quality gate.**
 
-Step 9 codifies the implementation-handoff phase that was missing from v1 doctrine. The mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact spec) and `plan-review-cascaded.md` §Step 9 (1-artifact revision-handoff spec). This common subsection holds the **shared acceptance criteria**: cold-context test + light-review gate + state-flip semantics.
+Step 9 codifies the implementation-handoff phase that was missing from v1 workflow. The mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact spec) and `plan-review-cascaded.md` §Step 9 (1-artifact revision-handoff spec). This common subsection holds the **shared acceptance criteria**: cold-context test + light-review gate + state-flip semantics.
 
 **Full requirements anchor**: `planning-is-prompting/src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (Tiberius's requirements draft; the workflow-doc redline below is the codification track).
 
@@ -558,17 +558,17 @@ After producing the Step 9 artifacts, the Manager reads them end-to-end **as if 
 1. Can I describe the implementation path section-by-section without back-referencing the cascade topic files?
 2. Do all Recon items have a clear resolution path? Each must be one of: `RETIRED` / `RESCOPED` / `CARRIED with caveat` / `RESOLVED` / `NEW with conditional-executability`.
 3. Are all cross-section dependencies explicit? An implementer doesn't need to infer what section X needs from section Y.
-4. Are standing doctrine memories that affect implementer work explicitly listed (coverage mandates, commit discipline, test-venue routing, never-auto-commit-push, etc.)?
+4. Are standing memory guidance that affect implementer work explicitly listed (coverage mandates, commit discipline, test-venue routing, never-auto-commit-push, etc.)?
 5. Are there ZERO "TBD at code-write" / "verify on the wire" items WITHOUT either (a) explicit conditional-executability tags with documented resolution branches, or (b) escalation to user / manager-unilateral resolution BEFORE Step 9 closes?
-6. **Did I make any moves this cascade that weren't pre-codified?** (Added 2026-05-20 post-Run-4 — Manager close-out self-audit sweep.) List each as a doctrine-gap candidate with a one-line empirical-anchor citation. If the gap is failure-mode-shaped, cross-link to design-doc §10.x failure-mode catalog at filing time. See §Manager close-out self-audit sweep below for the procedure.
+6. **Did I make any moves this cascade that weren't pre-codified?** (Added 2026-05-20 post-Run-4 — Manager close-out self-audit sweep.) List each as a workflow-guidance-gap candidate with a one-line empirical-anchor citation. If the gap is failure-mode-shaped, cross-link to design-doc §10.x failure-mode catalog at filing time. See §Manager close-out self-audit sweep below for the procedure.
 
-If all 6 answer "yes": cold-context test passes. If any answer is "no": revise the affected artifact and re-test. (Q#6 differs from Q#1-5 in shape: a "yes" means the Manager has produced a `kind: manager_self_audit_sweep` post enumerating any doctrine-gap candidates found AND filed them to TODO.md. A "yes" with zero candidates is also valid — the sweep was performed, nothing surfaced. A "no" means the sweep was skipped entirely; revise by performing the sweep.)
+If all 6 answer "yes": cold-context test passes. If any answer is "no": revise the affected artifact and re-test. (Q#6 differs from Q#1-5 in shape: a "yes" means the Manager has produced a `kind: manager_self_audit_sweep` post enumerating any workflow-guidance-gap candidates found AND filed them to TODO.md. A "yes" with zero candidates is also valid — the sweep was performed, nothing surfaced. A "no" means the sweep was skipped entirely; revise by performing the sweep.)
 
 **Self-administration cost**: ~15 min Manager-time for the 3-artifact authoring-cascade flavor; ~5-10 min for the 1-artifact review-cascade flavor. Q#6 sweep adds ~3-5 min for the enumeration + filing.
 
 ### Manager close-out self-audit sweep (Q#6 elaboration, added 2026-05-20 post-Run-4)
 
-The diagnostic **"Manager ad-hoc'd what should be codified"** has now validated 3 doctrine-gap detections (Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure mode #6 + observer-probe candidate post-Run-4). The pattern is itself a doctrine-gap signal worth codifying as a routine Manager close-out activity. This sub-section governs the procedure.
+The diagnostic **"Manager ad-hoc'd what should be codified"** has now validated 3 workflow-guidance-gap detections (Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure mode #6 + observer-probe candidate post-Run-4). The pattern is itself a workflow-guidance-gap signal worth codifying as a routine Manager close-out activity. This sub-section governs the procedure.
 
 **When the sweep fires**: at Step 9 cold-context test rubric Q#6 — i.e., once per cascade, at the synthesis-and-handoff stage, before posting the `kind: cascade_complete` or `kind: implementation_handoff_ready` state-flip.
 
@@ -576,17 +576,17 @@ The diagnostic **"Manager ad-hoc'd what should be codified"** has now validated 
 
 1. **Scan your own cascade activity** for any of the following Manager move-types:
    - Synthesis-doc structural choices that weren't in `plan-authoring-cascaded.md` / `plan-review-cascaded.md` §Step 9 spec
-   - Reviewer-reassignment improvisations not in §Reviewer Reassignment doctrine
+   - Reviewer-reassignment improvisations not in §Reviewer Reassignment rule
    - Cross-stage coordination patterns not in §Manager System Prompt
    - Heartbeat / probe response patterns not in §Heartbeat Handling or §Observer-mode Probe Protocol
    - Failure-mode mitigations not in §10.14 failure-mode catalog
    - Closure-action / kind enum usages that needed an enum value not yet listed in `plan-review-cascaded-defaults.md`
 2. **For each move surfaced**: write a one-line empirical-anchor citation:
-   > "Used [pattern] to handle [situation]. Not in doctrine. Proposed fold target: [common.md §X / personas.md §Y / defaults.md §Z]."
+   > "Used [pattern] to handle [situation]. Not in workflow. Proposed fold target: [common.md §X / personas.md §Y / defaults.md §Z]."
 3. **If the move is failure-mode-shaped** (matches the shape of an existing or new failure mode in §10.14): cross-link to the catalog entry at filing time.
 4. **Post `kind: manager_self_audit_sweep`** to the cascade's parent topic enumerating the candidates. Body includes:
    - Cascade ID + Manager persona
-   - List of doctrine-gap candidates (one per bullet, with empirical-anchor + proposed fold target)
+   - List of workflow-guidance-gap candidates (one per bullet, with empirical-anchor + proposed fold target)
    - Cross-references to §10.x failure-mode catalog where applicable
 5. **File each candidate to TODO.md** in the consuming project's repo (typically the planning-is-prompting repo if the cascade is on PIP workflows; the consuming project's TODO.md if cascade is on consuming-project work) under the v1.N codification candidate item.
 
@@ -594,13 +594,13 @@ The diagnostic **"Manager ad-hoc'd what should be codified"** has now validated 
 
 **Cross-link**: §Manager System Prompt self-audit checklist item 7 references this sub-section; `plan-review-cascaded-personas.md` §Persona 1 (Manager) outputs lists the `kind: manager_self_audit_sweep` artifact as a routine Manager output.
 
-**Doctrine-gap-candidate filing format** (TODO.md entry template):
+**Workflow-guidance-gap-candidate filing format** (TODO.md entry template):
 
 ```markdown
 - [ ] **v1.N candidate: [short title]** (cascade [ID], Manager [persona], filed YYYY-MM-DD). [Empirical anchor sentence.] Proposed fold target: [common.md §X / personas.md §Y / defaults.md §Z]. Cross-link: [§10.x failure-mode catalog entry, if applicable]. Source: kind: manager_self_audit_sweep post on [topic] at [timestamp].
 ```
 
-This format aligns with the existing v1.1 TODO.md item shape and the §10.18.8 doctrine-candidate table format.
+This format aligns with the existing v1.1 TODO.md item shape and the §10.18.8 workflow-guidance-candidate table format.
 
 ### Light-review gate (cascade-participant reviewer; focused rubric)
 
@@ -609,16 +609,16 @@ The Manager-as-synthesizer has a blind spot: after a long cascade, their cogniti
 **Reviewer selection** (Manager judgment for v1; algorithmic specification deferred to v2 if Manager-judgment proves to leak):
 
 - **Default**: one of the 4 cascade reviewers (Persona 3 / 4 / 5), preferably the reviewer with **freshest context on the most-impacted section** (section with most findings, longest revision trail, or most cross-section dependencies)
-- **Alternative**: the doctrine consultant if a 6th cascade participant ran in that role; doctrine-aware-fresh-eyes is a useful synthesis check even though the persona isn't section-anchored
+- **Alternative**: the Workflow Steward if a 6th cascade participant ran in that role; workflow-aware-fresh-eyes is a useful synthesis check even though the persona isn't section-anchored
 - **Escape hatch**: if no cascade participant has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit; quality risk is real but bounded
 
 **Light-review rubric** (NOT a full Persona-3/4/5 review — 5-criterion focused pass):
 
 1. **External-system assumptions check**: any Recon item still unresolved that touches an external system (server wire, infra, third-party API) is either (a) resolved before Step 9 closes, (b) explicitly escalation-worthy AT Step 9 (synthesizer surfaces as "this needs user ratification before implementer pre-flight"), or (c) explicitly tagged as conditional-executability with documented branches
-2. **AC conditionality check**: any AC that's conditionally-executable on something the synthesis didn't pin down — synthesis explicitly lists the condition + the resolution path (per Persona 2 point 9 + Persona 5 §Convention 6 doctrine)
+2. **AC conditionality check**: any AC that's conditionally-executable on something the synthesis didn't pin down — synthesis explicitly lists the condition + the resolution path (per Persona 2 point 9 + Persona 5 §Convention 6 rule)
 3. **Cross-section contract check**: any cross-section dependency mentioned in the synthesis matches the dependency mentioned in the execution plan (no drift between docs)
 4. **Hard-verification gate check**: any hard-verification gate introduced in the cascade (e.g., AC-B15 in Run 3) is reified into the execution plan's cross-cutting gates section
-5. **Standing doctrine memory check**: standing doctrine memories that affect implementer work are explicitly listed in the execution plan's global-standing-rules section
+5. **Standing memory-guidance check**: standing memory guidance that affects implementer work is explicitly listed in the execution plan's global-standing-rules section
 6. **Cross-component shared-state interaction check** (added 2026-05-19 post-Roscoe Node B closure): when multiple components in any section write to or read from a shared mutable state surface (DOM elements in frontend cascades; Redux store; event bus; file system; database tables in backend cascades), the synthesis doc per-section §3.X content names the **cross-component interaction pairs** + what each component writes/reads. Light-reviewer verifies the matrix is present + non-trivial pairs are flagged as watch-pairs for implementer attention. Generalizes from the Roscoe Node B anchor case (SenderStore dual-emission + NotificationsListRenderer's `replaceWith` wiping `data-focus-hidden` — a class of bug unit tests structurally cannot catch because each component is tested in isolation, but synthesis-time enumeration would have flagged the FocusTrayRenderer + NotificationsListRenderer pair as a watch-pair). DOM is one instance; the pattern generalizes to any mutable-state-sharing surface.
 
 **Output**: thumbs-up OR list of specific synthesis gaps to address before handoff. Posted as `kind: "step_9_light_review"` entry on the cascade's parent topic (or a sister `cascade-step-9-review` topic if the parent is congested).
@@ -653,13 +653,13 @@ A cascade can be `cascade_complete` without being `implementation_handoff_ready`
 
 **Added 2026-05-19 post-Run-3** based on Section A→C→D→B finding-count compression telemetry: 6 → 8 → 4 → 8 Stage-2 findings across 4 sections in cascade-launch order.
 
-The **cascade-learning-loop** is the cumulative dividend the cascade produces beyond per-section review value: lessons learned in earlier sections proactively apply to later sections, reducing both the cardinality of findings AND the per-finding cost. The loop is **first-order workflow asset**, not a serendipitous byproduct — proactively-doctrine-loaded sections produce fewer findings (Section D's 4 findings vs. Section A's 6, when D had 4 prior-section doctrines to carry forward).
+The **cascade-learning-loop** is the cumulative dividend the cascade produces beyond per-section review value: lessons learned in earlier sections proactively apply to later sections, reducing both the cardinality of findings AND the per-finding cost. The loop is **first-order workflow asset**, not a serendipitous byproduct — proactively-pattern-loaded sections produce fewer findings (Section D's 4 findings vs. Section A's 6, when D had 4 prior-section patterns to carry forward).
 
 The loop manifests in **3 distinct sub-patterns**, each with its own implication:
 
 ### Forward-only-asymmetry
 
-The forward-loop works **mechanically** via Author's autonomous lesson carry: Rachel's Section D draft proactively applied F-Arnold-1's directory-wide-glob doctrine (surfaced in Section A Stage 2) → ~50% reduction in Section D Stage-2 finding count vs. Section A.
+The forward-loop works **mechanically** via Author's autonomous lesson carry: Rachel's Section D draft proactively applied F-Arnold-1's directory-wide-glob pattern (surfaced in Section A Stage 2) → ~50% reduction in Section D Stage-2 finding count vs. Section A.
 
 The backward-loop does NOT work mechanically: F-Arnold-C3 (Section C Stage 2) **reproduced** F-Arnold-1 because C's Round-1 pre-dated A's lesson chronologically. The cascade cannot retroactively apply a lesson to a section already in flight; that's the cost of asymmetry.
 
@@ -667,25 +667,25 @@ The backward-loop does NOT work mechanically: F-Arnold-C3 (Section C Stage 2) **
 
 ### Symmetric-application
 
-Doctrine carry-forwards should apply to BOTH **writer + consumer** sections. Run 3 evidence: when Section D was revised to consume Section B's keyframes (per AC-B15 hard-gate), the writer side (Section B) was updated; the consumer side (Section D) silently inherited the dependency without the matching consumption assertion. F-Arnold-D1 caught the asymmetry.
+Pattern carry-forwards should apply to BOTH **writer + consumer** sections. Run 3 evidence: when Section D was revised to consume Section B's keyframes (per AC-B15 hard-gate), the writer side (Section B) was updated; the consumer side (Section D) silently inherited the dependency without the matching consumption assertion. F-Arnold-D1 caught the asymmetry.
 
-**Implication for Persona 2.A**: see `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 — doctrine-sweep on ANY revision-mechanism change must visit BOTH writer + consumer of the affected contract surface, not just the side the reviewer flagged.
+**Implication for Persona 2.A**: see `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 — forward-sweep on ANY revision-mechanism change must visit BOTH writer + consumer of the affected contract surface, not just the side the reviewer flagged.
 
 ### Context-aware-application
 
-A doctrine learned in Section X may NOT apply verbatim in Section Y. Run 3 evidence: Rachel applied F-Arnold-1's directory-wide-glob doctrine 4 times across the cascade; F-Arnold-B-Stage2-3 caught the 5th application where the doctrine **shouldn't** have applied because Section B's context differed materially (the glob target was a single-purpose file, not a directory-cluster).
+A pattern learned in Section X may NOT apply verbatim in Section Y. Run 3 evidence: Rachel applied F-Arnold-1's directory-wide-glob pattern 4 times across the cascade; F-Arnold-B-Stage2-3 caught the 5th application where the pattern **shouldn't** have applied because Section B's context differed materially (the glob target was a single-purpose file, not a directory-cluster).
 
-**Implication for Persona 2.A**: doctrine-sweeps are pre-emptive checks, not blanket apply-everywhere passes. Each application must verify the context is materially similar to the one where the doctrine was first surfaced. The Persona 2.A point 14 rubric calls out this verification step explicitly.
+**Implication for Persona 2.A**: forward-sweeps are pre-emptive checks, not blanket apply-everywhere passes. Each application must verify the context is materially similar to the one where the pattern was first surfaced. The Persona 2.A point 14 rubric calls out this verification step explicitly.
 
 ### Why this loop is a first-order workflow asset
 
-The Run 3 finding-count compression (6 → 8 → 4 → 8) is the empirical evidence: 4th-cascade-dispatched Section B benefited from 4 prior-section doctrines, but the residual 8 findings include catches of all 3 sub-pattern failures (F-Arnold-B-Stage2-3 context-aware misapplication; F-Arnold-D1 asymmetric writer-only update; F-Arnold-C3 backward-loop asymmetry). The cascade isn't just running reviews; it's **accumulating reviewable doctrine** that future cascades inherit. Capturing the sub-patterns formally lets future runs front-load the wins.
+The Run 3 finding-count compression (6 → 8 → 4 → 8) is the empirical evidence: 4th-cascade-dispatched Section B benefited from 4 prior-section patterns, but the residual 8 findings include catches of all 3 sub-pattern failures (F-Arnold-B-Stage2-3 context-aware misapplication; F-Arnold-D1 asymmetric writer-only update; F-Arnold-C3 backward-loop asymmetry). The cascade isn't just running reviews; it's **accumulating reviewable patterns** that future cascades inherit. Capturing the sub-patterns formally lets future runs front-load the wins.
 
 ---
 
 ## §Multi-surface Footer-ratification Close Protocol [SHARED]
 
-**Added 2026-05-20 post-Run-4** based on the 7 cross-cascade instances of footer-ratification close events (6 from Phase 7a Run 4 + Run 3 Section B AC-B15 hard-verification gate). When a finding or doctrine-candidate closes via a **footer ratification** pattern — where the close depends on multiple textual surfaces remaining coherent — the close protocol must visit ALL affected surfaces. Run-4 evidence refined two specific cases the v1 protocol missed: **non-adjacent surfaces** (item 5 below) and **the Step 9 synthesis doc as a 7th surface** (item 7 below).
+**Added 2026-05-20 post-Run-4** based on the 7 cross-cascade instances of footer-ratification close events (6 from Phase 7a Run 4 + Run 3 Section B AC-B15 hard-verification gate). When a finding or workflow-guidance-candidate closes via a **footer ratification** pattern — where the close depends on multiple textual surfaces remaining coherent — the close protocol must visit ALL affected surfaces. Run-4 evidence refined two specific cases the v1 protocol missed: **non-adjacent surfaces** (item 5 below) and **the Step 9 synthesis doc as a 7th surface** (item 7 below).
 
 ### What "multi-surface footer-ratification" means
 
@@ -726,7 +726,7 @@ The protocol's surface list is **open** — new cascade instances may surface ad
 
 ## §Mode-Specific Cross-References
 
-For the **mode-specific** doctrine (Steps 0, 0.5 for authoring; Steps 2, 5, 8 with mode variations; Persona 2 vs Persona 2.A rubrics; per-mode configuration knobs), consult the mode-specific playbooks:
+For the **mode-specific** workflow guidance (Steps 0, 0.5 for authoring; Steps 2, 5, 8 with mode variations; Persona 2 vs Persona 2.A rubrics; per-mode configuration knobs), consult the mode-specific playbooks:
 
 - `plan-review-cascaded.md` for review-mode (legacy v1 workflow; full text including duplicated shared sections for backwards-compat)
 - `plan-authoring-cascaded.md` for authoring-mode (pure + hybrid; ships 2026-05-19)
@@ -741,29 +741,29 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 
 ## Version History
 
-- **2026.05.20 (Run-4 v1.1 doctrine fold)** — Seven extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
+- **2026.05.20 (Run-4 v1.1 workflow fold)** — Seven extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
   1. **§Manager System Prompt self-audit checklist** — new item 7: post-cascade close-out self-audit sweep (Step 9 cold-context rubric Q#6). Codifies the "Manager ad-hoc'd what should be codified" diagnostic as a routine Manager activity. 3 validated empirical anchors: Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure mode #6 + observer-probe candidate post-Run-4.
   2. **NEW §Clarification Tier Vocabulary (T1/T2/T3/T4)** — foundational shared vocabulary for autonomy-level routing. T1 = silent in-cascade; T2 = cross-persona Manager-arbitrated; T3 = user-escalation deferrable; T4 = urgent halt. Tier inflation explicitly flagged as anti-pattern. Empirical anchor: Run 4's 100% T1/T2 silent execution = 0 user touches.
-  3. **NEW §Author-side Discipline — Grep-sweep Checklist** — 6-pass routine pre-handoff self-check (identifier-coherence + EXECUTOR-tag + coverage-assertion + doctrine-application + cross-section-reference + TBD/OSQ completeness). 3 empirical anchors: Run-4 Krishna Q-1..Q-4 catch (Stage 2 cap-3 cluster); Run-3 Rachel Section D AC-sweep (50% finding reduction); Run-4 Tiberius Tiffany-rename-pass catch. Companion to `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 (revision-mechanism case); this checklist covers the pre-handoff case.
-  4. **§Heartbeat Handling extension** — new **Daemon kickoff procedure (Manager + Observer dual-independent)** sub-section codifying the v1.1 default policy `heartbeat_daemon_kickoff_policy = dual_independent`. Run-4 prep empirical anchor (Rick's catch that v1 doctrine only documented Manager-daemon launch; Observer-daemon was tribal knowledge).
+  3. **NEW §Author-side Discipline — Grep-sweep Checklist** — 6-pass routine pre-handoff self-check (identifier-coherence + EXECUTOR-tag + coverage-assertion + pattern-application + cross-section-reference + TBD/OSQ completeness). 3 empirical anchors: Run-4 Krishna Q-1..Q-4 catch (Stage 2 cap-3 cluster); Run-3 Rachel Section D AC-sweep (50% finding reduction); Run-4 Tiberius Tiffany-rename-pass catch. Companion to `plan-review-cascaded-personas.md` §Persona 2.A rubric point 14 (revision-mechanism case); this checklist covers the pre-handoff case.
+  4. **§Heartbeat Handling extension** — new **Daemon kickoff procedure (Manager + Observer dual-independent)** sub-section codifying the v1.1 default policy `heartbeat_daemon_kickoff_policy = dual_independent`. Run-4 prep empirical anchor (Rick's catch that v1 workflow only documented Manager-daemon launch; Observer-daemon was tribal knowledge).
   5. **NEW §Observer-mode Probe Protocol** — codifies Observer's two roles (real-time mitigation channel + post-cascade retrospective partner); probe action shape (`commons_who` + `commons_read` + DM-Manager-with-pointer + post `kind: observer_probe_unblocked` on mitigation events); cadence per-stage defaults (M=4/8/2); cross-channel discipline; dual-channel safety property for failure mode #6. Empirical anchor: Run-4 Stage-2 minute-13 phantom-lag mitigation.
-  6. **§Step 9 — Synthesis & Handoff extension** — cold-context test rubric extended from 5-question to 6-question; new Q#6 covers Manager close-out self-audit sweep; new **§Manager close-out self-audit sweep** sub-section provides the procedure (~3-5 min sweep + `kind: manager_self_audit_sweep` post + TODO.md filing with empirical-anchor + failure-mode-catalog cross-link). Doctrine-gap-candidate TODO.md filing template included.
+  6. **§Step 9 — Synthesis & Handoff extension** — cold-context test rubric extended from 5-question to 6-question; new Q#6 covers Manager close-out self-audit sweep; new **§Manager close-out self-audit sweep** sub-section provides the procedure (~3-5 min sweep + `kind: manager_self_audit_sweep` post + TODO.md filing with empirical-anchor + failure-mode-catalog cross-link). Workflow-guidance-gap-candidate TODO.md filing template included.
   7. **NEW §Multi-surface Footer-ratification Close Protocol** — codifies the close-coherence-across-surfaces protocol with 7 surface types (originating AC, consumer-side AC, parent design doc, adjacent ACs, **non-adjacent ACs** [item 5 — Tiffany-rename anchor], pipeline-summary commons post, **Step 9 synthesis doc** [item 7 — F-LR-1+F-LR-2 anchors]). Anchored in 7 cross-cascade instances. Surface list is open — new cascade instances may surface additional surface types.
   Cross-references to `plan-review-cascaded-personas.md` (Persona 6 Observer + Persona 1 Manager self-audit-sweep output + Persona 2.A point 14 anchors #2+#3) and `plan-review-cascaded-defaults.md` (§Cascade-execution observability config + 3 new kind enum values). Empirical anchors in design-doc §10.18 (Run 4 retrofit row); pre-committed re-evaluation gates in §10.18.12.
 
-- **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — NEW §Step 0 — Cascade Preparation (Shared Acceptance Criteria) subsection added before §Step 1: Resolve Effective Configuration. Codifies the pre-cascade preparation phase that v1 doctrine omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding; Manager Tiberius had to verbally hand-hold a cold cast member through ~1500 words of tribal-knowledge cascade-input shape). Includes: cold-context test 5-question rubric (Manager self-administered, ~10-15 min); light-review gate with reviewer-selection guidance + 6-criterion focused rubric + ~15-20 min reviewer-time cost; 1-revision-turn cap on Manager response; pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state); `cascade_input_ready` state semantics + full cascade lifecycle state machine (`raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`). Mode-specific Step 0 specs live in `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) and `plan-review-cascaded.md` §Step 0 (lighter — review-cascade input is already a parent input plan). Full requirements anchor at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape.
+- **2026.05.20 (Step 0 — Cascade Preparation workflow)** — NEW §Step 0 — Cascade Preparation (Shared Acceptance Criteria) subsection added before §Step 1: Resolve Effective Configuration. Codifies the pre-cascade preparation phase that v1 workflow omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding; Manager Tiberius had to verbally hand-hold a cold cast member through ~1500 words of tribal-knowledge cascade-input shape). Includes: cold-context test 5-question rubric (Manager self-administered, ~10-15 min); light-review gate with reviewer-selection guidance + 6-criterion focused rubric + ~15-20 min reviewer-time cost; 1-revision-turn cap on Manager response; pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state); `cascade_input_ready` state semantics + full cascade lifecycle state machine (`raw_design_received` → `cascade_input_ready` → `cascade_complete` → `implementation_handoff_ready` → `shipped`). Mode-specific Step 0 specs live in `plan-authoring-cascaded.md` §Step 0 (6-sub-step authoring spec) and `plan-review-cascaded.md` §Step 0 (lighter — review-cascade input is already a parent input plan). Full requirements anchor at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Step 0 + Step 9 together close the cascade workflow's end-to-end shape.
 
-- **2026.05.19 (Step 9 light-review rubric — criterion 6 added)** — §Step 9 light-review rubric extended from 5 criteria to 6: new **Cross-component shared-state interaction check** (Tiberius's §6.7 candidate, ratified by Rick post-discussion). Anchored in Roscoe's Node B closure: SenderStore dual-emission + NotificationsListRenderer's `replaceWith` wiped `data-focus-hidden` — a class of bug unit tests structurally cannot catch (each component tested in isolation) but synthesis-time enumeration of cross-component interaction pairs would have flagged the watch-pair. Generalization to "cross-component shared-state" makes the criterion project-agnostic (DOM is one instance; same pattern applies to Redux store / event bus / file system / database tables / any mutable-state-sharing surface). Tiberius's requirements doc §6.7 entry preserves the empirical anchor + the v2-vs-v1 debate for future doctrine-curators.
+- **2026.05.19 (Step 9 light-review rubric — criterion 6 added)** — §Step 9 light-review rubric extended from 5 criteria to 6: new **Cross-component shared-state interaction check** (Tiberius's §6.7 candidate, ratified by Rick post-discussion). Anchored in Roscoe's Node B closure: SenderStore dual-emission + NotificationsListRenderer's `replaceWith` wiped `data-focus-hidden` — a class of bug unit tests structurally cannot catch (each component tested in isolation) but synthesis-time enumeration of cross-component interaction pairs would have flagged the watch-pair. Generalization to "cross-component shared-state" makes the criterion project-agnostic (DOM is one instance; same pattern applies to Redux store / event bus / file system / database tables / any mutable-state-sharing surface). Tiberius's requirements doc §6.7 entry preserves the empirical anchor + the v2-vs-v1 debate for future workflow-guidance curators.
 
-- **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — New §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) subsection. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). Includes: cold-context test 5-question rubric (Manager self-administered, ~15 min cost); light-review gate with reviewer-selection guidance + 5-criterion focused rubric (extended to 6-criterion later this same day per the criterion-6 addition above) + ~10-15 min reviewer-time cost; 1-revision-turn cap on Manager response to light-review findings; `implementation_handoff_ready` state semantics. Mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact: synthesis doc + parent design-doc amendments + execution plan) and `plan-review-cascaded.md` §Step 9 (1-artifact: revision-handoff doc). Full requirements anchor at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Empirical anchor: Run-3 Manager solo-authored 1,225 LOC of post-cascade synthesis work that wasn't in workflow Steps 1-8; implementer (Roscoe) surfaced 2 cascade-design gaps in his first 30 min that a light-review would have caught at synthesis time.
+- **2026.05.19 (Step 9 — Synthesis & Handoff workflow)** — New §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) subsection. Codifies the implementation-handoff phase that v1 workflow omitted (Rick's broadcast `d3a89a21` catch). Includes: cold-context test 5-question rubric (Manager self-administered, ~15 min cost); light-review gate with reviewer-selection guidance + 5-criterion focused rubric (extended to 6-criterion later this same day per the criterion-6 addition above) + ~10-15 min reviewer-time cost; 1-revision-turn cap on Manager response to light-review findings; `implementation_handoff_ready` state semantics. Mode-specific artifact specs live in `plan-authoring-cascaded.md` §Step 9 (3-artifact: synthesis doc + parent design-doc amendments + execution plan) and `plan-review-cascaded.md` §Step 9 (1-artifact: revision-handoff doc). Full requirements anchor at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Empirical anchor: Run-3 Manager solo-authored 1,225 LOC of post-cascade synthesis work that wasn't in workflow Steps 1-8; implementer (Roscoe) surfaced 2 cascade-design gaps in his first 30 min that a light-review would have caught at synthesis time.
 
-- **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation) integrated into this canonical shared-doctrine doc. Additions:
+- **2026.05.19 (Run-3 workflow fold)** — §10.14 errata items from Run 3 (Phase 6C cascade, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation) integrated into this canonical shared-workflow doc. Additions:
   - **§Manager System Prompt self-audit** — new item 6: `blocked_waiting_on_user` post for observer disambiguation
   - **§Severity Classification** — `closure_action` enum expanded with 3 new values: `hard_verification_gate` (Section B AC-B15), `manager_unilateral_ratify_by_concurrence` (Section D Q-D1), `reassigned_due_to_rate_limit` (Section B Mr-Radio→Arnold). Worked-example table added.
   - **§Escalation Taxonomy** — new 18-minute user-attention-block cap rule (multi-option escalations tighten to 2 options + recommendation-leads after 18 min without response)
-  - **NEW §Reviewer Reassignment — Manager Latitude with Bias Guardrails** — three paired doctrines: (a) 5-element Manager Reassignment Latitude (Rick's voice endorsement codified); (b) Reassignment Bias Risk Guardrail with rubric-differential discipline as default mitigation + cooling-off + two-reviewer cross-check options; (c) Reviewer-reassignment-due-to-rate-limit as 5th failure mode (extends 4-mode list to 5)
+  - **NEW §Reviewer Reassignment — Manager Latitude with Bias Guardrails** — three paired rules: (a) 5-element Manager Reassignment Latitude (Rick's voice endorsement codified); (b) Reassignment Bias Risk Guardrail with rubric-differential discipline as default mitigation + cooling-off + two-reviewer cross-check options; (c) Reviewer-reassignment-due-to-rate-limit as 5th failure mode (extends 4-mode list to 5)
   - **NEW §Cascade-Learning-Loop Sub-patterns** — three sub-patterns codified: forward-only-asymmetry (dispatch order matters), symmetric-application (writer + consumer), context-aware-application (not blanket apply-everywhere). First-order workflow asset.
-  - Cross-reference to `plan-review-cascaded-personas.md` §Persona 2.A point 14 (new doctrine-sweep rubric item) + §Persona 5 Stage-3 cosmetic-cluster recognition (new sub-section)
+  - Cross-reference to `plan-review-cascaded-personas.md` §Persona 2.A point 14 (new forward-sweep rubric item) + §Persona 5 Stage-3 cosmetic-cluster recognition (new sub-section)
   - Cross-reference to `plan-review-cascaded-defaults.md` for the closure_action worked-example table + new commons `kind` enumeration
 
-- **2026.05.19** — Initial extraction from `plan-review-cascaded.md` v1 single-doc playbook. Pulls the ~60% of doctrine that's identical between review-mode and authoring-mode cascade workflows: Step 1 config resolution, Step 3 user-approval gate pattern with spoken-headline contract, Manager System Prompt with universal-step-zero + self-audit, severity classification with 6-field metadata schema, escalation taxonomy with cluster-bundling default, DM-subset selection heuristics, vote mechanics, heartbeat handling (external-scheduler integration with daemon reference), briefing delivery dual-pattern, worker acknowledgment format. Mode-specific bits stay in `plan-review-cascaded.md` and `plan-authoring-cascaded.md`. Backwards-compat: review-cascaded.md retains full text of shared sections; future v3+ revisions should consolidate so common.md is sole source of truth.
+- **2026.05.19** — Initial extraction from `plan-review-cascaded.md` v1 single-doc playbook. Pulls the ~60% of workflow guidance that's identical between review-mode and authoring-mode cascade workflows: Step 1 config resolution, Step 3 user-approval gate pattern with spoken-headline contract, Manager System Prompt with universal-step-zero + self-audit, severity classification with 6-field metadata schema, escalation taxonomy with cluster-bundling default, DM-subset selection heuristics, vote mechanics, heartbeat handling (external-scheduler integration with daemon reference), briefing delivery dual-pattern, worker acknowledgment format. Mode-specific bits stay in `plan-review-cascaded.md` and `plan-authoring-cascaded.md`. Backwards-compat: review-cascaded.md retains full text of shared sections; future v3+ revisions should consolidate so common.md is sole source of truth.

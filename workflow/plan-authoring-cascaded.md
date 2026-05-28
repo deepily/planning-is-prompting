@@ -1,6 +1,6 @@
 # Cascaded Plan-Authoring (Manager's Playbook — Sister of `/plan-review-cascaded`)
 
-**Purpose**: cascaded multi-persona pipeline for **authoring** an implementation plan — either greenfield (from intent+scope+constraints) or hybrid (refining an existing design doc into an implementation plan + cascade-resolving outstanding Q-decisions). Sister workflow to `/plan-review-cascaded`. **~60% of doctrine is shared** via `plan-review-cascaded-common.md` (extracted post-2026.05.18 from the original cascade playbook).
+**Purpose**: cascaded multi-persona pipeline for **authoring** an implementation plan — either greenfield (from intent+scope+constraints) or hybrid (refining an existing design doc into an implementation plan + cascade-resolving outstanding Q-decisions). Sister workflow to `/plan-review-cascaded`. **~60% of workflow guidance is shared** via `plan-review-cascaded-common.md` (extracted post-2026.05.18 from the original cascade playbook).
 
 **Goal**: same as `/plan-review-cascaded` — **save user attention as the scarce resource**. Cascade-resolves Q-decisions via manager-funnel; only foundational/cross-section findings escalate. For authoring, the cognitive-workload reduction is even sharper because authoring naturally generates 5-10× more Q-decisions than review (see Run-3 pre-experiment prediction in design doc §10.14).
 
@@ -15,13 +15,13 @@
 | **Pure authoring** | Intent statement + must-reuse list + immutable constraints + target deliverables | Full implementation plan with sections, ACs, EXECUTOR tags | Greenfield projects, design-from-scratch work |
 | **Hybrid** (design-to-implementation) | Ratified design doc + sub-feature partitioning + outstanding Q-decisions | Implementation plan with Q-decisions cascade-resolved + ACs derived | Phase-shaped projects (e.g., Lupin Phase 6C), design-doc-stalled-at-Q-decisions cases |
 
-**Status**: v1 — markdown-driven, no orchestration code beyond the heartbeat daemon (inherited from `/plan-review-cascaded`). Ships 2026-05-19 post-Run-2 doctrine ratification.
+**Status**: v1 — markdown-driven, no orchestration code beyond the heartbeat daemon (inherited from `/plan-review-cascaded`). Ships 2026-05-19 post-Run-2 workflow ratification.
 
 ---
 
 ## Prerequisites
 
-All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, heartbeat daemon, dual-delivery briefing pattern when a doctrine consultant participates). PLUS:
+All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, heartbeat daemon, dual-delivery briefing pattern when a Workflow Steward participates). PLUS:
 
 - **One of**:
   - **(Pure authoring mode)**: intent statement, must-reuse list, immutable constraints, target deliverables
@@ -86,11 +86,11 @@ Manager runs the **Step 0 light-review gate** (see common.md §Step 0 light-revi
 
 By default the Manager (the persona who will run the cascade) authors Step 0 outputs. Rationale: same cross-section visibility that justifies Step 9 Manager-default authorship; carrying design context end-to-end reduces handoff cost across the cascade lifecycle.
 
-**Escape hatch for future v3**: workflow doctrine may allow a "designated preparer" role if a Manager is over-committed or if the parent-design-doc author IS the natural Step 0 preparer.
+**Escape hatch for future v3**: workflow guidance may allow a "designated preparer" role if a Manager is over-committed or if the parent-design-doc author IS the natural Step 0 preparer.
 
 ### Step 0 + Step 9 lifecycle completion
 
-Step 0 and Step 9 together close the cascade workflow doctrine's end-to-end shape. The full lifecycle:
+Step 0 and Step 9 together close the cascade workflow's end-to-end shape. The full lifecycle:
 
 ```
 raw_design_received → (Step 0) → cascade_input_ready
@@ -186,13 +186,13 @@ See `plan-review-cascaded-common.md` §Step 3. Same gate. In hybrid mode, this g
 
 ## Step 4: Assign Roles to the Other 4 Sessions (SHARED with casting guidance)
 
-Mechanism identical to `/plan-review-cascaded` Step 4 (manager DMs each peer; workers ack with `"ready, [role]"` per Lesson 5 doctrine).
+Mechanism identical to `/plan-review-cascaded` Step 4 (manager DMs each peer; workers ack with `"ready, [role]"` per Lesson 5 rule).
 
 **Casting guidance for authoring**:
 
 - **Pure authoring**: same 5-persona cast as review-cascade; Author drafts from intent
 - **Hybrid**: **Author SHOULD be the domain expert with prior work-context** — typically the design-doc author or the worker with the most familiarity with the design's prior art
-- **For Phase 6C** (canonical hybrid example): Rachel Author (designed Phase 6C 2026-05-12), Mr. Radio Usability (cycled from Author; has notification-UI handoff context per `<lupin>/src/rnd/v0.1.7/2026.05.13-handoff-to-arnold-notifications-ui-changes.md`), Arnold Viability (same as review-cascade), Rio Ownership (rubric extended with Convention 6 for Lupin's coverage mandate), Tiberius Manager, María Doctrine consultant
+- **For Phase 6C** (canonical hybrid example): Rachel Author (designed Phase 6C 2026-05-12), Mr. Radio Usability (cycled from Author; has notification-UI handoff context per `<lupin>/src/rnd/v0.1.7/2026.05.13-handoff-to-arnold-notifications-ui-changes.md`), Arnold Viability (same as review-cascade), Rio Ownership (rubric extended with Convention 6 for Lupin's coverage mandate), Tiberius Manager, María Workflow Steward
 
 ---
 
@@ -242,7 +242,7 @@ This pre-empts Run 2's load-bearing F1 pattern: goals promised but unowned at th
 
 ## Step 7: Escalation to User (SHARED)
 
-See `plan-review-cascaded-common.md` §Step 7. Same 7-trigger taxonomy. Same Item #2 spoken-headline doctrine (recommendation MUST lead the spoken question; abstract carries detail).
+See `plan-review-cascaded-common.md` §Step 7. Same 7-trigger taxonomy. Same Item #2 spoken-headline rule (recommendation MUST lead the spoken question; abstract carries detail).
 
 **One authoring-specific consideration**: the manager-funnel-inverted-for-proposals-up pattern (Lesson 12 from v2 polish bundle cycle) applies when authoring produces multiple Q-decisions that need user resolution simultaneously. Bundle them per Lesson 8; lead with recommendation per Item #2.
 
@@ -257,7 +257,7 @@ All `/plan-review-cascaded` Step 8 fields apply (telemetry, finding count, escal
 - **Per-section draft count** (1 = clean first-draft; 2 = one revision; 3 = at-cap, voted/escalated)
 - **Hybrid-mode-specific**: count of original Q-decisions resolved (target: 100% — either ratified or downgraded to TBD/Open-sub-question with explicit owning-section)
 
-**Step 8 is NOT cascade-done**: per Step 9 doctrine (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Implementation-Handoff Synthesis) artifacts land + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
+**Step 8 is NOT cascade-done**: per Step 9 workflow (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Implementation-Handoff Synthesis) artifacts land + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
 
 ---
 
@@ -280,7 +280,7 @@ The authoring-cascade flavor produces 3 artifacts at canonical paths next to the
 Single canonical contract derived from all section artifacts. Implementer (and future readers) read this to understand WHAT was ratified and WHY. Required content:
 
 - §1 Purpose statement + sister-doc cross-refs (parent design doc, execution plan)
-- §2 Cascade telemetry (closure metrics, per-section findings count, verbatim-accept rates, escalation counts, hard-verification-gate count, doctrine-candidate count)
+- §2 Cascade telemetry (closure metrics, per-section findings count, verbatim-accept rates, escalation counts, hard-verification-gate count, workflow-guidance-candidate count)
 - §3 **Per-section ratified synthesis** — one §3.X subsection per cascade section, each containing:
   - Cluster Q-decisions ratified (verbatim verdicts; user escalations + manager-unilateral ratifications inline-cited)
   - Final acceptance criteria (full AC table; verbatim text per AC; EXECUTOR column)
@@ -292,7 +292,7 @@ Single canonical contract derived from all section artifacts. Implementer (and f
   - Stage findings closure trail (Stages 1/2/3)
 - §4 Cross-section dependency map (mermaid graph + edges table)
 - §5 Post-cascade fold bundle (items deferred to documentation polish; NOT new code work)
-- §6 Doctrine candidates brief index (cross-ref to PIP-side deep redline) — **REQUIRED**, not optional
+- §6 Workflow-guidance candidates brief index (cross-ref to PIP-side deep redline) — **REQUIRED**, not optional
 - §7 Sequencing recommendation for implementation
 - §8 Open items + hand-off to design-doc amendment + execution plan
 
@@ -301,7 +301,7 @@ Single canonical contract derived from all section artifacts. Implementer (and f
 The parent design doc was created at design-mode time as the canonical reference. After the cascade ratifies the design, the design doc must reflect that ratified state. No new file; edits land in-place on the existing parent design doc. Required edits:
 
 - **Status header**: flip from "DRAFT" (or equivalent) to "🟢 CASCADE-RATIFIED YYYY-MM-DD" + sister-doc cross-refs (synthesis + execution plan paths)
-- **Cascade closure metadata**: brief paragraph in the header table — wall-clock, sections-closed, findings totals, verbatim-accept rate, user escalations, manager-unilateral ratifications, reviewer reassignments, hard-verification gates, doctrine candidates filed
+- **Cascade closure metadata**: brief paragraph in the header table — wall-clock, sections-closed, findings totals, verbatim-accept rate, user escalations, manager-unilateral ratifications, reviewer reassignments, hard-verification gates, workflow-guidance candidates filed
 - **Per-cluster ratification markers**: each Cluster N section gains a "✅ FULLY RATIFIED (X/Y) YYYY-MM-DD (Run N cascade)" line + brief closure paragraph
 - **Per-Q ratification markers**: each Q that had a user escalation or manager-unilateral ratification gains a dedicated marker with cascade-closure narrative inline
 - **AC tables**: replace DRAFT AC tables with final ratified per-section AC tables (OR cross-ref synthesis doc §3.X; keep legacy DRAFT below for historical context)
@@ -312,7 +312,7 @@ The parent design doc was created at design-mode time as the canonical reference
 Implementer's handoff doc. Anyone picking this up cold ships section-by-section without re-deriving cascade context. Structure per implementer's framing preference (DAG-first is the Run-3 canonical example; workflow leaves shape flexible). Required content:
 
 - §1 DAG / sequencing graph (mermaid; per-edge rationale; concurrency options)
-- §2 Global standing rules — doctrine memories that apply across all nodes (coverage mandate, commit discipline, test-venue routing); test pyramid required at every node; code style invariants
+- §2 Global standing rules — memory guidance that applies across all nodes (coverage mandate, commit discipline, test-venue routing); test pyramid required at every node; code style invariants
 - §3 **Per-node deliverables** (in DAG order), each containing:
   - Provides / Depends-on / Coordinates-with (cross-node)
   - Synthesis cross-ref (to §3.X of synthesis doc — the why-anchor)
@@ -335,7 +335,7 @@ Step 9 authorship is the **Manager's** responsibility by default. Rationale:
 - Manager already maintains the manager-classification thread across the cascade — synthesis is a natural extension
 - Avoids cast expansion (no new Persona 6 to allocate)
 
-**Escape hatch for future v3**: workflow doctrine may add a "designated synthesizer" role if cascades grow large enough that synthesis becomes its own full-time job. Run 3 (N=4 sections, 43 findings, 1,225 LOC synthesis output, ~80 min Manager wall-clock) is at the edge of Manager-solo feasibility. N=8 cascades may warrant the split. For v1, default = Manager; escape hatch documented but not invoked.
+**Escape hatch for future v3**: workflow guidance may add a "designated synthesizer" role if cascades grow large enough that synthesis becomes its own full-time job. Run 3 (N=4 sections, 43 findings, 1,225 LOC synthesis output, ~80 min Manager wall-clock) is at the edge of Manager-solo feasibility. N=8 cascades may warrant the split. For v1, default = Manager; escape hatch documented but not invoked.
 
 ### 9.3 Step 9 closure flow
 
@@ -377,7 +377,7 @@ Phase 6C (Lupin notifications-UI multiplexer port) is the **canonical hybrid-mod
 
 **Output target**: implementation plan with all Q-decisions resolved (ratified, deferred-to-Open-sub-question with explicit owning-section, or escalated and resolved by user).
 
-**Casting**: Rachel Author (designed it) / Mr. Radio Usability (cycled from review-cascade Author role) / Arnold Viability / Rio Ownership-with-Convention-6 / Tiberius Manager / María Doctrine consultant.
+**Casting**: Rachel Author (designed it) / Mr. Radio Usability (cycled from review-cascade Author role) / Arnold Viability / Rio Ownership-with-Convention-6 / Tiberius Manager / María Workflow Steward.
 
 **Activation**:
 - Skip Step 0 (design + partitioning exist)
@@ -409,7 +409,7 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 
 ## Companion References
 
-- `plan-review-cascaded-common.md` — shared doctrine (~60% of original playbook; heartbeat, manager system prompt, severity schema, etc.)
+- `plan-review-cascaded-common.md` — shared workflow guidance (~60% of original playbook; heartbeat, manager system prompt, severity schema, etc.)
 - `plan-review-cascaded.md` — sister review-mode playbook (~40% review-specific)
 - `plan-review-cascaded-defaults.md` — shared configuration defaults table
 - `plan-review-cascaded-personas.md` — persona briefs + rubrics (Persona 2.A authoring author here)
@@ -420,22 +420,22 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 
 ## Version History
 
-- **2026.05.20 (Run-4 v1.1 doctrine fold)** — Version-history-only entry; the v1.1 doctrine fold applies to this playbook via the shared-doctrine references already in place. New shared sections + extensions landed in:
+- **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
-  - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Doctrine Observer, optional)
+  - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Workflow Steward, optional)
   - `plan-review-cascaded-defaults.md`: NEW §Cascade-execution observability config section (4 new keys: `heartbeat_daemon_kickoff_policy`, `observer_probe_cadence_default`/`_stage_0`/`_stage_2`); 3 new `kind` enum values (`manager_self_audit_sweep`, `observer_probe_unblocked`, `multi_surface_footer_ratification`); total config keys 28 → 32
-  - `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`: NEW §10.18.12 Pre-committed re-evaluation gates (4 gates locked in writing to prevent doctrine drift)
+  - `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`: NEW §10.18.12 Pre-committed re-evaluation gates (4 gates locked in writing to prevent workflow drift)
   Empirical anchors: design-doc §10.18 (Run 4 retrofit row). 7 v1.1 candidates promoted + 1 placeholder, locked fold-order: heartbeat-kickoff → manager-self-audit-sweep → grep-sweep-checklist → tier-vocabulary → manager-proactive-commons-read → observer-probe-mitigation → multi-surface-footer-ratification. Ratified bilaterally via the María ↔ Tiberius post-Run-4 retrospective DM thread (2 rounds; final ratification 2026-05-20).
 
-- **2026.05.20 (Step 0 — Cascade Preparation doctrine)** — NEW §Step 0: Cascade Preparation section added before §Step 0.0 (formerly standalone "Step 0: Intent Capture"; renamed to Step 0.0 to avoid clash with the new Step 0 umbrella). The pre-existing §Step 0.5: Dependency Map renumbered to §Step 0.7 to free Step 0.5 for the new pre-cascade-ratification sub-step. Step 0 codifies the cascade-preparation phase that v1 doctrine omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding 2026-05-20). 6 sub-steps: 0.1 input intake + slice-ability + 0.2 slicing manifest (if sliced) + 0.3 per-slice design docs + 0.4 Q-decision matrix + 0.5 pre-cascade user ratification + 0.6 cascade-readiness gate (state flip to `cascade_input_ready`). Manager-default authorship; cold-context test analog + light-review gate (6-criterion focused rubric) + pre-cascade Recon checklist (REQUIRED for state-flip). Step 0 + Step 9 together close the cascade workflow doctrine's end-to-end shape. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Companion edits in `plan-review-cascaded.md` (lighter 3-sub-step Step 0 for review-cascade flavor), `plan-review-cascaded-common.md` (shared acceptance criteria), `plan-review-cascaded-personas.md` (Persona 1 Manager outputs extended), `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys).
+- **2026.05.20 (Step 0 — Cascade Preparation workflow)** — NEW §Step 0: Cascade Preparation section added before §Step 0.0 (formerly standalone "Step 0: Intent Capture"; renamed to Step 0.0 to avoid clash with the new Step 0 umbrella). The pre-existing §Step 0.5: Dependency Map renumbered to §Step 0.7 to free Step 0.5 for the new pre-cascade-ratification sub-step. Step 0 codifies the cascade-preparation phase that v1 workflow omitted (Rick's catch surfaced via Mr Radio's Phase 7 onboarding 2026-05-20). 6 sub-steps: 0.1 input intake + slice-ability + 0.2 slicing manifest (if sliced) + 0.3 per-slice design docs + 0.4 Q-decision matrix + 0.5 pre-cascade user ratification + 0.6 cascade-readiness gate (state flip to `cascade_input_ready`). Manager-default authorship; cold-context test analog + light-review gate (6-criterion focused rubric) + pre-cascade Recon checklist (REQUIRED for state-flip). Step 0 + Step 9 together close the cascade workflow's end-to-end shape. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Companion edits in `plan-review-cascaded.md` (lighter 3-sub-step Step 0 for review-cascade flavor), `plan-review-cascaded-common.md` (shared acceptance criteria), `plan-review-cascaded-personas.md` (Persona 1 Manager outputs extended), `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys).
 
-- **2026.05.19 (Step 9 — Synthesis & Handoff doctrine)** — NEW §Step 9: Implementation-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 doctrine omitted (Rick's broadcast `d3a89a21` catch). The cascade was previously "done" at Step 8 cascade-complete signal; in practice this left ~1,225 LOC of synthesis work as Manager ad-hoc post-cascade (Run-3 Tiberius), AND let 2 cascade-design gaps leak into the handoff package that the implementer (Roscoe) surfaced at pre-flight. Step 9 introduces: (a) the 3-artifact spec — synthesis doc + parent design-doc amendments + execution plan (with required-content per artifact); (b) Manager-default authorship with v3 escape hatch for designated-synthesizer at large N; (c) Step 9 closure flow with cold-context test + light-review gate + 1-revision-turn cap; (d) new `implementation_handoff_ready` closure state distinct from `cascade_complete`. Step 8 explicitly NOT cascade-done; handoff-ready requires Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Companion edits in `plan-review-cascaded-common.md` (shared acceptance criteria) + `plan-review-cascaded-personas.md` (Persona 1 Manager outputs) + `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys) + `plan-review-cascaded.md` (sister §Step 9 with 1-artifact spec).
+- **2026.05.19 (Step 9 — Synthesis & Handoff workflow)** — NEW §Step 9: Implementation-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 workflow omitted (Rick's broadcast `d3a89a21` catch). The cascade was previously "done" at Step 8 cascade-complete signal; in practice this left ~1,225 LOC of synthesis work as Manager ad-hoc post-cascade (Run-3 Tiberius), AND let 2 cascade-design gaps leak into the handoff package that the implementer (Roscoe) surfaced at pre-flight. Step 9 introduces: (a) the 3-artifact spec — synthesis doc + parent design-doc amendments + execution plan (with required-content per artifact); (b) Manager-default authorship with v3 escape hatch for designated-synthesizer at large N; (c) Step 9 closure flow with cold-context test + light-review gate + 1-revision-turn cap; (d) new `implementation_handoff_ready` closure state distinct from `cascade_complete`. Step 8 explicitly NOT cascade-done; handoff-ready requires Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`. Companion edits in `plan-review-cascaded-common.md` (shared acceptance criteria) + `plan-review-cascaded-personas.md` (Persona 1 Manager outputs) + `plan-review-cascaded-defaults.md` (closure_action enum + kind enum + new config keys) + `plan-review-cascaded.md` (sister §Step 9 with 1-artifact spec).
 
-- **2026.05.19 (Run-3 doctrine fold)** — §10.14 errata redline integrated post-Run-3 cascade-complete (Phase 6C, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation). Run-3 surfaced 12 doctrine candidates (plus 3 Rick-voice catches) filed in the `pipeline-summary-20260519` commons topic; this revision folds the cascade-shared subset into the canonical homes:
-  - `plan-review-cascaded-common.md`: new §Reviewer Reassignment (Manager Latitude 5-element doctrine + Bias Risk Guardrail + Rate-Limit failure-mode entry); new §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy
-  - `plan-review-cascaded-personas.md`: Persona 2.A point 14 (doctrine-sweep on revision-mechanism change with 3 sub-patterns); Persona 5 §Stage-3 Cosmetic-Cluster Recognition
+- **2026.05.19 (Run-3 workflow fold)** — §10.14 errata redline integrated post-Run-3 cascade-complete (Phase 6C, 108 min wall-clock, 43 findings, 91% verbatim-accept, 1 user-escalation). Run-3 surfaced 12 workflow-guidance candidates (plus 3 Rick-voice catches) filed in the `pipeline-summary-20260519` commons topic; this revision folds the cascade-shared subset into the canonical homes:
+  - `plan-review-cascaded-common.md`: new §Reviewer Reassignment (Manager Latitude 5-element rule + Bias Risk Guardrail + Rate-Limit failure-mode entry); new §Cascade-Learning-Loop Sub-patterns (forward-only-asymmetry + symmetric-application + context-aware-application); expanded `closure_action` enum (3 new values); Manager System Prompt self-audit item 6 (`blocked_waiting_on_user`); 18-min user-attention-block cap in §Escalation Taxonomy
+  - `plan-review-cascaded-personas.md`: Persona 2.A point 14 (forward-sweep on revision-mechanism change with 3 sub-patterns); Persona 5 §Stage-3 Cosmetic-Cluster Recognition
   - `plan-review-cascaded-defaults.md`: closure_action worked-example table; new commons `kind` enumeration (3 new values added; 6 pre-existing formalized)
-  - This file (`plan-authoring-cascaded.md`): version-history-only entry; the new doctrine applies via the shared-doctrine references already in place
-  - Out-of-scope items (filed elsewhere): Phase-6C-specific CSS-var visible-text safety (Lupin design doc, not cascade doctrine); ask_multiple_choice Path-B subprocess-restart cost (operational footnote, no doctrine entry needed); Mute-Channel Bypass for Manager-Escalation (Lupin/cosa-voice MCP feature request — Lupin TODO)
+  - This file (`plan-authoring-cascaded.md`): version-history-only entry; the new workflow guidance applies via the shared-workflow references already in place
+  - Out-of-scope items (filed elsewhere): Phase-6C-specific CSS-var visible-text safety (Lupin design doc, not cascade workflow guidance); ask_multiple_choice Path-B subprocess-restart cost (operational footnote, no workflow-guidance entry needed); Mute-Channel Bypass for Manager-Escalation (Lupin/cosa-voice MCP feature request — Lupin TODO)
 
-- **2026.05.19** — Initial creation post-Mr. Rick's ratification of the cascade-as-author shape (broadcast `69cffa07` for v2 polish + dinner-conversation ratification for authoring extension). Sister workflow alongside `/plan-review-cascaded` per the β shape (vs α flag-on-existing). Shared doctrine via `plan-review-cascaded-common.md` extraction. New: Step 0 intent capture, Step 0.5 dependency map, multi-draft author loop, goal-coverage matrix manager artifact, Persona 2.A Authoring Author with Convention 6 cross-link + manager-divergence-check safeguard for hybrid mode. Phase 6C as canonical hybrid example.
+- **2026.05.19** — Initial creation post-Mr. Rick's ratification of the cascade-as-author shape (broadcast `69cffa07` for v2 polish + dinner-conversation ratification for authoring extension). Sister workflow alongside `/plan-review-cascaded` per the β shape (vs α flag-on-existing). Shared workflow guidance via `plan-review-cascaded-common.md` extraction. New: Step 0 intent capture, Step 0.5 dependency map, multi-draft author loop, goal-coverage matrix manager artifact, Persona 2.A Authoring Author with Convention 6 cross-link + manager-divergence-check safeguard for hybrid mode. Phase 6C as canonical hybrid example.

@@ -89,7 +89,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - ✅ **[B]** History Management: `/plan-history-management`
 - ✅ **[C]** Planning is Prompting Core: `/p-is-p-00-start-here`, `/p-is-p-01-planning`, `/p-is-p-02-documentation`
 - ✅ **[C.5]** Plan Review Gate: `/plan-review` (fitness + ownership-language audit of implementation plans before code begins; mandatory for Pattern 1/2/5/6, REUSE-only available for Pattern 3 via `/plan-review-reuse`)
-- ✅ **[C.6]** Cascaded Plan Review: `/plan-review-cascaded` (parallelized 5-session wrapper around `/plan-review`; cascades plan sections through usability/reuse → fitness → ownership-audit reviewers with manager-as-filter; spends compute to save user attention on ≥2-section plans — see `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` for design)
+- ✅ **[C.6]** Cascaded Plan Review: `/plan-review-cascaded` (parallelized 5-session wrapper around `/plan-review`; cascades plan sections through usability/reuse → fitness → ownership-audit reviewers with manager-as-filter; spends compute to save user attention on ≥2-section plans — see `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` for design; stage-by-stage ASCII process flow at `workflow/plan-review-cascaded-stage-specs.md`)
 - ✅ **[D]** Backup Infrastructure: `/plan-backup-check`, `/plan-backup`, `/plan-backup-write`
 - ✅ **[E]** Testing Workflows: `/plan-test-baseline`, `/plan-test-remediation`, `/plan-test-harness-update`
 - ✅ **[F]** Skills Management: `/plan-skills-management` (discover, create, edit, audit, delete Agent Skills)

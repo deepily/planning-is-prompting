@@ -117,7 +117,7 @@ The cosa-voice session has a **binary mode toggle**: notification mode (default,
 
 ## CROSS-SESSION COMMUNICATION
 
-**Purpose**: Behavioral doctrine for the two cross-session surfaces — user→all broadcasts and Claude↔Claude commons blackboards. Applies whenever a session encounters a broadcast `<system-reminder>` or contemplates using `commons_*` MCP tools.
+**Purpose**: Behavioral guidance for the two cross-session surfaces — user→all broadcasts and Claude↔Claude commons blackboards. Applies whenever a session encounters a broadcast `<system-reminder>` or contemplates using `commons_*` MCP tools.
 
 ### Quick MCP tool reference
 
@@ -173,7 +173,7 @@ Broadcasts inject as `<system-reminder>` **between turns** — there's no interr
 
 Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notification_type="progress", priority="medium")` to the user so they can see in their UI that one session is blocking on another. Cross-session dialogue must not be invisible to the user.
 
-**Full canonical doctrine**: planning-is-prompting → workflow/cross-session-communication.md
+**Full canonical guidance**: planning-is-prompting → workflow/cross-session-communication.md
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages

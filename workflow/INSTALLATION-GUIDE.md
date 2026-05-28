@@ -172,7 +172,7 @@ allowed_prefixes:
   - docs/
 
 allowed_root_files:
-  # Always part of PIP doctrine surface
+  # Always part of PIP guidance surface
   - README.md
   - CHANGELOG.md
   - TODO.md

@@ -185,4 +185,4 @@ If a doc-link 404s when you expected a 200:
 
 ## Version History
 
-- **2026-05-21**: Initial canonical hub document. Consolidates the doc-link doctrine previously scattered across `claude-config-global.md`, `INSTALLATION-GUIDE.md`, and `cosa-voice-integration.md`. Reconciles the URL form to path-only (canonical post-2026-05-15 unification); flags form-(a) two-param URLs, `docs`/`io` shorthand scopes, and the `doc_scope` dict envelope as retired dead syntax. Drafted by María (PIP session `d66169f2`) with authoritative confirmation from Tiberius (Lupin session); plan-of-attack ratified by Rick.
+- **2026-05-21**: Initial canonical hub document. Consolidates the doc-link guidance previously scattered across `claude-config-global.md`, `INSTALLATION-GUIDE.md`, and `cosa-voice-integration.md`. Reconciles the URL form to path-only (canonical post-2026-05-15 unification); flags form-(a) two-param URLs, `docs`/`io` shorthand scopes, and the `doc_scope` dict envelope as retired dead syntax. Drafted by María (PIP session `d66169f2`) with authoritative confirmation from Tiberius (Lupin session); plan-of-attack ratified by Rick.

@@ -825,7 +825,7 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ### Cross-Session Communication
 **File**: `cross-session-communication.md`
-**Integration**: Behavioral doctrine for user→all broadcasts and Claude↔Claude commons blackboards (three-tier autonomy, reserved topic vocabulary, broadcast receipt routing)
+**Integration**: Behavioral guidance for user→all broadcasts and Claude↔Claude commons blackboards (three-tier autonomy, reserved topic vocabulary, broadcast receipt routing)
 
 ---
 

@@ -109,7 +109,7 @@ A session opening report for a cosa-voice hook-language audit dumped the full au
 
 ❌ **Bloated (175 words)** — inventory recital + terminology spoken aloud + rationale + ownership detail in speech:
 
-> "OK Ricey, Rio reporting. Yesterday, two big landings. Rachel built a cross-repo doc-viewer scope doctrine — global rule plus per-repo pins in five repos, and a Lupin TODO for the scopes endpoint. Session 86 wrote the cross-session communication doctrine, the three-tier autonomy model that lets us write on the commons board. Now the hooks audit. The home CLAUDE file isn't the problem — it explicitly delegates to the per-turn rider as authoritative. The drift is inside cosa-voice itself. The MCP startup blob still calls speakerphone-off 'phone mode' with the old silent semantic. But the per-turn rider and the exit reminder both renamed it to 'quiet mode, per-session DND' on May fourteenth evening, with a totally different rule: keep calling notify, just at medium priority with the small arrival ding. Recommended fix: rewrite the phone-mode bullet in cosa-voice MCP to match the rider's quiet-mode semantic. Likely a one-paragraph patch for Maria or the next Lupin session."
+> "OK Ricey, Rio reporting. Yesterday, two big landings. Rachel built a cross-repo doc-viewer scope guidance — global rule plus per-repo pins in five repos, and a Lupin TODO for the scopes endpoint. Session 86 wrote the cross-session communication guidance, the three-tier autonomy model that lets us write on the commons board. Now the hooks audit. The home CLAUDE file isn't the problem — it explicitly delegates to the per-turn rider as authoritative. The drift is inside cosa-voice itself. The MCP startup blob still calls speakerphone-off 'phone mode' with the old silent semantic. But the per-turn rider and the exit reminder both renamed it to 'quiet mode, per-session DND' on May fourteenth evening, with a totally different rule: keep calling notify, just at medium priority with the small arrival ding. Recommended fix: rewrite the phone-mode bullet in cosa-voice MCP to match the rider's quiet-mode semantic. Likely a one-paragraph patch for Maria or the next Lupin session."
 
 ✅ **Tightened (22 words)** — verdict only; abstract carries the table, the file paths, the terminology, the dates, the doc-viewer links:
 
@@ -225,7 +225,7 @@ NOTIFICATION VERIFICATION:
 
 ### Related: cross-session communication tools (`commons_*`)
 
-The cosa-voice MCP server also exposes five `commons_*` tools for Claude↔Claude blackboard communication: `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`. These are NOT covered in this document — they have their own behavioral doctrine governing when and how sessions may use them.
+The cosa-voice MCP server also exposes five `commons_*` tools for Claude↔Claude blackboard communication: `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`. These are NOT covered in this document — they have their own behavioral guidance governing when and how sessions may use them.
 
 **See**: planning-is-prompting → workflow/cross-session-communication.md for the three-tier autonomy rules, reserved topic vocabulary, broadcast receipt contract, and anti-patterns.
 
@@ -344,7 +344,7 @@ ask_multiple_choice(
         "header"  : "Sequencing",
         "options" : [
             {"label": "Bundle both",        "description": "One commit, both tracks."},
-            {"label": "Meta-doctrine first", "description": "Two commits, doctrine first."},
+            {"label": "Meta-guidance first", "description": "Two commits, guidance first."},
             {"label": "Step 6 first",        "description": "Two commits, bug fix first."}
         ]
     }],
@@ -361,7 +361,7 @@ ask_multiple_choice(
         "header"  : "Sequencing",
         "options" : [
             {"label": "Bundle both (Recommended)", "description": "One commit, both tracks. Fastest path."},
-            {"label": "Meta-doctrine first",       "description": "Two commits. Pedagogically cleaner."},
+            {"label": "Meta-guidance first",       "description": "Two commits. Pedagogically cleaner."},
             {"label": "Step 6 first",              "description": "Two commits. Ships bug fix first."}
         ]
     }],
@@ -371,16 +371,16 @@ ask_multiple_choice(
 **Pros**: single commit, single review, no cross-deps between tracks, fastest to land both
 **Cons**: compound commit message; if one track breaks in review the other waits
 
-### Option B: Meta-doctrine first
+### Option B: Meta-guidance first
 **Pros**: pedagogically cleaner; Step-6 conforms by construction; cleaner git log
 **Cons**: doubles your review attention cost; bug fix waits one commit cycle
 
 ### Option C: Step 6 first
 **Pros**: fastest path to closing the surfaced bug
-**Cons**: same review cost as B without the pedagogical benefit; doctrine deferred
+**Cons**: same review cost as B without the pedagogical benefit; guidance deferred
 
 ### Recommendation
-A. Zero cross-dependencies between tracks + bounded diffs make bundling strictly cheaper for your attention budget. B and C both cost two reviews; A captures both in one. Pick B if git-log surgical clarity is load-bearing; pick C if shipping the bug-fix urgently outweighs the doctrine ship."""
+A. Zero cross-dependencies between tracks + bounded diffs make bundling strictly cheaper for your attention budget. B and C both cost two reviews; A captures both in one. Pick B if git-log surgical clarity is load-bearing; pick C if shipping the bug-fix urgently outweighs the guidance ship."""
 )
 ```
 
