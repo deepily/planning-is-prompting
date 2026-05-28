@@ -27,6 +27,13 @@
 
 ## Step 1) Resolve repo set (discovery policy)
 
+> **[NEXT VERSION] Sub-directory traversal — Rick-flagged 2026-05-21**: the current Step 1 discovery glob `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv` assumes every repo sits exactly one level under `$PROJECTS_ROOT`. Two real layouts break this:
+>
+> - **Grouping subdirectories** (load-bearing): `lookml` lives at `projects/google/lookml`; `par-pacific` and `retail-ai-location-strategy` are siblings under `projects/google/`. First live run 2026-05-21 MISSED `lookml` entirely — Rick had 6 commits there that day and the rollup under-reported until he caught it ("what happened to the lookml repo?")
+> - **Nested sub-repos**: `cosa` lives at `lupin/src/cosa/` (a git repo nested inside another git repo). Invisible to the one-level glob; didn't affect the 2026-05-21 run only because cosa had 0 committed work that day
+>
+> **Next-version fix**: change the discovery to a depth-N traversal (default N=3) that descends into known group directories. Either via env-var `PROJECTS_ROOT_DEPTH=3` OR via an explicit grouping-dir registry in `loc-delta-global.md`. Tracked in TODO #23.
+
 **Default behavior — recently-active mtime heuristic**:
 
 ```bash
@@ -134,6 +141,26 @@ In both bypass cases, Step 1.5 is skipped entirely — proceed directly to Step 
 ### Recommendation Mandate compliance
 
 Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `CSV exists at PATH, mtime N days ago`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
+
+---
+
+## Step 1.7) Refresh per-repo CSVs before aggregating (added 2026-05-28)
+
+**Why this step exists**: the cosa-side aggregator reads each repo's per-branch CSV from `<repo>/io/git-loc-delta/<branch>-loc-delta.csv`. Those CSVs are only refreshed when **session-end §6 fires in that repo** — so a repo that hasn't been worked in recently (or where the prior session-end skipped §6) will have a stale CSV.
+
+**Empirical anchor**: first live `/plan-loc-delta-global` invocation 2026-05-21 — 2 of 3 repos had stale CSVs (cosa from 2026-05-16, PIP from 2026-05-20). The naive run reported only lupin's +1,526 LoC and silently missed PIP's +1,293 LoC.
+
+**The pre-aggregation refresh** — for each discovered repo (post-Step-1.5 ratification):
+
+1. Locate the per-branch CSV: `<repo>/io/git-loc-delta/<branch>-loc-delta.csv`
+2. Read the sidecar JSON metadata: `<repo>/io/git-loc-delta/<branch>-loc-delta.csv.meta.json`
+3. Check `last_refreshed_at` against the requested `--since` window. If `last_refreshed_at < since`, the CSV is stale.
+4. **Refresh the stale CSV**: invoke the per-repo analyzer via `cd <repo> && python -m cosa.repo.run_git_loc_delta --branch <branch> --since <since> --until <until>`
+5. Verify the refresh succeeded (CSV mtime updated; sidecar JSON updated; row count > 0)
+
+**Cost**: ~30 sec per repo. Optional if user passes `--skip-refresh` flag (e.g. for repeated invocations in the same session).
+
+**Failure mode**: if a refresh fails (no git history in window; uncommitted changes; cosa module not installed in target repo) — log a per-repo warning + proceed with the stale CSV + flag in the consolidated summary's per-repo breakdown column.
 
 ---
 
