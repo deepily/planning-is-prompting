@@ -225,6 +225,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Plan File Management
 - [**plan-serialization.md**](workflow/plan-serialization.md) - Behavioral directive for preserving non-trivial plan files with semantic names
+- [**memento-management.md**](workflow/memento-management.md) - Pre-`/clear` state snapshot for rehydration; 7-element memento contract; file location convention; lifecycle. Slash command: `/plan-memento` (modes: write, load, check). Distinct from auto-memory (durable cross-conversation) and `.claude-session.md` (file tracking) — memento captures cognitive/role state for single-clear-cycle rehydration.
 - [**Research: Plan File Serialization**](src/rnd/2026.02.13-plan-file-serialization-recommendation.md) - Data analysis backing the serialization recommendation (169 files, naming convention breakdown)
 - [**Plan: Test Ownership Mandate**](src/rnd/2026.04.23-test-ownership-mandate.md) - Placement strategy and canonical language for the role-separation rule (human is designer/user; Claude owns the testing pyramid)
 - [**Plan: Plan-Review Gate**](src/rnd/2026.04.27-promote-plan-review-pattern-to-pip.md) - Promote the ownership-language-audit + fitness review pattern from Lupin's CJ Flow R&D into a canonical PIP workflow with convention-establishment in `p-is-p-02` (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; see `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md`)

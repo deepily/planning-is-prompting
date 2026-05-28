@@ -1,0 +1,168 @@
+# Memento Management — Pre-`/clear` State Snapshot for Rehydration
+
+**Purpose**: a structured snapshot a Claude Code session writes BEFORE a deliberate `/clear`, so the post-`/clear` session (or a fresh session re-taking the same role) can rehydrate its working context without reconstructing state from scratch.
+
+**Author of mechanism**: Rick's specification 2026-05-21 (TODO #19) — "memento" terminology + structural contract.
+
+**Status**: v1.0 (2026-05-28) — initial codification.
+
+---
+
+## §1 When to use
+
+The memento mechanism applies in these scenarios:
+
+- **Planned `/clear`** to recover from context bloat mid-task
+- **Cascade Manager seat handoff** — a Manager who has accumulated heavy cascade-state (~30+ DMs, multiple section topics, deep classification history) hands off to a fresh-context session via the memento
+- **Persona role rotation** — a session about to switch personas writes a memento so the next persona-holder can pick up the role with current context
+- **End-of-day handoff** — at end of day, write a memento so tomorrow's session can rehydrate without re-reading history.md from scratch
+
+**Distinct from**:
+- **Auto-memory** (`~/.claude/projects/.../memory/`) — durable cross-conversation facts about the user / project / preferences. Memento is single-clear-cycle transient.
+- **`.claude-session.md`** — tracks touched files for the parallel-session commit-safety mandate. Memento captures cognitive/role state. Complementary.
+- **history.md** — long-form narrative of what happened. Memento is short-form working context for what's in flight RIGHT NOW.
+
+---
+
+## §2 The memento contract — 7 required elements
+
+Every memento MUST include the following 7 elements. Missing any one means the rehydrated session will face a context-recovery gap.
+
+```markdown
+# .claude-memento.md
+
+**Written**: <ISO-8601 timestamp>
+**Written by**: <persona> (<session_id>)
+**Role**: <e.g. "Cascade Manager — cascade-notif-sync" OR "Workflow Steward — daily session">
+**Cascade name (if applicable)**: <cascade name>
+
+## 1. Current state (cascade or task state)
+
+- Current step: <e.g. "Cascade Step 5 — Section §C at Stage 2 mid-review">
+- What's in flight: <a 2-3 sentence narrative of the immediate next action>
+- What I'm waiting for: <DM, user response, peer finding, etc>
+
+## 2. Cast roster (if cascade-mode)
+
+| Role | Persona | Session ID | Most-recent DM qid |
+|---|---|---|---|
+| Author | ... | ... | ... |
+| Manager | ... | ... | ... |
+| Stage 1 Reviewer | ... | ... | ... |
+| Stage 2 Reviewer | ... | ... | ... |
+| Stage 3 Reviewer | ... | ... | ... |
+| Workflow Steward | ... | ... | ... |
+
+## 3. Open findings + pending classifications
+
+(List every finding currently in-flight with classification state. For cascade-Manager mementos.)
+
+## 4. Active DM threads
+
+(Running DM threads with cast members or peers. Topic + most-recent qid each.)
+
+## 5. Standing memory guidance applicable to THIS session
+
+(Lifted from the pre-cascade Recon checklist OR project standing memories.)
+
+## 6. Heartbeat state (if cascade-mode)
+
+- Cadence: <e.g. "M=4 default, M=2 during Stage 2">
+- Daemon: <running OR self-paced ScheduleWakeup fallback>
+- Next scheduled probe: <timestamp>
+
+## 7. Rehydration instructions
+
+- **Re-warm reading list** (files to read in order):
+  1. <file 1>
+  2. <file 2>
+  3. ...
+- **First action post-rehydration**: <what the fresh session should do FIRST>
+- **Open loops to close**: <list of things that need closure>
+- **Where to discard this memento after successful rehydration**: <instruction>
+```
+
+---
+
+## §3 File location convention
+
+**Location**: `<project>/.claude-memento.md` at project root.
+
+**Gitignored**: yes — alongside `.claude-session.md`. Add to `.gitignore` if not already there:
+
+```
+.claude-session.md
+.claude-memento.md
+```
+
+**One memento per project at a time**: the file is single-occupancy. If a memento already exists and a new one needs writing, the prior memento is either (a) discarded (its session has completed rehydration) OR (b) renamed to `.claude-memento.archived-<timestamp>.md` if its content is still load-bearing for a different role.
+
+---
+
+## §4 Lifecycle
+
+| Event | Action |
+|---|---|
+| Session about to `/clear` | Write `.claude-memento.md` with all 7 elements |
+| Session post-`/clear` (rehydration) | Read `.claude-memento.md`; follow §7 rehydration instructions |
+| Rehydration successful | Discard memento OR archive per §3 |
+| Memento >24h old | Treat as stale; verify cascade state hasn't changed before acting on memento contents |
+| New session takes a NEW role (not the role the memento was written for) | Memento is irrelevant; do not auto-read |
+
+---
+
+## §5 Rehydration mechanism
+
+**v1 (current)** — Manual:
+- User points the fresh session at the memento by saying *"read .claude-memento.md and rehydrate"*
+- Fresh session reads file, follows §7 rehydration instructions
+
+**v2 (proposed)** — SessionStart hook integration:
+- A SessionStart hook auto-detects `.claude-memento.md` in the project root
+- Hook surfaces the memento to the session via `<system-reminder>` injection
+- Fresh session reads memento as part of Phase A startup
+- No manual user intervention required
+
+**v3 (future)** — Memento-aware MCP tool:
+- A `memento_save()` / `memento_load()` cosa-voice MCP tool pair
+- Memento lives in the cosa-voice bridge (cross-session); not on disk
+- Cross-machine portability; better concurrency handling
+
+For v1, use the manual approach.
+
+---
+
+## §6 Relationship to `.claude-session.md`
+
+| Aspect | `.claude-session.md` | `.claude-memento.md` |
+|---|---|---|
+| What it tracks | Files touched per session (for commit safety) | Cognitive / role state for rehydration |
+| Lifecycle | Per-session; survives `/clear` for context-clear recovery | Per-`/clear`; discarded after rehydration |
+| Multi-session | Supports parallel sessions (v2.0 format) | Single occupancy per project |
+| Gitignored | YES | YES |
+| Format | Multi-section manifest with timestamps | Free-form markdown structured per §2 |
+
+Both files complement each other. The session manifest tracks WHAT files you touched; the memento tracks WHY you touched them and what's next.
+
+---
+
+## §7 Empirical anchor
+
+Run 5 cascade (2026-05-22) — Manager seat was rehydrated by session `eac45c39` from a hand-authored memento doc that the prior Manager had written before the `/clear`. The rehydration worked cleanly; the cascade continued without finding-loss. This empirical instance is the SA-1 anchor that prompted codifying the mechanism (see `plan-review-cascaded-common.md` §Manager Rehydration for the cascade-specific application of the general memento pattern).
+
+First instance of the memento doc was hand-authored 2026-05-21 (Rick's specification) at `.claude-memento.md` in the PIP repo root, before María cleared context to take the Observer seat for cascade Run 5.
+
+---
+
+## §8 Cross-references
+
+- **Cascade Manager rehydration**: `plan-review-cascaded-common.md` §Manager Rehydration (cascade-Manager-specific application)
+- **Parallel-session manifest**: `~/.claude/CLAUDE.md` § PARALLEL SESSION SAFETY (the `.claude-session.md` companion)
+- **Auto-memory**: `~/.claude/CLAUDE.md` § auto memory (the durable cross-conversation alternative for facts that aren't transient)
+- **Slash command**: `.claude/commands/plan-memento.md` (slash-command wrapper for write + load operations)
+
+---
+
+## Version History
+
+- **v1.0 (2026-05-28)** — Initial codification at Rick's request (TODO #19). 7-element memento contract; file location convention; lifecycle; rehydration mechanism (v1 manual, v2 hook-based, v3 MCP-based); relationship to `.claude-session.md`. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
