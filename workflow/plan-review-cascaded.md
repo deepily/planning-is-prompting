@@ -42,6 +42,8 @@ If the run has no Workflow Steward, the Manager reads the playbook + defaults + 
 
 **Purpose**: lighter than the authoring-cascade Step 0 — review-cascade's input is already a pre-existing parent input plan, so much of the cascade-preparation work (slicing manifest authoring, per-slice design docs, Q-decision matrix extraction) is unnecessary. What review-cascade STILL needs from Step 0 workflow: a **pre-cascade Recon checklist** for cold-cast onboarding + a **light-review gate** on the input plan's cascade-readiness before Step 1 fires.
 
+**Canonical input spec**: `workflow/plan-review-cascaded-input-spec.md` carries the full 4-property cascade input spec, the 6-criterion Step 0 light-review rubric, and the remediation flowchart for what happens when the input doesn't comply. Read it once to understand what shape a planning doc must have before submission.
+
 **Trigger**: a parent input plan (intended for review) is received by the Manager + cascade has not yet fired.
 
 **Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria) for the cold-context test analog + light-review gate + pre-cascade Recon checklist requirement.

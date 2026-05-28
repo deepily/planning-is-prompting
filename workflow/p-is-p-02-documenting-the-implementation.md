@@ -535,6 +535,8 @@ These conventions are the prerequisites for [`workflow/plan-review.md`](plan-rev
 
 ## Structuring for Cascaded Review
 
+> **Expected Output Shape (when cascade-bound)**: if the implementation doc-set will be reviewed via `/plan-review-cascaded`, **the doc-set is the cascade's INPUT**. The cascade's section-independence requirement (a cascade reviewer should be able to review one doc-section having loaded only that section + the shared anchors) applies to file boundaries. See `workflow/plan-review-cascaded-input-spec.md` for the canonical input spec + validation rubric + remediation flowchart.
+
 The conventions above make a plan **grep-compatible** with the serial [`workflow/plan-review.md`](plan-review.md) gate. This section is their sibling for the **cascaded** gate ([`workflow/plan-review-cascaded.md`](plan-review-cascaded.md)): it makes the *documentation set itself* **decomposition-compatible** — so a multi-file plan can be sliced into independently-reviewable cascade sections without a separate reshaping pass.
 
 **When this applies**: only when the plan will be cascade-reviewed (≥ 2-section plans, reviewer-attention-bound). For serially-reviewed or unreviewed plans, skip it.

@@ -12,6 +12,8 @@
 
 **MANDATE (added 2026-05-28)**: every cascade planning doc opens with a Cast Manifest table that lists every persona by role + marks recycled assignments. This makes cast size visible at a glance and prevents persona-allocation confusion. Cross-link to `plan-review-cascaded-common.md` §Cast Manifest for the canonical mandate text.
 
+**See also**: `workflow/plan-review-cascaded-input-spec.md` for the full 4-property cascade input spec the Cast Manifest is one element of — the spec covers section count, independence, dependency DAG, comparable scope, plus the 6-criterion Step 0 validation rubric and the remediation flowchart.
+
 **Canonical template**:
 
 ```

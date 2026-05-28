@@ -272,7 +272,7 @@ flowchart TD
 
 **Gate: `/plan-review` (between Step 2 and Code)** — Pattern 1/2/5/6 plans must pass the two-pass review gate before code is written. Pattern 3 plans may invoke `/plan-review-reuse` standalone (REUSE pre-pass only) before code begins. Pattern 4 (Investigation) skips the gate entirely. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches design-completeness gaps and ownership-language drift **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
 
-**Cascaded review: `/plan-review-cascaded`** — for larger Pattern 1/2/5/6 plans (typically ≥ 2 reviewable sections) where reviewer attention is the binding constraint, the review gate runs as a *cascade*: sections are reviewed in a pipeline rather than the whole plan at once. A cascade consumes a plan that is *already* decomposed into independently-reviewable sections — so if your plan is cascade-bound, structure it cascade-ready *while planning it*, per the **Cascade-Readiness** subsection in [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) (Phase 3: Work Breakdown). A plan that is not section-shaped incurs a separate reshaping pass — or fails the cascade's ≥ 2-section gate.
+**Cascaded review: `/plan-review-cascaded`** — for larger Pattern 1/2/5/6 plans (typically ≥ 2 reviewable sections) where reviewer attention is the binding constraint, the review gate runs as a *cascade*: sections are reviewed in a pipeline rather than the whole plan at once. A cascade consumes a plan that is *already* decomposed into independently-reviewable sections — so if your plan is cascade-bound, structure it cascade-ready *while planning it*, per the **Cascade-Readiness** subsection in [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) (Phase 3: Work Breakdown). The canonical input specification + validation rubric + remediation flowchart live at [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md). A plan that is not section-shaped incurs a separate reshaping pass — or fails the cascade's ≥ 2-section gate.
 
 ### Step 1: Planning the Work (Always Required)
 
@@ -327,7 +327,7 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 | **Large implementation** | JWT authentication | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **01** → **02** (Pattern A) |
 | **Research-driven build** | Agent system (e.g., Google ADK) | 6-10 weeks | Pattern 6: Research-Driven | ✓ Yes | → **Phase 0** → **01** → **02** (B+A) |
 
-> **Cascade-bound plans**: if a Pattern 1/2/5/6 plan will be reviewed via `/plan-review-cascaded`, apply the *Cascade-Readiness* guidance in p-is-p-01 (Phase 3) during planning — see the Two-Step Process gate note above.
+> **Cascade-bound plans**: if a Pattern 1/2/5/6 plan will be reviewed via `/plan-review-cascaded`, your planning output **must satisfy the 4-property cascade input spec**: ≥ 2 sections, section independence, acyclic cross-section dependencies, comparable section scope. Production-side how-to: *Cascade-Readiness* subsection in p-is-p-01 §Phase 3. Canonical input spec + 6-criterion Step-0 validation rubric + remediation flowchart for non-compliance: [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md).
 
 ### First Decision: Do You Have Existing Research?
 

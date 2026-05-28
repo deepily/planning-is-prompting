@@ -36,6 +36,8 @@ All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designat
 
 **Trigger**: a raw design document lands on the Manager's desk + the cascade has not yet fired (no `cascade_input_ready` state declared).
 
+**Canonical input spec**: `workflow/plan-review-cascaded-input-spec.md` carries the full 4-property cascade input spec the planner-shaped input must satisfy + the 6-criterion Step 0 light-review rubric + the remediation flowchart. The authoring-cascade ingests planner-shaped input just like the review-cascade does; the additional artifacts (formal slicing manifest + per-slice design docs + Q-decision matrix) are §2b properties produced cascade-side at Step 0.2–0.4.
+
 **Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria) for the cold-context test analog + light-review gate + pre-cascade Recon checklist requirement.
 
 **Full requirements anchor**: `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`.

@@ -885,6 +885,8 @@ flowchart TD
 
 Once you've selected a pattern, break down the work into concrete tasks.
 
+> **Expected Output Shape (when cascade-bound)**: if your plan will be reviewed via `/plan-review-cascaded`, your Phase 3 output **is the cascade's INPUT**. The cascade expects your output to satisfy a 4-property spec: ≥ 2 sections, section independence (cold-reviewer test), explicit acyclic cross-section dependencies (valid DAG), comparable section scope. See §Cascade-Readiness below for the production-side how-to + `workflow/plan-review-cascaded-input-spec.md` for the canonical spec, validation rubric, and remediation flowchart for what happens when the input doesn't comply.
+
 #### Suggested Initial Task Breakdown
 
 **Based on**: Pattern 3 (Feature Development) + your work description
@@ -961,6 +963,8 @@ Once you've selected a pattern, break down the work into concrete tasks.
 5. **One Active Task**: Only one task in_progress at a time
 
 #### Cascade-Readiness (When the Plan Will Be Cascade-Reviewed)
+
+> **Your output is the cascade's input.** This subsection describes how to shape your Phase 3 work breakdown so it satisfies the cascade's 4-property input spec (canonical reference: `workflow/plan-review-cascaded-input-spec.md`). Building the shape upstream during planning is far cheaper than letting the cascade's Step 0 reshape it after submission — see the input-spec doc §5 for the remediation cost table.
 
 **When this applies**: the plan is destined for the **cascaded** plan-review gate (`/plan-review-cascaded`) rather than the serial `/plan-review`. Cascaded review is used for larger plans — typically ≥ 2 reviewable sections — where the binding constraint is *reviewer (user) attention*, so sections are reviewed in a pipeline. If the plan will get only serial `/plan-review`, or no review at all, **skip this subsection** — it adds nothing.
 

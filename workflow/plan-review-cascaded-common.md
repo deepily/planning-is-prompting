@@ -10,6 +10,9 @@
 
 ## §Step 0 — Cascade Preparation (Shared Acceptance Criteria) [SHARED]
 
+**Canonical input spec**: see `workflow/plan-review-cascaded-input-spec.md` for the full 4-property spec a planning doc must satisfy + the 6-criterion Step 0 light-review rubric + the remediation flowchart for non-compliance. This §Step 0 carries the shared acceptance criteria; the input-spec doc reframes the same material for planner-side audience and adds the Mr-Radio-ratified 4a/4b split (planner-pre-satisfiable vs intrinsically-Step-0).
+
+
 **Added 2026-05-20** based on Rick's catch surfaced via Mr Radio's onboarding for Phase 7 slicing-manifest authoring: when a manager has to verbally hand-hold a cold cast member through the cascade-input shape (~1500 words of tribal knowledge), that's an undocumented workflow phase. Step 0 codifies the cascade-preparation phase that takes a raw design document and produces cascade-ready inputs.
 
 **Pattern recognition**: Step 9 closed the post-cascade synthesis gap (codified 2026-05-19); Step 0 closes the pre-cascade preparation gap. **Both ends of the cascade lifecycle had workflow-guidance gaps; only the middle (Steps 1-8) was fully codified.** Step 0 + Step 9 together close the workflow's end-to-end shape.

@@ -221,7 +221,7 @@ The **independence criterion** (Step 0 light-review §5) catches cross-section d
 
 ## §5 Cast Manifest at the TOP of the Planning Doc
 
-(Cross-link: `plan-review-cascaded-stage-specs.md` §0 has the canonical template.)
+(Cross-link: `plan-review-cascaded-stage-specs.md` §0 has the canonical template; `plan-review-cascaded-input-spec.md` is the full 4-property cascade input spec the Cast Manifest is one element of.)
 
 **The mandate**: every cascade planning doc opens with a Cast Manifest table that:
 1. Names every persona by role
