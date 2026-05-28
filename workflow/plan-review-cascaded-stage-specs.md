@@ -8,6 +8,48 @@
 
 ---
 
+## §0 — Cast Manifest (at the TOP of every planning doc)
+
+**MANDATE (added 2026-05-28)**: every cascade planning doc opens with a Cast Manifest table that lists every persona by role + marks recycled assignments. This makes cast size visible at a glance and prevents persona-allocation confusion. Cross-link to `plan-review-cascaded-common.md` §Cast Manifest for the canonical mandate text.
+
+**Canonical template**:
+
+```
+## Cast Manifest
+
+| Role | Persona | Recycled? |
+|---|---|---|
+| Author | <name> 🎭 | — |
+| Manager | <name> 🎭 | — |
+| Stage 1 Reviewer (Usability/Reuse) | <name> 🎭 | — |
+| Stage 2 Reviewer (Viability/Gap) | <name> 🎭 | ✓ Also Step 0 light-review |
+| Stage 3 Reviewer (Ownership-Language) | <name> 🎭 | — |
+| Step 0 light-reviewer | (= Stage 2 reviewer above) | RECYCLED — Persona 4 |
+| Step 9 light-reviewer | (TBD at Step 8 — most-impacted-section reviewer; freshest context) | RECYCLED — one of Persona 3/4/5 |
+| Workflow Steward (optional) | <name> 🎭 | Escape hatch for either light-review if cast bandwidth tight |
+| Heartbeat Scheduler | external daemon | — |
+```
+
+**Headcount**: 6 sessions (or 5 without optional Workflow Steward). No new personas allocated for the light-reviews; both Step 0 and Step 9 light-reviews recycle from the cast already assembled.
+
+**Worked example** (anonymized from `cascade-notif-sync` Run 2026-05-22):
+
+| Role | Persona | Recycled? |
+|---|---|---|
+| Author | Tiffany 💍 | — |
+| Manager | Mr. Radio 🦉 | — |
+| Stage 1 Reviewer (Usability/Reuse) | Tiberius 🌑 | — |
+| Stage 2 Reviewer (Viability/Gap) | Krishna 🦚 | ✓ Also Step 0 light-review |
+| Stage 3 Reviewer (Ownership-Language) | Sam 🎙️ | — |
+| Step 0 light-reviewer | Krishna 🦚 | RECYCLED — same persona as Stage 2 |
+| Step 9 light-reviewer | Krishna 🦚 (Stage 2 carried the bulk of findings) | RECYCLED — most-impacted-section reviewer |
+| Workflow Steward (optional) | María 🌸 | Stood by; not invoked for either light-review this run |
+| Heartbeat Scheduler | `cascade_heartbeat_scheduler.py` | — |
+
+**See also**: `plan-review-cascaded-parallelism.md` §2.2 for the same example embedded in a full worked cascade walkthrough.
+
+---
+
 ## §1 — Macro Flow: Raw Draft → Final Plan
 
 ```
@@ -18,10 +60,13 @@
                                     ▼
               ┌──────────────────────────────────────────────┐
               │  STEP 0  Cascade Preparation                 │
+              │  • Cast Manifest at TOP of planning doc      │
               │  • Cascade-readiness check (input contract)  │
               │  • Slicing manifest (sections + scope)       │
               │  • Pre-cascade Recon (archaeology, prior Q-  │
               │    decisions, constraint inventory)          │
+              │  ◆ Step 0 light-review by RECYCLED Persona 4 │
+              │    (Stage 2 Viability reviewer — no new cast)│
               └──────────────────────┬───────────────────────┘
                                      │
                                      ▼
@@ -79,8 +124,10 @@
               ┌──────────────────────────────────────────────┐
               │  STEP 9  Synthesis + Handoff                 │
               │  • Revision-handoff doc (for implementer)    │
-              │  • Light-review gate (cold-context test)     │
-              │  • Post-game synthesis (Observer-led)        │
+              │  • Light-review gate (cold-context test) by  │
+              │    RECYCLED reviewer — the one who worked    │
+              │    the most-impacted section (no new cast)   │
+              │  • Post-game synthesis (Workflow Steward-led)│
               └──────────────────────┬───────────────────────┘
                                      │
                                      ▼
@@ -91,16 +138,16 @@
 
 ### Per-step spec table
 
-| Step | Owner | Required artifacts | Exit criteria |
-|---|---|---|---|
-| 0 | Manager (or designated Preparer) | Cascade-readiness check; slicing manifest; pre-cascade Recon notes | All 6 Step-0 light-review criteria PASS (per Sam's checklist) |
-| 1-2 | Manager | Cast list posted to coordination topic | All cast personas acked OR user-tap override recorded |
-| 3 | Manager + Sam | Decomposition validation post | Cast-ratified uncontested OR user resolves contest |
-| 4 | All cast | Role-ack posts to coordination topic | 4 role acks (Author + 3 Reviewers); Workflow Steward ack if present |
-| 5 | Reviewers + Author | Per-section findings posts; author revision posts | All sections cleared all 3 stages |
-| 6-7 | Manager | Severity classifications; cluster-family identifications | All findings classified; no untriaged items |
-| 8 | Manager | `cascade_complete` post with tally | Tally complete; per-cast performance notes attached |
-| 9 | Manager + Workflow Steward | Revision-handoff doc; light-review gate PASS; post-game synthesis | Light-review PASS; post-game doc landed; implementer notified |
+| Step | Owner | Required artifacts | Exit criteria | Recycled personas |
+|---|---|---|---|---|
+| 0 | Manager (or designated Preparer) | Cast Manifest at TOP; cascade-readiness check; slicing manifest; pre-cascade Recon notes | All 6 Step-0 light-review criteria PASS | **Step 0 light-review = Persona 4** (Stage 2 Viability/Gap reviewer) |
+| 1-2 | Manager | Cast list posted to coordination topic | All cast personas acked OR user-tap override recorded | — |
+| 3 | Manager | Decomposition validation post | Cast-ratified uncontested OR user resolves contest | — |
+| 4 | All cast | Role-ack posts to coordination topic | 4 role acks (Author + 3 Reviewers); Workflow Steward ack if present | — |
+| 5 | Reviewers + Author | Per-section findings posts; author revision posts | All sections cleared all 3 stages | — |
+| 6-7 | Manager | Severity classifications; cluster-family identifications | All findings classified; no untriaged items | — |
+| 8 | Manager | `cascade_complete` post with tally | Tally complete; per-cast performance notes attached | — |
+| 9 | Manager + Workflow Steward | Revision-handoff doc; light-review gate PASS; post-game synthesis | Light-review PASS; post-game doc landed; implementer notified | **Step 9 light-review = most-impacted-section reviewer** (one of Persona 3/4/5; freshest context). Workflow Steward is escape hatch if no cast member has bandwidth |
 
 **Cross-references**:
 - Canonical workflow: `plan-review-cascaded.md`
@@ -273,6 +320,7 @@ Expected Manager response:
 - **Cast roles**: `plan-review-cascaded-personas.md` (Personas 1-6; user-tap override codified in §Cast roles)
 - **Configuration knobs**: `plan-review-cascaded-defaults.md` (`discussion_turn_cap`, `step_3_gate`, `reviewer_context_scope`, observability config)
 - **Authoring sibling**: `plan-authoring-cascaded.md` (for cascades that produce a new plan rather than review an existing one)
+- **Parallelism mechanics + worked example**: `plan-review-cascaded-parallelism.md` (explicit 4-section worked example showing pipeline ramp-up → steady state → ramp-down with all three reviewers concurrent at the limit)
 - **Empirical anchors**:
   - Run 1 (2026-05-18): `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`
   - Run 4 (2026-05-20): Workflow Steward role validated; Step 0/9 first application
@@ -283,4 +331,5 @@ Expected Manager response:
 
 ## Version history
 
+- **v1.1 (2026-05-28)** — Added §0 Cast Manifest mandate (at the TOP of every planning doc; explicit recycled light-reviewer assignments). Updated Step 0 + Step 9 diagram boxes to flag the recycled personas (no new allocations). Per-step spec table extended with "Recycled personas" column. Cross-ref added to new `plan-review-cascaded-parallelism.md`. Same session as v1.0.
 - **v1.0 (2026-05-28)** — Initial serialization. Three ASCII process flow diagrams (macro + per-section + user-tap override). Per-step spec table. Cross-references. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer) at Rick's voice-msg request; companion to the no-doctrine vocabulary sweep + Persona 6 rename landing in the same session.

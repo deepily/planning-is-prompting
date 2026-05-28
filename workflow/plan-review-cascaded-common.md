@@ -61,11 +61,37 @@ If reviewer thumbs-up: cascade state flips to `cascade_input_ready` (new closure
 
 If reviewer finds gaps: Manager addresses gaps in slicing manifest / per-slice design doc / Q-decision matrix updates. **Capped at 1 revision turn** — single-pass refinement; no Round-2 cap-extending. If reviewer finds MORE gaps after Manager revision: escalate to user (rare case; suggests preparation-quality issue worth user-attention).
 
+### Cast Manifest at the TOP of the planning doc (REQUIRED — added 2026-05-28)
+
+**The mandate**: every cascade planning doc opens with a **Cast Manifest** table that names every persona by role, marks recycled assignments (Step 0 light-review = Stage 2 reviewer; Step 9 light-review = most-impacted-section reviewer), and identifies the Workflow Steward (optional) + Heartbeat Scheduler. This makes cast size visible at a glance and prevents persona-allocation confusion.
+
+**Canonical template** (cross-link: `plan-review-cascaded-stage-specs.md` §0):
+
+```
+## Cast Manifest
+
+| Role | Persona | Recycled? |
+|---|---|---|
+| Author | <name> 🎭 | — |
+| Manager | <name> 🎭 | — |
+| Stage 1 Reviewer (Usability/Reuse) | <name> 🎭 | — |
+| Stage 2 Reviewer (Viability/Gap) | <name> 🎭 | ✓ Also Step 0 light-review |
+| Stage 3 Reviewer (Ownership-Language) | <name> 🎭 | — |
+| Step 0 light-reviewer | (= Stage 2 reviewer above) | RECYCLED |
+| Step 9 light-reviewer | (TBD at Step 8 — most-impacted-section reviewer) | RECYCLED |
+| Workflow Steward (optional) | <name> 🎭 | Escape hatch for either light-review |
+| Heartbeat Scheduler | external daemon | — |
+```
+
+**Why this matters**: prior versions of the workflow left the light-reviewer assignments implicit, leading to repeated "wait, are we allocating two MORE personas for Step 0 and Step 9 light-reviews?" friction. The Cast Manifest makes the recycling explicit at the top of the document where every cast member sees it on first read.
+
+**Acceptance**: the Cast Manifest table is the FIRST section of the planning doc (before motivation, before slicing). The Step 0 light-reviewer at the §5 gate verifies the manifest is present + complete + recycled-assignments correctly marked.
+
 ### Pre-cascade Recon checklist (REQUIRED for `cascade_input_ready` state)
 
 This is the load-bearing piece for cold-cast onboarding. Codifies the standing-memory knowledge that the Manager would otherwise have to verbally walk a fresh cast member through.
 
-**Required content** — author-onboarding checklist embedded in the slicing manifest §1 cadence OR as a sister "Step 0 onboarding pointer" doc:
+**Required content** — author-onboarding checklist that sits IMMEDIATELY BELOW the Cast Manifest at the top of the planning doc (NOT buried in the slicing manifest §1; surfaced at the top so every cast member reads it before reading the design):
 
 - **Standing feedback memories that apply** (project-wide list — see consuming project's CLAUDE.md / memory directory for the full inventory; the slicing manifest enumerates which ones gate THIS cascade's authoring)
 - **Persona conventions** (project-specific — available personas + current role assignments + signing convention)

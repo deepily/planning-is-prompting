@@ -178,6 +178,8 @@ Expected Manager response: ack the tap on `coordination`; DM Rachel with role + 
 
 ## Step 5: Section Pipeline Execution
 
+**For the explicit worked example + ASCII timeline showing pipeline ramp-up → steady state → ramp-down**: see `workflow/plan-review-cascaded-parallelism.md`. That doc walks through a 4-section notification-sync plan with all three reviewers concurrent at the steady-state limit, and documents when parallelism breaks (PG-5 lesson) along with the coordination mechanics.
+
 For each section in sequence (A, B, C, ...), the manager initiates the author. Stages cascade automatically:
 
 ```
