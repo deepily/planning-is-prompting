@@ -102,6 +102,20 @@ This is the load-bearing piece for cold-cast onboarding. Codifies the standing-m
 
 **Acceptance**: light-reviewer at the §5 gate verifies all applicable standing memories are listed (no missing memory that would cause friction during cascade); persona conventions match current project state; project-specific rules accurate for THIS cascade's context.
 
+**PG-5 lesson — mandate scope-applicability verification (added 2026-05-28 post-Run-5)**:
+
+Cited mandates in the Recon checklist MUST have their **scope-applicability verified against the design's actual code location** — never assume blanket applicability. Run 5 (heartbeat-poker review) cited the Lupin-wide 100%-coverage mandate as applicable, but the design's code location (`HeartbeatPokerJob` in CoSA sub-repo) is mandate-EXCLUDED — CoSA is governed by a different coverage policy.
+
+**Verification template** (added to the Recon checklist as a required column):
+
+| Mandate | Cited from | Applies to THIS design? | Verification |
+|---|---|---|---|
+| 100% line/branch/function coverage | `lupin/CLAUDE.md` § Coverage | ❓ → ✅/❌ | Locate the design's actual code location; check whether that location is in the mandate's scope or excluded |
+
+**Why this matters**: a misapplied mandate adds friction during cascade (reviewer applies the mandate; finding rejected; revision cycle) AND can result in shipped code that doesn't satisfy the mandate it actually IS subject to.
+
+**Empirical anchor**: Run 5 PG-5 — the run cited the Lupin-wide mandate without checking CoSA exclusion; light-reviewer caught the mis-citation post-hoc.
+
 ### `cascade_input_ready` state semantics
 
 `cascade_input_ready` is a new `closure_action` enum value (see defaults.md §Severity-tag metadata schema for the full enum). It denotes Step 0 has completed all 6 sub-steps: input intake + slicing decision + slicing manifest (if sliced) + per-slice design docs + Q-decision matrices + user ratification + light-review pass + pre-cascade Recon checklist verified. Cascade Step 1 can fire.
@@ -525,6 +539,34 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
 
 ---
 
+## §Manager Rehydration (added 2026-05-28 post-Run-5 SA-1) [SHARED]
+
+**Context**: when the Manager's session is `/clear`'d mid-cascade (for example, to recover from context bloat or to allow a different topic to take focus), a fresh-context session re-takes the Manager seat via a **hand-authored rehydration doc** that recovers the Manager's working context.
+
+**Empirical anchor**: Run 5 (heartbeat-poker review) — Manager seat was rehydrated by session `eac45c39` from a memento doc that the prior Manager had authored before the `/clear`. The rehydration worked cleanly; the cascade continued without finding-loss.
+
+**Rehydration doc contract** — what the prior Manager MUST capture before the planned `/clear`:
+
+1. **Cascade state** — current step (Step 0 / 1 / ... / 9); which sections are at which stage; cascade name + parent topic
+2. **Cast roster** — name and session ID for every active cast member (Author + 3 Reviewers + Workflow Steward if present)
+3. **Open findings + pending classifications** — every finding currently in-flight with its classification state; every pending re-litigation
+4. **Active DMs** — running DM threads with cast members (topic + most-recent qid) so the rehydrated Manager can pick up the conversation
+5. **Standing memory guidance** — feedback memories applicable to THIS cascade (lifted from the pre-cascade Recon checklist; same content)
+6. **Heartbeat state** — current cadence; whether the daemon is running OR the self-paced fallback is in use (PG-2 lesson); next scheduled probe time
+7. **Workflow Steward DM trail** — if a Steward is attached, the most-recent Steward DM and its in_reply_to qid
+
+**Where it lives**: at the cascade's parent topic OR at `<project>/.claude-memento.md` (gitignored alongside `.claude-session.md`).
+
+**Cross-link to general memento skill**: this is the cascade-Manager-specific application of the general "memento" pattern — see the `plan-memento` skill (forthcoming) for the cross-cascade snapshot-for-rehydration mechanism.
+
+**Workflow Steward role in rehydration**:
+- Steward observes the planned `/clear` notification from the Manager
+- Steward verifies the rehydration doc satisfies the 7-element contract above before the `/clear` fires
+- Post-`/clear`, the Steward DMs the rehydrated Manager session to confirm seat handoff is clean
+- If rehydration fails (rehydrated Manager can't recover cascade state from the doc), Steward flags as workflow violation + escalates to user
+
+---
+
 ## §Heartbeat Handling — External Scheduler Integration [SHARED]
 
 **Architectural premise** (post-Run-1 workflow update): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first. The heartbeat protocol is **external-scheduler-driven**.
@@ -546,6 +588,29 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
   ```
 - Per-tick cost: sub-second; ~$0 (sleep loop) vs `/schedule` skill's per-tick CC session spawn (~5s cold start + Claude API call ≈ $0.50 over a 30-min cascade)
 - Post-2026-05-18 extension (Rachel's Item #3): per-section message-count budget tracking; `--budget-threshold` arg with `--section-glob` for what to count
+
+**PG-2 lesson — daemon-launch permission-denial fallback (added 2026-05-28 post-Run-5)**:
+
+When the host-harness permission classifier blocks a background-daemon launch (empirical anchor: Run 5 — the canonical Observer heartbeat daemon could not launch; auto-mode permission classifier blocked the persistent-process launch; the script also crashed on `import requests` (`ModuleNotFoundError`)), the cast member MUST fall back to **self-paced `ScheduleWakeup` probe loop** rather than skip the heartbeat role entirely.
+
+**Self-paced fallback specification**:
+
+1. **Cadence**: same as the daemon would have driven (per `observer_probe_cadence_*` config keys for the Observer; per `manager_push_frequency` for the Manager).
+2. **Mechanism**: `mcp__schedule__ScheduleWakeup(delaySeconds=<cadence>, prompt=<probe instruction>, reason=<heartbeat>)` at the end of each probe.
+3. **Probe action**: identical to the daemon-driven probe — `commons_who()` + `commons_read('coordination')` + DM to Manager if unread peer-DM surfaces.
+4. **Termination**: when cascade_complete posts OR user explicitly stands down the heartbeat role.
+
+**Pre-flight launch-approval step** (for v1.2 — to avoid the runtime fallback dance): before cascade kickoff, the Manager attempts a 5-second dry-run launch of both daemons (`Manager` + `Observer`) to verify the host-harness permits them. If either launch fails, the Manager either (a) requests the user grant the launch permission explicitly, or (b) flags `daemon_mode = self_paced_fallback` and continues with the `ScheduleWakeup` mechanism.
+
+**Empirical anchor**: Run 5 — Observer (María) fell back to a self-paced `ScheduleWakeup` probe loop after the canonical daemon failed to launch. The fallback worked cleanly across the cascade; no probes were missed.
+
+**PG-6 lesson — recipient-derived topic-name slugification (added 2026-05-28 post-Run-5)**:
+
+When the heartbeat scheduler builds a poke topic from a recipient's display name, the recipient name MUST be **slugified** before being inserted into the topic-name. Run 5 empirical anchor: `cascade_heartbeat_scheduler.py --manager "mr radio"` built poke topic `dm-mr radio` (with a space) → failed the server's topic-name validation regex `^[\w-]+$` → every poke 422'd silently for the entire run. The cascade was unaffected because real events reached the Manager via `commons_send_to` (which slugifies internally), but the heartbeat mechanism itself was broken end-to-end.
+
+**Slugification spec**: lowercase + spaces-to-hyphens; e.g. `"Mr Radio"` → `"mr-radio"`; topic becomes `dm-mr-radio` (valid). The Lupin-side `cascade_heartbeat_scheduler.py` slugifies in the helper layer (post-Run-5 commit pending — Lupin-side task); PIP-side documents the requirement here so any future heartbeat scheduler implementation (cosa-voice MCP-based, etc.) inherits the same slugification rule.
+
+**Cross-reflexive validation**: this lesson IS the Fitness finding F-Rio-C1 (poke-delivery/detection mechanism unspecified) AND F-Rio-B1 (`recipients` entry-type semantics) from the same Run 5 cascade — the doc under review was the generic `HeartbeatPokerJob` design, and the run's own poker broke exactly the predicted way.
 
 **Daemon kickoff procedure (Manager + Observer dual-independent, added 2026-05-20 post-Run-4)**:
 
