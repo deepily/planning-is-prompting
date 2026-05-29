@@ -51,3 +51,4 @@ Thumbs.db
 
 # Claude session memento (pre-context-clear state snapshot for rehydration)
 .claude-memento.md
+io/mementos/

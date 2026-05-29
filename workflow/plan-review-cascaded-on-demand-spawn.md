@@ -244,11 +244,15 @@ dismiss_sessions(session_ids=[author_session_id], write_memento=True)
 
 Before the tmux kill, the dismissed Author session writes its memento — capturing the cascade's outcome + open loops + lessons-learned. This memento is then the seed for the NEXT spawn of an Author resuming work on the same plan.
 
+**Archive convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation): the dismissed session writes to `io/mementos/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` (per-persona-per-cycle archive; no clobber). This lets multiple personas have parallel continuity threads — Tiffany's Round-1 Author memento does NOT clobber Mr. Radio's Manager-rehydration memento. See `workflow/memento-management.md` §3.2 for the full convention.
+
+**Re-spawn selection — Manager owns the choice**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the Manager picks the right archived memento path from `io/mementos/`. The MCP doesn't auto-select; the path is explicit. See `workflow/memento-management.md` §3.4.
+
 ### §8.3 The continuity loop in narrative
 
-> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento naming the Stage-3 ownership-language pattern she just learned.
+> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to `io/mementos/tiffany-2026.05.28-at-2350.md` naming the Stage-3 ownership-language pattern she just learned.
 >
-> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento=<round-1 memento path>)`. Tiffany comes up with prior-round context, applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
+> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany-2026.05.28-at-2350.md")`. Tiffany comes up with prior-round context (MCP prepends the memento as a "Prior context" section above the task), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
 
 **This is the cascade-learning-loop forward-direction made persistent across cascade runs.**
 

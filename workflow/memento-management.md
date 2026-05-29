@@ -86,16 +86,45 @@ Every memento MUST include the following 7 elements. Missing any one means the r
 
 ## §3 File location convention
 
+There are TWO distinct memento use cases with TWO different location conventions:
+
+### §3.1 User-initiated `/clear` rehydration (single-occupancy)
+
 **Location**: `<project>/.claude-memento.md` at project root.
 
-**Gitignored**: yes — alongside `.claude-session.md`. Add to `.gitignore` if not already there:
+**Use case**: A session about to undergo a deliberate `/clear` writes the memento; the post-`/clear` session reads from this canonical path.
+
+**Single-occupancy**: there's one rehydration target at a time. If a memento already exists when a new one needs writing, the prior memento is either (a) discarded (its session has completed rehydration) OR (b) renamed to `.claude-memento.archived-<timestamp>.md` if its content is still load-bearing for a different role.
+
+### §3.2 Spawn dismiss with `write_memento=True` (per-persona archive)
+
+**Location**: `io/mementos/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` (per-persona-per-cycle archive).
+
+**Use case**: A dismissed spawned session writes its memento before `tmux kill-session` so a future re-spawn of the same (or related) persona can read it via `seed_memento` param in `spawn_sessions`. The Manager (or the user) picks the right archived memento for the right re-spawn.
+
+**Per-persona-per-cycle**: multiple personas can have parallel continuity threads (Tiffany's Round-1 Author memento does NOT clobber Mr. Radio's Manager-rehydration memento). Timestamp suffix avoids same-day collisions.
+
+**Slugification**: `<persona-slug>` is the slugified persona name per PG-6 (lowercase + spaces-to-hyphens). E.g. "Mr Radio" → `mr-radio` → `io/mementos/mr-radio-2026.05.28-at-2347.md`.
+
+**Why `io/` not project-root**: `io/` is the scope for I/O artifacts (research reports, audio, plots) — and is doc-viewer-scope-visible by default. Per-persona mementos are I/O artifacts of the spawned session's lifecycle. The single-occupancy `<project>/.claude-memento.md` stays at project root for the user-initiated-`/clear` case.
+
+### §3.3 Gitignored
+
+Both locations are gitignored — mementos are transient session state, not source-of-truth:
 
 ```
 .claude-session.md
 .claude-memento.md
+io/mementos/
 ```
 
-**One memento per project at a time**: the file is single-occupancy. If a memento already exists and a new one needs writing, the prior memento is either (a) discarded (its session has completed rehydration) OR (b) renamed to `.claude-memento.archived-<timestamp>.md` if its content is still load-bearing for a different role.
+Add `io/mementos/` to `.gitignore` if not already there.
+
+### §3.4 Re-spawn selection — Manager owns the choice
+
+When the Manager calls `spawn_sessions(... seed_memento=<path>)`, the Manager owns "which archived memento for which re-spawn." This is what makes parallel continuity threads work — the Author's memento goes to the next Author re-spawn; the Manager's memento goes to the next Manager re-spawn; they don't collide.
+
+**Decision authority**: the Manager (or the user) selects from the available `io/mementos/*.md` archive. The MCP doesn't auto-select — the path is explicit in the spawn call.
 
 ---
 
