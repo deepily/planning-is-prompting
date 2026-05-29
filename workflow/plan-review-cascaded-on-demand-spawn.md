@@ -61,7 +61,7 @@ result = spawn_sessions(
 )
 ```
 
-**Note**: `manager_session_id` and `manager_persona` are NOT params on `spawn_sessions` — the MCP resolves both server-side from the calling session's bridge. The `{manager_session_id}` and `{manager_persona}` tokens in the task_prompt are auto-injected by the spawner along with `{role}` and `{index}`.
+**Note**: `manager_session_id` and `manager_persona` are NOT params on `spawn_sessions` — the MCP resolves both server-side from the calling session's bridge. **Auto-substituted tokens** in the task_prompt are `{role}`, `{manager_session_id}`, and `{index}` only — everything else (including `{cascade_name}` / `{parent_topic}` / `{section}` / `{scope_sentence}` / `{manager_persona}`) you author into the template body itself and substitute via your own rendering layer before calling `spawn_sessions`.
 
 ### §3.2 What the MCP returns
 
@@ -287,15 +287,22 @@ Before the tmux kill, the dismissed Author session writes its memento — captur
 - For the cascade on-demand-spawn case, the cascade NOW is what matters; the memento is **context for interpreting the task**, not a counter-instruction set. Appending preserves the task as the action driver.
 - The role template's behavioral rules (Layer 3 of the 5-layer template) end up at the position closest to the persona's first response — primacy of action stays with the active job.
 
-**Composition order at spawn time** (FINAL — confirmed via Track-T render_task_prompt 2026-05-29):
+**Composition order at spawn time** (FINAL — confirmed verbatim against Track-T `render_task_prompt` code 2026-05-29):
+
+The spawner produces **TWO blocks**, not three. The task instruction is part of YOUR template — the spawner does NOT separate "task" from "template" and does NOT reorder your layers.
 
 ```
-1. <rendered role template — tokens substituted>
-2. <the actual task statement>
-3. <if seed_memento: appended section labeled "Prior context (memento — your earlier work on this, for reference)" with memento content>
+1. <your fully-rendered template — all 5 layers in whatever order you composed them
+   in workflow/spawn-prompts/<role>.md, with auto-substituted tokens
+   ({role} / {manager_session_id} / {index}) resolved>
+2. <if seed_memento: appended section with literal header
+   "Prior context (memento — your earlier work on this, for reference)"
+   followed by the memento body>
 ```
 
-Effective when reading: the persona sees role + task + (then) prior-context appendix. The persona acts on the task; the prior-context informs how they understand their state, not what to do next. The Track-T `render_task_prompt` uses the label *"Prior context (memento — your earlier work on this, for reference)"* on the appendix header for clarity to the spawned session.
+**The only spawner guarantee**: the memento appendix always comes LAST. Where the actionable task instruction sits within your template (top, bottom, layer 3, wherever you compose it) is entirely your authoring choice. If you want the task to dominate behaviorally, compose your template so the task is its LAST layer (immediately before the memento appendix gets attached). If you want behavioral rules to come last, put them last. The spawner doesn't impose layer order.
+
+**Implication for `workflow/spawn-prompts/<role>.md` design**: the 5-layer template I'd recommend is (1) role identity → (2) rubric pointer → (3) behavioral rules → (4) Cast Manifest pointer → (5) task instruction (the action), composed in that order so the task is the LAST thing inside the template. When the memento appendix gets attached after, the persona reads: role → rubric → rules → manifest → task → (prior context memento). Task immediately precedes memento; memento informs interpretation of the task; behavioral rules are read before the task is named.
 
 **This is the cascade-learning-loop forward-direction made persistent across cascade runs.**
 
