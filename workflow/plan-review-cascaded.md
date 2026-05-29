@@ -169,7 +169,9 @@ If the user rejects the decomposition, ask via `converse()` for redirection (dif
 
 ## Step 4: Assign Roles to the Other 4 Sessions
 
-Per `persona_casting_strategy = user_assigns_at_launch`, the user has already chosen which 4 other sessions participate. The manager:
+**On-demand spawn alternative (added 2026-05-28)**: instead of requiring the user to manually pre-launch 4 peer sessions, the Manager may invoke the cosa-voice MCP `spawn_sessions(count, role, ...)` tool to spin up N headless reviewer/author sessions on demand. See `workflow/plan-review-cascaded-on-demand-spawn.md` for the operator runbook + worked example + Cast Manifest integration with spawn-origin + TTS axes. Track-T mechanics plan: `lupin/src/rnd/v0.1.7/2026.05.28-manager-spawned-reviewers.md`.
+
+Per `persona_casting_strategy = user_assigns_at_launch`, the user has already chosen which 4 other sessions participate (OR the Manager has spawned them via `spawn_sessions`). The manager:
 
 1. Identifies the 4 peer sessions via `mcp__cosa-voice__commons_who()`
 2. DMs each session a role assignment (one of: author, usability/reuse reviewer, viability/gap reviewer, ownership reviewer)
