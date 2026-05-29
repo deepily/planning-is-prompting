@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-05-28 late evening (María — push through TODO #13 P0 + companion practices + Run 5 PG fold + cross-repo rollup refinements + memento skill + 4-of-6 CLAUDE.md backfill audit; 6 commits today total)
+Last updated: 2026-05-29 early UTC (María — 17 commits today; TODO #13 P0 work landed + Run 5 PG fold + memento skill + cross-repo rollup refinements + cross-session Track-M runbook for manager-spawned reviewers in coordination with Tiberius's Track-T)
 
 ## Pending
 
