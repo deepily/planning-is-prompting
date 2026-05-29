@@ -274,7 +274,28 @@ Before the tmux kill, the dismissed Author session writes its memento — captur
 
 > Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to `io/mementos/tiffany-2026.05.28-at-2350.md` naming the Stage-3 ownership-language pattern she just learned.
 >
-> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany-2026.05.28-at-2350.md")`. Tiffany comes up with prior-round context (MCP prepends the memento as a "Prior context" section above the task), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
+> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany-2026.05.28-at-2350.md")`. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
+
+### §8.4 Prepend vs append — append wins (Rick directive 2026-05-29)
+
+**Decision (Rick, USER BROADCAST 2026-05-29)**: the MCP **appends** the seed_memento as a separate "Prior context" section AFTER the rendered task, NOT before it.
+
+**Why append, not prepend** (LLM primacy/recency dynamics):
+
+- The **task is the active focus**; the memento is supplementary context. Appending lets the task instructions be read first and stay the dominant frame.
+- LLMs exhibit a recency bias on behavioral instructions — the LAST instructions read tend to steer behavior most strongly. If the memento prepends, the memento's content shapes how the persona reads the task. If the memento appends, the task shapes how the persona reads the memento.
+- For the cascade on-demand-spawn case, the cascade NOW is what matters; the memento is **context for interpreting the task**, not a counter-instruction set. Appending preserves the task as the action driver.
+- The role template's behavioral rules (Layer 3 of the 5-layer template) end up at the position closest to the persona's first response — primacy of action stays with the active job.
+
+**Composition order at spawn time** (FINAL):
+
+```
+1. <rendered role template — tokens substituted>
+2. <the actual task statement>
+3. <if seed_memento: appended "Prior context" section with memento content>
+```
+
+Effective when reading: the persona sees role + task + (then) prior-context. The persona acts on the task; the prior-context informs how they understand their state, not what to do next.
 
 **This is the cascade-learning-loop forward-direction made persistent across cascade runs.**
 

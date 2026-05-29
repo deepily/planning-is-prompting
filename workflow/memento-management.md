@@ -126,6 +126,17 @@ When the Manager calls `spawn_sessions(... seed_memento=<path>)`, the Manager ow
 
 **Decision authority**: the Manager (or the user) selects from the available `io/mementos/*.md` archive. The MCP doesn't auto-select — the path is explicit in the spawn call.
 
+### §3.5 Composition order at spawn time — APPEND (Rick directive 2026-05-29)
+
+When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the memento content as a separate "Prior context" section AFTER the rendered task, NOT before it.
+
+**Composition order**:
+1. Rendered role template (tokens substituted)
+2. The task statement
+3. (if `seed_memento` set) Appended "Prior context" section with memento content
+
+**Why append**: LLM recency bias means the LAST instructions read tend to dominate behavior. Putting the task BEFORE the memento makes the task the action driver; the memento informs interpretation, not instruction. See `plan-review-cascaded-on-demand-spawn.md` §8.4 for the full rationale.
+
 ---
 
 ## §4 Lifecycle
