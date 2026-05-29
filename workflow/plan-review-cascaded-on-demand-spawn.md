@@ -48,9 +48,8 @@ Before invoking `spawn_sessions`:
 result = spawn_sessions(
     count              = 3,
     task_prompt        = (
-        "You are persona {role} for cascade {cascade_name}. "
-        "Read the input plan at {parent_topic} and review section {section} "
-        "per your stage rubric. Scope: {scope_sentence}. "
+        "You are persona {role} for cascade. "
+        "Read the input plan and review your assigned section per your stage rubric. "
         "Post findings to dm-{manager_persona} via commons_post with "
         "in_reply_to threading. Manager: {manager_session_id}."
     ),
@@ -58,25 +57,31 @@ result = spawn_sessions(
     role               = "reviewer",
     persona_preference = ["Tiberius", "Krishna", "Sam"],
     seed_memento       = None,  # reviewers are cold-cast; no prior context to restore
-    manager_persona    = "mr-radio",  # used for topic/name slug; matches PG-6 + cascade_heartbeat_scheduler.dm_topic_for
+    dry_run            = False,  # set True to print tmux commands without actually launching (cascade rehearsal)
 )
 ```
+
+**Note**: `manager_session_id` and `manager_persona` are NOT params on `spawn_sessions` — the MCP resolves both server-side from the calling session's bridge. The `{manager_session_id}` and `{manager_persona}` tokens in the task_prompt are auto-injected by the spawner along with `{role}` and `{index}`.
 
 ### §3.2 What the MCP returns
 
 ```python
 {
   "spawned": [
-    {"session_id": "abc123", "persona_name": "Tiberius", "persona_icon": "🌑",
-     "persona_color": "#3F51B5", "tmux_session_name": "cc-abc123",
-     "requested_role": "reviewer", "status": "spawning"},
-    {"session_id": "def456", "persona_name": "Krishna", ...},
-    {"session_id": "ghi789", "persona_name": "Sam", ...},
+    {"session_name": "cc-reviewer-mr-radio-1", "requested_role": "reviewer",
+     "project": "planning-is-prompting", "status": "spawning", "dry_run": False},
+    {"session_name": "cc-reviewer-mr-radio-2", ...},
+    {"session_name": "cc-reviewer-mr-radio-3", ...},
   ],
-  "manager_persona": "mr-radio",                 # slugified per PG-6 — used for dm-{manager} topic
-  "collection_topic": "dm-mr-radio",             # where findings will be threaded back
+  "manager_persona": "mr-radio",                 # slugified per PG-6; the spawner resolved this from bridge
+  "collection_topic": "dm-mr-radio",             # findings thread back here
+  "persona_preference": ["Tiberius", "Krishna", "Sam"],
+  "requested": 3,
+  "dry_run": False,
 }
 ```
+
+The `session_name` is the tmux session name; persona allocation (name/icon/color) is resolved at child startup time + reported back via the child's first `commons_post` ack. The runbook below cites sessions by `session_name`.
 
 ### §3.3 Wait for v1 polling-based acks
 
@@ -84,16 +89,19 @@ Each spawned session, on startup, posts `ready, [role name]` to `dm-{manager_per
 
 ```python
 # Per-heartbeat-tick (every ~2-3 min), Manager polls the collection topic:
-recent = commons_read(topic="dm-mr-radio", limit=20)
+# (collection_topic was returned by spawn_sessions; for this example: dm-mr-radio)
+recent = commons_read(topic=result["collection_topic"], limit=20)
 for entry in recent:
     if entry["body"].startswith("ready, "):
-        # Mark this spawned session as live
+        # Match the ack to a spawned session_name via the entry's metadata
         ...
 ```
 
-**Step 4 ack-timer interaction**: the cascade's Step 4 escalates if a peer doesn't ack within 2 min. For spawned sessions, the spawn→ack latency is ≥ tmux-startup-time + initial-prompt-render-time. The plan accepts this constraint as-is (no per-session deadline adjustment); operators using spawn at scale should expect first acks ~30-90 sec after `spawn_sessions` returns. If a spawned session has not acked within the Step 4 timer (2 min), escalate per the existing Step 4 protocol — typically the Manager dismisses and re-spawns rather than waiting longer.
+**Step 4 ack-timer interaction**: the cascade's Step 4 escalates if a peer doesn't ack within 2 min. For spawned sessions, the spawn→ack latency is ≥ tmux-startup-time + initial-prompt-render-time. Operators using spawn at scale should expect first acks ~30-90 sec after `spawn_sessions` returns.
 
-**Forward-looking (v1.1)**: Tiberius's Track-T plan will add an INI key (`cc session spawn reviewer ack timeout seconds`) and have the MCP wrapper return a per-session `expected_ack_deadline` field in the spawn result. When that lands, this section's fixed 2-min assumption is replaced by the returned deadline. Until then: 2-min Step 4 escalation stands.
+**Concrete escalation deadline (Track-T live)**: the INI key `cc session spawn reviewer ack timeout seconds` (default **120 sec** = 2 min) governs the ack escalation deadline. This matches Step 4's existing 2-min default, so the spawn flow integrates with Step 4 escalation without behavioral change.
+
+**Forward-looking (v1.1)**: when Tiberius wires a per-session `expected_ack_deadline` field into the spawn result, the runbook will swap the INI-default assumption for the returned per-session value. Until then: 120 sec from `spawn_sessions` return is the deadline.
 
 ### §3.4 Heartbeat scheduler registration (decision: spawn does NOT auto-register reviewers)
 
@@ -126,12 +134,17 @@ Once all spawned sessions have acked + the existing cast is assembled, the casca
 ### §5.1 Explicit dismissal (typical)
 
 ```python
-dismiss_sessions(
-    session_ids   = ["abc123", "def456", "ghi789"],  # or None → dismiss all I spawned
+result = dismiss_sessions(
+    session_names = ["cc-reviewer-mr-radio-1",   # tmux session names returned by spawn_sessions
+                     "cc-reviewer-mr-radio-2",
+                     "cc-reviewer-mr-radio-3"],
     reason        = "Cascade-notif-sync complete; freeing reviewer slots",
-    write_memento = True,  # give each session a chance to write a per-spawn memento
+    write_memento = None,  # None → INI default (currently True); pass True/False to override per-call
 )
+# Returns: {dismissed:[{session_name, status}], remaining, reason, write_memento, manager_session_id}
 ```
+
+`session_names=None` is the "dismiss all I spawned" default — the MCP filters by the `spawned_by=<your manager session_id>` bridge tag.
 
 **What the MCP does** (per the Lupin Track-T plan):
 1. Each spawned session receives a "you're being dismissed" notice + the `reason` string
@@ -153,13 +166,22 @@ If only one spawned session needs to be reaped (e.g. reviewer reassignment):
 
 ```python
 dismiss_sessions(
-    session_ids   = ["def456"],
+    session_names = ["cc-reviewer-mr-radio-2"],
     reason        = "Reviewer reassigned per rate-limit; replacing with fresh spawn",
     write_memento = True,
 )
 # Then spawn a replacement:
 spawn_sessions(count=1, role="reviewer", persona_preference=["Rachel"], ...)
 ```
+
+### §5.4 Listing what you've spawned
+
+```python
+result = list_spawned_sessions()
+# Returns: {sessions:[{session_name, requested_role, status, alive}], count, manager_session_id}
+```
+
+Useful for sanity-check before dismissal + for the Workflow Steward's mid-cascade probes.
 
 ---
 
