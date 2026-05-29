@@ -287,15 +287,15 @@ Before the tmux kill, the dismissed Author session writes its memento — captur
 - For the cascade on-demand-spawn case, the cascade NOW is what matters; the memento is **context for interpreting the task**, not a counter-instruction set. Appending preserves the task as the action driver.
 - The role template's behavioral rules (Layer 3 of the 5-layer template) end up at the position closest to the persona's first response — primacy of action stays with the active job.
 
-**Composition order at spawn time** (FINAL):
+**Composition order at spawn time** (FINAL — confirmed via Track-T render_task_prompt 2026-05-29):
 
 ```
 1. <rendered role template — tokens substituted>
 2. <the actual task statement>
-3. <if seed_memento: appended "Prior context" section with memento content>
+3. <if seed_memento: appended section labeled "Prior context (memento — your earlier work on this, for reference)" with memento content>
 ```
 
-Effective when reading: the persona sees role + task + (then) prior-context. The persona acts on the task; the prior-context informs how they understand their state, not what to do next.
+Effective when reading: the persona sees role + task + (then) prior-context appendix. The persona acts on the task; the prior-context informs how they understand their state, not what to do next. The Track-T `render_task_prompt` uses the label *"Prior context (memento — your earlier work on this, for reference)"* on the appendix header for clarity to the spawned session.
 
 **This is the cascade-learning-loop forward-direction made persistent across cascade runs.**
 
