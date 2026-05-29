@@ -154,9 +154,9 @@ result = dismiss_sessions(
 
 **Result**: the Manager's `list_spawned_sessions()` no longer shows these session_ids.
 
-### §5.2 Idle-TTL auto-reap backstop (v1 safety net)
+### §5.2 Idle-TTL auto-reap backstop (built + 100% tested)
 
-If the Manager session crashes or forgets to call `dismiss_sessions`, the MCP's idle-TTL auto-reap kicks in (configurable in `lupin-app.ini` per the plan). This prevents orphaned reviewer sessions from burning Max-plan OAuth indefinitely.
+If the Manager session crashes or forgets to call `dismiss_sessions`, the MCP's idle-TTL auto-reap kicks in (configurable in `lupin-app.ini`; Track-T-built and 100% tested as of 2026-05-29). This prevents orphaned reviewer sessions from burning Max-plan OAuth indefinitely.
 
 **Operator implication**: do not rely on idle-TTL for routine teardown. Always call `dismiss_sessions` explicitly at cascade close. Idle-TTL is a safety net, not a primary mechanism.
 
@@ -196,24 +196,31 @@ The Cast Manifest at the TOP of every planning doc (per `plan-review-cascaded-st
 |---|---|---|---|---|
 | Author | Tiffany 💍 | pre-existing | enabled | — |
 | Manager | Mr. Radio 🦉 | pre-existing | enabled | — |
-| Stage 1 Reviewer | Tiberius 🌑 | on-demand (spawn_sessions) | silent (un-mute on tap) | — |
-| Stage 2 Reviewer | Krishna 🦚 | on-demand (spawn_sessions) | silent (un-mute on tap) | ✓ Also Step 0 light-review |
-| Stage 3 Reviewer | Sam 🎙️ | on-demand (spawn_sessions) | silent (un-mute on tap) | — |
+| Stage 1 Reviewer | Tiberius 🌑 | on-demand (spawn_sessions) | speakerphone OFF (enable_speakerphone to un-mute) | — |
+| Stage 2 Reviewer | Krishna 🦚 | on-demand (spawn_sessions) | speakerphone OFF (enable_speakerphone to un-mute) | ✓ Also Step 0 light-review |
+| Stage 3 Reviewer | Sam 🎙️ | on-demand (spawn_sessions) | speakerphone OFF (enable_speakerphone to un-mute) | — |
 | Step 0 light-reviewer | Krishna 🦚 (= Stage 2 reviewer) | (recycled) | (recycled) | RECYCLED |
 | Step 9 light-reviewer | (TBD at Step 8) | (recycled) | (recycled) | RECYCLED |
 | Workflow Steward (optional) | María 🌸 | pre-existing | enabled | Escape hatch |
 | Heartbeat Scheduler | external daemon | external | n/a | — |
 ```
 
-### §6.1 TTS axis — the two-axis rule
+### §6.1 TTS axis — maps onto existing `enable_speakerphone` primitive (no new machinery)
 
-Per Decision #5 in the Track-T plan, spawned reviewers carry a **two-axis** TTS+broadcast configuration:
+Per Decision #5 in the Track-T plan, spawned reviewers operate with TTS silent by default but the user/Manager can "tap one on the shoulder" to un-mute. **Important** (Tiberius reconciliation 2026-05-29): this does NOT require a new `tts_muted` flag or bespoke un-mute toggle — the behavior **maps directly onto the EXISTING speakerphone primitive**.
 
-- **Spoken TTS: SILENT by default** — avoids a serialized chorus of identical-voiced Extra-N reviewers burying the Manager's voice. The cosa-voice MCP tracks per-session `tts_muted` state.
-- **Spoken TTS: individually UN-MUTABLE on demand** — the user or Manager can un-mute any ONE spawned reviewer to "tap it on the shoulder" (per-session toggle). The Cast Manifest's TTS column reflects current state.
-- **Text broadcasts: ON** — user broadcasts (`USER BROADCAST` system-reminders) still inject as text to spawned reviewers. This lets Rick halt or steer the running pack via text-broadcast even while TTS is silent.
+The three-axis mapping (codified verbatim against the cosa-voice machinery):
 
-**Operator implication**: when authoring a Cast Manifest for an on-demand-spawn cascade, default the TTS column to "silent (un-mute on tap)" for spawned reviewers. Update if the Manager un-mutes mid-cascade.
+| Axis | Mechanism | Why it works out-of-the-box |
+|---|---|---|
+| **Spoken TTS: silent by default** | Spawned reviewers register with `speakerphone_on=False`. Per-session spoken TTS is gated by `speakerphone_on` (the browser `conversationModes[sid]` map). A session that isn't speakerphone-on isn't spoken. | No new code path |
+| **Reviewer→Manager comms: text via commons** | Reviewers post findings via `commons_post` + DM threading on `dm-{manager_persona}`. Their comms path uses text, never `notify()`-TTS. | Silent by comms-path regardless of speakerphone state |
+| **Spoken TTS: shoulder-tap un-mute** | The user/Manager calls the EXISTING `enable_speakerphone(session_id=<reviewer-sid>)` tool (browser endpoint: `POST /api/cosa-voice/speakerphone/{reviewer_sid}`). It's already per-session + broadcasts `speakerphone_changed`. | That IS the shoulder-tap — no new toggle |
+| **Text broadcasts: always reach reviewers** | User `USER BROADCAST` messages reach sessions independently of `speakerphone_on` — listener injection bypasses the spoken-TTS gate. | Already true; "text-broadcastable" needs no new work |
+
+**Operator implication**: when authoring a Cast Manifest for an on-demand-spawn cascade, default the TTS column to "speakerphone OFF (call enable_speakerphone to un-mute)" for spawned reviewers. To shoulder-tap a specific reviewer, the user (or Manager) calls `enable_speakerphone` with the reviewer's session_id.
+
+**Residual hardening** (Tiberius noted): `register_session` will self-register headless reviewers with `speakerphone_on=False` belt-and-suspenders to defend against stray `urgent`-priority `notify()` slipping through. Lands with the live E2E pass; doesn't change this narrative.
 
 ### §6.2 Recycled light-reviewer assignments still apply
 
