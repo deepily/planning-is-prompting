@@ -51,13 +51,14 @@ result = spawn_sessions(
         "You are persona {role} for cascade {cascade_name}. "
         "Read the input plan at {parent_topic} and review section {section} "
         "per your stage rubric. Scope: {scope_sentence}. "
-        "Post findings to dm-{manager_session_id} via commons_post with "
+        "Post findings to dm-{manager_persona} via commons_post with "
         "in_reply_to threading. Manager: {manager_session_id}."
     ),
     project            = "planning-is-prompting",
     role               = "reviewer",
     persona_preference = ["Tiberius", "Krishna", "Sam"],
     seed_memento       = None,  # reviewers are cold-cast; no prior context to restore
+    manager_persona    = "mr-radio",  # used for topic/name slug; matches PG-6 + cascade_heartbeat_scheduler.dm_topic_for
 )
 ```
 
@@ -92,7 +93,15 @@ for entry in recent:
 
 **Step 4 ack-timer interaction**: the cascade's Step 4 escalates if a peer doesn't ack within 2 min. For spawned sessions, the spawn→ack latency is ≥ tmux-startup-time + initial-prompt-render-time. The plan accepts this constraint as-is (no per-session deadline adjustment); operators using spawn at scale should expect first acks ~30-90 sec after `spawn_sessions` returns. If a spawned session has not acked within the Step 4 timer (2 min), escalate per the existing Step 4 protocol — typically the Manager dismisses and re-spawns rather than waiting longer.
 
-### §3.4 Proceed to Step 5
+**Forward-looking (v1.1)**: Tiberius's Track-T plan will add an INI key (`cc session spawn reviewer ack timeout seconds`) and have the MCP wrapper return a per-session `expected_ack_deadline` field in the spawn result. When that lands, this section's fixed 2-min assumption is replaced by the returned deadline. Until then: 2-min Step 4 escalation stands.
+
+### §3.4 Heartbeat scheduler registration (decision: spawn does NOT auto-register reviewers)
+
+`spawn_sessions` does NOT auto-register reviewers with `cascade_heartbeat_scheduler.py` in v1. The scheduler pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no scheduler entry. Reviewer-liveness heartbeats are deferred to v1.1.
+
+**Operator implication**: the Manager's own heartbeat is unchanged; the Manager does not need to call any scheduler-register API for spawned reviewers; the spawned reviewers' liveness is observed via the `ready, [role]` ack + later commons-post activity on `dm-{manager_persona}`.
+
+### §3.5 Proceed to Step 5
 
 Once all spawned sessions have acked + the existing cast is assembled, the cascade proceeds to Step 5 Section Pipeline Execution. No special handling — spawned reviewers are first-class cast members.
 
