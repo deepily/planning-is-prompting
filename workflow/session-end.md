@@ -1154,9 +1154,9 @@ If commit count is `0`: skip Step 6 with the line *"LoC Delta Summary: nothing t
 
 # Pick the Python interpreter. git_loc_delta itself has no PyYAML dep, but the
 # --rich opt-in (§6.2.alt) does, so the same PYBIN selection serves both paths.
-# Prefer the cosa venv, fall back to lupin's top-level venv, then system python.
-PYBIN="$LUPIN_ROOT/src/cosa/.venv/bin/python"
-[ -x "$PYBIN" ] || PYBIN="$LUPIN_ROOT/.venv/bin/python"
+# Post-COSA-merge: $LUPIN_ROOT/.venv is the canonical Lupin venv (carries cosa +
+# PyYAML); fall back to system python.
+PYBIN="$LUPIN_ROOT/.venv/bin/python"
 [ -x "$PYBIN" ] || PYBIN="python3"
 
 PROJECT_ROOT="$(git -C . rev-parse --show-toplevel)"
@@ -1232,7 +1232,7 @@ cd "$LUPIN_ROOT/src" && \
 
 **Purpose**: Adds the language × code/comment/docstring breakdown from `cosa.repo.run_branch_analyzer` as a secondary section appended to the closing `notify()` abstract. Useful when the branch is about to be PR'd and you want the rich language summary alongside the per-day trace.
 
-**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. Additionally, `branch_analyzer` requires PyYAML — the cosa venv has it; lupin's top-level venv may or may not. If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
+**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
 
 **Invocation**:
 

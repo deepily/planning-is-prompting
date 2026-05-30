@@ -2,7 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
-**Version**: 1.0
+**Version**: 1.1
 
 ---
 
@@ -28,10 +28,11 @@
    - Contains: discovery policy (recently-active mtime heuristic), aggregator CLI invocation, summary rendering, surfacing pattern, full failure-mode table
 
 3. **MUST execute discovery before invoking aggregator** (per canonical workflow Step 1):
-   - Glob `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv`
+   - Glob THREE depth patterns (repos are NOT all one level under `$PROJECTS_ROOT`) and union+dedup: `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv` (flat), `$PROJECTS_ROOT/*/*/io/git-loc-delta/*-loc-delta.csv` (grouping dirs like `google/lookml`), `$PROJECTS_ROOT/*/src/*/io/git-loc-delta/*-loc-delta.csv` (nested sub-repos like `lupin/src/lupin-mobile`)
    - Filter by mtime within last 14 days (or narrower if `--since` is given AND smaller than 14 days from today)
-   - Extract repo names from `Path(csv).parents[2].name`
-   - Pass the resolved list explicitly via `--repos <abs-path-list>` to the aggregator CLI — DO NOT rely on the CLI to auto-discover (CLI is honest-explicit per Rachel's contract)
+   - Carry each repo's ABSOLUTE path `str(Path(csv).parents[2])` (correct at any depth); repo name for display is `Path(p).name`
+   - **Git-root guard**: keep a candidate ONLY if `(Path(csv).parents[2] / ".git").exists()` — excludes in-tree dirs that carry a stale CSV (`lupin/src`, and `lupin/src/cosa` post-COSA-merge) which would otherwise double-count their parent repo's LoC
+   - Pass the resolved absolute paths explicitly via `--repos <abs-path-list>` — DO NOT reconstruct from name + `PROJECTS_ROOT` (breaks for non-flat repos), and DO NOT rely on the CLI to auto-discover (CLI is honest-explicit per Rachel's contract)
    - **Bypass discovery only if user passed `--repos REPO1 REPO2 ...` explicitly** — explicit override always wins
 
 4. **MUST honor flag semantics**:

@@ -8,171 +8,44 @@
 
 ## PARALLEL SESSION SAFETY (v2.0)
 
-**Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
+**Purpose**: prevent committing files modified by *other* parallel Claude sessions on the same repo. **Mechanism**: a multi-section `.claude-session.md` manifest in the project root — one section per session, each tracking that session's own touched files, enabling selective staging + conflict detection. Canonical procedure: planning-is-prompting → workflow/session-start.md (Step 3.5) + session-end.md (Step 3.5 + 4.4).
 
-**Mechanism**: Multi-section `.claude-session.md` manifest file in project root. Each session has its own section, enabling true parallel session support with conflict detection.
+**The problem it solves**: at commit time `git status` shows files from ALL active sessions; without per-session tracking you'd commit another session's work. With the manifest you stage only your own.
 
-**Format Version**: 2.0 (Multi-Session)
-
-### The Problem
-
-When multiple Claude Code sessions work on the same repository simultaneously:
-- Session A modifies `src/auth.py`, `src/utils.py`
-- Session B modifies `src/database.py`, `tests/test_db.py`
-- At Session A's commit time: `git status` shows ALL 4 files
-- **Without tracking**: Session A commits ALL 4 files (wrong!)
-- **With v2.0 tracking**: Session A commits only its 2 files (correct!)
-
-### The Solution: Multi-Section `.claude-session.md` Manifest (v2.0)
-
-**Format**:
+**Manifest format** (one section per session):
 ```markdown
 # Claude Session Manifest (Multi-Session)
-
 **Format Version**: 2.0
 **Last Updated**: 2026-01-31T10:30:00
 
 ---
 
 ## Session: 5c8a3081
-
 **Started**: 2026-01-31T09:00:00
 **Last Activity**: 2026-01-31T10:25:00
-**Status**: active
+**Status**: active          # active | committed | stale (>24h inactive)
 **Project**: my-project
 
 ### Touched Files
-
 - 2026-01-31T09:15:00 | src/auth.py
 - 2026-01-31T09:30:00 | src/utils.py
 
 ---
-
-## Session: a357ab00
-
-**Started**: 2026-01-31T08:00:00
-**Last Activity**: 2026-01-31T10:20:00
-**Status**: active
-**Project**: my-project
-
-### Touched Files
-
-- 2026-01-31T08:30:00 | src/database.py
-- 2026-01-31T09:45:00 | tests/test_db.py
-
----
 ```
 
-**At Session-Start** (Step 3.5):
-1. Get session ID from `get_session_info()`
-2. Check for existing manifest:
-   - If v1.0 format → auto-migrate to v2.0
-   - If v2.0 format → search for your session's section
-3. Create/resume your section using **Edit or Write tools** (never Bash heredocs):
-   - Found + active → resume (context clear recovery)
-   - Not found → append new section
-4. Check for stale sessions (>24h inactive)
+**Session-start**: get session ID from `get_session_info()`; find your section (v1.0 manifest → auto-migrate to v2.0; v2.0 → resume your section if active, else append a new one); flag stale sessions (>24h).
 
-**During Session** (after EVERY Edit/Write):
+**During session (after EVERY Edit/Write) — MANDATE**: append the touched file to YOUR `### Touched Files` and bump your `**Last Activity**`.
 
-**MANDATE**: Find YOUR section and append to `### Touched Files`:
-```markdown
-- 2026-01-31T10:35:00 | workflow/session-start.md
-```
-Also update `**Last Activity**` timestamp in your section.
+**Session-end**: read your section; **conflict detection** — if a file you touched was also touched by another active session, prompt the user (Include mine / Skip conflicts / Cancel); stage ONLY your section's files plus auto-includes; **NEVER `git add .` or `git add -A`**; set your status → `committed` + commit hash; delete the manifest if you're the only section, else keep it. Manifest persists across context clears — your section is found by ID on resume.
 
-**At Session-End** (Step 3.5 + 4.4):
-1. Read your section from manifest
-2. **Conflict Detection**: Compare your files against other active sessions
-3. If conflict detected → prompt user (Include mine / Skip conflicts / Cancel)
-4. Stage ONLY files from your section (plus auto-includes)
-5. **NEVER** use `git add .` or `git add -A`
-6. Update your section: Status → `committed`, add commit hash
-7. If only section → delete manifest; if others active → keep manifest
+**Auto-include files** (committed even if not in your section): `history.md`, `TODO.md` (if modified), `CLAUDE.md` (if modified), `bug-fix-queue.md` (if bug-fix-mode active).
 
-### Session Status Values
+**Manifest I/O — MANDATE**: ALWAYS use Edit/Write tools, NEVER Bash heredocs. Heredocs generate unique multi-line strings (session IDs, timestamps) that `Bash(prefix:*)` permission patterns can't match across newlines → repeated permission prompts. Edit/Write are auto-approved.
 
-| Status | Meaning |
-|--------|---------|
-| `active` | Session running or may resume after context clear |
-| `committed` | Session completed commit successfully |
-| `stale` | Auto-detected: >24h inactive |
+**Fallback (manifest missing — session-start was skipped)**: warn the user, show all `git status` files, ask "Commit all / Let me select / Cancel".
 
-### Conflict Detection
-
-When Session A commits and `src/config.py` was edited by both A and B:
-
-```
-⚠️  FILE CONFLICT DETECTED
-
-  src/config.py
-    • Session 5c8a3081 (this session): 2026-01-31T10:25:00
-    • Session a357ab00 (other session): 2026-01-31T09:45:00
-
-Options:
-  [1] Include mine - I made the relevant changes
-  [2] Skip conflicts - Let other session commit it
-  [3] Cancel - I'll investigate first
-```
-
-### Manifest Lifecycle (v2.0)
-
-| Event | Action |
-|-------|--------|
-| Session-start (new) | Create manifest with single section |
-| Session-start (resume) | Find section by ID, update Last Activity |
-| Session-start (parallel) | Append new section to existing manifest |
-| Every Edit/Write | Append to YOUR section only |
-| Session-end | Parse your section, check conflicts, selective commit |
-| After successful commit | Update status to `committed`, add commit hash |
-| Cleanup | Remove `committed` sections older than 7 days |
-| Context clear | Manifest persists, section found by ID on resume |
-
-### Auto-Include Files
-
-These files are always included in commits even if not in your section:
-- `history.md` - Session documentation
-- `TODO.md` - If modified
-- `CLAUDE.md` - If modified
-- `bug-fix-queue.md` - If bug-fix-mode active
-
-### Fallback: When Manifest is Missing
-
-If `.claude-session.md` doesn't exist (session-start was skipped):
-1. Display warning to user
-2. Show all modified files from `git status`
-3. Ask user: "Commit all", "Let me select", or "Cancel"
-
-### Backward Compatibility
-
-v1.0 manifests are auto-migrated to v2.0:
-- If file starts with `# Claude Session Manifest (Multi-Session)` → v2.0
-- If file starts with `# Claude Session Manifest` → v1.0 (migrate)
-
-Migration is automatic and transparent.
-
-### Tool Usage for Manifest Operations
-
-**MANDATE**: ALWAYS use Edit or Write tools (never Bash heredocs) for `.claude-session.md` operations:
-- **Creating new manifest**: Use Write tool
-- **Appending new session section**: Use Edit tool (find end of file, append section)
-- **Updating touched files**: Use Edit tool (find your section, append entry)
-- **Updating timestamps/status**: Use Edit tool
-
-**Rationale**: Bash heredoc commands generate unique multi-line strings each session (different session IDs, timestamps). The `Bash(prefix:*)` permission patterns cannot match across newlines, causing repeated permission prompts. Edit/Write tools are already auto-approved and avoid this entirely.
-
-### .gitignore Recommendation
-
-Add to your project's `.gitignore`:
-```
-.claude-session.md
-```
-
-### Key Principle
-
-**Selective staging is strictly better than bulk staging.** Even when not working in parallel sessions, explicitly staging files prevents accidental commits of temporary files, IDE artifacts, or unintended changes.
-
-**See**: planning-is-prompting → workflow/session-start.md (Step 3.5) and workflow/session-end.md (Step 3.5 + 4.4)
+**Key principle**: selective staging is strictly better than bulk staging — even solo, it prevents committing temp files, IDE artifacts, or unintended changes. Add `.claude-session.md` to `.gitignore`.
 
 ## TODO.md MANAGEMENT
 
@@ -312,289 +185,92 @@ PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0)
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0). Full API params, timeout handling, project auto-detection, migration: `~/.claude/skills/cosa-voice-notifications/SKILL.md`. Canonical workflow: planning-is-prompting → workflow/cosa-voice-integration.md.
 
 ### Available MCP Tools
 
-| Tool | Purpose | Blocking | Example |
-|------|---------|----------|---------|
-| `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
-| `ask_yes_no()` | Yes/No/Neither decision (Neither = "the question needs re-framing") | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
-| `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
-| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
-| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
-| `get_session_info()` | Session metadata | No | `get_session_info()` |
-| `set_session_topic()` | Set session topic for stop hook context | No | `set_session_topic( "Bug Fix: WS queue crash" )` |
+| Tool | Purpose | Blocking |
+|------|---------|----------|
+| `notify()` | Fire-and-forget announcement | No |
+| `ask_yes_no()` | Yes/No/Neither decision (Neither = "question needs re-framing") | Yes |
+| `converse()` | Open-ended question | Yes |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes |
+| `get_session_info()` | Session metadata | No |
+| `set_session_topic()` | Set session topic for stop-hook context | No |
 
-**CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user.
+**CRITICAL: all blocking tools MUST use `priority="high"`** so the TTS alert reaches the user.
 
 ### MCP SESSION STARTUP PROTOCOL
 
-You MUST complete MCP initialization in two phases. This is NOT optional — skipping it is a session-start bug.
+Two-phase init — skipping it is a session-start bug, in ALL modes including plan mode (MCP tools are **communication** tools, not code-changing tools).
 
-**Phase A — Immediate (before ANY user-facing text, including the first acknowledgment):**
+**Phase A — before ANY user-facing text (including the first ack):**
+1. Fetch cosa-voice schemas via `ToolSearch` (tools are deferred — uncallable otherwise).
+2. Call `get_session_info()` to verify connectivity and resolve identity.
+3. Extract two coupled fields BEFORE composing any text — one call resolves both:
+   - **(a) `voice_persona`** — **Persona-First Mandate**: know who you are by name before responding. NEVER assume a default, respond as "Claude", or guess in chorus mode. If `voice_persona` is `None`, ask "Which persona am I?" via `converse()` first. The persona voice is the chorus disambiguator.
+   - **(b) `project`** (single string from `get_session_info()`) — **Doc-Link Literacy Mandate**: a doc-link is a markdown anchor `[Open: <file>](/app/docs?path=<scope>/<repo-rel-path>)` — **path-only**; the legacy `&scope=` query param and the old 4-field `doc_scope` envelope are retired/ignored (post-2026.05.15 unification). `<scope>` is the registered repo name (first path segment); the project-local `.claude/CLAUDE.md § Doc Viewer Scope` is the source of truth for the repo's scope name + allowed prefixes. Place links ONLY in `abstract` — never in a spoken `message` (URLs are TTS-hostile). See § DOCUMENT VIEWER LINKS.
+4. Report MCP status (project, session_id, version, server_url) AND name your persona in the first ack.
 
-1. You MUST fetch cosa-voice MCP tool schemas via `ToolSearch` (tools are deferred — they cannot be called without this step)
-2. You MUST call `get_session_info()` to verify MCP server connectivity AND to resolve your session identity
-3. You MUST extract from the `get_session_info()` response — BEFORE composing any user-facing text:
-   - **(a) Your assigned `voice_persona`** — the `name`/`display_name` field. You MUST know who you are by name before you respond. **Persona-First Response Mandate (2026-05-15)**: NEVER assume a default persona, NEVER respond as "Claude" or a placeholder when chorus mode is active, NEVER guess. If `voice_persona` is `None` (allocation failure), you MUST ask the user "Which persona am I?" via `converse()` before proceeding. The persona voice IS the disambiguator in chorus mode — responding persona-blind breaks the routing contract the user relies on.
-   - **(b) Your `doc_scope` envelope** — the `{scope, base_url, allowed_prefixes, source}` field. This is the canonical startup-context lookup for building doc-viewer links from this session. **Doc-Link Literacy Mandate (2026-05-15)**: a doc-link is a markdown anchor of shape `[Open: <filename>](/app/docs?path=<repo-relative-path>&scope=<scope-name>)`. You MUST use `doc_scope.scope` as the `scope=` query param. You MUST validate every `path=` against `doc_scope.allowed_prefixes` before emitting the anchor. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; speaking them verbalizes the URL phonetically character-by-character. See § DOCUMENT VIEWER LINKS for the full mandate.
-4. You MUST report MCP server status to the user (project, session_id, version, server_url) AND name your resolved persona in the first acknowledgment.
+**Phase B — as soon as the topic is knowable:** call `set_session_topic()` with a 3-8 word title (from the user's first message, history.md/TODO.md, or the approved plan). If the opening message already titles the session, call it IMMEDIATELY after Phase A. Self-check before any substantive work: has `set_session_topic()` fired? If not, do it first. Skipping is a session-start bug. Only defer if the opening message is too ambiguous to title — then ASK. The topic feeds the stop-hook "Continue Session?" notification; update it when switching tasks.
 
-**Phase B — After context gathering:**
+**If cosa-voice tools are NOT in the deferred list** (report "MCP Status: unavailable"): the server is likely missing from user-scope registration. Tell the user to run `bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh` then restart the session; verify with `cd /tmp && claude mcp get cosa-voice` (expect `Scope: User config`).
 
-5. You MUST call `set_session_topic()` as soon as you can write a meaningful 3-8 word session title — from the user's first message, from history.md/TODO.md, or from the approved plan. Skipping this is a session-start bug, not a minor oversight.
+### SPEAKERPHONE & TTS — SERVER-RIDER-DRIVEN
 
-**Trigger**: If the user's first message contains enough information to title the session (e.g., "I've got a new bug for you..."), call `set_session_topic()` IMMEDIATELY after Phase A — do not defer until later.
-
-**Self-check**: Before any substantive work (file reads, exploration, edits, planning), audit whether `set_session_topic()` has been called. If not, call it first. "After context gathering" means *as soon as the topic is knowable*, NOT "whenever I get around to it."
-
-**Rules:**
-- This applies in ALL modes including plan mode — MCP tools are **communication tools**, not code-changing tools
-- Phase A MUST complete before any file reading or session work begins — AND before any user-facing text including the first ack
-- **Persona-First Mandate**: You MUST know your assigned persona before composing your first response. Reading `get_session_info()` mid-turn or "for completeness" later is non-compliant — by then the disambiguation contract has already been broken
-- **Doc-Link Literacy Mandate**: You MUST know what a doc-link is (markdown anchor with `/app/docs?path=…&scope=…`) AND the rule that such links belong only in `abstract`, never in spoken channels. Hook 4 (persona resolution) and Hook 5 (doc-link construction) are COUPLED — one `get_session_info()` call resolves both
-- Phase B MUST complete before any substantive work begins. The ONLY reason to defer Phase B past the first turn is if the user's opening message is too ambiguous to title (in which case, ASK).
-
-**If cosa-voice tools are NOT in the deferred tools list** (report as "MCP Status: unavailable"):
-The cosa-voice MCP server is likely missing from user-scope registration. Surface this remediation to the user:
-
-> cosa-voice is not registered at user scope. Run the idempotent installer to fix:
-> ```bash
-> bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh
-> ```
-> (resolves to `/mnt/DATA01/include/www.deepily.ai/projects/lupin/src/scripts/install-cosa-voice.sh`)
-> After it completes, restart the Claude Code session to pick up the newly-registered tools.
-
-Verify with `cd /tmp && claude mcp get cosa-voice` — expect `Scope: User config (available in all your projects)`.
-
-### SESSION TOPIC (Stop Hook Context)
-
-You **MUST** call `set_session_topic()` to provide context for "Continue Session?" notifications. This applies in ALL modes including plan mode.
-
-**When to call**:
-- After context gathering at session start (use the session title, e.g., "Session 369 | Bug Fix: WS queue crash")
-- After plan mode produces a plan (use the plan title)
-- When switching tasks mid-session (update to new task description)
-
-**Do NOT** call `set_session_topic()` until you know the session's focus — ask the user if unclear.
-
-**Why**: The stop hook "Continue Session?" notification shows the session topic in its abstract.
-Without it, the user can't tell which session is asking to continue.
-
-**Example**:
-```python
-set_session_topic( "CJ Flow Persistence — Phases 3-5" )
-```
-
-### INTERACTIVE TOOL ROUTING (AskUserQuestion → cosa-voice)
-
-**MANDATE**: ALWAYS prefer cosa-voice MCP blocking tools over the built-in `AskUserQuestion` tool.
-
-**Rationale**: `AskUserQuestion` renders only in the terminal UI (no audio). The user is NOT watching the terminal. cosa-voice tools deliver audio alerts + UI, ensuring the user is always reached.
-
-**Routing Table**:
-
-| Scenario | Use This | NOT This |
-|----------|----------|----------|
-| Yes/no decision (with Neither re-frame escape) | `ask_yes_no()` | `AskUserQuestion` with 2 options |
-| Multiple choice (2-4 options) | `ask_multiple_choice()` | `AskUserQuestion` |
-| Open-ended clarification | `converse()` | `AskUserQuestion` with "Other" |
-| Multiple open-ended questions | `ask_open_ended_batch()` | Multiple `AskUserQuestion` calls |
-
-**Format compatibility**: `ask_multiple_choice()` accepts the same `questions` array format as `AskUserQuestion` — same `question`, `header`, `multiSelect`, and `options` fields.
-
-**Fallback**: If cosa-voice MCP server is unavailable (tool call errors), fall back to `AskUserQuestion`.
-
----
-
-### CRITICAL: The User Is NOT Watching the Terminal
-
-**Mental Model**: You are communicating with a user who may be in another room, working on another task, or waiting for AUDIO alerts to know when you need them.
-
-| Channel | Purpose | When User Sees It |
-|---------|---------|-------------------|
-| cosa-voice notifications | **PRIMARY** - Status, decisions | **Immediately** (audio alert) |
-| Terminal text output | SECONDARY - Detailed explanations | When user checks back |
-
-**Consequence**: If you complete work without notifying, the user has NO IDEA you finished.
-
----
+Speakerphone/TTS behavior is NOT documented here — the cosa-voice server injects a per-turn `<system-reminder>` rider keyed on `(tts_interaction_mode, speakerphone_on)`. **Honor the per-turn rider as authoritative**; it carries the closing-turn `notify()` rule, TTS brevity rules, interactive-tool routing, and mode framing — reflecting this session's actual state where static CLAUDE.md cannot. Fallback: if cosa-voice is unavailable, `AskUserQuestion` is the only (terminal-only, no-audio) surface — a degraded fallback, not the default. Canonical design: Lupin `src/rnd/v0.1.7/2026.05.11-tts-interaction-mode-solo-chorus/14-phase5-hook-rider-design.md`.
 
 ### MANDATORY Notification Requirements
 
-**MANDATE**: You MUST send notifications for the events below. These are NOT suggestions.
+You MUST send these — not suggestions.
 
-**Required `notify()` Events**:
-| Event | Priority | Requirement |
-|-------|----------|-------------|
-| TodoWrite item completed | low | **MUST** notify after EVERY item |
-| Phase/milestone complete | medium | **MUST** notify at phase boundaries |
-| Error encountered | urgent | **MUST** notify immediately |
-| Test suite finished | medium | **MUST** notify pass or fail |
-| Long process finished (>30s) | low | **MUST** notify completion |
+**`notify()` events**: TodoWrite item completed (low, after EVERY item) · phase/milestone complete (medium) · error encountered (urgent, immediately) · test suite finished (medium, pass or fail) · long process >30s finished (low).
 
-**Required Blocking Tool Events**:
-| Event | Tool | Requirement |
-|-------|------|-------------|
-| Before significant code changes | `ask_yes_no()` | **MUST** get approval |
-| Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
-| Unclear requirements | `converse()` | **MUST** clarify - never assume |
-| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion. **CRITICAL**: on `neither`, do NOT proceed — re-frame and re-ask. See workflow/cosa-voice-integration.md → "Handling Neither" |
+**Blocking-tool events**: before significant code changes → `ask_yes_no()` (get approval) · multiple valid approaches → `ask_multiple_choice()` (never choose silently) · unclear requirements → `converse()` (never assume) · destructive ops → `ask_yes_no()` (confirm; on `neither`, do NOT proceed — re-frame and re-ask, see workflow/cosa-voice-integration.md → "Handling Neither").
 
-**Decision-Question Framing Contract (MANDATE)**: every `ask_multiple_choice()` / `ask_yes_no()` / `converse()` that frames a decision between alternatives MUST carry, in its `abstract`, (a) pros AND cons per option AND (b) an explicit recommended choice with a one-line rationale — recommended option **first**, with "(Recommended)" appended to its label. Never present a bare menu and leave the user to do the synthesis; the agent has the context and the user is often listening at a distance. Canonical detail (per-tool shapes, worked example, anti-patterns): planning-is-prompting → workflow/cosa-voice-integration.md → "Recommendation Mandate for Blocking-Tool Asks".
+**Decision-Question Framing Contract (MANDATE)**: every decision-framing `ask_*`/`converse` MUST carry, in its `abstract`, (a) pros AND cons per option AND (b) an explicit recommended choice with one-line rationale — recommended option **first**, "(Recommended)" in its label. Never a bare menu; the user is often listening at a distance. Detail: workflow/cosa-voice-integration.md → "Recommendation Mandate for Blocking-Tool Asks".
 
-**PROHIBITED Anti-Patterns** - **NEVER** do the following:
-1. **NEVER** complete a multi-step task without progress notifications
-2. **NEVER** finish work and "wait" for user to check back
-3. **NEVER** make architectural decisions without `ask_multiple_choice()`
-4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
-5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
-6. **NEVER** present decision options as a bare menu — every decision ask carries pros/cons per option + a recommended choice (see the Framing Contract above)
-
----
-
-### CONVERSATION MODE & TTS RESPONSE BREVITY MANDATE
-
-**Purpose**: When the cosa-voice session is in **conversation mode** (`get_session_info().conversation_mode_active=true`), every `notify(message=...)` call gets TTS-rendered to a user listening at a distance. The spoken payload must be **conversational prose**, NOT a verbatim copy of the markdown terminal reply.
-
-**Mandatory in conversation mode**:
-
-1. **Two channels, two shapes**: terminal reply stays markdown-rich for scrollback; the `notify()` payload is RE-CRAFTED for speech. Never pipe the terminal reply through `notify()` as-is.
-2. **Strip TTS-hostile syntax** from the spoken text: `#`/`##`/`###` headings, `**bold**`/`*italic*`, `-`/`*` bullet symbols, inline backticks, fenced code blocks, table syntax, file paths, line numbers, JSON snippets, hash literals, URLs.
-3. **Drop section labels and letter enumeration** ("A, B, C, D"). Use natural connectives: "and", "but", "so".
-4. **Length cap (tiered)**: routine status close-outs ≈ 60 words / ~20 seconds; substantive turns (architectural decisions, multi-fork outcomes, deep readouts the user explicitly asked for) ≈ 80–120 words / ~30 seconds. Spoken closings are a **précis**, never a duplicate.
-5. **Speak the verdict, not the inventory or rationale**: numbers, file lists, percentages, test counts, paths all live in `abstract` — speak "tests are green," not the count. Skip confidence statements ("structurally identical to X, so confidence is high"), process meta ("documented in the log per the mandate"), and reasoning for deferred work. The decision is the news; the inventory and the why live in the written record.
-6. **Receipt acknowledgments at turn-start**: 1 sentence (e.g., "Looking into that now.").
-7. **Two-channel asymmetry — the `abstract` parameter STAYS richly formatted.** The brevity rules above apply to the SPOKEN `message` parameter ONLY, never to `abstract`. The `abstract` (rendered into the UI/notification card and terminal scrollback) SHOULD be richly formatted with full markdown structure: headings, code blocks, tables, file paths, line numbers, JSON snippets, hash literals, URLs — all the technical detail Claude would normally put in a terminal reply. The two channels are **complementary, not duplicates**: voice carries conversational gist; `abstract` carries the rich written record. Same `notify()` call delivers both: keep `message` short and stripped; keep `abstract` long and formatted.
-
-**Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
-
-**Rationale**: After ~1 week of real conversation-mode use (2026-05-04), verbose TTS-as-markdown-dump felt "like documentation read aloud." The terminal and voice channels have different ergonomics; treat them differently.
-
-**Full spec**: planning-is-prompting → `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
-
----
+**NEVER**: complete a multi-step task without progress notifications · finish and "wait" for the user to check back · make architectural decisions without `ask_multiple_choice()` · continue past an error without `notify(priority="urgent")` · mark >3 TodoWrite items complete without a `notify()` · present a decision as a bare menu.
 
 ### DOCUMENT VIEWER LINKS
 
-**MANDATE (two triggers, both MANDATORY)**:
-
-1. **User-ask trigger**: When the user asks to view a project file (plan, doc, R&D note, README, history), respond with a `notify()` whose abstract contains a markdown link to the document viewer. **Never dump file contents into the chat.**
-2. **Reference trigger (added 2026-05-15)**: When the abstract references a project file — audit findings, R&D-doc citations, file:line callouts, before/after diffs naming files, any structured payload that names a path — the abstract MUST contain a markdown viewer link to that file, scope-routed per the four-step priority below. A bare path or filename in the abstract without a viewer link is a violation. Links flow INTO the abstract from any file reference; **links MUST NOT appear in the spoken `message` parameter** (URLs are TTS-hostile — they verbalize as character-by-character gibberish). Doc-links belong ONLY in the `abstract` parameter of `notify()` and the body of `commons_post()`, NEVER in `message=...` of `notify()` / `converse()` / `ask_*()`.
+**MANDATE (two triggers)**: (1) when the user asks to view a project file, respond with a `notify()` whose abstract contains a doc-viewer link — **never dump file contents into chat**; (2) when an abstract *references* a project file (audit finding, R&D citation, file:line callout, diff naming files), it MUST contain a viewer link to that file. A bare path/filename in an abstract without a link is a violation. **Links live ONLY in `abstract` (and `commons_post()` body), NEVER in a spoken `message`** (URLs verbalize as character-by-character gibberish).
 
 **Pattern**:
 ```python
-notify(
-    message           = "Sure! Here you go",
-    abstract          = "[Open: <filename>](/app/docs?path=<path>&scope=docs)",
-    notification_type = "custom",
-    priority          = "high",
-    suppress_ding     = True
-)
+notify( message="Sure! Here you go",
+        abstract="[Open: <filename>](/app/docs?path=<scope>/<rel>)",
+        notification_type="custom", priority="high", suppress_ding=True )
 ```
 
-The notification UI auto-sanitizes the link, adds `target="_blank" rel="noopener noreferrer"`, and the popup's content-aware tier sizing handles rich abstracts.
-
-**Scope routing**:
-
-The `scope` query parameter identifies which registered repo the `path` is relative to. Built-in scopes route to Lupin only; external scopes route to other repos that Lupin has registered.
-
-- **Built-in scopes (Lupin only)**:
-  - `scope=io` — agent artifacts under Lupin's `io/` (research reports, podcast scripts, presentations, audio)
-  - `scope=docs` — whitelisted Lupin project docs: root `*.md` (`CLAUDE.md`, `history.md`, `TODO.md`, `README.md`, `bug-fix-queue.md`) + prefixes `src/docs/`, `src/rnd/`, `src/workflow/`
-
-- **External scopes** — name matches the registered repo name in Lupin's `external repos` INI key. Current registry: `lupin`, `cosa-voice`, `planning-is-prompting`, `lupin-mobile`, `lookml`, `par-pacific`, `claude-plans`. (Lupin INI is source of truth — `lupin-app.ini` § `external repos`.)
-
-**Choosing the right scope** (in order):
-
-1. If linking to a Lupin file → use `docs` or `io` (built-ins).
-2. If linking to a file in any other registered repo → use that repo's external scope name (e.g., `scope=cosa-voice` from the cosa-voice repo, `scope=planning-is-prompting` from this repo).
-3. To programmatically discover the correct scope for the current session: inspect the `doc_scope` field returned by `mcp__cosa-voice__get_session_info()`. Shape: `{scope, base_url, allowed_prefixes, source}`. Already in the session-init payload — no extra round trip needed.
-4. As a fallback, consult the current project's local `.claude/CLAUDE.md` § `Doc Viewer Scope`.
-
-**Out-of-scope files** (e.g., `~/.claude/plans/*.md` not yet serialized, files outside any registered repo, files in a registered repo but outside its `allowed_prefixes`): ask the user to serialize into the appropriate repo's `src/rnd/` first per plan-serialization mandate, then send the viewer link.
-
----
+**Scope**: the `<scope>` path segment names the registered repo `<rel>` is relative to (e.g. `planning-is-prompting`, `lupin`). The project-local `.claude/CLAUDE.md § Doc Viewer Scope` is the source of truth for the repo's scope name + allowed prefixes; `get_session_info()` returns the session's `project`. (Note: a session's `project` key may be a short alias — e.g. `plan` — while the doc-viewer scope segment is the full registered name — e.g. `planning-is-prompting`; the project-local config disambiguates.) Out-of-scope files (unserialized `~/.claude/plans/*.md`, files outside any registered repo or its allowed prefixes): ask the user to serialize into the right repo's `src/rnd/` first, then send the link. Canonical hub: planning-is-prompting → workflow/doc-viewer-links.md.
 
 ### Integration with TodoWrite
 
-**MANDATE**: Notifications are TIED to TodoWrite status changes.
-
-**Protocol**:
-1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
-2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
-3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
-
-**CRITICAL**: A task is NOT complete until BOTH:
-- TodoWrite status is updated
-- Notification is sent
-
----
-
-**Detailed Reference**: See `~/.claude/skills/cosa-voice-notifications/SKILL.md` for full API parameters, examples, timeout handling, project auto-detection, and migration guide.
-
-**Canonical Workflow**: planning-is-prompting → workflow/cosa-voice-integration.md
+**MANDATE**: notifications are TIED to TodoWrite status changes — `in_progress` → `notify("Starting: [item]", priority="low")`; `completed` → `notify("[item] complete", priority="low")`; ALL complete → `notify("All tasks complete", priority="medium")`. A task is NOT complete until BOTH its status is updated AND the notification is sent.
 
 ## CROSS-SESSION COMMUNICATION
 
-**Purpose**: Behavioral doctrine for the two cross-session surfaces — user→all broadcasts and Claude↔Claude commons blackboards. Applies whenever a session encounters a broadcast `<system-reminder>` or contemplates using `commons_*` MCP tools.
+**Purpose**: Doctrine pointer for sessions whose toolkit includes commons / DM / broadcast surfaces (currently provided by the cosa-voice MCP server's `commons_*` tools, but the doctrine is MCP-agnostic — applies to any future commons-shaped backend).
 
-### Quick MCP tool reference
+**Quick decision rule**:
 
-| Tool | Tier | Blocking | Use |
-|------|------|----------|-----|
-| `commons_who(topic?)` | Read | No | Discover active peer sessions |
-| `commons_read(topic, since?)` | Read | No | Tail topic for recent posts |
-| `commons_post(topic, body, metadata?)` | Self-disclosure OR Attention-demanding (topic-dependent) | No | Status, claims, replies |
-| `commons_ask_async(topic, question)` | Attention-demanding | No (returns question_id) | Ask peers; reply via `metadata.in_reply_to` |
-| `commons_ask_sync(topic, question, timeout?)` | Attention-demanding | Yes (first-reply + 1s coalesce) | Rarely — only when truly blocked |
+| Need | Tool / Action |
+|---|---|
+| "Who else is active?" | `commons_who()` (Read tier — always allowed) |
+| "Tail a shared topic" | `commons_read(topic, since=...)` (Read tier — always allowed) |
+| "Self-state my situation to peers" | `commons_post("presence", ...)` (Self-disclosure tier — allowed at your initiative) |
+| "DM a specific peer by persona name" | `commons_send_to(recipient="<persona>", body=...)` (DM tier — directed attention-demanding) |
+| "Ask peers an open question" | `commons_ask_async(topic="help-wanted", ...)` (Attention-demanding — needs user trigger or coordination need) |
+| Receiving a `COMMONS PEER MESSAGE` system-reminder | Read the originating topic via `commons_read`, then reply via `commons_post(topic, body, metadata={in_reply_to: <qid>})` or `commons_send_to(recipient=<sender>, in_reply_to=<qid>)` |
+| Receiving a `USER BROADCAST` system-reminder | Parse for `@MyPersona:` directives; ack via `notify()` if speakerphone is on; the listener auto-posts to `broadcast-acks` |
 
-### Three-tier autonomy
+**MANDATE — visibility when entering attention-demanding mode**: whenever you call `commons_ask_sync`, `commons_ask_async`, or post a contested-claim to `coordination`, you MUST also fire `notify()` to the user. They cannot inspect commons mid-session; without the notify, cross-session dialogue is invisible to them.
 
-| Tier | Operations | Default policy |
-|------|------------|----------------|
-| **Read** | `commons_who`, `commons_read` | ✅ Always allowed — like tailing a log |
-| **Self-disclosure** | `commons_post` to `presence` / `incidents` / own status | ✅ Allowed at your initiative |
-| **Attention-demanding** | `commons_ask_*`, contested `coordination` claims, `help-wanted` posts | ⚠️ Requires explicit user trigger OR clear coordination need (file collision, contested claim) |
+**Detailed Reference**: See `planning-is-prompting → workflow/cross-session-communication.md` for the full three-tier autonomy model, reserved topic vocabulary, broadcast receipt rules, anti-patterns, DM mechanics (send/receive/threading/choice-of-channel), and cross-session collaboration patterns (including the DM + durable-queue bug-filing pattern).
 
-### Reserved topic vocabulary (IS the signaling protocol)
-
-| Topic | Tier | Semantics |
-|-------|------|-----------|
-| `presence` | Self-disclosure | "I'm alive, working on X" |
-| `coordination` | Attention-demanding (when contested) | Claim-staking, ownership signals |
-| `help-wanted` | Attention-demanding | Open questions seeking peer input |
-| `incidents` | Self-disclosure or urgent | Errors / blockers |
-| `broadcasts` / `broadcast-acks` | Reserved (infrastructure only) | Do not post from sessions |
-
-Organic topic names are allowed but inherit no special tier.
-
-### Broadcast receipt rules
-
-Broadcasts inject as `<system-reminder>` **between turns** — there's no interrupt-vs-queue choice.
-
-**Routing**:
-- `@MyPersona:` matched → **ACT** on persona directive (+ default body if present)
-- Different `@persona` named, no default body → **ACK-ONLY** (not for me)
-- No persona at all → **ACT** on default body (all sessions respond)
-
-**Voice**:
-- Speakerphone ON → spoken ack via `notify(suppress_ding=True, priority='high')`
-- Speakerphone OFF → text-only ack
-- Mandatory `broadcast-acks` post is infrastructure, always happens
-
-### Anti-patterns
-
-- **Loop hazard**: never `commons_ask_*` in reply to another session's `commons_ask_*`. Reply with `commons_post(..., metadata={"in_reply_to": question_id})` instead.
-- **Attention abuse**: don't use `commons_ask_sync` when async would do. Don't spam `presence`.
-- **Sensitive content**: commons is per-user but visible to ALL of that user's sessions. Don't post credentials, tokens, or unseen content.
-
-### User-facing visibility (mandatory for attention-demanding tier)
-
-Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notification_type="progress", priority="medium")` to the user so they can see in their UI that one session is blocking on another. Cross-session dialogue must not be invisible to the user.
-
-**Full canonical doctrine**: planning-is-prompting → workflow/cross-session-communication.md
+**MCP-specific protocol**: when the cosa-voice MCP server is loaded, its `instructions` payload provides cosa-voice-specific protocol details (Phase A/B startup, DM workflow specifics, failure-mode debugging signals). Read what the MCP server pushes; don't duplicate that content here.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
@@ -701,154 +377,28 @@ Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notif
   - Debugging is easier when errors happen at the source
 
 ## PATH MANAGEMENT
-**Purpose**: Use canonical path resolution instead of fragile relative path manipulation
 
-### The Canonical Pattern
+**MANDATE**: Never resolve paths with `Path(__file__).parent…` / `os.path.dirname()` chains or `sys.path.append()`. Resolve from a single canonical project-root function backed by an env var; store relative paths (starting `/src/…`) in config and combine at runtime.
 
-**NEVER use fragile path manipulation**:
+**Canonical pattern** (regular code — everything except bootstrap files):
 ```python
-# ❌ WRONG - Fragile and breaks easily
-project_root = Path(__file__).parent.parent.parent.parent
-base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-```
-
-**ALWAYS use the canonical function**:
-```python
-# ✅ CORRECT - Canonical pattern
 import cosa.utils.util as cu
-
-# Get project root from environment variable (LUPIN_ROOT)
-project_root = cu.get_project_root()
-
-# Combine with relative paths from config
-full_path = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
+project_root = cu.get_project_root()                          # reads LUPIN_ROOT, falls back to /var/lupin
+full_path    = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
 ```
 
-### How It Works
-
-1. **Import the utility module**:
-   ```python
-   import cosa.utils.util as cu
-   ```
-
-2. **Use `cu.get_project_root()` for all path operations**:
-   - Returns `LUPIN_ROOT` environment variable value
-   - Falls back to `/var/lupin` if env var not set
-   - Single source of truth for project root
-
-3. **Store relative paths in configuration**:
-   - Config files store paths starting with `/src/`
-   - Example: `solution snapshots lancedb path = /src/conf/long-term-memory/lupin.lancedb`
-   - Combine at runtime: `cu.get_project_root() + config_path`
-
-### Real-World Examples from COSA
-
-**Configuration Manager**:
+**Bootstrap exception** — files that run BEFORE `cosa` is importable (entry points `src/fastapi_app/main.py`, standalone `src/scripts/*.py`, test `src/tests/conftest.py`) set `sys.path` manually first, then use `cu.get_project_root()` for everything after:
 ```python
-# Correct pattern from configuration_manager.py
-self.config_path = cu.get_project_root() + cli_args["config_path"]
-self.splainer_path = cu.get_project_root() + cli_args["splainer_path"]
-```
-
-**File Operations**:
-```python
-# Correct pattern from util_code_runner.py
-code_path = cu.get_project_root() + "/io/code_execution.py"
-os.chdir( cu.get_project_root() + "/io" )
-```
-
-**Data Loading**:
-```python
-# Correct pattern from util_pandas.py
-df = read_csv( cu.get_project_root() + "/src/conf/long-term-memory/todo.csv" )
-```
-
-**API Key Access**:
-```python
-# Correct pattern from util.py
-def get_api_key( key_name: str, project_root: str = None ):
-    if project_root is None:
-        project_root = get_project_root()
-    path = project_root + f"/src/conf/keys/{key_name}"
-```
-
-### Benefits
-
-1. **Environment-Aware**: Works in Docker, local dev, and production
-2. **Single Source of Truth**: One function controls all path resolution
-3. **Configuration-Driven**: Paths stored in config files, not hardcoded
-4. **Testable**: Easy to mock `get_project_root()` in unit tests
-5. **Maintainable**: No fragile parent directory counting
-
-### Enforcement
-
-- Always import: `import cosa.utils.util as cu`
-- Always use: `cu.get_project_root()` for base paths
-- Never use: `Path(__file__).parent` chains, `os.path.dirname()` chains, `sys.path.append()`
-- Store relative paths (starting with `/src/`) in config files
-- Combine paths: `cu.get_project_root() + relative_path`
-- **Exception**: Bootstrap files only (see below)
-
-### Bootstrap Files - The Exception
-
-**Problem**: Some files run BEFORE cosa is importable and cannot use `cu.get_project_root()`.
-
-**Bootstrap Files** (Manual path setup required):
-1. Entry points: `src/fastapi_app/main.py`
-2. Standalone scripts: `src/scripts/*.py`
-3. Test bootstrap: `src/tests/conftest.py`
-
-**Bootstrap Pattern** (ONLY for these files):
-```python
-import sys
-import os
-
-# Bootstrap using LUPIN_ROOT environment variable
-lupin_root = os.environ.get( 'LUPIN_ROOT' )
+import sys, os
+lupin_root = os.environ.get( "LUPIN_ROOT" )
 if lupin_root is None:
-    raise RuntimeError(
-        "LUPIN_ROOT environment variable not set.\n"
-        "Set it before running:\n"
-        "  export LUPIN_ROOT=/path/to/project\n"
-        "  python src/fastapi_app/main.py"
-    )
-
-src_path = os.path.join( lupin_root, 'src' )
-if src_path not in sys.path:
-    sys.path.insert( 0, src_path )  # Use insert(0), not append()
-
-# Now cosa is importable
-import cosa.utils.util as cu
+    raise RuntimeError( "LUPIN_ROOT not set — export LUPIN_ROOT=/path/to/project" )
+src_path = os.path.join( lupin_root, "src" )
+if src_path not in sys.path: sys.path.insert( 0, src_path )   # insert(0), not append
+import cosa.utils.util as cu                                  # now importable
 ```
 
-**After Bootstrap**: Use `cu.get_project_root()` for all subsequent paths.
-
-### Test Infrastructure
-
-**Pytest Bootstrap** (`src/tests/conftest.py`):
-- Create top-level conftest.py with LUPIN_ROOT bootstrap
-- All test files can then import cosa directly
-- No path manipulation needed in individual test files
-
-**Package Markers**: Add `__init__.py` files for:
-- `src/tests/__init__.py`
-- `src/tests/<test_subdirs>/__init__.py`
-
-**Standalone Test Scripts** (with `__main__` blocks):
-- Must include bootstrap pattern (can't rely on conftest.py)
-- Use absolute imports after bootstrap: `from tests.smoke.utilities import ...`
-
-### File Categories
-
-**Category 1: Bootstrap Files** (4-6 files maximum)
-- Use LUPIN_ROOT bootstrap pattern
-- Unavoidable manual path setup
-- Examples: main.py, migration scripts, conftest.py
-
-**Category 2: Regular Code** (Everything else)
-- Use `cu.get_project_root()` - NO path manipulation
-- Rely on conftest.py (tests) or proper imports (app code)
-- Never touch sys.path
+All other code never touches `sys.path`. Benefits: environment-aware (Docker/local/prod), single source of truth, config-driven, mockable in tests.
 
 ## TESTING & INCREMENTAL DEVELOPMENT
 

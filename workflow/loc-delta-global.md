@@ -27,12 +27,7 @@
 
 ## Step 1) Resolve repo set (discovery policy)
 
-> **[NEXT VERSION] Sub-directory traversal — Rick-flagged 2026-05-21**: the current Step 1 discovery glob `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv` assumes every repo sits exactly one level under `$PROJECTS_ROOT`. Two real layouts break this:
->
-> - **Grouping subdirectories** (load-bearing): `lookml` lives at `projects/google/lookml`; `par-pacific` and `retail-ai-location-strategy` are siblings under `projects/google/`. First live run 2026-05-21 MISSED `lookml` entirely — Rick had 6 commits there that day and the rollup under-reported until he caught it ("what happened to the lookml repo?")
-> - **Nested sub-repos**: genuinely-nested repos (their own `.git` inside another repo's tree) are invisible to the one-level glob. *(Note: `cosa` at `lupin/src/cosa/` WAS the canonical example, but the 2026-05-29 CoSA→Lupin merge folded it in — cosa is no longer a separate git repo, and its LoC now counts under `lupin`. The nested-sub-repo case now applies to still-separate nested repos such as `lupin-mobile` / `lupin-plugin-firefox`.)*
->
-> **Next-version fix**: change the discovery to a depth-N traversal (default N=3) that descends into known group directories. Either via env-var `PROJECTS_ROOT_DEPTH=3` OR via an explicit grouping-dir registry in `loc-delta-global.md`. Tracked in TODO #23.
+> **✅ Sub-directory traversal — implemented 2026-05-30 (TODO #23 closed)**: discovery now globs three explicit depth patterns (`*/io/...` flat, `*/*/io/...` grouping dirs, `*/src/*/io/...` nested sub-repos) and carries each repo's **absolute path** through to the aggregator. This fixes the 2026-05-21 under-report where the one-level glob MISSED `google/lookml` (Rick had 6 commits there that day — "what happened to the lookml repo?"). The COSA→Lupin merge (2026-05-29) mooted the original nested-`cosa` example — cosa's LoC now counts under `lupin`; the nested case now covers still-separate sub-repos like `lupin/src/lupin-mobile`. A **git-root guard** (`(repo_dir/".git").exists()`) is essential: the broader globs also surface in-tree dirs carrying a stale CSV (`lupin/src`, and `lupin/src/cosa` post-merge) which would **double-count** their parent repo's LoC — the guard counts only genuine git roots. Explicit patterns (not a recursive `**` walk) keep discovery fast and false-positive-free; extend the list if a new nesting layout appears.
 
 **Default behavior — recently-active mtime heuristic**:
 
@@ -58,15 +53,28 @@ projects_root = os.environ.get( "PROJECTS_ROOT", "/mnt/DATA01/include/www.deepil
 mtime_window_seconds = mtime_window_days * 86400
 cutoff = time.time() - mtime_window_seconds
 
-candidates = glob.glob( f"{projects_root}/*/io/git-loc-delta/*-loc-delta.csv" )
-active_repos = sorted( {
-    Path( csv ).parents[ 2 ].name   # project dir name two levels up from io/git-loc-delta/
+# Multi-depth discovery — repos are NOT all one level under PROJECTS_ROOT (implemented 2026-05-30, TODO #23):
+#   */io/...        flat repos       (lupin, planning-is-prompting)
+#   */*/io/...      grouping dirs    (google/lookml, google/par-pacific, google/retail-ai-location-strategy)
+#   */src/*/io/...  nested sub-repos (lupin/src/lupin-mobile)
+patterns = [
+    f"{projects_root}/*/io/git-loc-delta/*-loc-delta.csv",
+    f"{projects_root}/*/*/io/git-loc-delta/*-loc-delta.csv",
+    f"{projects_root}/*/src/*/io/git-loc-delta/*-loc-delta.csv",
+]
+candidates = sorted( { c for pat in patterns for c in glob.glob( pat ) } )
+active_repo_paths = sorted( {
+    str( repo_dir )                                    # ABSOLUTE repo dir, two levels up from io/git-loc-delta/
     for csv in candidates
     if os.path.getmtime( csv ) >= cutoff
-} )
+    for repo_dir in [ Path( csv ).parents[ 2 ] ]
+    if ( repo_dir / ".git" ).exists()                  # GIT-ROOT GUARD — count only genuine repos. Excludes in-tree dirs
+} )                                                     #   that carry a stale CSV (e.g. lupin/src, and lupin/src/cosa
+                                                       #   post-COSA-merge) — they'd double-count their parent repo's LoC.
+# Repo name for display/labels is Path( p ).name; the aggregator receives the absolute paths directly.
 ```
 
-**Then invoke**: `cosa.repo.run_git_loc_delta_global --repos <active_repos>...` with the discovered list passed explicitly.
+**Then invoke**: `cosa.repo.run_git_loc_delta_global --repos <active_repo_paths>...` with the discovered absolute paths passed explicitly (do NOT reconstruct from name + `PROJECTS_ROOT` — that breaks for non-flat repos).
 
 **Why mtime heuristic + explicit `--repos` pass-through** (not let the CLI auto-discover):
 
@@ -171,13 +179,13 @@ Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-T
 **Standard invocation** (cross-repo, branch-aware, with plot):
 
 ```bash
-PYBIN="$LUPIN_ROOT/src/cosa/.venv/bin/python"
-[ -x "$PYBIN" ] || PYBIN="$LUPIN_ROOT/.venv/bin/python"
+# Post-COSA-merge: $LUPIN_ROOT/.venv is the canonical Lupin venv (cosa is in-tree under src/cosa).
+PYBIN="$LUPIN_ROOT/.venv/bin/python"
 [ -x "$PYBIN" ] || PYBIN="python3"
 
 cd "$LUPIN_ROOT/src" && \
   "$PYBIN" -m cosa.repo.run_git_loc_delta_global \
-    --repos "${active_repos[@]/#/$PROJECTS_ROOT/}" \
+    --repos "${active_repo_paths[@]}" \
     ${SINCE_FLAG:+--since "$SINCE"} \
     ${UNTIL_FLAG:+--until "$UNTIL"} \
     ${PLOT_FLAG:+--plot} \
@@ -185,7 +193,7 @@ cd "$LUPIN_ROOT/src" && \
 ```
 
 **Notes**:
-- `${active_repos[@]/#/$PROJECTS_ROOT/}` prefixes each discovered repo name with `PROJECTS_ROOT/` to give absolute paths
+- `--repos "${active_repo_paths[@]}"` passes the absolute repo dirs resolved in Step 1 — correct for flat, grouping-dir, and nested layouts alike. Do NOT reconstruct paths from repo name + `PROJECTS_ROOT` (breaks for non-flat repos like `google/lookml`)
 - `--output json` for §3 renderer (structured parse); the CLI also supports `console` / `csv` / `markdown` for direct human-readable output
 - `--plot` writes to `$PROJECTS_ROOT/lupin/io/loc-delta-global/global-<since>_to_<until>-plot.png` (cosa's chosen output convention)
 
@@ -195,7 +203,7 @@ cd "$LUPIN_ROOT/src" && \
 |---|---|
 | `LUPIN_ROOT` unset | Hard error — surface to user; the aggregator CLI lives only in cosa, no fallback. Suggest `export LUPIN_ROOT=...` |
 | Aggregator CLI module missing | Hard error — surface with hint about cosa-side commit status |
-| Cosa venv missing | Falls through to lupin venv → system python3 (same selection as session-end §6.2) |
+| Lupin `.venv` missing | Falls through to system python3 (same selection as session-end §6.2; `.venv` is canonical post-COSA-merge) |
 | Aggregator exits non-zero | Capture stderr; surface in abstract with the partial output (if any) |
 | Per-repo CSV missing (subset of discovered repos OR added via Other in Step 1.5) | Aggregator handles internally — reports as stale in summary tag per §7.2 resolution |
 | Step 1.5 confirmation gate times out | `default={"Repos": discovered_repos}` returns all-checked; proceed as if user accepted (graceful degradation) |
@@ -327,5 +335,6 @@ Both files are included in the closing `notify()` abstract as doc-viewer links.
 
 ## Version History
 
+- **2026-05-30**: Accuracy fixes (TODO #23 closed). **(1) Multi-depth discovery** — Step 1 now globs three explicit patterns (`*/io/`, `*/*/io/`, `*/src/*/io/`) to catch grouping-dir repos (`google/lookml`) and nested sub-repos (`lupin/src/lupin-mobile`); both had live CSVs the old one-level glob silently dropped. Discovery now carries each repo's **absolute path** (`Path(csv).parents[2]`) through `--repos` instead of reconstructing `PROJECTS_ROOT/<name>` (which broke for non-flat layouts). A **git-root guard** (`.git` must exist) excludes in-tree dirs carrying a stale CSV (`lupin/src`, `lupin/src/cosa` post-merge) that would double-count their parent repo — caught by a disk dry-run during implementation. **(2) Venv ordering** — Step 2 PYBIN now prefers `$LUPIN_ROOT/.venv` (canonical post-COSA-merge; verified to carry cosa + matplotlib + PyYAML) then falls straight to `python3`; the stale `$LUPIN_ROOT/src/cosa/.venv` reference (a symlink to system python3 post-merge) was removed. Surfaced by María (PIP session `42a02847`), Rick-approved.
 - **2026-05-21 (evening)**: Added Step 1.5 confirmation gate (default ON, fast-path opt-out via `--no-confirm` or explicit `--repos`). Addresses Rick's UX concern: auto-discovery is lossy when a repo the user wants doesn't yet have a CSV (fresh repo, session-end §6 hasn't fired, stale mtime). Gate uses `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked, "Other" free-text for adding missed repos. **Critical default-on-timeout semantics** (Rick's addition): `default={"Repos": discovered_repos}` so timeout returns all-checked → rollup ships even if user is AFK. Timeout = 120 seconds. Added Step 1.5 to failure-handling table with 2 new failure modes.
 - **2026-05-21 (afternoon)**: Initial canonical workflow doc. Implements the converged Phase 1 design (PIP wrapper invoking Rachel's cosa-side aggregator CLI). Discovery: recently-active mtime heuristic (14-day window, narrowed by `--since`), PROJECTS_ROOT env var with hardcoded fallback. No INI lookup per Rick's "defer-INI-indefinitely" direction. Drafted by María (PIP session `d66169f2`); cosa-side aggregator demoed + reviewed by Rick same session.
