@@ -442,12 +442,15 @@ set_session_topic( "CJ Flow Persistence — Phases 3-5" )
 | Unclear requirements | `converse()` | **MUST** clarify - never assume |
 | Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion. **CRITICAL**: on `neither`, do NOT proceed — re-frame and re-ask. See workflow/cosa-voice-integration.md → "Handling Neither" |
 
+**Decision-Question Framing Contract (MANDATE)**: every `ask_multiple_choice()` / `ask_yes_no()` / `converse()` that frames a decision between alternatives MUST carry, in its `abstract`, (a) pros AND cons per option AND (b) an explicit recommended choice with a one-line rationale — recommended option **first**, with "(Recommended)" appended to its label. Never present a bare menu and leave the user to do the synthesis; the agent has the context and the user is often listening at a distance. Canonical detail (per-tool shapes, worked example, anti-patterns): planning-is-prompting → workflow/cosa-voice-integration.md → "Recommendation Mandate for Blocking-Tool Asks".
+
 **PROHIBITED Anti-Patterns** - **NEVER** do the following:
 1. **NEVER** complete a multi-step task without progress notifications
 2. **NEVER** finish work and "wait" for user to check back
 3. **NEVER** make architectural decisions without `ask_multiple_choice()`
 4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
 5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+6. **NEVER** present decision options as a bare menu — every decision ask carries pros/cons per option + a recommended choice (see the Framing Contract above)
 
 ---
 
