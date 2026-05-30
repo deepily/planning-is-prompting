@@ -30,7 +30,7 @@
 > **[NEXT VERSION] Sub-directory traversal — Rick-flagged 2026-05-21**: the current Step 1 discovery glob `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv` assumes every repo sits exactly one level under `$PROJECTS_ROOT`. Two real layouts break this:
 >
 > - **Grouping subdirectories** (load-bearing): `lookml` lives at `projects/google/lookml`; `par-pacific` and `retail-ai-location-strategy` are siblings under `projects/google/`. First live run 2026-05-21 MISSED `lookml` entirely — Rick had 6 commits there that day and the rollup under-reported until he caught it ("what happened to the lookml repo?")
-> - **Nested sub-repos**: `cosa` lives at `lupin/src/cosa/` (a git repo nested inside another git repo). Invisible to the one-level glob; didn't affect the 2026-05-21 run only because cosa had 0 committed work that day
+> - **Nested sub-repos**: genuinely-nested repos (their own `.git` inside another repo's tree) are invisible to the one-level glob. *(Note: `cosa` at `lupin/src/cosa/` WAS the canonical example, but the 2026-05-29 CoSA→Lupin merge folded it in — cosa is no longer a separate git repo, and its LoC now counts under `lupin`. The nested-sub-repo case now applies to still-separate nested repos such as `lupin-mobile` / `lupin-plugin-firefox`.)*
 >
 > **Next-version fix**: change the discovery to a depth-N traversal (default N=3) that descends into known group directories. Either via env-var `PROJECTS_ROOT_DEPTH=3` OR via an explicit grouping-dir registry in `loc-delta-global.md`. Tracked in TODO #23.
 

@@ -702,7 +702,7 @@ This step combines commit message drafting, user approval, and execution into a 
 
 **Check for Nested Repository Configuration**:
 - Project wrapper may specify: `Nested repositories: [list of paths]`
-- Example: `Nested repositories: /src/cosa/, /src/lupin-plugin-firefox/, /src/lupin-mobile/`
+- Example: `Nested repositories: /src/lupin-plugin-firefox/, /src/lupin-mobile/` (genuinely-separate `.git` repos nested in the tree; NOTE: `/src/cosa/` was folded into Lupin by the 2026-05-29 merge and is no longer a nested repo)
 
 **If nested repos are configured**:
 
@@ -715,7 +715,7 @@ This step combines commit message drafting, user approval, and execution into a 
 2. **Acknowledge nested repo changes** (if detected):
    ```
    ⚠️ Detected changes in nested repositories:
-   • /src/cosa/ (3 modified files)
+   • /src/lupin-plugin-firefox/ (3 modified files)
    • /src/lupin-mobile/ (1 new file)
 
    These are separate Git repositories and will not be included in this commit.

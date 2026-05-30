@@ -42,7 +42,7 @@ A planner can satisfy §2a fully and never see §2b. The Manager handles §2b at
 | # | Property | Who produces it |
 |---|---|---|
 | 1 | **Formal slicing manifest + Q-decision matrix** | Manager at Step 0, from the planner's sliceable breakdown. (Both review AND authoring cascades produce these — Mr Radio's correction: an earlier draft tagged them authoring-only; Run 5, a pure-review cascade, produced both.) |
-| 2 | **Pre-cascade Recon checklist assembly** | Manager at Step 0. The checklist is assembled by Step 0; the planning doc need only surface its project context legibly. **Run-5 lesson (PG-5)**: mandates cited in Recon must have **scope-applicability verified** — Run 5 cited the Lupin-wide 100%-coverage mandate without checking that `HeartbeatPokerJob` lives in CoSA (mandate-excluded). |
+| 2 | **Pre-cascade Recon checklist assembly** | Manager at Step 0. The checklist is assembled by Step 0; the planning doc need only surface its project context legibly. **Run-5 lesson (PG-5)**: mandates cited in Recon must have **scope-applicability verified** — Run 5 cited the Lupin-wide 100%-coverage mandate without checking that `HeartbeatPokerJob` lived in the then-separate CoSA sub-repo (mandate-excluded at the time; post-2026-05-29 merge CoSA inherits the gate — the verify-scope principle stands regardless). |
 
 A planner produces a *sliceable* breakdown plus project-context legibility. The Manager turns that into §2b. Do not attempt §2b at planning time — it depends on cascade-internal configuration.
 

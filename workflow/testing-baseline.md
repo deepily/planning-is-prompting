@@ -860,7 +860,7 @@ Ready for planned changes. Use /plan-test-remediation after modifications.
 
 ### Multi-Suite Projects
 
-**For projects with multiple independent test suites** (like Lupin + COSA):
+**For projects with multiple independent test suites** (e.g., a primary app suite plus a separate framework or library suite):
 
 **Option 1: Unified Workflow**
 - Execute all suites in single baseline run
@@ -874,6 +874,8 @@ Ready for planned changes. Use /plan-test-remediation after modifications.
 - Useful when suites are truly independent
 
 **Recommendation**: Option 1 for integrated systems, Option 2 for loosely coupled.
+
+> **Post-merge note (2026-05-29)**: Lupin + COSA was the original example here, but the CoSA framework was merged into Lupin (subtree fold). It now runs as ONE repo — cosa's suite is unified under Lupin (Option 1) and cosa inherits the Lupin-wide 100% coverage gate with a grandfathering ramp. Treat any "Lupin + COSA = two independent suites" framing elsewhere in these docs as pre-merge.
 
 ### Custom Health Checks
 

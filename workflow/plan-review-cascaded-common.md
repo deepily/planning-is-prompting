@@ -104,7 +104,7 @@ This is the load-bearing piece for cold-cast onboarding. Codifies the standing-m
 
 **PG-5 lesson — mandate scope-applicability verification (added 2026-05-28 post-Run-5)**:
 
-Cited mandates in the Recon checklist MUST have their **scope-applicability verified against the design's actual code location** — never assume blanket applicability. Run 5 (heartbeat-poker review) cited the Lupin-wide 100%-coverage mandate as applicable, but the design's code location (`HeartbeatPokerJob` in CoSA sub-repo) is mandate-EXCLUDED — CoSA is governed by a different coverage policy.
+Cited mandates in the Recon checklist MUST have their **scope-applicability verified against the design's actual code location** — never assume blanket applicability. Run 5 (heartbeat-poker review) cited the Lupin-wide 100%-coverage mandate as applicable, but at the time the design's code location (`HeartbeatPokerJob` in the then-separate CoSA sub-repo) was mandate-EXCLUDED — CoSA was governed by a different coverage policy. *(Historical note: as of the 2026-05-29 CoSA→Lupin merge, CoSA is no longer a sub-repo — it INHERITS the Lupin-wide 100% gate with a grandfathering ramp, so this specific exclusion no longer holds. The methodological lesson — verify a cited mandate's scope against the actual code location, never assume blanket applicability — stands unchanged.)*
 
 **Verification template** (added to the Recon checklist as a required column):
 

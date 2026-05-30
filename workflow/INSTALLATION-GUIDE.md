@@ -1602,8 +1602,8 @@ I need you to install the testing workflow commands from the planning-is-prompti
    - Where should reports be stored? (default: tests/results/reports)
    - Health check endpoint? (e.g., http://localhost:8000/health or a command)
 
-5. **For multi-suite projects** (like Lupin + COSA):
-   - Ask about scope parameter support (full|project_only|cosa|lupin)
+5. **For multi-suite projects** (a single repo with more than one test suite — e.g., an app suite plus a bundled framework/library suite):
+   - Ask about scope parameter support (e.g., full|project_only|<sub-suite>)
    - Configure separate test execution for each suite
    - Set up conditional execution based on scope
 
@@ -1717,9 +1717,9 @@ Reports: tests/results/reports
 Health Check: http://localhost:8000/health
 ```
 
-**Complex Project** (multi-suite like Lupin + COSA):
+**Complex Project** (a single repo with multiple test suites — this is the post-2026-05-29 shape of Lupin, with the CoSA framework folded in as a `src/cosa/` subtree, sharing one PYTHONPATH and one coverage gate):
 ```yaml
-[SHORT_PROJECT_PREFIX]: [LUPIN] or [COSA]
+[SHORT_PROJECT_PREFIX]: [LUPIN]   # CoSA is a subtree of Lupin, not a separate repo
 Working Directory: /path/to/genie-in-the-box
 Test Types: smoke, unit, integration
 Scope Support: yes (full|lupin|cosa)
