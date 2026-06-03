@@ -1,10 +1,43 @@
 # TODO
 
-Last updated: 2026-06-02 (María session `877d64ba`, Session 99 — CoSA post-game Q4 framework + WAVE-2 observer + Rick WAVE-3 prerequisites; history archived 46k→12k)
+Last updated: 2026-06-03 (María session `af1465b9` — all-tiers overnight coverage grind: Workflow Steward → honest-100% certification)
+
+## Pending Decisions
+
+*Queue for `/plan-decide` / "walk me through the pending decisions." One-line topics; the skill frames options live. See `workflow/decision-walkthrough.md`.*
+
+- [ ] Decision-walkthrough rollout — add the global `~/.claude/CLAUDE.md` pointer + `/plan-install-wizard` catalog entry now, or keep PIP-only until dogfooded a few more times? | priority: P2 | raised: 2026-06-02
+- [ ] Coverage framework graduation (§11) — promote `src/rnd/2026.06.01-…-framework.md` to a canonical `workflow/` doc now (g1–g4 met) or wait for a 2nd validating run? | priority: P2 | raised: 2026-06-02
+- [ ] Context-rate instrumentation for PREDICTIVE harvest (§5 framework hardening) — turn harvest-on-unproductive from proxy-based (tests-written / stall) to metric-based (sample token `usage` → tokens/min → project minutes-to-ceiling → harvest before degradation). No built-in rate exists; must derive. Which approach: (a) Agent-SDK accumulate `usage.input_tokens` per query; (b) Claude Code hook (Stop/PostToolUse) parses session JSONL → cosa-voice alert [fits our stack]; (c) Admin API org-level (~5min latency, authoritative). | priority: P2 | raised: 2026-06-02 | source: claude-code-guide research 2026-06-02
+
+## Decisions Log
+
+*ADR-lite: `YYYY-MM-DD — decision → ruling. Why: rationale.` Full records in the governing doc where noted.*
+
+- 2026-06-02 — Decision-walkthrough shape (DD1) → PIP workflow + Agent Skill + `/plan-decide` command, wizard-installed. Why: the only option that standardizes; one-word trigger. Record: `src/rnd/2026.06.02-guided-decision-walkthrough-skill.md`.
+- 2026-06-02 — Decision-walkthrough queue source (DD2) → `## Pending Decisions` in TODO.md. Why: reuses the file read at session-start; skill frames options live.
+- 2026-06-02 — Decision-walkthrough outcome record (DD3) → lightweight `## Decisions Log` + inline. Why: durable + greppable + low-ceremony; full ADRs reserved for architectural calls.
+- 2026-06-02 — Post-game framework D1–D5 + triage T1–T4 ratified. Record: `src/rnd/2026.06.02-cosa-coverage-campaign-post-game.md` §3.6 + §3.7.
 
 ## Pending
 
+- [ ] **🌅 RICK'S MORNING GATE (all-tiers grind close, 2026-06-03)** — handoff items from the overnight grind, captured by María (steward). Detail + evidence: `src/rnd/2026.06.03-all-tiers-overnight-grind-observer-log.md`.
+  - **Push the 11 held Lupin-side commits** (test-only, certified; Rick's call per push-is-user-session-end).
+  - **Reap-or-hold the parked fleet** (Tiberius + Cheech/Rachel/sam/Krishna).
+  - **2 honestly-tripwired prod bugs (Lupin) — Rick's prod-fix gate** (prod-logic = his call, never the fleet's): (a) `dispatcher.py self.debug` uninitialized; (b) `cosa_interface.ask_yes_no` → missing `_dispatcher.ask_yes_no` on `AgentNotificationDispatcher` (Bug #12, `xfail(strict=True)`-pinned `533d273` — self-announces the moment the method is added).
+  - **Stale `CLAUDE.md §STRUCTURE`** (Lupin) — flagged by Tiberius for refresh.
+  - **Deferred harvest-deletes** + the **global hermetic-config fixture** (see FM-21 item below).
+  - **Optional `:8000` integration tier** (unit tier is the certified 100%).
+
+- [ ] **Empty-broadcast-injection BUG (OPEN, HIGH)** (2026-06-03, María — filed `src/rnd/2026.06.02-empty-broadcast-injection-bug.md`). A user broadcast arrives as an **empty `USER BROADCAST` system-reminder** (body dropped) while the **content is intact on the `broadcasts` commons topic** — verified across 2 sessions (María + Tiberius). Root-cause locus: the **per-session injection/render layer** (broadcast row → system-reminder composer), NOT send/storage. Silently loses fleet-wide directives (surfaced when Rick's AFK all-tiers directive reached every recipient blank). Suggested fix + regression test in the doc. Owner: cosa-voice / broadcast-listener (Lupin); Rachel's lane likely. Mitigation in place: content recoverable via `commons_read(topic="broadcasts")`.
+
+- [ ] **FM-21 systemic fix — global autouse hermetic-config fixture** (2026-06-03, María steward ruling). FM-21 (non-hermetic config/registry test bleed) is cataloged + fixed at-source for tonight's instances. The SYSTEMIC kill is a global autouse fixture in a new `src/cosa/tests/conftest.py` (`cache_registry.invalidate_all()` + `ConfigurationManager(_reset_singleton=True)` + config-submodule sys.modules/parent-attr eviction). **Blast-radius-gated**: Rachel DESIGNS + isolation-verifies (full suite green with it active, zero currently-green tests broken); lands ONLY on a clean verification, between batches, revert-staged; **else Rick's morning gate**. Do NOT land a global autouse fixture into a live multi-author grind unilaterally. Owner: Rachel (design) + Rick (gate). Source: framework §8 FM-21.
+
+- [ ] **FM-22 — WATCH (held, do not catalog yet)** (2026-06-03, María steward ruling). A single non-reproducing `test_io_files_router` red under the full combined run, mechanism never captured (`--tb=long` gone before it could be read; self-healed as the test-set moved under peer commits). Naming a failure-mode for an un-pinned mechanism = confabulation. **Promote to FM-22 ONLY on a recurrence WITH a captured `--tb=long` that names the mechanism.** Watch-note: Lupin `…/90-io-files-router-nonrepro-watchnote-2026.06.03.md`; held-pointer in framework §8.
+
 - [ ] **🚨 WAVE-3 PREREQUISITES (Rick directives 2026-06-01) — REQUIRED before the next coverage batch** (framework §13 in `src/rnd/2026.06.01-dependable-coverage-campaign-framework.md`). **(A) Completion discipline** — never park on trivial/difficulty reasons; drive to 100% (codified §5; done). **(B) Messaging coordination-plane "black-holes"** — root-cause CONFIRMED two-layer (Tiberius): MCP-server saturation (sync handlers block on a fleet-loaded `:7999`, 5s MCP-transport timeout) + silent fire-and-forget drops → no delivery-guarantee / load-isolation / pull-fallback (FM-7/11/15/18 = ONE plane). **Fix to design + build (Lupin infra, Tiberius)**: concurrent/non-blocking MCP server + durable-queue/retry/ack + pull-able inbox + fleet concurrency-cap + decouple TTS from `:7999`. **(C) Harvest discipline** — mandate prompt reaping of unproductive workers (`extra-N` personas = pool-exhaustion alarm); FIX the reap mechanism (FM-3 dismiss_sessions bug + FM-16 cross-lineage). Owners: María (PIP §13 synthesis — stub to fill as the root-cause lands) + Tiberius (Lupin infra fix + 02-cold-start-runbook harvest/push-silence mandates).
+
+- [ ] **Stop-Hook Natural Heartbeat Poker — R&D (POST-GRIND)** (2026-06-03, María — Rick-directed). Pursue as a serious design **after the CoSA-in-Lupin grind is up and running**. Use Claude Code stock hooks (the `Stop`/quiescence lifecycle event) as a *naturally-occurring* per-instance poker that `tmux send-keys` a "get back to work" nudge into idle instances with work owed — replacing external-daemon polling. Crux: the **hold-vs-lazy discriminator** (never poke a legitimately-holding instance; proposed principle *"a hold is only honored if it is declared"*) = mechanical FM-19 completion-discipline enforcement. Coordinate a SHARED `Stop`/`PostToolUse` hook substrate with Rachel's line-11 token-rate research (don't ship two competing hooks). Bound by construction (poke-cap / opt-out) — no new storm vector (cf. the TTS-storm postmortem). Owner: María. priority: P2 (post-grind) | source: `src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md`
 
 - [ ] **Framework graduation (§11) — promote from `src/rnd/` to a canonical `workflow/` doc** once WAVE-2 hits genuine 100% + g1–g4 captured + Rick ratifies. g3 ✅ held, g2 ✅ exercised (honest, gate held through reviewer swap), g4 ✅ accruing; g1 strong (G0.4 poker never triggered — manager never stranded, logged honest-not-proven). Owner: María. Source: `src/rnd/2026.06.01-dependable-coverage-campaign-framework.md` + WAVE-2 observer log.
 
@@ -91,6 +124,10 @@ Last updated: 2026-06-02 (María session `877d64ba`, Session 99 — CoSA post-ga
 
 ## Completed (Recent)
 
+- [x] **All-tiers CoSA-in-Lupin coverage grind — Workflow Steward → honest, reviewer-audited 100%** (13,300 passed/0 failed, cosa 100% line+branch+function across 412 files, Krishna 8/8 0-hollow, 11 Lupin-side test-only commits held). Cataloged **FM-21**, HELD **FM-22** (evidence-gated), **git-verified both xfails myself** before co-signing the certification (zero mask). Observer log `src/rnd/2026.06.03-all-tiers-overnight-grind-observer-log.md` (per-wake ledger). - Session 100
+- [x] **Sam-TTS-storm postmortem + FM-20** (`src/rnd/2026.06.02-sam-tts-storm-incident-postmortem.md`; root cause = lever-A durable outbox replaying an 8,692-row stale backlog through the Sam error persona on a deploy bounce; fix `8447eec` verified `:7999`+`:8000`). - Session 100
+- [x] **Guided Decision Walkthrough skill** (PIP hub `workflow/decision-walkthrough.md` + design doc + `/plan-decide`; Lupin spoke installed by Tiberius). DD1–DD3 ratified (see Decisions Log). - Session 100
+- [x] **TTS-cap workflow lock** (`workflow/cosa-voice-integration.md` → 500-char INI-tunable `cosa voice spoken char cap` + `override_size_limitation`). - Session 100
 - [x] **Archive history.md (46,397 → 11,988 tokens; Sessions 57–93 → `history/2026-02-02-to-05-20-history.md`)** - Session 99
 - [x] **CoSA post-game Q4: dependable-generic-framework + WAVE-2 observer log (FM-1..18 catalog, g1–g4 graduation ledger); Rick mitigation set ratified (§12.4); messaging root-cause + harvest-discipline codified (§13)** - Session 99
 

@@ -119,6 +119,31 @@ What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file loca
 
 **Why this anchor is worth memorializing alongside #1**: the 2026-05-04 anchor (#1) targeted **inventory recital** as the dominant failure mode. The 2026-05-15 anchor (#2) targets **terminology recital** — the violation pattern where audit findings, doctrinal terms, or terms-in-conflict get spoken aloud rather than tabled in the abstract. Both share the same root cause (the author drafted spoken + abstract in parallel instead of treating speech as verdict-only headline), but they differ in surface: #1's bloat is *numbers and counts*, #2's bloat is *named concepts and file paths*. The MUST-audit gate above closes both at once: ANY noun overlap between channels is a violation.
 
+### Message-Size Hard Cap + Deliberate Override (2026-06-02)
+
+**Why a hard cap exists.** The TTS Response Brevity Mandate above is a *discipline*, and discipline **decays** over long sessions — re-confirmed 2026-06-02 when Rick flagged a wall-of-text spoken message the morning *after* the identical correction. Self-enforcement is unreliable, so the brevity rule is now backed by a **caller-side hard cap** on spoken-message length, enforced inside the cosa-voice MCP. This subsection documents the cap and its escape hatch.
+
+**The cap (default, automatic):**
+- Enforced on the **spoken `message`** of all five spoken tools: `notify()`, `converse()`, `ask_yes_no()`, `ask_multiple_choice()`, `ask_open_ended_batch()`.
+- **Default: 500 characters (~80 words).** Over-cap calls **REJECT** (raise `ValueError`) so the model must re-craft — unless the override is set. (Reject-not-truncate ratified by Rick 2026-06-02, decision D4: a hard fail trains brevity; truncation doesn't.)
+- **Config-driven + runtime-tunable.** The cap lives in `lupin-app.ini` as `cosa voice spoken char cap = 500` (read via ConfigurationManager, mtime-gated). Edit the INI and the MCP picks it up on the **next call — no restart**.
+- **`abstract` is NEVER capped** (see *Two-channel asymmetry* above). Moving detail into `abstract` is always the first-line answer to a too-long message; the cap should rarely bite if the brevity mandate is followed.
+- **Scope:** caller-side in the MCP only; the notifications REST API is unrestricted.
+
+**The deliberate override (opt-in, intentional):**
+- A message that *genuinely* must exceed the cap — a long/verbatim readout the user **explicitly asked to hear aloud** — must set the explicit override to pass through. **The cap is the default; chattiness is a conscious opt-in, never accidental.**
+- Mechanism: **`override_size_limitation: bool = False`** on all five spoken tools, e.g. `notify( message=..., override_size_limitation=True, ... )`. Omitting it (the default) means the cap applies and an over-cap call rejects.
+- **The override is NOT a loophole.** Setting it without a real justification is a *violation* of the brevity mandate, not a way around it. It exists for the rare legitimate long message; if you reach for it more than rarely, the content belongs in `abstract` + doc-links instead.
+
+**When the override IS legitimate:**
+- The user explicitly asked to **hear** a long or verbatim readout spoken (not just see it).
+- A spoken transcript / quotation the user wants reproduced aloud in full.
+
+**When it is NOT (default path — leave the flag off):**
+- Routine status closes, summaries, numeric/file inventories, audit findings, decision-support — these go to `abstract` + doc-links with a capped, headline spoken line. No override.
+
+**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented + 11/11 unit tests green (Tiberius, DM `14f9e3c8`).
+
 ### Priority="high" Mandate Intensified
 
 In notification mode, `priority="low"` `notify()` calls are silent — only the ding plays. In conversation mode, EVERY `notify()` becomes TTS, including low-priority. Workflows that emit frequent low-priority progress notifications should reconsider in conversation mode: either group them, suppress the dings (`suppress_ding=True`), or skip them entirely if they don't carry information the user needs spoken.
