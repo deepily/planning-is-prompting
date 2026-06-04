@@ -1,11 +1,22 @@
 # TODO
 
-Last updated: 2026-06-03 (María session `af1465b9` — all-tiers overnight coverage grind: Workflow Steward → honest-100% certification)
+Last updated: 2026-06-04 (María session `af1465b9` — Session 101: post-game ratification + Heartbeat Hook design + session-end)
+
+## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-04)
+
+Session 101 closed clean (push + backup done; global LoC roll-up held for Tiberius). **Top of the stack for tomorrow:**
+1. **Global cross-repo LoC roll-up** — run it once Tiberius signals his Lupin push+backup are done (he goes first; I aggregate after). Now unblocked: D9 permission persisted.
+2. **Heartbeat Hook build v1 (Lupin-side)** — design is ratified (`src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0). First step: empirically verify CC's `stop_hook_active` loop-guard, then the `Stop`-hook script + `.claude/settings.json` wiring + per-session poke-cap. Coordinate the shared substrate with Rachel.
+3. **Agentic Heartbeat Poker / arbiter-behavior design deep-dive** — Rick wants this as its own conversation (dependency graph, `owner_id` AFK pre-resolution, fleet throttle).
+4. **Framework §13 fold** of the post-game P0/P1/P2 (still on María's list).
+5. Lupin-side execution from PG rulings (Tiberius/Rachel lane): empty-broadcast bug, hermetic-config fixture, 2 prod-bug fixes, stale `CLAUDE.md §STRUCTURE` + PIP mirror.
 
 ## Pending Decisions
 
 *Queue for `/plan-decide` / "walk me through the pending decisions." One-line topics; the skill frames options live. See `workflow/decision-walkthrough.md`.*
 
+- [ ] **Heartbeat POKER / arbiter-behavior DESIGN deep-dive (still deferred)** — Rick: "drill down on the arbiter's behavior at a later date." The agentic Poker owns the cross-fleet arbiter role: dependency graph (who's waiting on whom), `owner_id` pre-resolution for AFK keep-alive (F2, `2026.05.30-…-observer-log.md`), fleet-wide poke throttle. Distinct from the now-ratified Heartbeat Hook. | priority: P0 | raised: 2026-06-03
+- [ ] **Heartbeat HOOK — build v1 (Lupin-side)** — design RATIFIED 2026-06-03 (`src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0). Build the `Stop`-hook script + `.claude/settings.json` wiring; FIRST verify CC loop-guard empirically (`stop_hook_active`?); per-session poke-cap + opt-out bounded before any live install. Coordinate the shared `Stop`/`PostToolUse` substrate with Rachel (TODO line 11). | priority: P1 | raised: 2026-06-03 | owner: Lupin-side
 - [ ] Decision-walkthrough rollout — add the global `~/.claude/CLAUDE.md` pointer + `/plan-install-wizard` catalog entry now, or keep PIP-only until dogfooded a few more times? | priority: P2 | raised: 2026-06-02
 - [ ] Coverage framework graduation (§11) — promote `src/rnd/2026.06.01-…-framework.md` to a canonical `workflow/` doc now (g1–g4 met) or wait for a 2nd validating run? | priority: P2 | raised: 2026-06-02
 - [ ] Context-rate instrumentation for PREDICTIVE harvest (§5 framework hardening) — turn harvest-on-unproductive from proxy-based (tests-written / stall) to metric-based (sample token `usage` → tokens/min → project minutes-to-ceiling → harvest before degradation). No built-in rate exists; must derive. Which approach: (a) Agent-SDK accumulate `usage.input_tokens` per query; (b) Claude Code hook (Stop/PostToolUse) parses session JSONL → cosa-voice alert [fits our stack]; (c) Admin API org-level (~5min latency, authoritative). | priority: P2 | raised: 2026-06-02 | source: claude-code-guide research 2026-06-02
@@ -18,6 +29,8 @@ Last updated: 2026-06-03 (María session `af1465b9` — all-tiers overnight cove
 - 2026-06-02 — Decision-walkthrough queue source (DD2) → `## Pending Decisions` in TODO.md. Why: reuses the file read at session-start; skill frames options live.
 - 2026-06-02 — Decision-walkthrough outcome record (DD3) → lightweight `## Decisions Log` + inline. Why: durable + greppable + low-ceremony; full ADRs reserved for architectural calls.
 - 2026-06-02 — Post-game framework D1–D5 + triage T1–T4 ratified. Record: `src/rnd/2026.06.02-cosa-coverage-campaign-post-game.md` §3.6 + §3.7.
+- 2026-06-03 — Heartbeat Hook design v1 RATIFIED (Rick live walkthrough). Local `Stop`-hook · declared-hold-only ("defend your quiescence") · native `decision:block` re-prompt (no tmux) · mandatory per-session poke-cap · per-session `.heartbeat-hold-<id>.json` JSON artifact. Separate from + complementary to the agentic Heartbeat Poker. Record: `src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0. Why: keep-alive is the precondition for unattended runs; local+self-contained avoids the fragile `:7999` plane.
+- 2026-06-03 — All-tiers grind post-game PG-D1..D9 ratified (full walkthrough). Record: `src/rnd/2026.06.03-all-tiers-grind-postgame.md` §3.6. Rulings: D1 priority order P0/P1/P2 CONFIRMED · D2 heartbeat-poker BUILD (design = separate convo) · D3 PRIORITIZE empty-broadcast bug + confirm D1 landed · D4 AUTHORIZE hermetic fixture (gated land) · D5 `:8000` tier GREENLIT (scope post-game) · D6 fleet reap NO-ACTION (Rachel Rick-summoned) · D7 FIX+DE-ARM 2 prod bugs · D8 FIX stale §STRUCTURE + mirror in PIP · D9 GRANT LoC permission rule. Why: keep-alive is the precondition for any unattended run; blast-radius guards preserved on the systemic fixes.
 
 ## Pending
 
