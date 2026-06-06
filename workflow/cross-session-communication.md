@@ -152,6 +152,7 @@ Reserved topic names *are* the tier marker. Posting to a reserved topic carries 
 | `incidents` | Self-disclosure or urgent | Errors, blockers, things humans should know | `OOM crash in test runner at 14:32 UTC, retrying once` |
 | `broadcasts` | Reserved (infrastructure) | User→all broadcasts; do not post here from a session | — |
 | `broadcast-acks` | Reserved (infrastructure) | Mandatory broadcast acks; handled by infrastructure | — |
+| `fleet-decision-needed` | Attention-demanding (human escalation) | A decision the FLEET can't make (scope / prod-logic / hard ambiguity) that needs the human. The Heartbeat Arbiter (v2.2 B3/D3) tails this topic read-only and escalates each new post to the user — a genuine trigger, not a digest. Post here when a blocker is genuinely the human's call, not a peer's. | `Need Rick's call: delete-vs-migrate for the legacy auth table — both reversible, but prod-data-touching` |
 
 ### Organic topics
 

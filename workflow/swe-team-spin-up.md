@@ -84,6 +84,7 @@ flowchart LR
 - **Hard commit gate (non-negotiable):** **green AND adversarially-reviewed** before any commit. No silent skips. This is the Test-Ownership mandate + adversarial-review discipline made mechanical — the Manager holds it.
 - **Always post-game, scaled:** the Steward runs a retrospective **every cycle** — a *full* retro for substantive runs, a *lightweight note* for trivial ones. Always-on (never "on-demand") because the standing post-game is how the Steward catches drift/confabulation — the role's whole point.
 - **Commit/push is the user's call** — the gate makes work *commit-ready*; the human decides when to commit/push (push is the user's session-end call).
+- **Standing-pair keep-alive (2026-06-06 lesson):** during an autonomous build the Manager + Steward must NOT both go dark — a re-loop/handoff with no one awake to actuate stalls silently (proven live: a ~90-min unactioned re-loop verdict). The fleet-stall keep-alive belongs to the **arbiter layer** (the closed-loop poker taps the Manager on stall), NOT the per-session stop-hook (which correctly won't poke a *legitimate* wait). Until the arbiter is deployed as a standing daemon, use an interim poker + the Steward actively watches for stalls. **Layering:** stop-hook = per-session lazy-stop guard · arbiter = fleet-stall poker · interim poker = stopgap until the arbiter ships.
 
 ---
 
