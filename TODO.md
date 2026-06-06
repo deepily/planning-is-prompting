@@ -1,15 +1,16 @@
 # TODO
 
-Last updated: 2026-06-04 (María session `af1465b9` — Session 101: post-game ratification + Heartbeat Hook design + session-end)
+Last updated: 2026-06-05 (María session `4347c712` — Session 102-cont: v2.1 Arbiter Direct-State Visibility design → D1–D4 walkthrough → Tiberius review → Rick bless → fold into Lupin `03` §10; session-end push+backup)
 
-## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-04)
+## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-05)
 
-Session 101 closed clean (push + backup done; global LoC roll-up held for Tiberius). **Top of the stack for tomorrow:**
-1. **Global cross-repo LoC roll-up** — run it once Tiberius signals his Lupin push+backup are done (he goes first; I aggregate after). Now unblocked: D9 permission persisted.
-2. **Heartbeat Hook build v1 (Lupin-side)** — design is ratified (`src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0). First step: empirically verify CC's `stop_hook_active` loop-guard, then the `Stop`-hook script + `.claude/settings.json` wiring + per-session poke-cap. Coordinate the shared substrate with Rachel.
-3. **Agentic Heartbeat Poker / arbiter-behavior design deep-dive** — Rick wants this as its own conversation (dependency graph, `owner_id` AFK pre-resolution, fleet throttle).
-4. **Framework §13 fold** of the post-game P0/P1/P2 (still on María's list).
-5. Lupin-side execution from PG rulings (Tiberius/Rachel lane): empty-broadcast bug, hermetic-config fixture, 2 prod-bug fixes, stale `CLAUDE.md §STRUCTURE` + PIP mirror.
+Session 102-cont closed clean (push + backup done at session-end; **cross-repo LoC roll-up ran as the post-hold finale** after Tiberius's crew landed the v2.1 implementation). **Top of the stack:**
+1. **Heartbeat Arbiter v2.1 implementation (Lupin-side, Tiberius-driven)** — design is FINAL + folded into `lupin/…/03-arbiter-design.md` §10. Pipeline: Cheech reviews §10 → Clayton builds the 3 lanes (server per-MCP-stamp → MCP lane · tool-use-hook trivial bridge-mtime touch → hooks lane · arbiter render + snapshot push + `/api/arbiter/fleet-snapshot` → arbiter lane) → Tiberius reviews. María on call if design intent is needed. Lupin doc `03` commit is a Lupin session's call.
+2. **Agentic Heartbeat Poker / arbiter-behavior design deep-dive** — Rick wants this as its own conversation (dependency graph, `owner_id` AFK pre-resolution, fleet throttle).
+3. **Framework §13 fold** of the post-game P0/P1/P2 (still on María's list).
+4. Lupin-side execution from PG rulings (Tiberius/Rachel lane): empty-broadcast bug, hermetic-config fixture, 2 prod-bug fixes, stale `CLAUDE.md §STRUCTURE` + PIP mirror.
+
+*(Done in 102 / 102-cont: Heartbeat Hook v1 shipped+verified; v2 Arbiter built+certified; v2.1 Direct-State-Visibility designed+folded.)*
 
 ## Pending Decisions
 
@@ -32,6 +33,8 @@ Session 101 closed clean (push + backup done; global LoC roll-up held for Tiberi
 - 2026-06-02 — Decision-walkthrough queue source (DD2) → `## Pending Decisions` in TODO.md. Why: reuses the file read at session-start; skill frames options live.
 - 2026-06-02 — Decision-walkthrough outcome record (DD3) → lightweight `## Decisions Log` + inline. Why: durable + greppable + low-ceremony; full ADRs reserved for architectural calls.
 - 2026-06-02 — Post-game framework D1–D5 + triage T1–T4 ratified. Record: `src/rnd/2026.06.02-cosa-coverage-campaign-post-game.md` §3.6 + §3.7.
+- 2026-06-05 — Arbiter direct-state-visibility D1–D4 ruled (guided walkthrough w/ Rick). D2→passive layered (tool-hook + transcript-mtime + server auto-stamp; show last-seen ages). D1→change + heartbeat tick showing duration-since-last-change. D3→log file + queryable FastAPI endpoint + commons. D4→verify bridge-mtime saturation-resilience first, adopt if server-independent. Why: see state never infer it; consumer-side only, producer untouched. Record: `src/rnd/2026.06.05-arbiter-direct-state-visibility.md` §6.1. NO code yet — folds into lupin `03` §v2.1 on Rick's go.
+- 2026-06-05 — Same design: Tiberius (manager) reviewed→APPROVED + Rick BLESSED the convergence. SYNERGY: all liveness writers (idle-waiter + tool-use hooks + server per-MCP-stamp) bump ONE host-side bridge-mtime clock → wedge-resilient, covers heads-down, AND upgrades the broadcast-list filter for free. Redlines: (1) trivial tool-hook touch only (2) no standalone arbiter HTTP — push to :7999 /api/arbiter/fleet-snapshot mirroring pool-status (3) converge on bridge-mtime, no parallel store (4) state vs liveness = 2 columns. Record: §6.2. DESIGN-FINAL; no code yet.
 - 2026-06-03 — Heartbeat Hook design v1 RATIFIED (Rick live walkthrough). Local `Stop`-hook · declared-hold-only ("defend your quiescence") · native `decision:block` re-prompt (no tmux) · mandatory per-session poke-cap · per-session `.heartbeat-hold-<id>.json` JSON artifact. Separate from + complementary to the agentic Heartbeat Poker. Record: `src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0. Why: keep-alive is the precondition for unattended runs; local+self-contained avoids the fragile `:7999` plane.
 - 2026-06-04 — **Heartbeat Hook: land v1 + use; reopen continued dev for arbiter-consumption** (Rick, post-Tiberius word). v1 (local self-poke / hold-management, `oracle_verdict=None`) ships AS-IS and goes into use now. Continued dev REOPENED on two tracks: (a) FM-19 lazy-stop catch (v2, gated on §C.3 Q4, María); (b) **arbiter consumption of poke-responses** — promotes §0 #2's "optional future" to active: the agentic Heartbeat Poker (arbiter) consumes the local Hook's poke-events+outcomes for the cross-fleet view; concrete first piece of the P0 arbiter deep-dive. Design steer (María): EMIT NOW, CONSUME LATER — v1's poke path writes a consumable poke-event record up front so the arbiter is a pure consumer with zero Hook retrofit; local poke never *depends* on the arbiter (§0 #2 invariant). Record: `src/rnd/2026.06.02-stop-hook-natural-heartbeat-poker.md` §0.2.
 - 2026-06-04 — **Manager spawn/harvest standing authority GRANTED** (Rick, live, during Heartbeat-Hook build). Resolving the >1h Rachel-respawn freeze: Rick chose RESPAWN **and** gave the manager (Tiberius) standing authority to spin up personas as-needed going forward. → founding ratified decision for the new **Manager Spawn/Harvest Autonomy workflow** (seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md`). Why: a manager that defaults to freeze-and-ask instead of acting within bounds is the wrong default (same failure family as FM-19). Codification job = bound the grant (standing vs. gated envelope), not invent the authority.
