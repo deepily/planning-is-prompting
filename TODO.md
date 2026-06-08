@@ -1,8 +1,16 @@
 # TODO
 
-Last updated: 2026-06-06 (María session `e26d2909` — SWE-Team Spin-Up: coordinated w/ Tiberius → guided walkthrough → all 7 decisions ruled by Rick → seed §6 ratified; build queue opened)
+Last updated: 2026-06-07 (María session `896d370e` — S104: B1 arbiter deploy-architecture designed + BUILT held; manage-not-build doctrine; 2 PM exec briefings; live stall caught+resolved)
 
-## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-05)
+## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-07)
+
+**Session 104 (2026-06-07) state — the B1 closed-loop arbiter is BUILT, held for Rick's push, NOT yet live:**
+1. **B1 arbiter-vigilance (:8001 standalone) — all 4 lanes built + reviewer-passed, held** (Lupin, Tiberius crew: Tiffany/Mr-Radio/Krishna). Design: `src/rnd/2026.06.07-arbiter-deploy-architecture.md` (host-side under systemd, R0–R5, §4.1 verified liveness) + R0 decommission spec sibling. **GO-LIVE remaining (operational, Rick-gated):** Rick's push → R0 atomic cutover (flip `arbiter in-process bootstrap enabled=false` + bounce, break-before-make) → enable systemd unit → 2 build-verifies (R5 stamp-attribution on shared :7999; supervisor root-rung) → warm-up → Loop B actuates. *Tonight's Lupin work is push-only, NOT in production (no :8000 verify, no cutover) — Tiberius.*
+2. **Broadcast-listener fix** — Rick-greenlit, assigned to **Clayton** (honor prose/@-mention addresses, not just strict `@Persona:`); gated source-fix → Krishna L3 → held. Bug doc `src/rnd/2026.06.02-empty-broadcast-injection-bug.md`.
+3. **Global LoC roll-up** — DEFERRED to after Tiberius's Lupin per-repo CSV refresh (hub-spoke; he pings me, I aggregate last).
+4. **:8000 e2e test-debt** — Clayton owns (7 clusters, Lupin TODO); v2.2 cleared with git evidence; in progress.
+
+**Previously — Session 102/103 (pick up only if the above is parked):**
 
 Session 102-cont closed clean (push + backup done at session-end; **cross-repo LoC roll-up ran as the post-hold finale** after Tiberius's crew landed the v2.1 implementation). **Top of the stack:**
 1. **Heartbeat Arbiter v2.1 implementation (Lupin-side, Tiberius-driven)** — design is FINAL + folded into `lupin/…/03-arbiter-design.md` §10. Pipeline: Cheech reviews §10 → Clayton builds the 3 lanes (server per-MCP-stamp → MCP lane · tool-use-hook trivial bridge-mtime touch → hooks lane · arbiter render + snapshot push + `/api/arbiter/fleet-snapshot` → arbiter lane) → Tiberius reviews. María on call if design intent is needed. Lupin doc `03` commit is a Lupin session's call.
