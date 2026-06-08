@@ -384,7 +384,7 @@ The prompts in §4, §5, and §8 contain double-brace placeholders that per-proj
 | `{{DESIGN_ANCHOR_FILE}}` | Layer 3 file (e.g., `01-design-review.md`) | Pass 1, Pass 2 |
 | `{{DECISION_ANCHOR_FORMAT}}` | The format used (e.g., "Q1–Q7 frozen 2026-04-23" or "D1–D5") | Pass 1, Pass 2 |
 | `{{PLAN_DOC_PATHS}}` | Ordered list of all plan docs to be reviewed (phase designs + execution logs) | REUSE pre-pass, Pass 1 |
-| `{{CODEBASE_ROOTS}}` | Source-tree paths to grep for prior art (e.g., `src/cosa/ src/fastapi_app/`) | REUSE pre-pass |
+| `{{CODEBASE_ROOTS}}` | Source-tree paths to grep for prior art (e.g., `src/cosa/ src/lupin_app/`) | REUSE pre-pass |
 | `{{GREP_TARGETS}}` | Doc directory the greps run against (e.g., `src/rnd/v0.1.7/<milestone>/`) | Pass 1, Pass 2 |
 | `{{TBD_QUESTIONS}}` | Numbered enumeration of currently-flagged TBDs in the docs (per-milestone, fills at invocation time) | Pass 1 |
 

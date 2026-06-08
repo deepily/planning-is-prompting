@@ -1,11 +1,11 @@
 # TODO
 
-Last updated: 2026-06-07 (María session `896d370e` — S104: B1 arbiter deploy-architecture designed + BUILT held; manage-not-build doctrine; 2 PM exec briefings; live stall caught+resolved)
+Last updated: 2026-06-08 (María session `7cf3310c` — S105: B1 go-live ruled "after the Lupin rename"; `fastapi_app`→`lupin_app` doc sweep + 3 B1-runbook refreshes)
 
 ## 📍 Resume Here (next session — pick up where we left off, per Rick 2026-06-07)
 
 **Session 104 (2026-06-07) state — the B1 closed-loop arbiter is BUILT, held for Rick's push, NOT yet live:**
-1. **B1 arbiter-vigilance (:8001 standalone) — all 4 lanes built + reviewer-passed, held** (Lupin, Tiberius crew: Tiffany/Mr-Radio/Krishna). Design: `src/rnd/2026.06.07-arbiter-deploy-architecture.md` (host-side under systemd, R0–R5, §4.1 verified liveness) + R0 decommission spec sibling. **GO-LIVE remaining (operational, Rick-gated):** Rick's push → R0 atomic cutover (flip `arbiter in-process bootstrap enabled=false` + bounce, break-before-make) → enable systemd unit → 2 build-verifies (R5 stamp-attribution on shared :7999; supervisor root-rung) → warm-up → Loop B actuates. *Tonight's Lupin work is push-only, NOT in production (no :8000 verify, no cutover) — Tiberius.*
+1. **B1 arbiter (:8001 standalone) — built (L1–L4 + R0) + reviewer-passed, HELD** (Lupin `622fe5c` @ wip-v0.1.8 — verified on disk 2026-06-08; Tiberius crew: Tiffany/Mr-Radio/Krishna). **⏳ GO-LIVE SEQUENCED AFTER the in-flight Lupin rename** `arbiter_vigilance`→`lupin_arbiter_app` & `fastapi_app`→`lupin_app` (Rick ruling 2026-06-08, María `7cf3310c`: cut over once on final names, not mid-rename — systemd unit/run-script/module paths all move). Design: `src/rnd/2026.06.07-arbiter-deploy-architecture.md` (host-side under systemd, R0–R5, §4.1 verified liveness) + R0 decommission spec sibling (both refreshed to new names + rename note). **GO-LIVE remaining (operational, Rick-gated, AFTER rename green):** R0 atomic cutover (flip `arbiter in-process bootstrap enabled=false` + bounce, break-before-make) → enable systemd unit → 2 build-verifies (R5 stamp-attribution on shared :7999; R1 supervisor root-rung) → warm-up → Loop B actuates. R0 flag currently `true` = in-process arbiter still live, :8001 not actuating.
 2. **Broadcast-listener fix** — Rick-greenlit, assigned to **Clayton** (honor prose/@-mention addresses, not just strict `@Persona:`); gated source-fix → Krishna L3 → held. Bug doc `src/rnd/2026.06.02-empty-broadcast-injection-bug.md`.
 3. **Global LoC roll-up** — DEFERRED to after Tiberius's Lupin per-repo CSV refresh (hub-spoke; he pings me, I aggregate last).
 4. **:8000 e2e test-debt** — Clayton owns (7 clusters, Lupin TODO); v2.2 cleared with git evidence; in progress.

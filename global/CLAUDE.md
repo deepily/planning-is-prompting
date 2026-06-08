@@ -387,7 +387,7 @@ project_root = cu.get_project_root()                          # reads LUPIN_ROOT
 full_path    = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
 ```
 
-**Bootstrap exception** — files that run BEFORE `cosa` is importable (entry points `src/fastapi_app/main.py`, standalone `src/scripts/*.py`, test `src/tests/conftest.py`) set `sys.path` manually first, then use `cu.get_project_root()` for everything after:
+**Bootstrap exception** — files that run BEFORE `cosa` is importable (entry points `src/lupin_app/main.py`, standalone `src/scripts/*.py`, test `src/tests/conftest.py`) set `sys.path` manually first, then use `cu.get_project_root()` for everything after:
 ```python
 import sys, os
 lupin_root = os.environ.get( "LUPIN_ROOT" )
