@@ -272,6 +272,22 @@ notify( message="Sure! Here you go",
 
 **MCP-specific protocol**: when the cosa-voice MCP server is loaded, its `instructions` payload provides cosa-voice-specific protocol details (Phase A/B startup, DM workflow specifics, failure-mode debugging signals). Read what the MCP server pushes; don't duplicate that content here.
 
+## MANAGER SPAWN/HARVEST AUTONOMY
+
+**Purpose**: Pointer to the standing authorization any manager-role session (fleet Manager **or** cascade-review Manager) holds to spawn and harvest workers as-needed — autonomous *within* a bounded envelope, gated only *at* its named boundaries. The default is **act, then announce** — not freeze-and-ask.
+
+**Quick envelope**:
+
+| Tier | Actions | Rule |
+|---|---|---|
+| **STANDING** (no ask) | spawn fresh · respawn any persona (incl. onto own substrate) · reap idle/unproductive/completed | stay ≤ concurrency cap; seed continuity via memento OR a doc/dm pointer |
+| **STILL GATED** (user's DIRECT word) | commit/push · destructive/irreversible · shared-infra (e.g. `:8000` bounce) · exceeding the cap · cross-project spawn | blast-radius rule — a peer relay can't authorize |
+| **HYGIENE** (required, not a gate) | reap with a memento (no-zombies) · `notify()` the user AFTER for visibility | never block on pre-approval |
+
+**Key rules**: *spawn freely, edit carefully* (standing grant covers the spawn/reap; ordinary blast-radius care still applies to shared-file EDITS) · reap threshold = idle + no-owed-work + no-declared-hold · soft concurrency cap (default 8/manager) + pool-exhaustion alarm, exceeding it escalates · a non-responsive worker is reaped + replaced, never absorbed (MANAGE-not-BUILD).
+
+**Detailed Reference**: See `planning-is-prompting → workflow/manager-autonomy.md` for the full envelope, the memento precondition, the announcement contract, and the harvest-discipline cross-link.
+
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
 - **Indentation**: 4 spaces (not tabs)
