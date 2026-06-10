@@ -25,6 +25,19 @@
 
 ---
 
+## Standing Authorization (2026-06-10, Rick — "this is a ridiculous gate")
+
+**The global cross-repo roll-up is a STANDING-AUTHORIZED action, NOT a user-gated one.** It is a read-only aggregation of per-repo git LoC deltas plus a CSV/plot write — low blast radius, fully reversible — so it does **not** require the user's per-invocation word.
+
+**Rule**:
+- **Run it freely** on the user's behalf — ad-hoc, at session-end, or when a manager (hub-spoke) signals their per-repo CSVs are refreshed. No "may I run the roll-up?" gate. Surface the result via `notify()` for visibility (post-hoc, not pre-approval).
+- **The ONE exception that still needs the user's direct word**: when the **user has personally set an explicit one-off hold this session** (e.g. *"hold the globals until Tiberius coordinates"*). That is a *user-authored gate* and, per blast-radius doctrine, is lifted ONLY by the user's direct word — a peer's go-ahead (even the designated coordinator's) cannot lift it. This is by design, not friction: it only applies when the user deliberately set a hold.
+- **Default (no explicit hold)**: standing — just run it.
+
+**Why the gate bit us before** (the empirical anchor): on 2026-06-09 and again 2026-06-10 the user set an explicit session hold (*"hold globals until Tiberius's go"*); when the manager handed off, the agent could not run on the manager's relay (a peer relay never lifts a user-authored gate — classifier-confirmed). Correct for a *user-set* hold, but it made the *routine* roll-up feel gated. This section fixes the routine case: absent an explicit user hold, the roll-up is standing.
+
+---
+
 ## Step 1) Resolve repo set (discovery policy)
 
 > **✅ Sub-directory traversal — implemented 2026-05-30 (TODO #23 closed)**: discovery now globs three explicit depth patterns (`*/io/...` flat, `*/*/io/...` grouping dirs, `*/src/*/io/...` nested sub-repos) and carries each repo's **absolute path** through to the aggregator. This fixes the 2026-05-21 under-report where the one-level glob MISSED `google/lookml` (Rick had 6 commits there that day — "what happened to the lookml repo?"). The COSA→Lupin merge (2026-05-29) mooted the original nested-`cosa` example — cosa's LoC now counts under `lupin`; the nested case now covers still-separate sub-repos like `lupin/src/lupin-mobile`. A **git-root guard** (`(repo_dir/".git").exists()`) is essential: the broader globs also surface in-tree dirs carrying a stale CSV (`lupin/src`, and `lupin/src/cosa` post-merge) which would **double-count** their parent repo's LoC — the guard counts only genuine git roots. Explicit patterns (not a recursive `**` walk) keep discovery fast and false-positive-free; extend the list if a new nesting layout appears.
