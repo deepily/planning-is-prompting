@@ -16,6 +16,9 @@ allowed_prefixes:
   - src/
   - workflow/
   - docs/
+  # LoC-delta CSVs from the session-end Step 6 summary live here; the workflow
+  # mandates a doc-link to them, so this prefix must be served (else 404).
+  - io/git-loc-delta/
 
 allowed_root_files:
   # Always part of PIP doctrine surface
