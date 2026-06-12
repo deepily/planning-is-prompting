@@ -55,7 +55,7 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 ## 4. The memento precondition (continuity vs. risk)
 
 - **Fresh spawn for new work = free** (standing, low-risk — a fresh worker is cheap to reap).
-- **Identity-continuous respawn** (rehydrating persona X onto their prior context) = **standing *with a continuity seed***: a `plan-memento` snapshot when one exists, **or** a doc / dm-history pointer when no memento exists. It is **not** user-gated — the originating-incident hesitation (memento-less respawn onto a peer's own substrate) is resolved toward *"do it, just provide a continuity pointer."*
+- **Identity-continuous respawn** (rehydrating persona X onto their prior context) = **standing *with a continuity seed***: a `plan-memento` snapshot when one exists, **or** a doc / dm-history pointer when no memento exists. It is **not** user-gated — the originating-incident hesitation (memento-less respawn onto a peer's own substrate) is resolved toward *"do it, just provide a continuity pointer."* **Takeover-spawn fallback (Rick-ruled 2026-06-12, focus-mode post-game P2): memento-first PRECEDENCE — archaeology (a partial-work inventory of the predecessor's on-disk state before any edit) is the continuity seed ONLY when no memento exists.** Founding case: Rio replacing quota-parked Tiffany archaeology-first — zero rework, attribution preserved; archaeology is slower and lossier than a memento, so it must never become the default path.
 - **Persona continuity is preserved across sessions and `/clear`** — designs default to PRESERVE the persona-per-repo, never re-allocate (so initiatives stay traceable through git log + history).
 
 Cross-ref: the `plan-memento` skill and the cascade Manager-rehydration item.
