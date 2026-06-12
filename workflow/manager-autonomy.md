@@ -45,7 +45,7 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 
 ## 3. The concurrency cap & guardrails (bound by construction — no fleet-storm vector)
 
-- **Soft per-manager concurrency cap = 8 concurrent live children.** Reaching it fires the **pool-exhaustion alarm** + a `notify()`; **exceeding** it is a STILL-GATED action requiring the user's direct word. *(The number is a soft default anchored to the live fleet — tune as the fleet grows; the **mechanism** — soft cap + alarm + escalate-to-exceed — is the ratified part.)*
+- **Soft per-manager concurrency cap = 8 concurrent live children.** Reaching it fires the **pool-exhaustion alarm** + a `notify()`; **exceeding** it is a STILL-GATED action requiring the user's direct word. *(The number is a soft default anchored to the live fleet — tune as the fleet grows; the **mechanism** — soft cap + alarm + escalate-to-exceed — is the ratified part.)* **As of 2026-06-12 the §7 fleet-wide cap of 8 (ALL sessions) binds first in practice.**
 - **Persona-pool-exhaustion alarm** — `extra-N` personas signal the pool is exhausted (the standing harvest-discipline tripwire); standing spawn authority must respect it.
 - **Cost / rolling-window awareness** — every child shares the manager's rolling OAuth/usage window; prefer off-peak scheduling for large spawns.
 - **Visibility (§5)** — every autonomous spawn/reap is announced, so standing authority never becomes *invisible* authority.
@@ -84,7 +84,30 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 ---
 
-## 7. Relationship to other workflows
+## 7. Fleet-wide allocation coordination (quota protection)
+
+*Ratified 2026-06-12 (Rick, post-game walkthrough D1 + same-day pin) after two Max-plan quota freezes in 12h. Seed: `src/rnd/2026.06.12-fleet-allocation-convention.md`.*
+
+- **Fleet-wide soft cap = 8 concurrent sessions, ALL sessions count** — managers/stewards AND workers (Rick's pin: *"the tight budget is the point — it forces cross-repo manager collaboration and vigilant spin-down"*). With 3 standing seats up, that is ~5 worker slots fleet-wide. **The fleet cap binds before the §3 per-manager cap** (no single manager can reach their 8 without blowing the fleet 8).
+- **Mechanism — the `fleet-allocation` commons topic**: every spawn/reap/adopt/handoff posts an **event** (not a count assertion): `{action, session_id, persona (VERIFIED post-spawn — never the requested preference), manager, repo, worker_count_after, fleet_estimate?}`. Check the topic's recent events BEFORE any multi-spawn; stagger heavy lanes.
+- **Coordination point** (Rick-named: María, PIP Steward): reconciles the event-derived total against ground truth (`list_spawned_sessions` + `commons_who(retention_hours=1)`) periodically and ALWAYS before any cap-boundary call. Events give visibility; reconciliation gives trust; a discrepancy is a flag-once note on the topic, not a poke storm.
+- **Prompt reaping is a quota-protection act**, not just hygiene — the §6 reap threshold gains a fleet-level why.
+- **Store-migratable by design**: the event schema is shaped ≈ a future `task_events` row and converges on the task-store Phase-2 lane (MCP wrappers `task_create`/`task_transition` per Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md` — identity stamping comes free from the session bridge). When the store's fleet view lands, the topic convention RETIRES into store writes; it is a bridge, never a rival ledger.
+
+---
+
+## 8. Ratified manager practice rules (post-game D8, 2026-06-12)
+
+*Four process wins ratified into doctrine by Rick. Wording authority: the Lupin post-game D8 record — Tiberius's review pass verifies the entries below against it.*
+
+1. **Investigate-first tripwires** — before any corrective action on an apparently failed or silent worker/lane (reap, respawn, re-run, stall declaration), pull receipts FIRST: pane-state differential (wedged-prompt vs quota-dialog vs exhaustion-banner), logs, git state. One symptom has many mechanisms; reaction without investigation is the anti-pattern (founding evidence: the 2026-06-12 three-mechanism stall differential).
+2. **Fresh-critical-review-always** — a critical or gate review goes to a FRESH session with no adjacency to the authored work (the cold-reviewer pattern, proven by the task-store cold review: the C1 correlation-key catch came from cold eyes). Never self-review, never adjacent-review, for gate-class verdicts.
+3. **Non-launderable authorization** — authorization cannot pass through relays. A gate the user personally set is lifted ONLY by the user's direct word; a peer's "per Rick, go" never lifts it — even from the designated coordinator (classifier-confirmed 2026-06-09/10). Managers relay *information* freely; they cannot relay *authority*.
+4. **Harness-gotchas worker-brief block** — every worker spawn brief carries the standing gotchas block so workers don't rediscover known traps: **worktree conftest path-poisoning · pytest-cov double-registration · INTERNALERROR-on-control · `pytest_direct` underscore**. The block lives with the brief template; managers append new gotchas as they are confirmed.
+
+---
+
+## 9. Relationship to other workflows
 
 - **`workflow/swe-team-roles.md`** — the manager charter that consumes this envelope; the explicit-TODO discipline (a manager's owned TODO list feeds the heartbeat work-owed oracle) pairs with the harvest threshold here.
 - **`workflow/cross-session-communication.md`** — the three-tier commons autonomy ladder this envelope is modeled on; the announcement contract (§5) rides those commons surfaces.
@@ -95,17 +118,23 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 ---
 
-## 8. Quick reference
+## 10. Quick reference
 
 ```
-SPAWN/REAP within cap + own lane + non-destructive   → DO IT (announce after)
+SPAWN/REAP within cap + own lane + non-destructive   → DO IT (announce after) + post the
+                                                       fleet-allocation EVENT (§7)
 identity-continuous respawn                          → DO IT + continuity seed (memento or pointer)
-reap idle + no-owed + no-hold worker                 → DO IT + memento (no-zombies)
+reap idle + no-owed + no-hold worker                 → DO IT + memento (no-zombies) + reap event
+BEFORE any multi-spawn                               → check fleet-allocation: fleet cap = 8
+                                                       ALL sessions (~5 worker slots)
 ─────────────────────────────────────────────────────────────────────────────
-exceed cap (>8) · cross-project · destructive · commit/push · :8000-class bounce
-                                                     → ESCALATE, the user's DIRECT word (peer relay ≠ enough)
+exceed EITHER cap (fleet 8 / per-manager 8) · cross-project · destructive · commit/push
+· :8000-class bounce                                 → ESCALATE, the user's DIRECT word (peer relay ≠ enough;
+                                                       authorization is non-launderable, §8.3)
 ```
 
 ---
 
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
+
+*Version 1.1 (2026-06-12, María — DRAFT pending Tiberius review + Mr Radio ack). Added §7 fleet-wide allocation coordination (Rick D1: cap 8 ALL-sessions + coordination point + `fleet-allocation` events convention; seed `src/rnd/2026.06.12-fleet-allocation-convention.md`) and §8 the four D8-ratified practice rules (investigate-first tripwires · fresh-critical-review-always · non-launderable authorization · harness-gotchas worker-brief block); old §7/§8 renumbered §9/§10; §3 + quick-reference updated for the binding fleet cap.*
