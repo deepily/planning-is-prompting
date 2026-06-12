@@ -10,7 +10,7 @@
 
 ## 1. The one-sentence practice
 
-**Use TodoWrite as you always have; the store follows you.** The `PostToolUse(TodoWrite)` hook mirrors your native task list into the store (correlation-keyed upserts — no duplicates on rewrites). The disciplines below cover the cases the hook canNOT infer: cross-session obligations, receipts, blocks, and gates.
+**Use your harness task list as you always have; the store follows you.** Whatever the harness's native surface is — the Task\* tool family (TaskCreate/TaskUpdate/TaskList/TaskGet) on current harnesses, TodoWrite on older ones — the `PostToolUse` hook mirrors it into the store via correlation-keyed upserts, no duplicates on rewrites. (Don't pin a tool name in your own practice docs either; `stop.py` §0.3 corrected the same retired-name assumption.) **One mechanical limit (Tiffany flag #3, Phase-2 contract)**: a hook-mirrored completion lands as **`review`, never `done`** — the hook has no receipts to attach, and `→done` requires them. **`done` is always an explicit, receipted act.** The disciplines below cover what the hook canNOT infer: cross-session obligations, receipts, blocks, and gates.
 
 ## 2. Who writes, who reads (F4 — managers-first)
 
@@ -37,7 +37,7 @@ Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never s
 - **`→done` REQUIRES `receipt_refs`** — key-whitelisted + shape-validated server-side (`commit` 7–40 hex · `qid` uuid · `test_run` id · `doc_path` exists · `log_line` `<path>:<lineno>` exists). A bare "trust me" completion is REJECTED with the server's errors verbatim. This is the no-confabulation rule, mechanized: if you can't cite a receipt, the work isn't done.
 - **`→blocked` REQUIRES BOTH** ≥1 typed `blocked_by` ref (`{kind: item|persona|user, id}`) AND `next_chase_ts` — a blocked item says what it waits ON and when it will be chased. No "pending X" graves. `{kind:user}` ⇒ the oracle treats it as not-owed (STALL ≠ QUIET).
 - **`done` and `dropped` are TERMINAL** — no transitions out; corrections are a new item linking the old id.
-- **`→dropped` carries a reason** (Phase-2 backlog C-item; until enforced, give one anyway — it's the escape hatch around the receipts rule).
+- **`→dropped` REQUIRES a reason — ENFORCED** (C12 pulled forward, Tiberius-ruled 2026-06-12 after Tiffany's wire-gap flag): `task_events` carries a nullable `reason` column; the server rejects a reasonless drop. The escape hatch around the receipts rule is closed.
 - **`authority` rides every write** (`standing` | `user_direct` | `manager_relay`) — the blast-radius model joins the audit trail.
 
 ## 5. The truth boundary (F3 — what stays markdown)
@@ -59,9 +59,9 @@ Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never s
 
 ## 7. Correlation — what sessions must know
 
-- Same-subject TodoWrite rewrites UPSERT (no duplicates); a changed subject supersedes (old item `→dropped` reason `superseded-by-rewrite`).
+- Same-subject rewrites UPSERT (no duplicates); a changed subject supersedes (old item `→dropped` reason `superseded-by-rewrite`). On Task\*-tool harnesses the hook payload carries the stable harness task id, so derivation precedence (a) applies universally and the (b) content-hash fallback is dormant (Tiffany flag #2).
 - `/clear` re-correlates via the STABLE session id — your list survives rehydration.
-- **Cross-SESSION respawn does NOT auto-correlate** (successor hashes to its own sid): at session-start seed, re-register your harness task ids onto inherited items' `correlation_key` (Phase-2 fix; until built, expect forked items and drop one — fail-visible by design).
+- **Cross-SESSION respawn does NOT auto-correlate** (successor hashes to its own sid): at session-start seed, ADOPT inherited items via the audited `POST /api/tasks/{id}/correlate` endpoint (ruled 2026-06-12 — re-registers your harness task id onto the item's `correlation_key`, with the adoption on the event trail). A respawned session that skips adoption forks items — fail-visible by design.
 
 ## 8. Failure modes
 
@@ -81,3 +81,4 @@ Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never s
 ## Version History
 
 - **v0.1 (2026-06-12, María)** — DRAFT authored S109 under Rick's AFK push directive, ahead of the Phase-2 write-path kickoff (D3) so the hook crew builds against stated practice. Pending: hook-crew sync, `taskstore_*` naming review, Phase-4 session-end §-addition.
+- **v0.2 (2026-06-12, María)** — pre-freeze sync FOLDED same-hour (the read-before-freeze loop working as designed): Tiffany flags ×3 (harness Task\* vs retired TodoWrite naming → generalized to harness-task-list-first per Tiberius's steer · hook-mirrored completion lands `review` never `done`, done = explicit+receipted act · dropped-reason wire gap) + Tiberius rulings ×2 (C12 pulled forward — `task_events.reason` + dropped-requires-reason now ENFORCED · audited `POST /api/tasks/{id}/correlate` adoption endpoint closes the cross-session respawn residual).
