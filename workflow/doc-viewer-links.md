@@ -58,7 +58,7 @@ A doc-link is a markdown anchor of shape:
 **MANDATE**: doc-links live ONLY in:
 
 - The `abstract` parameter of `notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `converse()`, `ask_open_ended_batch()`
-- The body of `commons_post()`, `commons_send_to()`, `commons_ask_async()`, `commons_ask_sync()`
+- The body of `commons_post()`, `dm_send()`, and the (deprecated) `commons_send_to()` / `commons_ask_async()` / `commons_ask_sync()` DM-bearing tools
 
 **MANDATE**: doc-links MUST NOT appear in:
 

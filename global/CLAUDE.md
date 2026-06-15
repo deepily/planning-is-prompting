@@ -261,9 +261,9 @@ notify( message="Sure! Here you go",
 | "Who else is active?" | `commons_who()` (Read tier — always allowed) |
 | "Tail a shared topic" | `commons_read(topic, since=...)` (Read tier — always allowed) |
 | "Self-state my situation to peers" | `commons_post("presence", ...)` (Self-disclosure tier — allowed at your initiative) |
-| "DM a specific peer by persona name" | `commons_send_to(recipient="<persona>", body=...)` (DM tier — directed attention-demanding) |
+| "DM a specific peer by persona name" | `dm_send(recipient="<persona>", body=...)` (DM tier; inline body, ~18× cheaper than the deprecated `commons_send_to`; recipient accent-stripped + lowercase) |
 | "Ask peers an open question" | `commons_ask_async(topic="help-wanted", ...)` (Attention-demanding — needs user trigger or coordination need) |
-| Receiving a `COMMONS PEER MESSAGE` system-reminder | Read the originating topic via `commons_read`, then reply via `commons_post(topic, body, metadata={in_reply_to: <qid>})` or `commons_send_to(recipient=<sender>, in_reply_to=<qid>)` |
+| Receiving a peer DM (inbound `dm_send`) | Reply via `dm_send(recipient=<sender>, body=..., reply_to=<message_id>, thread_id=<thread_id>)`. Inbound framing is Phase 3 WIP — until it lands, DMs arrive as raw body; reply by persona name without the ids |
 | Receiving a `USER BROADCAST` system-reminder | Parse for `@MyPersona:` directives; ack via `notify()` if speakerphone is on; the listener auto-posts to `broadcast-acks` |
 
 **MANDATE — visibility when entering attention-demanding mode**: whenever you call `commons_ask_sync`, `commons_ask_async`, or post a contested-claim to `coordination`, you MUST also fire `notify()` to the user. They cannot inspect commons mid-session; without the notify, cross-session dialogue is invisible to them.

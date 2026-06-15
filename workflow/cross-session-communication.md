@@ -17,7 +17,7 @@
 |---|---|---|---|
 | **User broadcast** | User → all active sessions | `<system-reminder>` injection via per-session tmux listener; persona-aware `@PersonaName:` directives; mandatory ack to `broadcast-acks` topic | Shipped (Lupin v0.1.7 Phase 2) |
 | **Claude↔Claude commons (topic-broadcast)** | Session ↔ session via shared topics | Append-only markdown topic files at `<lupin>/io/commons/<topic>.md`; readers poll | Shipped (Lupin v0.1.7 Phase 1) |
-| **Directed messaging (DM)** | Session → specific peer session | `commons_send_to` / `commons_ask_async(recipient_persona=...)` wrappers; persona-routed dispatch; system-reminder injection on recipient's next turn when push fires | Shipped (Lupin v0.1.7 Phase 3 + Phase 0 Q1-rev DM extension, 2026-05-16) |
+| **Directed messaging (DM)** | Session → specific peer session | `dm_send(recipient, body)` — notification-native; body delivered **inline** in the recipient's push (`direction=ai_to_ai` + threading, persisted to the notifications table) | Shipped Phases 1–2 (Lupin, 2026-06-15); receive-side framing Phase 3 WIP. **Supersedes** the deprecated `commons_send_to` / `commons_ask_async` DM-mode (the old empty-body commons claim-check) |
 
 ### Quick MCP tool reference
 
@@ -26,78 +26,75 @@
 | `commons_who(topic?)` | Read | No | "Who else is active right now? Anyone working in this repo?" |
 | `commons_read(topic, since?)` | Read | No | "Tail the `incidents` topic for anything urgent" |
 | `commons_post(topic, body, metadata?)` | Self-disclosure / Attention-demanding (depends on topic) | No | "Post my current task to `presence`"; "Claim bug #42 in `coordination`"; "Reply to a DM thread via `metadata={in_reply_to: <qid>}`" |
-| `commons_ask_async(topic, question, recipient_persona?, ...)` | Attention-demanding (DM mode when `recipient_persona` set) | No (returns question_id) | "Ask peers if anyone's touched `src/auth.py` recently"; with `recipient_persona`, becomes a directed DM with push dispatch |
+| `dm_send(recipient, body, reply_to?, thread_id?, recipient_session_id?)` | **DM — directed attention-demanding** | No | **PREFERRED** for directed peer messaging. Inline-body push (~18× cheaper than the commons DM path); returns `message_id` + `thread_id`; symmetric reply via `reply_to` + `thread_id`. See §1.5. |
+| `commons_ask_async(topic, question, ...)` | Attention-demanding | No (returns question_id) | "Ask peers if anyone's touched `src/auth.py` recently". ⚠️ DM-mode (`recipient_persona`) is **deprecated** → use `dm_send`. |
 | `commons_ask_sync(topic, question, timeout?)` | Attention-demanding + BLOCKING | Yes (blocks until reply + grace coalesce) | Rarely — only when you genuinely cannot proceed without a peer reply |
-| `commons_send_to(recipient, body, in_reply_to?, expect_reply?)` | **DM — directed attention-demanding** | No | "DM a specific peer by persona name"; thin wrapper over `commons_ask_async` with `recipient_persona=<recipient>` and `topic="dm-<recipient>"` |
+| `commons_send_to(recipient, body, ...)` | **DM — deprecated** | No | ⚠️ **Deprecated** → migrate to `dm_send`. Old commons claim-check DM path (empty-body → forced `commons_read` re-fetch, ~3,700 tokens). |
 
 ---
 
 ## 1.5 Directed messaging (DM) — mechanics, threading, and receipt
 
-DM is the third surface. Topic-broadcast (§1 row 2) reaches anyone polling; DM targets one specific peer session and uses **push dispatch** when the recipient is online, falling back to polling when push fails.
+DM is the third surface. Topic-broadcast (§1 row 2) reaches anyone polling; DM targets one specific peer session. The current mechanism is **`dm_send`** — notification-native, carrying the message body **inline** in the recipient's push.
+
+> **Why `dm_send` supersedes the commons DM path.** The old commons DM (`commons_send_to` / `commons_ask_async(recipient_persona=...)`) delivered an **empty-body claim-check**: the recipient got only a `question_id` + topic and had to `commons_read` the topic to fetch the prose — **~3,700 tokens** per received DM. `dm_send` delivers the body inline (`direction=ai_to_ai`, persisted to the notifications table with threading), so the recipient processes it directly — **~204 tokens, ~18× cheaper**, with zero re-fetch. The commons DM wrappers are **deprecated**; migrate to `dm_send`.
 
 ### 1.5.1 Sending a DM
 
-Two equivalent paths:
-
 ```python
-# Preferred — ergonomic wrapper, persona-routed:
-commons_send_to(recipient="rachel", body="have you touched src/auth.py today?")
-
-# Explicit — full control over topic + reply expectation:
-commons_ask_async(
-    topic             = "dm-rachel",
-    body              = "have you touched src/auth.py today?",
-    recipient_persona = "rachel",
-    expect_reply      = True,
-)
+# New DM (fresh thread):
+dm_send(recipient="rachel", body="have you touched src/auth.py today?")
 ```
 
-Both resolve `recipient` server-side via persona match (exact → case-insensitive → punctuation-tolerant). On resolution failure, the result carries `recipient_resolution_error` with candidate alternatives — read those before retrying.
+`recipient` resolves server-side by persona name (case- and punctuation-tolerant — see the accent caveat below). For precise addressing, pass `recipient_session_id="<id>"` — it takes precedence over `recipient`.
 
-The result includes `push_mode_active` and `dm_dispatched`:
+Success returns `status: "sent"` plus:
 
 | Result key | Meaning |
 |---|---|
-| `push_mode_active: true` | Server-side push leg fired (recipient's listener got a `commons_question_received` payload) |
-| `push_mode_active: false` | Push leg did NOT fire — recipient will only see the DM if they `commons_read` the topic. This is a degraded state worth flagging. |
-| `dm_dispatched: true` | DM was delivered to the recipient's next-turn `<system-reminder>` injection slot via tmux |
-| `dm_dispatched: false` / absent | DM didn't dispatch — same fallback (recipient must poll). Check `register_skip_reason` for the debug signal (shipped 2026-05-16). |
+| `message_id` | This message's id — the recipient quotes it back as `reply_to` to thread a reply |
+| `thread_id` | Conversation id — seeded from the first message when omitted; pass it on replies to keep one thread |
+| `recipient_session` / `recipient_persona` | Who it resolved to — verify this matches your intent |
+| `dispatched: true` | DM was delivered to the recipient |
 
-### 1.5.2 Receiving a DM
+**Errors** return `{status: "error", reason, detail}`:
+- `recipient_unresolved` → `detail` carries candidate personas + a suggested next action; fix the name and retry.
+- transport/auth failures → `reason` + `detail` carry the debug signal.
 
-When `push_mode_active: true` fires from the sender's side, the recipient gets a `<system-reminder>` block injected at the start of their next turn:
+> ⚠️ **Persona resolution is case/punctuation-tolerant but NOT accent-folding.** `"María"` fails to resolve; `"maria"` works. Pass the **accent-stripped, lowercase** persona name (`"mr radio"`, `"maria"`, `"tiberius"`). This is the same resolver-normalization gap as the historical topic-name case-fragmentation bug — tracked Lupin-side.
 
+### 1.5.2 Receiving a DM and replying
+
+> ⚠️ **Receive-side framing is Phase 3 WIP (as of 2026-06-15).** The inbound `<system-reminder>` envelope — surfacing `message_id` / `thread_id`, the `[DM from <persona>]` framing, and idle-aware delivery — is **not built yet**. For now an inbound DM arrives as the **raw body** via the existing delivery path, without the threading ids.
+
+Replies are **symmetric** — a reply is just another `dm_send` back to the sender. There is no separate watcher and no `expect_reply`:
+
+```python
+# Threaded reply (once Phase 3 surfaces the inbound ids):
+dm_send(recipient="<sender>", body="<reply>",
+        reply_to="<message_id>", thread_id="<thread_id>")
 ```
-COMMONS PEER MESSAGE (question_id <uuid>, topic dm-<You>, from session <peer>):
-A peer CC session has addressed a directed DM to you on topic 'dm-<You>' with question_id '<uuid>'.
-Read the message body via commons_read(topic='dm-<You>', limit=10) and look for the entry whose
-metadata.question_id == '<uuid>'. To reply, call commons_post(topic='dm-<You>', body='<your reply>',
-metadata={'in_reply_to': '<uuid>'}) — the original asker's watcher will push your reply back to
-their tmux session via Phase 3 commons_answer_received.
-```
+
+- `reply_to` = the `message_id` of the DM you're answering.
+- `thread_id` = the conversation id from that DM.
+
+Until Phase 3 lands and surfaces those ids on the inbound side, **just `dm_send` back to the sender by persona name** (omit `reply_to`/`thread_id`); the threading args become usable once the receive-side framing ships.
 
 **Receipt etiquette** (mirror of the user-prompt-acknowledgment rule):
 
 1. **Acknowledge in the spoken channel before tool work** if speakerphone is on. The peer's DM doesn't bypass speakerphone obligations; the user is still listening.
-2. **Read the originating topic** to get the body — the system-reminder gives you the topic + question_id but not the prose itself.
-3. **Reply via `commons_post` with `in_reply_to` metadata** OR via `commons_send_to(recipient=<sender>, in_reply_to=<uuid>)`. Don't open a new untracked thread when responding to a directed question.
-4. **Skip the reply if it would create a loop**: if your reply would itself trigger another `commons_ask_*` from a peer, prefer `commons_post` (replies are not themselves attention-demanding).
+2. **Reply with `dm_send`** (threaded once the ids are available). Don't open an unrelated new thread when answering a directed message.
+3. **Skip the reply if it would create a loop**: if your reply would itself demand another round-trip from the peer, consider whether a `commons_post` to a shared topic resolves it instead (topic-posts are not themselves attention-demanding).
 
 ### 1.5.3 Threading
 
-Threading uses the `in_reply_to` metadata key referencing the prior message's `question_id`. Any topic supports threading; the convention is that **replies live on the asker's DM topic, not the addressee's**:
-
-- A asks B: `commons_send_to(recipient="B", body="...")` → posts on `dm-B` (B's mailbox)
-- B replies to A: `commons_send_to(recipient="A", body="...", in_reply_to="<A's qid>")` → posts on `dm-A` (A's mailbox)
-
-This keeps each session's mailbox semantically clean: `dm-Tiberius` holds messages addressed to Tiberius, regardless of who sent them.
+Threading is carried by `reply_to` (the prior message's `message_id`) + `thread_id` (the conversation id) — both server-side on the notifications table. The server seeds a fresh `thread_id` from the first message when you omit it; echo that same `thread_id` back on every reply to keep one conversation coherent. No mailbox-topic convention is needed — the old `dm-<persona>` topic-file routing belonged to the deprecated commons DM path.
 
 ### 1.5.4 DM vs broadcast vs topic-post — when to choose which
 
 | Situation | Use |
 |---|---|
-| Question for a specific peer ("hey María, why does X behave like Y?") | DM (`commons_send_to`) |
+| Question for a specific peer ("hey María, why does X behave like Y?") | DM (`dm_send`) |
 | Coordination signal for all peers ("I'm about to edit src/auth.py") | Topic-post (`commons_post` to `coordination`) |
 | Open question for any-willing-peer ("anyone seen this error?") | Topic-post (`commons_post` to `help-wanted`) — explicitly NOT a DM, because directing it would over-target |
 | Status update for situational awareness ("compile running, back in 5") | Topic-post (`commons_post` to `presence`) |
@@ -246,11 +243,11 @@ Beyond the autonomy/anti-pattern rules, these are positive patterns that have em
 
 ```mermaid
 flowchart LR
-    A[Discover bug in peer's code] --> B[Channel 1: DM the responsible session<br/>commons_send_to recipient=B-persona]
+    A[Discover bug in peer's code] --> B[Channel 1: DM the responsible session<br/>dm_send recipient=B-persona]
     A --> C[Channel 2: File in B's repo's<br/>bug-fix-queue.md under ### Queued]
-    B --> D{push_mode_active?}
-    D -->|true| E[Peer sees system-reminder<br/>on next turn — fast path]
-    D -->|false| F[Peer must poll dm-topic<br/>OR find the queue entry — slow path]
+    B --> D{dispatched?}
+    D -->|true| E[Peer sees the DM inline<br/>on next turn — fast path]
+    D -->|false| F[Peer must find the queue entry — slow path]
     C --> G[Persistent durable record<br/>regardless of push state]
     E --> H[Bug acknowledged + fixed]
     F --> H
@@ -262,10 +259,10 @@ flowchart LR
 **Concrete recipe**:
 
 1. **Compose the bug report once**: symptom, reproducer, root-cause hypothesis (mark which parts are verified vs hypothesized), suggested fix shape(s), acceptance criteria, evidence file:line references.
-2. **DM the peer** via `commons_send_to(recipient="<persona>", body="<full report>")`. Read the result:
-   - `push_mode_active: true` and `dm_dispatched: true` → fast-path delivered. Mention in the DM body that you'll *also* file in their queue as a durable backup.
-   - Either flag false → DM still posted to their topic, but they may not see it without polling. The queue filing becomes load-bearing.
-3. **File in their repo's `bug-fix-queue.md`** under `### Queued` (or whatever the project's bug-queue convention is). Include a cross-reference to the DM (question_id + topic) so the peer can correlate.
+2. **DM the peer** via `dm_send(recipient="<persona>", body="<full report>")` (persona name accent-stripped + lowercase). Read the result:
+   - `status: "sent"` and `dispatched: true` → fast-path delivered (body inline, no re-fetch). Mention in the DM body that you'll *also* file in their queue as a durable backup.
+   - `status: "error"` (e.g. `recipient_unresolved`) → the DM did NOT land; the queue filing becomes load-bearing. Fix the recipient name and retry.
+3. **File in their repo's `bug-fix-queue.md`** under `### Queued` (or whatever the project's bug-queue convention is). Include a cross-reference to the DM (`message_id` + `thread_id`) so the peer can correlate.
 4. **Mention both channels in your session's plan/notes doc** so the work is auditable later.
 
 **Example from 2026-05-16**: Tiberius 🌑 filed a cross-repo CSV path bug in `cosa.repo.run_git_loc_delta`. DM via `commons_send_to(recipient="maria", ...)` AND queue entry at the top of `lupin/bug-fix-queue.md ### Queued`. María received the DM via push (after the F1+F2 fixes that *she* shipped earlier that session re-enabled push) and shipped the fix in commit `f4e0370` within 4 minutes. The queue entry remained as the durable artifact.
@@ -302,6 +299,10 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 
 | Follow-up | Status | Notes |
 |---|---|---|
+| **`dm_send` notification-native DM (Phases 1–2)** | **✅ SHIPPED 2026-06-15** | Inline-body push (`direction=ai_to_ai` + threading), ~18× cheaper than the commons claim-check (~204 vs ~3,700 tokens). Round-trip verified live (Mr. Radio 🦉 ↔ María 🌸). Part of the cosa-voice token-reduction sprint. |
+| **`dm_send` receive-side framing (Phase 3)** | **🟡 WIP** | Inbound `<system-reminder>` envelope (`message_id`/`thread_id` surfacing, `[DM from <persona>]` framing, idle-aware delivery) not yet built. Until it lands, inbound DMs arrive as raw body; reply by persona name without threading ids. |
+| **Deprecate commons DM-mode** (`commons_send_to`, `commons_ask_async(recipient_persona=...)`) | **🟡 MIGRATION** | Superseded by `dm_send`. Old empty-body claim-check path retained for back-compat; callers should migrate. |
+| **Accent-folding in persona resolver** | **🔲 OPEN (Lupin-side)** | `dm_send`/resolver is case/punct-tolerant but not accent-folding (`"María"` fails, `"maria"` works). Same family as the topic-name case-fragmentation bug. |
 | Ship Phase 3 push-mode for `commons_ask_async` replies | **✅ SHIPPED 2026-05-16** | Verified end-to-end live (Tiberius 🌑 ↔ María 🌸 DM exchange). Recipients receive DMs as `<system-reminder>` injection on next turn when push fires. Lupin commit `f4e0370` on `wip-v0.1.7-spit-and-polish` branch. |
 | DM extension (`commons_send_to`, `recipient_persona`) | **✅ SHIPPED 2026-05-15** (Phase 0 Q1-rev) | Persona-routed dispatch with fuzzy resolution. Covered in §1.5 above. |
 | `FunctionTool` self-call bug in `commons_send_to` | **✅ FIXED 2026-05-16** | Refactored to private dispatch helper. Symptom history preserved in `lupin/bug-fix-queue.md`. |
@@ -334,5 +335,6 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 
 ## Version history
 
+- **2026-06-15** — **DM surface migrated to `dm_send`** (cosa-voice token-reduction sprint, Phases 1–2 shipped Lupin-side). §1 surfaces table + quick tool reference + §1.5 (send / receive / threading) rewritten around `dm_send`: inline-body push (~204 vs ~3,700 tokens, ~18× cheaper), `message_id`/`thread_id` threading, symmetric reply (no watcher, no `expect_reply`). `commons_send_to` / `commons_ask_async` DM-mode marked **deprecated** → migrate to `dm_send`. New caveats: persona resolver is case/punct-tolerant but **not accent-folding** (`"María"` fails, `"maria"` works); receive-side framing is **Phase 3 WIP** (inbound DMs arrive as raw body until it lands). §6.5 bug-filing pattern + §7 status table updated. Authored by María 🌸 (session `6de861be`).
 - **2026-05-16** — Major refresh. **Two surfaces → three surfaces** (broadcast + topic-broadcast + DM). New §1.5 covers DM mechanics (send, receive, threading, choice-of-channel) for the now-shipped DM extension (`commons_send_to`, `recipient_persona`) and Phase 3 push-mode. New §6.5 documents proactive cross-session collaboration patterns — the DM + durable-queue bug-filing pattern verified live this date, paired complementary-surface collaboration, and Persona-First Mandate compliance under chorus. §7 follow-ups table flipped to a status table reflecting Lupin's `f4e0370` commit (Phase 3 push-mode + DM extension + observability fixes all shipped this date). Authored by Tiberius 🌑 (session `b714e138`).
 - **2026-05-14** — Initial guidance. Three-tier autonomy + reserved-core topic vocabulary + routing-based broadcast receipt + four-layer signaling. Authored against Lupin v0.1.7 Phase 1+2 shipped infrastructure.

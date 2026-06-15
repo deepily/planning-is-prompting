@@ -248,9 +248,9 @@ NOTIFICATION VERIFICATION:
 
 ---
 
-### Related: cross-session communication tools (`commons_*`)
+### Related: cross-session communication tools (`commons_*` + `dm_send`)
 
-The cosa-voice MCP server also exposes five `commons_*` tools for Claude↔Claude blackboard communication: `commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`. These are NOT covered in this document — they have their own behavioral guidance governing when and how sessions may use them.
+The cosa-voice MCP server also exposes Claude↔Claude cross-session tools: the `commons_*` blackboard tools (`commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`) and **`dm_send`** for directed peer DMs — the notification-native, inline-body successor to the deprecated `commons_send_to` / `commons_ask_async` DM-mode (~18× cheaper). These are NOT covered in this document — they have their own behavioral guidance governing when and how sessions may use them.
 
 **See**: planning-is-prompting → workflow/cross-session-communication.md for the three-tier autonomy rules, reserved topic vocabulary, broadcast receipt contract, and anti-patterns.
 

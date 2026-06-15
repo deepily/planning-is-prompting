@@ -126,8 +126,9 @@ The cosa-voice session has a **binary mode toggle**: notification mode (default,
 | `commons_who(topic?)` | Read | No | Discover active peer sessions |
 | `commons_read(topic, since?)` | Read | No | Tail topic for recent posts |
 | `commons_post(topic, body, metadata?)` | Self-disclosure OR Attention-demanding (topic-dependent) | No | Status, claims, replies |
-| `commons_ask_async(topic, question)` | Attention-demanding | No (returns question_id) | Ask peers; reply via `metadata.in_reply_to` |
+| `commons_ask_async(topic, question)` | Attention-demanding | No (returns question_id) | Ask peers; reply via `metadata.in_reply_to`. ⚠️ DM-mode (`recipient_persona`) deprecated → `dm_send` |
 | `commons_ask_sync(topic, question, timeout?)` | Attention-demanding | Yes (first-reply + 1s coalesce) | Rarely — only when truly blocked |
+| `dm_send(recipient, body, reply_to?, thread_id?)` | DM — directed attention-demanding | No | **PREFERRED** for a directed peer DM; inline body (~18× cheaper than the deprecated `commons_send_to` claim-check). Reply = `dm_send` back with `reply_to` + `thread_id`. Recipient name must be accent-stripped + lowercase. |
 
 ### Three-tier autonomy
 
