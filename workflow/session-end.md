@@ -28,7 +28,7 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 ## ⚠️ Conversation Mode Awareness
 
-This wrap-up ritual has 5–7 user-decision gates (commit message approval, push approval, archive decision, etc.). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
+This wrap-up ritual has a few user-decision gates (**push approval**, archive decision, conflict resolution, etc.). **The commit itself is NOT a gate** — committing to the working branch is standing manager/session authority once the quality gate (green AND reviewed) is met; only **push** remains the user's call (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
 
 **Mandates in conversation mode**:
 - All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`) MUST use `priority="high"`. Some legacy calls in this workflow may not — verify before use.
@@ -50,7 +50,7 @@ This wrap-up ritual has 5–7 user-decision gates (commit message approval, push
 **MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 - `notify()`: Fire-and-forget (progress updates, completions)
 - `ask_yes_no()`: Ternary yes/no/neither decisions (response may include `[comment: ...]` qualifier on any value - use `startswith("yes" / "no" / "neither")`; on `neither`, re-frame rather than infer)
-- `ask_multiple_choice()`: Menu selections (commit approval, archive decision)
+- `ask_multiple_choice()`: Menu selections (archive decision, conflict resolution; **not** commit approval — commit is autonomous)
 - `ask_open_ended_batch()`: Batch open-ended questions (single screen, blocking)
 - `converse()`: Open-ended questions
 
@@ -87,23 +87,12 @@ notify(
     abstract="**Warnings**:\n- Unused import in auth.py:12\n- Deprecated API call in utils.py:45"
 )
 
-# Blocking decisions with abstract (shows file list in UI, not spoken)
-ask_multiple_choice(
-    questions=[
-        {
-            "question": "Commit approval needed - how would you like to proceed?",
-            "header": "Commit",
-            "multiSelect": False,
-            "options": [
-                {"label": "Commit only", "description": "Keep changes local"},
-                {"label": "Commit and push", "description": "Sync to remote"},
-                {"label": "Modify", "description": "Edit commit message"},
-                {"label": "Cancel", "description": "Skip commit"}
-            ]
-        }
-    ],
-    title="Commit Decision",
-    abstract="**Staged files**: 5 modified, 2 new\n**Lines**: +124/-45"
+# Blocking decision — the retained PUSH gate (commit already happened autonomously)
+ask_yes_no(
+    question="Push this session's commit(s) to origin now?",
+    priority="high",
+    timeout_seconds=300,
+    default="no"
 )
 ```
 
@@ -694,9 +683,9 @@ If a v1.0 manifest is detected (single-session format):
 
 ---
 
-## 4) Draft, Approve, and Execute Commit
+## 4) Draft, Commit (autonomously), Receipt, then PUSH Decision
 
-This step combines commit message drafting, user approval, and execution into a single unified workflow to eliminate duplication.
+This step drafts the commit message, **commits autonomously** (no user approval — commit is standing manager/session authority once the quality gate is met), posts a brief **commit receipt**, and then presents the **one retained user gate: push**.
 
 ### 4.1) Analyze Changes and Apply Nested Repo Filtering
 
@@ -745,128 +734,73 @@ This step combines commit message drafting, user approval, and execution into a 
   Co-Authored-By: Claude <noreply@anthropic.com>
   ```
 
-### 4.3) Present for Approval (Single Decision Point)
+### 4.3) Commit Autonomously (no approval gate)
 
-**Send blocking notification and display options**:
+**Authority**: committing to the working branch is **standing manager/session authority** once the quality gate is satisfied — the user is **NOT** the commit gate (Rick, 2026-06-16: "I do not want to be the gate for commits and merges"; D1 guided-walkthrough ruling). Do **NOT** present a commit-approval menu. The commit happens; it then **announces itself** via a receipt (Step 4.4).
 
+**Quality gate (self-held, replaces the user gate)** — before committing, confirm both:
+- **Green** — tests pass where a test surface exists (see `workflow/testing-remediation.md`); for a docs-only change, the documentation-structure check stands in.
+- **Reviewed** — changes self-reviewed against the verified file list from Step 3.5 (selective staging; no stray files).
+
+If the quality gate is **not** satisfied, do **not** commit — hold the working tree and surface why:
 ```python
-ask_multiple_choice(
-    questions=[
-        {
-            "question": "Commit approval needed - review message and choose action",
-            "header": "Commit",
-            "multiSelect": False,
-            "options": [
-                {"label": "Commit only", "description": "Keep changes local"},
-                {"label": "Commit and push", "description": "Sync to remote"},
-                {"label": "Modify message", "description": "Edit commit message"},
-                {"label": "Cancel", "description": "Skip commit for now"}
-            ]
-        }
-    ],
-    title="Commit Decision",
-    abstract="""**Staged files**:
-- workflow/session-end.md (+45/-12)
-- global/CLAUDE.md (+23/-8)
-- history.md (+15/-0)
-
-**Commit message**:
-Document abstract parameter in cosa-voice MCP tools (Session 45)
-
-**Summary**: 3 files changed, +83/-20 lines"""
-)
+notify( "Holding commit — quality gate not met: <reason>", notification_type="alert", priority="medium" )
 ```
 
-**Display drafted commit message and options**:
+**Stage selectively** (from Step 3.5 — **NEVER** `git add .` / `git add -A`):
 
+```bash
+# Stage each file individually based on the Step 3.5 verified list
+git add src/auth.py
+git add history.md
+git add TODO.md
+# ... (only files from touched_files + auto-includes)
+
+# Verify staging matches the Step 3.5 list; drop any stray file
+git diff --cached --name-only
+git reset HEAD <unexpected_file>   # if anything unexpected appears
 ```
-══════════════════════════════════════════════════════════
-Proposed Commit Message
-══════════════════════════════════════════════════════════
 
+**Create the commit** with the drafted message (Step 4.2):
+
+```bash
+git commit -m "$(cat <<'EOF'
 [Your drafted commit message here]
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-
-══════════════════════════════════════════════════════════
-What would you like to do?
-══════════════════════════════════════════════════════════
-
-[1] Commit only (keep changes local)
-    → Stage files and commit with this message
-
-[2] Commit and push (sync to remote)
-    → Stage, commit, and push to remote repository
-
-[3] Modify message (provide changes)
-    → Update the commit message and show options again
-
-[4] Cancel (don't commit now)
-    → Skip commit, continue with session wrap-up
-
-What would you like to do? [1/2/3/4]
+EOF
+)"
 ```
 
-**CRITICAL**: STOP and WAIT for user response. Do NOT proceed until user selects an option.
+**Error handling**: see Step 4.6 (pre-commit hook modifies files, etc.).
 
-**Timeout Handling**: If timeout occurs, default to Cancel:
-- Send notification: `notify( "Commit timeout - changes uncommitted, preserved for next session", notification_type="alert", priority="medium" )`
-- Skip commit, preserve working tree, continue to Final Verification
+### 4.4) Post the Commit Receipt (FYI — not a gate)
 
-### 4.4) Execute Based on User Choice
+Per the 2026-06-16 D1 ruling, an autonomous commit **announces itself** with a brief receipt — transparency without re-introducing a gate ("act, then announce").
 
-**CRITICAL: Use Selective Staging from Step 3.5**
-
-**NEVER** use `git add .` or `git add -A`. Always stage files explicitly based on the verified file list from Step 3.5.
-
-**If user selects [1] - Commit only**:
-
-1. **Stage ONLY verified files** from Step 3.5:
-
-   ```bash
-   # Stage each file individually - NEVER git add . or git add -A
-   git add src/auth.py
-   git add src/utils.py
-   git add history.md
-   git add TODO.md
-   # ... (only files from touched_files + auto-includes)
-   ```
-
-   **Verification** (immediately after staging):
-   ```bash
-   git diff --cached --name-only
-   ```
-
-   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them:
-   ```bash
-   git reset HEAD <unexpected_file>
-   ```
-
-2. Create commit with approved message:
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   [Your commit message here]
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-
-3. Send success notification:
-   ```python
-   notify( "Changes committed successfully", notification_type="progress", priority="low" )
-   ```
-
-4. **Update Session Status in Manifest** (v2.0):
-
-   **Get commit hash**:
+1. **Get the commit hash**:
    ```bash
    commit_hash=$(git rev-parse --short HEAD)
    ```
+
+2. **Send the receipt** (an FYI — do **NOT** block on it):
+   ```python
+   notify(
+       message="Committed: <one-line subject>",
+       notification_type="task",
+       priority="low",
+       abstract="""**Commit** `abc1234` — <one-line subject>
+**Files** (N):
+- workflow/session-end.md
+- history.md
+- TODO.md
+**Stat**: N files, +X/-Y lines"""
+   )
+   ```
+
+3. **Update Session Status in Manifest** (v2.0):
 
    **Update YOUR section in `.claude-session.md`**:
    - Change `**Status**: active` → `**Status**: committed`
@@ -887,90 +821,40 @@ What would you like to do? [1/2/3/4]
    ...
    ```
 
-   **If this is the ONLY section** (no other active sessions):
-   - Delete `.claude-session.md` entirely (clean slate)
+   - **If this is the ONLY section** (no other active sessions): delete `.claude-session.md` entirely (clean slate).
+   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it).
 
-   **If other active sessions exist**:
-   - Keep manifest with updated status (other sessions still need it)
+### 4.5) PUSH Decision (the one retained user gate)
 
-5. DONE - Skip to Final Verification
+**Push stays the user's call.** The commit is autonomous; **push to origin is NOT** — it is the user's session-end decision, **executed by the manager/session on the user's word** (never punt the git op back to the user — that's a role inversion).
 
-**If user selects [2] - Commit and push**:
+**Visibility rule**: do **NOT** proactively surface push-readiness mid-session — it's noise (the push is the user's alone). This gate fires **only inside the end-ritual** (this step), which is the sanctioned moment for the push question.
 
-1. **Stage ONLY verified files** from Step 3.5:
+```python
+ask_yes_no(
+    question="Push this session's commit(s) to origin now?",
+    priority="high",
+    timeout_seconds=300,
+    default="no"      # AFK → hold; push is never the silent default
+)
+```
 
-   ```bash
-   # Stage each file individually - NEVER git add . or git add -A
-   git add src/auth.py
-   git add src/utils.py
-   git add history.md
-   git add TODO.md
-   # ... (only files from touched_files + auto-includes)
-   ```
+**On `yes`** — the manager/session executes the push:
+```bash
+git push   # parent repo only; exclude nested repos
+```
+```python
+notify( "Pushed to origin", notification_type="task", priority="low" )
+```
 
-   **Verification** (immediately after staging):
-   ```bash
-   git diff --cached --name-only
-   ```
+**On `no` / `neither` / timeout** — hold. The commit stays local, preserved for a later push (the user's next session-end call):
+```python
+notify( "Commit held locally — not pushed", notification_type="progress", priority="low" )
+```
 
-   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them.
+Then continue to Final Verification.
 
-2. Create commit with approved message:
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   [Your commit message here]
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-
-3. Push to remote (parent repo only):
-   ```bash
-   git push
-   ```
-
-4. Send success notification:
-   ```python
-   notify( "Changes committed and pushed successfully", notification_type="progress", priority="low" )
-   ```
-
-5. **Update Session Status in Manifest** (v2.0):
-
-   Same as [1] above:
-   - Get commit hash: `git rev-parse --short HEAD`
-   - Update YOUR section: Status → `committed`, add Commit hash
-   - If only section → delete manifest
-   - If other active sessions → keep manifest
-
-6. DONE - Skip to Final Verification
-
-**If user selects [3] - Modify message**:
-
-1. Prompt user: "Please provide your updated commit message or describe the changes you'd like:"
-
-2. Wait for user input
-
-3. Update commit message based on user feedback
-
-4. Loop back to Step 4.3 (present options again with updated message)
-
-**If user selects [4] - Cancel**:
-
-1. Send notification:
-   ```python
-   notify( "Commit cancelled by user", notification_type="progress", priority="low" )
-   ```
-
-2. **Keep session manifest** (do NOT delete `.claude-session.md`)
-   - Session may continue working
-   - Or resume later with `/plan-session-start` (will detect existing manifest)
-
-3. Continue to Final Verification (without committing)
-
-### 4.5) Error Handling
+### 4.6) Error Handling
 
 **Pre-commit hook modifies files**:
 - If commit succeeds but hook modified files, check:
@@ -987,10 +871,10 @@ What would you like to do? [1/2/3/4]
   - [3] View detailed error
 - Commit is already saved, no data loss
 
-**No remote configured** (when user selects [2]):
+**No remote configured** (when the push gate returns `yes`):
 - Detect: `git remote -v` returns empty
 - Inform user: "No remote repository configured. Commit succeeded but cannot push."
-- Auto-fallback to [1] behavior (commit only)
+- The commit stands (already saved); skip the push, no data loss
 
 **Git Safety Protocol** (applies to all operations):
 - NEVER run destructive/irreversible git commands (push --force, hard reset, etc.) unless user explicitly requests
@@ -1001,7 +885,7 @@ What would you like to do? [1/2/3/4]
 
 ## 5) Backup Prompt (Conditional)
 
-**Condition**: Only execute this step if Step 4 resulted in a commit (user selected "Commit only" or "Commit and push"). Skip this step if commit was cancelled or timed out.
+**Condition**: Only execute this step if Step 4 resulted in a commit (the normal autonomous-commit path). Skip this step if the commit was held back because the quality gate (green AND reviewed) was not met.
 
 ### 5.1) Offer Backup Options
 
@@ -1449,7 +1333,7 @@ Before sending the final close-out notification, audit:
 - [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
 - [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
 - [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
-- [ ] **If a blocking-tool ask was made during this session-end** (commit approval, archive decision, etc.) — does each such ask's abstract include pros/cons + recommendation per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`?
+- [ ] **If a blocking-tool ask was made during this session-end** (push approval, archive decision, conflict resolution, etc.) — does each such ask's abstract include pros/cons + recommendation per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`?
 
 If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 if needed; re-issue the closing notification with the missing elements added.
 
@@ -1475,6 +1359,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now parses current session's section from multi-section manifest, detects conflicts with other active sessions, prompts user for conflict resolution. Step 4.4 updates session status to `committed` with commit hash instead of deleting manifest (preserves tracking for other active sessions). Added conflict detection UI with ask_multiple_choice(). (~180 lines rewritten).
 - **2026.01.29 (Session 53)**: Added parallel session safety with `.claude-session.md` manifest (v1.0). Step 3.5 reads manifest file, verifies files against git status, handles missing/empty manifest. Step 4.4 uses selective staging and deletes manifest after successful commit. NEVER use `git add .` or `git add -A`. (~150 lines added, ~30 modified)
 - **2026.01.XX**: Prior iterations (no version tracking before this date)

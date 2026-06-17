@@ -17,7 +17,7 @@
 Two layers, never collapsed (ratified Q6):
 
 - **Standing pair (the backbone — pre-exists every spin-up):**
-  - **Manager** — sequences work, holds the gate, owns commit/push authority, spawns/harvests the crew under standing autonomy.
+  - **Manager** — sequences work, holds the **quality gate** (green AND reviewed), owns **standing commit + merge authority** (no per-commit user gate; **push** is the user's session-end call, executed by the Manager on their word), spawns/harvests the crew under standing autonomy.
   - **Workflow Steward** — design author + live observer + post-game synthesizer. Plans the work, watches the run, catches drift/confabulation, runs the retrospective. **Not an implementer.**
 - **Spin-up crew (the ephemeral workers — what "spin up" instantiates):**
   - **Implementer(s)** · **Reviewer(s)** (adversarial) · **Tester(s)** (integration/e2e).
@@ -70,7 +70,7 @@ flowchart LR
     R --> T["Tester (integration/e2e)"]
     T --> G{"Manager gate:<br/>green + reviewed?"}
     G -- no --> I
-    G -- yes --> C["Commit/push (user's word)"]
+    G -- yes --> C["Commit + merge<br/>(Manager authority; push = user's word)"]
     S["Steward:<br/>design · observe · post-game"] -. spans .-> I
     S -. spans .-> R
     S -. spans .-> T
@@ -83,7 +83,7 @@ flowchart LR
 
 - **Hard commit gate (non-negotiable):** **green AND adversarially-reviewed** before any commit. No silent skips. This is the Test-Ownership mandate + adversarial-review discipline made mechanical — the Manager holds it.
 - **Always post-game, scaled:** the Steward runs a retrospective **every cycle** — a *full* retro for substantive runs, a *lightweight note* for trivial ones. Always-on (never "on-demand") because the standing post-game is how the Steward catches drift/confabulation — the role's whole point.
-- **Commit/push is the user's call** — the gate makes work *commit-ready*; the human decides when to commit/push (push is the user's session-end call).
+- **Commit + merge are the Manager's call** (standing authority, once green AND reviewed) — **NO per-commit/per-merge user gate** (Rick 2026-06-16). The quality gate makes work commit-ready; the Manager then commits + merges. **PUSH to origin stays the user's session-end call** — the Manager executes the push on the user's word (never punts the git op to the user).
 - **Standing-pair keep-alive (2026-06-06 lesson):** during an autonomous build the Manager + Steward must NOT both go dark — a re-loop/handoff with no one awake to actuate stalls silently (proven live: a ~90-min unactioned re-loop verdict). The fleet-stall keep-alive belongs to the **arbiter layer** (the closed-loop poker taps the Manager on stall), NOT the per-session stop-hook (which correctly won't poke a *legitimate* wait). Until the arbiter is deployed as a standing daemon, use an interim poker + the Steward actively watches for stalls. **Layering:** stop-hook = per-session lazy-stop guard · arbiter = fleet-stall poker · interim poker = stopgap until the arbiter ships.
 
 ---

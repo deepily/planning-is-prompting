@@ -292,7 +292,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 [SHORT_PROJECT_PREFIX] Load configuration files
 [SHORT_PROJECT_PREFIX] Discover available workflows
 [SHORT_PROJECT_PREFIX] Load session history
-[SHORT_PROJECT_PREFIX] Rebuild harness TODO list (memento + task-store reconcile)
+[SHORT_PROJECT_PREFIX] Reconcile owed work on rehydrate (store query + memento)
 [SHORT_PROJECT_PREFIX] Identify active work and outstanding TODOs
 [SHORT_PROJECT_PREFIX] Present session context and await direction
 ```
@@ -997,11 +997,11 @@ This prevents accidentally committing the session manifest.
 
 ---
 
-## Step 4.7: Rebuild the Harness TODO List (MANDATORY on rehydrate)
+## Step 4.7: Reconcile Owed Work on Rehydrate (store-only)
 
-> **✅ STORE-ONLY IS LIVE — THIS STEP IS SUPERSEDED (cutover executed 2026-06-17).** The native harness list is no longer the liveness source (flag `heartbeat.owed_source_from_store=True` set + confirmed; Stop-hook oracle reads the store), so there is no native list to rebuild on rehydrate. Instead, **query the store on demand** (`task_query(owner=self, status=open)`, terse/projection) to see your work; the human-visible list is the fleet-status-style **UI card**. The rebuild procedure below is retained as HISTORICAL pre-cutover context. Cutover record: `workflow/task-store-discipline.md` §0.
+> **✅ STORE-ONLY IS LIVE (cutover 2026-06-17).** The native harness list is no longer the liveness source (flag `heartbeat.owed_source_from_store=True` set + confirmed; the Stop-hook oracle reads the store). On rehydrate you do **not** rebuild a native list — you **query the store** (`task_query(owner_persona=self, status=open)`, terse/projection) and reconcile it against your memento. The human-visible list is the fleet-status-style **UI card** rendered from the store. Cutover record: `workflow/task-store-discipline.md` §0.
 
-**Purpose**: A fresh session — including every `/clear` rehydration — starts with an **empty harness task list** (`TaskCreate`/`TaskUpdate`). An empty harness list means **nothing is driving the session forward**: the visible, rendered to-do list is the agenda the manager-tick and the session itself read to stay productive. Rebuilding it is **not optional** (Rick, broadcast `beaaaa2c`, 2026-06-16: "neither of you rebuilt your harness to-do list, which is an absolute no-no… that helps drive you forward").
+**Purpose**: A fresh session — including every `/clear` rehydration — starts knowing nothing about its owed work until it asks. **Query the store** for what you owe and reconcile it against your memento so the session has a driving agenda (Rick, broadcast `beaaaa2c`, 2026-06-16: a session with no visible owed-work agenda has nothing driving it forward — an absolute no-no). Post-cutover this is a **store query**, not a native-list rebuild.
 
 This is the **READ side** of the memento↔harness-list contract. The **WRITE side** lives in `workflow/memento-management.md` (every memento MUST serialize a `## Verbatim Pending TODO List`).
 
@@ -1021,25 +1021,17 @@ Rebuild from **two sources** and reconcile — do **not** trust either alone:
    - **Add** store-open items the memento missed.
    - **Store-status WINS** on any conflict.
    - Net result = the **store-status-authoritative union**, deduped.
-4. **VERIFY, don't manufacture** — re-mint a harness item only after confirming it's still owed. A **correctly-empty list is valid** (e.g. a fresh worker with nothing assigned). **FAIL LOUD** (surface via `notify`, do not silently proceed) only when the store OR the memento shows owed work but the rebuilt list came back empty — that is a process bug, not a quiet state.
+4. **VERIFY, don't manufacture** — treat an item as owed only after confirming it in the store. A **correctly-empty owed-list is valid** (e.g. a fresh worker with nothing assigned). **FAIL LOUD** (surface via `notify`, do not silently proceed) only when the store OR the memento shows owed work but your reconciled list came back empty — that is a process bug, not a quiet state.
 
-### Source-priority flips by environment (same algorithm)
+### Source priority (same algorithm, all environments)
 
-| Environment | PRIMARY source | Secondary (verifier) | Why |
-|---|---|---|---|
-| **lupin** sessions | task-store | memento | the harness→store mirror works here |
-| **plan / non-lupin** sessions | memento | task-store | the `derive_project_name → LUPIN_ROOT` write-gate bug (`9bf1dc4a`) silently drops non-lupin mirror writes until it lands |
+**The task-store is PRIMARY for every session; the memento is the secondary verifier (INTENT + next-action).** Post-cutover all sessions write their owed work directly to the store via `task_create`, so the store is authoritative for existence + status regardless of project. *(🗄️ HISTORICAL: pre-cutover, non-lupin sessions used the memento as primary because the retired harness→store mirror dropped their writes — bug `9bf1dc4a`; moot now the mirror is gone and all sessions write directly.)*
 
-### ⚠️ Caveat — until bug `9b23d5bc` lands, the harness rebuild is VISIBILITY-only
+### 🗄️ HISTORICAL — the `9b23d5bc` mirror caveat is moot (mirror retired)
 
-A post-`/clear` harness `TaskCreate` reuses the correlation_key `cc-task:<session>:<N>` and **OVERWRITES** pre-existing store rows (bug `9b23d5bc`, the `/clear` correlation-key collision). Therefore, **until that fix lands**:
+Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key and UPSERT-corrupt pre-existing store rows (bug `9b23d5bc`), so the harness rebuild was visibility-only and the MCP store was trusted for auditable truth. With the harness→store mirror **retired** at the cutover, this collision is **gone by construction** — write owed work directly via `task_create` (collision-safe) and query the store for the auditable, fleet-visible truth.
 
-- **Rebuild the harness list to DRIVE yourself** (the visible agenda that keeps the session productive) — this is its job.
-- **Trust the MCP task-store (`task_create` / `task_query`) for the auditable, fleet-visible truth** — durable/cross-persona/typed items are minted and verified there, collision-safe.
-
-In short: **rebuild the harness for your own drive; trust MCP for the auditable truth.** (Both `9bf1dc4a` and `9b23d5bc` are mirror bugs; this contract is the workaround until they land.)
-
-**Update TodoWrite**: mark "Rebuild harness TODO list" completed; if any item failed verification or the FAIL-LOUD condition tripped, surface it now via `notify`.
+**Done when**: you've queried the store (`task_query`) and reconciled it against your memento; if any item failed verification or the FAIL-LOUD condition tripped, surface it now via `notify`.
 
 ---
 

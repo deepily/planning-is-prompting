@@ -1805,6 +1805,8 @@ else:
 
 ## Version History
 
+**v1.5** (2026.06.16, María) - **Commit-gate sweep (D1 guided-walkthrough ruling) — reviewed, already aligned.** Per-bug commits here were already autonomous (Step 9 stages selectively + commits with no approval gate; wrap mode states "Automatic commit without approval — user invocation IS approval"). This matches the 2026-06-16 ruling that committing is standing manager/session authority once green AND reviewed; the user is not the commit gate. No behavioral change required. Bug-fix commits are local + atomic per-bug; pushing remains out of scope here (handled by `branch-pr-and-merge.md` / `session-end.md`, where push stays the user's call).
+
 **v1.4** (2026.02.02) - Parallel-session-friendly bug fix queue (v2.0)
 - **Major**: Redesigned bug-fix-queue.md format for parallel session support
 - New Active Sessions table tracks multiple concurrent sessions

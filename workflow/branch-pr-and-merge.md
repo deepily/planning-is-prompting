@@ -10,7 +10,7 @@
 
 **Entry Point**: `/plan-branch-pr-and-merge`
 
-> **⚠️ Conversation Mode Awareness**: this workflow has multiple destructive-or-shared-state gates (PR description approval, push approval, merge confirmation, post-merge tag prompt). When `conversation_mode_active=true` (check via `get_session_info()`), each gate is a voice gate.
+> **⚠️ Conversation Mode Awareness**: this workflow has multiple destructive-or-shared-state gates (PR description approval, **push approval**, merge confirmation, post-merge tag prompt). **Committing outstanding work is NOT a gate** — it's standing manager/session authority once the quality gate (green AND reviewed) is met; only push / PR / merge-to-main / tag remain user gates (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), each gate is a voice gate.
 >
 > **Mandates in conversation mode**:
 > - All blocking calls MUST use `priority="high"`. Destructive operations (force-push) require **explicit voice confirmation** — never silent default.
@@ -162,23 +162,20 @@ ask_multiple_choice(
 
 **If uncommitted changes BUT history entry exists for today**:
 
+The commit itself is **not** gated — a history entry already exists, so **commit the outstanding work autonomously** (standing authority, once green AND reviewed) and post a receipt, then proceed. Do **not** ask "may I commit?".
+
 ```python
-ask_multiple_choice(
-    questions=[{
-        "question": "Uncommitted changes detected. Commit before PR?",
-        "header": "Uncommitted",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit now", "description": "Stage and commit these changes"},
-            {"label": "Run checkpoint", "description": "Full checkpoint with history update"},
-            {"label": "Skip", "description": "Continue with uncommitted changes (not recommended)"},
-            {"label": "Cancel", "description": "Abort PR workflow"}
-        ]
-    }],
-    priority="high",
-    abstract="**Uncommitted files**:\n[list from git status]\n\n**Note**: History entry for today exists. Quick commit may be sufficient."
+# Stage selectively (Step 3.5 verified list — NEVER git add . / -A), commit, then:
+commit_hash = "<git rev-parse --short HEAD>"
+notify(
+    message="Committed outstanding work before PR: <one-line subject>",
+    notification_type="task",
+    priority="low",
+    abstract="**Commit** `<hash>` — <subject>\n**Files**: [list]\n**Stat**: N files, +X/-Y"
 )
 ```
+
+**Edge case** — if the uncommitted changes look unexpected or unrelated to this session's work (not on the Step 3.5 list), do not auto-commit: surface them and let the user direct (commit / stash / abort).
 
 **If no uncommitted changes**:
 - Display: "All changes committed ✓"
@@ -363,20 +360,23 @@ Remote tracking: [Yes/No] (origin/[branch-name])
 
 **If uncommitted changes exist**:
 
+Committing is standing authority (not a gate). If the changes are this session's own work (on the Step 3.5 verified list), **commit them autonomously** (green AND reviewed) and post a receipt, then continue the audit. Only prompt the user when the changes are **ambiguous** — unexpected/unrelated files, or a genuine commit-vs-stash judgment the user owns:
+
 ```python
+# Ambiguous-changes branch only:
 ask_multiple_choice(
     questions=[{
-        "question": "Uncommitted changes detected. How to proceed?",
+        "question": "Unexpected uncommitted changes detected. How to proceed?",
         "header": "Changes",
         "multiSelect": False,
         "options": [
-            {"label": "Commit first", "description": "Run /plan-session-end or commit now"},
+            {"label": "Commit them", "description": "These are mine — stage (selectively) and commit"},
             {"label": "Stash", "description": "Stash changes and continue"},
             {"label": "Cancel", "description": "Abort PR workflow"}
         ]
     }],
     priority="high",
-    abstract="**Uncommitted files**:\n[list from git status]"
+    abstract="**Uncommitted files**:\n[list from git status]\n\n**Note**: shown because the changes are not on this session's Step 3.5 touched-files list."
 )
 ```
 
@@ -1181,6 +1181,8 @@ At session start, detect if on main and prompt:
 ---
 
 ## Version History
+
+**v1.1** (2026.06.16, María) - **Commit gate removed (D1 guided-walkthrough ruling).** Committing outstanding work is now standing manager/session authority once green AND reviewed — only push / PR / merge-to-main / tag remain user gates. The two "commit before PR" blocking gates now **commit autonomously + post a receipt** (prompting the user only when the changes are ambiguous/unexpected — not on the session's Step 3.5 touched-files list). Conversation-mode gate list updated to match. Test gates, PR-description approval, push, merge confirmation, and tag prompt are unchanged.
 
 **v1.0** (2026.02.04) - Initial workflow
 - 12-step branch completion process

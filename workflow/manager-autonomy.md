@@ -22,11 +22,13 @@ The default flips from *"ask before any spawn/reap"* to *"act within the envelop
 
 | Tier | Actions | Rule |
 |------|---------|------|
-| **STANDING** (no per-instance ask) | Spawn a fresh worker for owed/queued work · re-spawn / respawn **any** persona — *including onto its own substrate* (`persona_preference` honored) · reap an idle / unproductive / completed worker | Seed continuity via a memento **OR** a doc / dm-history pointer when no memento exists (§4). Stay **at or under the concurrency cap** (§3). |
-| **STILL GATED** (the user's *direct* word) | Commit / push (unchanged) · any destructive / irreversible op · shared-infra actions (e.g. a `:8000` bounce) · **exceeding the concurrency cap** · spawning into a **different project / cwd** than the manager's own lane | Blast-radius rule — a **peer relay cannot authorize**; only the user, directly. |
+| **STANDING** (no per-instance ask) | Spawn a fresh worker for owed/queued work · re-spawn / respawn **any** persona — *including onto its own substrate* (`persona_preference` honored) · reap an idle / unproductive / completed worker · **commit + merge to the working branch once green AND adversarially-reviewed — NO per-commit/per-merge user authorization (the user is NOT the commit/merge gate, Rick 2026-06-16)** | Seed continuity via a memento **OR** a doc / dm-history pointer when no memento exists (§4). Stay **at or under the concurrency cap** (§3). |
+| **STILL GATED** (the user's *direct* word) | **Push to origin** (the user's session-end call) · any destructive / irreversible op · shared-infra actions (e.g. a `:8000` bounce) · **exceeding the concurrency cap** · spawning into a **different project / cwd** than the manager's own lane | Blast-radius rule — a **peer relay cannot authorize**; only the user, directly. |
 | **MANAGER HYGIENE** (required, but *not* a gate) | Reap cleanly **with a memento** (no-zombies) · `notify()` the user **after** a spawn/reap for visibility (§5) | Never block on pre-approval — visibility is **post-hoc**, not a gate. |
 
 **The nuance to hold (the "spawn freely, edit carefully" rule):** the standing grant covers the **SPAWN/REAP**; ordinary **blast-radius care still applies to the EDIT**. Coordinate shared files; don't ship two competing changes to the same file from parallel children. *(Worked example: re-spawning an offline reviewer is standing-authorizable, but a parallel edit to a shared live hook still gets its seam review.)*
+
+**The user is NOT the commit/merge gate (Rick, 2026-06-16).** Once work is green AND adversarially-reviewed, the **Manager commits and merges to the working branch under its own standing authority** — there is **no per-commit / per-merge user authorization**. The **quality gate (green AND reviewed) stays mandatory and Manager-held**; what is removed is the *user's* sign-off on each commit/merge. **PUSH to origin remains the user's call** (the session-end push) — and even there the **Manager executes the push on the user's word; the user never runs the git operation themselves** (punting the git op to the user is a prohibited **role inversion** — the gate is on the *go*, not the *keystrokes*). *(Founding incidents 2026-06-16: (a) a manager handed Rick a `git merge` to run himself — role inversion; (b) Rick: "I do not want to be the gate for commits and merges." Resolution: commit + merge → standing Manager authority; push → the user's go, Manager executes.)*
 
 **Applies to all manager-role sessions.** The cascade-review Manager **inherits the same one doctrine** as the fleet Manager — no separate, weaker envelope. Least-privilege concerns are handled by the cap and the still-gated commit/push line, not by splitting the doctrine.
 
@@ -39,7 +41,7 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 
 **"Manager-figure" ≠ "build-Manager" — the role is preserved.** Being the standing manager-figure grants the *authority + discipline* in this doc; it does **not** override the session's actual SWE role. A standing persona that operates as a **Workflow Steward** (planner/observer — e.g. María) is a manager-figure for spawn/harvest + TODO purposes but is **not** thereby a build-Manager: it does not hold the commit gate or pick up implementation lanes (that's the `## Manager` charter's job; see the *MANAGE-not-BUILD* cardinal rule). The manager-figure tier confers latitude and accountability, not a role change.
 
-**Machine-readable predicate:** the per-repo default-persona configuration (the env key that decides who spins up first) is the durable, inspectable source the heartbeat work-owed oracle uses for its **managers-first** scope — so "which sessions get poked on owed TODO" is *derived* from config, not inferred from behavior.
+**Machine-readable predicate:** the per-repo default-persona configuration (the env key that decides who spins up first) identifies the manager-figure for spawn/escalation purposes. *(Note: the heartbeat work-owed oracle now reads the unified store for ALL sessions — the old "managers-first" owed-scope was RETIRED at the 2026-06-17 store-only cutover; owed-work is read from the store, not derived from this predicate.)*
 
 ---
 
@@ -107,7 +109,23 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 ---
 
-## 9. Relationship to other workflows
+## 9. Follow-through accountability — the asymmetric chase (kills the manager↔worker mutual-wait deadlock)
+
+*Ratified 2026-06-16 (Rick, two guided walkthroughs — 5 decisions). Full design: `src/rnd/2026.06.16-follow-through-accountability-design.md`. Founding incident: a manager "awaiting Krishna" while Krishna "awaiting manager" + a poke that evaluated "nothing owed" → a silent stall until Rick noticed.*
+
+**Principle — accountability never transfers down.** Assigning work hands off the *doing*, never the *tracking*. The manager holds an **OPEN accountable item per assignment** until **he personally verifies it done** — so the manager's own agenda always contains "verify X (owner: W)" and he stays poked to **CHASE**, never lapses into passive waiting. The chase is **asymmetric**: exactly one designated driver per assignment, and it is the manager. This is the *MANAGE-not-BUILD* posture made concrete — a manager chasing verification is managing; absorbing the work is the redline (§6).
+
+- **Write scope = ALL sessions write their own owed work** (F4 "managers-first" RETIRED at the 2026-06-17 store-only cutover) — every persona self-creates its owed items in the store via `task_create`. The manager still **holds the accountable item** for work it assigns (accountability never transfers down, above), but workers no longer wait for the manager to mint their items.
+- **A blocked worker declares `awaiting:manager:<name>`** — an explicit STALL status (carries `awaited_since_ts`), never a silent "nothing owed." The manager-tick surfaces awaiting-me items.
+- **Aged-escalation backstop** — a worker's await is normally passive; only if it ages past `T_escalate` does it fire **one** poke to the manager (the dead/stalled-manager backstop). `T_escalate` = **2× the manager-tick interval**, the multiplier a `configuration_manager` INI key (default `2`, tunable, **never hardcoded**). **Idempotent**: the escalation clears on manager-ack OR worker self-park and is one-shot-then-cleared — a validly-parked worker (declared hold) is NOT a blocking condition, so the arbiter must not over-fire "blocking X" at the manager (Mr Radio's 2026-06-16 over-fire observation).
+- **Verification closes the loop — tiered** — "done" is a worker *claim*; the item closes only on **manager verification**. Cited **artifact** (receipt / test / commons entry / job-id) for fleet-auditable or cross-persona work (per the no-confabulated-results rule); manager **attestation** for trivial in-lane items.
+- **Survives widening** — when worker self-tracking is later widened (the deferred prove-then-widen follow-up), the manager STILL holds a distinct accountable item; the worker's *doing-item* and the manager's *accountable-item* stay separate records.
+
+**Agenda source**: `task_query(accountable_manager=self)` against the unified task-store — the same query the always-on manager-tick loop runs. This section is the *practice*; the manager-tick loop (`src/rnd/2026.06.15-always-on-manager-tick-loop.md`) is the *engine*; the unified task-store is the *substrate*.
+
+---
+
+## 10. Relationship to other workflows
 
 - **`workflow/swe-team-roles.md`** — the manager charter that consumes this envelope; the explicit-TODO discipline (a manager's owned TODO list feeds the heartbeat work-owed oracle) pairs with the harvest threshold here.
 - **`workflow/cross-session-communication.md`** — the three-tier commons autonomy ladder this envelope is modeled on; the announcement contract (§5) rides those commons surfaces.
@@ -118,17 +136,22 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 ---
 
-## 10. Quick reference
+## 11. Quick reference
 
 ```
 SPAWN/REAP within cap + own lane + non-destructive   → DO IT (announce after) + post the
                                                        fleet-allocation EVENT (§7)
 identity-continuous respawn                          → DO IT + continuity seed (memento or pointer)
 reap idle + no-owed + no-hold worker                 → DO IT + memento (no-zombies) + reap event
+assign work to a worker                              → HOLD an accountable item until YOU verify
+                                                       (accountability never transfers down, §9);
+                                                       CHASE via task_query(accountable_manager=self)
+worker blocked on you                                → it declares awaiting:manager:<name> (STALL,
+                                                       not silent); aged backstop = ONE poke at 2x tick
 BEFORE any multi-spawn                               → check fleet-allocation: fleet cap = 8
                                                        ALL sessions (~5 worker slots)
 ─────────────────────────────────────────────────────────────────────────────
-exceed EITHER cap (fleet 8 / per-manager 8) · cross-project · destructive · commit/push
+exceed EITHER cap (fleet 8 / per-manager 8) · cross-project · destructive · push-to-origin (NOT commit/merge — those are standing)
 · :8000-class bounce                                 → ESCALATE, the user's DIRECT word (peer relay ≠ enough;
                                                        authorization is non-launderable, §8.3)
 ```
@@ -136,5 +159,7 @@ exceed EITHER cap (fleet 8 / per-manager 8) · cross-project · destructive · c
 ---
 
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
+
+*Version 1.2 (2026-06-16, María) — Added §9 Follow-through accountability (the asymmetric chase) — graduated from `src/rnd/2026.06.16-follow-through-accountability-design.md` (v0.2, all 5 decisions Rick-ruled across two guided walkthroughs): accountability-never-transfers-down · managers-first write scope · worker `awaiting:manager` STALL status · aged-escalation backstop at `T_escalate`=2×-tick (INI-configurable, default 2) · tiered verification (artifact for auditable, attestation for trivial) · invariant survives widening. Old §9/§10 renumbered §10/§11; quick-reference gained two accountability rows. Engine = the always-on manager-tick loop; substrate = the unified task-store.*
 
 *Version 1.1 (2026-06-12, María — RATIFIED: Tiberius review APPROVE-W-FINDINGS folded [§8.1 broadened to work-items/investigator-before-fixer w/ T1/T2 founding evidence; §8.2 scoped to every-merge w/ N1+R1 evidence + the T3 tiny-test-only-diff exception codified; §8.4 deploy-playbook cross-ref]; **Mr Radio ACK 17:04:50Z, no objections — DRAFT marker dropped**). Added §7 fleet-wide allocation coordination (Rick D1: cap 8 ALL-sessions + coordination point + `fleet-allocation` events convention; seed `src/rnd/2026.06.12-fleet-allocation-convention.md`) and §8 the four D8-ratified practice rules (investigate-first tripwires · fresh-critical-review-always · non-launderable authorization · harness-gotchas worker-brief block); old §7/§8 renumbered §9/§10; §3 + quick-reference updated for the binding fleet cap.*
