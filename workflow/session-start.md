@@ -292,6 +292,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 [SHORT_PROJECT_PREFIX] Load configuration files
 [SHORT_PROJECT_PREFIX] Discover available workflows
 [SHORT_PROJECT_PREFIX] Load session history
+[SHORT_PROJECT_PREFIX] Rebuild harness TODO list (memento + task-store reconcile)
 [SHORT_PROJECT_PREFIX] Identify active work and outstanding TODOs
 [SHORT_PROJECT_PREFIX] Present session context and await direction
 ```
@@ -993,6 +994,52 @@ This prevents accidentally committing the session manifest.
    - Display combined list in Step 5
 
 **Key Principle**: TODO.md is the single source of truth for pending work. If it exists, use it. If not, fall back to history.md TODO sections (legacy pattern).
+
+---
+
+## Step 4.7: Rebuild the Harness TODO List (MANDATORY on rehydrate)
+
+> **🚧 STORE-ONLY TRANSITION (2026-06-17, NOT-live-until-cutover):** at cutover this step is **SUPERSEDED** — with the native harness list jettisoned there is no list to rebuild; instead you **query the store on demand** (`task_query(owner=self, status=open)`, terse/projection mode) when you need to see your work, and the human-visible list is a fleet-status-style **UI card** rendered from the store. **Until the lupin build cuts over, the rebuild procedure below REMAINS MANDATORY** — the Stop-hook oracle still replays your harness transcript for liveness, so an empty list still darks you. Ratified: Rick GO `42c3e814` + unanimous cascade review; target mandate + 5-step cutover order in `workflow/task-store-discipline.md` §0.
+
+**Purpose**: A fresh session — including every `/clear` rehydration — starts with an **empty harness task list** (`TaskCreate`/`TaskUpdate`). An empty harness list means **nothing is driving the session forward**: the visible, rendered to-do list is the agenda the manager-tick and the session itself read to stay productive. Rebuilding it is **not optional** (Rick, broadcast `beaaaa2c`, 2026-06-16: "neither of you rebuilt your harness to-do list, which is an absolute no-no… that helps drive you forward").
+
+This is the **READ side** of the memento↔harness-list contract. The **WRITE side** lives in `workflow/memento-management.md` (every memento MUST serialize a `## Verbatim Pending TODO List`).
+
+### When this step fires
+
+- **ALWAYS** at session start, and **especially** after a `/clear` rehydration (when a memento was written and read back).
+- Skippable **only** when this is a genuinely brand-new session with no prior owed work in either source (verified below, not assumed).
+
+### Reconciliation algorithm (store-authoritative union)
+
+Rebuild from **two sources** and reconcile — do **not** trust either alone:
+
+1. **Skeleton from the memento** — read the memento's `## Verbatim Pending TODO List` (the memento carries **INTENT + next-action**). If a rehydration memento exists (e.g. `src/rnd/<date>-<persona>-...-memento.md`), this is the skeleton.
+2. **Verify each item against the task-store** — `task_query( owner=self, status=open )` (the store carries **EXISTENCE + STATUS**, the authoritative truth).
+3. **Reconcile**:
+   - **Drop** items the store shows as `done` / `dropped` (don't recreate completed work).
+   - **Add** store-open items the memento missed.
+   - **Store-status WINS** on any conflict.
+   - Net result = the **store-status-authoritative union**, deduped.
+4. **VERIFY, don't manufacture** — re-mint a harness item only after confirming it's still owed. A **correctly-empty list is valid** (e.g. a fresh worker with nothing assigned). **FAIL LOUD** (surface via `notify`, do not silently proceed) only when the store OR the memento shows owed work but the rebuilt list came back empty — that is a process bug, not a quiet state.
+
+### Source-priority flips by environment (same algorithm)
+
+| Environment | PRIMARY source | Secondary (verifier) | Why |
+|---|---|---|---|
+| **lupin** sessions | task-store | memento | the harness→store mirror works here |
+| **plan / non-lupin** sessions | memento | task-store | the `derive_project_name → LUPIN_ROOT` write-gate bug (`9bf1dc4a`) silently drops non-lupin mirror writes until it lands |
+
+### ⚠️ Caveat — until bug `9b23d5bc` lands, the harness rebuild is VISIBILITY-only
+
+A post-`/clear` harness `TaskCreate` reuses the correlation_key `cc-task:<session>:<N>` and **OVERWRITES** pre-existing store rows (bug `9b23d5bc`, the `/clear` correlation-key collision). Therefore, **until that fix lands**:
+
+- **Rebuild the harness list to DRIVE yourself** (the visible agenda that keeps the session productive) — this is its job.
+- **Trust the MCP task-store (`task_create` / `task_query`) for the auditable, fleet-visible truth** — durable/cross-persona/typed items are minted and verified there, collision-safe.
+
+In short: **rebuild the harness for your own drive; trust MCP for the auditable truth.** (Both `9bf1dc4a` and `9b23d5bc` are mirror bugs; this contract is the workaround until they land.)
+
+**Update TodoWrite**: mark "Rebuild harness TODO list" completed; if any item failed verification or the FAIL-LOUD condition tripped, surface it now via `notify`.
 
 ---
 
@@ -1730,6 +1777,8 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
+- **2026.06.16 (María + Mr Radio)**: **Added Step 4.7 — Rebuild the Harness TODO List (MANDATORY on rehydrate)** — the READ side of the memento↔harness-list contract (Rick broadcast `beaaaa2c`: a session with no visible harness to-do list has nothing driving it forward; rebuilding is "an absolute no-no" to skip). Documents the store-authoritative reconciliation algorithm (memento skeleton → verify each vs `task_query(owner=self)` → drop done, add store-missed, store-status wins → deduped union; VERIFY-don't-manufacture; FAIL-LOUD-if-empty only when owed work exists), the env-priority flip (lupin = store-primary, plan/non-lupin = memento-primary until mirror bug `9bf1dc4a` lands), and the `9b23d5bc` caveat (rebuild is VISIBILITY-only until the `/clear` correlation-key collision lands; trust MCP `task_create`/`task_query` for auditable truth). Added the rebuild item to the Step 0 init checklist. Companion WRITE side in `workflow/memento-management.md`. Joint design with Mr Radio 🦉 (lupin).
 - **2026.05.19 (Session 93)**: **Added Preliminary -1 (Preferred-Persona Env Var) + Preliminary 0.5 (Persona-Request Swap)** — two complementary conditional sections for persona selection at session start. Preliminary -1 documents the declarative env-var path (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` read by cosa-voice's SessionStart hook); Preliminary 0.5 documents the interactive slash-command swap path (`$ARGS` arg routed to `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` with atomic-swap flow + 200/409/422/500 response handling + ask_multiple_choice conflict resolution capped at 3 alternatives). Both paths preserve narrative continuity across days/sessions/`/clear` (Path A locked: allocation is immutable after first claim; only fresh allocation re-reads the env var). Updated the existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality. ~220 lines added across both Preliminaries. Paired with cosa-voice's server-side env-var allocator + `requested_persona_name` route handler.
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now supports multiple concurrent sessions with independent tracking sections. Added: automatic v1.0→v2.0 migration, session search by ID, context clear recovery, stale session detection, Last Activity timestamps. Each session gets its own `## Session: {ID}` section. Enables true parallel session safety with conflict detection at commit time (~200 lines rewritten).
 - **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety with `.claude-session.md` manifest file (v1.0). Creates persistent file-based tracking of all Edit/Write operations. Survives context clears. Documented manifest lifecycle and tracking mandate (~120 lines added).

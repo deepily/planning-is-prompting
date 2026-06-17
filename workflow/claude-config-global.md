@@ -16,6 +16,20 @@
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
+## UNIFIED TASK-STORE — ALWAYS-CREATE-A-TASK-ITEM MANDATE
+
+> **🚧 STORE-ONLY TRANSITION (ratified 2026-06-17 — Rick GO `42c3e814` + unanimous cascade review — NOT yet live).** The fleet is moving to a **store-only** task model: the native harness task list is being **jettisoned**; one unified store is read by the Stop-hook count-poke, the arbiter, and a fleet-status-style UI card; the mirror retires (kills `9bf1dc4a`/`9b23d5bc`/`82e4eaf0` by construction). **Until the lupin build cuts over, KEEP the dual-write interim below — do NOT stop using `TaskCreate` early, or a session goes dark while owing work.** **F4 "managers-first writes" is ✅ RETIRED — ALL sessions now write their own owed work via `task_create`** (Rick's direct confirmation 2026-06-17; `POST /api/tasks` was never manager-gated). Target mandate + 5-step cutover order: planning-is-prompting → workflow/task-store-discipline.md §0. Plan of record: src/rnd/2026.06.16-store-canonical-task-management.md (v3).
+
+**MANDATE (standing reflex, no per-session re-telling)**: in any repo where the unified task-store is live, **open a task item for every unit of work — without being asked — and keep its status current** as you go. A unit of work that lives only in your head is invisible to the fleet; the task item is the sign-of-life the work-owed oracle and the manager-tick loop read.
+
+**Reach for the NATIVE harness task tool first** (`TaskCreate`/`TaskUpdate`). It auto-mirrors into the durable, cross-session task-store via the `PostToolUse` hook — so the harness list is **NOT "session-local"** (it even survives `/clear`). Reaching for the MCP `task_create` verb merely to get durability is unnecessary and costlier. Reserve the explicit MCP verb for cross-session obligations the hook can't infer — work assigned to another persona, a `decision` to be ruled, a `review_request`, a `bug`, or a user's-court `gate`.
+
+> **⚠️ KNOWN LIMITATION until bug `9bf1dc4a` lands — the auto-mirror SILENTLY DROPS writes from non-lupin sessions.** The write-gate derives the project from `LUPIN_ROOT` (always resolves to `"lupin"`), so only the lupin-manager persona chain passes; every other session's harness writes POST **nothing** — no error, no log. So the "NOT session-local" claim above holds **only inside a lupin-manager session**. Outside one, **dual-write** (harness `TaskCreate` for liveness + explicit MCP `task_create` for auditability) and verify with `task_query`. Separate defect (`9b23d5bc`): post-`/clear` harness writes can UPSERT-corrupt existing store rows — verify NEW rows were created. Full detail: planning-is-prompting → workflow/task-store-discipline.md §1–§2.
+
+**Scope**: F4 "managers-first writes" is **RETIRED (2026-06-17)** — **ALL sessions write their own owed work now**, not just manager-figures (during the §0 transition, under the dual-write interim until cutover).
+
+**Canonical practice**: planning-is-prompting → workflow/task-store-discipline.md (§1 mandate, §2 who-writes, §3 when an explicit `task_create` is owed, §4 transition/receipts discipline).
+
 ## General Preferences
 
 - With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )

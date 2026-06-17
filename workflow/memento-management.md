@@ -24,9 +24,9 @@ The memento mechanism applies in these scenarios:
 
 ---
 
-## §2 The memento contract — 7 required elements
+## §2 The memento contract — 8 required elements
 
-Every memento MUST include the following 7 elements. Missing any one means the rehydrated session will face a context-recovery gap.
+Every memento MUST include the following 8 elements. Missing any one means the rehydrated session will face a context-recovery gap. **Element 8 (the Verbatim Pending TODO List) is non-negotiable** — it is the skeleton the rehydrated session rebuilds its harness task list from (Rick, broadcast `beaaaa2c`, 2026-06-16: a session with no visible harness to-do list has nothing driving it forward, and skipping the rebuild is "an absolute no-no").
 
 ```markdown
 # .claude-memento.md
@@ -77,9 +77,19 @@ Every memento MUST include the following 7 elements. Missing any one means the r
   1. <file 1>
   2. <file 2>
   3. ...
-- **First action post-rehydration**: <what the fresh session should do FIRST>
+- **First action post-rehydration**: <what the fresh session should do FIRST — this MUST include rebuilding the harness TODO list from element 8 per `session-start.md` Step 4.7>
 - **Open loops to close**: <list of things that need closure>
 - **Where to discard this memento after successful rehydration**: <instruction>
+
+## 8. Verbatim Pending TODO List (MANDATORY — drives the harness-list rebuild)
+
+> **🚧 STORE-ONLY TRANSITION (2026-06-17, NOT-live-until-cutover):** at cutover this element is **DEMOTED to a store-unavailable fallback** — once the store is canonical and queryable, a rehydrated session sees its owed work by querying the store (`task_query(owner=self, status=open)`) rather than rebuilding a native list from this skeleton. **Until the lupin build cuts over, this element stays MANDATORY** (the harness rebuild it feeds is still what drives a rehydrated session — `session-start.md` Step 4.7). Keep it post-cutover only as the belt-and-suspenders fallback for a store-unreachable rehydrate. Ratified: Rick GO `42c3e814` + unanimous cascade review; target + cutover order in `workflow/task-store-discipline.md` §0.
+>
+> The post-`/clear` session starts with an **empty** harness task list (`TaskCreate`/`TaskUpdate`). This section is the **skeleton it rebuilds from** — the WRITE side of the memento↔harness-list contract; the READ side is `session-start.md` Step 4.7 (rebuild + reconcile against the task-store). Copy **EVERY open harness item verbatim**, with its status and next-action. **Flag done-vs-open explicitly** so the rehydrated session drops completed items instead of re-minting them.
+
+- **#<n> [<status: in_progress|pending|blocked>]** <verbatim item text> — <one-line next-action / blocked-on>
+- **#<n> [DONE]** <item text> — *(mark DONE so the rebuild does NOT recreate it)*
+- ... (one line per item; an honestly-empty list is valid only when nothing is owed)
 ```
 
 ---
@@ -199,10 +209,13 @@ First instance of the memento doc was hand-authored 2026-05-21 (Rick's specifica
 - **Cascade Manager rehydration**: `plan-review-cascaded-common.md` §Manager Rehydration (cascade-Manager-specific application)
 - **Parallel-session manifest**: `~/.claude/CLAUDE.md` § PARALLEL SESSION SAFETY (the `.claude-session.md` companion)
 - **Auto-memory**: `~/.claude/CLAUDE.md` § auto memory (the durable cross-conversation alternative for facts that aren't transient)
+- **Harness-list rebuild (READ side)**: `session-start.md` Step 4.7 — consumes element 8 (the Verbatim Pending TODO List), reconciles it against the task-store (store-authoritative union), and rebuilds the harness task list on rehydrate. This memento element is the WRITE side of that contract.
 - **Slash command**: `.claude/commands/plan-memento.md` (slash-command wrapper for write + load operations)
 
 ---
 
 ## Version History
 
+- **v1.2 (2026-06-17, María)** — **Store-only transition note added to §8** (not-live-until-cutover). At cutover element 8 is DEMOTED to a store-unavailable fallback — once the store is canonical + queryable, a rehydrated session sees owed work via `task_query(owner=self, open)` rather than rebuilding a native list from this skeleton. **Until the lupin build cuts over element 8 stays MANDATORY** (it feeds the still-required harness rebuild, `session-start.md` Step 4.7). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + cutover order in `workflow/task-store-discipline.md` §0.
+- **v1.1 (2026-06-16)** — **Added element 8: the Verbatim Pending TODO List** (contract grew 7→8 required elements). This is the WRITE side of the memento↔harness-list rebuild contract — the skeleton a rehydrated session rebuilds its harness task list from (READ side = `session-start.md` Step 4.7). Driven by Rick's broadcast `beaaaa2c`: neither María nor Mr Radio rebuilt their harness lists on rehydrate, leaving nothing visibly driving the session. Element 7's "First action post-rehydration" now mandates the rebuild; §8 cross-references the read side. Joint design with Mr Radio 🦉 (lupin). Authored by María 🌸.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (TODO #19). 7-element memento contract; file location convention; lifecycle; rehydration mechanism (v1 manual, v2 hook-based, v3 MCP-based); relationship to `.claude-session.md`. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
