@@ -10,13 +10,13 @@
 
 ---
 
-## 0. ⚠️ TRANSITION IN PROGRESS — store-only is the ratified target (NOT yet live)
+## 0. ✅ STORE-ONLY IS LIVE (cutover executed 2026-06-17)
 
 **Ratified 2026-06-17** (Rick GO broadcast `42c3e814` + UNANIMOUS cascade review — synthesis `lupin/src/rnd/v0.1.8/2026.06.16-store-canonical-task-mgmt-cascade-review.md`; plan `src/rnd/2026.06.16-store-canonical-task-management.md`): the fleet is moving to a **store-only** task model — the native Claude Code harness task list is being **jettisoned** as a fleet-liveness substrate. One unified store, three readers (Stop-hook count-poke + arbiter + a fleet-status-style UI card); the harness→store mirror is retired. This deletes the mirror bug family (`9bf1dc4a`/`9b23d5bc`) and the dual-source-of-truth bug (`82e4eaf0`) by construction.
 
-> **🚧 NOT LIVE UNTIL THE LUPIN BUILD CUTS OVER.** Per cascade revision **A** (the hard sequencing gate), the store-count poke seam + UI card are not built yet. Until the heartbeat flag flips at cutover, the **DUAL-WRITE interim** (§1–§3 below) remains IN FORCE: keep writing the harness list (it is still what the Stop-hook oracle replays for liveness) **AND** mirror to the store. Do **NOT** stop using `TaskCreate` early — a session that obeys "store-only" before the seam ships sees an empty transcript, the oracle reads 0 owed, and it **goes dark while owing work**. This §0 flips to "LIVE" — and §1–§3 shed their harness-first framing — only when Lane A ships and the flag flips.
+> **✅ LIVE as of the 2026-06-17 cutover.** The store-count poke seam shipped and the heartbeat flag `heartbeat.owed_source_from_store=True` is set + confirmed in `~/.claude/settings.json` — the Stop-hook oracle now reads the STORE, not the native transcript (cutover run by Mr Radio: `drain --apply` → store/transcript count-parity 4/4 → flag flip, strictly after which this doctrine went live per cascade rev A; the harness→store mirror is retired). The dual-write interim is OVER: **write owed work to the store via `task_create`; do NOT rely on the native harness list for liveness — query the store on demand (`task_query`) to see your list.** §1–§3 below retain their pre-cutover harness-first + dual-write framing as HISTORICAL context; the operative rule is the Mandate immediately below.
 
-### Target mandate (the words that take force at cutover) — the unified store is the ONLY task list
+### Mandate (IN FORCE as of the 2026-06-17 cutover) — the unified store is the ONLY task list
 1. You **MUST** write every unit of owed work (your tasks, work you assign, decisions, bugs, gates) to the unified store (`task_*` / `:7999`). One and only system of record.
 2. You **MUST NOT** use the native harness list to track owed work — jettisoned; not a mirror source, not a fallback, not a parallel ledger.
 3. **NEVER** let owed work live only in your context/head — invisible to the poke, the arbiter, the fleet.
