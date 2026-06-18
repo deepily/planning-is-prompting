@@ -175,6 +175,33 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "memento-management",
+  "name": "Memento (Session Continuity / Re-spin)",
+  "description": "Pre-/clear state snapshot so a re-spawned session rehydrates without losing context. Responds to the 'prepare for re-spin' shorthand.",
+  "category": "core",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-memento",
+      "description": "Write/load/check a .claude-memento.md state snapshot (modes: write/load/check). Also fires on the 'prepare for re-spin' intent trigger → worker safe-checkpoint → memento → ACK."
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-memento.md",
+    ".claude-memento.md (created on first use; gitignored)"
+  ],
+  "notes": "Install in any repo whose workers get reaped + re-spawned so 'prepare for re-spin' is recognized fleet-wide. Canonical workflow: workflow/memento-management.md (§0 trigger phrases, §2 the 8-element contract)."
+}
+```
+
 ### Planning Workflows (For Structured Work Planning)
 
 ```json

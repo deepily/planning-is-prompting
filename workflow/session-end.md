@@ -239,6 +239,36 @@ Health: ✅ HEALTHY
 
 ---
 
+## 0.6) TODO Horizon Health Check (Automated)
+
+**Purpose**: Keep TODO.md scoped to the **current + next-two branch horizon** — the companion to the history.md health check (Step 0.5), but keyed on **branch/version horizon**, not token age. Full rules: workflow/todo-management.md → **Archival Strategy** + the `/plan-todo archive` mode.
+
+1. **Scan TODO.md for past-horizon content**:
+   - Detect the current version from the branch name (e.g. `wip-v0.1.3-…` → `v0.1.3`); keep-horizon = { current, +1, +2 }.
+   - Items carrying `| horizon: vX.Y` older than the keep-horizon (**untagged = current = kept**).
+   - Decisions-Log entries older than the date-retention window.
+   - Also weigh raw size — a TODO.md well past ~200 lines is itself a signal.
+
+2. **If past-horizon content exists (or TODO.md is oversized)**:
+   ```python
+   ask_yes_no(
+       message="TODO.md has past-horizon content — archive to todo-archive/ now?",
+       title="TODO Horizon",
+       abstract="**N past-horizon item(s)** + Decisions-Log slice older than the window.\n**Recommended**: Archive now via `/plan-todo archive` (dry-run → confirm → write). Keeps TODO.md at current+next-2 horizon; archives preserve the rest, greppable.",
+       priority="high"
+   )
+   ```
+   - **Yes** → invoke `/plan-todo archive` (dry-run first → confirm → write), then resume.
+   - **No** → log + add "Archive TODO.md horizon" to the backlog; resume.
+
+3. **If clean** → no action; continue to Step 1.
+
+**Rationale**: TODO.md is branch-horizon-scoped (2026-06-17 redefinition); this check is the automatic trigger that keeps it small — mirroring how Step 0.5 keeps history.md under its token limit.
+
+**Notification**: results sent via `notify()` when an archive is proposed.
+
+---
+
 ## 0.6) Bug Fix Mode Integration
 
 **Purpose**: Check if bug fix mode is active and prompt for session closure if this session owns it.

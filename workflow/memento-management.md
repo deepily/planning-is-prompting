@@ -8,6 +8,24 @@
 
 ---
 
+## §0 Trigger phrases & the "prepare for re-spin" shorthand
+
+This workflow is invoked **by intent, not only by the `/plan-memento` command**. Any of the following phrases — spoken to a session in any installed repo — means *"write your memento now"* and MUST trigger the §2 contract:
+
+- **"prepare for re-spin"** (the canonical shorthand)
+- "respin prep" · "ready yourself for re-spin" · "get ready to be re-spun"
+- "make a memento" · "write your memento" · "snapshot your state before I clear you"
+
+**The worker re-spin sequence (3 beats).** When a manager (or Rick) tells a worker *"prepare for re-spin,"* the worker MUST:
+
+1. **Reach a safe checkpoint** — finish or cleanly suspend the in-flight tool call/edit; leave no half-written file. (Do **not** commit as part of this step — committing/staging stays with the session-end ritual or the manager; bundling a commit into the shorthand risks staging another session's files.)
+2. **Write the memento** — the full §2 8-element contract, to the §3 location (`io/mementos/<persona-slug>-<date-at-HHMM>.md` for a spawned worker about to be dismissed; `<project>/.claude-memento.md` for a self-`/clear`).
+3. **ACK "ready for re-spin"** — notify the requesting manager/Rick (via `dm_send` to the manager, or `notify` to Rick) that the memento is written and the session is safe to reap + re-spawn.
+
+The phrase exists so Rick (or a manager) can say two words instead of re-explaining the memento-then-reap dance every time. It maps onto this **existing** workflow — there is no separate "re-spin" command.
+
+---
+
 ## §1 When to use
 
 The memento mechanism applies in these scenarios:
@@ -16,6 +34,7 @@ The memento mechanism applies in these scenarios:
 - **Cascade Manager seat handoff** — a Manager who has accumulated heavy cascade-state (~30+ DMs, multiple section topics, deep classification history) hands off to a fresh-context session via the memento
 - **Persona role rotation** — a session about to switch personas writes a memento so the next persona-holder can pick up the role with current context
 - **End-of-day handoff** — at end of day, write a memento so tomorrow's session can rehydrate without re-reading history.md from scratch
+- **"Prepare for re-spin" (worker dismiss + re-spawn)** — a manager (or Rick) tells a spawned worker to ready itself for reaping + re-spawn; the worker writes its memento per the §0 3-beat sequence so the re-spawned session inherits continuity (via `seed_memento`)
 
 **Distinct from**:
 - **Auto-memory** (`~/.claude/projects/.../memory/`) — durable cross-conversation facts about the user / project / preferences. Memento is single-clear-cycle transient.
@@ -153,7 +172,8 @@ When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the mement
 
 | Event | Action |
 |---|---|
-| Session about to `/clear` | Write `.claude-memento.md` with all 7 elements |
+| Session about to `/clear` | Write `.claude-memento.md` with all 8 elements |
+| Worker told "prepare for re-spin" | Run the §0 3-beat sequence: safe checkpoint → write memento (§2) → ACK "ready for re-spin" |
 | Session post-`/clear` (rehydration) | Read `.claude-memento.md`; follow §7 rehydration instructions |
 | Rehydration successful | Discard memento OR archive per §3 |
 | Memento >24h old | Treat as stale; verify cascade state hasn't changed before acting on memento contents |
@@ -216,6 +236,7 @@ First instance of the memento doc was hand-authored 2026-05-21 (Rick's specifica
 
 ## Version History
 
+- **v1.3 (2026-06-17, María)** — **NEW §0: trigger phrases + the "prepare for re-spin" shorthand.** Canonized *"prepare for re-spin"* (and synonyms) as an intent trigger for this workflow, with the worker 3-beat re-spin sequence (safe checkpoint → write memento → ACK ready-to-reap; commit explicitly NOT bundled). Added the re-spin scenario to §1 + the §4 lifecycle table; corrected the stale "all 7 elements" → "all 8 elements" (§4). Extend-existing decision (Rick voice GO 2026-06-17) — no new command; `/plan-memento` made wizard-installable in the same sweep. Authored by María 🌸.
 - **v1.2 (2026-06-17, María)** — **Store-only transition note added to §8** (not-live-until-cutover). At cutover element 8 is DEMOTED to a store-unavailable fallback — once the store is canonical + queryable, a rehydrated session sees owed work via `task_query(owner=self, open)` rather than rebuilding a native list from this skeleton. **Until the lupin build cuts over element 8 stays MANDATORY** (it feeds the still-required harness rebuild, `session-start.md` Step 4.7). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + cutover order in `workflow/task-store-discipline.md` §0.
 - **v1.1 (2026-06-16)** — **Added element 8: the Verbatim Pending TODO List** (contract grew 7→8 required elements). This is the WRITE side of the memento↔harness-list rebuild contract — the skeleton a rehydrated session rebuilds its harness task list from (READ side = `session-start.md` Step 4.7). Driven by Rick's broadcast `beaaaa2c`: neither María nor Mr Radio rebuilt their harness lists on rehydrate, leaving nothing visibly driving the session. Element 7's "First action post-rehydration" now mandates the rebuild; §8 cross-references the read side. Joint design with Mr Radio 🦉 (lupin). Authored by María 🌸.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (TODO #19). 7-element memento contract; file location convention; lifecycle; rehydration mechanism (v1 manual, v2 hook-based, v3 MCP-based); relationship to `.claude-session.md`. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).

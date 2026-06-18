@@ -2,9 +2,11 @@
 
 **Session Start**: Read history.md, TODO.md, and implementation document at start of each session
 
-**Harness-list rebuild (MANDATORY on rehydrate)**: after `/clear`, REBUILD your harness TODO list — reconcile your memento's verbatim pending-list against the task-store (store-authoritative union; verify-don't-manufacture; fail-loud-if-empty-when-owed; rebuild for your own drive, trust MCP `task_query` for the auditable truth until bugs `9bf1dc4a`/`9b23d5bc` land). See planning-is-prompting → workflow/session-start.md Step 4.7 (READ side) + workflow/memento-management.md §2 element 8 (WRITE side).
+**Owed-work on rehydrate (store-only, LIVE 2026-06-17)**: after `/clear`, do NOT rebuild a native harness TODO list as your liveness source — it is jettisoned. Query the store (`task_query(owner_persona=me, status=…)`) to see what you owe, and reconcile against your memento (store-authoritative union; verify-don't-manufacture; fail-loud-if-empty-when-owed). See planning-is-prompting → workflow/session-start.md Step 4.7 (READ side) + workflow/memento-management.md §2 element 8 (WRITE side).
 
 **Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
+
+**Prepare for re-spin (shorthand)**: when you (or a worker) are told *"prepare for re-spin"* (synonyms: *"make a memento," "ready yourself for re-spin"*) — **reach a safe checkpoint → write your memento → ACK "ready for re-spin"** (commit is NOT bundled; that stays with session-end / the manager). It's the two-word shorthand for the memento-then-reap handoff so the re-spawn inherits continuity; invokes `/plan-memento`. See planning-is-prompting → workflow/memento-management.md §0.
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
@@ -69,15 +71,15 @@
 
 ## TODO.md MANAGEMENT
 
-**Purpose**: Persistent tracking of pending work items across sessions.
+**Purpose**: The durable, human-readable **narrative companion** to the unified task-store — the Decisions Log, the Pending-Decisions queue, and the not-yet-owed backlog. The **store** is the single source of truth for *owed work*; TODO.md holds the durable "why" and the human-strategic layer the operational store deliberately isn't.
 
 **Location**: `TODO.md` at project root (alongside `history.md`)
 
 **Workflow Integration**:
-- **Session-Start**: Read TODO.md to review pending items (Step 4.5)
-- **Session-End**: Update TODO.md with new items and mark completions (Step 1.5)
+- **Session-Start**: Read TODO.md to review pending decisions + backlog (Step 4.5)
+- **Session-End**: Update TODO.md (decisions-log entries, backlog) and mark completions (Step 1.5)
 
-**Key Principle**: TODO.md is the single source of truth for pending work. Do NOT embed TODO lists in history.md entries.
+**Key Principle**: The **unified task-store** is the single source of truth for **owed work** (live, owned, status-tracked, liveness-bearing — query with `task_query`). **TODO.md** is the single source of truth for **durable narrative**: the Decisions Log, the Pending-Decisions queue, and backlog not yet promoted to a store item. Do NOT track live owed work in TODO.md (→ the store); do NOT put decisions-log narrative in the store (→ here); do NOT embed either in history.md entries.
 
 **File Format**:
 ```markdown
@@ -103,7 +105,8 @@ Last updated: YYYY-MM-DD (Session N)
 | Document | Purpose | ✅ Include | ❌ Exclude |
 |----------|---------|-----------|-----------|
 | **history.md** | Brief accomplishments | What was done, files changed | TODOs, phase tracking |
-| **TODO.md** | Pending work items | Tasks not yet done | Detailed step tracking |
+| **TODO.md** | Durable narrative | Decisions Log + Pending-Decisions queue + not-yet-owed backlog | Live owed work (→ task-store), step tracking |
+| **Unified task-store** | Live owed work | Owned/status-tracked items (task·decision·gate·bug·review) | Narrative / "why" (→ TODO.md) |
 | **Implementation docs** | Multi-phase tracking | Phase/step progress | General TODOs |
 
 **Key Principle**: When user says "update all tracking documents":

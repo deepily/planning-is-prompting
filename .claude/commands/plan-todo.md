@@ -1,9 +1,9 @@
 # TODO Management
 
-**Purpose**: Manage TODO.md file for persistent tracking of pending work items across sessions.
+**Purpose**: Manage TODO.md — the durable **narrative companion** to the unified task-store (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). Owed work lives in the store (`task_query`); TODO.md holds the durable narrative.
 
 **Project**: planning-is-prompting (meta-repository)
-**Version**: 1.0
+**Version**: 1.1
 
 ---
 
@@ -18,6 +18,7 @@
 - `add`: Add new items interactively
 - `complete`: Mark items as complete
 - `edit`: Full review and edit mode
+- `archive`: Branch-horizon-scoped archival — move past-horizon items to `todo-archive/`
 
 ---
 
@@ -28,7 +29,7 @@
 1. **MUST detect operation mode**:
    - Check if user provided mode parameter (add, complete, edit)
    - If no parameter: default to check/list mode
-   - Valid modes: (default), add, complete, edit
+   - Valid modes: (default), add, complete, edit, archive
    - Do NOT proceed without determining mode
 
 2. **MUST read the canonical workflow document**:
@@ -64,6 +65,9 @@
 
 # Edit mode - full review and edit
 /plan-todo edit
+
+# Archive mode - move past-horizon items to todo-archive/ (branch-horizon retention)
+/plan-todo archive
 ```
 
 ---
@@ -120,6 +124,22 @@
 5. Apply changes
 6. Update timestamp
 7. Notify: "TODO.md updated"
+
+### Archive Mode
+
+Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but keyed on **branch/version horizon**. Full rules: workflow/todo-management.md → **Archival Strategy** + design record `src/rnd/2026.06.17-todo-md-redefinition-and-archival.md` §3.
+
+1. Read TODO.md and detect the **current version** from the branch name (e.g. `wip-v0.1.3-…` → `v0.1.3`).
+2. Compute the **keep-horizon** = { current, +1, +2 } planned versions.
+3. Scan items for an optional `| horizon: vX.Y` tag. **Untagged = current horizon = KEEP.** Flag items tagged to a version older than the keep-horizon as past-horizon.
+4. **Decisions Log**: additionally slice entries older than the date-retention window (same window as history.md).
+5. **Pending Decisions**: NEVER auto-archived while open (a live decision queue) — archived only once ruled (the ruling lands in the Decisions Log).
+6. Move past-horizon items + the dated Decisions-Log slice to `todo-archive/<vLow>-to-<vHigh>-todo.md` (version-range) or `todo-archive/YYYY-MM-DD-todo.md` (Decisions-Log date slice), creating `todo-archive/` if missing.
+7. Leave a one-line breadcrumb in TODO.md (`→ archived to <file>`).
+8. Update the "Last updated" timestamp.
+9. Notify: "Archived N item(s) to <file>; TODO.md now at current+next-2 horizon."
+
+**Dry-run first (MANDATE)**: present the proposed moves and confirm before writing (`ask_yes_no` in conversation mode) — never archive silently. The session-end health-check (`session-end.md`) proposes this pass automatically when TODO.md outgrows its horizon.
 
 ---
 

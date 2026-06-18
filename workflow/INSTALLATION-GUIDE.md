@@ -68,6 +68,7 @@ I found existing planning-is-prompting workflows in this project:
 
 Not yet installed:
 ○ Planning is Prompting Core (/p-is-p-*)
+○ Memento / Re-spin Continuity (/plan-memento)
 ○ Backup Infrastructure (/plan-backup-*)
 
 What would you like to do?
