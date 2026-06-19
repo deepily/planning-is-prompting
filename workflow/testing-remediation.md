@@ -1,10 +1,14 @@
 # Testing Remediation Workflow
 
+> **Test Ownership**: This workflow is invoked by Claude, not requested from the human. Per the TEST OWNERSHIP MANDATE (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), testing the pyramid is Claude's responsibility; the human is a designer/user, not a tester. Scope decisions within this workflow are Claude's to make via change-impact analysis.
+
 **Purpose**: Verify system health after changes, identify regressions, systematically remediate issues
 **Mode**: Comparison analysis with targeted remediation
 **Principle**: Compare, Analyze, Fix, Validate
-**Version**: 1.0
-**Last Updated**: 2025.10.11
+**Version**: 1.1
+**Last Updated**: 2026.02.23
+
+> **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for remediation scope decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Regression diff goes to `abstract`; speak the headline only ("two regressions: auth flow and websocket reconnect").
 
 ---
 
@@ -64,10 +68,13 @@ project_config:
 - Example: `src/tests/results/reports/2025.10.10-baseline-test-report.md`
 
 **Argument 2: remediation_scope** (optional, default: FULL)
-- **FULL**: Fix all issues in priority order (Critical→High→Medium)
-- **CRITICAL_ONLY**: Fix only blocking/critical issues, document the rest
-- **SELECTIVE**: Present issues for user selection, fix chosen subset
-- **ANALYSIS_ONLY**: Generate comparison report only, no fixes
+
+> **Scoping is Claude's job, not the human's.** Per the TEST OWNERSHIP MANDATE, Claude picks the scope based on change-impact analysis (`~/.claude/skills/testing-development/references/change-impact-analysis.md`) and reports the choice and reasoning. Do **not** prompt the human to pick a scope. The explicit argument exists for cases where the human has already communicated intent (e.g., "just check for regressions") or for automation callers — it is an override, not a default question.
+
+- **FULL**: Fix all issues in priority order (Critical→High→Medium) — use when blast radius is wide.
+- **CRITICAL_ONLY**: Fix only blocking/critical issues, document the rest — use when the change is narrow and only critical regressions matter.
+- **SELECTIVE**: Target the subset flagged by change-impact analysis (the files/surfaces actually affected by the change). Claude derives the subset; it is **not** a "show the user a list and ask them to pick" mode.
+- **ANALYSIS_ONLY**: Generate comparison report only, no fixes — use for pre-merge audit or investigation.
 
 **Examples**:
 ```bash
@@ -233,9 +240,9 @@ Create comprehensive task list based on remediation scope:
 [{PREFIX}] Pre-flight validation and baseline detection
 [{PREFIX}] Execute post-change test suites
 [{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Present issues for user selection
-[{PREFIX}] Fix selected issues (time-boxed)
-[{PREFIX}] Validate selected fixes
+[{PREFIX}] Derive affected subset via change-impact analysis
+[{PREFIX}] Fix the derived subset (time-boxed)
+[{PREFIX}] Validate fixes
 [{PREFIX}] Generate remediation report
 [{PREFIX}] Update session history
 [{PREFIX}] Send completion notification
@@ -273,6 +280,24 @@ notify( "Post-change remediation STARTED ({scope}) - Comparing against baseline 
 **Task**: Run same tests as baseline, capture current state
 
 **Use exact same execution patterns as testing-baseline.md Step 3**, but with different log file naming (postchange_* instead of baseline_*).
+
+#### 3.0 Change-Scoped Test Selection (Optional)
+
+When a full re-run would take >5 minutes and changes are well-bounded, use Change Impact Analysis to scope the test run:
+
+1. **Classify** changed files using the 9-category taxonomy
+   (Documentation / Presentational / Config / Build / Utility / Business Logic / API / Data Layer / Security)
+2. **Compute blast radius** (fan-out level 1-5)
+3. **Scope decision**:
+   - If blast radius ≤ 3: Run only tests covering changed modules + full smoke suite
+   - If blast radius ≥ 4: Run full suite (skip this optimization)
+   - If all changes are Documentation: Skip testing entirely
+
+Document the scope decision in the comparison report (Step 4).
+
+**Reference**: See `~/.claude/skills/testing-development/references/change-impact-analysis.md` for the complete taxonomy, blast radius algorithm, and decision tree.
+
+**Note**: This step is an optimization. When in doubt, skip it and run the full suite.
 
 #### 3.1 Smoke Tests (Always Included)
 
@@ -753,7 +778,7 @@ case "$REMEDIATION_SCOPE" in
         ;;
     SELECTIVE)
         echo "🔧 Executing SELECTIVE remediation..."
-        # Present issues for user selection, then fix selected
+        # Derive affected subset via change-impact analysis, then fix subset
         ;;
     FULL)
         echo "🔧 Executing FULL remediation..."
@@ -1346,6 +1371,11 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 ---
 
 ## Version History
+
+**Version 1.1** (2026.02.23)
+- Added Step 3.0: Change-Scoped Test Selection (optional optimization)
+- Integrates Change Impact Analysis taxonomy for targeted test runs
+- References `~/.claude/skills/testing-development/references/change-impact-analysis.md`
 
 **Version 1.0** (2025.10.11)
 - Initial canonical workflow

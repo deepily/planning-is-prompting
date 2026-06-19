@@ -885,6 +885,8 @@ flowchart TD
 
 Once you've selected a pattern, break down the work into concrete tasks.
 
+> **Expected Output Shape (when cascade-bound)**: if your plan will be reviewed via `/plan-review-cascaded`, your Phase 3 output **is the cascade's INPUT**. The cascade expects your output to satisfy a 4-property spec: ≥ 2 sections, section independence (cold-reviewer test), explicit acyclic cross-section dependencies (valid DAG), comparable section scope. See §Cascade-Readiness below for the production-side how-to + `workflow/plan-review-cascaded-input-spec.md` for the canonical spec, validation rubric, and remediation flowchart for what happens when the input doesn't comply.
+
 #### Suggested Initial Task Breakdown
 
 **Based on**: Pattern 3 (Feature Development) + your work description
@@ -959,6 +961,37 @@ Once you've selected a pattern, break down the work into concrete tasks.
 3. **Logical Ordering**: Dependencies clear, tasks flow naturally
 4. **Testable Outcomes**: Each task produces verifiable output
 5. **One Active Task**: Only one task in_progress at a time
+
+#### Cascade-Readiness (When the Plan Will Be Cascade-Reviewed)
+
+> **Your output is the cascade's input.** This subsection describes how to shape your Phase 3 work breakdown so it satisfies the cascade's 4-property input spec (canonical reference: `workflow/plan-review-cascaded-input-spec.md`). Building the shape upstream during planning is far cheaper than letting the cascade's Step 0 reshape it after submission — see the input-spec doc §5 for the remediation cost table.
+
+**When this applies**: the plan is destined for the **cascaded** plan-review gate (`/plan-review-cascaded`) rather than the serial `/plan-review`. Cascaded review is used for larger plans — typically ≥ 2 reviewable sections — where the binding constraint is *reviewer (user) attention*, so sections are reviewed in a pipeline. If the plan will get only serial `/plan-review`, or no review at all, **skip this subsection** — it adds nothing.
+
+**Why structure for it at planning time**: a cascade consumes a plan that is *already* decomposed into independently-reviewable sections. If the planning output is not section-shaped, the cascade's Step 0 ("Cascade Preparation") has to reshape it first — and a plan that cannot be cleanly decomposed (single-section, or sections that can't be reviewed in isolation) fails the cascade's ≥ 2-section gate outright. Building the section shape *while planning* shrinks — ideally eliminates — that Step-0 reshaping gap.
+
+**The four properties to build into the work breakdown**:
+
+1. **≥ 2 sections** — decompose the work breakdown into at least two review sections. This is a **hard gate**: a one-section plan cannot be cascaded (the cascade refuses a section count below 2 unless the user explicitly overrides). A section is a coherent group of phases/tasks — coarser than a single task, finer than the whole plan.
+
+2. **Section independence** — each section must be reviewable *without loading sibling sections*. This is the load-bearing property. Self-apply the **cold-reviewer test**: *hand one section to a reviewer who has read only it, plus the shared design/decisions context — can they produce a complete, correct review?* If reviewing section B first requires reading section A's prose to understand what B refers to or whether it is correct, B is not independent — either fold the shared thing into an explicit cross-section dependency (property 3), or re-cut the section boundary.
+
+3. **Explicit, minimal, acyclic cross-section dependencies** — sections will have *some* dependencies; make them **explicit**, keep them **minimal**, and for each one document both directions — which section *provides* and which *consumes*. The dependency set must form a valid **DAG** (directed acyclic graph): a cycle means no valid section ordering exists, so the cascade pipeline cannot be built.
+
+   ```mermaid
+   flowchart LR
+       A["Section A<br/>data model"] --> B["Section B<br/>API layer"]
+       A --> C["Section C<br/>UI layer"]
+       B --> C
+   ```
+
+   The graph above is a valid DAG — a topological order exists (A → B → C), so the cascade can pipeline it. A cycle — e.g. A depends on C *and* C depends on A — has no topological order; break it (merge the two sections, or re-cut the boundary) before the plan is cascade-ready.
+
+4. **Comparable section scope** — aim for sections of *roughly* comparable size. This is a **soft preference, not a gate**: the cascade does not refuse uneven sections. It only improves pipelined throughput — the slowest section is the pipeline bottleneck. Treat it as a nice-to-have, never a blocker.
+
+**Boundary — what NOT to do here**: produce a *sliceable* breakdown, and nothing more. The cascade's Step 0 still assembles the pre-cascade Recon checklist and the formal slicing manifest — those are Manager-side work that depends on cascade-internal configuration. Do not attempt them in the plan. Cascade-readiness *shrinks* Step 0; it does not replace it.
+
+**Cross-references**: `/plan-review-cascaded` (the cascaded review gate); the cascade's Step 0 "Cascade Preparation" phase.
 
 #### Manual Breakdown Methodology (If Not Accepting Suggested Tasks)
 
@@ -1563,11 +1596,13 @@ This work planning workflow integrates with other planning-is-prompting workflow
 - **Session End** (planning-is-prompting → workflow/session-end.md): Update history.md with completed work, learnings, and next steps
 - **History Management** (planning-is-prompting → workflow/history-management.md): Archive completed phases to maintain token budgets
 - **Commit Management** (planning-is-prompting → workflow/commit-management.md): Commit completed phases with descriptive messages
+- **Cascaded Plan Review** (planning-is-prompting → workflow/plan-review-cascaded.md): For ≥ 2-section plans reviewed under a reviewer-attention constraint — structure the Phase 3 work breakdown per the *Cascade-Readiness* subsection so the plan is born cascade-shaped
 
 ---
 
 ## Version History
 
+- **2026.05.22**: Added "Cascade-Readiness" subsection to Phase 3 (Work Breakdown) — guidance for shaping a plan's work breakdown into ≥ 2 independently-reviewable, acyclically-dependent sections so the plan is born ready for `/plan-review-cascaded`; plus a cross-reference under "Integration with Other Workflows"
 - **2025.10.14**: Added interactive discovery with context-aware defaults - Phase 1 discovery questions now infer smart defaults from user description, git state, and history; Phase 2 suggests recommended pattern with rationale; Phase 3 provides suggested task breakdown based on pattern and context
 - **2025.10.04**: Renamed from work-planning.md to p-is-p-01-planning-the-work.md for "Planning is Prompting" grouping
 - **2025.10.04**: Initial comprehensive workflow created, adapted from Lupin design-planning-docs slash command

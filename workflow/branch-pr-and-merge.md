@@ -10,6 +10,18 @@
 
 **Entry Point**: `/plan-branch-pr-and-merge`
 
+> **⚠️ Conversation Mode Awareness**: this workflow has multiple destructive-or-shared-state gates (PR description approval, **push approval**, merge confirmation, post-merge tag prompt). **Committing outstanding work is NOT a gate** — it's standing manager/session authority once the quality gate (green AND reviewed) is met; only push / PR / merge-to-main / tag remain user gates (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), each gate is a voice gate.
+>
+> **Mandates in conversation mode**:
+> - All blocking calls MUST use `priority="high"`. Destructive operations (force-push) require **explicit voice confirmation** — never silent default.
+> - Consider grouping push + merge confirmation as one `ask_multiple_choice()` to reduce voice round-trips.
+> - **Brevity mandate**: speak the **PR title** aloud; full PR body, diff stats, and file list stay in the terminal reply and the `abstract` parameter. Don't read the changelog or commit list aloud.
+> - Receipt-acknowledge each user prompt before further tool work.
+>
+> **Brevity mandate (universal)**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers; cap at ~30 seconds of speech.
+>
+> **Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
 ---
 
 ## Overview
@@ -150,23 +162,20 @@ ask_multiple_choice(
 
 **If uncommitted changes BUT history entry exists for today**:
 
+The commit itself is **not** gated — a history entry already exists, so **commit the outstanding work autonomously** (standing authority, once green AND reviewed) and post a receipt, then proceed. Do **not** ask "may I commit?".
+
 ```python
-ask_multiple_choice(
-    questions=[{
-        "question": "Uncommitted changes detected. Commit before PR?",
-        "header": "Uncommitted",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit now", "description": "Stage and commit these changes"},
-            {"label": "Run checkpoint", "description": "Full checkpoint with history update"},
-            {"label": "Skip", "description": "Continue with uncommitted changes (not recommended)"},
-            {"label": "Cancel", "description": "Abort PR workflow"}
-        ]
-    }],
-    priority="high",
-    abstract="**Uncommitted files**:\n[list from git status]\n\n**Note**: History entry for today exists. Quick commit may be sufficient."
+# Stage selectively (Step 3.5 verified list — NEVER git add . / -A), commit, then:
+commit_hash = "<git rev-parse --short HEAD>"
+notify(
+    message="Committed outstanding work before PR: <one-line subject>",
+    notification_type="task",
+    priority="low",
+    abstract="**Commit** `<hash>` — <subject>\n**Files**: [list]\n**Stat**: N files, +X/-Y"
 )
 ```
+
+**Edge case** — if the uncommitted changes look unexpected or unrelated to this session's work (not on the Step 3.5 list), do not auto-commit: surface them and let the user direct (commit / stash / abort).
 
 **If no uncommitted changes**:
 - Display: "All changes committed ✓"
@@ -351,20 +360,23 @@ Remote tracking: [Yes/No] (origin/[branch-name])
 
 **If uncommitted changes exist**:
 
+Committing is standing authority (not a gate). If the changes are this session's own work (on the Step 3.5 verified list), **commit them autonomously** (green AND reviewed) and post a receipt, then continue the audit. Only prompt the user when the changes are **ambiguous** — unexpected/unrelated files, or a genuine commit-vs-stash judgment the user owns:
+
 ```python
+# Ambiguous-changes branch only:
 ask_multiple_choice(
     questions=[{
-        "question": "Uncommitted changes detected. How to proceed?",
+        "question": "Unexpected uncommitted changes detected. How to proceed?",
         "header": "Changes",
         "multiSelect": False,
         "options": [
-            {"label": "Commit first", "description": "Run /plan-session-end or commit now"},
+            {"label": "Commit them", "description": "These are mine — stage (selectively) and commit"},
             {"label": "Stash", "description": "Stash changes and continue"},
             {"label": "Cancel", "description": "Abort PR workflow"}
         ]
     }],
     priority="high",
-    abstract="**Uncommitted files**:\n[list from git status]"
+    abstract="**Uncommitted files**:\n[list from git status]\n\n**Note**: shown because the changes are not on this session's Step 3.5 touched-files list."
 )
 ```
 
@@ -562,6 +574,8 @@ ask_yes_no(
     abstract="**Smoke tests**: [N]/[N] ✓\n**Unit tests**: [N]/[N] ✓\n\nIntegration tests are optional and may require external services."
 )
 ```
+
+**Response handling** (ternary): `yes` → run integration tests; `no` → continue to PR creation without integration tests; `neither` → re-frame (typical: "which integration suite — db-only, full stack, smoke-integration?"). Re-prompt with `ask_multiple_choice()` over the available suites. Do NOT default to skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TaskUpdate**: Mark Step 1.5 complete.
 
@@ -849,8 +863,9 @@ ask_yes_no(
 )
 ```
 
-- **If YES** (response starts with "yes", may include `[comment: ...]`): Continue to Step 7
-- **If NO** (response starts with "no"): Re-prompt or offer to cancel
+- **If YES** (`response.startswith("yes")`, may include `[comment: ...]`): Continue to Step 7
+- **If NO** (`response.startswith("no")`): Re-prompt or offer to cancel
+- **If NEITHER** (`response.startswith("neither")`): **CRITICAL — do NOT proceed to Step 7.** Merge-confirmation is a load-bearing gate. Typical re-frames: "merged with squash vs merge commit?", "merged into main vs another branch?", "still waiting on CI". Read the `[comment: ...]` qualifier, re-prompt with the narrower question, and only continue once a definite yes is received. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TaskUpdate**: Mark Step 6 complete.
 
@@ -920,7 +935,7 @@ ask_yes_no(
 )
 ```
 
-### If Yes (response starts with "yes", may include `[comment: ...]`)
+### If Yes (`response.startswith("yes")`, may include `[comment: ...]`)
 
 1. **Delete local branch**:
    ```bash
@@ -931,6 +946,10 @@ ask_yes_no(
    ```bash
    git push origin --delete [branch-name]
    ```
+
+### If Neither (`response.startswith("neither")`)
+
+**CRITICAL — do NOT delete.** Branch deletion is destructive (remote deletion especially). Typical re-frames: "delete local but keep remote", "delete remote but keep local for reference", "wait until I confirm CI ran on the merged main". Read the `[comment: ...]` qualifier, then re-prompt — usually `ask_multiple_choice()` over "delete both", "delete local only", "delete remote only", "keep both". Default ("no") is meaningless here: Neither requires an explicit user click. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ### Error Handling
 
@@ -986,12 +1005,16 @@ ask_yes_no(
 )
 ```
 
-### If Yes (response starts with "yes", may include `[comment: ...]`)
+### If Yes (`response.startswith("yes")`, may include `[comment: ...]`)
 
 ```bash
 git tag [version]
 git push origin [version]
 ```
+
+### If Neither (`response.startswith("neither")`)
+
+**CRITICAL — do NOT tag.** Tagging is irreversible on remote (`git push origin --delete tag <name>` works but git tag hygiene is fragile). Typical re-frames: "the extracted version is wrong", "this is a pre-release/RC", "tag locally but don't push", "use a different versioning scheme". Read the `[comment: ...]` qualifier, then re-prompt — usually `converse()` asking the user to type the exact tag string, or `ask_multiple_choice()` over the variant types. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ### Display
 
@@ -1158,6 +1181,8 @@ At session start, detect if on main and prompt:
 ---
 
 ## Version History
+
+**v1.1** (2026.06.16, María) - **Commit gate removed (D1 guided-walkthrough ruling).** Committing outstanding work is now standing manager/session authority once green AND reviewed — only push / PR / merge-to-main / tag remain user gates. The two "commit before PR" blocking gates now **commit autonomously + post a receipt** (prompting the user only when the changes are ambiguous/unexpected — not on the session's Step 3.5 touched-files list). Conversation-mode gate list updated to match. Test gates, PR-description approval, push, merge confirmation, and tag prompt are unchanged.
 
 **v1.0** (2026.02.04) - Initial workflow
 - 12-step branch completion process

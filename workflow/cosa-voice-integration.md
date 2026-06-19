@@ -14,6 +14,8 @@ The cosa-voice MCP server provides real-time voice notifications and interactive
 - **Native MCP tool calls**: No bash command execution required
 - **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
 
+> **Note**: When the cosa-voice session is in **conversation mode** (binary toggle, exclusive — only one session at a time can hold the microphone), every `notify()` call becomes TTS, every user prompt arrives with `<voice-message from-distance="true">` metadata, and Claude must speak a re-crafted (NOT verbatim) closing turn via `notify()`. The spoken payload follows the **TTS Response Brevity Mandate**: stripped of markdown structure, conversational in tone, capped at ~30 seconds of speech even when the terminal reply runs long. See [§ Conversation Mode](#conversation-mode) below for full rules including voice persona, two-turn obligations, and the brevity mandate.
+
 ---
 
 ## CRITICAL: The User Is NOT Watching the Terminal
@@ -32,6 +34,129 @@ The cosa-voice MCP server provides real-time voice notifications and interactive
 | Terminal text output | SECONDARY - Detailed explanations | When user checks back |
 
 **Consequence**: If you complete work without notifying, the user has NO IDEA you finished. They will wonder if you're still working, stuck, or waiting for input.
+
+---
+
+## Conversation Mode
+
+The cosa-voice session has a session-level **binary mode toggle** that fundamentally changes how Claude communicates with the user.
+
+### The Two Modes
+
+| Mode | Default? | TTS behavior | When the user is… |
+|------|----------|--------------|-------------------|
+| **Notification mode** | Yes | Each `notify()` plays a "ding"; only `priority="high"`/`"urgent"` is rendered as TTS | At the terminal, watching scrollback |
+| **Conversation mode** | No (opt-in, **exclusive** — only one session at a time can hold the microphone) | EVERY `notify()` is rendered as TTS; user prompts arrive wrapped in `<voice-message from-distance="true" priority="high" suppress-ding="true">` metadata | At a distance, listening via TTS rather than reading the terminal |
+
+### Voice Persona
+
+Each Claude Code session is assigned a **unique voice persona** (TTS voice) at startup, used to disambiguate parallel sessions when the user has multiple sessions running. The persona is surfaced in the MCP `get_session_info()` response as a `voice_persona` dict (`{name, display_name, voice_id, icon, color, ...}`), and is also exposed via the server endpoint `/api/cosa-voice/voice-persona/{session_id}`. Extracting `voice_persona.name` / `display_name` at Phase A startup is mandatory under the Persona-First Response Mandate — see `workflow/claude-config-global.md § Persona-First & Doc-Link Literacy`.
+
+### State Checking
+
+Read `conversation_mode_active` from `get_session_info()` at session start (Phase A of the MCP startup protocol in `~/.claude/CLAUDE.md`). Re-check after any user message that pattern-matches "enter/exit conversation mode" (the harness sends a system message confirming the toggle).
+
+### Two-Turn Obligations in Conversation Mode
+
+When `conversation_mode_active=true`:
+
+1. **Receipt acknowledgment BEFORE any tool work begins.** Every user prompt must be greeted with at minimum a brief `notify(message=<short ack>, suppress_ding=True, priority='high')` BEFORE you fire any tool calls. The acknowledgment can be one short sentence ("Looking into that now."). A turn that opens with tool calls and never speaks violates the contract — the user has no audible signal the prompt was received.
+2. **Closing turn must be spoken.** After tool work completes (or any turn that produces user-facing text), call `notify(message=<spoken précis>, suppress_ding=True, priority='high')`. The spoken payload follows the **TTS Response Brevity Mandate** below.
+
+### USER-ONLY INITIATION (HARD RULE)
+
+Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
+
+When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
+
+### TTS Response Brevity Mandate
+
+**Promoted from real-use observation (2026-05-04, after ~1 week of conversation-mode use)**: spoken responses that are verbatim copies of the markdown terminal reply feel "like documentation read aloud." That's the failure mode this mandate corrects.
+
+**Rule**: in conversation mode, the `notify(message=...)` payload must be **conversational, concise, and TTS-shaped** — actively re-crafted for the voice channel, NOT a verbatim copy of the markdown terminal reply.
+
+**Specifically**:
+
+- **Strip markdown structure**: no `#`/`##`/`###` headings; no `**bold**`/`*italic*` markers; no `-`/`*` bullet symbols; no inline code backticks (or speak the bare word, e.g., "git status" not `` `git status` ``); no fenced code blocks; no table syntax (tables are unreadable as speech — render as prose summaries).
+- **Strip technical density**: file paths, line numbers, function signatures, JSON snippets, hash literals, URLs all stay terminal-only. If a path is unavoidable, speak the human-readable name ("the install wizard catalog entry") not the raw path.
+- **Drop section labels and letter enumeration**: no "A, B, C, D"; no "section 3"; use natural connectives ("and", "but", "so").
+- **Aim for human speech patterns**: short sentences, no parenthetical asides cluttering flow.
+- **Length discipline — 3-sentence maximum (2026-06-13)**: sentence 1 = headline (the verdict); sentences 2–3 = two supporting takeaways. This rule is UNIVERSAL — routine closes and substantive turns alike. **Rationale**: word-count limits ("≤80 words", "≤120 words") failed repeatedly in practice because LLMs do not reliably count words; LLMs count sentences reliably. Three sentences is a concrete, enforceable constraint. The spoken version is a **précis** of the terminal reply, never a duplicate. The terminal still carries the rich content for when the user reads back.
+- **Headline, don't enumerate**: numbers, file lists, percentages, test counts, file paths, hash literals — all of these live in `abstract`, never in the spoken line. Speak the verdict ("tests are green," "two commits ready for review"), then let the abstract carry the inventory. Reciting numeric or file inventories aloud was the most common bloat source observed in real use (2026-05-05 follow-up to the original mandate).
+- **No justification for non-actions in the spoken line**: skip confidence statements ("structurally identical to the known-working path, so confidence is high"), process meta ("documented in the execution log per the test ownership mandate"), and rationale for deferred work. The decision is the news; the rationale belongs in the `abstract` or terminal scrollback. If the user wants the why, they'll drill into the abstract.
+- **Two-channel asymmetry — the `abstract` parameter STAYS richly formatted.** The brevity rules above apply to the SPOKEN `message` parameter ONLY — NEVER to `abstract`. The `abstract` (rendered into the UI/notification card and terminal scrollback) SHOULD be richly formatted with full markdown structure: headings, code blocks, tables, file paths, line numbers, JSON snippets, hash literals, URLs — all the technical detail Claude would normally put in a terminal reply. The two channels are **complementary, not duplicates**: voice carries conversational gist, `abstract` carries the rich written record. The same `notify()` call delivers both: keep `message` short, conversational, stripped; keep `abstract` long, structured, formatted. Examples of what belongs in `abstract`: findings tables, code diffs, catalogs, full PR bodies, error stack traces, command outputs, multi-file change lists.
+- **Acknowledge-then-summarize pattern**: receipt acks at turn-start are 1 sentence. Closing summaries cap at the length above; longer only when the user explicitly requested a deep readout.
+- **The terminal reply stays markdown-rich**. The `notify()` payload is RE-CRAFTED for speech, not a plain-text copy. Two channels with different ergonomics: terminal = scannable structure; voice = conversational prose.
+- **Pre-`notify()` MUST-audit gate (MANDATORY, 2026-05-15)**: the session MUST audit every closing-turn `notify()` call before sending it. If the spoken `message` contains ANY noun, term, file path, version number, percentage, or named entity that also appears in `abstract`, the offending token MUST be struck from `message` before the call is made. The two channels are STRUCTURALLY COMPLEMENTARY, NEVER DUPLICATES — token overlap between `message` and `abstract` is a violation, not a style preference. No "if/then" framing, no "consider whether," no "maybe trim" — the audit is MANDATORY and the strike is OBLIGATORY. See the 2026-05-15 anchor example below.
+
+**Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()`. That's passive filtering. The mandate requires **active re-shaping** for the voice channel.
+
+**Anchor example** (real failure mode observed 2026-05-05; ~190 words → ~45 words):
+
+❌ **Bloated** — three failure modes: inventory recital, deferred-work justification, process meta:
+
+> "All phases done. Auto tier verification is 100 percent green — three nine five zero unit tests passing in the full regression, plus thirteen on the router, forty one on the wrap helper, ten on the M C P toggle round trip, and fifty out of fifty on the websocket smoke suite. The manual live verification on dev is the one thing I deferred — running it would require toggling off the conversation mode we're using to communicate right now, which would be self defeating. I documented that explicitly in the execution log per the test ownership mandate. The fix is structurally identical to the known working displace path so confidence is high. Two commits remain on your end whenever you're ready — the Lupin commit covering the doc directory plus the helper plus the two test files, and a separate CoSA commit for just the router file. I have not touched git in either repo. The E two E U I conversation mode test on the test server is the only follow up — submit it via the test suite endpoint when you have a clean slot."
+
+✅ **Tightened** — verdict-first, abstract carries the rest:
+
+> "All phases done. Auto-tier tests are green — counts in the abstract. I deferred the live manual check since running it would drop us out of conversation mode. Two commits are staged for your review whenever you're ready."
+
+What was cut: per-suite test counts (→ abstract), three-sentence justification of the deferred test, "documented in the log" process meta, file inventory of each commit, "I haven't touched git" assurance, follow-up test detail. Total reduction: ~76% fewer spoken words; zero loss in conveyed decision because the abstract still carries the full detail.
+
+**Anchor example #2** (real failure mode observed 2026-05-15; ~175 words → ~22 words):
+
+A session opening report for a cosa-voice hook-language audit dumped the full audit verdict into the spoken channel: named the two drifted terms verbatim, recited the file paths where they lived, spoke the rationale for the recommended fix, and explained which session owned the follow-up. The abstract carried the same content as a table. The user called the violation immediately: *"You yourself just violated 1 of the first mandates… All detail is supposed to be pushed into the abstract."*
+
+❌ **Bloated (175 words)** — inventory recital + terminology spoken aloud + rationale + ownership detail in speech:
+
+> "OK Ricey, Rio reporting. Yesterday, two big landings. Rachel built a cross-repo doc-viewer scope guidance — global rule plus per-repo pins in five repos, and a Lupin TODO for the scopes endpoint. Session 86 wrote the cross-session communication guidance, the three-tier autonomy model that lets us write on the commons board. Now the hooks audit. The home CLAUDE file isn't the problem — it explicitly delegates to the per-turn rider as authoritative. The drift is inside cosa-voice itself. The MCP startup blob still calls speakerphone-off 'phone mode' with the old silent semantic. But the per-turn rider and the exit reminder both renamed it to 'quiet mode, per-session DND' on May fourteenth evening, with a totally different rule: keep calling notify, just at medium priority with the small arrival ding. Recommended fix: rewrite the phone-mode bullet in cosa-voice MCP to match the rider's quiet-mode semantic. Likely a one-paragraph patch for Maria or the next Lupin session."
+
+✅ **Tightened (22 words)** — verdict only; abstract carries the table, the file paths, the terminology, the dates, the doc-viewer links:
+
+> "Home CLAUDE file is clean; the drift lives inside cosa-voice itself, May-14 evening reframe missed one surface."
+
+What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file locations (`cosa_voice_mcp.py`, `hook_common.py`), the surface count, the recommended-fix rationale, the ownership note (Maria / next Lupin session), the yesterday-recap inventory (Sessions 86/87 by-name). All of it lives in the abstract — with working `/app/docs?path=<project>/<rel>` viewer links to every file referenced (per the doc-link reflex extension, hook 3 of the recovery plan; canonical link grammar at `workflow/doc-viewer-links.md`). Total reduction: ~87% fewer spoken words; zero loss because the abstract carries the full detail AND clickable navigation.
+
+**Why this anchor is worth memorializing alongside #1**: the 2026-05-04 anchor (#1) targeted **inventory recital** as the dominant failure mode. The 2026-05-15 anchor (#2) targets **terminology recital** — the violation pattern where audit findings, doctrinal terms, or terms-in-conflict get spoken aloud rather than tabled in the abstract. Both share the same root cause (the author drafted spoken + abstract in parallel instead of treating speech as verdict-only headline), but they differ in surface: #1's bloat is *numbers and counts*, #2's bloat is *named concepts and file paths*. The MUST-audit gate above closes both at once: ANY noun overlap between channels is a violation.
+
+### Message-Size Hard Cap + Deliberate Override (2026-06-02)
+
+**Why a hard cap exists.** The TTS Response Brevity Mandate above is a *discipline*, and discipline **decays** over long sessions — re-confirmed 2026-06-02 when Rick flagged a wall-of-text spoken message the morning *after* the identical correction. Self-enforcement is unreliable, so the brevity rule is now backed by a **caller-side hard cap** on spoken-message length, enforced inside the cosa-voice MCP. This subsection documents the cap and its escape hatch.
+
+**The cap (default, automatic):**
+- Enforced on the **spoken `message`** of all five spoken tools: `notify()`, `converse()`, `ask_yes_no()`, `ask_multiple_choice()`, `ask_open_ended_batch()`.
+- **Default: 500 characters (roughly 3 sentences).** Over-cap calls **REJECT** (raise `ValueError`) so the model must re-craft — unless the override is set. (Reject-not-truncate ratified by Rick 2026-06-02, decision D4: a hard fail trains brevity; truncation doesn't.) The 500-char cap enforces the 3-sentence rule mechanically — if 3 sentences fit comfortably under 500 chars, the brevity mandate is met.
+- **Config-driven + runtime-tunable.** The cap lives in `lupin-app.ini` as `cosa voice spoken char cap = 500` (read via ConfigurationManager, mtime-gated). Edit the INI and the MCP picks it up on the **next call — no restart**.
+- **`abstract` is NEVER capped** (see *Two-channel asymmetry* above). Moving detail into `abstract` is always the first-line answer to a too-long message; the cap should rarely bite if the brevity mandate is followed.
+- **Scope:** caller-side in the MCP only; the notifications REST API is unrestricted.
+
+**The deliberate override (opt-in, intentional):**
+- A message that *genuinely* must exceed the cap — a long/verbatim readout the user **explicitly asked to hear aloud** — must set the explicit override to pass through. **The cap is the default; chattiness is a conscious opt-in, never accidental.**
+- Mechanism: **`override_size_limitation: bool = False`** on all five spoken tools, e.g. `notify( message=..., override_size_limitation=True, ... )`. Omitting it (the default) means the cap applies and an over-cap call rejects.
+- **The override is NOT a loophole.** Setting it without a real justification is a *violation* of the brevity mandate, not a way around it. It exists for the rare legitimate long message; if you reach for it more than rarely, the content belongs in `abstract` + doc-links instead.
+
+**When the override IS legitimate:**
+- The user explicitly asked to **hear** a long or verbatim readout spoken (not just see it).
+- A spoken transcript / quotation the user wants reproduced aloud in full.
+
+**When it is NOT (default path — leave the flag off):**
+- Routine status closes, summaries, numeric/file inventories, audit findings, decision-support — these go to `abstract` + doc-links with a capped, headline spoken line. No override.
+
+**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented + 11/11 unit tests green (Tiberius, DM `14f9e3c8`).
+
+### Priority="high" Mandate Intensified
+
+In notification mode, `priority="low"` `notify()` calls are silent — only the ding plays. In conversation mode, EVERY `notify()` becomes TTS, including low-priority. Workflows that emit frequent low-priority progress notifications should reconsider in conversation mode: either group them, suppress the dings (`suppress_ding=True`), or skip them entirely if they don't carry information the user needs spoken.
+
+All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`, `ask_open_ended_batch()`) MUST use `priority="high"` regardless of mode — but the rule is doubly important in conversation mode where audio is the only channel reaching the user.
+
+### Batch Over Sequential
+
+Each blocking tool call in conversation mode is a voice round-trip — the user must hear the prompt, formulate a response, and speak it back. Sequential `converse()` calls compound the latency. Prefer `ask_open_ended_batch()` to bundle related questions into a single screen with one voice prompt covering all of them.
+
+### Cross-Reference
+
+The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVERSATION MODE & TTS RESPONSE BREVITY MANDATE` (loaded into every Claude Code session globally). This canonical doc is the long form; the global config is the headline rule.
 
 ---
 
@@ -87,9 +212,11 @@ NOTIFICATION VERIFICATION:
 □ Did I use blocking tools when I needed decisions?
 □ Did I notify about any errors encountered?
 □ Will the user know I'm finished?
+□ If I made a blocking-tool ask, does the abstract carry pros/cons + recommendation
+  per the Recommendation Mandate for Blocking-Tool Asks above?
 ```
 
-**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
+**If ANY checkbox is unchecked**: Send the missing notification(s) NOW, or re-issue the blocking-tool ask with the missing decision-support added.
 
 ---
 
@@ -113,11 +240,19 @@ NOTIFICATION VERIFICATION:
 | Tool | Purpose | Blocking | Parameters |
 |------|---------|----------|------------|
 | `notify()` | Fire-and-forget audio announcement | No | message, notification_type, priority, abstract, suppress_ding |
-| `ask_yes_no()` | Binary yes/no decision | Yes | question, default, timeout_seconds, abstract, job_id |
+| `ask_yes_no()` | Ternary yes/no/neither decision (Neither = re-frame escape) | Yes | question, default, timeout_seconds, abstract, job_id |
 | `converse()` | Open-ended question (voice/text response) | Yes | message, response_type, timeout_seconds, response_default, priority, title, abstract |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | questions, timeout_seconds, priority, title, abstract |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | questions (with optional default_value), timeout_seconds, priority, title, abstract |
 | `get_session_info()` | Session metadata (project, sender_id) | No | (none) |
+
+---
+
+### Related: cross-session communication tools (`commons_*` + `dm_send`)
+
+The cosa-voice MCP server also exposes Claude↔Claude cross-session tools: the `commons_*` blackboard tools (`commons_post`, `commons_read`, `commons_who`, `commons_ask_sync`, `commons_ask_async`) and **`dm_send`** for directed peer DMs — the notification-native, inline-body successor to the deprecated `commons_send_to` / `commons_ask_async` DM-mode (~18× cheaper). These are NOT covered in this document — they have their own behavioral guidance governing when and how sessions may use them.
+
+**See**: planning-is-prompting → workflow/cross-session-communication.md for the three-tier autonomy rules, reserved topic vocabulary, broadcast receipt contract, and anti-patterns.
 
 ---
 
@@ -206,16 +341,103 @@ Use blocking tools when you need user input before proceeding. All blocking tool
 
 **CRITICAL: All blocking tools MUST use `priority="high"`** to ensure TTS alert reaches the user. Without `high` priority, the notification will not be spoken aloud and may time out before the user notices.
 
+### Recommendation Mandate for Blocking-Tool Asks (2026-05-21)
+
+**MANDATE**: every `ask_multiple_choice()`, `ask_yes_no()`, and `converse()` call that frames a decision between alternatives MUST include in its `abstract` parameter: (a) pros AND cons per option, AND (b) an explicit recommendation with rationale.
+
+**Why this exists**: when a blocking-tool ask presents N options as a neutral menu, the user has to do the synthesis work the agent should be doing. The agent has all the context (just-completed analysis, file reads, prior conversation); the user is often at-a-distance, listening, and lacks the on-screen context. **Forcing the agent to commit to a position is a tax that buys the user faster, better decisions** — and surfaces the agent's reasoning so the user can either accept the recommendation or override it with their own judgment.
+
+**Why "abstract" not "message"**: the spoken `message` parameter is capped at 3 sentences (TTS Brevity Mandate). Pros/cons/recommendation is structural detail that belongs in the UI card the user reads on-demand. The spoken line names the question; the abstract carries the decision-support.
+
+#### Per-tool shape
+
+| Tool | What the `abstract` MUST contain |
+|------|----------------------------------|
+| `ask_multiple_choice` (2+ options) | One "Pros" sub-list + one "Cons" sub-list **per option**, followed by a "Recommendation" paragraph naming the recommended option AND the rationale (what trade-off you weighed, why this option wins). Mark the recommended option in the option's `description` field too (e.g. prefix "Recommended: …" or end with "← my recommendation"). |
+| `ask_yes_no` (with non-trivial framing) | Reasoning for the yes-path (what happens, what risk, what cost) AND reasoning for the no-path AND a recommendation (default-yes vs default-no) with the rationale that explains which trade-off dominated. The `default` parameter should match the recommendation. |
+| `converse` (open-ended, with framed alternatives) | Same shape as `ask_multiple_choice` if the prompt enumerates alternatives. For unframed open-ended ("what would you like to do?") the mandate doesn't apply — no alternatives to weigh. |
+| `ask_open_ended_batch` | Same as `converse` per-question. |
+
+#### Worked example — anti-pattern vs canonical
+
+❌ **Anti-pattern** (neutral menu, user does the synthesis):
+
+```python
+ask_multiple_choice(
+    questions = [{
+        "question": "How should we sequence the work?",
+        "header"  : "Sequencing",
+        "options" : [
+            {"label": "Bundle both",        "description": "One commit, both tracks."},
+            {"label": "Meta-guidance first", "description": "Two commits, guidance first."},
+            {"label": "Step 6 first",        "description": "Two commits, bug fix first."}
+        ]
+    }],
+    abstract = "Three sequencing options. Pick one."
+)
+```
+
+✅ **Canonical** (decision-support carried by abstract):
+
+```python
+ask_multiple_choice(
+    questions = [{
+        "question": "How should we sequence the work?",
+        "header"  : "Sequencing",
+        "options" : [
+            {"label": "Bundle both (Recommended)", "description": "One commit, both tracks. Fastest path."},
+            {"label": "Meta-guidance first",       "description": "Two commits. Pedagogically cleaner."},
+            {"label": "Step 6 first",              "description": "Two commits. Ships bug fix first."}
+        ]
+    }],
+    abstract = """## Sequencing decision — pros/cons + recommendation
+
+### Option A: Bundle both ⭐ My Recommendation
+**Pros**: single commit, single review, no cross-deps between tracks, fastest to land both
+**Cons**: compound commit message; if one track breaks in review the other waits
+
+### Option B: Meta-guidance first
+**Pros**: pedagogically cleaner; Step-6 conforms by construction; cleaner git log
+**Cons**: doubles your review attention cost; bug fix waits one commit cycle
+
+### Option C: Step 6 first
+**Pros**: fastest path to closing the surfaced bug
+**Cons**: same review cost as B without the pedagogical benefit; guidance deferred
+
+### Recommendation
+A. Zero cross-dependencies between tracks + bounded diffs make bundling strictly cheaper for your attention budget. B and C both cost two reviews; A captures both in one. Pick B if git-log surgical clarity is load-bearing; pick C if shipping the bug-fix urgently outweighs the guidance ship."""
+)
+```
+
+**Notice**: the canonical version makes the recommendation explicit, justifies it, AND tells the user when each non-recommended option would actually be the right call. The user reads, agrees, and clicks — or overrides with full context.
+
+#### Anti-patterns (PROHIBITED)
+
+| Anti-pattern | Why it's wrong |
+|--------------|----------------|
+| Listing options without pros/cons | User has to derive the trade-offs themselves; agent isn't paying its way |
+| Listing pros/cons but no recommendation | Agent ducks the commit; this is the "I won't pick a side" failure mode |
+| Recommendation without rationale | Recommendation is a number, rationale is the reasoning — user can't override intelligently without it |
+| Marking ALL options as "good in their own way" | Every option is recommended = no option is recommended; this is recommendation-laundering |
+| Putting pros/cons in the spoken `message` | TTS-hostile; the spoken line names the question, abstract carries the decision-support |
+| Skipping the mandate for "trivial" asks | If the ask is genuinely trivial, you probably don't need a blocking tool — use `notify()` instead and proceed |
+
+#### When the mandate doesn't apply
+
+- **Pure information-gathering** `converse()` calls ("what is the project name?", "where does X live?") — no alternatives to weigh, nothing to recommend.
+- **Pure confirmation** `ask_yes_no()` for routine acks ("ready to proceed?", "checkpoint OK?") — the framing is genuinely binary and the agent has no asymmetric preference. Borderline cases: lean toward including reasoning anyway (it's cheap to write, costly to omit).
+- **Repeated identical asks within a session** — first ask carries the full mandate; subsequent re-asks with same options can reference back ("same pros/cons as before; recommendation unchanged unless you redirect").
+
 ### ask_yes_no()
 
-For simple binary yes/no decisions. Users can optionally attach a qualifying comment to their answer.
+For ternary yes/no/neither decisions. The third value, **Neither**, is a re-frame escape hatch: the user is signaling the question itself needs to be re-asked. Users can optionally attach a qualifying comment to any of the three answers.
 
 **Parameters**:
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `question` | string | Yes | The yes/no question to ask |
-| `default` | string | No | Default on timeout: `yes` or `no` (default: `no`) |
+| `default` | string | No | Default on timeout: `yes` or `no` only (default: `no`). **Neither is never a default** — it requires an explicit user click and cannot arrive via timeout |
 | `timeout_seconds` | int | No | Seconds to wait (default: 300) |
 | `priority` | string | **Yes** | **MUST be `high`** for TTS alert (default: `medium` - NOT RECOMMENDED) |
 | `abstract` | string | No | Supplementary context (markdown, URLs, details) shown in UI |
@@ -223,44 +445,52 @@ For simple binary yes/no decisions. Users can optionally attach a qualifying com
 
 #### Response Format
 
-The response string can be one of four variants:
+The response string can be one of six variants:
 
 | Response | Meaning |
 |----------|---------|
 | `"yes"` | Plain approval |
 | `"no"` | Plain rejection |
+| `"neither"` | Re-frame signal — question needs to be re-asked more clearly |
 | `"yes [comment: ...]"` | Approval with qualifying comment |
 | `"no [comment: ...]"` | Rejection with qualifying comment |
+| `"neither [comment: ...]"` | Re-frame signal with explanation of what was ambiguous |
 
-**When checking responses**, use `startswith()` to handle both plain and commented variants:
+**When checking responses**, use `startswith()` to handle plain and commented variants of all three values. See `#### Handling Neither` below for the canonical ternary parser pattern.
 
 ```python
 response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
 
-# ✅ CORRECT - handles both plain and commented responses
+# ✅ CORRECT - ternary parser, handles all three values + commented variants
 if response.startswith( "yes" ):
     proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
+elif response.startswith( "neither" ):
+    # Re-frame — see #### Handling Neither for the full pattern
+    handle_neither( response )
 
-# ❌ WRONG - misses "yes [comment: only the docs]"
+# ❌ WRONG - misses neither entirely and misses "yes [comment: only the docs]"
 if response == "yes":
     proceed_with_commit()
 ```
 
 #### Qualified Comments
 
-Users can attach a qualifying comment to their yes/no answer by pressing **C** to expand a comment input field. Comments provide additional context without changing the binary decision.
+Users can attach a qualifying comment to any of the three answers (yes / no / neither) by pressing **C** to expand a comment input field. Comments provide additional context without changing the ternary decision.
 
 **How it works**:
-- User presses **Y** or **N** for plain yes/no (immediate response)
+- User presses **Y**, **N**, or the Neither button for plain ternary response (immediate)
 - User presses **C** to expand comment field (300 char max)
 - Comment field accepts voice input (mic button) or text input
-- Input guard prevents Y/N keys from triggering while typing in the comment field
-- After entering comment, user presses **Y** or **N** to submit with the comment attached
+- Input guard prevents Y/N/Neither keys from triggering while typing in the comment field
+- After entering comment, user submits with Y, N, or Neither — the comment attaches to whichever value is chosen
 
 **Example responses**:
 - `"yes"` - plain approval
 - `"yes [comment: only the March ones]"` - approval with context
 - `"no [comment: let me review the diff first]"` - rejection with explanation
+- `"neither [comment: which 'old backups' — March or April?]"` - re-frame request with the specific ambiguity
 
 **Example**:
 
@@ -282,7 +512,62 @@ if response.startswith( "yes" ):
     proceed_with_commit()
 elif response.startswith( "no" ):
     skip_commit()
+elif response.startswith( "neither" ):
+    # See #### Handling Neither below for the canonical re-frame pattern
+    handle_neither( response )
 ```
+
+#### Handling Neither — the Re-Frame Escape Hatch
+
+**Neither is NOT a soft no.** When the response starts with `neither`, the user is signaling that **the question itself needs re-framing** — they couldn't honestly answer yes OR no without misrepresenting their intent. Treating Neither as a silent skip, a deferred-yes, or a soft-no is the failure mode this escape hatch exists to prevent.
+
+**The canonical ternary parser pattern**:
+
+```python
+response = ask_yes_no(
+    question="Commit these 5 files to the repository?",
+    default="no",
+    timeout_seconds=300,
+    priority="high"  # MANDATORY for blocking tools
+)
+
+if response.startswith( "yes" ):
+    proceed_with_commit()
+elif response.startswith( "no" ):
+    skip_commit()
+elif response.startswith( "neither" ):
+    # Extract the qualifying comment if present — it tells you what was ambiguous.
+    comment = ""
+    if "[comment:" in response:
+        comment = response.split( "[comment: " )[1].rstrip( "]" )
+    # Re-frame using the comment as the signal. Do NOT default to "no" and continue silently.
+    notify(
+        message  = f"Re-framing — your concern: {comment}" if comment else "Re-framing the question",
+        priority = "high"
+    )
+    # Then issue a more specific ask_yes_no() or ask_multiple_choice() — narrower, not the same question.
+```
+
+**Anti-patterns** (PROHIBITED):
+
+| Anti-pattern | Why it's wrong |
+|--------------|----------------|
+| Treat `neither` as `no` and silently skip the gate | The user explicitly said the question was ambiguous; skipping resolves nothing |
+| Treat `neither` as `yes` to keep momentum | Same failure mode in the other direction; potentially destructive |
+| Ignore the `[comment: ...]` qualifier on Neither | The comment is the user's signal for what to ask instead — read it |
+| Re-ask the *same* question after Neither | The question already failed once; ask something narrower |
+| Use `default="neither"` | Neither is never a default — the MCP contract rejects it |
+
+**When to expect Neither**:
+- The gate question conflates two decisions (e.g., "commit AND push?" — user wants to commit but not push)
+- The gate question's scope is unclear (e.g., "delete the old backups?" — which old ones?)
+- The user has new information that makes the question stale (something changed since the gate was framed)
+
+**Critical contexts (CRITICAL)**:
+
+For **destructive operations** (push, merge, tag, branch cleanup, file deletion, config rewrite), Neither MUST NOT proceed. Re-frame and re-prompt. The `default` parameter offers no fallback here because Neither requires an explicit user click — it cannot arrive via timeout. Treat Neither on a destructive op the same way you would treat a hard "no, but with reservations": **do not act, ask again with a narrower question.**
+
+**Reference for callsite docs**: Every `ask_yes_no()` callsite in PIP workflows should either inline the ternary parser above or cross-reference this section. See `workflow/session-end.md`, `workflow/branch-pr-and-merge.md`, `workflow/bug-fix-mode.md`, etc.
 
 ### converse()
 

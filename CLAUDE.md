@@ -27,7 +27,8 @@ planning-is-prompting/
 │   ├── testing-remediation.md            # Post-change verification and fixes
 │   ├── testing-harness-update.md         # Test maintenance planning
 │   ├── commit-management.md              # Git operation workflows
-│   ├── notification-system.md            # Notification usage patterns
+│   ├── cosa-voice-integration.md         # Notification usage patterns (cosa-voice MCP)
+│   ├── cross-session-communication.md    # Cross-session broadcast + commons doctrine
 │   ├── bug-fix-mode.md                   # Iterative bug fixing workflow
 │   ├── todo-management.md                # Persistent TODO.md file management
 │   ├── branch-pr-and-merge.md            # Branch completion, PR, and merge workflow
@@ -384,3 +385,20 @@ This project follows the session-end ritual defined in planning-is-prompting →
 - **Repository**: Meta-knowledge base for Claude Code workflow patterns
 - **Primary Use**: Template source and canonical workflow reference
 - **Related Projects**: All projects using Claude Code should reference these workflows
+
+## Doc Viewer Scope
+
+When sending document viewer links from this repo, use:
+
+- **Scope name**: `planning-is-prompting` (first path segment of the URL)
+- **URL form** (canonical, post-2026.05.15 unification): `/app/docs?path=<scope>/<rel>` — the legacy `?scope=` query param is **ignored**
+- **Allowed prefixes**: `src/`, `workflow/`, `docs/` (per Lupin INI § `external repos`)
+- **Allowed root files** (per `.docview.yml` at repo root): `README.md`, `CHANGELOG.md`, `TODO.md`, `history.md`, `CLAUDE.md`, `bug-fix-queue.md`
+- **Manifest source of truth**: `.docview.yml` at this repo's root (overrides INI prefixes when present per Q2-C semantics; loaded at lupin-rest-dev startup, requires bounce after edits)
+- **Runtime discovery**: inspect the `doc_scope` field returned by `mcp__cosa-voice__get_session_info()`
+
+**Examples**:
+- Prefix-rooted: `/app/docs?path=planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
+- Root-file: `/app/docs?path=planning-is-prompting/TODO.md`
+
+**If a link 404s**: confirm (a) the path uses the `<scope>/<rel>` form, (b) the file's path matches one of the allowed prefixes OR is enumerated in `.docview.yml` `allowed_root_files`, (c) `.docview.yml` has been picked up by a lupin-rest-dev restart since the last edit. Design background: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`.

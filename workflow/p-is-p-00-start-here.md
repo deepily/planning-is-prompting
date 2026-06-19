@@ -265,7 +265,14 @@ flowchart TD
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
     Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip to execution<br>Use history.md for tracking"]
+    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Fitness<br>• Pass 2: Ownership-Language Audit<br>(non-negotiable gates)"]
+    Review --> Code["Code begins"]
+    Skip --> Code
 ```
+
+**Gate: `/plan-review` (between Step 2 and Code)** — Pattern 1/2/5/6 plans must pass the two-pass review gate before code is written. Pattern 3 plans may invoke `/plan-review-reuse` standalone (REUSE pre-pass only) before code begins. Pattern 4 (Investigation) skips the gate entirely. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches design-completeness gaps and ownership-language drift **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
+
+**Cascaded review: `/plan-review-cascaded`** — for larger Pattern 1/2/5/6 plans (typically ≥ 2 reviewable sections) where reviewer attention is the binding constraint, the review gate runs as a *cascade*: sections are reviewed in a pipeline rather than the whole plan at once. A cascade consumes a plan that is *already* decomposed into independently-reviewable sections — so if your plan is cascade-bound, structure it cascade-ready *while planning it*, per the **Cascade-Readiness** subsection in [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) (Phase 3: Work Breakdown). The canonical input specification + validation rubric + remediation flowchart live at [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md). A plan that is not section-shaped incurs a separate reshaping pass — or fails the cascade's ≥ 2-section gate.
 
 ### Step 1: Planning the Work (Always Required)
 
@@ -319,6 +326,8 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 | **Architecture design** | Microservices design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **01** → **02** (Pattern B) |
 | **Large implementation** | JWT authentication | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **01** → **02** (Pattern A) |
 | **Research-driven build** | Agent system (e.g., Google ADK) | 6-10 weeks | Pattern 6: Research-Driven | ✓ Yes | → **Phase 0** → **01** → **02** (B+A) |
+
+> **Cascade-bound plans**: if a Pattern 1/2/5/6 plan will be reviewed via `/plan-review-cascaded`, your planning output **must satisfy the 4-property cascade input spec**: ≥ 2 sections, section independence, acyclic cross-section dependencies, comparable section scope. Production-side how-to: *Cascade-Readiness* subsection in p-is-p-01 §Phase 3. Canonical input spec + 6-criterion Step-0 validation rubric + remediation flowchart for non-compliance: [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md).
 
 ### First Decision: Do You Have Existing Research?
 
@@ -811,8 +820,12 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 **Integration**: Commit completed phases with descriptive messages based on work from p-is-p-01 and p-is-p-02
 
 ### Notification System
-**File**: `notification-system.md`
+**File**: `cosa-voice-integration.md` (formerly `notification-system.md`, renamed 2026-01-06)
 **Integration**: Send notifications at key milestones (phase completion, blocker encountered, approval needed)
+
+### Cross-Session Communication
+**File**: `cross-session-communication.md`
+**Integration**: Behavioral guidance for user→all broadcasts and Claude↔Claude commons blackboards (three-tier autonomy, reserved topic vocabulary, broadcast receipt routing)
 
 ---
 
@@ -856,5 +869,6 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ## Version History
 
+- **2026.05.22**: Added a `/plan-review-cascaded` pointer to the Two-Step Process gate section, directing cascade-bound plans to the p-is-p-01 Cascade-Readiness guidance; companion note added to the Decision Matrix
 - **2025.10.14**: Added interactive workflow selection section explaining context-aware defaults; enhanced First Decision section with context-aware routing for Pattern 6 detection
 - **2025.10.04**: Initial creation as meta wrapper for "Planning is Prompting" core workflows

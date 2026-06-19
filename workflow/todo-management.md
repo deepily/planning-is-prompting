@@ -1,16 +1,18 @@
 # TODO.md Management
 
-**Purpose**: Persistent tracking of pending work items across Claude Code sessions.
+**Purpose**: The durable, human-readable **narrative companion** to the unified task-store — the Decisions Log, the Pending-Decisions queue, and the not-yet-owed backlog. The **store** is the single source of truth for *owed work*; TODO.md holds the durable "why" and the human-strategic layer the operational store deliberately isn't.
 
 **Canonical Location**: planning-is-prompting → workflow/todo-management.md
+
+> **⚠️ Conversation Mode**: this workflow uses `notify()` and `ask_multiple_choice()` for todo operations — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Long todo lists go to `abstract`; speak the count and headline ("4 pending items, top one is the wizard wiring").
 
 ---
 
 ## Overview
 
-TODO.md provides a single source of truth for pending work items that persists across sessions and doesn't get buried in history archives. Unlike TODO lists embedded in history.md session entries, this file:
+TODO.md is the durable **narrative companion** to the unified task-store. The **store** is the single source of truth for *owed work* (live, owned, status-tracked, liveness-bearing — query with `task_query`); TODO.md holds the **Decisions Log**, the **Pending-Decisions queue**, and the **not-yet-owed backlog** — the durable record that doesn't get buried in history archives. Unlike TODO lists embedded in history.md session entries, this file:
 
-- Survives history archival (never archived)
+- Is **branch-horizon-scoped** — keeps the current + next-two branch horizon; older content archives to `todo-archive/` (see Archival Strategy)
 - Is always at project root (easy to find)
 - Tracks completion with session attribution
 - Supports both manual and workflow-driven updates
@@ -194,7 +196,8 @@ Last updated: YYYY-MM-DD (Session N)
 | Document | Purpose | What Goes Here | What Does NOT Go Here |
 |----------|---------|----------------|----------------------|
 | **history.md** | Brief accomplishments | What was completed this session | TODOs, implementation tracking details |
-| **TODO.md** | Pending work items | Tasks not yet done | Detailed phase/step tracking |
+| **TODO.md** | Durable narrative | Decisions Log + Pending-Decisions queue + not-yet-owed backlog | Live owed work (→ task-store), phase/step tracking |
+| **Unified task-store** | Live owed work | Owned/status-tracked items (task·decision·gate·bug·review) | Narrative / "why" (→ TODO.md) |
 | **Implementation docs** | Multi-phase tracking | Phase progress, step-by-step status | General TODO items |
 
 ### history.md
@@ -206,8 +209,8 @@ Last updated: YYYY-MM-DD (Session N)
 - No cross-session visibility
 
 **With TODO.md** (new pattern):
-- Single file for all pending work
-- Never archived (always at project root)
+- Single durable home for decisions + backlog (live owed work lives in the task-store)
+- Branch-horizon-scoped — archives past-horizon content to `todo-archive/`
 - Cross-session visibility guaranteed
 - history.md focuses on what happened
 
@@ -265,7 +268,9 @@ Last updated: YYYY-MM-DD (Session N)
 
 ## Archival Strategy
 
-**TODO.md is NEVER archived** - it stays at project root permanently.
+**TODO.md is branch-horizon-scoped** (changed 2026-06-17 — formerly "never archived"). It retains only items relevant to the **current branch + the next two planned branches**; content tied to already-merged/superseded branches is archived to `todo-archive/<version-range>-todo.md`, mirroring the `history.md` adaptive archival. The file at project root stays small + current; the archives hold the rest.
+
+**Mechanism** (branch-horizon retention): items may carry an optional `| horizon: vX.Y` tag (like `| priority:` / `| raised:`); **untagged = current horizon = kept**. The `/plan-todo archive` mode + a session-end health-check move past-horizon items (and the dated Decisions-Log slice) into `todo-archive/`. See the design record `src/rnd/2026.06.17-todo-md-redefinition-and-archival.md` §3.
 
 **Completed items**:
 - Keep recent completions (7 days) for context

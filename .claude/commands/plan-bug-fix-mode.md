@@ -6,6 +6,10 @@
 
 ---
 
+> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications and emits per-bug status updates throughout the lifecycle. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies (per-bug updates spoken as "bug N fixed, smoke tests green", not the full diff). See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+
+---
+
 ## Related Commands
 
 This command supports all four modes via arguments. For discoverability in the slash command menu, use the mode-specific variants:

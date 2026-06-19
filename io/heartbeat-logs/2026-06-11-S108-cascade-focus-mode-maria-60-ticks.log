@@ -1,0 +1,72 @@
+[cascade-heartbeat] started
+  manager              : maria
+  cadence_active       : 180s
+  cadence_idle         : 300s
+  strikes              : 3
+  input_plan_topic     : cascade-focus-mode-input-plan
+  input_plan_size_at_t0: 0 bytes
+  api_base_url         : http://localhost:7999
+  max_ticks            : unbounded
+  budget_threshold     : 25
+  section_glob         : cascaded-prototype-section-*.md
+[cascade-heartbeat] tick 1: {"tick": 1, "question_id": "16337c47-9703-4bb9-bfba-d082e9106bbd", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 2: {"tick": 2, "question_id": "69ff2371-f7da-40ad-8954-aab66c844889", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 3: {"tick": 3, "question_id": "5b218d51-ef69-48d4-8e65-4f645f545b8a", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 4: {"tick": 4, "question_id": "61bd9605-c56f-4e3a-933e-e780fec0bb86", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 5: {"tick": 5, "question_id": "e2c2726f-1104-4386-a9db-479b53998ac1", "register_error": "ReadTimeout(ReadTimeoutError(\"HTTPConnectionPool(host='localhost', port=7999): Read timed out. (read timeout=5)\"))"}
+[cascade-heartbeat] tick 6: {"tick": 6, "question_id": "3bf97f2b-f7ee-495b-a63d-d55c3d3f6e2d", "register_error": "ConnectionError(ProtocolError('Connection aborted.', ConnectionResetError(104, 'Connection reset by peer')))"}
+[cascade-heartbeat] tick 7: {"tick": 7, "question_id": "50f9e9da-434b-48be-9da3-9e13b552f503", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 8: {"tick": 8, "question_id": "80ab5b49-fddf-4c26-9c7f-a87f27e67019", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 9: {"tick": 9, "question_id": "1f7969b6-15c6-4a25-b271-4bc073733557", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 10: {"tick": 10, "question_id": "e0f2b88f-ffba-4b8e-94e9-d84bec8b8f24", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 11: {"tick": 11, "question_id": "175fd189-fc28-4b97-afc3-0666123dc2f9", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 12: {"tick": 12, "question_id": "a7b5052a-420b-4621-9235-d2b13cfec2cd", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 13: {"tick": 13, "question_id": "fc04112e-f1c6-4c8d-8f30-05485993bf73", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 14: {"tick": 14, "question_id": "fdd0931f-31ff-4382-9951-413d49975e04", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 15: {"tick": 15, "question_id": "7d52c1eb-972d-44fc-8aa7-74bb20b5a317", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 16: {"tick": 16, "question_id": "23e7344a-5bfc-4472-8706-69e3cffe9b07", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 17: {"tick": 17, "question_id": "d0b5365e-bb8f-4880-a6f1-3ecaa9dfcf8a", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 18: {"tick": 18, "question_id": "ebd6ccf0-8ba2-4651-bbb2-41f1fb9cef9f", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 19: {"tick": 19, "question_id": "60d5c4ea-f500-4d5e-9fbe-4cd63ba43c55", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 20: {"tick": 20, "question_id": "fc913a5f-3a2f-4ef4-8f96-0393da6e0339", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 21: {"tick": 21, "question_id": "fbb155e9-5ffd-4d42-be04-83bf32c66786", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 22: {"tick": 22, "question_id": "20da3224-60c4-44de-9859-4df60b40042c", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 23: {"tick": 23, "question_id": "98904357-7ec1-45bc-a698-b65c6c07aca3", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 24: {"tick": 24, "question_id": "f5bfaed3-4120-4d8b-b437-2164205e4abb", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 25: {"tick": 25, "question_id": "d058700b-2154-4dff-b3b9-4ba0dcd9ab02", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 26: {"tick": 26, "question_id": "1cb38a17-a48c-4caf-95b5-1ae1adb9091e", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 27: {"tick": 27, "question_id": "ad3a3876-6a6f-4501-8b2e-68f8f86c3a18", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 28: {"tick": 28, "question_id": "384a7657-266c-4586-ae39-5f4e7f559579", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 29: {"tick": 29, "question_id": "c53fbb43-70e0-464b-b68a-1e68ab617433", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 30: {"tick": 30, "question_id": "e3b690ed-0ca9-4334-b88e-eee0287b0bf0", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 31: {"tick": 31, "question_id": "02d5f9ef-98aa-4ed6-baf1-a85e88c29794", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 32: {"tick": 32, "question_id": "f12ebc85-fa83-4ea7-a0ed-eea0aa0df570", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 33: {"tick": 33, "question_id": "151877ef-25be-4b36-9334-e8fe6e43225a", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 34: {"tick": 34, "question_id": "7b753ad1-dcfe-4d2a-98d6-979e04b3be81", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 35: {"tick": 35, "question_id": "9f7484e4-9342-4be9-82b9-35f130369aef", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 36: {"tick": 36, "question_id": "9cad35e0-20be-4d8e-a6d7-e1ffdf1d1c62", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 37: {"tick": 37, "question_id": "cd13ce7f-846f-45e0-a2cf-3b33de08e9bf", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 38: {"tick": 38, "question_id": "4b60bfa6-da85-4cc2-8858-96f727dfe132", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 39: {"tick": 39, "question_id": "74a384fb-c7cf-452e-85e0-7f4c2c4175cc", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 40: {"tick": 40, "question_id": "8989a058-bf0d-47b5-85f6-51890494c67b", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 41: {"tick": 41, "question_id": "abdfd327-2929-4ff1-8a29-7230e5c0f819", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 42: {"tick": 42, "question_id": "f532b816-8789-48b5-a541-0784dbb08a04", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 43: {"tick": 43, "question_id": "b5190207-ff0e-4246-90e4-3440491ebbfc", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 44: {"tick": 44, "question_id": "d0d00e28-a144-4cf5-b83d-fccfa94e0338", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 45: {"tick": 45, "question_id": "0b3735a6-a226-4d49-920c-70e476380f78", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 46: {"tick": 46, "question_id": "5716a7c4-c099-4edd-9b9c-22799f4827f6", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 47: {"tick": 47, "question_id": "cf8829e6-4a73-40d5-b153-a1d62632687e", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 48: {"tick": 48, "question_id": "102a7981-b5a0-4405-8593-35bb0e72d21b", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 49: {"tick": 49, "question_id": "f0eb88b7-50d6-4a40-8afd-88423f21832b", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 50: {"tick": 50, "question_id": "dfa43680-c33c-4f7d-8b52-44dc65ec9a22", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 51: {"tick": 51, "question_id": "8267cee8-9f44-447e-ad50-3be0c2e963f3", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 52: {"tick": 52, "question_id": "e1901a75-f2c5-49ee-bb0b-b98a7e98e1d9", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 53: {"tick": 53, "question_id": "465b4691-2bf2-4d85-925f-16afd791b4b9", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 54: {"tick": 54, "question_id": "c51de19c-0e0d-4715-8f7c-b24dd78bc86c", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 55: {"tick": 55, "question_id": "744534c9-9598-441d-a9b1-74a53a339779", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 56: {"tick": 56, "question_id": "7e57b44b-dfa8-46cc-a977-c255035ca32a", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 57: {"tick": 57, "question_id": "fd47dfb0-1f2a-4ecb-861c-1aae11f42b6a", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 58: {"tick": 58, "question_id": "bb86bf25-1fb6-4f21-8eaf-b061cae57514", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 59: {"tick": 59, "question_id": "29bd2e48-8339-42b9-b0f4-b3769c96b2e1", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] tick 60: {"tick": 60, "question_id": "a1fe579a-7803-4847-9886-8726b8b1a951", "register_status": 201, "dm_dispatched": true}
+[cascade-heartbeat] cascade_complete signal detected (new content since t0); exiting cleanly at tick 61

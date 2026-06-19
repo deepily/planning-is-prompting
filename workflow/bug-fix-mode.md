@@ -14,6 +14,12 @@
 - `/plan-bug-fix-mode wrap` - Wrap up completed fix (document + commit)
 - `/plan-bug-fix-mode close` - End bug fix session for the day
 
+> **⚠️ Conversation Mode Awareness**: this workflow uses `converse()` for bug-id selection (a voice round-trip in conversation mode), and emits per-bug status `notify()` calls throughout the lifecycle. When `conversation_mode_active=true`, prefer `ask_open_ended_batch()` over sequential `converse()` calls to bundle related questions (e.g., bug-id + reproduction-steps) into a single voice prompt.
+>
+> **Voice persona disambiguation**: when multiple parallel bug-fix sessions are running, the assigned voice persona helps the user identify which session just finished a phase. Voice persona is server-side (`/api/cosa-voice/voice-persona/{session_id}`) and not currently in `get_session_info()` — accept user-provided persona names ("you are Rachel") rather than self-identifying.
+>
+> **Brevity mandate at status updates**: per-bug completion is "Bug N fixed, smoke tests green" — NOT the full diff or test log. The diff and log stay in the terminal reply and the `abstract` parameter. Use `priority="high"` on every blocking call. Full spec: `cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
 ---
 
 ## Overview
@@ -24,6 +30,24 @@ Claude Code's "plan to file → clear context → execute" pattern breaks histor
 2. **`history.md`** serving as persistent memory across context clears
 3. **`bug-fix-queue.md`** tracking bugs queued vs completed
 4. **Session ownership** enabling parallel Claude sessions without interference
+
+---
+
+## Autonomous Bug Capture
+
+Per the **TEST OWNERSHIP MANDATE** (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), bug capture is Claude's job — not the human's.
+
+When Claude discovers a bug during testing, exploration, or any other session activity:
+
+- Claude appends the bug to `bug-fix-queue.md` under `### Queued` with:
+  - A Claude-authored title (imperative, specific)
+  - Reproduction steps (or the observation that surfaced it)
+  - A short root-cause hypothesis if one is available
+  - The surface/file where it was observed
+- The human is **not asked** to remember, capture, or file the bug.
+- Triage from `Queued` to `In Progress` remains a separate, explicit action (taken by the human or a future session that claims the bug) — autonomous capture is about making sure the bug is recorded, not about starting work on it.
+
+**PROHIBITED**: "I noticed X might be a bug, let me know if you'd like me to file it." → Claude files it.
 
 ---
 
@@ -569,6 +593,8 @@ Files to track include:
 
 ### Step 7: Test the Fix
 
+> **Test Ownership** (per TEST OWNERSHIP MANDATE in `~/.claude/CLAUDE.md`): Claude owns test scope and execution. Do NOT ask the human which additional tests to run — decide via change-impact analysis and execute proactively.
+
 **Run smoke test automatically:**
 
 ```bash
@@ -576,23 +602,25 @@ Files to track include:
 ./tests/run-smoke-tests.sh  # or equivalent
 ```
 
-**Ask about further testing:**
+**Autonomously extend the pyramid based on change-impact analysis** (see `~/.claude/skills/testing-development/references/change-impact-analysis.md`):
 
-```python
-ask_multiple_choice(
-    questions=[{
-        "question": "Which additional tests should we run?",
-        "header": "Tests",
-        "multiSelect": True,
-        "options": [
-            {"label": "Unit tests", "description": "Test affected modules"},
-            {"label": "Integration tests", "description": "End-to-end validation"},
-            {"label": "Skip", "description": "Smoke test sufficient"}
-        ]
-    }],
-    priority="medium",
-    abstract="**Smoke test**: [PASS/FAIL]\n\nSelect additional tests or skip."
-)
+1. Classify the fix (isolated / module-scoped / cross-surface) and compute blast radius.
+2. Based on the classification, Claude runs — without asking the human:
+   - **Always**: smoke (already run above).
+   - **Unit tests**: when the fix touches module-internal logic.
+   - **Integration tests**: when the fix crosses a collaboration surface (another module, an I/O boundary, an API).
+   - **E2E test**: when a runnable surface exists AND the fix affects user-observable behavior.
+3. If a tier genuinely cannot be automated (subjective feel, external-service gating), state the specific reason — do not silently defer to the human.
+
+**Report results in tabular form** so "tests were actually run" is visible at a glance:
+
+```markdown
+| Tier | Status | Notes |
+|------|--------|-------|
+| Smoke | PASS | 12/12 |
+| Unit (affected module) | PASS | 34/34 |
+| Integration | SKIPPED | No cross-surface change |
+| E2E | N/A | No user-observable surface |
 ```
 
 **Record test results for history entry.**
@@ -601,8 +629,9 @@ ask_multiple_choice(
 
 **Verification**:
 - [ ] Smoke test executed
-- [ ] User prompted for additional tests
-- [ ] All requested tests executed
+- [ ] Change-impact classification performed
+- [ ] All applicable tiers executed by Claude (not deferred to human)
+- [ ] Results reported in pass/fail table
 - [ ] Test results recorded (for history entry)
 - [ ] TodoWrite updated
 
@@ -757,9 +786,11 @@ ask_yes_no(
 )
 ```
 
-**If yes** (response starts with "yes", may include `[comment: ...]`): User clears context manually, will use `/plan-bug-fix-mode continue`.
+**If yes** (`response.startswith("yes")`, may include `[comment: ...]`): User clears context manually, will use `/plan-bug-fix-mode continue`.
 
-**If no** (response starts with "no"): Loop back to Step 4 (bug selection) in same context.
+**If no** (`response.startswith("no")`): Loop back to Step 4 (bug selection) in same context.
+
+**If neither** (`response.startswith("neither")`): Re-frame — typical concerns: "I want to clear but pick a specific next bug", "keep context but pause for a break", "clear and switch to a different repo". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual options. Do NOT default to either branch. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **TodoWrite Update**: Mark cycle complete.
 
@@ -1095,8 +1126,9 @@ ask_yes_no(
     abstract="**Warning**: Session manifest not found.\n\nThis could mean:\n- Bug fix mode wasn't properly initialized\n- Manifest was deleted\n\nContinuing will stage ALL modified files (risky if parallel sessions exist)."
 )
 ```
-If no (starts with "no"): Return to fix work, reinitialize manifest.
-If yes (starts with "yes", may include `[comment: ...]`): Use git status for file list (fallback mode).
+If no (`response.startswith("no")`): Return to fix work, reinitialize manifest.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Use git status for file list (fallback mode).
+If neither (`response.startswith("neither")`): Read the `[comment: ...]` qualifier — typically "I want to stage some files but not all of git status". Re-prompt with `ask_multiple_choice()` over (a) fallback to git status, (b) exit and reinitialize manifest properly, (c) commit only this session's known-touched files. **CRITICAL**: bug-fix commits should be atomic per-bug; do NOT silently default to staging everything. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If manifest section has no files**:
 ```python
@@ -1107,8 +1139,9 @@ ask_yes_no(
     abstract="**Warning**: Manifest section has no files.\n\nThis could mean:\n- You haven't made any changes yet\n- Files were edited before manifest was initialized\n\nContinuing will create an empty commit (history.md + queue only)."
 )
 ```
-If no (starts with "no"): Return to fix work.
-If yes (starts with "yes", may include `[comment: ...]`): Continue with documentation-only commit.
+If no (`response.startswith("no")`): Return to fix work.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Continue with documentation-only commit.
+If neither (`response.startswith("neither")`): The user wants an option beyond yes/no — typically "let me audit git status first" or "abort and restart bug fix mode". Read the `[comment: ...]` qualifier and re-prompt accordingly. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If current bug is ambiguous** (multiple bugs in queue):
 ```python
@@ -1643,8 +1676,9 @@ ask_yes_no(
 )
 ```
 
-If yes (starts with "yes", may include `[comment: ...]`): Execute session closure (Steps 15-17) - only affects YOUR session.
-If no (starts with "no"): Skip, leave your bug fix session open.
+If yes (`response.startswith("yes")`, may include `[comment: ...]`): Execute session closure (Steps 15-17) - only affects YOUR session.
+If no (`response.startswith("no")`): Skip, leave your bug fix session open.
+If neither (`response.startswith("neither")`): The closure question is ambiguous — typical re-frames: "close session but keep queue open for other sessions", "archive my completed bugs but stay active", "wait — let me finish the in-progress one first". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual closure variants. **CRITICAL**: do NOT silently close — parallel sessions depend on the Active Sessions table state. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If YOUR session is NOT in Active Sessions table:**
 
@@ -1770,6 +1804,8 @@ else:
 ---
 
 ## Version History
+
+**v1.5** (2026.06.16, María) - **Commit-gate sweep (D1 guided-walkthrough ruling) — reviewed, already aligned.** Per-bug commits here were already autonomous (Step 9 stages selectively + commits with no approval gate; wrap mode states "Automatic commit without approval — user invocation IS approval"). This matches the 2026-06-16 ruling that committing is standing manager/session authority once green AND reviewed; the user is not the commit gate. No behavioral change required. Bug-fix commits are local + atomic per-bug; pushing remains out of scope here (handled by `branch-pr-and-merge.md` / `session-end.md`, where push stays the user's call).
 
 **v1.4** (2026.02.02) - Parallel-session-friendly bug fix queue (v2.0)
 - **Major**: Redesigned bug-fix-queue.md format for parallel session support

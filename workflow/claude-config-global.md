@@ -16,6 +16,20 @@
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
+## UNIFIED TASK-STORE — ALWAYS-CREATE-A-TASK-ITEM MANDATE
+
+> **✅ STORE-ONLY IS LIVE (cutover executed 2026-06-17).** The fleet has cut over: the cutover flag `heartbeat.owed_source_from_store=True` is set + confirmed in `~/.claude/settings.json`, so the Stop-hook oracle now reads the unified store, not the native transcript (cutover run by Mr Radio: drain --apply → count-parity 4/4; mirror retired; bugs `9bf1dc4a`/`9b23d5bc`/`82e4eaf0` dead by construction). **Write owed work to the store via `task_create`; the native harness list is NO LONGER the liveness source — query the store on demand (`task_query`) to see your list.** F4 "managers-first writes" RETIRED — ALL sessions write their own owed work. The dual-write interim guidance below is now HISTORICAL. Operative mandate + cutover record: planning-is-prompting → workflow/task-store-discipline.md §0.
+
+**MANDATE (standing reflex, no per-session re-telling)**: in any repo where the unified task-store is live, **open a task item for every unit of work — without being asked — and keep its status current** as you go. A unit of work that lives only in your head is invisible to the fleet; the task item is the sign-of-life the work-owed oracle and the manager-tick loop read.
+
+**Reach for the MCP `task_create` verb** — write every unit of owed work directly to the store. Post-cutover the harness→store mirror is **retired** and the native harness list is **no longer the liveness source**, so the native `TaskCreate` list is not where owed work lives. Use `task_create` for ALL owed work — your own stubs, work assigned to another persona, a `decision` to be ruled, a `review_request`, a `bug`, or a user's-court `gate`. Query the store (`task_query`) to see your list.
+
+> **🗄️ HISTORICAL (pre-cutover; the harness→store mirror is RETIRED, so this is moot BY CONSTRUCTION — kept as a record, NOT a live instruction).** Pre-cutover, the auto-mirror silently dropped writes from non-lupin sessions (`9bf1dc4a`: write-gate derived the project from `LUPIN_ROOT` → always `"lupin"`), and the `/clear` counter-reset could UPSERT-corrupt store rows (`9b23d5bc`). The **dual-write workaround those defects required is CLOSED** — store-only is live; write owed work directly via `task_create` and query the store. Record: planning-is-prompting → workflow/task-store-discipline.md §1–§2.
+
+**Scope**: F4 "managers-first writes" is **RETIRED (2026-06-17 cutover)** — **ALL sessions write their own owed work to the store now**, not just manager-figures.
+
+**Canonical practice**: planning-is-prompting → workflow/task-store-discipline.md (§1 mandate, §2 who-writes, §3 when an explicit `task_create` is owed, §4 transition/receipts discipline).
+
 ## General Preferences
 
 - With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
@@ -37,7 +51,7 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 | Tool | Purpose | Blocking |
 |------|---------|----------|
 | `notify()` | Fire-and-forget announcement | No |
-| `ask_yes_no()` | Binary yes/no decision | Yes |
+| `ask_yes_no()` | Yes/no/neither decision (Neither = re-frame escape) | Yes |
 | `converse()` | Open-ended question | Yes |
 | `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
 | `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes |
@@ -50,12 +64,16 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 
 ### When to Send Notifications
 
-- **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`
+- **Need approval**: Use `ask_yes_no()` or `ask_multiple_choice()`. `ask_yes_no()` returns `yes`/`no`/`neither` — on `neither` the user is signaling the question itself needs re-framing; re-ask with a narrower question, do NOT silently treat as soft-no
 - **Blocked/waiting**: Use `converse()` for open-ended questions
 - **Multiple related questions**: Use `ask_open_ended_batch()` for gathering 2+ answers at once
 - **Errors encountered**: Use `notify()` with `priority="urgent"`
 - **Task completion**: Use `notify()` with `priority="low"`
 - **Progress updates**: Use `notify()` with `notification_type="progress"`
+
+### Recommendation Mandate for Blocking-Tool Asks (2026-05-21)
+
+Every `ask_multiple_choice()` / `ask_yes_no()` / `converse()` call that frames a decision between alternatives MUST include in its `abstract` parameter: (a) pros AND cons per option, AND (b) an explicit recommendation with rationale. The spoken `message` stays short; the abstract carries the decision-support so the user can either accept the recommendation or override it with full context. **Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks.
 
 ### Notification Examples
 
@@ -90,6 +108,87 @@ ask_multiple_choice( questions=[
 ### Full Documentation
 
 **See**: planning-is-prompting → workflow/cosa-voice-integration.md
+
+### Conversation Mode + TTS Response Brevity Mandate
+
+The cosa-voice session has a **binary mode toggle**: notification mode (default, ding-and-selective-TTS) vs conversation mode (exclusive, all-TTS, one session at a time). Check `conversation_mode_active` from `get_session_info()` at session start.
+
+**TTS Brevity Mandate** (in conversation mode): the `notify(message=...)` payload is **conversational prose**, NOT a verbatim copy of the markdown terminal reply. Strip markdown structure (headings, bullets, bold/italic, inline code, fenced code blocks, tables); strip file paths, line numbers, JSON, URLs; drop section labels and letter enumeration; cap at 3 sentences: sentence 1 = headline (the verdict), sentences 2–3 = two supporting takeaways. (3-sentence rule replaces the prior word-count tiers — LLMs count sentences reliably; word counts do not. 2026-06-13.) Use the `abstract` parameter for rich content. The terminal reply stays markdown-rich; the spoken version is a re-crafted précis. **Anti-pattern**: dumping the markdown reply through a "strip code blocks" filter into `notify()` — that's passive filtering; the mandate requires active re-shaping.
+
+**USER-ONLY INITIATION (HARD RULE)**: Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle.
+
+**Full spec**: planning-is-prompting → workflow/cosa-voice-integration.md §Conversation Mode
+
+### Persona-First & Doc-Link Literacy (Phase A startup mandates, 2026-05-21)
+
+**Persona-First Response Mandate**: at session start, Claude MUST call `get_session_info()` BEFORE composing any user-facing text — including the first acknowledgment — and MUST extract the `voice_persona.name` / `display_name` field from the response. NEVER assume a default persona, NEVER respond as "Claude" or a placeholder when chorus mode is active, NEVER guess. If `voice_persona` is `None` (allocation failure), Claude MUST ask the user "Which persona am I?" via `converse()` before proceeding. The persona voice IS the disambiguator in chorus mode — responding persona-blind breaks the routing contract.
+
+**Doc-Link Literacy Mandate**: the same `get_session_info()` call returns a single string `project` field. Claude MUST extract this string at startup and use it as the first path segment when emitting doc-viewer links. The canonical URL form is `/app/docs?path=<project>/<repo-relative-path>` — path-only, no `?scope=` query param. **Doc-links live ONLY in the `abstract` parameter of `notify()` (and the body of `commons_post()`) — NEVER in the spoken `message` parameter of `notify()`/`converse()`/`ask_*()`.** URLs are TTS-hostile; spoken aloud they verbalize character-by-character. Putting a doc-link in `message` is a violation. Hook 4 (persona resolution) and Hook 5 (doc-link construction) are COUPLED: ONE `get_session_info()` call resolves both before the first response.
+
+**Dead syntax to never emit**: the legacy two-param form (`/app/docs?path=<rel>&scope=<name>`), the retired `docs` and `io` shorthand scopes for Lupin files, and the old 4-field `doc_scope` dict envelope shape (replaced by the single string `project` field). The server silently ignores the legacy `?scope=` param — consumers emitting it never see a failure signal, which is precisely why the purge is urgent.
+
+**Full spec**: planning-is-prompting → workflow/doc-viewer-links.md (the canonical hub) and the home `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL Phase A. The runtime URL grammar + registered-repo list are owned by Lupin's `CLAUDE.md § Doc Viewer Scope`.
+
+## CROSS-SESSION COMMUNICATION
+
+**Purpose**: Behavioral guidance for the two cross-session surfaces — user→all broadcasts and Claude↔Claude commons blackboards. Applies whenever a session encounters a broadcast `<system-reminder>` or contemplates using `commons_*` MCP tools.
+
+### Quick MCP tool reference
+
+| Tool | Tier | Blocking | Use |
+|------|------|----------|-----|
+| `commons_who(topic?)` | Read | No | Discover active peer sessions |
+| `commons_read(topic, since?)` | Read | No | Tail topic for recent posts |
+| `commons_post(topic, body, metadata?)` | Self-disclosure OR Attention-demanding (topic-dependent) | No | Status, claims, replies |
+| `commons_ask_async(topic, question)` | Attention-demanding | No (returns question_id) | Ask peers; reply via `metadata.in_reply_to`. ⚠️ DM-mode (`recipient_persona`) deprecated → `dm_send` |
+| `commons_ask_sync(topic, question, timeout?)` | Attention-demanding | Yes (first-reply + 1s coalesce) | Rarely — only when truly blocked |
+| `dm_send(recipient, body, reply_to?, thread_id?)` | DM — directed attention-demanding | No | **PREFERRED** for a directed peer DM; inline body (~18× cheaper than the deprecated `commons_send_to` claim-check). Reply = `dm_send` back with `reply_to` + `thread_id`. Recipient name must be accent-stripped + lowercase. |
+
+### Three-tier autonomy
+
+| Tier | Operations | Default policy |
+|------|------------|----------------|
+| **Read** | `commons_who`, `commons_read` | ✅ Always allowed — like tailing a log |
+| **Self-disclosure** | `commons_post` to `presence` / `incidents` / own status | ✅ Allowed at your initiative |
+| **Attention-demanding** | `commons_ask_*`, contested `coordination` claims, `help-wanted` posts | ⚠️ Requires explicit user trigger OR clear coordination need (file collision, contested claim) |
+
+### Reserved topic vocabulary (IS the signaling protocol)
+
+| Topic | Tier | Semantics |
+|-------|------|-----------|
+| `presence` | Self-disclosure | "I'm alive, working on X" |
+| `coordination` | Attention-demanding (when contested) | Claim-staking, ownership signals |
+| `help-wanted` | Attention-demanding | Open questions seeking peer input |
+| `incidents` | Self-disclosure or urgent | Errors / blockers |
+| `broadcasts` / `broadcast-acks` | Reserved (infrastructure only) | Do not post from sessions |
+
+Organic topic names are allowed but inherit no special tier.
+
+### Broadcast receipt rules
+
+Broadcasts inject as `<system-reminder>` **between turns** — there's no interrupt-vs-queue choice.
+
+**Routing**:
+- `@MyPersona:` matched → **ACT** on persona directive (+ default body if present)
+- Different `@persona` named, no default body → **ACK-ONLY** (not for me)
+- No persona at all → **ACT** on default body (all sessions respond)
+
+**Voice**:
+- Speakerphone ON → spoken ack via `notify(suppress_ding=True, priority='high')`
+- Speakerphone OFF → text-only ack
+- Mandatory `broadcast-acks` post is infrastructure, always happens
+
+### Anti-patterns
+
+- **Loop hazard**: never `commons_ask_*` in reply to another session's `commons_ask_*`. Reply with `commons_post(..., metadata={"in_reply_to": question_id})` instead.
+- **Attention abuse**: don't use `commons_ask_sync` when async would do. Don't spam `presence`.
+- **Sensitive content**: commons is per-user but visible to ALL of that user's sessions. Don't post credentials, tokens, or unseen content.
+
+### User-facing visibility (mandatory for attention-demanding tier)
+
+Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notification_type="progress", priority="medium")` to the user so they can see in their UI that one session is blocking on another. Cross-session dialogue must not be invisible to the user.
+
+**Full canonical guidance**: planning-is-prompting → workflow/cross-session-communication.md
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
@@ -168,6 +267,39 @@ ask_multiple_choice( questions=[
       "top_p": 1.0
   }
   ```
+
+## TEST OWNERSHIP MANDATE
+
+**MANDATE**: The human collaborator is the **designer and user** of the software — NOT the tester. You, Claude Code, own testing across the full pyramid (unit → integration → E2E) AND the triage of bugs you discover. Do not hand manual QA or bug-capture back to the human.
+
+**Operating assumption**: There is not enough time in the world for the human to manually test anything. Every "please verify this works" or "let me know if you hit a bug" hand-off is a failure of this mandate.
+
+**Role separation**:
+
+| Responsibility | Owner |
+|----------------|-------|
+| Decide WHAT to build | Human (designer) |
+| USE the software | Human (user) |
+| Write tests | Claude |
+| Run tests | Claude |
+| Triage failures | Claude |
+| File bugs discovered during testing | Claude (into `bug-fix-queue.md` when bug-fix-mode is active) |
+
+**PROHIBITED phrases** — never end a code change with any of these:
+- "Please try it and let me know if it works."
+- "Can you verify this?"
+- "Let me know if you hit any bugs."
+- "Which additional tests should I run?"
+
+**Required behavior**:
+- After any behavior-changing code change, proactively extend the pyramid — a unit test for the changed unit, an integration test for the affected collaboration surface, and an E2E test for the user-observable behavior when a runnable surface exists. Scope via change-impact analysis; **Claude decides the scope, not the human**.
+- Report test results in tabular form (pass/fail per tier).
+- If a test genuinely cannot be automated (subjective feel, external-service gating, UI polish), state this **explicitly with the specific reason** — silent deferral to the human is prohibited.
+- Bugs discovered during testing are auto-queued to `bug-fix-queue.md` — do not ask the human to remember to file them.
+
+**Why**: The designer's time is the scarce resource. A code change is "done" only when tests pass across every applicable pyramid tier AND the human can use the software without being asked to check for breakage.
+
+**Full canonical prompt**: See planning-is-prompting repo → workflow/testing-baseline.md and workflow/testing-remediation.md
 
 ## HISTORY DOCUMENT MANAGEMENT
 **Full canonical prompt**: See planning-is-prompting repo → workflow/history-management.md

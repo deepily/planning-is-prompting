@@ -67,7 +67,7 @@ pytest tests/unit/ -v
 **Prerequisites:**
 \`\`\`bash
 # Verify server is running
-curl localhost:8000/health
+python3 -c "import urllib.request; urllib.request.urlopen( 'http://localhost:8000/health' )"
 \`\`\`
 
 **Command:**

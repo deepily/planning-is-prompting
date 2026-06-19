@@ -26,14 +26,31 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+This wrap-up ritual has a few user-decision gates (**push approval**, archive decision, conflict resolution, etc.). **The commit itself is NOT a gate** — committing to the working branch is standing manager/session authority once the quality gate (green AND reviewed) is met; only **push** remains the user's call (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
+
+**Mandates in conversation mode**:
+- All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`) MUST use `priority="high"`. Some legacy calls in this workflow may not — verify before use.
+- **Brevity mandate**: spoken commit-message preview is the **1-line subject only**; full body stays in the terminal and the `abstract` parameter. Spoken end-of-session summary is conversational ("we wrapped up the wizard wiring and committed cleanly"), NOT a file-by-file enumeration.
+- Use the `abstract` parameter aggressively to keep the file-changed list, diff stats, and commit body terminal-side while voice carries only the gist.
+- Receipt-acknowledge each user prompt before further tool work (1 sentence: "Wrapping up — running the test suite first.").
+- Per-gate response parsing: `ask_yes_no()` is **ternary** — returns `yes`/`no`/`neither` (each optionally suffixed with `[comment: ...]`). Use `response.startswith("yes" / "no" / "neither")` not equality. On `neither`, re-frame the gate question rather than treat as soft-no — see `workflow/cosa-voice-integration.md` → "Handling Neither".
+
+**Brevity mandate (universal)**: spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, section labels; cap at ~30 seconds of speech for routine work.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## 0) Use Notification System Throughout
 
 **Mandate**: Keep me updated with notifications after completing each step of the end-of-session ritual.
 
 **MCP Tools**: cosa-voice MCP server (v0.3.0) - no bash commands needed
 - `notify()`: Fire-and-forget (progress updates, completions)
-- `ask_yes_no()`: Binary yes/no decisions (response may include `[comment: ...]` qualifier - use `startswith("yes")` not `== "yes"`)
-- `ask_multiple_choice()`: Menu selections (commit approval, archive decision)
+- `ask_yes_no()`: Ternary yes/no/neither decisions (response may include `[comment: ...]` qualifier on any value - use `startswith("yes" / "no" / "neither")`; on `neither`, re-frame rather than infer)
+- `ask_multiple_choice()`: Menu selections (archive decision, conflict resolution; **not** commit approval — commit is autonomous)
 - `ask_open_ended_batch()`: Batch open-ended questions (single screen, blocking)
 - `converse()`: Open-ended questions
 
@@ -70,23 +87,12 @@ notify(
     abstract="**Warnings**:\n- Unused import in auth.py:12\n- Deprecated API call in utils.py:45"
 )
 
-# Blocking decisions with abstract (shows file list in UI, not spoken)
-ask_multiple_choice(
-    questions=[
-        {
-            "question": "Commit approval needed - how would you like to proceed?",
-            "header": "Commit",
-            "multiSelect": False,
-            "options": [
-                {"label": "Commit only", "description": "Keep changes local"},
-                {"label": "Commit and push", "description": "Sync to remote"},
-                {"label": "Modify", "description": "Edit commit message"},
-                {"label": "Cancel", "description": "Skip commit"}
-            ]
-        }
-    ],
-    title="Commit Decision",
-    abstract="**Staged files**: 5 modified, 2 new\n**Lines**: +124/-45"
+# Blocking decision — the retained PUSH gate (commit already happened autonomously)
+ask_yes_no(
+    question="Push this session's commit(s) to origin now?",
+    priority="high",
+    timeout_seconds=300,
+    default="no"
 )
 ```
 
@@ -233,6 +239,36 @@ Health: ✅ HEALTHY
 
 ---
 
+## 0.6) TODO Horizon Health Check (Automated)
+
+**Purpose**: Keep TODO.md scoped to the **current + next-two branch horizon** — the companion to the history.md health check (Step 0.5), but keyed on **branch/version horizon**, not token age. Full rules: workflow/todo-management.md → **Archival Strategy** + the `/plan-todo archive` mode.
+
+1. **Scan TODO.md for past-horizon content**:
+   - Detect the current version from the branch name (e.g. `wip-v0.1.3-…` → `v0.1.3`); keep-horizon = { current, +1, +2 }.
+   - Items carrying `| horizon: vX.Y` older than the keep-horizon (**untagged = current = kept**).
+   - Decisions-Log entries older than the date-retention window.
+   - Also weigh raw size — a TODO.md well past ~200 lines is itself a signal.
+
+2. **If past-horizon content exists (or TODO.md is oversized)**:
+   ```python
+   ask_yes_no(
+       message="TODO.md has past-horizon content — archive to todo-archive/ now?",
+       title="TODO Horizon",
+       abstract="**N past-horizon item(s)** + Decisions-Log slice older than the window.\n**Recommended**: Archive now via `/plan-todo archive` (dry-run → confirm → write). Keeps TODO.md at current+next-2 horizon; archives preserve the rest, greppable.",
+       priority="high"
+   )
+   ```
+   - **Yes** → invoke `/plan-todo archive` (dry-run first → confirm → write), then resume.
+   - **No** → log + add "Archive TODO.md horizon" to the backlog; resume.
+
+3. **If clean** → no action; continue to Step 1.
+
+**Rationale**: TODO.md is branch-horizon-scoped (2026-06-17 redefinition); this check is the automatic trigger that keeps it small — mirroring how Step 0.5 keeps history.md under its token limit.
+
+**Notification**: results sent via `notify()` when an archive is proposed.
+
+---
+
 ## 0.6) Bug Fix Mode Integration
 
 **Purpose**: Check if bug fix mode is active and prompt for session closure if this session owns it.
@@ -275,12 +311,14 @@ Health: ✅ HEALTHY
    )
    ```
 
-   - **If YES** (response starts with "yes", may include `[comment: ...]`): Execute bug fix mode closure:
+   - **If YES** (`response.startswith("yes")`, may include `[comment: ...]`): Execute bug fix mode closure:
      1. Finalize history.md session entry with summary
      2. Archive completed bugs in queue (or clear queue)
      3. Send notification: `notify( "Bug fix session closed", notification_type="progress", priority="low" )`
 
-   - **If NO**: Skip closure, leave bug fix mode open for next session
+   - **If NO** (`response.startswith("no")`): Skip closure, leave bug fix mode open for next session
+
+   - **If NEITHER** (`response.startswith("neither")`): The closure question itself was ambiguous (e.g., user wants to close *some* bugs but not the session, or vice versa). Read the `[comment: ...]` qualifier, re-frame with a more specific question (e.g., `ask_multiple_choice()` offering "close session + archive all", "close session + leave queue", "archive completed only + leave session open"). Do NOT default to skip or close. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
    d. **If DIFFERENT session** (another session owns bug fix mode):
 
@@ -675,15 +713,15 @@ If a v1.0 manifest is detected (single-session format):
 
 ---
 
-## 4) Draft, Approve, and Execute Commit
+## 4) Draft, Commit (autonomously), Receipt, then PUSH Decision
 
-This step combines commit message drafting, user approval, and execution into a single unified workflow to eliminate duplication.
+This step drafts the commit message, **commits autonomously** (no user approval — commit is standing manager/session authority once the quality gate is met), posts a brief **commit receipt**, and then presents the **one retained user gate: push**.
 
 ### 4.1) Analyze Changes and Apply Nested Repo Filtering
 
 **Check for Nested Repository Configuration**:
 - Project wrapper may specify: `Nested repositories: [list of paths]`
-- Example: `Nested repositories: /src/cosa/, /src/lupin-plugin-firefox/, /src/lupin-mobile/`
+- Example: `Nested repositories: /src/lupin-plugin-firefox/, /src/lupin-mobile/` (genuinely-separate `.git` repos nested in the tree; NOTE: `/src/cosa/` was folded into Lupin by the 2026-05-29 merge and is no longer a nested repo)
 
 **If nested repos are configured**:
 
@@ -696,7 +734,7 @@ This step combines commit message drafting, user approval, and execution into a 
 2. **Acknowledge nested repo changes** (if detected):
    ```
    ⚠️ Detected changes in nested repositories:
-   • /src/cosa/ (3 modified files)
+   • /src/lupin-plugin-firefox/ (3 modified files)
    • /src/lupin-mobile/ (1 new file)
 
    These are separate Git repositories and will not be included in this commit.
@@ -726,128 +764,73 @@ This step combines commit message drafting, user approval, and execution into a 
   Co-Authored-By: Claude <noreply@anthropic.com>
   ```
 
-### 4.3) Present for Approval (Single Decision Point)
+### 4.3) Commit Autonomously (no approval gate)
 
-**Send blocking notification and display options**:
+**Authority**: committing to the working branch is **standing manager/session authority** once the quality gate is satisfied — the user is **NOT** the commit gate (Rick, 2026-06-16: "I do not want to be the gate for commits and merges"; D1 guided-walkthrough ruling). Do **NOT** present a commit-approval menu. The commit happens; it then **announces itself** via a receipt (Step 4.4).
 
+**Quality gate (self-held, replaces the user gate)** — before committing, confirm both:
+- **Green** — tests pass where a test surface exists (see `workflow/testing-remediation.md`); for a docs-only change, the documentation-structure check stands in.
+- **Reviewed** — changes self-reviewed against the verified file list from Step 3.5 (selective staging; no stray files).
+
+If the quality gate is **not** satisfied, do **not** commit — hold the working tree and surface why:
 ```python
-ask_multiple_choice(
-    questions=[
-        {
-            "question": "Commit approval needed - review message and choose action",
-            "header": "Commit",
-            "multiSelect": False,
-            "options": [
-                {"label": "Commit only", "description": "Keep changes local"},
-                {"label": "Commit and push", "description": "Sync to remote"},
-                {"label": "Modify message", "description": "Edit commit message"},
-                {"label": "Cancel", "description": "Skip commit for now"}
-            ]
-        }
-    ],
-    title="Commit Decision",
-    abstract="""**Staged files**:
-- workflow/session-end.md (+45/-12)
-- global/CLAUDE.md (+23/-8)
-- history.md (+15/-0)
-
-**Commit message**:
-Document abstract parameter in cosa-voice MCP tools (Session 45)
-
-**Summary**: 3 files changed, +83/-20 lines"""
-)
+notify( "Holding commit — quality gate not met: <reason>", notification_type="alert", priority="medium" )
 ```
 
-**Display drafted commit message and options**:
+**Stage selectively** (from Step 3.5 — **NEVER** `git add .` / `git add -A`):
 
+```bash
+# Stage each file individually based on the Step 3.5 verified list
+git add src/auth.py
+git add history.md
+git add TODO.md
+# ... (only files from touched_files + auto-includes)
+
+# Verify staging matches the Step 3.5 list; drop any stray file
+git diff --cached --name-only
+git reset HEAD <unexpected_file>   # if anything unexpected appears
 ```
-══════════════════════════════════════════════════════════
-Proposed Commit Message
-══════════════════════════════════════════════════════════
 
+**Create the commit** with the drafted message (Step 4.2):
+
+```bash
+git commit -m "$(cat <<'EOF'
 [Your drafted commit message here]
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-
-══════════════════════════════════════════════════════════
-What would you like to do?
-══════════════════════════════════════════════════════════
-
-[1] Commit only (keep changes local)
-    → Stage files and commit with this message
-
-[2] Commit and push (sync to remote)
-    → Stage, commit, and push to remote repository
-
-[3] Modify message (provide changes)
-    → Update the commit message and show options again
-
-[4] Cancel (don't commit now)
-    → Skip commit, continue with session wrap-up
-
-What would you like to do? [1/2/3/4]
+EOF
+)"
 ```
 
-**CRITICAL**: STOP and WAIT for user response. Do NOT proceed until user selects an option.
+**Error handling**: see Step 4.6 (pre-commit hook modifies files, etc.).
 
-**Timeout Handling**: If timeout occurs, default to Cancel:
-- Send notification: `notify( "Commit timeout - changes uncommitted, preserved for next session", notification_type="alert", priority="medium" )`
-- Skip commit, preserve working tree, continue to Final Verification
+### 4.4) Post the Commit Receipt (FYI — not a gate)
 
-### 4.4) Execute Based on User Choice
+Per the 2026-06-16 D1 ruling, an autonomous commit **announces itself** with a brief receipt — transparency without re-introducing a gate ("act, then announce").
 
-**CRITICAL: Use Selective Staging from Step 3.5**
-
-**NEVER** use `git add .` or `git add -A`. Always stage files explicitly based on the verified file list from Step 3.5.
-
-**If user selects [1] - Commit only**:
-
-1. **Stage ONLY verified files** from Step 3.5:
-
-   ```bash
-   # Stage each file individually - NEVER git add . or git add -A
-   git add src/auth.py
-   git add src/utils.py
-   git add history.md
-   git add TODO.md
-   # ... (only files from touched_files + auto-includes)
-   ```
-
-   **Verification** (immediately after staging):
-   ```bash
-   git diff --cached --name-only
-   ```
-
-   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them:
-   ```bash
-   git reset HEAD <unexpected_file>
-   ```
-
-2. Create commit with approved message:
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   [Your commit message here]
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-
-3. Send success notification:
-   ```python
-   notify( "Changes committed successfully", notification_type="progress", priority="low" )
-   ```
-
-4. **Update Session Status in Manifest** (v2.0):
-
-   **Get commit hash**:
+1. **Get the commit hash**:
    ```bash
    commit_hash=$(git rev-parse --short HEAD)
    ```
+
+2. **Send the receipt** (an FYI — do **NOT** block on it):
+   ```python
+   notify(
+       message="Committed: <one-line subject>",
+       notification_type="task",
+       priority="low",
+       abstract="""**Commit** `abc1234` — <one-line subject>
+**Files** (N):
+- workflow/session-end.md
+- history.md
+- TODO.md
+**Stat**: N files, +X/-Y lines"""
+   )
+   ```
+
+3. **Update Session Status in Manifest** (v2.0):
 
    **Update YOUR section in `.claude-session.md`**:
    - Change `**Status**: active` → `**Status**: committed`
@@ -868,90 +851,40 @@ What would you like to do? [1/2/3/4]
    ...
    ```
 
-   **If this is the ONLY section** (no other active sessions):
-   - Delete `.claude-session.md` entirely (clean slate)
+   - **If this is the ONLY section** (no other active sessions): delete `.claude-session.md` entirely (clean slate).
+   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it).
 
-   **If other active sessions exist**:
-   - Keep manifest with updated status (other sessions still need it)
+### 4.5) PUSH Decision (the one retained user gate)
 
-5. DONE - Skip to Final Verification
+**Push stays the user's call.** The commit is autonomous; **push to origin is NOT** — it is the user's session-end decision, **executed by the manager/session on the user's word** (never punt the git op back to the user — that's a role inversion).
 
-**If user selects [2] - Commit and push**:
+**Visibility rule**: do **NOT** proactively surface push-readiness mid-session — it's noise (the push is the user's alone). This gate fires **only inside the end-ritual** (this step), which is the sanctioned moment for the push question.
 
-1. **Stage ONLY verified files** from Step 3.5:
+```python
+ask_yes_no(
+    question="Push this session's commit(s) to origin now?",
+    priority="high",
+    timeout_seconds=300,
+    default="no"      # AFK → hold; push is never the silent default
+)
+```
 
-   ```bash
-   # Stage each file individually - NEVER git add . or git add -A
-   git add src/auth.py
-   git add src/utils.py
-   git add history.md
-   git add TODO.md
-   # ... (only files from touched_files + auto-includes)
-   ```
+**On `yes`** — the manager/session executes the push:
+```bash
+git push   # parent repo only; exclude nested repos
+```
+```python
+notify( "Pushed to origin", notification_type="task", priority="low" )
+```
 
-   **Verification** (immediately after staging):
-   ```bash
-   git diff --cached --name-only
-   ```
+**On `no` / `neither` / timeout** — hold. The commit stays local, preserved for a later push (the user's next session-end call):
+```python
+notify( "Commit held locally — not pushed", notification_type="progress", priority="low" )
+```
 
-   Compare output against Step 3.5 verified list. If unexpected files appear, unstage them.
+Then continue to Final Verification.
 
-2. Create commit with approved message:
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   [Your commit message here]
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-
-3. Push to remote (parent repo only):
-   ```bash
-   git push
-   ```
-
-4. Send success notification:
-   ```python
-   notify( "Changes committed and pushed successfully", notification_type="progress", priority="low" )
-   ```
-
-5. **Update Session Status in Manifest** (v2.0):
-
-   Same as [1] above:
-   - Get commit hash: `git rev-parse --short HEAD`
-   - Update YOUR section: Status → `committed`, add Commit hash
-   - If only section → delete manifest
-   - If other active sessions → keep manifest
-
-6. DONE - Skip to Final Verification
-
-**If user selects [3] - Modify message**:
-
-1. Prompt user: "Please provide your updated commit message or describe the changes you'd like:"
-
-2. Wait for user input
-
-3. Update commit message based on user feedback
-
-4. Loop back to Step 4.3 (present options again with updated message)
-
-**If user selects [4] - Cancel**:
-
-1. Send notification:
-   ```python
-   notify( "Commit cancelled by user", notification_type="progress", priority="low" )
-   ```
-
-2. **Keep session manifest** (do NOT delete `.claude-session.md`)
-   - Session may continue working
-   - Or resume later with `/plan-session-start` (will detect existing manifest)
-
-3. Continue to Final Verification (without committing)
-
-### 4.5) Error Handling
+### 4.6) Error Handling
 
 **Pre-commit hook modifies files**:
 - If commit succeeds but hook modified files, check:
@@ -968,10 +901,10 @@ What would you like to do? [1/2/3/4]
   - [3] View detailed error
 - Commit is already saved, no data loss
 
-**No remote configured** (when user selects [2]):
+**No remote configured** (when the push gate returns `yes`):
 - Detect: `git remote -v` returns empty
 - Inform user: "No remote repository configured. Commit succeeded but cannot push."
-- Auto-fallback to [1] behavior (commit only)
+- The commit stands (already saved); skip the push, no data loss
 
 **Git Safety Protocol** (applies to all operations):
 - NEVER run destructive/irreversible git commands (push --force, hard reset, etc.) unless user explicitly requests
@@ -982,7 +915,7 @@ What would you like to do? [1/2/3/4]
 
 ## 5) Backup Prompt (Conditional)
 
-**Condition**: Only execute this step if Step 4 resulted in a commit (user selected "Commit only" or "Commit and push"). Skip this step if commit was cancelled or timed out.
+**Condition**: Only execute this step if Step 4 resulted in a commit (the normal autonomous-commit path). Skip this step if the commit was held back because the quality gate (green AND reviewed) was not met.
 
 ### 5.1) Offer Backup Options
 
@@ -1031,7 +964,7 @@ Tip: Dry-run first to preview, then execute."""
    )
    ```
 
-4. **If yes** (response starts with "yes", may include `[comment: ...]`) → execute actual backup:
+4. **If yes** (`response.startswith("yes")`, may include `[comment: ...]`) → execute actual backup:
    ```bash
    ./src/scripts/backup.sh --write
    ```
@@ -1040,10 +973,12 @@ Tip: Dry-run first to preview, then execute."""
    notify( "Backup complete", notification_type="task", priority="low" )
    ```
 
-5. **If no** (response starts with "no") → notify and continue:
+5. **If no** (`response.startswith("no")`) → notify and continue:
    ```python
    notify( "Backup skipped after dry-run review", notification_type="progress", priority="low" )
    ```
+
+6. **If neither** (`response.startswith("neither")`) → the backup question was ambiguous. Read the `[comment: ...]` qualifier (typical re-frames: "which backup target?", "with or without LanceDB?", "what about the secrets dir?") and re-prompt with a narrower question (often `ask_multiple_choice()` over backup variants). Do NOT default to skip or execute. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 **If user selects "Run backup"**:
 
@@ -1073,9 +1008,364 @@ If timeout occurs, default to Skip:
 - Continue to Final Verification
 
 
+## 6) LoC Delta Summary (Day's Work)
+
+**Purpose**: Close every session with a tangible artifact of the day's work — a LoC-delta table broken down by language and by code/comment/docstring, optionally compared against the repo's overall composition. This is **the last thing the user sees, hears, or finds in the notification card** before Final Verification.
+
+> **Vocabulary note**: this step is referred to verbally as the **"LoC delta summarizer"** / **"daily LoC summary"** / **"branch progress closer"**. The historical section name was "Day's Work Summary" (preserved in the heading as a parenthetical anchor for backward-compat); the canonical name as of 2026-05-21 is **LoC Delta Summary**.
+
+**When**: After Step 5 (Backup Prompt) regardless of whether a commit was made. Even on cancelled-commit sessions, the day's work on the working tree is worth summarizing.
+
+### MANDATE — Step 6 is not optional under default invocation
+
+**Three obligations that MUST be satisfied on every session-end where `--no-summary` was NOT passed**:
+
+1. **MUST fire**: Step 6 must execute. Soft-skip ("we're wrapping up, let's not bother") is a violation, not a judgment call. The only valid skip paths are: (a) explicit `--no-summary` flag; (b) the documented preflight failures in §6.1 (no `main` branch / no commits since merge-base) which produce explicit skip lines, NOT silent omission.
+2. **MUST surface the table**: the rendered markdown table (per §6.4) MUST land in the closing `notify()`'s `abstract` parameter — not just terminal scrollback. The user is often at-a-distance with speakerphone on; terminal-only delivery means invisible delivery.
+3. **MUST speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter MUST include a single short LoC verdict so the user gets the signal aurally even if they never read the abstract. Compliant forms (≈8-15 words): *"Branch is at +560 net since main"*, *"Day's wrap: light day, plus 12 net"*, *"Branch close: 4 days, plus 318 net across 14 files"*. **The verdict replaces the generic "session ended" sign-off, it doesn't add to it** — net spoken word count stays under the routine 3-sentence cap (headline + 2 takeaways — TTS Brevity Mandate 2026-06-13).
+
+**Skip condition** (the only valid one): User passed `--no-summary` to the slash-command wrapper. Skip Step 6 entirely; proceed to Final Verification. In every other case, Step 6 fires.
+
+**Failure mode this MANDATE exists to prevent** (the empirical anchor for the 2026-05-21 promotion): prior soft-language ("Skip condition: …") allowed agents under wrap-up pressure to interpret Step 6 as "optional if the session is short / time is short / context is full." Users reported the summary not running consistently AND not being visibly surfaced when it did run — both heads of a two-headed failure that this MANDATE addresses jointly.
+
+---
+
+### 6.1) Resolve the Diff Scope
+
+**Default scope**: branch-since-`main` — the LoC delta from the merge-base of the current branch with `main` to `HEAD`. This matches the typical "what did I do on this branch" mental model and naturally captures multi-day, multi-session work.
+
+**Why not "calendar day"**: sessions cross midnight; a fixed calendar boundary cuts work in half.
+
+**Why not "session-only"**: granular but misses cross-session work; the summary is meant to aggregate the day's effort, not just one session's commits.
+
+**Pre-flight checks**:
+
+```bash
+# Confirm there's a main branch to diff against
+git rev-parse --verify main >/dev/null 2>&1 || { echo "no-main-branch"; }
+
+# Confirm there are commits on this branch since main
+git rev-list --count $(git merge-base HEAD main)..HEAD
+```
+
+If `git rev-parse --verify main` fails (orphan branch, fresh repo): skip Step 6 with the line *"LoC Delta Summary: skipped — no `main` branch to diff against."*
+
+If commit count is `0`: skip Step 6 with the line *"LoC Delta Summary: nothing to summarize — no commits on this branch since branching from main."*
+
+---
+
+### 6.2) Per-Day LoC Delta (Default Path)
+
+**Module**: `cosa.repo.git_loc_delta` (sister to `branch_analyzer` — same `cosa.repo` package). Where `branch_analyzer` answers "what does this whole branch change vs main", `git_loc_delta` answers **"what changed when"** with a per-day temporal axis. Critically, it writes a **stable per-branch CSV** that grows day-by-day across sessions, giving you a persistent artifact of the branch's progress.
+
+**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The CLI lives at `$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py`.
+
+**Invocation** (two-pass — one for the persistent CSV, one for the renderer's structured data):
+
+```bash
+# Verify LUPIN_ROOT and the module
+[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py" ] || skip_to_fallback
+
+# Pick the Python interpreter. git_loc_delta itself has no PyYAML dep, but the
+# --rich opt-in (§6.2.alt) does, so the same PYBIN selection serves both paths.
+# Post-COSA-merge: $LUPIN_ROOT/.venv is the canonical Lupin venv (carries cosa +
+# PyYAML); fall back to system python.
+PYBIN="$LUPIN_ROOT/.venv/bin/python"
+[ -x "$PYBIN" ] || PYBIN="python3"
+
+PROJECT_ROOT="$(git -C . rev-parse --show-toplevel)"
+REPO_NAME="$(basename "$PROJECT_ROOT")"
+BRANCH_SLUG="$(git -C "$PROJECT_ROOT" symbolic-ref --short HEAD)"
+CSV_PATH="$PROJECT_ROOT/io/git-loc-delta/${REPO_NAME}-${BRANCH_SLUG}-loc-delta.csv"
+mkdir -p "$PROJECT_ROOT/io/git-loc-delta"
+
+# Pass 1 — write the persistent per-branch CSV into the TARGET project's io/.
+# We must use --save-output explicitly because git_loc_delta's default path is
+# computed relative to cu.get_project_root() (i.e. LUPIN_ROOT), not relative to
+# --repo-path. Without --save-output, the CSV lands in $LUPIN_ROOT/io/, which
+# is wrong for the cross-repo "every session, every repo" use case.
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_git_loc_delta \
+    --repo-path "$PROJECT_ROOT" \
+    --branch \
+    --output csv \
+    --save-output "$CSV_PATH"
+
+# Pass 2 — emit JSON to stdout for §6.4 renderer (no disk side-effect)
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_git_loc_delta \
+    --repo-path "$PROJECT_ROOT" \
+    --branch \
+    --output json
+```
+
+**Outputs**:
+
+- **Persistent CSV** (Pass 1) at `{PROJECT_ROOT}/io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv` — tidy-long 6-column schema (`date,file_type,added,deleted,files_touched,commits`). Same filename across daily reruns; each call overwrites with the full branch-to-date snapshot.
+- **Structured JSON** (Pass 2) on stdout, consumed by §6.4 renderer.
+
+**JSON shape** (verified against `<lupin>/src/cosa/repo/git_loc_delta/report_formatter.py`):
+
+```json
+{
+  "since": "2026-05-14",
+  "until": null,
+  "branch": "wip-v0.1.3-...",
+  "rev_range": "main..wip-v0.1.3-...",
+  "repo_path": ".",
+  "summary": {
+    "total_added": 367,
+    "total_deleted": 49,
+    "total_files": 14,
+    "total_commits": 9,
+    "total_days": 3,
+    "net": 318
+  },
+  "days": [
+    {
+      "date": "2026-05-14",
+      "added": 88,
+      "deleted": 12,
+      "files_touched": 4,
+      "commits": 3,
+      "by_file_type": [
+        { "file_type": "markdown", "added": 88, "deleted": 12, "files_touched": 4, "commits": 3 }
+      ]
+    }
+  ]
+}
+```
+
+**If the chosen interpreter raises `ModuleNotFoundError`** or either pass exits non-zero: treat as §6.2 failure and fall through to §6.3. The CSV side-effect is best-effort — failure to write does not block session-end (see §6.6).
+
+---
+
+### 6.2.alt) Optional: Rich Language Breakdown (`--rich`)
+
+**When**: User passes `--rich` to the slash-command wrapper (e.g. `/plan-session-end --rich`). Off by default — the per-day table from §6.2 is the canonical day-end shape.
+
+**Purpose**: Adds the language × code/comment/docstring breakdown from `cosa.repo.run_branch_analyzer` as a secondary section appended to the closing `notify()` abstract. Useful when the branch is about to be PR'd and you want the rich language summary alongside the per-day trace.
+
+**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
+
+**Invocation**:
+
+```bash
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_branch_analyzer \
+    --repo-path "$PROJECT_ROOT" \
+    --base main \
+    --head HEAD \
+    --output json
+```
+
+**JSON shape** (verified in `<lupin>/src/cosa/repo/branch_analyzer/statistics_collector.py`):
+
+```json
+{
+  "base_branch": "main",
+  "head_branch": "wip-v0.1.3-...",
+  "repository": "/abs/path",
+  "statistics": {
+    "overall": {
+      "total_added": 342,
+      "total_removed": 89,
+      "net_change": 253,
+      "files_changed": 12
+    },
+    "by_file_type": [
+      { "file_type": "python", "added": 234, "removed": 45, "net": 189, "total": 279 }
+    ],
+    "language_details": {
+      "python": {
+        "code": 198, "comment": 36, "docstring": 0, "removed": 45,
+        "total_added": 234, "net": 189,
+        "percentages": { "code": 84.6, "comment": 15.4, "docstring": 0.0 }
+      }
+    }
+  }
+}
+```
+
+Parsed into the same `### Rich Language Breakdown` markdown sub-table at the bottom of §6.4's rendered output. Failure of this section is non-fatal — the per-day summary still ships; just log the stderr line and continue.
+
+---
+
+### 6.3) Fallback: Native `git diff --shortstat`
+
+**When**: `LUPIN_ROOT` unset, analyzer modules missing, or §6.2 invocation fails.
+
+**Invocation**:
+
+```bash
+merge_base=$(git merge-base HEAD main)
+git diff --shortstat "$merge_base"..HEAD
+git diff --numstat  "$merge_base"..HEAD  # for per-file breakdown
+```
+
+This gives line totals and per-file counts but **no code/comment/docstring split**. Render a degraded summary per §6.4 and append the upgrade-path line:
+
+> *Upgrade: set `LUPIN_ROOT` to enable code/comment/docstring breakdown. See `~/.claude/skills/codebase-analysis/SKILL.md`.*
+
+---
+
+### 6.4) Render the Summary
+
+**Terminal output** (all paths — §6.2 default per-day, §6.3 native fallback, with §6.2.alt and/or §6.5 appended when enabled):
+
+```markdown
+══════════════════════════════════════════════════════════
+LoC Delta Summary (Day's Work)
+══════════════════════════════════════════════════════════
+
+Branch: wip-v0.1.3-...  →  main
+Net: +318 lines  |  Files: 14  |  Days: 3  |  Commits: 9
+
+### Daily Totals
+
+| Date       | Added | Deleted | Net  | Files | Commits |
+|------------|-------|---------|------|-------|---------|
+| 2026-05-14 |    88 |      12 |  +76 |     4 |       3 |
+| 2026-05-15 |   145 |      28 | +117 |     6 |       4 |
+| 2026-05-16 |   134 |       9 | +125 |     6 |       2 |
+
+### By Date × File Type (top rows)
+
+| Date       | File Type | Added | Deleted | Files |
+|------------|-----------|-------|---------|-------|
+| 2026-05-14 | markdown  |    88 |      12 |     4 |
+| 2026-05-15 | python    |   110 |      18 |     4 |
+| 2026-05-15 | markdown  |    35 |      10 |     2 |
+| 2026-05-16 | python    |    94 |       3 |     3 |
+| 2026-05-16 | markdown  |    40 |       6 |     3 |
+
+CSV: io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv
+```
+
+If the **Repo Baseline** section is enabled (default ON; see §6.5), append:
+
+```markdown
+### Repo Baseline (current composition)
+
+| Language     | Total LoC | Code | Comment | Docstring |
+|--------------|-----------|------|---------|-----------|
+| Python       | 12,403    | 78%  | 12%     | 10%       |
+| Markdown     | 4,221     | 100% | —       | —         |
+
+Today's contribution: +318 LoC against a 16,624-LoC base (≈1.9%)
+```
+
+If `--rich` was passed (see §6.2.alt), append:
+
+```markdown
+### Rich Language Breakdown (branch-total)
+
+| Language     | Added | Removed | Net  | Code | Comment | Docstring |
+|--------------|-------|---------|------|------|---------|-----------|
+| Python       | 234   | 45      | +189 | 84.6%| 15.4%   | 0.0%      |
+| Markdown     | 163   | 28      | +135 | 100% | —       | —         |
+```
+
+**Notification** (always, all paths — **MANDATED per the Step 6 obligations above**) — fire `notify()` with the LoC verdict in `message` (TTS-Brevity-Mandate-compliant, ≈8-15 words) and the full table in `abstract`:
+
+```python
+notify(
+    message           = "Day's wrap: three days net plus three-eighteen across fourteen files. Mostly Python and markdown.",
+    abstract          = "<full markdown table from above, including baseline and/or rich breakdown if present, plus a doc-link to the persistent CSV>",
+    notification_type = "task",
+    priority          = "medium",
+    suppress_ding     = True
+)
+```
+
+The `abstract` MUST include a doc-viewer link to the persistent CSV (per the canonical link grammar at `workflow/doc-viewer-links.md`):
+
+```markdown
+[Open: {repo}-{branch-slug}-loc-delta.csv](/app/docs?path={project}/io/git-loc-delta/{repo}-{branch-slug}-loc-delta.csv)
+```
+
+Resolve `{project}` from `get_session_info().project` (single string field — see `workflow/doc-viewer-links.md § Discovering Your Scope at Runtime`). The legacy two-param form with `&scope=` query param is dead syntax; emit the path-only form only.
+
+**Spoken-verdict mandate** (intensified per the Step 6 obligations): 1 sentence, conversational, **verdicts not inventory**. No file paths, percentages, or hash literals in the spoken line. The LoC verdict is REQUIRED — it is the aural signal that Step 6 actually fired. Per `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+Examples of compliant spoken verdicts (per-day shape):
+- *"Day's wrap: three sessions, net plus three-eighteen, Python-heavy with a markdown chaser."*
+- *"Closing summary: light day — net plus twelve across two files of markdown."*
+- *"Branch close: five days on the branch, net plus four-fifty across forty files."*
+
+Anti-patterns (DO NOT do any of these):
+- *"Day's wrap: plus 234 minus 45 in Python at 84.6 percent code 15.4 percent comment 0 percent docstring..."* — inventory recital, the brevity mandate violation
+- *"CSV written to io slash git dash loc dash delta slash..."* — URLs and file paths are TTS-hostile
+- Closing turn with NO LoC verdict at all (generic "session ended" sign-off without the LoC headline) — silent omission, the accountability mandate violation
+
+---
+
+### 6.5) Repo Baseline (Optional)
+
+**Default**: ON. User can disable via `--no-baseline` slash-command flag.
+
+**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
+
+**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view):
+
+```bash
+# Reuse the same $PYBIN selection from §6.2
+cd "$LUPIN_ROOT/src" && \
+  "$PYBIN" -m cosa.repo.run_directory_analyzer \
+    --path /absolute/path/to/current/project \
+    --output json
+```
+
+Parse the same `statistics` shape from `<lupin>/src/cosa/repo/directory_analyzer/statistics_collector.py`. Compute `today_pct = overall.net_change / sum(language_details.*.code)` for the "≈1.1%" line.
+
+---
+
+### 6.6) Failure Handling
+
+| Failure | Behavior |
+|---------|----------|
+| `LUPIN_ROOT` unset | Fall through to §6.3 native fallback. |
+| `LUPIN_ROOT` set but `run_git_loc_delta.py` missing | Same as unset. |
+| §6.2 Pass 1 (CSV write) exits non-zero or disk full / permission denied | Log stderr to terminal (not abstract); attempt Pass 2 anyway. If Pass 2 succeeds, render summary without the CSV doc-link. If Pass 2 also fails, fall through to §6.3. **Non-fatal**. |
+| §6.2 Pass 2 (JSON) exits non-zero or JSON parse error | Log stderr to terminal; fall through to §6.3. |
+| §6.2 `ModuleNotFoundError` | Log stderr to terminal; fall through to §6.3. |
+| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table silently; per-day summary still ships. **Non-fatal**. |
+| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table silently. **Non-fatal**. |
+| `git merge-base HEAD main` fails | Skip Step 6 with "no main branch" line. |
+| No commits since merge-base | Skip Step 6 with "nothing to summarize" line. |
+| `notify()` call fails | Terminal output still rendered; notification failure is non-fatal. |
+
+In all skip/fallback paths, **continue to Final Verification**. Step 6 is informational; it must never block session-end.
+
+---
+
+### 6.7) Cross-References
+
+- **Git LoC Delta module README** (canonical reference for `git_loc_delta` CLI usage and CSV schema): `<lupin>/src/cosa/repo/git_loc_delta/README.md`
+- **Git LoC Delta R&D plan** (design rationale, acceptance criteria, reuse audit): `<lupin>/src/cosa/rnd/2026.05.16-daily-loc-delta-tool.md`
+- **Session-end integration plan** (this rewrite's plan-of-action): `src/rnd/2026.05.16-git-loc-delta-session-end-integration.md`
+- **Codebase-analysis skill** (canonical reference for all three analyzer CLIs + decision rule): `~/.claude/skills/codebase-analysis/SKILL.md`
+- **Brevity mandate for spoken headline**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate"
+- **Env-var-gated invocation precedent**: `workflow/backup-version-check.md` (same `if env-var set, run; else degrade` pattern)
+- **Markdown table convention**: `workflow/branch-pr-and-merge.md` (file-type breakdown table format)
+
+---
+
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
+
+### Step-6 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
+
+Before sending the final close-out notification, audit:
+
+- [ ] **Did Step 6 fire?** — unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line, Step 6 MUST have run. Silent omission is a violation.
+- [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
+- [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
+- [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
+- [ ] **If a blocking-tool ask was made during this session-end** (push approval, archive decision, conflict resolution, etc.) — does each such ask's abstract include pros/cons + recommendation per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`?
+
+If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 if needed; re-issue the closing notification with the missing elements added.
 
 ## Project-Specific Context
 
@@ -1099,6 +1389,7 @@ At the end of every session when user says goodbye, verify completion of the man
 
 ## Version History
 
+- **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now parses current session's section from multi-section manifest, detects conflicts with other active sessions, prompts user for conflict resolution. Step 4.4 updates session status to `committed` with commit hash instead of deleting manifest (preserves tracking for other active sessions). Added conflict detection UI with ask_multiple_choice(). (~180 lines rewritten).
 - **2026.01.29 (Session 53)**: Added parallel session safety with `.claude-session.md` manifest (v1.0). Step 3.5 reads manifest file, verifies files against git status, handles missing/empty manifest. Step 4.4 uses selective staging and deletes manifest after successful commit. NEVER use `git add .` or `git add -A`. (~150 lines added, ~30 modified)
 - **2026.01.XX**: Prior iterations (no version tracking before this date)

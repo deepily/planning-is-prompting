@@ -29,6 +29,23 @@ Interactive first-time installation of planning-is-prompting workflows in a new 
 
 ---
 
+## ⚠️ Conversation Mode Awareness
+
+This wizard has many user-decision gates: catalog selection (Step 2), dependency-warning gates (Step 3), config collection (Step 4), validation (Step 6), session-end offer (Step 8). When `conversation_mode_active=true` (check via `get_session_info()` at the start), **the entire wizard becomes voice-driven** — the user may not see the full ASCII catalog you render to the terminal.
+
+**Mandates in conversation mode**:
+- At the start, announce the wizard with a 1-sentence orientation: "Installation wizard starting — I'll voice each gate." (Then proceed.)
+- All `ask_*()` calls in this workflow MUST use `priority="high"`. Verify before each call — voice is the only channel reaching the user.
+- **Brevity mandate at the catalog gate (Step 2)**: NEVER read the full workflow catalog aloud row-by-row. Speak categories ("session, history, planning, testing, review — pick which you want") and put the detailed catalog in the `abstract` parameter for terminal display. Same for dependency warnings — speak the headline ("missing rsync, two options") and detail in `abstract`.
+- For multi-question phases (Step 4 config collection), prefer `ask_open_ended_batch()` over sequential `converse()` calls — each voice round-trip is friction.
+- Receipt-acknowledge each user prompt before further tool work.
+
+**Brevity mandate (universal)**: in conversation mode, spoken responses are **conversational prose**, NOT verbatim copies of the markdown terminal reply. Strip markdown structure, file paths, line numbers, table syntax; cap at ~30 seconds of speech.
+
+**Full spec**: `workflow/cosa-voice-integration.md` §Conversation Mode → "TTS Response Brevity Mandate".
+
+---
+
 ## Workflow Catalog Metadata
 
 This metadata drives the interactive menu generation in Step 2.
@@ -158,6 +175,33 @@ This metadata drives the interactive menu generation in Step 2.
 }
 ```
 
+```json
+{
+  "id": "memento-management",
+  "name": "Memento (Session Continuity / Re-spin)",
+  "description": "Pre-/clear state snapshot so a re-spawned session rehydrates without losing context. Responds to the 'prepare for re-spin' shorthand.",
+  "category": "core",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-memento",
+      "description": "Write/load/check a .claude-memento.md state snapshot (modes: write/load/check). Also fires on the 'prepare for re-spin' intent trigger → worker safe-checkpoint → memento → ACK."
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["session-management"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-memento.md",
+    ".claude-memento.md (created on first use; gitignored)"
+  ],
+  "notes": "Install in any repo whose workers get reaped + re-spawned so 'prepare for re-spin' is recognized fleet-wide. Canonical workflow: workflow/memento-management.md (§0 trigger phrases, §2 the 8-element contract)."
+}
+```
+
 ### Planning Workflows (For Structured Work Planning)
 
 ```json
@@ -192,6 +236,38 @@ This metadata drives the interactive menu generation in Step 2.
     ".claude/commands/p-is-p-01-planning.md",
     ".claude/commands/p-is-p-02-documentation.md"
   ]
+}
+```
+
+### Review Workflows (Optional)
+
+```json
+{
+  "id": "plan-review-gate",
+  "name": "Plan Review Gate",
+  "description": "Two-pass quality gate (Fitness + Ownership-Language Audit) for implementation plans before any code is written",
+  "category": "review",
+  "recommended": false,
+  "commands": [
+    {
+      "name": "/plan-review",
+      "description": "Full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit). Supports --from=reuse|fitness|ownership for partial reruns (Pass 2 renamed from Adversarial 2026-05-15; --from=adversarial retired with no alias)"
+    },
+    {
+      "name": "/plan-review-reuse",
+      "description": "Standalone REUSE pre-pass for Pattern 3 single-doc plans (catches accidental reinvention of existing helpers)"
+    }
+  ],
+  "dependencies": {
+    "files": [],
+    "workflows": ["planning-is-prompting-core"],
+    "env_vars": [],
+    "tools": []
+  },
+  "creates": [
+    ".claude/commands/plan-review.md"
+  ],
+  "notes": "Mandatory for Pattern 1/2/5/6 plans (the patterns that fire /p-is-p-02-documentation); optional REUSE-only pre-pass available for Pattern 3 via /plan-review-reuse; Pattern 4 (Investigation) skips entirely. The gate is the doc-quality bar that DOCUMENTATION-FIRST PROTOCOL doesn't impose on its own. Depends on TEST OWNERSHIP MANDATE in ~/.claude/CLAUDE.md as Layer 1 anchor."
 }
 ```
 
@@ -1094,12 +1170,26 @@ Available Workflows:
     Dependencies: None
     Note: Includes diagram type catalog, conversion guide, and exemption rules
 
+┌─────────────────────────────────────────────────────────┐
+│ REVIEW WORKFLOWS (Optional - plan quality gate)         │
+└─────────────────────────────────────────────────────────┘
+
+[N] Plan Review Gate
+    Two-pass quality gate for implementation plans before any code is written
+    Commands:
+      • /plan-review - Full pipeline (REUSE → Fitness → Ownership-Language Audit)
+      • /plan-review-reuse - Standalone REUSE pre-pass for Pattern 3 plans
+    Dependencies: Planning is Prompting Core (D); reads ~/.claude/CLAUDE.md
+                  TEST OWNERSHIP MANDATE as Layer 1 anchor
+    Note: Mandatory for Pattern 1/2/5/6 plans; REUSE-only available for
+          Pattern 3 via /plan-review-reuse; Pattern 4 skips entirely
+
 ──────────────────────────────────────────────────────────
 Select workflows to install:
 
 [1] Install all core workflows (A + B) - Recommended
-[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L + M)
-[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L, M)
+[2] Install everything (A + B + C + D + E + F + G + H + I + J + K + L + M + N)
+[3] Custom selection (tell me which: A, B, C, D, E, F, G, H, I, J, K, L, M, N)
 [4] Cancel installation
 
 What would you like to do? [1/2/3/4]
@@ -1146,8 +1236,8 @@ ask_multiple_choice( questions=[
 1. **Parse User Selection**:
 
    - **Option [1] - All core**: Select A + B (session-management, history-management)
-   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I + J + K (all workflows)
-   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I, J, K")
+   - **Option [2] - Everything**: Select A + B + C + D + E + F + G + H + I + J + K + L + M + N (all workflows)
+   - **Option [3] - Custom**: Parse user's list (e.g., "A and C", "just B", "A, C, D, E, F, G, H, I, J, K, L, M, N")
    - **Option [4] - Cancel**: Exit wizard
 
 2. **Validate Dependencies**:
@@ -1297,6 +1387,21 @@ ask_multiple_choice( questions=[
    - Creates slash command for removing workflows later
    - No validation needed (always available)
    - Note: Can uninstall itself along with other workflows
+
+   **Plan Review Gate (N)**:
+   - Requires: Planning is Prompting Core (D) must also be selected (the gate fires between `/p-is-p-02-documentation` and code)
+   - If user selected N but not D, warn:
+     ```
+     ⚠️ Dependency Warning
+
+     Plan Review Gate (N) depends on Planning is Prompting Core (D).
+     The gate is the doc-quality bar that runs after `/p-is-p-02-documentation`.
+
+     [1] Yes, add Planning is Prompting Core (D)
+     [2] No, remove Plan Review Gate (N) from selection
+     [3] Cancel installation
+     ```
+   - Note: The gate also reads `~/.claude/CLAUDE.md` `TEST OWNERSHIP MANDATE` as the Layer 1 anchor; if absent, Pass 2 (Ownership-Language Audit) loses its calibration target — surface this to the user as informational, not blocking
 
 3. **Confirm Selection**:
 
@@ -1705,6 +1810,20 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    Customize:
    - No customization needed (wizard is project-agnostic)
    - Note: This makes uninstall wizard available as `/plan-uninstall-wizard` for removing workflows
+
+   **Plan Review Gate (N)**:
+   ```bash
+   # Copy plan-review slash command wrapper
+   cp planning-is-prompting/.claude/commands/plan-review.md \
+      ./.claude/commands/plan-review.md
+   ```
+
+   Customize:
+   - Replace `[SHORT_PROJECT_PREFIX]` → User's prefix (e.g., `[MYPROJ]`)
+   - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
+   - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
+   - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
+   - Note: The wrapper supports `--from=reuse|fitness|ownership` for partial reruns and a `/plan-review-reuse` sub-command for Pattern 3 single-doc plans; both are documented in the canonical workflow (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; the old `--from=adversarial` flag was retired with no backward-compat alias)
 
 3. **Create or Update CLAUDE.md**:
 
@@ -3392,6 +3511,8 @@ What would you like to do? [1/2]
 ```python
 ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=300 )
 ```
+
+**Response handling** (ternary): `yes` → apply updates; `no` → skip; `neither` → re-frame (typical concerns: "apply some but not all of the diff", "show the diff in a different format", "wait — what does this overwrite?"). Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over per-file selection or a narrower diff view. Do NOT default to apply or skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ---
 

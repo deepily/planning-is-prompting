@@ -1,10 +1,14 @@
 # Testing Baseline Collection Workflow
 
+> **Test Ownership**: This workflow is invoked by Claude, not requested from the human. Per the TEST OWNERSHIP MANDATE (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), testing the pyramid is Claude's responsibility; the human is a designer/user, not a tester. Scope decisions within this workflow are Claude's to make via change-impact analysis.
+
 **Purpose**: Establish comprehensive baseline before major changes through pure data collection
 **Mode**: Observation only - ZERO remediation attempts
 **Principle**: Observe First, Fix Later
 **Version**: 1.0
 **Last Updated**: 2025.10.11
+
+> **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress (medium priority) — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Test pass/fail counts go in headline ("smoke 47 pass, unit 121 pass, 3 integration skipped"); full output stays in the terminal and `abstract`.
 
 ---
 
@@ -182,7 +186,7 @@ echo "Baseline collection timestamp: ${TIMESTAMP}"
 **If health_check_url is configured**:
 ```bash
 echo "=== System Health Check ==="
-if curl -s -f "{health_check_url}" >/dev/null 2>&1; then
+if python3 -c "import urllib.request; urllib.request.urlopen( '{health_check_url}' )" 2>/dev/null; then
     echo "✅ Server is healthy and responding at {health_check_url}"
 else
     echo "❌ Server health check failed at {health_check_url}"
@@ -856,7 +860,7 @@ Ready for planned changes. Use /plan-test-remediation after modifications.
 
 ### Multi-Suite Projects
 
-**For projects with multiple independent test suites** (like Lupin + COSA):
+**For projects with multiple independent test suites** (e.g., a primary app suite plus a separate framework or library suite):
 
 **Option 1: Unified Workflow**
 - Execute all suites in single baseline run
@@ -870,6 +874,8 @@ Ready for planned changes. Use /plan-test-remediation after modifications.
 - Useful when suites are truly independent
 
 **Recommendation**: Option 1 for integrated systems, Option 2 for loosely coupled.
+
+> **Post-merge note (2026-05-29)**: Lupin + COSA was the original example here, but the CoSA framework was merged into Lupin (subtree fold). It now runs as ONE repo — cosa's suite is unified under Lupin (Option 1) and cosa inherits the Lupin-wide 100% coverage gate with a grandfathering ramp. Treat any "Lupin + COSA = two independent suites" framing elsewhere in these docs as pre-merge.
 
 ### Custom Health Checks
 

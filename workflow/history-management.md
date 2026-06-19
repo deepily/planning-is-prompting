@@ -14,6 +14,8 @@
 - Four operational modes (check, archive, analyze, dry-run)
 - Integration with session-end workflows
 
+> **⚠️ Conversation Mode**: this workflow uses cosa-voice `notify()` for token-warning thresholds and `ask_multiple_choice()` for archival decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply (strip markdown structure, cap at ~30 seconds of speech). Token-warning announcement is a 1-sentence headline ("history at 18k tokens, archive recommended"); detailed forecast stays in `abstract` parameter.
+
 ---
 
 ## Design Principles

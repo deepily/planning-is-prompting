@@ -68,6 +68,7 @@ I found existing planning-is-prompting workflows in this project:
 
 Not yet installed:
 ○ Planning is Prompting Core (/p-is-p-*)
+○ Memento / Re-spin Continuity (/plan-memento)
 ○ Backup Infrastructure (/plan-backup-*)
 
 What would you like to do?
@@ -140,6 +141,8 @@ This guide provides copy-paste prompts to install workflow templates from the pl
 2. **Referenced directly** - Link to canonical workflow in project CLAUDE.md
 3. **Copied and customized** - Fork the workflow for heavy project-specific modifications
 
+> **⚠️ Conversation Mode Awareness**: many of the workflows installed by this guide use cosa-voice notifications (`notify()`, `ask_*()`, `converse()`). When the user's session is in conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules. Each individual workflow's documentation in this guide reinforces the mandate where relevant.
+
 ---
 
 ## Quick Start
@@ -150,6 +153,48 @@ Before installing workflows, ensure:
 - Your project has a `.claude/` directory (created automatically by Claude Code)
 - You've defined a `[SHORT_PROJECT_PREFIX]` for your project (e.g., `[AUTH]`, `[LUPIN]`, `[WS]`)
 - Your global `~/.claude/CLAUDE.md` is configured with notification settings
+
+### Doc Viewer Readiness (`.docview.yml`)
+
+If your project will use cosa-voice notifications with doc-viewer links (the `[Open: …](/app/docs?path=…)` pattern in `notify()` abstracts), drop a `.docview.yml` manifest at your repo root. Without it, root-level tracking files (`TODO.md`, `history.md`, `README.md`, `CLAUDE.md`, `bug-fix-queue.md`) will 404 when linked.
+
+> **Canonical doc-link grammar lives at `workflow/doc-viewer-links.md`** — that hub teaches the URL form, the registered-repo discovery contract, the `abstract`-only-never-`message` rule, and the purge inventory of dead syntax (`?scope=` query param, retired `docs`/`io` shorthand scopes, old `doc_scope` dict envelope). The installer guidance below is purely about the `.docview.yml` whitelist manifest; for everything else, defer to the hub.
+
+**Why the manifest is needed**: the doc-viewer gate's directory-prefix-only `allowed_prefixes` (configured via Lupin INI `external repos`) does not cover individual root files. The `.docview.yml` manifest's `allowed_root_files` whitelist supplies the per-file granularity — and overrides the INI prefixes when present per Q2-C semantics.
+
+**Template** (canonical PIP-shipped — copy as-is, then trim or extend for project-specific needs):
+
+```yaml
+version: 1
+
+allowed_prefixes:
+  - src/
+  - workflow/
+  - docs/
+
+allowed_root_files:
+  # Always part of PIP guidance surface
+  - README.md
+  - CHANGELOG.md
+  - TODO.md
+  - history.md
+  - CLAUDE.md
+  # Bug-fix-mode artifact — file present only when bug-fix-mode is installed,
+  # but listing is harmless when absent (gate is whitelist-only;
+  # filesystem check happens at request time, returns clean 404).
+  - bug-fix-queue.md
+
+extra_blocklist: []
+```
+
+**Notes**:
+- Entries pointing at non-existent files are silently OK at startup — the manifest loader does no filesystem validation. A view request for an absent listed file gets a clean 404 from the file resolver (not a 400 from the gate).
+- **Adjust `allowed_prefixes` per project** — most code projects also want `src/cosa/`, `src/lupin_mcp/`, etc.
+- **URL form**: `/app/docs?path=<project>/<rel>` (path-only). For the full canonical grammar + dead-syntax purge inventory, see `workflow/doc-viewer-links.md`.
+- After dropping the file or editing it, bounce the doc-viewer backend (e.g., `docker restart lupin-rest-dev`) to pick it up. Manifests are read once at FastAPI startup.
+- Design background: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`.
+
+**Verification**: hit `/api/docs/health?scope=<project>&path=TODO.md` — should report `exists=true`. Or open `/app/docs?path=<project>/TODO.md` in a browser.
 
 ### Slash Command Naming Convention
 
@@ -403,8 +448,21 @@ Comprehensive end-of-session ritual that:
 - Proposes commit message
 - Commits and optionally pushes changes (selective staging)
 - Sends notifications at each step
+- **Closes with a Day's Work Summary** — LoC delta by language with code/comment/docstring breakdown plus optional repo-baseline comparison
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-end.md
+
+### Day's Work Summary Prerequisite (Step 6)
+
+Step 6 (Day's Work Summary) renders a closing LoC-delta table as the **last visible/audible artifact** of every session. The rich path uses lupin's `BranchChangeAnalyzer` and `DirectoryAnalyzer` for code/comment/docstring breakdown per language.
+
+**Prerequisite for the rich path**: `LUPIN_ROOT` environment variable pointing to a lupin checkout with `src/cosa/repo/run_branch_analyzer.py` present. See `~/.claude/skills/codebase-analysis/SKILL.md` for the canonical analyzer reference.
+
+**If `LUPIN_ROOT` is not set**: Step 6 falls back gracefully to `git diff --shortstat` (line totals only, no language breakdown) and appends a one-line upgrade-path note. No setup is required for the fallback path; the summary still fires.
+
+**Slash-command flags** (default both ON):
+- `--no-summary` — skip Step 6 entirely (fast wrap-up)
+- `--no-baseline` — render the day's delta but skip the repo-composition comparison
 
 ### Parallel Session Safety
 
@@ -799,6 +857,20 @@ Session initialization routine:
 - Understand current context
 
 **Canonical Workflow**: planning-is-prompting → workflow/session-start.md
+
+### Optional: Per-Repo Default Persona via Env Var
+
+The cosa-voice MCP server's SessionStart hook honors a per-project preferred-persona environment variable, so each repo lands on its canonical persona automatically (no `/plan-session-start <name>` arg needed every session). Add to `~/.bashrc` / `~/.zshrc`:
+
+```bash
+# cosa-voice per-repo default personas (read by SessionStart hook)
+export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
+export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
+# Pattern: COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER> (hyphens → underscores)
+# Conflict (held by another session, invalid name): falls back to random + notify
+```
+
+Details: planning-is-prompting → workflow/session-start.md § Preliminary -1, plan doc `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`.
 
 ### Install as Slash Command
 
@@ -1531,13 +1603,37 @@ I need you to install the testing workflow commands from the planning-is-prompti
    - Where should reports be stored? (default: tests/results/reports)
    - Health check endpoint? (e.g., http://localhost:8000/health or a command)
 
-5. **For multi-suite projects** (like Lupin + COSA):
-   - Ask about scope parameter support (full|project_only|cosa|lupin)
+5. **For multi-suite projects** (a single repo with more than one test suite — e.g., an app suite plus a bundled framework/library suite):
+   - Ask about scope parameter support (e.g., full|project_only|<sub-suite>)
    - Configure separate test execution for each suite
    - Set up conditional execution based on scope
 
 After installation, test with: `/plan-test-baseline` (dry-run to see what would execute)
 ```
+
+### Alternative: Use Templates
+
+Instead of copying the planning-is-prompting slash commands and manually customizing them, you can start from **parameterized templates** that make all project-specific values explicit:
+
+**Location**: `workflow/slash-command-templates/`
+
+| Template | Target Command |
+|----------|----------------|
+| `plan-test-baseline-template.md` | `.claude/commands/plan-test-baseline.md` |
+| `plan-test-remediation-template.md` | `.claude/commands/plan-test-remediation.md` |
+| `plan-test-harness-update-template.md` | `.claude/commands/plan-test-harness-update.md` |
+
+**How to use**:
+1. Copy the template to your project's `.claude/commands/` directory (remove `-template` from filename)
+2. Replace all `{{PLACEHOLDER}}` values with your project-specific configuration
+3. Remove the HTML comment block at the top
+4. Verify no placeholders remain: `grep '{{' .claude/commands/plan-test-*.md`
+
+Each template includes a **Customization Guide** at the bottom with examples for code projects vs. documentation projects.
+
+**When to use templates vs. copy-and-customize**:
+- **Templates**: Best when installing from scratch or when the planning-is-prompting commands don't match your project type
+- **Copy-and-customize**: Best when your project closely resembles an existing installation (e.g., another code project similar to Lupin)
 
 ### Expected Questions
 
@@ -1622,9 +1718,9 @@ Reports: tests/results/reports
 Health Check: http://localhost:8000/health
 ```
 
-**Complex Project** (multi-suite like Lupin + COSA):
+**Complex Project** (a single repo with multiple test suites — this is the post-2026-05-29 shape of Lupin, with the CoSA framework folded in as a `src/cosa/` subtree, sharing one PYTHONPATH and one coverage gate):
 ```yaml
-[SHORT_PROJECT_PREFIX]: [LUPIN] or [COSA]
+[SHORT_PROJECT_PREFIX]: [LUPIN]   # CoSA is a subtree of Lupin, not a separate repo
 Working Directory: /path/to/genie-in-the-box
 Test Types: smoke, unit, integration
 Scope Support: yes (full|lupin|cosa)
@@ -1991,6 +2087,119 @@ Create separate wrapper commands for each component:
 - `/plan-test-baseline-full` - All components
 
 Each wrapper configures different test script paths and scopes.
+
+---
+
+## Plan Review Gate Workflow
+
+### What It Does
+
+Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 (Fitness) enforces design-completeness — every step must be implementable by a competent-but-unfamiliar engineer without asking clarifying questions. Pass 2 (Ownership-Language Audit) enforces ownership-language clarity — "done" is never claimed without AI-executed verification, and ownership is explicit (`EXECUTOR: AI` or `EXECUTOR: HUMAN <reason>`). A short REUSE pre-pass runs first to catch accidental reinvention of existing helpers. **Pass 2 was renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15** because the old name pulled sessions into OWASP threat-model semantics; see `workflow/plan-review.md` top-of-doc "NOT A SECURITY REVIEW" banner and `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the rationale.
+
+The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
+
+**Canonical Workflow**: planning-is-prompting → workflow/plan-review.md
+
+**Slash Commands**: `/plan-review` (full pipeline), `/plan-review-reuse` (standalone REUSE pre-pass for Pattern 3 plans)
+
+### Pass Ordering: Fitness Before Ownership-Audit
+
+The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit).
+
+**Why fitness first**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted or redesigned at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Ownership-Language Audit) then polishes the executor language on text that is stable. See `workflow/plan-review.md` §3 for the full ordering rationale.
+
+### Modes
+
+- `/plan-review` — full pipeline (REUSE → Pass 1 Fitness → Pass 2 Ownership-Language Audit)
+- `/plan-review --from=fitness` — skip REUSE; resume after REUSE fixes already applied
+- `/plan-review --from=ownership` — skip REUSE and Pass 1; resume after Fitness fixes already applied. **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired with no backward-compat alias.
+- `/plan-review --doc-set=<path>` — target a specific milestone doc-set
+- `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
+- `/plan-review-reuse` — standalone REUSE pre-pass for Pattern 3 single-doc plans
+
+### Install as Slash Command
+
+```
+I need you to install the `/plan-review` slash command from the planning-is-prompting repository into this project.
+
+Steps:
+1. Read the canonical workflow from: planning-is-prompting → workflow/plan-review.md
+
+2. Copy slash command file:
+   - Source: planning-is-prompting/.claude/commands/plan-review.md
+   - Target: .claude/commands/plan-review.md
+   - Keep the filename as-is (plan-review.md)
+
+3. Customize the wrapper:
+   - Replace `[PLAN]` → User's project prefix (e.g., `[MYPROJ]`)
+   - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
+   - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
+   - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
+
+After installation, test it: `/plan-review`
+```
+
+**Alternative**: Run `/plan-install-wizard` and select "Plan Review Gate (N)" from the workflow catalog.
+
+### Expected Questions
+
+The wizard or installer may ask:
+- **Doc-set discovery**: "I found `src/rnd/v0.1.7/cj-flow-async-multi-lane/00-index.md`. Use this as the target doc-set?"
+- **TBD enumeration**: For Pass 1 (Fitness), the user is asked to enumerate currently-flagged `TBD` markers in the docs (these can't be auto-discovered reliably).
+- **Layer 2 anchor**: "Is there a `00-working-contract.md` in the doc-set?" (skip Layer 2 if absent)
+
+### Usage
+
+```bash
+# Full pipeline — REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit, renamed from "Adversarial" 2026-05-15)
+/plan-review
+
+# Resume after REUSE fixes already applied — start at Pass 1 (Fitness)
+/plan-review --from=fitness
+
+# Resume after Pass 1 fixes already applied — start at Pass 2 (Ownership-Language Audit)
+/plan-review --from=ownership
+
+# Target a specific milestone
+/plan-review --doc-set=src/rnd/v0.1.7/cj-flow-async-multi-lane
+
+# Pattern 3 escape hatch (research-only plan)
+/plan-review --skip-with-reason "research-only plan, no executable work"
+
+# Standalone REUSE pre-pass on a Pattern 3 single-doc plan
+/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md
+```
+
+### Key Features
+
+- **Three-layer anchor stack**: Layer 1 (global rule, non-negotiable) → Layer 2 (project working-contract, non-negotiable when present) → Layer 3 (milestone decisions, challengeable via "Design concerns" lane)
+- **Non-negotiable gates**: Both Pass 1 and Pass 2 deliver findings only and wait for user confirmation — the AI never applies fixes pre-emptively
+- **Convergence re-grep**: After approved fixes, re-run the same greps and diff against the pre-fix baseline; "resolved" must be falsifiable, not self-reported
+- **Termination rule**: Loop terminates when 0 new structural findings remain OR after 2 full rounds (belt-and-suspenders against quality-vs-count gaming)
+- **Idempotency marker**: `00-index.md` carries `last-reviewed-at: YYYY-MM-DD (commit-hash)` so re-invocation knows whether docs have changed
+
+### Prerequisites
+
+- **Planning is Prompting Core** must be installed (`/p-is-p-02-documentation` produces the doc-set the gate reviews)
+- **Doc-set conventions** established per `workflow/p-is-p-02-documenting-the-implementation.md` §"Doc Conventions for Plan-Review Compatibility":
+  - Convention 1 — working-contract document (optional but recommended)
+  - Convention 2 — decision-anchor format (numbered + `FROZEN` dated)
+  - Convention 3 — `EXECUTOR: AI / HUMAN <reason>` tagging
+  - Convention 4 — `TBD` and `Open sub-question N:` markers
+  - Convention 5 — "Manual E2E" semantics ("not-yet-automated", NEVER "human does it")
+
+If a convention is missing, the review's greps return clean and report false confidence.
+
+### Integration with Planning is Prompting Workflows
+
+Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`) **must** invoke `/plan-review` before code begins. Pattern 3 plans **may** invoke `/plan-review-reuse` standalone (REUSE pre-pass only). Pattern 4 (Investigation) plans **skip** the gate entirely — the doc-set shape isn't there.
+
+The flow:
+
+1. `/p-is-p-01-planning` — classify work, select pattern, break down tasks
+2. `/p-is-p-02-documentation` — create doc structure (Pattern 1/2/5/6 only)
+3. `/plan-review` — **THIS GATE** — Fitness then Ownership-Language Audit passes
+4. Code writing begins
 
 ---
 

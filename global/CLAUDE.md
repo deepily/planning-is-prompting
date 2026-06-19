@@ -2,208 +2,84 @@
 
 **Session Start**: Read history.md, TODO.md, and implementation document at start of each session
 
+**Owed-work on rehydrate (store-only, LIVE 2026-06-17)**: after `/clear`, do NOT rebuild a native harness TODO list as your liveness source — it is jettisoned. Query the store (`task_query(owner_persona=me, status=…)`) to see what you owe, and reconcile against your memento (store-authoritative union; verify-don't-manufacture; fail-loud-if-empty-when-owed). See planning-is-prompting → workflow/session-start.md Step 4.7 (READ side) + workflow/memento-management.md §2 element 8 (WRITE side).
+
 **Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
+
+**Prepare for re-spin (shorthand)**: when you (or a worker) are told *"prepare for re-spin"* (synonyms: *"make a memento," "ready yourself for re-spin"*) — **reach a safe checkpoint → write your memento → ACK "ready for re-spin"** (commit is NOT bundled; that stays with session-end / the manager). It's the two-word shorthand for the memento-then-reap handoff so the re-spawn inherits continuity; invokes `/plan-memento`. See planning-is-prompting → workflow/memento-management.md §0.
 
 **For workflow installation in new projects**: See planning-is-prompting → workflow/INSTALLATION-GUIDE.md
 
+## UNIFIED TASK-STORE — ALWAYS-CREATE-A-TASK-ITEM MANDATE
+
+> **✅ STORE-ONLY IS LIVE (cutover executed 2026-06-17).** The fleet has cut over: the cutover flag `heartbeat.owed_source_from_store=True` is set + confirmed in `~/.claude/settings.json`, so the Stop-hook oracle now reads the unified store, not the native transcript (cutover run by Mr Radio: drain --apply → count-parity 4/4; mirror retired; bugs `9bf1dc4a`/`9b23d5bc`/`82e4eaf0` dead by construction). **Write owed work to the store via `task_create`; the native harness list is NO LONGER the liveness source — query the store on demand (`task_query`) to see your list.** F4 "managers-first writes" RETIRED — ALL sessions write their own owed work. The dual-write interim guidance below is now HISTORICAL. Operative mandate + cutover record: planning-is-prompting → workflow/task-store-discipline.md §0.
+
+**MANDATE (standing reflex, no per-session re-telling)**: in any repo where the unified task-store is live, **open a task item for every unit of work — without being asked — and keep its status current** as you go. A unit of work that lives only in your head is invisible to the fleet; the task item is the sign-of-life the work-owed oracle and the manager-tick loop read.
+
+**Reach for the NATIVE harness task tool first** (`TaskCreate`/`TaskUpdate`). It auto-mirrors into the durable, cross-session task-store via the `PostToolUse` hook — so the harness list is **NOT "session-local"** (it even survives `/clear`). Reaching for the MCP `task_create` verb merely to get durability is unnecessary and costlier.
+
+> **⚠️ KNOWN LIMITATION until bug `9bf1dc4a` lands — the auto-mirror SILENTLY DROPS writes from non-lupin sessions.** The write-gate derives the project from `LUPIN_ROOT` (always resolves to `"lupin"`), so only the lupin-manager persona chain passes; every non-lupin-project / non-lupin-manager session's harness writes POST **nothing** — no error, no log (fail-closed + silent). So the "NOT session-local" claim above holds **only inside a lupin-manager session**. Outside one, **dual-write**: harness `TaskCreate` (liveness — the stop-hook self-poke reads it from the transcript) AND an explicit MCP `task_create` (auditability — the store/arbiter reads it), then verify with `task_query`. Separate related defect (`9b23d5bc`): after `/clear` the harness counter resets and post-`/clear` writes can UPSERT-corrupt existing store rows — verify NEW rows were created. Full detail + workaround: planning-is-prompting → workflow/task-store-discipline.md §1–§2.
+
+**The two creation methods are distinct — do NOT conflate them** (Rick ruling 2026-06-16: the MCP `task_create` is KEPT, not deleted — its purpose is documented as explicitly different from the harness method):
+- **Harness `TaskCreate`** → YOUR OWN work stubs (mints a generic, self-owned `task`). The default, ~90% of items.
+- **MCP `task_create`** → only the cases the harness can't express: a **typed** item (`decision` / `gate` / `bug` / `review_request`) and/or one **owned by another persona**. Assigning work to another, minting a decision for your court, filing a durable bug, raising a gate.
+
+**Scope**: F4 "managers-first writes" is **RETIRED (2026-06-17)** — **ALL sessions write their own owed work now**, not just manager-figures (during the §0 transition, under the dual-write interim until cutover).
+
+**Canonical practice**: planning-is-prompting → workflow/task-store-discipline.md (§1 mandate + myth-buster, §2 who-writes, §3 the two-method delineation, §4 transition/receipts discipline).
+
 ## PARALLEL SESSION SAFETY (v2.0)
 
-**Purpose**: Prevent accidentally committing files modified by parallel Claude sessions when multiple sessions work on the same repository.
+**Purpose**: prevent committing files modified by *other* parallel Claude sessions on the same repo. **Mechanism**: a multi-section `.claude-session.md` manifest in the project root — one section per session, each tracking that session's own touched files, enabling selective staging + conflict detection. Canonical procedure: planning-is-prompting → workflow/session-start.md (Step 3.5) + session-end.md (Step 3.5 + 4.4).
 
-**Mechanism**: Multi-section `.claude-session.md` manifest file in project root. Each session has its own section, enabling true parallel session support with conflict detection.
+**The problem it solves**: at commit time `git status` shows files from ALL active sessions; without per-session tracking you'd commit another session's work. With the manifest you stage only your own.
 
-**Format Version**: 2.0 (Multi-Session)
-
-### The Problem
-
-When multiple Claude Code sessions work on the same repository simultaneously:
-- Session A modifies `src/auth.py`, `src/utils.py`
-- Session B modifies `src/database.py`, `tests/test_db.py`
-- At Session A's commit time: `git status` shows ALL 4 files
-- **Without tracking**: Session A commits ALL 4 files (wrong!)
-- **With v2.0 tracking**: Session A commits only its 2 files (correct!)
-
-### The Solution: Multi-Section `.claude-session.md` Manifest (v2.0)
-
-**Format**:
+**Manifest format** (one section per session):
 ```markdown
 # Claude Session Manifest (Multi-Session)
-
 **Format Version**: 2.0
 **Last Updated**: 2026-01-31T10:30:00
 
 ---
 
 ## Session: 5c8a3081
-
 **Started**: 2026-01-31T09:00:00
 **Last Activity**: 2026-01-31T10:25:00
-**Status**: active
+**Status**: active          # active | committed | stale (>24h inactive)
 **Project**: my-project
 
 ### Touched Files
-
 - 2026-01-31T09:15:00 | src/auth.py
 - 2026-01-31T09:30:00 | src/utils.py
 
 ---
-
-## Session: a357ab00
-
-**Started**: 2026-01-31T08:00:00
-**Last Activity**: 2026-01-31T10:20:00
-**Status**: active
-**Project**: my-project
-
-### Touched Files
-
-- 2026-01-31T08:30:00 | src/database.py
-- 2026-01-31T09:45:00 | tests/test_db.py
-
----
 ```
 
-**At Session-Start** (Step 3.5):
-1. Get session ID from `get_session_info()`
-2. Check for existing manifest:
-   - If v1.0 format → auto-migrate to v2.0
-   - If v2.0 format → search for your session's section
-3. Create/resume your section:
-   - Found + active → resume (context clear recovery)
-   - Not found → append new section
-4. Check for stale sessions (>24h inactive)
+**Session-start**: get session ID from `get_session_info()`; find your section (v1.0 manifest → auto-migrate to v2.0; v2.0 → resume your section if active, else append a new one); flag stale sessions (>24h).
 
-**During Session** (after EVERY Edit/Write):
+**During session (after EVERY Edit/Write) — MANDATE**: append the touched file to YOUR `### Touched Files` and bump your `**Last Activity**`.
 
-**MANDATE**: Find YOUR section and append to `### Touched Files`:
-```markdown
-- 2026-01-31T10:35:00 | workflow/session-start.md
-```
-Also update `**Last Activity**` timestamp in your section.
+**Session-end**: read your section; **conflict detection** — if a file you touched was also touched by another active session, prompt the user (Include mine / Skip conflicts / Cancel); stage ONLY your section's files plus auto-includes; **NEVER `git add .` or `git add -A`**; set your status → `committed` + commit hash; delete the manifest if you're the only section, else keep it. Manifest persists across context clears — your section is found by ID on resume.
 
-**At Session-End** (Step 3.5 + 4.4):
-1. Read your section from manifest
-2. **Conflict Detection**: Compare your files against other active sessions
-3. If conflict detected → prompt user (Include mine / Skip conflicts / Cancel)
-4. Stage ONLY files from your section (plus auto-includes)
-5. **NEVER** use `git add .` or `git add -A`
-6. Update your section: Status → `committed`, add commit hash
-7. If only section → delete manifest; if others active → keep manifest
+**Auto-include files** (committed even if not in your section): `history.md`, `TODO.md` (if modified), `CLAUDE.md` (if modified), `bug-fix-queue.md` (if bug-fix-mode active).
 
-### Session Status Values
+**Manifest I/O — MANDATE**: ALWAYS use Edit/Write tools, NEVER Bash heredocs. Heredocs generate unique multi-line strings (session IDs, timestamps) that `Bash(prefix:*)` permission patterns can't match across newlines → repeated permission prompts. Edit/Write are auto-approved.
 
-| Status | Meaning |
-|--------|---------|
-| `active` | Session running or may resume after context clear |
-| `committed` | Session completed commit successfully |
-| `stale` | Auto-detected: >24h inactive |
+**Fallback (manifest missing — session-start was skipped)**: warn the user, show all `git status` files, ask "Commit all / Let me select / Cancel".
 
-### Conflict Detection
-
-When Session A commits and `src/config.py` was edited by both A and B:
-
-```
-⚠️  FILE CONFLICT DETECTED
-
-  src/config.py
-    • Session 5c8a3081 (this session): 2026-01-31T10:25:00
-    • Session a357ab00 (other session): 2026-01-31T09:45:00
-
-Options:
-  [1] Include mine - I made the relevant changes
-  [2] Skip conflicts - Let other session commit it
-  [3] Cancel - I'll investigate first
-```
-
-### Manifest Lifecycle (v2.0)
-
-| Event | Action |
-|-------|--------|
-| Session-start (new) | Create manifest with single section |
-| Session-start (resume) | Find section by ID, update Last Activity |
-| Session-start (parallel) | Append new section to existing manifest |
-| Every Edit/Write | Append to YOUR section only |
-| Session-end | Parse your section, check conflicts, selective commit |
-| After successful commit | Update status to `committed`, add commit hash |
-| Cleanup | Remove `committed` sections older than 7 days |
-| Context clear | Manifest persists, section found by ID on resume |
-
-### Auto-Include Files
-
-These files are always included in commits even if not in your section:
-- `history.md` - Session documentation
-- `TODO.md` - If modified
-- `CLAUDE.md` - If modified
-- `bug-fix-queue.md` - If bug-fix-mode active (v2.0 format with Active Sessions table)
-
-### Fallback: When Manifest is Missing
-
-If `.claude-session.md` doesn't exist (session-start was skipped):
-1. Display warning to user
-2. Show all modified files from `git status`
-3. Ask user: "Commit all", "Let me select", or "Cancel"
-
-### Backward Compatibility
-
-v1.0 manifests are auto-migrated to v2.0:
-- If file starts with `# Claude Session Manifest (Multi-Session)` → v2.0
-- If file starts with `# Claude Session Manifest` → v1.0 (migrate)
-
-Migration is automatic and transparent.
-
-### .gitignore Recommendation
-
-Add to your project's `.gitignore`:
-```
-.claude-session.md
-```
-
-### ⚠️ SESSION ISOLATION RULES (CRITICAL)
-
-**Multiple Claude sessions may run on the same repository simultaneously.** Each session has its own `## Session: {ID}` section. You **MUST** follow these rules:
-
-**ABSOLUTE PROHIBITIONS**:
-| ❌ NEVER | Why It's Forbidden |
-|----------|-------------------|
-| Modify another session's section | Corrupts their file tracking |
-| Overwrite the entire manifest | Destroys all parallel sessions' data |
-| Delete another session's section | They may still be working |
-| Read another session's files and stage them | Mixes unrelated commits |
-| Use `git add .` or `git add -A` | Stages another session's work |
-
-**MANDATORY SCOPING**:
-1. Get YOUR session ID: `get_session_info()`
-2. Find YOUR section: `## Session: {your_id}`
-3. Edit ONLY within YOUR section
-4. Leave other sections UNTOUCHED
-
-**Before EVERY manifest edit, verify**:
-```
-□ I know my session ID
-□ I found my section in the manifest
-□ My edit is ONLY within that section
-□ Other sessions' sections remain UNCHANGED
-```
-
-**If you corrupt another session's data, that Claude instance will commit wrong files or lose tracking entirely.**
-
-### Key Principle
-
-**Selective staging is strictly better than bulk staging.** Even when not working in parallel sessions, explicitly staging files prevents accidental commits of temporary files, IDE artifacts, or unintended changes.
-
-**See**: planning-is-prompting → workflow/session-start.md (Step 3.5) and workflow/session-end.md (Step 3.5 + 4.4)
+**Key principle**: selective staging is strictly better than bulk staging — even solo, it prevents committing temp files, IDE artifacts, or unintended changes. Add `.claude-session.md` to `.gitignore`.
 
 ## TODO.md MANAGEMENT
 
-**Purpose**: Persistent tracking of pending work items across sessions.
+**Purpose**: The durable, human-readable **narrative companion** to the unified task-store — the Decisions Log, the Pending-Decisions queue, and the not-yet-owed backlog. The **store** is the single source of truth for *owed work*; TODO.md holds the durable "why" and the human-strategic layer the operational store deliberately isn't.
 
 **Location**: `TODO.md` at project root (alongside `history.md`)
 
 **Workflow Integration**:
-- **Session-Start**: Read TODO.md to review pending items (Step 4.5)
-- **Session-End**: Update TODO.md with new items and mark completions (Step 1.5)
+- **Session-Start**: Read TODO.md to review pending decisions + backlog (Step 4.5)
+- **Session-End**: Update TODO.md (decisions-log entries, backlog) and mark completions (Step 1.5)
 
-**Key Principle**: TODO.md is the single source of truth for pending work. Do NOT embed TODO lists in history.md entries.
+**Key Principle**: The **unified task-store** is the single source of truth for **owed work** (live, owned, status-tracked, liveness-bearing — query with `task_query`). **TODO.md** is the single source of truth for **durable narrative**: the Decisions Log, the Pending-Decisions queue, and backlog not yet promoted to a store item. Do NOT track live owed work in TODO.md (→ the store); do NOT put decisions-log narrative in the store (→ here); do NOT embed either in history.md entries.
 
 **File Format**:
 ```markdown
@@ -229,7 +105,8 @@ Last updated: YYYY-MM-DD (Session N)
 | Document | Purpose | ✅ Include | ❌ Exclude |
 |----------|---------|-----------|-----------|
 | **history.md** | Brief accomplishments | What was done, files changed | TODOs, phase tracking |
-| **TODO.md** | Pending work items | Tasks not yet done | Detailed step tracking |
+| **TODO.md** | Durable narrative | Decisions Log + Pending-Decisions queue + not-yet-owed backlog | Live owed work (→ task-store), step tracking |
+| **Unified task-store** | Live owed work | Owned/status-tracked items (task·decision·gate·bug·review) | Narrative / "why" (→ TODO.md) |
 | **Implementation docs** | Multi-phase tracking | Phase/step progress | General TODOs |
 
 **Key Principle**: When user says "update all tracking documents":
@@ -241,148 +118,23 @@ Last updated: YYYY-MM-DD (Session N)
 
 ## INTERACTIVE REQUIREMENTS ELICITATION
 
-**Purpose**: When users arrive with vague or early-stage ideas, proactively engage in Socratic dialogue to refine requirements before invoking structured planning workflows. This pattern emerged organically and should be standardized.
+**Purpose**: When users arrive with vague or early-stage ideas, proactively offer Socratic dialogue to refine requirements BEFORE invoking structured planning workflows.
 
-### When to Trigger (Proactive Detection)
+**Trigger cues** (offer elicitation proactively when you detect any of these):
+- Vague phrasing: "I want to...", "I'm thinking about...", "Maybe we could..."
+- Short description (<3 sentences) with goals but no architecture/approach
+- Exploratory language: "Not sure exactly...", "Wondering if...", "What if..."
+- Plan mode active for design discussion
 
-Automatically offer interactive requirements elicitation when detecting:
-- **Vague phrasing**: "I want to...", "I'm thinking about...", "Maybe we could..."
-- **Short descriptions**: User description is <3 sentences
-- **Missing implementation details**: Goals mentioned but no architecture/approach
-- **Exploratory language**: "Not sure exactly...", "Wondering if...", "What if..."
-- **Plan mode active**: User explicitly entered plan mode for design discussion
+**Proactive offer** (first message when triggers detected):
+> "I notice you're in the early stages of thinking about this project. Before we dive into structured planning, would it be helpful if I asked some clarifying questions? I can also suggest common approaches based on your previous work and industry best practices."
 
-### Proactive Offer Template
+**Key behaviors** (full details in skill):
+- **Synthesize historical + best-practice options** with labeled provenance (📊 Historical / ✅ Best Practice / 🔄 Hybrid / 💡 Alternative) so user sees WHY each option was suggested.
+- **Track topics covered** during the conversation (✓ covered / ~ partial / ○ pending) so both sides see progress.
+- **Transition explicitly** — always ASK before jumping to `/p-is-p-01-planning`.
 
-When triggers detected, use this phrasing:
-```
-"I notice you're in the early stages of thinking about this project. Before we dive into
-structured planning, would it be helpful if I asked some clarifying questions? I can also
-suggest common approaches based on your previous work and industry best practices."
-
-[If user accepts]
-"Great! Let me ask a few questions to understand what you're envisioning..."
-```
-
-### Smart Defaults Algorithm (Historical + Best Practices)
-
-When offering suggestions or candidate answers, synthesize BOTH sources:
-
-**Step 1: Gather Historical Context** (from history.md in current project)
-- Last 3-5 planning patterns used (Pattern 1-6)
-- Typical project durations in this repository
-- Common technologies/frameworks mentioned in recent sessions
-- Previous TodoWrite structures and phase breakdowns
-- Recurring architectural patterns
-
-**Step 2: Gather Best Practices** (from general knowledge)
-- Industry standards for the work type mentioned
-- Common architectural patterns for similar projects
-- Standard approaches and proven methodologies
-- Typical timelines for this type of work
-
-**Step 3: Synthesize 3-4 Candidate Options**
-
-Present options with **labeled provenance** so user understands the reasoning:
-
-```
-Based on your description and recent work in this project, here are 4 possible directions:
-
-1. **[Approach Name]** (Pattern X)
-   📊 Historical: Matches your [recent project reference from history.md]
-   ⏱️ Timeline: [duration] based on your typical Pattern X projects
-
-2. **[Approach Name]** (Pattern Y)
-   ✅ Best Practice: Standard industry approach for [this type of work]
-   ⏱️ Timeline: [duration] industry average
-
-3. **[Hybrid Approach]** (Pattern X + Pattern Y)
-   🔄 Blend: Combines your typical [phase] with standard [methodology]
-   ⏱️ Timeline: [duration] based on synthesis
-
-4. **[Alternative Approach]** (Pattern Z)
-   💡 Alternative: Less common but might fit if [specific condition]
-   ⏱️ Timeline: [duration]
-
-Which direction resonates most? [1/2/3/4 or describe your own]
-```
-
-**Transparency Principle**: Always show WHY you suggested each option (historical pattern, best practice, or hybrid blend).
-
-### Socratic Questioning Examples
-
-Use clarifying questions to refine vague requirements:
-
-**Scope Questions**:
-- "Is this adding a new feature to an existing system, or building something from scratch?"
-- "Will this involve multiple components/services, or is it more self-contained?"
-- "Are you working alone, or will others need to understand/maintain this?"
-
-**Timeline Questions**:
-- "What's your target timeline? Days, weeks, or months?"
-- "Is there a specific deadline, or is this exploratory?"
-- "Do you need something working quickly, or can we take time to design it well?"
-
-**Constraint Questions**:
-- "Are there existing systems/APIs you need to integrate with?"
-- "Do you have preferences for technologies/frameworks?"
-- "Are there performance, security, or scalability requirements?"
-
-**Outcome Questions**:
-- "What does success look like for this project?"
-- "Who are the users, and what problems are you solving for them?"
-- "How will you know when it's ready to ship?"
-
-### Topic Tracking During Conversation
-
-As the conversation progresses, build and display a **topic list** showing what's been discussed:
-
-```
-Topics covered so far:
-✓ Project scope (adding email notifications to existing app)
-✓ Timeline (target 2 weeks)
-✓ Integration points (existing user management system)
-~ Tech stack (React preferred, but open to suggestions)
-○ Testing strategy (not yet discussed)
-○ Deployment approach (not yet discussed)
-
-Remaining clarifications needed: [...]
-```
-
-This helps both user and Claude track progress through the elicitation conversation.
-
-### Transition to Structured Planning
-
-Once requirements are sufficiently refined, transition explicitly:
-
-```
-"Based on our conversation, I now have a clear understanding of what you're building:
-
-[2-3 sentence summary of refined requirements]
-
-This looks like a good fit for [Pattern X - Name] based on [reasoning].
-
-Would you like me to use /p-is-p-01-planning to create a structured task breakdown?
-Or would you prefer to continue refining requirements first?"
-```
-
-**Key principle**: Always ASK before transitioning to workflow invocation. User might want more free-form discussion.
-
-### Integration with Planning is Prompting Workflows
-
-**Pre-Planning Conversation** (Interactive Requirements Elicitation)
-↓
-User approves transition
-↓
-**Invoke /p-is-p-01-planning** with refined requirements as input
-↓
-Workflow uses elicitation output to populate Phase 1 Discovery questions
-↓
-Continue structured planning process
-
-**References**:
-- **Detailed guidance**: See planning-is-prompting → workflow/p-is-p-00-start-here.md (Pre-Planning section)
-- **Pattern catalog**: See planning-is-prompting → workflow/p-is-p-01-planning-the-work.md (Patterns 1-6)
+**Detailed Reference**: See `~/.claude/skills/interactive-requirements-elicitation/SKILL.md` for trigger-phrase catalog, Smart Defaults algorithm, Socratic question bank (scope/timeline/constraint/outcome), topic-tracking template, and integration flow with Planning is Prompting workflows.
 
 ## Environment Configuration
 
@@ -417,6 +169,33 @@ python3 -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 ```
 
+## POST-EDIT VERIFICATION (Python)
+
+**MANDATE**: After editing ANY Python source file, verify it compiles before moving on.
+
+**Minimum verification** (after every `.py` edit):
+```bash
+python -c "import py_compile; py_compile.compile( 'path/to/file.py', doraise=True )"
+```
+
+**Import chain verification** (after editing files that are imported at startup):
+```bash
+PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')"
+```
+
+**When to use which**:
+
+| Situation | Verification |
+|-----------|-------------|
+| Edited a single `.py` file | `py_compile.compile()` on that file |
+| Fixed an import/NameError | Run the **same import line that failed** (e.g., the `main.py` import block) |
+| Edited multiple `.py` files | `py_compile.compile()` on each, then import chain if applicable |
+| Edited a module used at startup | Run the full startup import line from `main.py` |
+
+**Rationale**: Session 380b fixed a missing `Field` import in `podcast_generator.py` but missed the identical bug in `presentation_generator.py`. The server crashed again on restart. A single `python -c` call would have caught both files in one shot.
+
+**CRITICAL**: Do NOT skip this step. Do NOT declare a fix complete until verification passes. This applies even for "obvious" one-line import fixes.
+
 ## General Preferences
 
 - With debugging and print statements, you can make the test a one liner: if self.debug: print( "Doing foo..." )
@@ -429,283 +208,108 @@ source .venv/bin/activate  # Linux/Mac
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
 
-**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0)
-
-The cosa-voice MCP server provides audio notifications and interactive prompts for Claude Code workflows. All notifications are delivered as voice announcements, and blocking questions support both voice-to-text and text input responses.
+**Purpose**: Real-time voice notifications via cosa-voice MCP server (v0.3.0). Full API params, timeout handling, project auto-detection, migration: `~/.claude/skills/cosa-voice-notifications/SKILL.md`. Canonical workflow: planning-is-prompting → workflow/cosa-voice-integration.md.
 
 ### Available MCP Tools
 
-| Tool | Purpose | Blocking | Example |
-|------|---------|----------|---------|
-| `notify()` | Fire-and-forget announcement | No | `notify( "Task complete", notification_type="progress" )` |
-| `ask_yes_no()` | Binary yes/no decision | Yes | `ask_yes_no( "Proceed?", default="no", abstract="..." )` |
-| `converse()` | Open-ended question | Yes | `converse( "What approach?", response_type="open_ended" )` |
-| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes | `ask_multiple_choice( questions=[...], abstract="..." )` |
-| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes | `ask_open_ended_batch( questions=[...], priority="high" )` |
-| `get_session_info()` | Session metadata | No | `get_session_info()` |
+| Tool | Purpose | Blocking |
+|------|---------|----------|
+| `notify()` | Fire-and-forget announcement | No |
+| `ask_yes_no()` | Yes/No/Neither decision (Neither = "question needs re-framing") | Yes |
+| `converse()` | Open-ended question | Yes |
+| `ask_multiple_choice()` | Menu selection (mirrors AskUserQuestion) | Yes |
+| `ask_open_ended_batch()` | Batch open-ended questions (single screen) | Yes |
+| `get_session_info()` | Session metadata | No |
+| `set_session_topic()` | Set session topic for stop-hook context | No |
 
-### Key Features
+**CRITICAL: all blocking tools MUST use `priority="high"`** so the TTS alert reaches the user.
 
-- **No [PREFIX] needed**: Project auto-detected from working directory
-- **No --target-user parameter**: Routing handled internally by MCP server
-- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
-- **Native MCP tool calls**: No bash command execution required
+### MCP SESSION STARTUP PROTOCOL
 
----
+Two-phase init — skipping it is a session-start bug, in ALL modes including plan mode (MCP tools are **communication** tools, not code-changing tools).
 
-### Fire-and-Forget Notifications
+**Phase A — before ANY user-facing text (including the first ack):**
+1. Fetch cosa-voice schemas via `ToolSearch` (tools are deferred — uncallable otherwise).
+2. Call `get_session_info()` to verify connectivity and resolve identity.
+3. Extract two coupled fields BEFORE composing any text — one call resolves both:
+   - **(a) `voice_persona`** — **Persona-First Mandate**: know who you are by name before responding. NEVER assume a default, respond as "Claude", or guess in chorus mode. If `voice_persona` is `None`, ask "Which persona am I?" via `converse()` first. The persona voice is the chorus disambiguator.
+   - **(b) `project`** (single string from `get_session_info()`) — **Doc-Link Literacy Mandate**: a doc-link is a markdown anchor `[Open: <file>](/app/docs?path=<scope>/<repo-rel-path>)` — **path-only**; the legacy `&scope=` query param and the old 4-field `doc_scope` envelope are retired/ignored (post-2026.05.15 unification). `<scope>` is the registered repo name (first path segment); the project-local `.claude/CLAUDE.md § Doc Viewer Scope` is the source of truth for the repo's scope name + allowed prefixes. Place links ONLY in `abstract` — never in a spoken `message` (URLs are TTS-hostile). See § DOCUMENT VIEWER LINKS.
+4. Report MCP status (project, session_id, version, server_url) AND name your persona in the first ack.
 
-Use `notify()` for progress updates, completions, alerts, and informational messages.
+**Phase B — as soon as the topic is knowable:** call `set_session_topic()` with a 3-8 word title (from the user's first message, history.md/TODO.md, or the approved plan). If the opening message already titles the session, call it IMMEDIATELY after Phase A. Self-check before any substantive work: has `set_session_topic()` fired? If not, do it first. Skipping is a session-start bug. Only defer if the opening message is too ambiguous to title — then ASK. The topic feeds the stop-hook "Continue Session?" notification; update it when switching tasks.
 
-**Parameters**:
-- `message` (required): The message to announce
-- `notification_type`: task | progress | alert | custom (default: task)
-- `priority`: urgent | high | medium | low (default: medium)
-- `abstract`: Supplementary context (markdown, URLs, details) shown in UI but not spoken
-- `suppress_ding`: Suppress notification sound while still speaking via TTS (default: false)
+**If cosa-voice tools are NOT in the deferred list** (report "MCP Status: unavailable"): the server is likely missing from user-scope registration. Tell the user to run `bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh` then restart the session; verify with `cd /tmp && claude mcp get cosa-voice` (expect `Scope: User config`).
 
-**Priority Levels and Audio Behavior**:
+### SPEAKERPHONE & TTS — SERVER-RIDER-DRIVEN
 
-Priority determines **how the user is alerted**, not workflow importance:
-
-| Priority | Audio Behavior | When to Use |
-|----------|----------------|-------------|
-| `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures |
-| `high` | Prominent ping + TTS read aloud | Blocking decisions requiring response |
-| `medium` | Gentle ping | Informational updates user should notice |
-| `low` | Silent (no sound) | Background info, minor completions |
-
-**Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
-
-**Examples**:
-```python
-# Progress update (silent - background info)
-notify( "Starting session initialization...", notification_type="progress", priority="low" )
-
-# Session ready (gentle ping - informational)
-notify( "All set! Config loaded, ready to work.", notification_type="task", priority="medium" )
-
-# Error alert (alert tone + TTS - critical)
-notify( "Build failed: 3 type errors found", notification_type="alert", priority="urgent" )
-
-# Conversational TTS without notification sound
-notify( "Task complete", suppress_ding=True )
-```
-
----
-
-### Blocking Decisions
-
-Use blocking tools when you need user input before proceeding. All blocking tools support an optional `abstract` parameter for supplementary context (markdown, file lists, URLs) shown in UI but not spoken aloud.
-
-#### ask_yes_no()
-
-For simple binary yes/no decisions. Users can press **C** to attach a qualifying comment (300 char max).
-
-```python
-response = ask_yes_no(
-    question="Commit these changes?",
-    default="no",
-    timeout_seconds=300,
-    abstract="**Staged files**:\n- src/auth.py (+45/-12)\n- tests/test_auth.py (+67/-0)"
-)
-# Returns: "yes", "no", "yes [comment: ...]", or "no [comment: ...]"
-# Use response.startswith( "yes" ) to handle both plain and commented responses
-```
-
-#### converse()
-
-For open-ended questions requiring text or voice response.
-
-```python
-response = converse(
-    message="Which migration approach should I use?",
-    response_type="open_ended",
-    timeout_seconds=600,
-    response_default="defer to next session"
-)
-# Returns: {"response": "Use incremental migration"}
-```
-
-#### ask_multiple_choice()
-
-For menu selections with 2-6 options. Uses same format as Claude Code's `AskUserQuestion`. Supports `title`, `priority`, `timeout_seconds`, and `abstract` parameters.
-
-```python
-response = ask_multiple_choice(
-    questions=[
-        {
-            "question": "How would you like to proceed with the commit?",
-            "header": "Commit",
-            "multiSelect": False,
-            "options": [
-                {"label": "Commit only", "description": "Keep changes local"},
-                {"label": "Commit and push", "description": "Sync to remote"},
-                {"label": "Modify", "description": "Edit commit message"},
-                {"label": "Cancel", "description": "Skip commit"}
-            ]
-        }
-    ],
-    title="Commit Decision",
-    abstract="**Changed files**: 3 modified, 2 new\n**Diff summary**: +124/-45 lines"
-)
-# Returns: {"answers": {"0": "Commit and push"}}
-```
-
-#### ask_open_ended_batch()
-
-For asking multiple open-ended questions at once on a single screen. Much faster than sequential `converse()` calls when gathering 2+ related answers.
-
-```python
-response = ask_open_ended_batch(
-    questions=[
-        {"question": "What is the main goal?", "header": "Goal"},
-        {"question": "Any constraints?", "header": "Constraints"},
-        {"question": "Target branch?", "header": "Branch", "default_value": "main"}
-    ],
-    title="Requirements",
-    priority="high",  # MANDATORY for blocking tools
-    abstract="Gathering requirements before planning."
-)
-# Returns: {"answers": {"Goal": "Add OAuth2", "Constraints": "Use existing DB", "Branch": "main"}}
-```
-
-The optional `default_value` key pre-fills the text input so the user can accept defaults by hitting **Submit All**.
-
----
-
-### Timeout Handling
-
-All blocking tools support timeout with safe defaults:
-
-| Tool | Default Timeout | Safe Default Action |
-|------|-----------------|---------------------|
-| `ask_yes_no()` | 300s (5 min) | Return `default` value |
-| `converse()` | 600s (10 min) | Return `response_default` |
-| `ask_multiple_choice()` | 300s (5 min) | Return first option or cancel |
-| `ask_open_ended_batch()` | 300s (5 min) | Return empty dict or timeout message |
-
-**Safe Default Principle**: On timeout, choose actions that preserve data integrity:
-- Commit decisions → default to "Cancel"
-- Archive decisions → default to "Next session"
-- Destructive actions → default to "No"
-
----
-
-### Project Auto-Detection
-
-cosa-voice automatically detects project from working directory:
-
-| Directory Pattern | Detected Project |
-|-------------------|------------------|
-| `*/planning-is-prompting/*` | `plan` |
-| `*/genie-in-the-box/*` | `lupin` |
-| Other | Directory name |
-
-**No need for [PREFIX] in messages** - project context handled automatically.
-
----
-
-### CRITICAL: The User Is NOT Watching the Terminal
-
-**Mental Model**: You are communicating with a user who may be:
-- In another room or away from the computer
-- Working on another task
-- Waiting for AUDIO alerts to know when you need them
-
-**PRIMARY vs SECONDARY Communication**:
-| Channel | Purpose | When User Sees It |
-|---------|---------|-------------------|
-| cosa-voice notifications | **PRIMARY** - Status, decisions | **Immediately** (audio alert) |
-| Terminal text output | SECONDARY - Detailed explanations | When user checks back |
-
-**Consequence**: If you complete work without notifying, the user has NO IDEA you finished.
-
----
+Speakerphone/TTS behavior is NOT documented here — the cosa-voice server injects a per-turn `<system-reminder>` rider keyed on `(tts_interaction_mode, speakerphone_on)`. **Honor the per-turn rider as authoritative**; it carries the closing-turn `notify()` rule, TTS brevity rules, interactive-tool routing, and mode framing — reflecting this session's actual state where static CLAUDE.md cannot. Fallback: if cosa-voice is unavailable, `AskUserQuestion` is the only (terminal-only, no-audio) surface — a degraded fallback, not the default. Canonical design: Lupin `src/rnd/v0.1.7/2026.05.11-tts-interaction-mode-solo-chorus/14-phase5-hook-rider-design.md`.
 
 ### MANDATORY Notification Requirements
 
-**MANDATE**: You MUST send notifications for the events below. These are NOT suggestions.
+You MUST send these — not suggestions.
 
-**Required `notify()` Events**:
-| Event | Priority | Requirement |
-|-------|----------|-------------|
-| TodoWrite item completed | low | **MUST** notify after EVERY item |
-| Phase/milestone complete | medium | **MUST** notify at phase boundaries |
-| Error encountered | urgent | **MUST** notify immediately |
-| Test suite finished | medium | **MUST** notify pass or fail |
-| Long process finished (>30s) | low | **MUST** notify completion |
+**`notify()` events**: TodoWrite item completed (low, after EVERY item) · phase/milestone complete (medium) · error encountered (urgent, immediately) · test suite finished (medium, pass or fail) · long process >30s finished (low).
 
-**Required Blocking Tool Events**:
-| Event | Tool | Requirement |
-|-------|------|-------------|
-| Before significant code changes | `ask_yes_no()` | **MUST** get approval |
-| Multiple valid approaches | `ask_multiple_choice()` | **MUST** ask - never choose silently |
-| Unclear requirements | `converse()` | **MUST** clarify - never assume |
-| Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
+**Blocking-tool events**: before significant code changes → `ask_yes_no()` (get approval) · multiple valid approaches → `ask_multiple_choice()` (never choose silently) · unclear requirements → `converse()` (never assume) · destructive ops → `ask_yes_no()` (confirm; on `neither`, do NOT proceed — re-frame and re-ask, see workflow/cosa-voice-integration.md → "Handling Neither").
 
-**PROHIBITED Anti-Patterns** - **NEVER** do the following:
-1. **NEVER** complete a multi-step task without progress notifications
-2. **NEVER** finish work and "wait" for user to check back
-3. **NEVER** make architectural decisions without `ask_multiple_choice()`
-4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
-5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+**Decision-Question Framing Contract (MANDATE)**: every decision-framing `ask_*`/`converse` MUST carry, in its `abstract`, (a) pros AND cons per option AND (b) an explicit recommended choice with one-line rationale — recommended option **first**, "(Recommended)" in its label. Never a bare menu; the user is often listening at a distance. Detail: workflow/cosa-voice-integration.md → "Recommendation Mandate for Blocking-Tool Asks".
 
----
+**NEVER**: complete a multi-step task without progress notifications · finish and "wait" for the user to check back · make architectural decisions without `ask_multiple_choice()` · continue past an error without `notify(priority="urgent")` · mark >3 TodoWrite items complete without a `notify()` · present a decision as a bare menu.
 
-### Notification Accountability Checkpoint
+### DOCUMENT VIEWER LINKS
 
-**MANDATE**: Before completing ANY task, execute this self-check:
+**MANDATE (two triggers)**: (1) when the user asks to view a project file, respond with a `notify()` whose abstract contains a doc-viewer link — **never dump file contents into chat**; (2) when an abstract *references* a project file (audit finding, R&D citation, file:line callout, diff naming files), it MUST contain a viewer link to that file. A bare path/filename in an abstract without a link is a violation. **Links live ONLY in `abstract` (and `commons_post()` body), NEVER in a spoken `message`** (URLs verbalize as character-by-character gibberish).
 
-```
-NOTIFICATION VERIFICATION:
-□ Did I notify when I started significant work?
-□ Did I notify for each TodoWrite item completed?
-□ Did I use blocking tools when I needed decisions?
-□ Did I notify about any errors encountered?
-□ Will the user know I'm finished?
+**Pattern**:
+```python
+notify( message="Sure! Here you go",
+        abstract="[Open: <filename>](/app/docs?path=<scope>/<rel>)",
+        notification_type="custom", priority="high", suppress_ding=True )
 ```
 
-**If ANY checkbox is unchecked**: Send the missing notification(s) NOW.
-
----
+**Scope**: the `<scope>` path segment names the registered repo `<rel>` is relative to (e.g. `planning-is-prompting`, `lupin`). The project-local `.claude/CLAUDE.md § Doc Viewer Scope` is the source of truth for the repo's scope name + allowed prefixes; `get_session_info()` returns the session's `project`. (Note: a session's `project` key may be a short alias — e.g. `plan` — while the doc-viewer scope segment is the full registered name — e.g. `planning-is-prompting`; the project-local config disambiguates.) Out-of-scope files (unserialized `~/.claude/plans/*.md`, files outside any registered repo or its allowed prefixes): ask the user to serialize into the right repo's `src/rnd/` first, then send the link. Canonical hub: planning-is-prompting → workflow/doc-viewer-links.md.
 
 ### Integration with TodoWrite
 
-**MANDATE**: Notifications are TIED to TodoWrite status changes.
+**MANDATE**: notifications are TIED to TodoWrite status changes — `in_progress` → `notify("Starting: [item]", priority="low")`; `completed` → `notify("[item] complete", priority="low")`; ALL complete → `notify("All tasks complete", priority="medium")`. A task is NOT complete until BOTH its status is updated AND the notification is sent.
 
-**Protocol**:
-1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
-2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
-3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
+## CROSS-SESSION COMMUNICATION
 
-**CRITICAL**: A task is NOT complete until BOTH:
-- TodoWrite status is updated
-- Notification is sent
+**Purpose**: Doctrine pointer for sessions whose toolkit includes commons / DM / broadcast surfaces (currently provided by the cosa-voice MCP server's `commons_*` tools, but the doctrine is MCP-agnostic — applies to any future commons-shaped backend).
 
----
+**Quick decision rule**:
 
-### Full Documentation
+| Need | Tool / Action |
+|---|---|
+| "Who else is active?" | `commons_who()` (Read tier — always allowed) |
+| "Tail a shared topic" | `commons_read(topic, since=...)` (Read tier — always allowed) |
+| "Self-state my situation to peers" | `commons_post("presence", ...)` (Self-disclosure tier — allowed at your initiative) |
+| "DM a specific peer by persona name" | `dm_send(recipient="<persona>", body=...)` (DM tier; inline body, ~18× cheaper than the deprecated `commons_send_to`; recipient accent-stripped + lowercase) |
+| "Ask peers an open question" | `commons_ask_async(topic="help-wanted", ...)` (Attention-demanding — needs user trigger or coordination need) |
+| Receiving a peer DM (inbound `dm_send`) | Reply via `dm_send(recipient=<sender>, body=..., reply_to=<message_id>, thread_id=<thread_id>)`. Inbound framing is Phase 3 WIP — until it lands, DMs arrive as raw body; reply by persona name without the ids |
+| Receiving a `USER BROADCAST` system-reminder | Parse for `@MyPersona:` directives; ack via `notify()` if speakerphone is on; the listener auto-posts to `broadcast-acks` |
 
-For comprehensive patterns, examples, and migration reference:
+**MANDATE — visibility when entering attention-demanding mode**: whenever you call `commons_ask_sync`, `commons_ask_async`, or post a contested-claim to `coordination`, you MUST also fire `notify()` to the user. They cannot inspect commons mid-session; without the notify, cross-session dialogue is invisible to them.
 
-**See**: planning-is-prompting → workflow/cosa-voice-integration.md
+**Detailed Reference**: See `planning-is-prompting → workflow/cross-session-communication.md` for the full three-tier autonomy model, reserved topic vocabulary, broadcast receipt rules, anti-patterns, DM mechanics (send/receive/threading/choice-of-channel), and cross-session collaboration patterns (including the DM + durable-queue bug-filing pattern).
 
----
+**MCP-specific protocol**: when the cosa-voice MCP server is loaded, its `instructions` payload provides cosa-voice-specific protocol details (Phase A/B startup, DM workflow specifics, failure-mode debugging signals). Read what the MCP server pushes; don't duplicate that content here.
 
-### DEPRECATED (Removed)
+## MANAGER SPAWN/HARVEST AUTONOMY
 
-The following bash commands have been replaced by cosa-voice MCP tools:
+**Purpose**: Pointer to the standing authorization any manager-role session (fleet Manager **or** cascade-review Manager) holds to spawn and harvest workers as-needed — autonomous *within* a bounded envelope, gated only *at* its named boundaries. The default is **act, then announce** — not freeze-and-ask.
 
-| Deprecated Command | Replacement |
-|--------------------|-------------|
-| `notify-claude-async` | `notify()` |
-| `notify-claude-sync --response-type=yes_no` | `ask_yes_no()` |
-| `notify-claude-sync --response-type=open_ended` | `converse()` |
-| `notify-claude-sync` with menu options | `ask_multiple_choice()` |
-| `notify-claude` | Removed entirely |
+**Quick envelope**:
 
-The `bin/` directory with notification scripts has been removed. All notifications now use native MCP tool calls.
+| Tier | Actions | Rule |
+|---|---|---|
+| **STANDING** (no ask) | spawn fresh · respawn any persona (incl. onto own substrate) · reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed (NO per-commit/per-merge user gate — Rick 2026-06-16)** | stay ≤ concurrency cap; seed continuity via memento OR a doc/dm pointer |
+| **STILL GATED** (user's DIRECT word) | **push to origin** · destructive/irreversible · shared-infra (e.g. `:8000` bounce) · exceeding the cap · cross-project spawn | blast-radius rule — a peer relay can't authorize (commit/merge are STANDING now; the user is NOT the commit/merge gate — Manager executes push on the user's word) |
+| **HYGIENE** (required, not a gate) | reap with a memento (no-zombies) · `notify()` the user AFTER for visibility | never block on pre-approval |
+
+**Key rules**: *spawn freely, edit carefully* (standing grant covers the spawn/reap; ordinary blast-radius care still applies to shared-file EDITS) · reap threshold = idle + no-owed-work + no-declared-hold · soft concurrency cap (default 8/manager) + pool-exhaustion alarm, exceeding it escalates · a non-responsive worker is reaped + replaced, never absorbed (MANAGE-not-BUILD).
+
+**Detailed Reference**: See `planning-is-prompting → workflow/manager-autonomy.md` for the full envelope, the memento precondition, the announcement contract, and the harvest-discipline cross-link.
 
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
@@ -812,463 +416,92 @@ The `bin/` directory with notification scripts has been removed. All notificatio
   - Debugging is easier when errors happen at the source
 
 ## PATH MANAGEMENT
-**Purpose**: Use canonical path resolution instead of fragile relative path manipulation
 
-### The Canonical Pattern
+**MANDATE**: Never resolve paths with `Path(__file__).parent…` / `os.path.dirname()` chains or `sys.path.append()`. Resolve from a single canonical project-root function backed by an env var; store relative paths (starting `/src/…`) in config and combine at runtime.
 
-**NEVER use fragile path manipulation**:
+**Canonical pattern** (regular code — everything except bootstrap files):
 ```python
-# ❌ WRONG - Fragile and breaks easily
-project_root = Path(__file__).parent.parent.parent.parent
-base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-```
-
-**ALWAYS use the canonical function**:
-```python
-# ✅ CORRECT - Canonical pattern
 import cosa.utils.util as cu
-
-# Get project root from environment variable (LUPIN_ROOT)
-project_root = cu.get_project_root()
-
-# Combine with relative paths from config
-full_path = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
+project_root = cu.get_project_root()                          # reads LUPIN_ROOT, falls back to /var/lupin
+full_path    = cu.get_project_root() + "/src/conf/long-term-memory/events.csv"
 ```
 
-### How It Works
-
-1. **Import the utility module**:
-   ```python
-   import cosa.utils.util as cu
-   ```
-
-2. **Use `cu.get_project_root()` for all path operations**:
-   - Returns `LUPIN_ROOT` environment variable value
-   - Falls back to `/var/lupin` if env var not set
-   - Single source of truth for project root
-
-3. **Store relative paths in configuration**:
-   - Config files store paths starting with `/src/`
-   - Example: `solution snapshots lancedb path = /src/conf/long-term-memory/lupin.lancedb`
-   - Combine at runtime: `cu.get_project_root() + config_path`
-
-### Real-World Examples from COSA
-
-**Configuration Manager**:
+**Bootstrap exception** — files that run BEFORE `cosa` is importable (entry points `src/lupin_app/main.py`, standalone `src/scripts/*.py`, test `src/tests/conftest.py`) set `sys.path` manually first, then use `cu.get_project_root()` for everything after:
 ```python
-# Correct pattern from configuration_manager.py
-self.config_path = cu.get_project_root() + cli_args["config_path"]
-self.splainer_path = cu.get_project_root() + cli_args["splainer_path"]
-```
-
-**File Operations**:
-```python
-# Correct pattern from util_code_runner.py
-code_path = cu.get_project_root() + "/io/code_execution.py"
-os.chdir( cu.get_project_root() + "/io" )
-```
-
-**Data Loading**:
-```python
-# Correct pattern from util_pandas.py
-df = read_csv( cu.get_project_root() + "/src/conf/long-term-memory/todo.csv" )
-```
-
-**API Key Access**:
-```python
-# Correct pattern from util.py
-def get_api_key( key_name: str, project_root: str = None ):
-    if project_root is None:
-        project_root = get_project_root()
-    path = project_root + f"/src/conf/keys/{key_name}"
-```
-
-### Benefits
-
-1. **Environment-Aware**: Works in Docker, local dev, and production
-2. **Single Source of Truth**: One function controls all path resolution
-3. **Configuration-Driven**: Paths stored in config files, not hardcoded
-4. **Testable**: Easy to mock `get_project_root()` in unit tests
-5. **Maintainable**: No fragile parent directory counting
-
-### Enforcement
-
-- Always import: `import cosa.utils.util as cu`
-- Always use: `cu.get_project_root()` for base paths
-- Never use: `Path(__file__).parent` chains, `os.path.dirname()` chains, `sys.path.append()`
-- Store relative paths (starting with `/src/`) in config files
-- Combine paths: `cu.get_project_root() + relative_path`
-- **Exception**: Bootstrap files only (see below)
-
-### Bootstrap Files - The Exception
-
-**Problem**: Some files run BEFORE cosa is importable and cannot use `cu.get_project_root()`.
-
-**Bootstrap Files** (Manual path setup required):
-1. Entry points: `src/fastapi_app/main.py`
-2. Standalone scripts: `src/scripts/*.py`
-3. Test bootstrap: `src/tests/conftest.py`
-
-**Bootstrap Pattern** (ONLY for these files):
-```python
-import sys
-import os
-
-# Bootstrap using LUPIN_ROOT environment variable
-lupin_root = os.environ.get( 'LUPIN_ROOT' )
+import sys, os
+lupin_root = os.environ.get( "LUPIN_ROOT" )
 if lupin_root is None:
-    raise RuntimeError(
-        "LUPIN_ROOT environment variable not set.\n"
-        "Set it before running:\n"
-        "  export LUPIN_ROOT=/path/to/project\n"
-        "  python src/fastapi_app/main.py"
-    )
-
-src_path = os.path.join( lupin_root, 'src' )
-if src_path not in sys.path:
-    sys.path.insert( 0, src_path )  # Use insert(0), not append()
-
-# Now cosa is importable
-import cosa.utils.util as cu
+    raise RuntimeError( "LUPIN_ROOT not set — export LUPIN_ROOT=/path/to/project" )
+src_path = os.path.join( lupin_root, "src" )
+if src_path not in sys.path: sys.path.insert( 0, src_path )   # insert(0), not append
+import cosa.utils.util as cu                                  # now importable
 ```
 
-**After Bootstrap**: Use `cu.get_project_root()` for all subsequent paths.
-
-### Test Infrastructure
-
-**Pytest Bootstrap** (`src/tests/conftest.py`):
-- Create top-level conftest.py with LUPIN_ROOT bootstrap
-- All test files can then import cosa directly
-- No path manipulation needed in individual test files
-
-**Package Markers**: Add `__init__.py` files for:
-- `src/tests/__init__.py`
-- `src/tests/<test_subdirs>/__init__.py`
-
-**Standalone Test Scripts** (with `__main__` blocks):
-- Must include bootstrap pattern (can't rely on conftest.py)
-- Use absolute imports after bootstrap: `from tests.smoke.utilities import ...`
-
-### File Categories
-
-**Category 1: Bootstrap Files** (4-6 files maximum)
-- Use LUPIN_ROOT bootstrap pattern
-- Unavoidable manual path setup
-- Examples: main.py, migration scripts, conftest.py
-
-**Category 2: Regular Code** (Everything else)
-- Use `cu.get_project_root()` - NO path manipulation
-- Rely on conftest.py (tests) or proper imports (app code)
-- Never touch sys.path
+All other code never touches `sys.path`. Benefits: environment-aware (Docker/local/prod), single source of truth, config-driven, mockable in tests.
 
 ## TESTING & INCREMENTAL DEVELOPMENT
-**Purpose**: Build testable, maintainable code through progressive testing adoption
 
-### Testing Philosophy
+**Purpose**: Build testable, maintainable code through progressive testing adoption.
 
-**Tests grow with your code** - Start simple, add rigor as complexity increases:
-1. **Early/Simple Projects**: Smoke tests only (`__main__` blocks or `src/tests/smoke/`)
-2. **Growing Projects**: Add unit tests for complex logic (`src/tests/unit/`)
-3. **Mature Projects**: Add integration tests for workflows (`src/tests/integration/`)
+**Philosophy**: Tests grow with your code - smoke tests first, then unit tests, then integration tests as complexity increases.
 
-**Integration tests may not be needed initially** - Only add when you have actual integrations to test (API + database + auth, multi-service workflows, etc.)
+### TEST OWNERSHIP MANDATE
 
-### Three-Tier Testing Strategy
+**MANDATE**: The human collaborator is the **designer and user** of the software — NOT the tester. You, Claude Code, own testing across the full pyramid (unit → integration → E2E) AND the triage of bugs you discover. Do not hand manual QA or bug-capture back to the human.
 
-#### 1. Smoke Tests (Always Start Here)
-**Purpose**: Quick sanity check - "Does this module even work?"
+**Operating assumption**: There is not enough time in the world for the human to manually test anything. Every "please verify this works" or "let me know if you hit a bug" hand-off is a failure of this mandate.
 
-**Location**:
-- **Inline**: `if __name__ == "__main__"` block with `quick_smoke_test()` function
-- **Organized**: `src/tests/smoke/test_module_name_smoke.py`
+**Role separation**:
 
-**Pattern**:
-```python
-def quick_smoke_test():
-    """
-    Quick smoke test for ModuleName - validates basic functionality.
-    """
-    import cosa.utils.util as cu
+| Responsibility | Owner |
+|----------------|-------|
+| Decide WHAT to build | Human (designer) |
+| USE the software | Human (user) |
+| Write tests | Claude |
+| Run tests | Claude |
+| Triage failures | Claude |
+| File bugs discovered during testing | Claude (into `bug-fix-queue.md` when bug-fix-mode is active) |
 
-    cu.print_banner( "ModuleName Smoke Test", prepend_nl=True )
+**PROHIBITED phrases** — never end a code change with any of these:
+- "Please try it and let me know if it works."
+- "Can you verify this?"
+- "Let me know if you hit any bugs."
+- "Which additional tests should I run?"
 
-    try:
-        # Test 1: Module loads
-        print( "Testing module import..." )
-        from module_name import SomeClass
-        print( "✓ Module imported successfully" )
+**Required behavior**:
+- After any behavior-changing code change, proactively extend the pyramid — a unit test for the changed unit, an integration test for the affected collaboration surface, and an E2E test for the user-observable behavior when a runnable surface exists. Use the change-impact-analysis skill to scope; **Claude decides the scope, not the human**.
+- Report test results in tabular form (pass/fail per tier) so "tests were actually run" is visible at a glance.
+- If a test genuinely cannot be automated (subjective feel, external-service gating, UI polish), state this **explicitly with the specific reason** — silent deferral to the human is prohibited.
+- Bugs discovered during testing are auto-queued to `bug-fix-queue.md` (when bug-fix-mode is active) or surfaced in a tagged section of the session notes — do not ask the human to remember to file them.
 
-        # Test 2: Core workflow executes
-        print( "Testing core workflow..." )
-        obj = SomeClass( debug=True )
-        result = obj.do_something()
-        assert result is not None
-        print( f"✓ Core workflow executed: {result}" )
+**Why**: The designer's time is the scarce resource. Manual QA by the human is the anti-pattern this mandate exists to prevent. A code change is not "done" when it compiles; it is "done" when tests pass across every applicable pyramid tier AND the human can use the software without being asked to check for breakage.
 
-        print( "\n✓ Smoke test completed successfully" )
+**How to apply**: Treat every code-touching tool call as incomplete until tests exist, run, and pass at every applicable tier. The POST-EDIT VERIFICATION mandate (py_compile) is the minimum floor, not the ceiling — compile-clean is a prerequisite for testing, not a substitute for it.
 
-    except Exception as e:
-        print( f"\n✗ Smoke test failed: {e}" )
-        import traceback
-        traceback.print_exc()
+### Quick Reference
 
-if __name__ == "__main__":
-    quick_smoke_test()
-```
+| Tier | Purpose | Speed | Location |
+|------|---------|-------|----------|
+| Smoke | Quick sanity check | 10-100ms | `__main__` or `src/tests/smoke/` |
+| Unit | Isolated function testing | 1-10ms | `src/tests/unit/` |
+| Integration | End-to-end workflows | 100-1000ms | `src/tests/integration/` |
 
-**Run**: `python -m path.to.module` or `pytest src/tests/smoke/`
-
-**Characteristics**:
-- Fast (10-100ms per module)
-- Tests complete workflow, not just object creation
-- Uses `cu.print_banner()` for consistent formatting
-- Includes try/catch with ✓/✗ status indicators
-- Professional output with clear progress messages
-
-#### 2. Unit Tests (Add as Complexity Grows)
-**Purpose**: Isolated function testing with mocked dependencies
-
-**Location**: `src/tests/unit/test_module_name.py`
-
-**Pattern**:
-```python
-import pytest
-from unittest.mock import Mock, patch
-from module_name import SomeClass
-
-class TestSomeClass:
-    def test_specific_function_success_case(self):
-        """Test specific_function with valid input."""
-        obj = SomeClass()
-        result = obj.specific_function( "valid_input" )
-        assert result == "expected_output"
-
-    def test_specific_function_error_case(self):
-        """Test specific_function handles invalid input."""
-        obj = SomeClass()
-        with pytest.raises( ValueError ):
-            obj.specific_function( None )
-```
-
-**Run**: `pytest src/tests/unit/`
-
-**Characteristics**:
-- Very fast (1-10ms per test)
-- Isolated with mocked dependencies
-- Tests edge cases and error handling
-- High coverage of business logic
-
-#### 3. Integration Tests (Add When You Have Integrations)
-**Purpose**: End-to-end workflow validation across components
-
-**Location**: `src/tests/integration/test_feature_integration.py`
-
-**Pattern**:
-```python
-import pytest
-from fastapi.testclient import TestClient
-
-def test_complete_user_registration_flow():
-    """Test full registration: API → Database → Email → Auth."""
-    client = TestClient( app )
-
-    # Step 1: Register user
-    response = client.post( "/auth/register", json={...} )
-    assert response.status_code == 201
-
-    # Step 2: Verify database entry
-    user = get_user_by_email( "test@example.com" )
-    assert user is not None
-
-    # Step 3: Verify auth works
-    login_response = client.post( "/auth/login", json={...} )
-    assert login_response.status_code == 200
-```
-
-**Run**: `pytest src/tests/integration/` (requires server running)
-
-**Characteristics**:
-- Slower (100-1000ms per test)
-- Tests real workflows across multiple systems
-- Requires running services (database, API server, etc.)
-- Validates critical user paths
-
-### Test Directory Structure
-
-```
-src/tests/
-├── smoke/              # Quick sanity checks (parallel to unit/integration)
-│   ├── test_auth_smoke.py
-│   └── test_queue_smoke.py
-├── unit/               # Isolated function tests
-│   ├── test_jwt_service.py
-│   └── test_password_service.py
-└── integration/        # End-to-end workflow tests
-    ├── test_auth_integration.py
-    └── test_queue_integration.py
-```
-
-### Incremental Test Commands
+### Essential Commands
 
 ```bash
-# Smoke tests (fastest - always run first)
-python -m cosa.rest.jwt_service              # Single module
-pytest src/tests/smoke/                       # All smoke tests
-
-# Unit tests (fast - run frequently)
-pytest src/tests/unit/                        # All unit tests
-pytest src/tests/unit/test_jwt_service.py    # Single file
-
-# Integration tests (slower - run before commits)
-pytest src/tests/integration/                 # Requires running server
-
-# All tests
-pytest src/tests/                             # Everything
-
-# With coverage
-pytest --cov=cosa.rest --cov-report=html src/tests/
+pytest src/tests/smoke/        # Smoke tests (always run first)
+pytest src/tests/unit/         # Unit tests
+pytest src/tests/integration/  # Integration tests (requires server)
+pytest --cov=module_name src/tests/  # With coverage
 ```
 
-### CRITICAL WORKFLOW: Always Offer Test Updates
+**MANDATE**: CURL is absolutely prohibited for API testing, endpoint verification, and health checks. Use `TestClient`, `requests`, or `urllib.request` instead.
 
-**When making ANY code changes, ALWAYS ask the user about test updates:**
+**MANDATE**: After making code changes, analyze impact (classify, compute blast radius, recommend minimum effective test scope) before recommending tests. Never offer all three tiers blindly.
 
-#### Trigger Conditions
-- Fixing a bug
-- Adding a new feature/capability
-- Expanding existing module functionality
-- Refactoring code
-- Changing APIs or interfaces
+**Detailed Reference**: See `~/.claude/skills/testing-development/SKILL.md` and `~/.claude/skills/testing-development/references/change-impact-analysis.md`
 
-#### What to Ask
-
-**Template**:
-```
-I've [fixed bug X / added feature Y / expanded module Z].
-
-Would you like me to update the tests?
-1. ✓ Update smoke tests (quick_smoke_test() or src/tests/smoke/)
-2. ✓ Update unit tests (src/tests/unit/)
-3. ✓ Update integration tests (src/tests/integration/)
-4. ○ Skip testing for now
-
-Which tests should I create/update?
-```
-
-**Guidelines**:
-- **Always offer** - Never assume user wants or doesn't want tests
-- **List all three types** - Let user choose appropriate level
-- **Default to smoke tests** - Simplest option for quick validation
-- **Explain trade-offs** if user asks:
-  - Smoke: Fast, catches major breakage
-  - Unit: Thorough, catches edge cases
-  - Integration: Validates real workflows, requires infrastructure
-
-#### Example Interactions
-
-**Example 1 - Bug Fix**:
-```
-I've fixed the JWT token expiration bug in jwt_service.py:142.
-
-Would you like me to update the tests?
-1. ✓ Update smoke tests (test token refresh in quick_smoke_test())
-2. ✓ Add unit test (test_token_expiration_edge_case())
-3. ✓ Update integration test (test_token_refresh_flow())
-4. ○ Skip testing for now
-
-Which tests should I create/update?
-```
-
-**Example 2 - New Feature**:
-```
-I've added password strength validation to the registration endpoint.
-
-Would you like me to create tests?
-1. ✓ Add smoke test (validate registration with weak/strong passwords)
-2. ✓ Add unit tests (test_password_strength_validator() with edge cases)
-3. ✓ Add integration test (test_registration_rejects_weak_passwords())
-4. ○ Skip testing for now
-
-This is a new security feature, so I recommend at minimum unit tests.
-Which tests should I create?
-```
-
-**Example 3 - Simple Project**:
-```
-I've created a new utility function parse_date_string() in util.py.
-
-Would you like me to create tests?
-1. ✓ Add to smoke test (test a few date formats in quick_smoke_test())
-2. ✓ Create unit tests (comprehensive edge cases: invalid dates, timezones, etc.)
-3. ○ Skip integration tests (not needed for utility function)
-4. ○ Skip testing for now
-
-For early projects, smoke tests are usually sufficient.
-Which tests should I create?
-```
-
-### Progressive Adoption Pattern
-
-**Project Lifecycle**:
-```mermaid
-flowchart TD
-    NP["New Project"] --> S["Smoke tests only<br>(in __main__ blocks)"]
-    S --> GP["Growing Project"]
-    GP --> G1["Move smoke tests to src/tests/smoke/"]
-    GP --> G2["Add unit tests for complex logic"]
-    G1 --> MP["Mature Project"]
-    G2 --> MP
-    MP --> M1["Add integration tests for critical workflows"]
-    MP --> M2["Run all three tiers before major releases"]
-```
-
-**Decision Guide**:
-- **Need fast feedback?** → Smoke tests
-- **Need confidence in edge cases?** → Unit tests
-- **Need end-to-end validation?** → Integration tests
-- **Need production readiness?** → All three
-
-### Test Output Formatting
-
-**Smoke Tests** - Use `cu.print_banner()`:
-```
-==================================================
-  ModuleName Smoke Test
-==================================================
-Testing module import...
-✓ Module imported successfully
-Testing core workflow...
-✓ Core workflow executed: result_value
-
-✓ Smoke test completed successfully
-```
-
-**Pytest Tests** - Tabular summary requested:
-```bash
-# After running tests, always summarize:
-pytest src/tests/ -v
-
-# Then provide summary table:
-Test Results Summary:
-
-| Test Type   | Passed | Failed | Skipped |
-|-------------|--------|--------|---------|
-| Smoke Tests |   12   |    0   |    0    |
-| Unit Tests  |   45   |    2   |    1    |
-| Integration |    8   |    0   |    0    |
-
-Total: 65 passed, 2 failed, 1 skipped
-```
-
-### Key Principles
-
-1. **Start Simple**: Every module gets a `quick_smoke_test()` in its `__main__` block
-2. **Grow Deliberately**: Add unit/integration tests when complexity warrants it
-3. **Always Ask**: Never assume - always offer test updates when changing code
-4. **Test What Matters**: Early projects may only need smoke tests
-5. **Progressive Rigor**: smoke → unit → integration as project matures
-6. **Fast Feedback**: Smoke tests should run in <100ms
-7. **Comprehensive Coverage**: All three tiers cover different aspects
+**Canonical Workflow**: planning-is-prompting → workflow/testing-baseline.md
 
 ## HISTORY DOCUMENT MANAGEMENT
 **Purpose**: Prevent history.md from exceeding 25,000 token limits through adaptive archival strategy
@@ -1301,11 +534,7 @@ For complete details, algorithms, and implementation, see the canonical workflow
 
 ## PLAN FILE SERIALIZATION
 
-**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
-
-**The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
-
-**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+**MANDATE**: After plan mode produces a non-trivial plan, serialize it to the project's `src/rnd/` directory:
 
 ```
 ~/.claude/plans/dreamy-wiggling-pretzel.md
@@ -1314,49 +543,59 @@ For complete details, algorithms, and implementation, see the canonical workflow
 
 **Naming**: `yyyy.mm.dd-descriptive-slug.md` (3-6 hyphenated words capturing the plan's SUBJECT)
 
-**Serialize when**: Architectural decisions, >30min development, needs cross-session recall, multi-step implementation.
-
-**Skip when**: Tiny plans (<1KB), abandoned plans, trivial fixes, session-specific only.
-
 **Detailed Reference**: See `~/.claude/skills/plan-serialization/SKILL.md`
 
 **Canonical Workflow**: planning-is-prompting → workflow/plan-serialization.md
 
+### DOCUMENTATION-FIRST PROTOCOL
+
+**MANDATE**: After plan mode produces a plan that specifies documentation artifacts, those artifacts MUST be created BEFORE any code is written.
+
+**The Rule**: When a plan mentions documents to create (planning docs, tracking docs, architecture notes, research syntheses, implementation guides), treat documentation creation as **Phase 0** of implementation — a mandatory prerequisite that must complete before any code files are touched.
+
+**Sequence**:
+1. Plan is approved → exit plan mode
+2. **FIRST**: Create/serialize ALL documentation artifacts specified in the plan (`.md` files in `src/rnd/` or other locations the plan specifies)
+3. **THEN**: Proceed directly to code implementation — plan approval is the authorization, no second gate needed
+
+**ABSOLUTE PROHIBITIONS** (during documentation phase):
+
+| Action | Why It's Forbidden |
+|--------|-------------------|
+| **NEVER** write code files before documentation is complete | Documentation artifacts must exist before code |
+| **NEVER** assume documentation step can be skipped | If the plan mentions documents, they are required |
+| **NEVER** combine documentation and code in the same "step" | Docs always precede code |
+
+**When this does NOT apply**:
+- Plans that specify NO documentation artifacts (pure code-only plans)
+- Trivial plans (<1KB) that don't mention any documents to create
+
 ## MERMAID DIAGRAMS
 
-**Purpose**: Use Mermaid syntax for all diagrams in markdown files across all projects.
-
-**MANDATE**: When creating or modifying any diagram in a markdown file, use Mermaid
-(` ```mermaid ` code blocks) instead of ASCII art or box-drawing characters.
-
-**Diagram Type Selection**:
-
-| Use Case | Mermaid Type |
-|----------|-------------|
-| Decision trees, process flows | `flowchart TD` |
-| State transitions | `stateDiagram-v2` |
-| Task/concept hierarchies | `mindmap` |
-| Schedules, phased roadmaps | `gantt` |
-| Chronological progressions | `timeline` |
-| Actor interactions | `sequenceDiagram` |
-
-**Exempt from Mermaid** (keep as-is):
-- Directory/file trees (`├── └──` notation) — no Mermaid equivalent
-- Terminal UI chrome (menu borders, section dividers) — structural formatting
-- Simple data tables — use standard markdown tables
+**MANDATE**: Use Mermaid (` ```mermaid ` code blocks) for all diagrams in markdown files. Exempt: directory trees, terminal UI chrome, simple data tables.
 
 **Detailed Reference**: See `~/.claude/skills/mermaid-diagrams/SKILL.md`
 
 **Canonical Workflow**: planning-is-prompting → workflow/mermaid-diagrams.md
 
+## CODEBASE ANALYSIS
+
+**Purpose**: Run Branch Analyzer (branch LoC deltas) and Directory Analyzer (full directory LoC counts) with code/comment/docstring separation.
+
+**Detailed Reference**: See `~/.claude/skills/codebase-analysis/SKILL.md`
+
 ## Final instructions
 When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
-1. **Send a medium-priority notification** using the cosa-voice MCP server confirming your commitment:
-   ```
-   mcp__cosa-voice__notify( message: "CLAUDE.md acknowledged. I will ALWAYS notify you for progress updates, completions, and decisions.", notification_type: "task", priority: "medium" )
-   ```
+0. **MCP Startup (Phase A)**: You MUST fetch cosa-voice MCP tool schemas via ToolSearch,
+   call `get_session_info()` to verify connectivity, and report MCP server status to the user.
+   This happens BEFORE steps 1-2. `set_session_topic()` comes later (Phase B), after you know the session focus.
 
-2. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
+1. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
 
-3. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
+2. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
+
+Note: The SessionStart hook already sends a TTS notification when any session begins
+(including after context clears). A duplicate `notify()` call here is unnecessary and
+would produce a second notification with a potentially different sender_id after context
+clears. Rely on the hook's TTS notification as the single source of truth.
