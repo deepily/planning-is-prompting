@@ -43,6 +43,18 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 
 **Machine-readable predicate:** the per-repo default-persona configuration (the env key that decides who spins up first) identifies the manager-figure for spawn/escalation purposes. *(Note: the heartbeat work-owed oracle now reads the unified store for ALL sessions — the old "managers-first" owed-scope was RETIRED at the 2026-06-17 store-only cutover; owed-work is read from the store, not derived from this predicate.)*
 
+### 2.2 The worker-creation channel rule — `spawn_sessions`, NOT in-process subagents
+
+**A crew manager creates workers via `spawn_sessions` ONLY — never via the Agent/Task tool (in-process subagents). The Agent/Task tool is a WORKER's instrument, reserved for parallelizing the work of a task already assigned to that worker.** (Rick, 2026-06-22.)
+
+**Why this is a hard rule, not a preference.** An in-process subagent (Agent/Task) runs *under the spawning session* with **no persona and no bridge**, so it **never registers in the fleet roster or the focus bar** — it is **invisible and not independently manageable** (can't be inspected, reaped, re-tasked, or held by the arbiter/peers). A `spawn_sessions` worker is a first-class fleet session: persona'd, bridge-registered, roster-visible, independently manageable. A manager who builds a crew out of invisible subagents has a crew the fleet cannot see or govern — the exact failure this doctrine exists to prevent. *(Founding incident 2026-06-22: a manager ran a reviewer + an orphan-diff as in-process subagents; they returned correct results but the focus bar stayed empty — functional yet ungovernable.)*
+
+**This is the channel face of MANAGE-not-BUILD.** A manager delegates to *manageable* workers; it does not absorb work into private, unobservable threads — whether that work is building, reviewing, or even read-only scouting. If a manager wants exploration done, it assigns it to a worker (or does a quick read inline), not via a hidden subagent.
+
+**Scope (who the rule binds):** it binds a **manager-of-a-crew** — a session that has assumed the crew-management role per §2.1 (spawned workers via `spawn_sessions` / ran `/spin-up-swe-team`). A **solo, non-crew session** (e.g. a builder using the read-only `Explore` agent to map code) is **NOT** thereby a crew manager and is **not** blocked — the prohibition is on a manager manufacturing *workers/crew work* as invisible subagents, not on all Agent-tool use everywhere.
+
+**Enforcement (doctrine + teeth):** doctrine alone does not prevent this (a manager who knows the model still defaults to the convenient Agent tool — see the founding incident). So the rule is backed by a **`PreToolUse` hook that DENIES the Agent/Task call for a crew-manager session** and redirects to `spawn_sessions`. The hook keys off a **manager-of-a-crew role marker** the session writes when it assumes the role (at `spawn_sessions` / `/spin-up-swe-team`); a session with no marker is exempt. *(Hook + role-marker write-seam live in the harness/fleet layer — lupin; this doctrine is the portable rule. Build tracked separately.)*
+
 ---
 
 ## 3. The concurrency cap & guardrails (bound by construction — no fleet-storm vector)
@@ -123,6 +135,25 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 **Agenda source**: `task_query(accountable_manager=self)` against the unified task-store — the same query the always-on manager-tick loop runs. This section is the *practice*; the manager-tick loop (`src/rnd/2026.06.15-always-on-manager-tick-loop.md`) is the *engine*; the unified task-store is the *substrate*.
 
+### 9.1 Receipts-of-progress — the empirical liveness contract (no sitting back and waiting)
+
+*Ratified 2026-06-22 (Rick, broadcast `a8c4070e`). Closes the loophole Rick named: "waiting for a worker's notification" implicitly accepts the unproven claim **that work is being performed** — the same face-value trust receipts-not-claims forbids, merely shifted from the **result** to the **in-progress state**. Empirical-probe layer co-authored with Tiberius 👑 (Empirical Liveness Contract, exercised live same day).*
+
+**Principle — receipts-not-claims applies to the IN-PROGRESS state, not just the result.** A worker's "still working" reply — and a worker's done-*notification* being relied on as the only checkpoint — are **claims**. Waiting on them is the exact anti-pattern the receipts mantra exists to prevent. The manager must *prove* a worker is progressing on each chase, never *assume* it.
+
+**Liveness ≠ progress (the core distinction).** A fresh heartbeat / bridge-mtime / "I'm on it" proves the session **EXISTS**, not that it **PRODUCES**. Liveness signals are necessary-not-sufficient and can mislead **both ways** — the arbiter may also mis-infer an actively-computing worker as "blocked" (Tiberius's 2026-06-22 catch: arbiter said blocked, capture-pane showed Clayton computing). So an empirical ground-truth probe beats any inferred status before either resting on it OR reaping on it.
+
+**Empirical proof of progress = an artifact-delta within the chase window** (same currency as proof-of-done): new commits / a growing working-tree diff / task-store status transitions carrying receipt refs / a test run / a partial-deliverable DM that **cites** an artifact. The manager **observes the delta**, it is not asserted.
+
+**The probes (Tiberius's Empirical Liveness Contract — run each chase tick, never assume):**
+1. **`tmux capture-pane`** — a token counter / elapsed timer advancing ⇒ computing; a pane **frozen across two consecutive ticks** ⇒ a stall to **probe/reap**, NOT "probably working."
+2. **`git show <claimed-hash>` + a growing working-tree diff** ⇒ commit / forward-motion receipts.
+3. **Fresh-critical reviewer RE-RUNS the gate** (reproduce-not-trust — §8.2 — extended from results to liveness): never accept a re-asserted status; reproduce it.
+
+**`awaiting:peer:X` / `awaiting:manager:X` is NEVER a terminal resting state.** It is valid only when it reads, in effect, *"verified at HH:MM that X is empirically progressing (probe: <pane/commit/test>); next check HH:MM+T"* — backed by an **observation**, not a hope, and carrying a `next_chase_ts`. An await with no recent progress-receipt is a **presumed stall**, not a wait.
+
+**The default flips: "demonstrate progress, or it's a stall" — never "assume they're working."** Absence of a fresh artifact-delta within the window ⇒ presumed-stalled ⇒ probe → verify → reap+replace. This is the in-progress dual of the §9 "verification closes the loop" rule (which governs the *result*): together they make BOTH "is working" and "is done" provable, never trusted on a claim.
+
 ---
 
 ## 10. Relationship to other workflows
@@ -143,11 +174,20 @@ SPAWN/REAP within cap + own lane + non-destructive   → DO IT (announce after) 
                                                        fleet-allocation EVENT (§7)
 identity-continuous respawn                          → DO IT + continuity seed (memento or pointer)
 reap idle + no-owed + no-hold worker                 → DO IT + memento (no-zombies) + reap event
+create a WORKER / crew (manager)                     → spawn_sessions ONLY; NEVER Agent/Task
+                                                       (in-process subagents = no persona/bridge =
+                                                       invisible + ungovernable, §2.2). Agent/Task is
+                                                       a WORKER's tool for its own assigned task.
 assign work to a worker                              → HOLD an accountable item until YOU verify
                                                        (accountability never transfers down, §9);
                                                        CHASE via task_query(accountable_manager=self)
 worker blocked on you                                → it declares awaiting:manager:<name> (STALL,
                                                        not silent); aged backstop = ONE poke at 2x tick
+worker "working" / you're "awaiting:X"               → PROVE progress, never assume: an artifact-delta
+                                                       (pane counter advancing / new commit + diff /
+                                                       test run) within the chase window. Absence =
+                                                       presumed STALL → probe → reap. Liveness ≠
+                                                       progress; a "still working" reply is a CLAIM (§9.1)
 BEFORE any multi-spawn                               → check fleet-allocation: fleet cap = 8
                                                        ALL sessions (~5 worker slots)
 ─────────────────────────────────────────────────────────────────────────────
@@ -159,6 +199,10 @@ exceed EITHER cap (fleet 8 / per-manager 8) · cross-project · destructive · p
 ---
 
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
+
+*Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*
+
+*Version 1.3 (2026-06-22, María — Rick-ruled, per rec) — Added §2.2 The worker-creation channel rule: a crew manager creates workers via `spawn_sessions` ONLY, never via in-process Agent/Task subagents (which have no persona/bridge → invisible in roster/focus bar → ungovernable); Agent/Task is a worker's tool for its own assigned task; solo non-crew sessions (e.g. read-only Explore) exempt. Enforcement = doctrine + a PreToolUse hard-block hook keyed on a manager-of-a-crew role marker (hook + marker build in lupin/harness, tracked separately). Founding incident 2026-06-22 (Mr Radio ran reviewer + orphan-diff as invisible subagents — functional but ungovernable). Quick-reference gained the channel row.*
 
 *Version 1.2 (2026-06-16, María) — Added §9 Follow-through accountability (the asymmetric chase) — graduated from `src/rnd/2026.06.16-follow-through-accountability-design.md` (v0.2, all 5 decisions Rick-ruled across two guided walkthroughs): accountability-never-transfers-down · managers-first write scope · worker `awaiting:manager` STALL status · aged-escalation backstop at `T_escalate`=2×-tick (INI-configurable, default 2) · tiered verification (artifact for auditable, attestation for trivial) · invariant survives widening. Old §9/§10 renumbered §10/§11; quick-reference gained two accountability rows. Engine = the always-on manager-tick loop; substrate = the unified task-store.*
 
