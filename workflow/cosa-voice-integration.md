@@ -188,6 +188,7 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 | Unclear requirements | `converse()` | **MUST** clarify - never assume |
 | Destructive operations | `ask_yes_no()` | **MUST** confirm before deletion |
 | Waiting >60s for input | `converse()` | **MUST** ask - don't wait silently |
+| **Action blocked on user's go** (deploy / put-into-service / activate / commit-to-prod / push) | `ask_yes_no()` / `ask_multiple_choice()` | **MUST** ask a DIRECT targeted question — NEVER bury "standing by" in a status `notify()` |
 
 ### PROHIBITED Anti-Patterns
 
@@ -198,6 +199,21 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 3. **NEVER** make architectural decisions without `ask_multiple_choice()`
 4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
 5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+6. **NEVER** bury a gate. If an action needs the user's go to proceed, do NOT append "standing by for your approval" / "waiting on your word" to a multi-sentence status `notify()` and then sit. That is **burying the lead** — fire a dedicated targeted ask instead (see below).
+
+### Gate = a Direct Targeted Ask, Never a Buried "Standing By" (MANDATE, 2026-06-22)
+
+When an action is **blocked on the user's go** — deploy · put-into-service · commit-to-production · activate a flag/feature · push · any irreversible or shared-infra step — you MUST surface it as a **dedicated, targeted blocking ask** (`ask_yes_no` / `ask_multiple_choice`) whose answer DIRECTLY unblocks that one action. The ask is its own notification; its spoken line names the single decision.
+
+**The violation (Rick called this out 2026-06-22, broadcast `0481cf56`):** appending *"standing by for your approval"* / *"waiting on your word"* to the bottom of a multi-sentence status `notify()`. That buries the lead — and **if you never fired a question that REQUIRES a response, you are NOT waiting on the user; you are stalled and pretending to wait.** A status update INFORMS; only an ask UNBLOCKS. They are different acts — doing the first is not doing the second.
+
+**The self-test:** if your next step needs the user to say "yes / go," is there an unanswered `ask_*` on their screen demanding exactly that? If no → you have not asked, and "standing by" is false. Fire the ask.
+
+**One gate = one ask.** Don't bundle several gated decisions into one status wall; each deploy / activate / put-into-service decision gets its own targeted question (or a single `ask_multiple_choice` resolving exactly one). The Framing Contract still applies — recommended option first, `(Recommended)` in the label, pros/cons + rationale in the `abstract`. Pair with `notify()` for visibility only AFTER (never INSTEAD of) the ask.
+
+**Re-ask until answered — a pending gate is owed work, not a parked wait (MANDATE, 2026-06-22, Rick broadcast `cd610b8a`).** Firing the ask once is necessary but NOT sufficient. While a user-gate remains unanswered, you OWE re-surfacing it: on every self-tick (default every 10 min — set a `ScheduleWakeup` / `/loop` timer for exactly this) **RE-FIRE the dedicated `ask_*`** until the user answers. An `awaiting: user:<name>` hold is the *trigger to re-ask*, NEVER a license to go silent — a hold suppresses peer/arbiter nagging, but never the re-ask to the user. Going quiet on an open gate is the same violation as a manager who sits on unverified workers (receipts-of-progress, `manager-autonomy.md §9.1` / task `6929f4ac`): *owed ⇒ act, don't sit*. **The user must always be pinged when they are needed** — a decision only they can make stays on their screen, re-asked, until cleared.
+
+**The stamp is your obligation (built 2026-06-22, task `6929f4ac`).** The structural enforcement is **built and merged; it takes effect on the arbiter + listener restart** that loads it: session state carries structured `pending_user_gates` rows; the heartbeat Stop-hook owed-oracle counts any OPEN gate as `work_owed` (new `outstanding_user_gate` signal) and that obligation **overrides a declared hold** (a `work_owed:false` / fresh-reasoned hold no longer silences the re-ask — the §9 inversion enforced in code); and the arbiter re-surfaces an aged gate to the user if the owning session goes dark. But the explicit half depends on YOU: **when you re-fire the ask, stamp `last_asked_ts` on that gate row** (this resets the 10-min cadence so you re-ask at the interval, not every turn) and **when the user answers, mark the gate `answered`** (this clears the obligation so the poke stops). A gate you never stamp/answer keeps poking until the per-session poke-cap, then the arbiter backstop carries it — the cadence discipline is the stamp. Mechanism + design: lupin `src/rnd/2026.06.22-receipts-of-progress-heartbeat-owed-calc.md §9`; the heartbeat Stop hook can't call `ask_*` itself (SSE-blocking) — it keeps your session alive and NAMES the due gates; YOU re-fire the `ask_*` on the poke.
 
 ---
 
@@ -214,6 +230,8 @@ NOTIFICATION VERIFICATION:
 □ Will the user know I'm finished?
 □ If I made a blocking-tool ask, does the abstract carry pros/cons + recommendation
   per the Recommendation Mandate for Blocking-Tool Asks above?
+□ Is any next step blocked on the user's go? If so, did I fire a DIRECT targeted
+  ask_* for it — NOT bury "standing by" in a status notify? (Gate = a Direct Ask)
 ```
 
 **If ANY checkbox is unchecked**: Send the missing notification(s) NOW, or re-issue the blocking-tool ask with the missing decision-support added.
