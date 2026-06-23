@@ -52,3 +52,6 @@ Thumbs.db
 # Claude session memento (pre-context-clear state snapshot for rehydration)
 .claude-memento.md
 io/mementos/
+
+# Claude heartbeat hold (runtime liveness-state file, rewritten every turn)
+.heartbeat-hold-*.json
