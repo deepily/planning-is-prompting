@@ -55,3 +55,6 @@ io/mementos/
 
 # Claude heartbeat hold (runtime liveness-state file, rewritten every turn)
 .heartbeat-hold-*.json
+
+# Git LoC-delta artifacts (per-branch CSV + meta, regenerated every session-end)
+io/git-loc-delta/
