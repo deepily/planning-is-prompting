@@ -20,6 +20,8 @@
 1. You **MUST** write every unit of owed work (your tasks, work you assign, decisions, bugs, gates) to the unified store (`task_*` / `:7999`). One and only system of record.
 2. You **MUST NOT** use the native harness list to track owed work — jettisoned; not a mirror source, not a fallback, not a parallel ledger.
 3. **NEVER** let owed work live only in your context/head — invisible to the poke, the arbiter, the fleet.
+
+> **Companion — why you keep the list honest.** This doc is the *mechanics* of owed work; `workflow/role-goals.md` is the *goal* those mechanics serve. "Done" in both role goals is defined against this store: a Manager is done when `task_query` over their + their workers' scope returns zero open (each closed with a receipt); a Worker transitions each assigned item to `done` with a receipt as they finish. The store is the scoreboard the goals are measured on.
 4. The store **ALWAYS** wins (single source: the poke and the arbiter both read it, so they cannot diverge). To *see* your list, **query the store on demand** (a terse/projection query — cascade rev G) — never keep a second copy.
 5. Keep status current with evidence: `→blocked` carries typed `blocked_by` + `next_chase_ts`; `→done` carries a receipt. No receipt → not done.
 6. The human-visible list is a **UI card rendered from the store** (like the fleet-status card), **NEVER** the native widget.
