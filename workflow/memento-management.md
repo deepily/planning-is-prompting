@@ -19,7 +19,7 @@ This workflow is invoked **by intent, not only by the `/plan-memento` command**.
 **The worker re-spin sequence (3 beats).** When a manager (or Rick) tells a worker *"prepare for re-spin,"* the worker MUST:
 
 1. **Reach a safe checkpoint** — finish or cleanly suspend the in-flight tool call/edit; leave no half-written file. (Do **not** commit as part of this step — committing/staging stays with the session-end ritual or the manager; bundling a commit into the shorthand risks staging another session's files.)
-2. **Write the memento** — the full §2 8-element contract, to the §3 location (`io/mementos/<persona-slug>-<date-at-HHMM>.md` for a spawned worker about to be dismissed; `<project>/.claude-memento.md` for a self-`/clear`).
+2. **Write the memento** — the full §2 8-element contract, to the §3 location. The location is **always derivable, never handed to anyone**: `io/mementos/<persona-slug>.md` for a spawned worker about to be dismissed (stable, one slot per persona — see §3.2); `<project>/.claude-memento.md` for a self-`/clear` (see §3.1).
 3. **ACK "ready for re-spin"** — notify the requesting manager/Rick (via `dm_send` to the manager, or `notify` to Rick) that the memento is written and the session is safe to reap + re-spawn.
 
 The phrase exists so Rick (or a manager) can say two words instead of re-explaining the memento-then-reap dance every time. It maps onto this **existing** workflow — there is no separate "re-spin" command.
@@ -115,7 +115,9 @@ Every memento MUST include the following 8 elements. Missing any one means the r
 
 ## §3 File location convention
 
-There are TWO distinct memento use cases with TWO different location conventions:
+> **GOVERNING PRINCIPLE — the location is ALWAYS derivable, NEVER handed to the user (Rick directive 2026-06-27).** A memento's path is a *convention*, computed from `(repo, persona)` — it is **not** a value a worker reports to the user, a manager, or a peer. If you ever find yourself telling someone "my memento is at `<path>`," the convention has failed: the reader should already know where to look without being told. Rick's complaint that prompted this: a Lupin worker kept handing him its memento path because the path carried a timestamp and was therefore unpredictable. The fix below makes every memento live at a **stable, collision-free slot** so no one has to track or pass a path.
+
+There are TWO distinct memento use cases with TWO different location conventions. **Both are single-occupancy at a derivable path** — the only difference is the slug:
 
 ### §3.1 User-initiated `/clear` rehydration (single-occupancy)
 
@@ -125,17 +127,19 @@ There are TWO distinct memento use cases with TWO different location conventions
 
 **Single-occupancy**: there's one rehydration target at a time. If a memento already exists when a new one needs writing, the prior memento is either (a) discarded (its session has completed rehydration) OR (b) renamed to `.claude-memento.archived-<timestamp>.md` if its content is still load-bearing for a different role.
 
-### §3.2 Spawn dismiss with `write_memento=True` (per-persona archive)
+### §3.2 Spawn dismiss with `write_memento=True` (stable per-persona slot)
 
-**Location**: `io/mementos/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` (per-persona-per-cycle archive).
+**Location**: `io/mementos/<persona-slug>.md` — **one stable slot per persona, NO timestamp.** The path is fully derivable from the persona name: a re-spawn of "Mr Radio" always seeds from `io/mementos/mr-radio.md`, full stop. Nobody hands anybody a path.
 
-**Use case**: A dismissed spawned session writes its memento before `tmux kill-session` so a future re-spawn of the same (or related) persona can read it via `seed_memento` param in `spawn_sessions`. The Manager (or the user) picks the right archived memento for the right re-spawn.
+**Use case**: A dismissed spawned session writes its memento before `tmux kill-session` so a future re-spawn of the *same* persona can read it via `seed_memento` param in `spawn_sessions`. Because the slot is derivable, the Manager computes the seed path from the persona it's re-spawning — it does not need to be told which file.
 
-**Per-persona-per-cycle**: multiple personas can have parallel continuity threads (Tiffany's Round-1 Author memento does NOT clobber Mr. Radio's Manager-rehydration memento). Timestamp suffix avoids same-day collisions.
+**Collision-free across workers, single-occupancy per worker**: each persona owns exactly one slot, so parallel workers in the same repo never collide (Tiffany's `io/mementos/tiffany.md` does NOT touch Mr Radio's `io/mementos/mr-radio.md`). This relies on **persona-per-repo stability** — a persona keeps its name across sessions and across `/clear` (see `~/.claude/CLAUDE.md` § persona consistency), which is precisely what makes the slot stable and predictable.
 
-**Slugification**: `<persona-slug>` is the slugified persona name per PG-6 (lowercase + spaces-to-hyphens). E.g. "Mr Radio" → `mr-radio` → `io/mementos/mr-radio-2026.05.28-at-2347.md`.
+**Overwrite, don't accumulate**: a fresh memento for a persona **overwrites** that persona's slot — the prior memento's job ends once its re-spawn has rehydrated, so a stale predecessor is not worth keeping by default. If a predecessor is still load-bearing (e.g. a re-spawn hasn't consumed it yet and you must write a newer one), move it aside to `io/mementos/archive/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` BEFORE overwriting — the timestamp lives ONLY on the archived copy, never on the live slot. The live slot is always the timestamp-free, derivable path.
 
-**Why `io/` not project-root**: `io/` is the scope for I/O artifacts (research reports, audio, plots) — and is doc-viewer-scope-visible by default. Per-persona mementos are I/O artifacts of the spawned session's lifecycle. The single-occupancy `<project>/.claude-memento.md` stays at project root for the user-initiated-`/clear` case.
+**Slugification**: `<persona-slug>` is the slugified persona name per PG-6 (lowercase + spaces-to-hyphens). E.g. "Mr Radio" → `mr-radio` → `io/mementos/mr-radio.md`.
+
+**Why `io/` not project-root**: `io/` is the scope for I/O artifacts (research reports, audio, plots) — and is doc-viewer-scope-visible by default. Per-persona mementos are I/O artifacts of the spawned session's lifecycle, and `io/mementos/<persona-slug>.md` keeps each worker's slot out of the single project-root `<project>/.claude-memento.md` (which is reserved for the §3.1 self-`/clear` case so the two never collide).
 
 ### §3.3 Gitignored
 
@@ -149,11 +153,11 @@ io/mementos/
 
 Add `io/mementos/` to `.gitignore` if not already there.
 
-### §3.4 Re-spawn selection — Manager owns the choice
+### §3.4 Re-spawn selection — Manager DERIVES the path, doesn't pick it
 
-When the Manager calls `spawn_sessions(... seed_memento=<path>)`, the Manager owns "which archived memento for which re-spawn." This is what makes parallel continuity threads work — the Author's memento goes to the next Author re-spawn; the Manager's memento goes to the next Manager re-spawn; they don't collide.
+When the Manager calls `spawn_sessions(... seed_memento=<path>)`, the seed path is **computed from the persona being re-spawned**: re-spawning "Mr Radio" → `seed_memento=io/mementos/mr-radio.md`. There is no "which file?" decision and no hunting through an archive — the stable per-persona slot (§3.2) IS the answer. This is what makes parallel continuity threads work without anyone tracking paths: the Author's slot seeds the next Author; the Manager's slot seeds the next Manager; they never collide because the slug differs.
 
-**Decision authority**: the Manager (or the user) selects from the available `io/mementos/*.md` archive. The MCP doesn't auto-select — the path is explicit in the spawn call.
+**No path hand-off**: a worker never reports its memento path, and the Manager never asks for one — both sides derive `io/mementos/<persona-slug>.md` from the persona. The only time `io/mementos/archive/*.md` is consulted is the rare forensic case of reading a deliberately-archived predecessor (§3.2), which is an explicit, non-default act.
 
 ### §3.5 Composition order at spawn time — APPEND (Rick directive 2026-05-29)
 
@@ -208,7 +212,7 @@ For v1, use the manual approach.
 |---|---|---|
 | What it tracks | Files touched per session (for commit safety) | Cognitive / role state for rehydration |
 | Lifecycle | Per-session; survives `/clear` for context-clear recovery | Per-`/clear`; discarded after rehydration |
-| Multi-session | Supports parallel sessions (v2.0 format) | Single occupancy per project |
+| Multi-session | Supports parallel sessions (v2.0 format) | Single occupancy per derivable slot: one `io/mementos/<persona-slug>.md` per worker, one `<project>/.claude-memento.md` for self-`/clear` |
 | Gitignored | YES | YES |
 | Format | Multi-section manifest with timestamps | Free-form markdown structured per §2 |
 
@@ -236,6 +240,7 @@ First instance of the memento doc was hand-authored 2026-05-21 (Rick's specifica
 
 ## Version History
 
+- **v1.4 (2026-06-27, María)** — **Stable, derivable per-worker memento location (Rick directive 2026-06-27).** Added the §3 GOVERNING PRINCIPLE: a memento's path is ALWAYS computed from `(repo, persona)` and NEVER handed to anyone. Rewrote §3.2 from the timestamped per-cycle archive (`io/mementos/<persona-slug>-<date>-at-HHMM>.md`) to a **stable single slot per persona** (`io/mementos/<persona-slug>.md`, no timestamp) — overwrite-by-default, archive-a-load-bearing-predecessor only to `io/mementos/archive/` with the timestamp on the COPY. Rewrote §3.4 so the Manager DERIVES the seed path from the persona instead of selecting from an archive; updated §0 beat 2 and the §6 table to match. Driver: a Lupin worker kept handing Rick its (unpredictable, timestamped) memento path; the stable slot makes the location collision-free across workers AND predictable, so no path is ever passed. Authored by María 🌸.
 - **v1.3 (2026-06-17, María)** — **NEW §0: trigger phrases + the "prepare for re-spin" shorthand.** Canonized *"prepare for re-spin"* (and synonyms) as an intent trigger for this workflow, with the worker 3-beat re-spin sequence (safe checkpoint → write memento → ACK ready-to-reap; commit explicitly NOT bundled). Added the re-spin scenario to §1 + the §4 lifecycle table; corrected the stale "all 7 elements" → "all 8 elements" (§4). Extend-existing decision (Rick voice GO 2026-06-17) — no new command; `/plan-memento` made wizard-installable in the same sweep. Authored by María 🌸.
 - **v1.2 (2026-06-17, María)** — **Store-only transition note added to §8** (not-live-until-cutover). At cutover element 8 is DEMOTED to a store-unavailable fallback — once the store is canonical + queryable, a rehydrated session sees owed work via `task_query(owner=self, open)` rather than rebuilding a native list from this skeleton. **Until the lupin build cuts over element 8 stays MANDATORY** (it feeds the still-required harness rebuild, `session-start.md` Step 4.7). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + cutover order in `workflow/task-store-discipline.md` §0.
 - **v1.1 (2026-06-16)** — **Added element 8: the Verbatim Pending TODO List** (contract grew 7→8 required elements). This is the WRITE side of the memento↔harness-list rebuild contract — the skeleton a rehydrated session rebuilds its harness task list from (READ side = `session-start.md` Step 4.7). Driven by Rick's broadcast `beaaaa2c`: neither María nor Mr Radio rebuilt their harness lists on rehydrate, leaving nothing visibly driving the session. Element 7's "First action post-rehydration" now mandates the rebuild; §8 cross-references the read side. Joint design with Mr Radio 🦉 (lupin). Authored by María 🌸.

@@ -273,15 +273,15 @@ dismiss_sessions(session_ids=[author_session_id], write_memento=True)
 
 Before the tmux kill, the dismissed Author session writes its memento — capturing the cascade's outcome + open loops + lessons-learned. This memento is then the seed for the NEXT spawn of an Author resuming work on the same plan.
 
-**Archive convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation): the dismissed session writes to `io/mementos/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` (per-persona-per-cycle archive; no clobber). This lets multiple personas have parallel continuity threads — Tiffany's Round-1 Author memento does NOT clobber Mr. Radio's Manager-rehydration memento. See `workflow/memento-management.md` §3.2 for the full convention.
+**Location convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation; revised 2026-06-27 to stable slots): the dismissed session writes to its **stable per-persona slot** `io/mementos/<persona-slug>.md` (one slot per persona, no timestamp, derivable from the persona name). This lets multiple personas have parallel continuity threads — Tiffany's `io/mementos/tiffany.md` does NOT clobber Mr. Radio's `io/mementos/mr-radio.md` — while keeping every path predictable so nobody hands a path to the user or the Manager. A fresh memento overwrites the slot by default; a still-load-bearing predecessor is moved to `io/mementos/archive/` (timestamp on the copy only). See `workflow/memento-management.md` §3.2 for the full convention.
 
-**Re-spawn selection — Manager owns the choice**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the Manager picks the right archived memento path from `io/mementos/`. The MCP doesn't auto-select; the path is explicit. See `workflow/memento-management.md` §3.4.
+**Re-spawn selection — Manager DERIVES the path**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the seed path is computed from the persona being re-spawned — `io/mementos/<persona-slug>.md`, the stable single slot. No archive-picking and no path hand-off; the slug IS the answer. See `workflow/memento-management.md` §3.4.
 
 ### §8.3 The continuity loop in narrative
 
-> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to `io/mementos/tiffany-2026.05.28-at-2350.md` naming the Stage-3 ownership-language pattern she just learned.
+> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
 >
-> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany-2026.05.28-at-2350.md")`. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
+> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany.md")` — the seed path derived straight from the persona, no file-picking. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
 
 ### §8.4 Prepend vs append — append wins (Rick directive 2026-05-29)
 

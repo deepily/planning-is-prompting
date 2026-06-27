@@ -2,7 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
-**Version**: 1.1
+**Version**: 1.2
 
 ---
 
@@ -31,7 +31,7 @@ Captures the current session's state into `.claude-memento.md`:
    - Standing memory guidance applicable
    - Heartbeat state (if cascade mode)
    - Rehydration instructions (re-warm reading list + first action + open loops + discard instruction)
-3. Write to `<project>/.claude-memento.md` (single-occupancy; archive prior if needed per §3)
+3. Write to the **derivable** location per §3 — NEVER a path you then hand to anyone: `<project>/.claude-memento.md` for a self-`/clear`, or the stable per-persona slot `io/mementos/<persona-slug>.md` for a spawned worker about to be dismissed (single-occupancy; overwrite by default, archive a still-load-bearing predecessor to `io/mementos/archive/` per §3.2)
 4. Verify the file was written + add to `.gitignore` if not already present
 5. Notify the user via `notify()` that the memento is ready
 

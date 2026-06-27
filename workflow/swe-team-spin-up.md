@@ -91,7 +91,7 @@ flowchart LR
 ## 6. Teardown (ratified Q7)
 
 - **Symmetric, one directive:** *"stand down the SWE team"* reaps **all crew workers** in one directive — mirroring spin-up.
-- **Mementos on by default:** each worker writes a memento (`io/mementos/<persona>-<timestamp>.md`) before reap, so its role specialization survives for a **warm re-spawn** via `seed_memento`.
+- **Mementos on by default:** each worker writes a memento to its stable, derivable slot (`io/mementos/<persona-slug>.md` — one per persona, no timestamp) before reap, so its role specialization survives for a **warm re-spawn** via `seed_memento`. The Manager derives the seed path from the persona; nobody hands a path around (see `memento-management.md` §3.2).
 - **Standing pair persists** — only the crew is reaped.
 - **Composes with** the Manager's ad-hoc harvest autonomy: the Manager can still reap individual workers mid-run; *"stand down the SWE team"* is the clean end-of-engagement sweep.
 
