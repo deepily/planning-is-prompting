@@ -32,7 +32,7 @@
 
 ## 1. What a post-game is (and is not)
 
-A post-game is a **retrospective on a just-finished engagement**, owned by the **Workflow Steward** — or, in a solo session with no Steward, **by the session itself, which runs its own post-game** (D3). **Solo gate (D3):** a self-run post-game MUST surface its self-report to the user and get the user's approval *before* it is documented — the human check that covers the self-review blind spot. It answers four questions:
+A post-game is a **retrospective on a just-finished engagement**, **moderated and owned** by the **Workflow Steward** — or, in a solo session with no Steward, **by the session itself, which runs its own post-game** (D3). **For a multi-participant run (a fleet, a SWE crew, a cascade panel), the Steward MODERATES the participant conversation — the user does not** (see §3.5). **Solo gate (D3):** a self-run post-game MUST surface its self-report to the user and get the user's approval *before* it is documented — the human check that covers the self-review blind spot. It answers four questions:
 
 1. **What happened?** — a receipt-backed account of the run (not a claim-based one).
 2. **What went right / wrong?** — process wins to keep, drift/confabulation/stalls to fix.
@@ -71,9 +71,28 @@ Gather these **before** writing (they are the evidence base; pull them, don't re
 
 ---
 
+## 3.5 The moderated participant roundtable (multi-participant runs)
+
+When the engagement had **more than one participant** (a fleet of managers, a SWE crew, a cascade panel), the post-game is not a solo write-up — it is a **conversation the Steward moderates**. The Steward owns driving it end-to-end; **the user is the audience, never the moderator or the relay.** (Solo run with no Steward → the session moderates its own single-participant roundtable, which collapses to the §1 self-report + the D3 user-approval gate.)
+
+**Moderator = the Workflow Steward.** Transport = **the commons `post-game` topic** (Rick-ratified, 2026-06-30). The protocol runs in four beats:
+
+1. **Open the floor (solicit directly).** The Steward posts a structured retro prompt to the commons `post-game` topic — the four-field frame: *went-well · didn't · do-better · receipts*. Every participant posts their own contribution **to the topic**, addressed to the Steward — **not to the user.** Reaped workers are briefly respun from their memento, or contribute from their last memento if a respin isn't warranted (mark such entries `from-memento`).
+2. **Name the threads + DIGEST the user.** The Steward reads all contributions and posts a **convergence summary** to the topic (the common threads, the disagreements, the still-open questions). **Then — MANDATORY — fire one `notify()` to the user** (the *after-collection digest*): spoken headline (≤3 sentences: "all N contributions in; here's the through-line") + an `abstract` carrying a **doc-viewer link** to the in-progress transcript and a tight "what we've seen" summary. This is a **digest, not a gate** — the user catches up async; the Steward keeps moderating without waiting.
+3. **Run ≥1 cross-examination round (the actual conversation).** The Steward drives discussion **persona-to-persona** in-topic (*"X and Y both named the wind-down miss — concur on the root cause? Is X's 'weak agency' the same failure as Y's 'caution-as-deferral'?"*). Participants answer **to the topic**. The Steward keeps driving rounds until the threads converge or are explicitly logged unresolved. **This is the transcript the user follows.**
+4. **Synthesize + close the floor.** The Steward writes the §4 doc from the converged transcript, fires a **second digest `notify()`** (synthesis ready, doc link), and produces §5 movement. Participants are thanked and released (reaped with mementos per harvest discipline).
+
+**The "user = audience" contract.** In a moderated roundtable the user is an **observer with a veto at the gates**, not a participant in the mechanics:
+- The Steward **never routes a participant's contribution through the user.** Contributions go participant → topic → Steward.
+- The transcript **streams to the user passively**: he can tail the `post-game` topic live, and the two digest `notify()`s (beat 2 + beat 4) let an AFK user follow without reading raw commons. (Honor the `notify`-on-attention-demanding-mode mandate — cross-session dialogue is invisible to the user unless surfaced.)
+- The user is pulled in **only at a gate** — the D3 self-review approval (solo) and the doctrine-graduation approval (§5) — never to moderate, relay, or keep the conversation moving. "Keep it moving" is the Steward's job by definition.
+- If the user interjects mid-roundtable, the Steward folds it in as one more contribution and **resumes moderating** — it does not hand the baton back.
+
+---
+
 ## 4. The full-retro template
 
-Write to `src/rnd/yyyy.mm.dd-<slug>-post-game.md`:
+Write to `io/post-games/yyyy.mm.dd-<slug>-post-game.md` (the post-game **corpus** — see §5.6):
 
 ```markdown
 # Post-Game: <engagement name> (yyyy.mm.dd)
@@ -109,11 +128,12 @@ Keep it tight: receipts over prose, rulings over rumination.
 
 A post-game **produces movement**, not just a document:
 
-1. **The dated doc** lands in `src/rnd/` (full retro) or **one line** in `history.md` (lightweight).
+1. **The dated doc** lands in the corpus `io/post-games/` (full retro — see §5.6) or **one line** in `history.md` (lightweight).
 2. **Rulings → TODO.md Decisions Log** (the durable "why"), each dated and attributed.
 3. **Doctrine-grade lessons → graduate into a `workflow/` doc** — the post-game records the pointer (the §"Status" / version-history note in the target doc cites the post-game as its seed). This is how past post-games (`cascade-notif-sync` §2.1–2.4, the SWE first-run post-game) became standing rules.
 4. **Open threads → a store item** (`task_create`) so they stay live and owed, not stranded in prose.
 5. **New failure modes → the failure-mode catalog** the Steward enforces against next time.
+6. **The corpus — `io/post-games/`.** Every full-retro post-game lives in this one directory, named `yyyy.mm.dd-<slug>-post-game.md`, and is **registered in `io/post-games/README.md`** — the tagged index (`date · engagement · type · key threads/tags · rulings · graduation-status`). **`io/post-games/` is a gitignored, local-only corpus** (Rick, 2026-06-30: *"that way it doesn't get tracked by the repo"*) — post-games are research artifacts, not committed doctrine (sibling to `io/mementos/`); they stay doc-viewable via the `io/post-games/` prefix in `.docview.yml`. The corpus is **researchable**: a tag recurring across N entries (e.g. `drive-vs-hold`, `confabulation`) is exactly the *"larger cross-session pattern"* the `accumulate-pattern-before-graduating-doctrine` rule waits for before a lesson graduates. The corpus + tag-index is how we draw on past conversations ad hoc when planning workflow updates.
 
 ---
 
@@ -124,7 +144,8 @@ flowchart LR
     E["Engagement ends<br/>(SWE run · cascade · solo session)"] --> S{"Substantive?"}
     S -- "no" --> N["Lightweight note<br/>(1 line in history.md)"]
     S -- "yes" --> G["Gather receipts<br/>(git · store · commons · tests · ledger)"]
-    G --> W["Write full retro<br/>(src/rnd/...-post-game.md)"]
+    G --> M["Moderated roundtable<br/>(Steward-driven · multi-participant)<br/>solicit → digest user → cross-examine"]
+    M --> W["Write full retro<br/>(io/post-games/...-post-game.md)"]
     W --> R["Rulings → Decisions Log"]
     W --> D["Doctrine lessons → graduate to workflow/"]
     W --> O["Open threads → store items"]
@@ -142,10 +163,12 @@ flowchart LR
 - **Rumination without rulings** — a post-game that lists feelings but mints no owned, destined changes produced nothing.
 - **Orphaned lessons** — a good lesson written only into the post-game doc and never graduated to a `workflow/` doc or the Decisions Log evaporates by the next `/clear`.
 - **Open threads left in prose** — an unresolved thread that doesn't become a store item is invisible to the work-owed oracle.
+- **User-as-moderator** — letting a multi-participant conversation route *through* the user (participants relaying their notes to the user, the user driving the discussion, the Steward only collating). The Steward moderates; the user listens. Founding case: the 2026-06-29 fleet post-game, where the moderator role defaulted to Rick because the workflow never named one (fixed by §3.5).
 
 ---
 
 ## Version history
 
+- **1.1 (2026-06-30, María 🌸 — Rick-ratified)** — **Self-driving moderation**: added §3.5 (the Steward-moderated participant roundtable, transport = commons `post-game` topic) + the "user = audience" contract, closing the role-gap where the moderator defaulted to the user (founding case: 2026-06-29 fleet post-game). Added the mandatory **after-collection digest `notify()`** (beat 2) + synthesis digest (beat 4). Repointed full-retro output into the new **`io/post-games/` corpus** with a tagged `README.md` index (§5.6) — the substrate for tracking recurring threads across runs (feeds `accumulate-pattern-before-graduating-doctrine`). Anti-pattern "user-as-moderator" added; §6 lifecycle gains the roundtable node. Seed: `src/rnd/2026.06.30-post-game-self-driving-moderation.md`. **HELD for commit.**
 - **1.0 (2026-06-29, María 🌸 — Rick-ratified)** — 5 design decisions ruled via guided walkthrough (§0): D1 auto-trigger at SWE-teardown + cascade Stage-9 (solo = manual); D2 lesson-test scaling threshold; D3 solo self-run WITH a mandatory self-report → user-approval gate before documenting; D4 post-game-first then session-end folds in; D5 receipts bar hard-on-facts-and-rulings, exempt-analysis. Folded into §0/§1/§2. HELD for commit.
 - **0.1 (2026-06-29)** — Initial canonical draft, authored by María 🌸 (Workflow Steward) at Rick's request, extracting the post-game from where it lived embedded (`swe-team-spin-up.md` §5 "always post-game, scaled" + `swe-team-roles.md` §Steward items 4/7 + cascade Stage 9) into a first-class standalone workflow runnable after any engagement. Companion `/plan-post-game` command. **HELD for Rick's review.**

@@ -58,3 +58,4 @@ io/mementos/
 
 # Git LoC-delta artifacts (per-branch CSV + meta, regenerated every session-end)
 io/git-loc-delta/
+io/post-games/

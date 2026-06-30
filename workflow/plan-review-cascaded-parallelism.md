@@ -241,7 +241,7 @@ This makes the cast size visible at a glance and prevents "wait, are we allocati
 - **Cast roles**: `plan-review-cascaded-personas.md`
 - **Configuration knobs**: `plan-review-cascaded-defaults.md`
 - **PG-5 root-cause (serial-vs-parallel lesson)**: `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
-- **Empirical anchor (4-section run with real section-pipelining)**: `src/rnd/2026.05.22-cascade-notif-sync-post-game.md`
+- **Empirical anchor (4-section run with real section-pipelining)**: `io/post-games/2026.05.22-cascade-notif-sync-post-game.md`
 
 ---
 

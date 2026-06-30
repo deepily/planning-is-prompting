@@ -326,8 +326,8 @@ Expected Manager response:
 - **Empirical anchors**:
   - Run 1 (2026-05-18): `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`
   - Run 4 (2026-05-20): Workflow Steward role validated; Step 0/9 first application
-  - Run 5 (2026-05-21): `src/rnd/2026.05.22-cascade-run-5-observer-log-post-game.md` + `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
-  - `cascade-notif-sync` Run (2026-05-22): `src/rnd/2026.05.22-cascade-notif-sync-post-game.md` — source of the six roadblock-removal conclusions feeding this doc's user-tap override + Step 3 cast-ratified-conditional gate
+  - Run 5 (2026-05-21): `io/post-games/2026.05.22-cascade-run-5-observer-log-post-game.md` + `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
+  - `cascade-notif-sync` Run (2026-05-22): `io/post-games/2026.05.22-cascade-notif-sync-post-game.md` — source of the six roadblock-removal conclusions feeding this doc's user-tap override + Step 3 cast-ratified-conditional gate
 
 ---
 
