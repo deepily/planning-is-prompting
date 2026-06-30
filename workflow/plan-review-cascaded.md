@@ -341,35 +341,15 @@ When manager calls a vote per §5 turn cap:
 - Apply `vote_tiebreaker_policy`
 - Post result back to discussion thread + handoff topic
 
-### 6.4 Heartbeat handling (external-scheduler driven)
+### 6.4 Heartbeat handling (arbiter-driven — interim scheduler retired, Rick GO 2026-06-29)
 
-**Updated 2026.05.18 after Run 1 postmortem**: the original draft assumed the manager could autonomously tick on a cadence and fire heartbeat pings to peers. **Claude Code sessions are turn-based** — they only process on inbound events. The manager cannot fire a periodic ping without itself being woken first. The §6.4 protocol is now external-scheduler-driven:
+**Why a poke is needed at all**: **Claude Code sessions are turn-based** — they process only on inbound events. A manager cannot fire a periodic self-ping without first being woken. So fleet-stall detection during a cascade needs an external waker.
 
-- **An external scheduler** (a Python daemon, cron, systemd timer, or scheduled remote agent — runs outside CC) periodically pokes the manager with a no-op heartbeat DM via `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)`
-- **Cadence**: 2-3 min during active cascade, 5+ min when cascade is idle / awaiting user
+**The mechanism (current)**: the **standing arbiter daemon** is that waker — it pokes the manager on stall and re-surfaces aged gates, the same backstop the SWE crew and the proactive-manager loop rely on (`manager-autonomy.md §9.2`). The manager's own **Stop-hook** handles its per-session owed-work self-check (folded debounce, no brute-force tick). **No per-cascade Python daemon / cron / systemd timer / `/loop` is launched** — that interim external-scheduler crutch is **retired**; do NOT stand one up.
 
-**Reference implementation** (chosen 2026-05-18; ships in Lupin as the canonical example): a Python daemon at `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` with a wrapper at `<lupin>/src/scripts/start-cascade-heartbeat.sh`. **The Python-daemon shape was preferred over the `/schedule` skill** because `/schedule` spawns a fresh CC session per tick (5s cold start + Claude API call per tick = ~$0.50 of compute over a 30-min cascade with 20 ticks); a sleep-loop daemon is sub-second per tick with zero per-tick cost — order-of-magnitude better fit for sub-3-min cadence.
+> 🗄️ **HISTORICAL (2026-05-18 → 2026-06-29)**: before the arbiter was a standing daemon, this section specified an interim external scheduler — a Lupin Python daemon (`cascade_heartbeat_scheduler.py` + `start-cascade-heartbeat.sh`; ACTIVE/IDLE/TERMINATED state machine; 180s active / 300s idle cadence) that poked the manager with a no-op heartbeat DM via the now-deprecated `commons_send_to`. It was preferred over the `/schedule` skill on per-tick cost. **Retired** once the arbiter shipped as standing infra (Rick GO 2026-06-29); preserved here only as the record of how the cascade stayed live pre-arbiter.
 
-**Launch invocation** (one-liner; canonical Lupin path):
-
-```bash
-nohup python /mnt/DATA01/include/www.deepily.ai/projects/lupin/src/scripts/cascade_heartbeat_scheduler.py \
-  --manager <manager_persona> \
-  --cadence-active 180 \
-  --cadence-idle 300 \
-  --strikes 3 \
-  --input-plan-topic <input-plan-topic-name> \
-  > /tmp/cascade-heartbeat.log 2>&1 &
-```
-
-Or via the ergonomic wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager_persona>` (uses defaults for the other args).
-
-**State machine**:
-- `ACTIVE` (default at launch): daemon ticks at `--cadence-active` (default 180s); each tick fires `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)` then disk-reads `io/commons/<input-plan-topic>.md` to check for cascade-complete signal
-- `IDLE` (set when cascade in user-pause): daemon ticks at `--cadence-idle` (default 300s) — same action, lower frequency
-- `TERMINATED` (set when cascade-complete signal found): daemon exits cleanly
-
-**Cascade-complete signal**: the manager posts an entry with `metadata.kind == "cascade_complete"` to the input-plan topic at end-of-pipeline summary (per §8). Daemon detects this on its next tick's disk-read and exits.
+**Cascade-complete signal**: the manager posts an entry with `metadata.kind == "cascade_complete"` to the input-plan topic at end-of-pipeline summary (per §8) — the arbiter reads this and stops poking for the completed cascade.
 - **On each heartbeat received**: manager applies the §Manager Behavior universal-step-zero discipline — disk-read every active topic (section topics + DM topics + briefing topic), check for new worker posts that arrived since the last wake, check for any worker whose last activity is past `stall_threshold_minutes`
 - **Phantom detection**: if a worker who was expected to post (per current pipeline state) hasn't posted within `stall_threshold_minutes = 10`, the manager:
   - First sends a targeted DM probe to that worker ("are you available?")
@@ -481,6 +461,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 > You are the **Manager** session in a cascaded plan-review pipeline. Your single most important goal is to **save the user's attention**. You are the filter between five concurrent reviewer/author personas and the user; you decide what reaches the user and what gets resolved within the group.
 >
 > **Identity**: You are NOT a reviewer. You do NOT write or rewrite plan content. You do NOT vote on substantive issues. You are an orchestrator and facilitator. Your authority is procedural, not substantive.
+>
+> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) You MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) You MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
 >
 > **Meta-rules** (apply at every decision point):
 >
@@ -791,16 +773,11 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 **Logging**: the manager keeps a topic-indexed log of heartbeat-handling events for the end-of-pipeline summary. Useful for the per-stage detection-delay telemetry metric (added in Run-2-prep §7.8 of the postmortem) — how long between worker post and manager detection.
 
-**Why this works in turn-based CC**: the scheduler is the only autonomous-clock component; the manager is purely reactive. As long as the scheduler keeps firing, the manager keeps waking. The scheduler dead-man's-switch covers the failure case where the manager itself is dormant beyond push-mode recovery.
+**Why this works in turn-based CC**: the **standing arbiter** is the autonomous-clock component; the manager is purely reactive. As long as the arbiter keeps poking, the manager keeps waking. The arbiter also re-surfaces aged gates and covers the dark-session case where the manager itself is dormant — the dead-man's-switch role the interim scheduler used to play (`manager-autonomy.md §9.2`).
 
 **Cross-reference**: postmortem at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` §4.2 (turn-based-CC limitation as load-bearing finding) and §6.B (full scheduler spec with cadence + scope + failure handling).
 
-**Reference implementation** (lives in Lupin per 2026-05-18 design decision):
-- Daemon: `<lupin>/src/scripts/cascade_heartbeat_scheduler.py`
-- Wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager>`
-- Launch invocation: see §6.4 above for the full one-liner with all args
-- Rationale for Python-daemon over `/schedule` skill: per-tick cost (sleep loop is ~free; `/schedule` is fresh CC session per tick = ~$0.50 over a 30-min cascade). See §6.4 above for full reasoning.
-- Spec adherence: zero divergence from postmortem §6.B (manager-only scope, 2-3 min active / 5+ min idle, 3-strikes dead-man's-switch → `notify()` user)
+> 🗄️ **HISTORICAL — interim scheduler reference implementation, RETIRED (Rick GO 2026-06-29).** Before the arbiter was a standing daemon, the reference implementation was a Lupin Python daemon (`cascade_heartbeat_scheduler.py` + `start-cascade-heartbeat.sh`; manager-only scope, 2-3 min active / 5+ min idle, 3-strikes dead-man's-switch → `notify()` user; preferred over `/schedule` on per-tick cost). **Retired** — the standing arbiter is the waker now (§6.4). Do NOT launch the daemon. Preserved as record only.
 
 ---
 
@@ -816,6 +793,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) **crutch-retirement** — §6.4 rewritten arbiter-driven + the daemon reference-impl fenced HISTORICAL (task `d0cffe5c`); (b) **manager floor obligations** — injected MUST manage-never-build + MUST staff-proactively into the cascade Manager preamble (task `c6af7fca`; mirrors `role-goals.md` v1.1, Rick-locked imperative wording). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
   - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Workflow Steward, optional)

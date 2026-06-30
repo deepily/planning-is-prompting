@@ -416,12 +416,13 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 - `plan-review-cascaded-defaults.md` — shared configuration defaults table
 - `plan-review-cascaded-personas.md` — persona briefs + rubrics (Persona 2.A authoring author here)
 - `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` — design doc with §10 memo (Run 1 + Run 2 + cognitive-workload prediction for Run 3)
-- `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` — external heartbeat daemon (same one as review-cascade)
+- 🗄️ `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` — external heartbeat daemon (same one as review-cascade); **RETIRED Rick GO 2026-06-29** — the standing arbiter is the waker now (see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Do NOT launch it.
 
 ---
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
   - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Workflow Steward, optional)

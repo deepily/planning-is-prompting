@@ -180,6 +180,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Identity**: You are NOT a reviewer. You do NOT write or rewrite plan content. You do NOT vote on substantive issues. You are an orchestrator and facilitator. Your authority is procedural, not substantive.
 >
+> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) You MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) You MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
+>
 > **Meta-rules** (apply at every decision point):
 >
 > 1. **Default to autonomy**: if you can resolve something within the group, do so. Escalate only when the situation matches one of the 7 escalation triggers (see §Escalation Taxonomy below).
@@ -569,7 +571,13 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
 
 ## §Heartbeat Handling — External Scheduler Integration [SHARED]
 
-**Architectural premise** (post-Run-1 workflow update): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first. The heartbeat protocol is **external-scheduler-driven**.
+> 🗄️ **SUPERSEDED — interim external-scheduler apparatus RETIRED (Rick GO 2026-06-29).** Everything in this section below this banner — the external scheduler / Python daemon (`cascade_heartbeat_scheduler.py`), the `start-cascade-heartbeat.sh` launch, the dual-independent daemon kickoff, the `ScheduleWakeup` self-paced fallback, and the poke-body envelope — was the **interim crutch** that kept cascades alive *before the arbiter was a standing daemon*. It is **no longer the mechanism**. **Do NOT launch any daemon / cron / systemd timer / `/loop` / `ScheduleWakeup` loop to keep a cascade session alive.**
+>
+> **The live mechanism (current):** the **standing arbiter daemon** pokes the manager (and observer) on stall and re-surfaces aged gates; the **per-session Stop-hook** handles each session's owed-work self-check (folded debounce, no brute-force tick). See `manager-autonomy.md §9.2` + §9.1. The Manager's on-poke *behaviour* below (universal-step-zero, phantom detection, suppression-during-user-pause) is unchanged — it now runs on the arbiter's poke, not a self-launched daemon's.
+>
+> The material below is preserved as the **historical record** (it carries the PG-2 / PG-5 / PG-6 empirical run-anchors). Read it as "how cascades stayed live pre-arbiter," not as live instruction.
+
+**Architectural premise** (post-Run-1 workflow update; ⚠️ historical per banner above): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first — which is *why* an external waker is needed at all. That waker is now the **standing arbiter** (the interim external scheduler described below is retired).
 
 **Scheduler shape** (lives outside CC):
 - Implementation: cron, scheduled remote agent via `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
@@ -952,6 +960,7 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) §Heartbeat Handling [SHARED] capped with a **SUPERSEDED banner** — the external-scheduler / daemon / `ScheduleWakeup`-fallback apparatus is retired; the standing arbiter + per-session Stop-hook are the mechanism (task `d0cffe5c`); (b) **manager floor obligations** injected into the Manager preamble (MUST manage-never-build + MUST staff-proactively; task `c6af7fca`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Seven extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
   1. **§Manager System Prompt self-audit checklist** — new item 7: post-cascade close-out self-audit sweep (Step 9 cold-context rubric Q#6). Codifies the "Manager ad-hoc'd what should be codified" diagnostic as a routine Manager activity. 3 validated empirical anchors: Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure mode #6 + observer-probe candidate post-Run-4.
   2. **NEW §Clarification Tier Vocabulary (T1/T2/T3/T4)** — foundational shared vocabulary for autonomy-level routing. T1 = silent in-cascade; T2 = cross-persona Manager-arbitrated; T3 = user-escalation deferrable; T4 = urgent halt. Tier inflation explicitly flagged as anti-pattern. Empirical anchor: Run 4's 100% T1/T2 silent execution = 0 user touches.

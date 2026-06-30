@@ -105,7 +105,9 @@ for entry in recent:
 
 ### §3.4 Heartbeat scheduler registration (decision: spawn does NOT auto-register reviewers)
 
-`spawn_sessions` does NOT auto-register reviewers with `cascade_heartbeat_scheduler.py` in v1. The scheduler pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no scheduler entry. Reviewer-liveness heartbeats are deferred to v1.1.
+> 🗄️ **HISTORICAL framing (Rick GO 2026-06-29)**: the `cascade_heartbeat_scheduler.py` daemon is RETIRED — the standing arbiter is the waker now (see `plan-review-cascaded-common.md §Heartbeat Handling` banner). The decision below still holds in spirit (spawned reviewers need no per-session waker entry — they self-signal readiness via commons-post), but read "the scheduler pokes the Manager" as "the **arbiter** pokes the Manager."
+
+`spawn_sessions` does NOT auto-register reviewers with any heartbeat waker. The waker (formerly `cascade_heartbeat_scheduler.py`, now the arbiter) pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no waker entry. Reviewer-liveness heartbeats are deferred to v1.1.
 
 **Operator implication**: the Manager's own heartbeat is unchanged; the Manager does not need to call any scheduler-register API for spawned reviewers; the spawned reviewers' liveness is observed via the `ready, [role]` ack + later commons-post activity on `dm-{manager_persona}`.
 
@@ -346,4 +348,5 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
