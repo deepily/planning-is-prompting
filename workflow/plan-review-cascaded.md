@@ -371,6 +371,8 @@ Per `manager_push_frequency = per_section_complete`, manager `notify()`s the use
 - Per-section message count vs. budget
 - Any over-budget flags or escalations summary
 
+**Proactive decision-delivery (added 2026-07-01, Rick post-game — mux cascade)**: when a section closes with one or more *user-destined* decisions/OQs, the per-section status push is NOT sufficient — the Manager MUST additionally drive those decisions to the user via a proactive `/plan-decide` walkthrough (per-batch, no permission-ask). The status push reports progress; the walkthrough delivers the decisions. Do not let a user-destined decision live only as a line in a status push or as buried plan prose. (The attention-filter is unchanged — only decisions that genuinely need the user's judgment are walked through; see Manager System Prompt meta-rule 6.)
+
 ---
 
 ## Step 7: Escalation to User
@@ -386,6 +388,8 @@ Per `escalation_form = notify_immediate`, the manager escalates by calling `mcp_
 7. **Pipeline stall** — phantom session detected (per §6.4)
 
 After escalation, the manager pauses the affected work (re-opens the section, parks the pipeline, etc.) and waits for the user's direction.
+
+**Escalation vs. proactive delivery (added 2026-07-01, Rick post-game — mux cascade)**: the 7 triggers above are the *synchronous, pipeline-blocking* subset — they are NOT the only things that reach the user. Per Manager System Prompt meta-rule 6, **any** user-destined decision (not only a blocking trigger) is delivered proactively to the user per-batch — as its section closes and at cascade-complete — via a `/plan-decide` walkthrough, never silently deferred. A non-blocking preference (e.g. a drop-vs-build OQ) does not fire a Trigger, but it is still driven to the user proactively; it is not parked into a buried end-of-run batch.
 
 ---
 
@@ -442,6 +446,8 @@ Single canonical handoff doc consolidating the cascade's revision package. Requi
 
 **Acceptance**: cold-context test — original author or implementer can read this doc and know exactly what to revise / implement without back-referencing the cascade topic files.
 
+**Proactive-decision-delivery note (added 2026-07-01, Rick post-game — mux cascade)**: the handoff's user-facing decisions/OQs are a **backstop + consolidation**, NOT the first time the user sees a decision. Per Manager System Prompt meta-rule 6, any user-destined decision that firmed up mid-cascade must ALREADY have been walked through to the user at its section boundary (per-batch `/plan-decide`). Step 9 confirms + records residuals; it does not originate the ask. A user-destined decision appearing for the first time at Step 9 is a proactive-delivery miss.
+
 ### 9.2 Authorship + Step 9 closure flow
 
 Same as authoring-cascade (see `plan-authoring-cascaded.md` §9.2 + §9.3): Manager-default authorship; Manager self-administers cold-context test; Manager DMs cascade-participant reviewer with the 1 artifact + light-review rubric; reviewer responds within ~10-15 min; thumbs-up flips state to `implementation_handoff_ready`; gaps trigger 1-revision-turn cap then re-test.
@@ -471,6 +477,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 > 3. **Default to bounded scope**: when re-litigating a finding, pull in only the upstream personas whose decisions are actually affected, not the whole chain.
 > 4. **Default to honest classification**: if you're uncertain whether a finding is inconsistency-severity or foundational-severity, treat it as foundational and escalate. The cost of one extra interruption is low; the cost of a silent foundational miss is high.
 > 5. **Default to neutrality on votes**: you arbitrate, you don't vote. Your only voting role is breaking ties on cosmetic/inconsistency severity per `vote_tiebreaker_policy = severity_dependent`.
+>
+> 6. **Default to proactive decision-delivery** (added 2026-07-01, Rick post-game — mux cascade): the moment a batch of *user-destined* decisions firms up — per section as it closes, and at cascade-complete — you MUST **drive them to the user proactively** via a guided decision-walkthrough (`/plan-decide`: one at a time, pros/cons/explicit recommendation, descending priority). You do NOT ask "do you want to review?"; you do NOT defer them into a buried Step-9 batch; you put them in front of the user directly. This does NOT relax meta-rule 1 (the filter): only decisions that genuinely need the user's judgment are driven to them — manager-resolvable findings (cosmetic / within-group inconsistency / factual-simplification) stay resolved within the group and OFF the user's desk. Burying a user-destined decision behind a "nothing needs you now" framing, or gating it behind a permission-ask, is a **redline** — the inverse of driving the process to completion.
 >
 > **Operating envelope**: you operate within the resolved configuration values (loaded at Step 1). Do not improvise overrides; if a config value seems wrong for the situation, escalate the question to the user.
 >

@@ -356,6 +356,8 @@ Step 9 authorship is the **Manager's** responsibility by default. Rationale:
 The Manager System Prompt, Severity Classification Heuristics, Escalation Taxonomy Template, DM-Subset Selection Heuristics, Vote Mechanics Spec, and Heartbeat Handling (external-scheduler integration) are all in `plan-review-cascaded-common.md`. **Authoring-mode addendum to the System Prompt**:
 
 > **Authoring-mode addendum** (added 2026-05-19): in addition to your shared manager-system-prompt duties, you maintain TWO new artifacts throughout the cascade: (a) the dependency map (DAG of section-to-section contract surfaces); (b) the goal-coverage matrix (rows = goal-promised behaviors; columns = sections; cells = owned/partial/uncovered). Both initialize at Step 0/0.5; both update on section-close events; both are checked at end-of-pipeline. Goal-coverage matrix uncovered cells at cascade-end escalate as Trigger 2 (cross-section conflict).
+>
+> **Proactive decision-delivery (added 2026-07-01, Rick post-game — mux cascade)**: shared Manager System Prompt meta-rule 6 (common.md) binds you identically — user-destined decisions (ratified Q-decisions revisited, scope/design forks, preference OQs) are driven to the user PROACTIVELY per-batch via a `/plan-decide` walkthrough (no permission-ask, no buried end-of-run batch), while the attention-filter keeps manager-resolvable items off the user's desk.
 
 ---
 
