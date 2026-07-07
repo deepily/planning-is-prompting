@@ -96,6 +96,25 @@ ask_yes_no(
 )
 ```
 
+## 0.3) Harvest Crew Before Wrap-Up (manager-role sessions only)
+
+**Applies to**: manager-role sessions (fleet Manager or cascade Manager, and the repo's standing manager-figure) that have **live spawned crew workers**. Solo sessions with no crew skip this step entirely.
+
+**Rule (Rick, 2026-07-06)**: the **end-of-session ritual is itself a teardown trigger**. When the user calls *"end of session ritual"* / *"session-end"*, the manager **harvests the crew (memento each) as the FIRST wrap-up action — BEFORE** updating history, committing, or pushing. The user should **not** have to also say *"stand down the SWE team"*; the two are coupled. Leaving a worker running across the session boundary is a zombie (the no-zombies hygiene rule already forbids it).
+
+**Process**:
+
+1. **Enumerate live crew** — `list_spawned_sessions()` for this manager's workers (verify actual personas, never the requested `persona_preference`).
+2. **Classify each worker**:
+   - **Idle / done / no-owed-work** → reap **immediately** (memento each, to the stable slot `io/mementos/<persona-slug>.md`).
+   - **Genuinely about to finish a substantial unit** → **let it run to completion / its next commit-checkpoint**, then memento + reap. **Hold the manager's own session-end for that worker.** *(This is Rick's "let them finish, then harvest" exception — harvesting near-complete work would waste it.)*
+   - **Guard against a harvest-dodge loophole**: "about to finish" requires an **imminent-commit / verifiable-checkpoint receipt** (an artifact-delta per the §9.1 receipts-of-progress contract, e.g. a growing diff / advancing pane counter / next commit landing), **never** a vague *"still working."* If you can't cite the receipt, it does not qualify — memento-and-reap or wait for a genuine checkpoint.
+3. **Confirm the sweep** — post the reap events (per `manager-autonomy.md §5` visibility) and `notify()` the user that the crew is harvested before continuing the ritual.
+
+**Canonical cross-refs**: `workflow/swe-team-spin-up.md` §6 (Teardown) · `workflow/swe-team-roles.md` §7 (per-role Teardown) · `workflow/manager-autonomy.md` §6 (the harvest side) + §9.1 (receipts-of-progress, the "genuinely about to finish" evidence bar).
+
+---
+
 ## 0.4) Quick Token Count Check (Manual)
 
 **Purpose**: Quick spot-check of history.md token count using pre-approved script
