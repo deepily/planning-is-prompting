@@ -25,23 +25,26 @@
    - Location: planning-is-prompting → `workflow/loc-delta-global.md`
    - This is the ONLY authoritative source for ALL invocation steps
    - Do NOT proceed without reading this document in full
-   - Contains: discovery policy (recently-active mtime heuristic), aggregator CLI invocation, summary rendering, surfacing pattern, full failure-mode table
+   - Contains: discovery policy (git-root enumeration), aggregator CLI invocation, summary rendering, surfacing pattern, full failure-mode table, the coverage-reconciliation guard
 
 3. **MUST execute discovery before invoking aggregator** (per canonical workflow Step 1):
-   - Glob THREE depth patterns (repos are NOT all one level under `$PROJECTS_ROOT`) and union+dedup: `$PROJECTS_ROOT/*/io/git-loc-delta/*-loc-delta.csv` (flat), `$PROJECTS_ROOT/*/*/io/git-loc-delta/*-loc-delta.csv` (grouping dirs like `google/lookml`), `$PROJECTS_ROOT/*/src/*/io/git-loc-delta/*-loc-delta.csv` (nested sub-repos like `lupin/src/lupin-mobile`)
-   - Filter by mtime within last 14 days (or narrower if `--since` is given AND smaller than 14 days from today)
-   - Carry each repo's ABSOLUTE path `str(Path(csv).parents[2])` (correct at any depth); repo name for display is `Path(p).name`
-   - **Git-root guard**: keep a candidate ONLY if `(Path(csv).parents[2] / ".git").exists()` — excludes in-tree dirs that carry a stale CSV (`lupin/src`, and `lupin/src/cosa` post-COSA-merge) which would otherwise double-count their parent repo's LoC
-   - Pass the resolved absolute paths explicitly via `--repos <abs-path-list>` — DO NOT reconstruct from name + `PROJECTS_ROOT` (breaks for non-flat repos), and DO NOT rely on the CLI to auto-discover (CLI is honest-explicit per Rachel's contract)
+   > **🔄 REWRITTEN 2026-07-13 — discovery enumerates GIT ROOTS, not CSVs.** The aggregator now **computes from git** and no longer reads per-repo CSVs at all (those are artifacts, not inputs). Keying discovery on CSV freshness is what made `google/skills-distillation` invisible — a repo had to have already run session-end §6 to be *seen*.
+   - Glob THREE depth patterns for **`.git`** (repos are NOT all one level under `$PROJECTS_ROOT`) and union+dedup: `$PROJECTS_ROOT/*/.git` (flat), `$PROJECTS_ROOT/*/*/.git` (grouping dirs like `google/lookml`, `google/skills-distillation`, `google/harvey-labs`), `$PROJECTS_ROOT/*/src/*/.git` (nested sub-repos like `lupin/src/lupin-mobile`)
+   - **🛑 GUARD 1 — `.git` MUST be a DIRECTORY.** A `.git` **file** means a **worktree or submodule**, which **shares its parent's object database and branch refs** — analyzing one returns the parent's commits *again*. There are **9 lupin worktrees** (`lupin-wt-*`, `lupin-worktrees/*`) sitting directly under `$PROJECTS_ROOT`; counting them would **multiply lupin's LoC by ~10**. Keep a candidate only if `Path(dotgit).is_dir()`
+   - **🛑 GUARD 2 — the repo MUST have commits in the window.** `git -C <repo> log --branches --no-merges --since=<since> --until=<until> --oneline` must be non-empty. This is what drops the ~39 vendored/dormant clones (`transformers`, `peft`, `vllm`, `lancedb`, …). On a typical week discovery goes **43 roots → 4 active**. `--branches` walks LOCAL refs only, so a `git fetch` on a vendored clone does NOT make it look active
+   - Carry each repo's ABSOLUTE path `str(Path(dotgit).parent)`; repo name for display is `Path(p).name`
+   - **NO mtime filter — the activity filter IS git.** The old CSV-mtime heuristic asked *"has this repo run session-end §6 recently?"* — a proxy for activity a repo had to **earn by running our tooling**, which is exactly what made `google/skills-distillation` invisible. Asking git directly also surfaced `google/harvey-labs`, which the CSV glob had **never once seen**
+   - Pass the resolved absolute paths explicitly via `--repos <abs-path-list>` — DO NOT reconstruct from name + `PROJECTS_ROOT` (breaks for non-flat repos), and DO NOT rely on the CLI to auto-discover (`--repos` is required by design; discovery policy lives PIP-side)
    - **Bypass discovery only if user passed `--repos REPO1 REPO2 ...` explicitly** — explicit override always wins
 
 4. **MUST honor flag semantics**:
-   - `--since YYYY-MM-DD` / `--until YYYY-MM-DD` — passes through to aggregator; also narrows discovery mtime window when shorter than default 14 days
+   - `--since YYYY-MM-DD` / `--until YYYY-MM-DD` — inclusive commit-window bounds; pass through
    - `--repos REPO1 REPO2 ...` — overrides discovery; explicit list passes through directly
+   - `--head-only` — pass through. **Default is ALL LOCAL BRANCHES**: the roll-up asks *"what work happened in window W"*, and work on a sibling branch is still work. Only pass this to deliberately narrow scope
+   - `--include-merges` — pass through; merges are excluded by default (they'd double-count)
    - `--plot` — passes through; renders plot PNG to `$LUPIN_ROOT/io/loc-delta-global/global-<since>_to_<until>-plot.png`
-   - `--plot-output PATH` — passes through; overrides default plot path
-   - `--no-baseline` — passes through; skips repo-baseline section if aggregator supports it
    - `--verbose` / `--debug` — passes through to aggregator
+   - **⚠️ `--prefer-branch-csv` was REMOVED (2026-07-13). Never pass it — argparse hard-errors.** Likewise `--plot-output` / `--no-baseline` were never real: **verify a flag against `--help` before passing it.** *(A wrong flag in prose is indistinguishable from a right one until something runs it — which is the exact defect this whole rewrite came from.)*
 
 5. **MUST surface the rollup via `notify()`** with:
    - **Spoken `message`**: TTS-Brevity-Mandate-compliant one-line LoC verdict (≈8-15 words, e.g. *"Cross-repo wrap: 7 days, 3 repos, net plus 47k lines"*)
@@ -49,34 +52,35 @@
    - **`priority="medium"`** + `suppress_ding=True` (informational, not alerting)
 
 6. **MUST handle failures per canonical workflow Step 4**:
+   - **⚠️ COVERAGE-RECONCILIATION MISMATCH → WARN LOUDLY.** The aggregator asserts counted-commits == `git rev-list --count` for the same window/branch-scope/date-basis, per repo. On mismatch the roll-up still ships but the summary is **prominently flagged as unreliable** — surface it in the spoken line, not just the abstract. **Never render a suspect number as if it were fine.** *(This guard is the replacement for the retired Step 1.7. The original bug produced figures that were internally consistent, confidently rendered, and wrong by 1,607 lines — and nothing complained, because nothing ever asked "is this everything?")*
    - `LUPIN_ROOT` unset → hard error with hint
-   - No CSVs in window → informational "Nothing to roll up" notify with remediation hint
-   - Aggregator CLI fails → surface stderr in abstract; suggest cosa-side status check
-   - Per-repo stale CSV → aggregator handles internally; surface stale list in summary
+   - No git roots found under `PROJECTS_ROOT` → **configuration error**, not "nothing to roll up"
+   - Aggregator CLI fails → surface stderr in abstract; suggest a cosa-side status check
+   - A repo has no commits in the window → **informational**; list it explicitly so an expected-but-absent repo is conspicuous
    - `--plot` fails but data succeeded → render summary without plot link; non-fatal
 
 7. **MUST follow Recommendation Mandate** if any blocking-tool ask arises during invocation (e.g. ambiguous repo selection): pros/cons + recommendation in abstract per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`.
 
 8. **MUST run the Step 1.5 confirmation gate before invoking the aggregator** (default behavior):
-   - After Step 1 discovery resolves a non-empty list, fire `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked as options, with mtime context in each option's description
+   - After Step 1 discovery resolves a non-empty list, fire `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked as options, each option's description carrying the **repo's absolute path** (no more CSV path / mtime hint — there is no CSV in the loop)
    - **MUST pass `default={"Repos": discovered_repos}`** — timeout returns all-checked (graceful degradation; rollup ships even if user is AFK; this is load-bearing per Rick's 2026-05-21 specification)
    - **Timeout**: 120 seconds (tunable per the workflow doc Step 1.5 if usage data warrants)
-   - **"Other" free-text handling**: resolve as `{PROJECTS_ROOT}/{value}` first, fall back to treating as absolute path, warn-and-skip if neither resolves; pass the resolved repo to Rachel's aggregator with the rest
-   - **Bypass paths**: skip Step 1.5 entirely when `--no-confirm` flag is passed OR explicit `--repos REPO1 REPO2 ...` is provided
-   - **Per Recommendation Mandate**: abstract MUST explain why each repo was discovered (CSV path + mtime hint) AND include a recommendation paragraph ("Recommended: accept all auto-discovered with one click; use Other to add missed repos")
+   - **"Other" free-text handling**: resolve as `{PROJECTS_ROOT}/{value}` first, fall back to treating as absolute path, warn-and-skip if neither resolves; pass the resolved repo through with the rest
+   - **Bypass paths**: skip Step 1.5 entirely when `--no-confirm` is passed OR explicit `--repos REPO1 REPO2 ...` is provided
+   - **Per Recommendation Mandate**: the abstract MUST explain why each repo was discovered (*"git root at PATH"*) AND include a recommendation ("Recommended: accept all discovered — one click. A repo with no commits in the window is reported as zero, not dropped, so including it costs nothing.")
 
 ---
 
 ## Usage
 
 ```bash
-/plan-loc-delta-global                                    # default: 14-day mtime window + Step 1.5 confirmation gate
-/plan-loc-delta-global --no-confirm                       # default discovery, skip confirmation gate (fast path)
-/plan-loc-delta-global --since 2026-05-21                # today only (still gated unless --no-confirm)
-/plan-loc-delta-global --since 2026-05-01 --until 2026-05-15  # explicit date range (still gated)
-/plan-loc-delta-global --repos lupin cosa                # explicit subset; bypasses discovery + gate
-/plan-loc-delta-global --plot                             # default window + plot PNG (still gated)
-/plan-loc-delta-global --no-confirm --plot --verbose      # fast path + plot + verbose stderr
+/plan-loc-delta-global                                        # discover all git roots + Step 1.5 confirmation gate
+/plan-loc-delta-global --no-confirm                           # discover all, skip the gate (fast path)
+/plan-loc-delta-global --since 2026-07-13                     # today only (still gated unless --no-confirm)
+/plan-loc-delta-global --since 2026-07-08 --until 2026-07-14  # explicit window (still gated)
+/plan-loc-delta-global --repos lupin planning-is-prompting    # explicit subset; bypasses discovery + gate
+/plan-loc-delta-global --plot                                 # + plot PNG (still gated)
+/plan-loc-delta-global --no-confirm --plot --verbose          # fast path + plot + verbose stderr
 ```
 
 **Gate behavior** (Step 1.5 confirmation):

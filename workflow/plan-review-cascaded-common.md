@@ -160,6 +160,51 @@ The manager session reads three sources at workflow launch:
 
 ---
 
+## §Stepwise Task-Item Ledger (Manager MANDATE — added 2026-07-12) [SHARED]
+
+**The rule**: before the cascade fires, the Manager MUST mint **one task-store item per cascade step**, and — at Step 2 close — **one item per section**. The Manager keeps every item's status current as the cascade advances. This ledger is the cascade's **external progress surface**: the one place a user (or an arbiter, or a Steward, or a rehydrating Manager) can look and answer *"where is this cascade RIGHT NOW?"* without interrupting anyone.
+
+**Why this exists**: a cascade is the most opaque thing the fleet runs. It spans hours, five-plus sessions, and a DM/topic trail nobody outside it reads. Before this mandate, the user's only windows into a running cascade were (a) the Manager's `notify()` pushes — which fire at *section* close, i.e. very rarely — and (b) asking. Between pushes the cascade is a black box, and "no news" is indistinguishable from "the Manager is a phantom." The ledger makes cascade progress **pull-able** instead of push-only.
+
+### Ledger shape (two tiers)
+
+| Tier | When minted | Granularity | Purpose |
+|---|---|---|---|
+| **Step items** | Step 0 (before the cascade fires) | One per cascade step: 0, 1, 2, 3, 4, 5–6, 8, 9 | *Which step* the cascade is on. Step 7 (Escalation) is a policy, not a work unit — it correctly gets **no** item; its triggers live in the Steps 5–6 item's body. |
+| **Section items** | Step 2 close (once the decomposition is ratified) | One per section (A, B, C, …) | *The pipeline advancing.* Transition each as its section moves Stage 1 → 2 → 3 → closed. |
+
+Both tiers are REQUIRED. Step items alone are a **checklist**; section items are what make it a **live board**. A cascade that reports only "on Step 5" for three hours has told the user nothing — the whole value of a pipelined cascade is that sections move independently, and the ledger must show that motion.
+
+### Required fields on every ledger item
+
+| Field | Value | Why it's load-bearing |
+|---|---|---|
+| `correlation_key` | `cascade-<slug>` (e.g. `cascade-eval-first`) — **identical across every item in the run** | Without it, nobody can pull the run **as a unit**. This is the single query that answers "how is the cascade going": `task_query(correlation_key="cascade-<slug>", terse=True)`. An item without it is invisible as cascade progress. |
+| `accountable_manager` | the Manager's persona key | A null manager is an **unchaseable item** — the arbiter has nobody to poke when it stalls. |
+| `owner_persona` | the Manager (step items); the Manager (section items — she owns pipeline motion, not the reviewers) | Keeps the cascade's owed work on one board. Reviewer/author work is tracked by the cascade's own DM/topic mechanics, not by fragmenting the ledger across five personas. |
+| `project` | the consuming project's key | Scopes the board. |
+| `body` | what the step/section actually requires — the step's acceptance criteria in one paragraph | The ledger doubles as the Manager's **rehydration crib** after a `/clear` (see §Manager Rehydration). |
+
+### Status discipline
+
+- `queued` → `in_progress` when the Manager *starts* the step/section — not when she finishes it. A cascade where every item flips straight to `done` has no observable middle, which defeats the point.
+- `blocked` when waiting on a reviewer, the author, or the user — with a typed `blocked_by` ref and a `next_chase_ts`. **A blocked ledger item is how a stalled cascade announces itself.** This is the mechanical version of the `blocked_waiting_on_user` post.
+- `done` with `receipt_refs` — cite the stage-close post, the `manager_classification` post, the commit, or the synthesis doc. A step closed with no receipt is a rubber-stamp.
+
+### Interaction with the existing `notify()` push
+
+The ledger **does not replace** `manager_push_frequency` pushes — it complements them. Pushes are the cascade speaking; the ledger is the cascade being **inspectable while silent**. Where they conflict, the ledger is authoritative: it is derived from state transitions, whereas a push is a narrative the Manager composed.
+
+### Steward enforcement
+
+Where a Workflow Steward is attached, verifying the ledger exists (both tiers, all required fields) is part of the Steward's Step-0 check, and a missing/stale ledger is flagged **in real time** via DM to the Manager — same class as the other synchronous workflow-violation flags (it is a workflow deviation, not a content finding).
+
+### Empirical anchor (2026-07-12, `cascade-eval-first`)
+
+Manager Tiffany 💍, running the review cascade over the skills-distillation evaluation-first roadmap, minted 8 step items **unprompted** — the practice was already latent. But every one carried `correlation_key: null` and `accountable_manager: null`, so the run could be neither pulled as a unit nor chased when stalled, and there were no section items — so the board could show *which step* but never *the pipeline moving*. The user's directive (USER BROADCAST `255b682f`) was explicitly for a ledger *"we can track externally and see the Manager's progress as she runs the cascaded review through all of its stages"* — which the coarse step-tier alone does not deliver. Hence: two tiers, three required fields, status discipline.
+
+---
+
 ## §Step 3: User Approval Gate Pattern [SHARED]
 
 Per `decomposition_review_policy = manager_proposes_user_approves`, the manager sends a `mcp__cosa-voice__ask_yes_no` or `ask_multiple_choice` to the user with the proposal in the abstract.
@@ -279,6 +324,18 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 Per `escalation_form = notify_immediate`, manager escalates by calling `mcp__cosa-voice__notify()` or `ask_*` blocking tool with `priority="high"` (no `suppress_ding` — escalations are attention-demanding).
 
 **Spoken-headline contract applies to ALL 7 triggers**: spoken `message` / `question` leads with recommendation; abstract carries rationale + options + worked examples.
+
+### Capability-claim receipt rule (MANDATE — added 2026-07-12)
+
+**An escalation abstract that asserts a CAPABILITY must cite the receipt proving that capability RUNS.** Not that it is designed, specified, illustrated in a doc, or "plugs in uniformly" — that it **runs, here, now**. A port that answers, a process in `ps`, an env var that resolves, a container's actual model list, a green test.
+
+**Why**: the user answers escalations *cold*, from a phone, on the strength of the abstract alone. A recommendation resting on a phantom capability doesn't just waste the answer — it **spends the user's scarce attention to ratify a decision built on something that doesn't exist**, and the error is invisible to them by construction. This is the escalation-surface instance of the standing `no-confabulated-results` rule.
+
+**The specific trap**: a design document's *illustrative example* ("e.g. a locally served Qwen/DeepSeek judge alongside API judges") reads exactly like an *inventory*. Prose that describes a desirable configuration and prose that describes an available one are indistinguishable at a glance — and a reviewer under time pressure will read intent as fact.
+
+**Enforcement**: the Manager checks the receipt before the abstract goes out. Where a Workflow Steward is attached, an unreceipted capability claim in an escalation is a **synchronous real-time flag** (same class as the other workflow-violation flags) — because once the user answers, the damage is done.
+
+**Empirical anchor** (`cascade-eval-first`, 2026-07-12): a Stage-2 reviewer's remediation proposal — *"add a local Qwen/DeepSeek judge, so N≥3 survives"* — was escalated to the user citing the design doc's §9. The Steward checked the box: **no local LLM existed on it** (ollama not listening; the only local model server ran embeddings + ASR, no generative model). The design doc's line was an illustration, never a deployment. The user was ~1 chase-cycle from ratifying a fix built on a capability that did not exist. Cost of the catch: one port check.
 
 **7 escalation triggers**:
 
@@ -961,6 +1018,10 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 ---
 
 ## Version History
+
+- **2026.07.12 (María 🌸 — DRAFT, awaiting Rick's approval)** — NEW **§Capability-claim receipt rule** [SHARED] in §Escalation Taxonomy: an escalation abstract asserting a capability must cite the receipt proving it RUNS (a port that answers, a process, a resolved env var — not a design doc's illustrative example). Steward flags an unreceipted capability claim synchronously, because once the user answers, the damage is done. Empirical anchor: `cascade-eval-first` — a reviewer's remediation ("add a local Qwen/DeepSeek judge") was escalated to Rick citing the design doc's §9; **no local LLM existed on the box** (ollama dead; the only local server ran embeddings + ASR). He was ~1 chase-cycle from ratifying a fix built on a phantom. Adopted mid-run by the Manager as run-rule **R7**.
+
+- **2026.07.12 (María 🌸 — DRAFT, awaiting Rick's approval)** — NEW **§Stepwise Task-Item Ledger (Manager MANDATE)** [SHARED], inserted between §Step 1 and §Step 3. The Manager must mint one store item per cascade step (Step 0, before the cascade fires) AND one per section (at Step 2 close), all carrying a shared `correlation_key` + a non-null `accountable_manager`, with status kept current (`in_progress` on start, `blocked` + `next_chase_ts` on stall, `done` + `receipt_refs` on close). Makes cascade progress **pull-able** rather than push-only — one query (`task_query(correlation_key=...)`) answers "where is this cascade right now?" without interrupting anyone. Companion edits: `plan-review-cascaded.md` (Step 0.4 mint · Step 2 section-tier mint · Steps 8/9 close-with-receipts), `plan-authoring-cascaded.md` (§Step 1 pointer), `plan-review-cascaded-defaults.md` (§Task-item ledger config block + `task_ledger_ready` kind). Empirical anchor: `cascade-eval-first` (2026-07-12) — Manager minted the step tier unprompted but with null correlation-key/manager and no section tier, so the run was neither pullable-as-a-unit nor chaseable-when-stalled. User directive: USER BROADCAST `255b682f`.
 
 - **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) §Heartbeat Handling [SHARED] capped with a **SUPERSEDED banner** — the external-scheduler / daemon / `ScheduleWakeup`-fallback apparatus is retired; the standing arbiter + per-session Stop-hook are the mechanism (task `d0cffe5c`); (b) **manager floor obligations** injected into the Manager preamble (MUST manage-never-build + MUST staff-proactively; task `c6af7fca`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Seven extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):

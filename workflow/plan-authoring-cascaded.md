@@ -171,6 +171,8 @@ See `plan-review-cascaded-common.md` §Step 1. The procedure is identical (workf
 | `goal_coverage_matrix_required` | `true` | Manager maintains throughout cascade; surfaces uncovered goals at section-close. |
 | `convention_6_active` | detected | Set `true` if consuming project's CLAUDE.md has `## Coverage` section or equivalent ratification; otherwise `false` (Convention 6 dormant). |
 
+**Stepwise task-item ledger (MANDATE — added 2026-07-12; applies to authoring-mode identically)**: the Manager mints one task-store item per cascade step at Step 0, and one per section at Step 2 close, all sharing the run's `correlation_key` with a non-null `accountable_manager`, statuses kept current throughout. This is the cascade's external progress surface — the one place a user can see where an authoring cascade stands without interrupting it. Canonical spec + required fields + status discipline: `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger. Config knobs: `plan-review-cascaded-defaults.md` §Task-item ledger.
+
 ---
 
 ## Step 2: Decompose / Confirm Sections

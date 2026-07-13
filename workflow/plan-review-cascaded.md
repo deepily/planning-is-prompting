@@ -67,6 +67,14 @@ Manager runs the **Step 0 light-review gate** with the review-cascade rubric (6-
 
 On thumbs-up + Recon-checklist-verified: Manager posts `kind: "cascade_input_ready"`; state flips. Cascade Step 1 can fire.
 
+**Step 0.4 — Mint the stepwise task-item ledger (MANDATE; added 2026-07-12)**
+
+Before the cascade fires, the Manager mints the **step tier** of the ledger: one task-store item per cascade step (0, 1, 2, 3, 4, 5–6, 8, 9 — Step 7 is a policy, not a work unit, and correctly gets no item). Every item carries the run's shared `correlation_key`, a non-null `accountable_manager`, and a `body` stating that step's acceptance criteria.
+
+The **section tier** is minted later, at Step 2 close (see Step 2 below) — it cannot exist before the decomposition does.
+
+Canonical spec (both tiers, required fields, status discipline, Steward enforcement): `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger. Post `kind: "task_ledger_ready"` when the step tier is on the board.
+
 ### Authorship — Manager-default
 
 Same Manager-default as authoring-cascade. The Manager who will run the review-cascade is the natural Step 0 preparer.
@@ -117,6 +125,8 @@ Per `section_decomposition_authority = manager_autonomous`, the manager reads th
 - Cross-section dependencies should be explicit and minimal
 
 The manager produces a proposed decomposition: section labels (A, B, C, …), section boundaries (which content goes in each), and a brief rationale for the split.
+
+**At Step 2 close — mint the section tier of the ledger (MANDATE; added 2026-07-12)**: once the decomposition is ratified (Step 3), the Manager mints **one task-store item per section**, sharing the run's `correlation_key`, and transitions each as its section moves Stage 1 → 2 → 3 → closed. The step tier shows *which step*; the section tier is what shows *the pipeline advancing* — and pipelined section motion is this workflow's entire value proposition. See `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger.
 
 ---
 
@@ -410,6 +420,8 @@ This summary is `notify()`-ed to the user and also posted to a `pipeline-summary
 For the prototype phase (Phase D), this summary feeds into the telemetry analysis (intervention count, message count, wall-clock vs. baseline `/plan-review`).
 
 **Step 8 is NOT cascade-done**: per Step 9 workflow (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Revision-Handoff Synthesis) artifact lands + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
+
+**Ledger close (added 2026-07-12)**: by Step 8, every **section-tier** item is `done` with `receipt_refs` (cite the stage-close / `manager_classification` posts). The Step 9 item stays open until the synthesis artifact lands — then it closes with the doc path as its receipt, and the run's ledger is fully terminal. **A cascade with a green summary and a half-open ledger is not done** — the summary is a narrative the Manager composed; the ledger is what actually happened. See `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger.
 
 ---
 

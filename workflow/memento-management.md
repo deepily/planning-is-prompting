@@ -43,9 +43,9 @@ The memento mechanism applies in these scenarios:
 
 ---
 
-## §2 The memento contract — 8 required elements
+## §2 The memento contract — 9 required elements
 
-Every memento MUST include the following 8 elements. Missing any one means the rehydrated session will face a context-recovery gap. **Element 8 (the Verbatim Pending TODO List) is the store-unavailable fallback + INTENT/next-action verifier** (store-only is LIVE — see §8): post-cutover the rehydrated session sees its owed work via `task_query`, and element 8 remains as the belt-and-suspenders skeleton for a store-unreachable rehydrate and the intent the store doesn't carry (Rick, broadcast `beaaaa2c`, 2026-06-16: a session with no visible owed-work agenda has nothing driving it forward).
+Every memento MUST include the following 9 elements. Missing any one means the rehydrated session will face a context-recovery gap — **or, for element 9, the RUN will face a lesson-recovery gap that no rehydration can repair.** **Element 8 (the Verbatim Pending TODO List) is the store-unavailable fallback + INTENT/next-action verifier** (store-only is LIVE — see §8): post-cutover the rehydrated session sees its owed work via `task_query`, and element 8 remains as the belt-and-suspenders skeleton for a store-unreachable rehydrate and the intent the store doesn't carry (Rick, broadcast `beaaaa2c`, 2026-06-16: a session with no visible owed-work agenda has nothing driving it forward).
 
 ```markdown
 # .claude-memento.md
@@ -109,7 +109,32 @@ Every memento MUST include the following 8 elements. Missing any one means the r
 - **#<n> [<status: in_progress|pending|blocked>]** <verbatim item text> — <one-line next-action / blocked-on>
 - **#<n> [DONE]** <item text> — *(mark DONE so reconciliation does NOT re-add it)*
 - ... (one line per item; an honestly-empty list is valid only when nothing is owed)
+
+## 9. Retro deposit (the post-game's testimony — MANDATORY at reap)
+
+> Answer in YOUR OWN WORDS, from experience — not from the spec, not from what you were supposed to do.
+> This is the part of you the run cannot get back once this session ends.
+
+- **⭐ HOW I CAME TO KNOW WHAT I KNOW — the PROVENANCE of each finding.** *(Write this FIRST. It is the field that dies first.)*
+  For every finding you're depositing, say **how you found it and from what position** — not just what you concluded:
+  - **By what act?** *"I ran his grep and it returned 11, not zero"* — never *"his claim was unfounded."* Name the act, not the verdict.
+  - **From what position?** Alone or in a panel · one seat or three · before the code or after · with the artifact open or from memory.
+  - **What would have sufficed?** The cheapest thing that would have caught it (*"one port check"* · *"opening the file"* · *"running my own snippet — twenty seconds"*).
+- **Where I asserted instead of checked** — and **what made asserting cheaper** than checking.
+- **What in my brief / role-DM misled me** — quote the phrasing, not the person.
+- **My self-corrections** — what I caught myself getting wrong, and how cheaply.
+- **What surprised me** — the code / tool / peer that did not behave as I expected.
+- **Practices this seat minted** — anything I'd tell the next holder of this role to do differently.
+- **Open threads only I know about** — what dies with me if I don't write it here.
 ```
+
+**Element 9 is not optional, and it is not a summary of your work** (elements 1–8 already cover that). It is the **experiential** material a post-game is built from — the *why I judged*, not the *what I did*. **A memento carries conclusions; element 9 is the deliberate attempt to carry the experience.** Even so, it is only the **third-strongest** form of testimony (see the ladder in `post-game.md` §3.4): weaker than a live seat answering cross-examination, and weaker than the **rolling deposits** you should have been posting to the commons `post-game` topic all along. **Write element 9 as if you will be reaped without warning — because that is the case it exists for.**
+
+**⭐ The provenance field is the load-bearing one (R-B, Rick-ratified 2026-07-13 — it is why this element was amended within a day of being written).** As first drafted, element 9 asked *what you concluded · what surprised you · what misled you* — and **never asked how you came to know it, or from what position.** That omission is not cosmetic. **A conclusion tells the next reader THAT you were right; the provenance tells them whether the rule they are about to draw from you is the rule your experience actually supports.**
+
+This is the field that lets **a dead seat refute a bad rule.** The founding case: a reviewer's deposit recorded his findings but not that he had found **two of three defects ALONE, from ONE seat** — and *that* fact was the exact counter-example to a rule the Steward was drafting about panels. He refuted her **alive, because he happened to still be there.** Had the provenance been in his file, **it would have refuted her from the file** — no witness, no harvest window, no fleet-hours. That is the entire argument for the field, and it is why it goes **first** in the list: it is also the part of the experience that **decays fastest** into a tidy conclusion.
+
+*Rulings **R-4** (element 9 exists) + **R-B** (element 9 gains the provenance field), both Rick-ratified 2026-07-13. R-4 anchor: the `cascade-eval-first` run, where three reviewers were reaped ~1 minute before the harvest, and what partially saved that post-game was that the Manager's mementos happened to include the self-corrections — **by good instinct, not by rule.** R-B anchor: the M0 build run, where the Steward built the vessel for saving what dies with the context — **and left out the first casualty.** See `post-game.md` §3.3 (the cost-ordered ladder — this is mechanism ②, and it outranks the reap gate).*
 
 ---
 
@@ -176,8 +201,9 @@ When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the mement
 
 | Event | Action |
 |---|---|
-| Session about to `/clear` | Write `.claude-memento.md` with all 8 elements |
-| Worker told "prepare for re-spin" | Run the §0 3-beat sequence: safe checkpoint → write memento (§2) → ACK "ready for re-spin" |
+| Session about to `/clear` | Write `.claude-memento.md` with all 9 elements |
+| Worker told "prepare for re-spin" | Run the §0 3-beat sequence: safe checkpoint → write memento (§2, **element 9 included**) → ACK "ready for re-spin" |
+| Worker reaped at **engagement teardown** | Element 9 (retro deposit) is **MANDATORY** — the Manager may not reap through an open harvest (`manager-autonomy.md` §6; `post-game.md` §3.5.2) |
 | Session post-`/clear` (rehydration) | Read `.claude-memento.md`; follow §7 rehydration instructions |
 | Rehydration successful | Discard memento OR archive per §3 |
 | Memento >24h old | Treat as stale; verify cascade state hasn't changed before acting on memento contents |
@@ -240,6 +266,8 @@ First instance of the memento doc was hand-authored 2026-05-21 (Rick's specifica
 
 ## Version History
 
+- **v1.6 (2026-07-13, María 🌸 — Rick-ratified, guided walkthrough)** — **Element 9 gains its PROVENANCE-OF-FINDING field (ruling R-B) — amends v1.5 the same day.** As drafted that morning, element 9 asked *what you concluded · what surprised you · what misled you*, and **never asked how you came to know it, or from what position** — **the thing that dies first.** The vessel built to save what dies with the context **omitted the first casualty.** The new field (now the **first** bullet: *by what act? · from what position? · what would have sufficed?*) is what lets **a dead seat refute a bad rule from its own file** — a conclusion says *that* you were right; provenance says whether the rule someone is drawing from you is the one your experience supports. Anchor (M0 build, 2026-07-13): a reviewer's deposit recorded his findings but not that he had found **two of three defects ALONE, from ONE seat** — precisely the counter-example to a rule the Steward was drafting; he refuted her **alive**, and only because he happened to still be there. Ranked as **mechanism ②** in the new `post-game.md` §3.3 cost-ordered ladder (**nearly free, unconditional — it outranks the expensive reap gate**). Seed: `io/post-games/2026.07.13-m0-build-post-game.md` (R-A, R-B). **HELD for commit.**
+- **v1.5 (2026-07-13, María 🌸 — Rick-ratified)** — **Element 9: the Retro Deposit (contract grows 8→9 required elements).** Post-game ruling **R-4**: a reap memento MUST carry the seat's testimony in its **own words, from experience** — where it asserted instead of checked (and what made asserting cheaper) · what in its brief misled it · its self-corrections · what surprised it · practices it minted · open threads only it knows. This is the *experiential* material (the **why I judged**), distinct from elements 1–8 (the **what I did**) — and it is what a post-game is actually built from. Framed honestly against the `post-game.md` §3.4 **testimony ladder**: element 9 is the *third*-strongest evidence (below a live seat and below **rolling deposits** posted to the commons `post-game` topic as the run happens) — write it as if you will be reaped without warning, because that is the case it exists for. §4 lifecycle gains the teardown row; the harvest precondition lives in `manager-autonomy.md` §6. Anchor: 2026-07-13 `cascade-eval-first` — three reviewers reaped ~1 min before the harvest; what partially saved that retro was a Manager whose mementos happened to include the self-corrections **by good instinct, not by rule**. Seed: `io/post-games/2026.07.13-cascade-eval-first-post-game.md` (R-4). **HELD for commit.**
 - **v1.4 (2026-06-27, María)** — **Stable, derivable per-worker memento location (Rick directive 2026-06-27).** Added the §3 GOVERNING PRINCIPLE: a memento's path is ALWAYS computed from `(repo, persona)` and NEVER handed to anyone. Rewrote §3.2 from the timestamped per-cycle archive (`io/mementos/<persona-slug>-<date>-at-HHMM>.md`) to a **stable single slot per persona** (`io/mementos/<persona-slug>.md`, no timestamp) — overwrite-by-default, archive-a-load-bearing-predecessor only to `io/mementos/archive/` with the timestamp on the COPY. Rewrote §3.4 so the Manager DERIVES the seed path from the persona instead of selecting from an archive; updated §0 beat 2 and the §6 table to match. Driver: a Lupin worker kept handing Rick its (unpredictable, timestamped) memento path; the stable slot makes the location collision-free across workers AND predictable, so no path is ever passed. Authored by María 🌸.
 - **v1.3 (2026-06-17, María)** — **NEW §0: trigger phrases + the "prepare for re-spin" shorthand.** Canonized *"prepare for re-spin"* (and synonyms) as an intent trigger for this workflow, with the worker 3-beat re-spin sequence (safe checkpoint → write memento → ACK ready-to-reap; commit explicitly NOT bundled). Added the re-spin scenario to §1 + the §4 lifecycle table; corrected the stale "all 7 elements" → "all 8 elements" (§4). Extend-existing decision (Rick voice GO 2026-06-17) — no new command; `/plan-memento` made wizard-installable in the same sweep. Authored by María 🌸.
 - **v1.2 (2026-06-17, María)** — **Store-only transition note added to §8** (not-live-until-cutover). At cutover element 8 is DEMOTED to a store-unavailable fallback — once the store is canonical + queryable, a rehydrated session sees owed work via `task_query(owner=self, open)` rather than rebuilding a native list from this skeleton. **Until the lupin build cuts over element 8 stays MANDATORY** (it feeds the still-required harness rebuild, `session-start.md` Step 4.7). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + cutover order in `workflow/task-store-discipline.md` §0.

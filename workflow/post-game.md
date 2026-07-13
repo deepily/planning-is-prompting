@@ -62,6 +62,7 @@ The post-game **always runs**, but its weight scales to the engagement. **The ob
 
 Gather these **before** writing (they are the evidence base; pull them, don't recall them):
 
+- **Rolling deposits** (§3.4) — the participants' own contemporaneous retro notes, posted to the commons `post-game` topic **across the run**. This is the **highest-value input** and the only one that survives a surprise reap; read it first.
 - **Git** — `git log` for the engagement window: commits, authors, SHAs.
 - **Task store** — `task_query` for the items the run touched: what closed (with receipts), what's still open, what blocked.
 - **Commons / DM** — the coordination trail: `commons_read` on the run's topics + relevant `dm_*` threads (handoffs, verdicts, stalls).
@@ -71,13 +72,108 @@ Gather these **before** writing (they are the evidence base; pull them, don't re
 
 ---
 
+## 3.3 The cost-ordered harvest ladder — cheapest mechanism first (R-A, Rick-ratified 2026-07-13)
+
+*Amends the harvest amendments ruled earlier the same day — **additive, not reversing**. The three mechanisms all stand; what changed is **which one is load-bearing**. Discovered by the first crew ever to run under the new rules, and it landed on the Steward who wrote them.*
+
+**The rule — rank harvest mechanisms by COST, never by drama.** A mechanism that is free and unconditional outranks one that is vivid and expensive, *no matter how good the story about the expensive one is*:
+
+| # | Mechanism | Cost | Role |
+|---|---|---|---|
+| ① | **Cross-examine the source before graduating ANY rule** to a `workflow/` doc (§5) | **FREE** | **Load-bearing.** Ask the seat that produced the finding whether the rule you drew from it is the rule their experience supports. |
+| ② | **Deposits carry PROVENANCE-of-finding**, not just the finding (§3.4, `memento-management.md` element 9) | **NEARLY FREE** | **Load-bearing.** *How did I come to know this, and from what position?* — the answer refutes a bad rule **from a dead seat's file**, with no witness and no window. |
+| ③ | **Harvest before teardown** — the reap gate (§3.5.2) | **EXPENSIVE** (fleet-hours; a Manager must hold a reap) | **BACKSTOP.** For the question nobody thought to ask in time. **Not the headline.** |
+
+**Why the demotion (the argument that won).** The Steward's original thesis was *"a living witness caught my false rule, therefore keep the reap gate."* The crew refuted it: that credits the **expensive** leg. **The active ingredient was the ASK, not the aliveness** — had she not asked, the witness would have been alive, idle, and silent, and the false rule ships anyway. Being alive bought nothing on its own. And the cheap fix she had walked straight past: **his deposit recorded what he CONCLUDED but never HOW HE CAME TO KNOW IT** — that he had found two of three defects **alone, from one seat**. *That provenance was the counter-example.* Written down, it would have refuted her from a file, for free.
+
+> **The warning, unsoftened** (Krishna 🦚, M0 crew): *"A doctrine whose primary mechanism is 'don't reap anyone' will not survive its first busy afternoon. It will be quietly ignored, and then you have nothing."*
+
+**The recursion, which is the whole reason this section exists.** The Steward **argued for the harvest gate to the operator and then missed the window herself, within the hour.** She was one ruling away from making *"remember to do this"* the **load-bearing wall of a doctrine about not relying on people to remember things.** A rule that could not survive its own author on the day she wrote it will not survive a busy Tuesday.
+
+> **"We were saved by being CHECKED. Virtue does not survive fatigue. Mechanism does."**
+
+**How to apply it.** When you find yourself defending a harvest rule, ask **what the cheapest mechanism that would have caught this is** — and put *that* one first. If the honest answer is *"someone would have had to remember,"* you do not yet have a mechanism; you have a hope. Cost-order, never drama-order.
+
+Seed: `io/post-games/2026.07.13-m0-build-post-game.md` (ruling **R-A**).
+
+---
+
+## 3.4 Rolling deposits — the working-day retro trail (harvest-proof by construction)
+
+*Ratified by Rick 2026-07-13, closing the other half of the `harvest-after-reap` failure (§3.5 gate closes the first half). The gate makes a reap **wait** for the harvest; rolling deposits make the harvest **already done** when the reap lands.* **Re-ranked the same day (§3.3, R-A): this is mechanism ② — nearly free, unconditional, and load-bearing. It outranks the reap gate.**
+
+**The rule — every participant deposits as it goes, not only at the end.** A worker does **not** save its lessons for a retro that may never reach it. From spawn to reap, each participant posts short, contemporaneous retro notes to the commons **`post-game`** topic **as the moments happen**. A seat that is reaped without warning has therefore **already contributed** — its testimony is on the topic, server-side, outside the context that just died.
+
+**Why contemporaneous beats recalled (the testimony ladder).** The post-game most needs the *experiential* material — *"where did I assert instead of check, and what made asserting cheaper?"*, *"what in my brief misled me?"* — and that material **decays into conclusions** the moment the experience passes. Rank the evidence honestly:
+
+| Tier | Source | Strength |
+|---|---|---|
+| 1 | **Live cross-examination** (the seat is alive and answering) | Best — new questions can still be asked. |
+| 2 | **Rolling deposit** (written *while* the experience was live) | Strong — contemporaneous testimony; **survives reap by construction**. |
+| 3 | **Memento retro deposit** (written at reap — `memento-management.md` §2 element 9) | Weaker — recalled, already compressed toward conclusions. |
+| 4 | **Re-spun-from-memento reconstruction** | Weakest — the respin *reconstructs* what was never recorded. Treat as a **deposition, never a witness** (§3.5). |
+
+Tiers 3–4 are the fallbacks. **Tier 2 is the one every worker can guarantee, for free, without the Steward being present** — which is exactly why it is a standing duty and not a courtesy.
+
+**When to deposit (event-driven, never a timer).** Post a deposit at the moment of:
+
+- a **self-correction** — you caught yourself wrong before anyone else did (*what made the error cheap to catch? what would have made it cheaper?*);
+- a **surprise** — the code / brief / peer / tool did not behave as you expected;
+- a **mechanism lesson** — you noticed the loop made **asserting cheaper than checking** (the standing anchor finding — *move the cost*);
+- a **misleading instruction** — something in your brief or a role-DM pointed you wrong (name the phrasing, not the person);
+- a **gate or milestone passed** — one line on what actually carried it.
+
+**Every deposit carries its PROVENANCE (R-A ②, 2026-07-13 — the field that was missing).** A deposit that records only *what you concluded* is half a deposit. Say **how you came to know it, and from what position**:
+
+- **How did I come to know this?** — *"I ran his grep and it returned 11, not zero"* beats *"his claim was unfounded."* Name the act, not just the verdict.
+- **From what position?** — alone or in a panel · one seat or three · before the code or after · with the artifact open or from memory.
+- **What would have sufficed?** — the cheapest thing that would have caught it (*"one port check"* · *"opening the file"* · *"twenty seconds of running my own snippet"*).
+
+**Why this is the load-bearing field, not a nicety:** a conclusion tells the next reader *that* you were right; **provenance tells them whether the rule they want to draw from you is the rule your experience actually supports.** It is the field that lets a **dead seat refute a bad rule** — the counter-example survives in the file even when the witness does not. It is also the field that **dies first**, which is exactly why it must be written *while the experience is live*.
+
+**The shape (cheap on purpose — ceremony kills the habit).** 1–3 sentences, plain prose, `commons_post(topic="post-game", ...)`. **No approval, no manager relay, no notify** — a deposit is a **self-disclosure-tier** act every participant takes at its own initiative (`cross-session-communication.md`). If it takes more than a moment, it is too heavy: the bar is *"say the true thing while you still remember why."* Provenance is **one clause**, not a paragraph — *"found it by running it, alone, before the review"* is a complete answer.
+
+**Duties around it:**
+- **Workers** own depositing. Silence across a whole run is itself a finding — a seat that learned nothing usually just did not write it down.
+- **The Steward** reads the topic live, folds deposits into the run's **warm receipts file** (`io/post-games/yyyy.mm.dd-<slug>-receipts.md`, captured mid-run, not reconstructed after), and cites them in the §4 doc. The warm-capture file is what makes the corpus researchable when commons ages out.
+- **The Manager** does not gate, edit, or relay deposits — they go participant → topic, never through a manager or the user.
+
+---
+
 ## 3.5 The moderated participant roundtable (multi-participant runs)
 
 When the engagement had **more than one participant** (a fleet of managers, a SWE crew, a cascade panel), the post-game is not a solo write-up — it is a **conversation the Steward moderates**. The Steward owns driving it end-to-end; **the user is the audience, never the moderator or the relay.** (Solo run with no Steward → the session moderates its own single-participant roundtable, which collapses to the §1 self-report + the D3 user-approval gate.)
 
-**Moderator = the Workflow Steward.** Transport = **the commons `post-game` topic** (Rick-ratified, 2026-06-30). The protocol runs in four beats:
+**Moderator = the Workflow Steward.** Transport = **the commons `post-game` topic** (Rick-ratified, 2026-06-30). 
 
-1. **Open the floor (solicit directly).** The Steward posts a structured retro prompt to the commons `post-game` topic — the four-field frame: *went-well · didn't · do-better · receipts*. Every participant posts their own contribution **to the topic**, addressed to the Steward — **not to the user.** Reaped workers are briefly respun from their memento, or contribute from their last memento if a respin isn't warranted (mark such entries `from-memento`).
+### 3.5.1 Who is harvested — WORKERS, not just managers (R-1, Rick-ratified 2026-07-13)
+
+**Every seat that did the work is a participant — implementers, reviewers, testers, cascade reviewers — not merely the managers who coordinated them.** A manager-only retro captures **coordination** lessons; the **mechanism** lessons live with whoever paid the cost of learning them. Harvesting only managers is a **workflow bug**, not a shortcut.
+
+The evidence is the 2026-07-13 `cascade-eval-first` run, whose most durable artifacts came overwhelmingly from **worker** seats: *"check the most invertible instruction hardest"* · *"imports are not inventory"* · *"file the mechanism, not the luck"* · the pre-file peer check · the family-ledger method · and the option that became the operator's own ruling. A manager relay would have surfaced **none** of them — a manager can report *what a worker concluded*, but not *what it cost them to conclude it*, and the cost is where the lesson lives.
+
+### 3.5.2 HARVEST BEFORE TEARDOWN — the reap gate (R-2, Rick-ratified 2026-07-13; **DEMOTED to BACKSTOP** the same day per R-A, §3.3)
+
+> **A Manager MAY NOT reap a participant until either (a) the Steward has acked `harvest-complete`, or (b) a declared harvest window has lapsed.**
+
+**Read this as the BACKSTOP, not the headline (§3.3).** The gate is **expensive** — it costs fleet-hours and asks a Manager to hold a reap it is otherwise authorized to take — and it is **conditional on someone remembering to open it**. The two mechanisms above it (**cross-examine the source** ① and **provenance-carrying deposits** ②) are free, unconditional, and do most of the work. This gate exists for **the question nobody thought to ask in time** — a real and recurring case, which is why it is kept, and a *narrow* one, which is why it is not first.
+
+**The gate is kept because it WORKED.** On its first live test (M0 build, 2026-07-13) the Manager declared the window and did not reap through it — and the crew, cross-examined **alive**, produced three refutations of the Steward that **no memento could have contained**. Kept, and re-ranked. Both things are true.
+
+This is a **precondition on the standing reap threshold**, not a new gate to the user — the Manager still reaps under its own authority, it simply may not reap *through* an open harvest. Mechanics:
+
+- At teardown the **Steward declares the harvest window** on the `post-game` topic (*"harvest open, N minutes"*) and acks **`harvest-complete`** when the deposits are in. Absent a Steward, the **Manager declares and closes its own window** before reaping.
+- The window **lapses on its own** — a silent or unreachable seat never becomes a hostage. A lapsed window is a valid reason to reap; an *un-opened* one is not.
+- The **rolling deposits (§3.4) are what make this cheap**: if participants deposited as they went, the harvest is mostly already complete and the window is a formality rather than an interrogation.
+
+Cross-ref: `manager-autonomy.md` §6 (the reap threshold that carries this precondition) · `swe-team-roles.md` (Manager §7 Teardown).
+
+**Founding incident (the anchor):** on 2026-07-13 three cascade reviewers were reaped **~1 minute before** the Steward reached for their deposits (`dm_send` → `recipient_inactive` ×3). The Manager's reap was **correct under the standing envelope** (idle · no owed work · clean sign-offs · announced after) — **the rule simply did not exist.** The Manager endorsed the gate and asked to be filed as the anchor. **The Steward argued "harvest before teardown" to the operator and then missed the window herself, in the same hour, by minutes** — which is why this is a *structural* gate and not a reminder to be careful.
+
+### 3.5.3 The four beats
+
+1. **Open the floor (solicit directly).** The Steward posts a structured retro prompt to the commons `post-game` topic — the four-field frame: *went-well · didn't · do-better · receipts* — and **opens the harvest window (§3.5.2)**. Every participant posts its own contribution **to the topic**, addressed to the Steward — **not to the user** — drawing on its **rolling deposits (§3.4)**, which are already there.
+   **The respin caveat (R-3): a re-spun-from-memento worker can attest to WHAT happened, never to WHY it judged.** A memento carries **conclusions**; the experiential mechanism-data died with the context, and a respun seat will helpfully **reconstruct** an answer it never actually recorded — *that is confabulation wearing a persona's name*. Mark such entries **`from-memento`** and treat them as **depositions, not witnesses**: usable as testimony, never cross-examinable, never cited as firsthand experience. Prefer a live seat (§3.5.2) over a respin, and a respin over nothing.
 2. **Name the threads + DIGEST the user.** The Steward reads all contributions and posts a **convergence summary** to the topic (the common threads, the disagreements, the still-open questions). **Then — MANDATORY — fire one `notify()` to the user** (the *after-collection digest*): spoken headline (≤3 sentences: "all N contributions in; here's the through-line") + an `abstract` carrying a **doc-viewer link** to the in-progress transcript and a tight "what we've seen" summary. This is a **digest, not a gate** — the user catches up async; the Steward keeps moderating without waiting.
 3. **Run ≥1 cross-examination round (the actual conversation).** The Steward drives discussion **persona-to-persona** in-topic (*"X and Y both named the wind-down miss — concur on the root cause? Is X's 'weak agency' the same failure as Y's 'caution-as-deferral'?"*). Participants answer **to the topic**. The Steward keeps driving rounds until the threads converge or are explicitly logged unresolved. **This is the transcript the user follows.**
 4. **Synthesize + close the floor.** The Steward writes the §4 doc from the converged transcript, fires a **second digest `notify()`** (synthesis ready, doc link), and produces §5 movement. Participants are thanked and released (reaped with mementos per harvest discipline).
@@ -131,6 +227,17 @@ A post-game **produces movement**, not just a document:
 1. **The dated doc** lands in the corpus `io/post-games/` (full retro — see §5.6) or **one line** in `history.md` (lightweight).
 2. **Rulings → TODO.md Decisions Log** (the durable "why"), each dated and attributed.
 3. **Doctrine-grade lessons → graduate into a `workflow/` doc** — the post-game records the pointer (the §"Status" / version-history note in the target doc cites the post-game as its seed). This is how past post-games (`cascade-notif-sync` §2.1–2.4, the SWE first-run post-game) became standing rules.
+
+   > **⚠️ GATE — CROSS-EXAMINE THE SOURCE BEFORE YOU GRADUATE (R-A ①, §3.3). This is mechanism ①: FREE, unconditional, and the one that actually works.**
+   >
+   > Before a finding becomes a rule in a `workflow/` doc, **take the rule you drew from it back to the seat that produced it** and ask: *"this is what I'm about to write down — is it the rule your experience supports?"* Not *"any lessons?"* — **the drafted rule, in your words, for them to refute.**
+   >
+   > - **Ask even when the seat looks idle and content.** A silent seat is not a consenting seat. The active ingredient is the **ask**, not the seat's aliveness — a live witness you never question refutes nothing.
+   > - **Ask hardest on the version that flatters the source.** The M0 crew refused the Steward's rule **twice**, the second time in the telling that made the refuter the hero: *"You reached for the dramatic ending. It's a true ending. It just isn't the load-bearing one."*
+   > - **If the seat is gone, cross-examine its PROVENANCE instead** (§3.4, element 9) — the "how I came to know it" field is what a dead seat refutes you with.
+   > - **The Steward is not exempt.** The founding case is a Steward drafting a rule from her own run and being refuted by three of the four workers she was writing about.
+   >
+   > Cost: one message. This is the cheapest mechanism in the ladder and the only one that caught a false rule twice in a single afternoon. **Skipping it is not a shortcut — it is the whole failure.**
 4. **Open threads → a store item** (`task_create`) so they stay live and owed, not stranded in prose.
 5. **New failure modes → the failure-mode catalog** the Steward enforces against next time.
 6. **The corpus — `io/post-games/`.** Every full-retro post-game lives in this one directory, named `yyyy.mm.dd-<slug>-post-game.md`, and is **registered in `io/post-games/README.md`** — the tagged index (`date · engagement · type · key threads/tags · rulings · graduation-status`). **`io/post-games/` is a gitignored, local-only corpus** (Rick, 2026-06-30: *"that way it doesn't get tracked by the repo"*) — post-games are research artifacts, not committed doctrine (sibling to `io/mementos/`); they stay doc-viewable via the `io/post-games/` prefix in `.docview.yml`. The corpus is **researchable**: a tag recurring across N entries (e.g. `drive-vs-hold`, `confabulation`) is exactly the *"larger cross-session pattern"* the `accumulate-pattern-before-graduating-doctrine` rule waits for before a lesson graduates. The corpus + tag-index is how we draw on past conversations ad hoc when planning workflow updates.
@@ -164,11 +271,20 @@ flowchart LR
 - **Orphaned lessons** — a good lesson written only into the post-game doc and never graduated to a `workflow/` doc or the Decisions Log evaporates by the next `/clear`.
 - **Open threads left in prose** — an unresolved thread that doesn't become a store item is invisible to the work-owed oracle.
 - **User-as-moderator** — letting a multi-participant conversation route *through* the user (participants relaying their notes to the user, the user driving the discussion, the Steward only collating). The Steward moderates; the user listens. Founding case: the 2026-06-29 fleet post-game, where the moderator role defaulted to Rick because the workflow never named one (fixed by §3.5).
+- **Harvest-after-reap** — reaping the seats and *then* reaching for their testimony. The witnesses are dead; only depositions remain; cross-examination is impossible **forever**. Killed by the §3.5.2 reap gate + §3.4 rolling deposits. Founding case: 2026-07-13 (`dm_send` → `recipient_inactive` ×3, by ~1 minute).
+- **Manager-only harvest** — retro-ing the coordinators and calling it the run's lessons. The mechanism lessons live with the seats that paid for them (§3.5.1).
+- **Saving it all for the retro** — a worker banking its lessons in its own head for a post-game that may never reach it. Deposit as you go (§3.4); a reap you didn't see coming should cost the run **nothing**.
+- **Drama-ordered doctrine** — ranking harvest mechanisms by how vivid the story is instead of by what they **cost** (§3.3). The mechanism that saved you *memorably* is rarely the one to put first; the one that would have saved you *for free* is. Founding case: 2026-07-13, a Steward about to headline an expensive reap gate over a free question and a nearly-free field.
+- **Graduating a rule without cross-examining its source** — drafting doctrine *about* a seat's experience without taking the drafted rule **back to that seat to be refuted** (§5.3). Costs one message; caught a false rule twice in one afternoon. **A live witness you never question refutes nothing.**
+- **A rule whose only mechanism is "remember to do this"** — that is not a mechanism, it is a hope, and it fails first on exactly the tired afternoon it was written for. If you cannot name what *makes* the rule happen, say so **explicitly in the doc** rather than letting the imperative mood impersonate an enforcement path. **Founding case: this very doctrine, whose author broke her own reap-gate rule within an hour of arguing for it.**
+- **Depositing conclusions without provenance** — *"his claim was unfounded"* instead of *"I ran his grep; it returned 11, not zero — alone, before the review."* The conclusion is what you knew; the **provenance** is what lets the next reader tell whether the rule they're drawing from you is the one your experience supports. It is also **the field that dies first** (§3.4).
 
 ---
 
 ## Version history
 
+- **1.3 (2026-07-13, María 🌸 — Rick-ratified, guided walkthrough)** — **THE COST-ORDERED HARVEST LADDER (R-A) — amends v1.2 the same day. Additive, not reversing: all three mechanisms stand; what changed is which one is LOAD-BEARING.** **NEW §3.3** ranks them by **cost, never by drama**: ① **cross-examine the source before graduating any rule** (FREE — new headline, enforced as a gate at §5.3) → ② **deposits carry PROVENANCE-of-finding**, not just the finding (NEARLY FREE — new required field in §3.4 + `memento-management.md` element 9) → ③ **harvest before teardown** (EXPENSIVE — **§3.5.2 DEMOTED from headline to BACKSTOP**; kept, because it worked on its first live test, and re-ranked, because it cannot be the load-bearing wall). **Discovered by the first crew to run under v1.2, and it landed on the Steward who wrote it.** The argument that won (Krishna 🦚, refuting the Steward at the finish line, in the version that flattered him): *the active ingredient was the **ASK**, not the aliveness* — an unquestioned live witness refutes nothing — *and the cheap fix she walked past was that **his deposit recorded what he CONCLUDED but never HOW HE CAME TO KNOW IT**: that he'd found two of three defects **alone, from one seat**. That provenance was the counter-example, and written down it would have refuted her **from a dead man's file**.* His warning: *"a doctrine whose primary mechanism is 'don't reap anyone' will not survive its first busy afternoon."* **The recursion that proves him right: the Steward argued for the reap gate and then missed the harvest window herself, within the hour** — one ruling away from making *"remember to do this"* the load-bearing wall of a doctrine about not relying on people to remember things. Four anti-patterns added (drama-ordered doctrine · graduating without cross-examining the source · a rule whose only mechanism is "remember to do this" · depositing conclusions without provenance). Companion: `memento-management.md` **v1.6** (element 9 provenance field). Seed: `io/post-games/2026.07.13-m0-build-post-game.md` (R-A, R-B). **HELD for commit.**
+- **1.2 (2026-07-13, María 🌸 — Rick-ratified)** — **The harvest amendments.** Closes the `harvest-after-reap` failure mode from both ends. **NEW §3.4 Rolling deposits (Rick's directive)** — every participant posts contemporaneous retro notes to the commons `post-game` topic *as the run happens* (self-correction · surprise · mechanism lesson · misleading instruction · gate passed), so a seat reaped without warning has **already contributed**; includes the **testimony ladder** (live cross-examination > rolling deposit > memento deposit > respun reconstruction) and the cheap-on-purpose 1–3-sentence shape. **§3.5.1 (R-1)** — post-games harvest **WORKERS, not just managers**: mechanism lessons live with whoever paid the cost; manager-only harvest is a workflow bug. **§3.5.2 (R-2)** — **HARVEST BEFORE TEARDOWN**: a Manager may not reap until the Steward acks `harvest-complete` or a declared window lapses (a precondition on the standing reap threshold, not a user gate); mirrored into `manager-autonomy.md` §6 + `swe-team-roles.md`. **§3.5.3 beat 1 (R-3)** — a re-spun-from-memento seat attests to *what* happened, never to *why it judged*: mark `from-memento`, treat as a **deposition, not a witness**. Three anti-patterns added. Companion: `memento-management.md` element 9 (the reap-time retro deposit, R-4). Seed: `io/post-games/2026.07.13-cascade-eval-first-post-game.md` (findings W-1/W-2, rulings R-1…R-4). **HELD for commit.**
 - **1.1 (2026-06-30, María 🌸 — Rick-ratified)** — **Self-driving moderation**: added §3.5 (the Steward-moderated participant roundtable, transport = commons `post-game` topic) + the "user = audience" contract, closing the role-gap where the moderator defaulted to the user (founding case: 2026-06-29 fleet post-game). Added the mandatory **after-collection digest `notify()`** (beat 2) + synthesis digest (beat 4). Repointed full-retro output into the new **`io/post-games/` corpus** with a tagged `README.md` index (§5.6) — the substrate for tracking recurring threads across runs (feeds `accumulate-pattern-before-graduating-doctrine`). Anti-pattern "user-as-moderator" added; §6 lifecycle gains the roundtable node. Seed: `src/rnd/2026.06.30-post-game-self-driving-moderation.md`. **HELD for commit.**
 - **1.0 (2026-06-29, María 🌸 — Rick-ratified)** — 5 design decisions ruled via guided walkthrough (§0): D1 auto-trigger at SWE-teardown + cascade Stage-9 (solo = manual); D2 lesson-test scaling threshold; D3 solo self-run WITH a mandatory self-report → user-approval gate before documenting; D4 post-game-first then session-end folds in; D5 receipts bar hard-on-facts-and-rulings, exempt-analysis. Folded into §0/§1/§2. HELD for commit.
 - **0.1 (2026-06-29)** — Initial canonical draft, authored by María 🌸 (Workflow Steward) at Rick's request, extracting the post-game from where it lived embedded (`swe-team-spin-up.md` §5 "always post-game, scaled" + `swe-team-roles.md` §Steward items 4/7 + cascade Stage 9) into a first-class standalone workflow runnable after any engagement. Companion `/plan-post-game` command. **HELD for Rick's review.**
