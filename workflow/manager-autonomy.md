@@ -190,6 +190,7 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 - **`workflow/cross-session-communication.md`** — the three-tier commons autonomy ladder this envelope is modeled on; the announcement contract (§5) rides those commons surfaces.
 - **Harvest-discipline mandate** — the reap *mechanism* + `extra-N` alarm; this doc is its *authorization* half.
 - **`plan-memento` skill** — the continuity seed for identity-continuous respawn (§4).
+- **`workflow/fleet-recovery.md`** — when a crew dies to *process death* (tmux wipe, crash, reboot) rather than a deliberate reap, do **not** respawn-from-memento: the workers' transcripts survive on disk and are resumable verbatim (`claude --resume <uuid>`). A manager resurrects its **own** crew — the memento path is the fallback for a transcript that is genuinely gone, not the first resort when it isn't.
 - **Heartbeat Hook + Arbiter** — same failure family (owed work idling for lack of authorization); the Heartbeat Hook pokes a frozen *worker*, this doctrine keeps a *manager* from freezing in the first place.
 - **Blast-radius-scaled authorization** (global feedback) — the rule that sorts STANDING from STILL-GATED.
 

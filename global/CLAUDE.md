@@ -238,7 +238,21 @@ Two-phase init — skipping it is a session-start bug, in ALL modes including pl
 
 **Phase B — as soon as the topic is knowable:** call `set_session_topic()` with a 3-8 word title (from the user's first message, history.md/TODO.md, or the approved plan). If the opening message already titles the session, call it IMMEDIATELY after Phase A. Self-check before any substantive work: has `set_session_topic()` fired? If not, do it first. Skipping is a session-start bug. Only defer if the opening message is too ambiguous to title — then ASK. The topic feeds the stop-hook "Continue Session?" notification; update it when switching tasks.
 
-**If cosa-voice tools are NOT in the deferred list** (report "MCP Status: unavailable"): the server is likely missing from user-scope registration. Tell the user to run `bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh` then restart the session; verify with `cd /tmp && claude mcp get cosa-voice` (expect `Scope: User config`).
+**If cosa-voice tools are NOT in the deferred list** (report "MCP Status: unavailable"): the server is likely missing from user-scope registration. Tell the user to run `bash $LUPIN_ROOT/src/scripts/install-cosa-voice.sh` then restart the session; verify with `claude mcp get cosa-voice` (expect `Scope: User config`) — run it **from inside the repo**; the command reports its own scope, so there is nothing to gain by `cd`-ing elsewhere first.
+
+> ⚠️ **NEVER run a Claude process (or `git init`) outside a registered repo — not `/tmp`, not `~`, not a scratchpad.** cosa-voice derives the project from the **basename of the working directory**, so a session in `/tmp` is auto-detected as project `"tmp"`, finds no `[tmp]` credentials section, and fires `CRITICAL: COSA-VOICE MCP VALIDATION FAILED` on every connection. (This instruction previously read `cd /tmp && claude mcp get …` — i.e. the doc itself prescribed the failure. Fixed 2026-07-13 after it flooded the user with urgent MCP errors.)
+>
+> **Why `/tmp` specifically breaks**: `detect_project()` walks UP from cwd to the nearest `.git` ancestor and returns *that repo's* basename. `/tmp` has no `.git` ancestor, so it falls back to the cwd basename — `"tmp"` — which has no credentials section. **A directory is safe iff it has a `.git` ancestor that resolves to a registered project.**
+>
+> **Pick your directory by what you need — NEUTRALITY and REGISTRATION are orthogonal:**
+>
+> | Need | Use | Why |
+> |---|---|---|
+> | Temp **files** (notes, outputs, data) | the session scratchpad | Fine for files. **Never** as a cwd for a spawned process or a `git init`. |
+> | An isolated **sandbox with repo context** | a **git worktree** | Registered (resolves to the main repo, worktree-aware) — but **NOT neutral**: it has a `conftest.py` ancestor. |
+> | **Neutral test execution** (defeating a false green) | the **registered scratch project** | Both neutral *and* registered. ⚠️ **NOT `/tmp`.** |
+>
+> ⚠️ **A worktree is registered but NOT neutral.** A worktree `conftest.py` can inject `src/` onto `sys.path` and manufacture a **false green** — a suite that passes because the harness helped, not because the code works. That is why cascade doctrine says to verify from a neutral directory, and why *"a neutral directory"* used to send reviewers to `/tmp`. **Neutrality is about Python import context; registration is about platform context. `/tmp` bought the first by destroying the second.** The registered scratch project (Rick-approved 2026-07-13) gives both: per-session subdir `<session_id_8>/`, no ancestor `conftest.py`, age-swept by a janitor — **never a mandatory "delete when done," which is a rule and will be forgotten.**
 
 ### SPEAKERPHONE & TTS — SERVER-RIDER-DRIVEN
 

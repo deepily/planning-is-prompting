@@ -59,3 +59,7 @@ io/mementos/
 # Git LoC-delta artifacts (per-branch CSV + meta, regenerated every session-end)
 io/git-loc-delta/
 io/post-games/
+
+# Claude mementos (records + pointers) — NEVER commit: a memento that
+# will be committed is written more carefully, and therefore less honestly.
+.claude-memento-*.md
