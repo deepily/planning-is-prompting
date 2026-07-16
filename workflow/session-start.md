@@ -134,6 +134,30 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 
 ---
 
+## Preliminary 0.1: Provisional Session Topic (MANDATORY — operator visibility)
+
+**Purpose**: Render this session on the operator's focus bar (name + color + icon) from the very first minutes of life. The focus-bar roster is **notification-derived** — a session that has pushed nothing is INVISIBLE to the operator regardless of how alive it is. `set_session_topic()` pushes, and is therefore the session's birth certificate on the operator's side of the glass.
+
+**Timing**: IMMEDIATELY after Preliminary 0's `get_session_info()` succeeds — BEFORE the first user-facing acknowledgment, BEFORE the topic is genuinely knowable. Do not wait.
+
+**Command**:
+```python
+set_session_topic( "Session initializing — <repo-name>" )   # provisional; refine later
+```
+
+**Then refine at Phase B**: when the real focus of the session becomes knowable (user's first message, history/TODO review, approved plan), call `set_session_topic()` again with the true 3-8 word topic — the provisional topic is a placeholder, not a substitute for Phase B.
+
+**Why the provisional call is load-bearing (2026-07-15 incident)**: the SessionStart hook's hello-world TTS is supposed to auto-announce every new session, but it depends on pane environment (`LUPIN_DEV_EMAIL`) that can silently vanish — after the 2026-07-13 tmux-server restart, the new server's global env froze without it, every hello-world no-oped **silently**, and the operator had to manually ask each session to set a topic before it appeared on the focus bar. The MCP `set_session_topic()` path uses server-side credentials and does NOT depend on pane env — making it the reliable visibility push. Rule of record (Rick, 2026-07-15, voice): **every MCP-connected session calls `set_session_topic` once at boot, unconditionally.**
+
+**Spawned workers**: this obligation travels INTO spawn briefs — a manager spawning reviewers/implementers MUST include the topic-set-at-boot instruction in every worker's brief (see `workflow/swe-team-spin-up.md`). An invisible worker defeats the VISIBLE CAST rule from the operator's side.
+
+**Anti-patterns**:
+- ❌ Deferring the first `set_session_topic()` until the topic is "knowable" (visibility waits on nothing)
+- ❌ Relying on the SessionStart hook's TTS to announce the session (env-dependent; fails silently)
+- ❌ A spawn brief that omits the topic-set instruction (the worker boots invisible)
+
+---
+
 ## Preliminary 0.5: Persona-Request Swap (CONDITIONAL — only if slash command received an arg)
 
 **Purpose**: Honor an optional persona-request argument passed to the session-start slash command (e.g., `/plan-session-start María`), swapping the randomly-allocated persona for the requested one **BEFORE the first user-facing acknowledgment**.
