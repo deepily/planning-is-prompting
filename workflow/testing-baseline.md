@@ -12,6 +12,41 @@
 
 ---
 
+## ⛔ MANDATE — a tmux-invoking test MUST land WITH the tmux-isolation guard
+
+**This repo has no tmux-touching pytest surface today. The first one to land is the hazard — and it must not land alone.**
+
+**THE RULE**: any test in planning-is-prompting that shells out to `tmux` (any verb — `new-session`, `list-sessions`, `kill-server`, even a "read-only" `list-panes`) **MUST** land in the SAME change as a tmux-isolation guard. Not a follow-up commit. Not a TODO. **The guard is part of the test's definition of done.**
+
+**WHY — this is not hygiene, it is a fleet-killer, and it has a body count.** A single shared user-level tmux server (socket `/tmp/tmux-<uid>/default`) hosts **every Claude Code session across all project trees**. On tmux 3.2a an **inherited `$TMUX` BEATS `TMUX_TMPDIR`** for socket selection, so a bare `tmux <verb>` run from inside a Claude pane addresses the **FLEET socket** no matter what `TMUX_TMPDIR` says. A smoke test that *believed it was isolated* ran `tmux kill-server` in teardown and **killed the entire fleet — three deaths positively attributed, 2026-07-14**.
+
+**planning-is-prompting shares that default socket.** Nothing about this repo makes it safer than the tree where the fleet died; it has simply not had a tmux test yet.
+
+**REFERENCE SHAPE** (do not re-derive it — port it): lupin `src/tests/smoke/tmux_isolation.py` + its session-scoped autouse guard in `src/tests/smoke/conftest.py` (`tmux_fleet_socket_isolation`), committed `52ceabe0`. It strips `TMUX`/`TMUX_PANE` and pins `TMUX_TMPDIR`; **stripping `$TMUX` is the load-bearing part**, because with `$TMUX` present `TMUX_TMPDIR` is ignored.
+
+**STATE OF THIS REPO — verified by execution 2026-07-16, not inherited. Predicates stated, because they disagree:**
+
+| Question | Predicate | Answer |
+|---|---|---|
+| Any `conftest.py` **committed to this repo**? | `git ls-files` | **0** |
+| Any `conftest.py` **on disk**? | `find` | **22** — *all* vendored under `.venv/.../site-packages/` |
+| Any `.py` **referencing tmux**? | tracked **and** on-disk | **0** — by both |
+| Any **test file** at all? | `git ls-files` → **0** · `find` (excl `.venv`) → **1** | `workflow/scripts/test_memento_io_postgame.py` — **UNTRACKED** (`??`, not ignored), and does not touch tmux |
+
+⇒ the guard has **no home yet**: the first tmux-invoking test must create `conftest.py` **and** the guard together.
+
+> **⚠️ RE-VERIFYING THIS? NAME YOUR PREDICATE — THE OBVIOUS COMMAND LIES, AND SO DOES THE OBVIOUS FIX.**
+>
+> `find . -name conftest.py` → **22**. `git ls-files | grep conftest.py` → **0**. **Both are correct; they answer different questions.** A prior recon pair split exactly here — one seat reported a conftest, another reported none, same night, same tree. **That was a predicate difference, not a competence gap.**
+>
+> **AND "just use git-tracked" IS THE WRONG LESSON — it is how this very note got its own state wrong on first draft.** ⚠️ **For the tmux hazard the operative predicate is ON DISK, not git-tracked: `pytest` collects from the FILESYSTEM and does not consult git.** An **untracked** tmux test (this repo has an untracked test file *right now*) will be collected and will address the fleet socket exactly as hard as a committed one. A vendored `.venv` conftest will not be — because it is outside the collected path, **not** because it is untracked.
+>
+> **So pick the predicate from the QUESTION, not from habit:**
+> - *"Is it this repo's committed surface?"* → **git-tracked**.
+> - *"Will pytest load and run it?"* → **on disk, within the collection path**. ← **this is the one the fleet's life depends on**.
+
+---
+
 ## When to Use This Workflow
 
 **Use this workflow before**:
