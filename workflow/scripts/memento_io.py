@@ -14,6 +14,10 @@ destroyed two irreplaceable records anyway. So nothing here is left to memory:
   * The gitignore is repaired automatically if it would let a record leak into git.
     (A committed memento is a memento written less honestly — Rick declined that trade.)
   * Any failure of any leg fails LOUD and non-zero. A record never lands unmirrored.
+  * `write --slot root` REFUSES when a crew ran and no post-game exists (ruling R-1,
+    Rick 2026-07-16). Doctrine had said to run one; on 2026-07-16 it didn't fire and
+    Rick caught it by hand. The escape (`--no-post-game <reason>`) is always reachable
+    and is RECORDED in the record itself — an escape you can take silently is not a gate.
 
 Layout (per repo, `repo_root` = `git rev-parse --show-toplevel`):
 
@@ -55,6 +59,34 @@ DATEISH_RE      = re.compile( r"\d{4}[.\-]\d{2}[.\-]\d{2}|\d{6,}" )
 POINTER_MARK    = "<!-- MEMENTO POINTER"
 
 REQUIRED_IGNORES = [ "io/mementos/", ".claude-memento.md", ".claude-memento-*.md" ]
+
+# ---- the post-game gate (ruling R-1, Rick 2026-07-16) --------------------------------
+#
+# Doctrine ALREADY said to run /plan-post-game after a significant engagement. On
+# 2026-07-16 it did not fire, and Rick had to catch it himself in the narrow window
+# before a re-spin destroyed the fresh memories. A LOUDER MUST on the same page would
+# have been the run's own disease a third time. So the duty lives HERE, at the choke
+# point every re-spin must pass through: you cannot write the memento that ends the
+# engagement without either the post-game existing, or SAYING IN THE RECORD why not.
+#
+# The bar is deliberately narrow. `qualifies()` fires only where the evidence is on
+# disk and unambiguous: OTHER seats wrote records in this repo, recently, and you are
+# writing the root-slot memento that ends your own context. A solo session does not
+# trip it; a worker seat does not trip it (a worker owes a DEPOSIT, not a post-game).
+# A wrong qualifies() blocks a re-spin at the worst possible moment — hence the escape,
+# and hence a bar that under-fires by construction rather than over-fires.
+#
+# KNOWN LIMITATION, stated because the escape is what covers it: this check is PER-REPO.
+# A retro for a cross-repo engagement lands in ONE repo's io/post-games/ — on 2026-07-16
+# the M1 retro landed in `skills-distillation` while the crew's records sat here. This
+# gate WILL over-fire on the other repo. That is a real cost and the reason --no-post-game
+# must stay trivially reachable: the correct answer there is to take the escape and name
+# the retro's actual path in the reason, which leaves a cross-repo pointer in the record.
+# A fleet-wide retro index would fix it properly. Nobody has built one; do not pretend
+# this fires only where a retro is genuinely missing.
+
+ENGAGEMENT_WINDOW_HOURS = 24
+POST_GAME_GLOBS         = [ "io/post-games/*.md", "src/rnd/*post-game*.md", "src/rnd/*postgame*.md" ]
 
 
 # ---------------------------------------------------------------- helpers
@@ -209,7 +241,7 @@ def ensure_gitignored( repo_root, rel_path, apply_fix=True, verbose=True ):
 
 # ---------------------------------------------------------------- header stamping
 
-def stamp_header( body, persona, sid, slot, written_at ):
+def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None ):
     """
     Guarantee the record carries its own provenance (element-1: session_id + written_at).
 
@@ -226,9 +258,20 @@ def stamp_header( body, persona, sid, slot, written_at ):
     """
     machine = ( f"<!-- memento-record: persona={persona} session_id={sid} "
                 f"written_at={written_at} slot={slot} -->" )
+    if no_post_game_reason is not None:
+        machine += ( "\n<!-- post-game-waived: "
+                     f"by={persona} session_id={sid} at={written_at} "
+                     f"reason={no_post_game_reason!r} -->" )
 
     lines = body.lstrip( "\n" ).splitlines()
     lines = [ l for l in lines if not l.startswith( "<!-- memento-record:" ) ]
+    lines = [ l for l in lines if not l.startswith( "<!-- post-game-waived:" ) ]
+
+    if no_post_game_reason is not None:
+        lines.append( "" )
+        lines.append( "---" )
+        lines.append( f"**POST-GAME WAIVED** by {persona} ({sid}) at {written_at} — "
+                      f"a crew ran and no retro was written. Reason given: {no_post_game_reason}" )
 
     has_written_by = any( l.startswith( "**Written by**:" ) for l in lines )
     has_written    = any( l.startswith( "**Written**:" )    for l in lines )
@@ -242,6 +285,84 @@ def stamp_header( body, persona, sid, slot, written_at ):
         lines     = lines[ :insert_at ] + injected + lines[ insert_at: ]
 
     return machine + "\n" + "\n".join( lines ).rstrip() + "\n"
+
+
+def within_window( path, now, hours=ENGAGEMENT_WINDOW_HOURS ):
+    """
+    Ensures: True iff `path`'s mtime is no older than `hours` before `now`.
+             mtime is HOST TRUTH — it is the same anchor `is_fresh` already trusts,
+             and unlike a field inside the file it cannot be hand-written wrong.
+    """
+    try:
+        age = now - datetime.datetime.fromtimestamp( path.stat().st_mtime, tz=now.tzinfo )
+    except OSError:
+        return False
+    return age <= datetime.timedelta( hours=hours )
+
+
+def crew_records( repo_root, persona_slug, now ):
+    """
+    Evidence that an ENGAGEMENT happened: io-slot RECORDS written by OTHER personas,
+    recently, in this repo.
+
+    Requires:
+        - persona_slug is the writing seat's slug (its own records never count as crew)
+    Ensures:
+        - returns the sorted list of repo-relative record paths that qualify
+        - pointers are excluded (a pointer is not a seat)
+        - RESCUED/unknown records are excluded — see below
+        - returns [] when io/mementos/ does not exist
+
+    On the exclusions, because the first dogfood run found them and they are the whole
+    reason this function is not a one-line glob: `io/mementos/` also holds records a
+    RESCUE wrote (`rescued-maria-*`, `rescued-unknown-*`). A rescue stamps its OWN clock
+    onto a fragment that may be weeks old — on 2026-07-16 it stamped `written_at` and
+    mtime alike onto records whose originals were 553 hours old. So NEITHER mtime NOR
+    the header distinguishes "a seat ran tonight" from "someone copied a file tonight",
+    and a rescue would otherwise make this gate fire forever, on every seat, from files
+    nobody wrote. A rescue artifact is not a seat, and it is not testimony.
+    """
+    out = []
+    for p in sorted( ( repo_root / "io" / "mementos" ).glob( "*.md" ) ):
+        if not HEX8_SUFFIX_RE.search( p.stem ):                   continue  # pointer, not a record
+        seat = HEX8_SUFFIX_RE.sub( "", p.stem )
+        if seat == persona_slug:                                  continue  # my own seat
+        if seat.startswith( "rescued-" ) or seat == "unknown":    continue  # an artifact, not a seat
+        if not within_window( p, now ):                           continue
+        out.append( str( p.relative_to( repo_root ) ) )
+    return out
+
+
+def post_game_artifacts( repo_root, now ):
+    """
+    Ensures: returns the sorted repo-relative paths of post-game artifacts touched
+             inside the engagement window. A stale retro from last month is not a
+             receipt for THIS run — the window is what makes this a real check
+             rather than one that passes because the directory is non-empty.
+    """
+    out = []
+    for pattern in POST_GAME_GLOBS:
+        for p in sorted( repo_root.glob( pattern ) ):
+            if within_window( p, now ): out.append( str( p.relative_to( repo_root ) ) )
+    return sorted( set( out ) )
+
+
+def qualifies_for_post_game( repo_root, persona_slug, slot, now ):
+    """
+    Does THIS write owe a post-game?
+
+    Requires:
+        - slot is "io" or "root"
+    Ensures:
+        - returns (bool, evidence) where evidence is the crew records that fired it
+        - slot="io" ALWAYS returns (False, []) — a reaped worker owes a retro DEPOSIT
+          (memento element 9), not a post-game. The harvest belongs to the seat that
+          survives the engagement, and that seat writes to the root slot.
+        - a solo run (no other seat's record inside the window) returns (False, [])
+    """
+    if slot != "root": return False, []
+    evidence = crew_records( repo_root, persona_slug, now )
+    return bool( evidence ), evidence
 
 
 def pointer_text( record_rel, mirror_abs, record_body ):
@@ -276,6 +397,9 @@ def cmd_write( args ):
         - all THREE files exist on success, and record bytes == mirror bytes
         - the record path was NOT overwritten (exit 3 if it already existed)
         - the record path is gitignored (exit 4 if it cannot be made so)
+        - a crewed engagement (slot=root, other seats' records inside the window) does
+          NOT land a memento unless a post-game exists or --no-post-game gives a reason
+          (exit 6) — and that reason is written INTO the record, mirror and pointer
     Raises:
         - SystemExit(non-zero) on any failed leg — a record NEVER lands unmirrored
     """
@@ -301,6 +425,26 @@ def cmd_write( args ):
         print( f"         (Same persona, same session? Append to it by hand, or write a new session's record.)", file=sys.stderr )
         sys.exit( 3 )
 
+    # 1b. POST-GAME GATE (R-1) — refuse to end a crewed engagement with no retro.
+    #     Checked BEFORE anything lands: a refusal must cost the caller nothing but a
+    #     re-run, and must never leave a half-written record behind.
+    now              = datetime.datetime.now().astimezone()
+    owed, evidence   = qualifies_for_post_game( repo_root, persona, args.slot, now )
+    retros           = post_game_artifacts( repo_root, now ) if owed else []
+    if owed and not retros and args.no_post_game is None:
+        print(  "REFUSED: this engagement owes a POST-GAME and none exists.", file=sys.stderr )
+        print( f"         {len( evidence )} other seat(s) wrote records here in the last "
+               f"{ENGAGEMENT_WINDOW_HOURS}h — a crew ran, and you are writing the memento", file=sys.stderr )
+        print(  "         that ends your context. The retro dies with it if you don't write it now.", file=sys.stderr )
+        for e in evidence[ :8 ]: print( f"           - {e}", file=sys.stderr )
+        if len( evidence ) > 8:  print( f"           ... and {len( evidence ) - 8} more", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "         Run /plan-post-game, then re-run this write.", file=sys.stderr )
+        print(  "         Or, if a retro genuinely is not owed:", file=sys.stderr )
+        print(  "           --no-post-game \"<reason>\"   (the reason is RECORDED in the memento,", file=sys.stderr )
+        print(  "                                        the mirror and the pointer — never silent)", file=sys.stderr )
+        sys.exit( 6 )
+
     rec_abs.parent.mkdir( parents=True, exist_ok=True )
 
     # 2. CANDOR GUARD — a record that git can see is a record someone commits.
@@ -309,7 +453,8 @@ def cmd_write( args ):
         sys.exit( 4 )
     ensure_gitignored( repo_root, ptr_rel )
 
-    text = stamp_header( body, persona, sid, args.slot, written )
+    text = stamp_header( body, persona, sid, args.slot, written,
+                         no_post_game_reason=args.no_post_game if owed else None )
 
     # 3. RECORD
     rec_abs.write_text( text )
@@ -453,9 +598,39 @@ def cmd_amend( args ):
     if not body.strip():
         sys.exit( "REFUSED: amendment body is empty — nothing to add." )
 
+    # POST-GAME GATE (R-1) — SAME BAR AS `write`, AND THIS IS THE PATH THAT ACTUALLY CARRIES
+    # THE TRAFFIC. Found by dogfooding at the moment of use (2026-07-16): the gate was built on
+    # `write` only, and `write` REFUSES a same-session re-spin at the immutability guard before
+    # the gate is ever consulted. So a seat re-spun in its own session amends — and sailed
+    # straight past a gate that reported itself built. A gate on a door nobody walks through.
+    # Its author's own object, at zero distance: the check existing is not the check working.
+    now            = datetime.datetime.now().astimezone()
+    owed, evidence = qualifies_for_post_game( repo_root, persona, args.slot, now )
+    retros         = post_game_artifacts( repo_root, now ) if owed else []
+    if owed and not retros and args.no_post_game is None:
+        print(  "REFUSED: this engagement owes a POST-GAME and none exists.", file=sys.stderr )
+        print( f"         {len( evidence )} other seat(s) wrote records here in the last "
+               f"{ENGAGEMENT_WINDOW_HOURS}h — a crew ran, and you are amending the memento", file=sys.stderr )
+        print(  "         that ends your context. The retro dies with it if you don't write it now.", file=sys.stderr )
+        for e in evidence[ :8 ]: print( f"           - {e}", file=sys.stderr )
+        if len( evidence ) > 8:  print( f"           ... and {len( evidence ) - 8} more", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "         Run /plan-post-game, then re-run this amend.", file=sys.stderr )
+        print(  "         Or, if a retro genuinely is not owed:", file=sys.stderr )
+        print(  "           --no-post-game \"<reason>\"   (RECORDED in the amendment, never silent)", file=sys.stderr )
+        sys.exit( 6 )
+
+    waiver = ""
+    if owed and args.no_post_game is not None:
+        waiver = ( f"<!-- post-game-waived: by={persona} session_id={sid} at={stamped} "
+                   f"reason={args.no_post_game!r} -->\n"
+                   f"**POST-GAME WAIVED** by {persona} ({sid}) at {stamped} — a crew ran and no retro "
+                   f"was written. Reason given: {args.no_post_game}\n\n" )
+
     block = ( f"\n\n---\n\n"
               f"<!-- memento-amendment: by={persona} session_id={sid} amended_at={stamped} -->\n"
               f"**AMENDED** {stamped} — {persona} ({sid})\n\n"
+              f"{waiver}"
               f"{body.strip()}\n" )
 
     with rec_abs.open( "a" ) as fh:
@@ -696,6 +871,8 @@ def build_parser():
     w.add_argument( "--persona",      required=True )
     w.add_argument( "--session-id",   required=True, help="from get_session_info()" )
     w.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
+    w.add_argument( "--no-post-game", metavar="REASON", default=None,
+                    help="waive the post-game gate; REASON is RECORDED in the memento, never silent" )
     w.set_defaults( func=cmd_write )
 
     a = sub.add_parser( "amend", help="APPEND to the current record + re-sync mirror + pointer, in ONE call" )
@@ -703,6 +880,8 @@ def build_parser():
     a.add_argument( "--persona",      required=True )
     a.add_argument( "--session-id",   required=True, help="who is amending (from get_session_info())" )
     a.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
+    a.add_argument( "--no-post-game", metavar="REASON", default=None,
+                    help="waive the post-game gate; REASON is RECORDED in the amendment, never silent" )
     a.set_defaults( func=cmd_amend )
 
     r = sub.add_parser( "resolve", help="print the current record path (follows the pointer)" )

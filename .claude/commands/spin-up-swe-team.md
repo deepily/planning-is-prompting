@@ -32,7 +32,15 @@
    - **Reviewer** ×`--reviewers` (default 1, adversarial)
    - **Tester** ×`--testers` (default 1, integration/e2e)
 
-5. **MUST compose each member's brief by slicing its role's `##` section** out of `swe-team-roles.md` verbatim, then appending: (a) **THE TASK** (the command argument); (b) the governing spec/R&D doc path if known; (c) the **collection topic** — *"DM the Manager (this session's `dm-<manager-persona>` topic, returned as `collection_topic`) at your three reporting points."* Do NOT paraphrase the charter — slice it whole so the durable wording is preserved.
+5. **MUST compose each member's brief by slicing its role's `##` section** out of `swe-team-roles.md` verbatim, then appending: (a) **THE TASK** (the command argument); (b) the governing spec/R&D doc path if known; (c) the **collection topic** — *"DM the Manager (this session's `dm-<manager-persona>` topic, returned as `collection_topic`) at your three reporting points."*; (d) ⭐ **ANY IN-FORCE PROVISIONAL MANDATE — see 5a.** Do NOT paraphrase the charter — slice it whole so the durable wording is preserved.
+
+5a. **⭐ MUST append every in-force PROVISIONAL MANDATE to EVERY brief — every role, no exceptions.** (Canonical: `workflow/swe-team-spin-up.md` **§7.1**.)
+   - **Why this step exists**: a member receives **ONLY its own `##` section**. A directive governing the whole run — a deadline, a scope bar, a quality ceiling — **cannot live at the top of the load document; it is sliced away and reaches nobody.** This append is the only path that does not depend on a manager remembering.
+   - **How**: check **the TARGET PROJECT's repo root** for **`MANDATE.md`** — NOT this repo, NOT `workflow/`. If present, append its directive block **VERBATIM**. **Never paraphrase — paraphrase is how a mandate erodes.**
+   - **⚠️ THE MANDATE LIVES IN THE TARGET REPO, AND ITS EXISTENCE IS THE IN-FORCE FLAG.** Present ⇒ governs. Absent ⇒ nothing to append. `rm` ⇒ gone, everywhere, at once. **Scoping is by construction**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, and is *structurally incapable* of inheriting another project's deadline. Mechanism: `workflow/provisional-mandates.md`.
+   - **Where**: in the **Expectations & gates / done-section**, NOT the preamble. *A mandate at the top gets skimmed; a mandate in the acceptance criteria gets executed.*
+   - **If absent**: the slot is empty; append nothing. **The seam is permanent; the mandate is not.**
+   - **Receipt for why "the Manager will tell them" is not acceptable** (2026-07-16): a manager's supersession notice reached **2 of 4** workers — one send bounced off a persona that did not exist, **the bounce reported itself with the live roster attached, and it was read and moved past**; 3 of 4 briefs carried a defect; the briefs were never reviewed. **Two hops, both lossy. In the append, the brief IS the delivery.**
 
 6. **MUST spawn the crew** via the cosa-voice **`spawn_sessions`** tool — one call per member (`count=1`), with:
    - `task_prompt` = the composed brief from step 5.

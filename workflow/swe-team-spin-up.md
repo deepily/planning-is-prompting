@@ -117,6 +117,20 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 **Content source for the charters:** the ratified rulings in `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (esp. Q5 gates) + the standing mandates in global `~/.claude/CLAUDE.md` (Test Ownership · no-confabulation · cross-session communication).
 
+### 7.1 Provisional mandates — appended to EVERY brief, by construction
+
+**A member receives ONLY its own `##` section.** Therefore a directive that governs *the whole run* — a deadline, a scope bar, a quality ceiling — **cannot live at the top of the load document. It would be sliced away and reach nobody.**
+
+**THE RULE:** if **the TARGET PROJECT's repo root** holds a `MANDATE.md`, **the spawn appends its Directive block VERBATIM to every brief, for every role, without exception.** If it does not, **the slot is empty and nothing is appended.**
+
+> ⚠️ **THE MANDATE LIVES IN THE TARGET REPO — NEVER HERE.** `<target-repo>/MANDATE.md`, and **its existence is the in-force flag** (present ⇒ governs; `rm` ⇒ gone). **Scoping is by construction**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, inherits nothing — it is *structurally incapable* of being bound by another project's deadline. **Full mechanism: `workflow/provisional-mandates.md`.**
+
+**Placement: in the Expectations & gates position — the done-section. NOT the preamble.** *A mandate at the top gets skimmed; a mandate in the acceptance criteria gets executed.*
+
+**Why the seam is here and the mandate is not**: **the seam is permanent and content-free; a mandate is neither.** Putting a project's time-boxed directive in this fleet-wide repo would push one project's deadline into every crew in every repo. **Anchor (2026-07-16): the Steward did exactly that** — wrote a 3-day, one-project POC mandate into `workflow/` and wired it here — **and Rick caught it.** *"This is really only relevant to Sam's work… how do we make a time sensitive mandate only relative to Sam's project?"* **A scoped obligation in an unscoped surface, authored by the seat that spent that night filing that exact defect against others.** *(And the sibling trap it also avoids: a provisional rule in a permanent doc becomes the field nobody flips — the 2026-07-16 line-5 anchor, a plan reading "DRAFT — NOT YET REVIEWED, not approved for build" while four builders worked against it, stale in **both** directions.)*
+
+**Why the append and not "the Manager tells them"**: 2026-07-16 — a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist; **the bounce reported itself with the live roster attached and was read and moved past.** Three of four briefs carried a defect. ⇒ **Two hops, both lossy. In the append, the brief IS the delivery — a manager cannot omit what a manager does not assemble.**
+
 ---
 
 ## 8. Build & install status

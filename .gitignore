@@ -4,9 +4,16 @@ venv/
 env/
 ENV/
 
-# Claude Code settings (exclude user-local settings but keep template slash commands)
+# Claude Code settings (exclude user-local settings but keep repo-level commands AND skills)
+# Rick's ruling 2026-07-16: repo-level Skills and Commands are BOTH tracked.
+# Before this, `.claude/*` ignored everything and only `commands/` was negated back in — so all four
+# skills (push-to-completion, plan-post-game, spin-up-swe-team, guided-decision-walkthrough) were
+# untracked: absent from a fresh clone, erased by `git clean -fd`, and propagating to nobody.
+# The commands were tracked and the SKILLS THAT ACTIVATE THEM WERE NOT — the rule was versioned and
+# the mechanism was not.
 .claude/*
 !.claude/commands/
+!.claude/skills/
 
 # IDE directories
 .idea/
