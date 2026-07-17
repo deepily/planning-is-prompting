@@ -4,6 +4,17 @@ Last updated: 2026-07-16 (**Session 131** (María 🌸 `a61fd7b6`) — **M1-scaf
 
 ## 📍 Resume Here
 
+> ### ☀️ **FIRST THING TOMORROW MORNING (2026-07-17) — RICK'S DIRECT ASK AT SESSION-END, 00:33 ET: *"let's make a note in your to-do file for first thing tomorrow morning to discuss post game enforcement build P1 and the work tree guard P2."***
+>
+> **① `14b3951d` — P1 — R-1 BUILD: mechanically enforce the post-game MUST at `memento_io.py write`.** Rick RULED this on 2026-07-16 (`ask_multiple_choice`, as recommended): fail loud/non-zero when a qualifying engagement has no post-game artifact; `--no-post-game <reason>` **records** the escape rather than allowing a silent skip.
+> ⚠️ **DISCUSS IT WITH THE IRONY ON THE TABLE — Rick's own words, 00:33: *"the irony of this evening's lessons is not lost on me."*** **Last night's post-game ran ONLY because Rick ruled it and then corrected the Steward for asking permission** (*"you should have done it at your discretion"*). Two nights running, **a human enforced it.** The night before, Rick caught María about to re-spin *"with the ore and none of the metal."* ⇒ **THE POST-GAME IS CURRENTLY A RULE WHOSE ONLY MECHANISM IS "REMEMBER TO DO THIS" — WHICH `post-game.md` ITSELF NAMES AS AN ANTI-PATTERN** (*"that is not a mechanism, it is a hope, and it fails first on exactly the tired afternoon it was written for"*). **This build IS the mechanism. It is P1 because the rule it enforces has now been carried twice by a human, and the run that proved its value is the run that nearly skipped it.**
+>
+> **② `fc83b711` — P2 — BUILD worktree-lifecycle enforcement: PreToolUse creation-guard + filesystem-anchored janitor.** Rick ruled the fork **BOTH** (2026-07-14/15, S129). **The inert creation-guard is already built + 11/11 tested (S131); the janitor half is not.** Same species as ①: a policy currently held by discipline, awaiting its mechanism. **Parked on this walkthrough — that park is now ~2 days old and should either move or be re-scoped.**
+>
+> **Discussion frame, not a build order:** both are *"a rule that needs a mechanism"* — the same category `post-game.md` §3.3's cost-ordered ladder ranks. **Worth asking together rather than separately: what is the CHEAPEST mechanism that would have caught each, and is the expensive one we're about to build actually the load-bearing one?** *(That question has retired two of the Steward's own rules in three days. Ask it before typing.)*
+>
+> **Also queued for that conversation (Rick deferred it explicitly, 00:05): the judge-prompt assembler** — *"you can build a missing component tomorrow **after we discuss best way forward**."* Sam's precondition, logged so it isn't in his head: **G1/G2/G3 settle FIRST — the roadmap rules G3 "not implementable yet", so a prompt asking a judge for G3 asks for something we already ruled unimplementable.** ⇒ **the assembler nobody built would have asked for something already ruled impossible.** Design conversation before anyone types a template.
+
 → Stale S102–S108 session-state stack archived 2026-06-22 → `todo-archive/2026.06.22-aggressive-recut.md` (that work is done / in the task-store / in the Decisions Log). Live owed work: query the store (`task_query`).
 
 ## Pending Decisions
