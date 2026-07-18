@@ -264,15 +264,18 @@ flowchart TD
     Start --> Step1
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
-    Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip to execution<br>Use history.md for tracking"]
-    Step2 --> Review["GATE: /plan-review<br>plan-review.md<br>• REUSE pre-pass<br>• Pass 1: Fitness<br>• Pass 2: Ownership-Language Audit<br>(non-negotiable gates)"]
+    Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip Step 2 docs<br>Use history.md for tracking"]
+    Review["GATE: /plan-review<br>plan-review.md<br>• Dispatch: ≥2 sections → cascade<br>• else → critique (1 critic seat)<br>• REUSE / Fitness / Ownership<br>(non-negotiable gates)"]
+    Step2 --> Review
+    Skip --> HasDoc{Is there a<br>plan document?}
+    HasDoc -->|Yes| Review
+    HasDoc -->|"No (e.g. investigation)"| Code
     Review --> Code["Code begins"]
-    Skip --> Code
 ```
 
-**Gate: `/plan-review` (between Step 2 and Code)** — Pattern 1/2/5/6 plans must pass the two-pass review gate before code is written. Pattern 3 plans may invoke `/plan-review-reuse` standalone (REUSE pre-pass only) before code begins. Pattern 4 (Investigation) skips the gate entirely. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches design-completeness gaps and ownership-language drift **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
+**Gate: `/plan-review` (before code)** — **every plan document passes this gate, whatever pattern produced it.** The gate dispatches internally: ≥ 2 reviewable sections → the cascade; otherwise → the critique branch, which **spawns one critic seat** (self-critique does not satisfy it). Pattern 4 work that produces **no plan document** has nothing to gate — out of scope by construction, not by exemption. The gate is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("create docs before code") doesn't impose on its own — it catches design-completeness gaps and ownership-language drift **before** any code is written. See [`plan-review.md`](plan-review.md) for the canonical workflow.
 
-**Cascaded review: `/plan-review-cascaded`** — for larger Pattern 1/2/5/6 plans (typically ≥ 2 reviewable sections) where reviewer attention is the binding constraint, the review gate runs as a *cascade*: sections are reviewed in a pipeline rather than the whole plan at once. A cascade consumes a plan that is *already* decomposed into independently-reviewable sections — so if your plan is cascade-bound, structure it cascade-ready *while planning it*, per the **Cascade-Readiness** subsection in [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) (Phase 3: Work Breakdown). The canonical input specification + validation rubric + remediation flowchart live at [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md). A plan that is not section-shaped incurs a separate reshaping pass — or fails the cascade's ≥ 2-section gate.
+**Cascaded review: `/plan-review-cascaded`** — for larger plans (**≥ 2 reviewable sections, whatever pattern produced them**) where reviewer attention is the binding constraint, the review gate runs as a *cascade*: sections are reviewed in a pipeline rather than the whole plan at once. A cascade consumes a plan that is *already* decomposed into independently-reviewable sections — so if your plan is cascade-bound, structure it cascade-ready *while planning it*, per the **Cascade-Readiness** subsection in [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) (Phase 3: Work Breakdown). The canonical input specification + validation rubric + remediation flowchart live at [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md). A plan that is not section-shaped incurs a separate reshaping pass — or fails the cascade's ≥ 2-section gate.
 
 ### Step 1: Planning the Work (Always Required)
 
@@ -319,15 +322,15 @@ This is the **heart** of "Planning is Prompting" - use this matrix to determine 
 
 | Work Type | Example | Duration | Pattern (Step 1) | Need Step 2? | Workflow Path |
 |-----------|---------|----------|------------------|--------------|---------------|
-| **Small feature** | Email notifications | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **01** only → history.md |
-| **Bug investigation** | WebSocket routing bug | 3-5 days | Pattern 4: Investigation | ✗ No | → **01** only → history.md |
-| **Quick research** | Library evaluation | 1 week | Pattern 2: Research (small) | ✗ No | → **01** only → history.md |
+| **Small feature** | Email notifications | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **01** only → history.md · **plan doc? → `/plan-review`** |
+| **Bug investigation** | WebSocket routing bug | 3-5 days | Pattern 4: Investigation | ✗ No | → **01** only → history.md · **plan doc? → `/plan-review`** |
+| **Quick research** | Library evaluation | 1 week | Pattern 2: Research (small) | ✗ No | → **01** only → history.md · **plan doc? → `/plan-review`** |
 | **Medium research** | WebSocket arch evaluation | 2-3 weeks | Pattern 2: Research | ✓ Yes | → **01** → **02** (Pattern C) |
 | **Architecture design** | Microservices design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **01** → **02** (Pattern B) |
 | **Large implementation** | JWT authentication | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **01** → **02** (Pattern A) |
 | **Research-driven build** | Agent system (e.g., Google ADK) | 6-10 weeks | Pattern 6: Research-Driven | ✓ Yes | → **Phase 0** → **01** → **02** (B+A) |
 
-> **Cascade-bound plans**: if a Pattern 1/2/5/6 plan will be reviewed via `/plan-review-cascaded`, your planning output **must satisfy the 4-property cascade input spec**: ≥ 2 sections, section independence, acyclic cross-section dependencies, comparable section scope. Production-side how-to: *Cascade-Readiness* subsection in p-is-p-01 §Phase 3. Canonical input spec + 6-criterion Step-0 validation rubric + remediation flowchart for non-compliance: [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md).
+> **Cascade-bound plans**: if a plan will be reviewed via `/plan-review-cascaded` (**≥ 2 sections, any pattern**), your planning output **must satisfy the 4-property cascade input spec**: ≥ 2 sections, section independence, acyclic cross-section dependencies, comparable section scope. Production-side how-to: *Cascade-Readiness* subsection in p-is-p-01 §Phase 3. Canonical input spec + 6-criterion Step-0 validation rubric + remediation flowchart for non-compliance: [`plan-review-cascaded-input-spec.md`](plan-review-cascaded-input-spec.md).
 
 ### First Decision: Do You Have Existing Research?
 
@@ -417,7 +420,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 3. Review pattern recommendation
 4. Check decision matrix above:
    - Pattern 1, 2, or 5? → Also use `p-is-p-02-documenting-the-implementation.md`
-   - Pattern 3 or 4? → Skip to execution, use history.md
+   - Pattern 3 or 4? → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
 5. Break down work into tasks (Phase 3 of workflow 01)
 6. Create TodoWrite list (Phase 4 of workflow 01)
 7. Begin execution
@@ -837,7 +840,7 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 3. Get pattern recommendation
 4. Check decision matrix in this document
 5. If Pattern 1, 2, or 5 → Also use `p-is-p-02-documenting-the-implementation.md`
-6. If Pattern 3 or 4 → Skip to execution, use history.md
+6. If Pattern 3 or 4 → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
 7. Create TodoWrite list
 8. Begin work
 
