@@ -65,7 +65,7 @@ When `conversation_mode_active=true`:
 
 ### USER-ONLY INITIATION (HARD RULE)
 
-Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
+Claude must NEVER call `enable_speakerphone()` or `disable_speakerphone()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
 
 When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
 

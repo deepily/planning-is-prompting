@@ -74,7 +74,7 @@ And the **Manager may not reap you through an open harvest window** (`manager-au
 
 **Tools used**:
 - `mcp__cosa-voice__notify()` — push status to user (per `manager_push_frequency` and `escalation_form`)
-- `mcp__cosa-voice__commons_send_to()` — DM individual personas
+- `mcp__cosa-voice__dm_send()` — DM individual personas (body travels inline; ~18× cheaper than the retired `commons_send_to`)
 - `mcp__cosa-voice__commons_post()` — post to commons topics (e.g., section handoffs, vote calls)
 - `mcp__cosa-voice__commons_read()` — observe discussions the manager is CC'd on
 - `mcp__cosa-voice__commons_who()` — check session freshness (phantom detection auxiliary)
@@ -524,7 +524,7 @@ The Steward runs as a separate CC session alongside the Manager when a workflow 
 **Tools used**:
 - `mcp__cosa-voice__commons_who()` — presence check on probe ticks
 - `mcp__cosa-voice__commons_read()` — disk-read of cascade topics (coordination + DM-Manager-where-CC'd)
-- `mcp__cosa-voice__commons_send_to()` — informational DM to Manager with unread-signal pointer
+- `mcp__cosa-voice__dm_send()` — informational DM to Manager with unread-signal pointer
 - `mcp__cosa-voice__commons_post()` — post `kind: observer_probe_unblocked` on real mitigation events
 - `mcp__cosa-voice__notify()` — surface cascade-wide signals to user (rare; informational only)
 
