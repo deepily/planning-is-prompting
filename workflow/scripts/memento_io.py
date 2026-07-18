@@ -191,13 +191,34 @@ POST_GAME_EXCLUDED_NAMES = { "readme.md", "index.md", "template.md" }
 #     mutate BYTES->0  26 passed ❌     mutate BYTES->0  2 failed ✅
 #     mutate LINES->0  26 passed ❌     mutate LINES->0  26 passed
 #
-# WITH BOTH FLOORS LIVE, NEITHER IS INDIVIDUALLY DETECTABLE. Every junk case fails BOTH (an empty
-# file has 0 bytes AND 0 lines), so deleting either leaves the other catching everything and the
-# suite reports green regardless. The suite could not tell you whether the byte floor existed.
-# Two checks covering each other look like defence in depth and report success whether or not either
-# one is there — a REDUNDANCY THAT HIDES VACUITY, which is the check-that-cannot-fail (ruling R-3)
-# with a second author, and neither author can see it from their own side. Dropping the line floor
-# is what makes the byte floor load-bearing and its removal catchable.
+# WITH BOTH FLOORS LIVE AND NO ISOLATING TEST, NEITHER FLOOR IS INDIVIDUALLY DETECTABLE. Every junk
+# case fails BOTH (an empty file has 0 bytes AND 0 lines), so deleting either leaves the other
+# catching everything and the suite reports green regardless. The suite could not tell you whether
+# the byte floor existed.
+#
+# THE CLASS — and the SECOND version of it, because the first was wrong and the correction is the
+# more useful artifact:
+#
+#   FIRST NAME (2026-07-18, mine at María's instruction, WRONG): "a redundancy that hides vacuity."
+#   CORRECTED NAME (Rachel's wording): A REDUNDANCY MAKES A MISSING TEST INVISIBLE. Two checks
+#   covering each other do not CREATE vacuity — they HIDE it, because each looks individually
+#   justified and the suite reads green whether either exists. THE REMEDY IS A TEST THAT ISOLATES
+#   EACH MEMBER OF A REDUNDANT PAIR, NOT AVOIDING REDUNDANCY.
+#   María's rider, kept: it is the check-that-cannot-fail (ruling R-3) with a SECOND AUTHOR, and
+#   neither author can see it from their own side.
+#
+# WHY THE NAME CHANGED, recorded because the refutation is worth more than a clean statement: it was
+# corrected by MEASURING THE OPTION THAT WAS NOT TAKEN. Keeping lines=4 and adding two isolating
+# tests gives control 28 passed, BYTES->0 caught, LINES->0 caught — both floors individually
+# detectable with the redundancy fully intact. So the redundancy was never the defect; the MISSING
+# TEST was. The first name blamed a structure and was unactionable ("avoid redundancy"); the second
+# names a gap and is buildable. A reader meeting this comment gets the refutation instead of
+# re-deriving it.
+#
+# WHICH ALSO CORRECTS A SENTENCE THAT STOOD HERE: "dropping the line floor is what makes the byte
+# floor load-bearing." Not so. THE ISOLATING TEST is what makes it detectable — the drop merely
+# removes the other place it could hide. The floor was dropped for a different and better reason,
+# below.
 #
 # What was given up, honestly: the line floor's one unique catch was single-line padding (1,600
 # bytes on one line clears bytes and would now pass). That is contrived, and more to the point it is
