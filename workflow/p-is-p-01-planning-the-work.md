@@ -290,6 +290,7 @@ With research synthesis complete, proceed to:
 1. **Phase 1** (Discovery Questions): Answer based on synthesized understanding
 2. **Phase 2** (Pattern Selection): Likely Pattern 6 (Research-Driven Implementation)
 3. **Step 2** (Documentation): Create Pattern B (Architecture) and Pattern A (Implementation Tracking)
+4. **GATE** (`/plan-review`): every plan document produced above enters the gate before code is written — it dispatches to the cascade (≥ 2 sections) or the critique branch
 ```
 
 **Step 4: Create TodoWrite Checklist for Synthesis**
@@ -847,6 +848,8 @@ gantt
 - Phase 2 creates: Pattern A (Implementation Tracking) docs
 - Phases 3+ use: Pattern A for active work, archive completed phases
 
+**Integration with `/plan-review` (the gate)**: every plan document this workflow produces — at any phase, under any pattern — **enters `/plan-review` before code is written.** The gate dispatches internally: ≥ 2 reviewable sections → `/plan-review-cascaded`; otherwise → the critique branch, which spawns one critic seat. See [`plan-review.md`](plan-review.md) §4a. **Do not route yourself to the cascade directly** — invoking `/plan-review` is what selects the route.
+
 **Key Success Factors**:
 - Thorough Phase 0 synthesis prevents rework later
 - Research synthesis doc becomes key reference throughout project
@@ -873,7 +876,19 @@ flowchart TD
     Q4 -->|No| Q5{3+ distinct phases?}
     Q5 -->|Yes| P1[Pattern 1: Multi-Phase Implementation]
     Q5 -->|No| P3[Pattern 3: Feature Development]
+    P1 --> Gate
+    P2 --> Gate
+    P3 --> Gate
+    P4 --> Gate
+    P5 --> Gate
+    P6 --> Gate
+    Gate{Did this produce a<br>plan DOCUMENT?}
+    Gate -->|Yes| Review["GATE: /plan-review<br>MANDATORY — every plan document,<br>whatever pattern produced it<br>• ≥2 sections → cascade<br>• else → critique (1 critic seat)"]
+    Gate -->|"No (e.g. investigation)"| Code["Execution"]
+    Review --> Code
 ```
+
+> **⚠️ THE PATTERN IS NOT THE TERMINAL DESTINATION.** Selecting a pattern is not the end of planning — **every pattern above can produce a plan document, and every plan document enters `/plan-review` before code is written** ([`plan-review.md`](plan-review.md) §4a). The gate is keyed on the **existence of the document**, not on the pattern that produced it. Work that produces no plan document has nothing to gate — out of scope by construction, not by exemption.
 
 **Hybrid Patterns**: You can combine patterns for complex work. For example:
 - Research synthesis (Pattern 6 Phase 0) → Architecture design (Pattern 5) → Implementation (Pattern 1)
@@ -966,7 +981,11 @@ Once you've selected a pattern, break down the work into concrete tasks.
 
 > **Your output is the cascade's input.** This subsection describes how to shape your Phase 3 work breakdown so it satisfies the cascade's 4-property input spec (canonical reference: `workflow/plan-review-cascaded-input-spec.md`). Building the shape upstream during planning is far cheaper than letting the cascade's Step 0 reshape it after submission — see the input-spec doc §5 for the remediation cost table.
 
-**When this applies**: the plan is destined for the **cascaded** plan-review gate (`/plan-review-cascaded`) rather than the serial `/plan-review`. Cascaded review is used for larger plans — typically ≥ 2 reviewable sections — where the binding constraint is *reviewer (user) attention*, so sections are reviewed in a pipeline. If the plan will get only serial `/plan-review`, or no review at all, **skip this subsection** — it adds nothing.
+**When this applies**: the plan is expected to be **≥ 2 reviewable sections** — the shape that `/plan-review` dispatches to the cascade ([`plan-review.md`](plan-review.md) §4a). Cascaded review is used for larger plans, where the binding constraint is *reviewer (user) attention*, so sections are reviewed in a pipeline. If your plan is single-section, **skip this subsection** — it adds nothing, and the gate routes you to the critique branch on its own.
+
+> ⚠️ **YOU DO NOT CHOOSE THE ROUTE — THE GATE DOES.** Always invoke **`/plan-review`**; it dispatches by size internally. Invoking `/plan-review-cascaded` directly **bypasses the §4a dispatch**, and a plan that self-assesses its way into the cascade never reaches the critique branch. One entry point exists precisely to *remove* this decision, not to relocate it into the planning phase.
+>
+> **And there is no "no review at all" option.** Every plan document enters the gate, whatever pattern produced it. Only work that produces *no plan document* has nothing to gate.
 
 **Why structure for it at planning time**: a cascade consumes a plan that is *already* decomposed into independently-reviewable sections. If the planning output is not section-shaped, the cascade's Step 0 ("Cascade Preparation") has to reshape it first — and a plan that cannot be cleanly decomposed (single-section, or sections that can't be reviewed in isolation) fails the cascade's ≥ 2-section gate outright. Building the section shape *while planning* shrinks — ideally eliminates — that Step-0 reshaping gap.
 
