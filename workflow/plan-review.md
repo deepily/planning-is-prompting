@@ -2,7 +2,7 @@
 
 **Purpose**: Two-pass quality gate for implementation plan documents, run **before any code is written**. Pass 1 enforces design-completeness (every step implementable by a competent-but-unfamiliar engineer without asking clarifying questions). Pass 2 enforces ownership-language clarity ("done" never claimed without AI-executed verification). A short REUSE pre-pass runs first to catch accidental redundancy.
 
-**When to use**: Mandatory for `/p-is-p-01-planning` Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`). Optional standalone REUSE pre-pass available for Pattern 3 plans (`/plan-review-reuse`). Pattern 4 (Investigation) skips entirely. The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
+**When to use**: **Mandatory for every plan DOCUMENT, regardless of pattern.** The trigger is the existence of a plan document, not the pattern that produced it — if `/p-is-p-01-planning` yielded a plan doc, that doc enters this gate before code is written. An investigation that produces no plan document has nothing to gate and is **out of scope by construction, not by exemption**. The gate then **dispatches by size (§4a): ≥ 2 reviewable sections → the cascade; otherwise → the critique branch.** The gate fires **between `/p-is-p-02-documentation` and code writing** — it is the doc-quality bar that the global `DOCUMENTATION-FIRST PROTOCOL` ("docs before code") doesn't impose on its own.
 
 **For large plans (≥2 sections)**: consider `/plan-review-cascaded` — a parallelized 5-session wrapper that cascades plan sections through this skill's three passes in pipeline fashion (1 author + 3 reviewers + 1 manager-as-filter). Spends compute on inter-session DMs to save user attention; only foundational-severity findings escalate to the user. The cascaded skill REUSES this skill's rubric semantics (REUSE pre-pass / Pass 1 Fitness / Pass 2 Ownership-Language Audit) per-section instead of plan-wide. See `plan-review-cascaded.md` and `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` for the design.
 
@@ -64,6 +64,40 @@ If any convention is missing, the review is calibrated wrong: stop and amend the
 
 ---
 
+## 4a. Dispatch: Cascade or Critique
+
+> **This section runs BEFORE the passes below.** It routes the plan document; §4–§8 are what the chosen route then executes. (Numbered `4a` because it is the branch taken *into* the pass sequence, not a fourth pass.)
+
+Every plan document that reaches this gate is routed by **SIZE, not by pattern**:
+
+| Shape | Route | Why |
+|---|---|---|
+| **≥ 2 independently-reviewable sections** | `/plan-review-cascaded` | Reviewer attention is the binding constraint; sections pipeline. |
+| **Otherwise (single-section / small)** | **The critique branch (below)** | One plan, one adversary. |
+
+### The critique branch
+
+**SPAWN ONE CRITIC SEAT.** The branch is not a different procedure you run on yourself — it exists to supply a **SECOND PERSON**. **Self-critique does not satisfy this branch.** A session that reviews its own plan has produced zero other-seat checks, which is the exact gap this dispatch was added to close.
+
+**The critic receives**: the plan document, and the standing mandates it must honor.
+**The critic's mandate** is the Reviewer charter already in force ([`swe-team-roles.md`](swe-team-roles.md) § Reviewer): *adversarial review — you try to refute, not rubber-stamp.* Nothing new is created here; the charter is applied one phase earlier, to a spec instead of a diff.
+
+### 🔑 THE BAR (non-negotiable)
+
+The critique MUST produce ONE of:
+- **(a)** a refutation of **≥ 1 specific claim** in the plan, **CITED** to the claim it refutes; or
+- **(b)** a written **ACCOUNT** of what was attacked and why it held — what they tried to break, how they tried, and why it survived.
+
+**AN ACCOUNT, NOT A VERDICT.** *"Looks good"* is a **contract violation, not a pass.** A clean critique is one you *tried and failed* to break, and the account is the evidence that you tried.
+
+> **An account whose only method is reading is not an account. State what you RAN, not what you considered. A receipt shows the work happened; it does not show the work bore on the claim. The reader is the check on relevance.**
+
+**Both sentences are load-bearing, and the second is the residual stated where the rule is.** The first closes the vacuous account (*"I read it and it seemed fine"* is not a method). The second is the part that is **not solved**: a receipt can be real, re-runnable, and bear on nothing — a command that counts headings in this very section is genuine and establishes nothing about the plan. **No mechanism here forces relevance; the reader does.** This is stated inside the bar rather than in a footnote because *an unresolved judgment inside a confident frame becomes a resolved one* — the next reader would otherwise inherit a bar they believe is closed.
+
+> **Why the bar is the feature**: without it, *"reviewer glanced, looks good"* is **a check that cannot fail** — a control whose passing state is indistinguishable from its own absence. The branch would then certify plans while measuring nothing.
+
+---
+
 ## 4. Pre-pass: REUSE Detection
 
 **Why first**: REUSE findings can dissolve "new" components entirely (a proposed helper turns out to already exist). Running this before Pass 1 means Pass 1 reviews the post-correction surface, not prose that's about to be deleted.
@@ -95,7 +129,9 @@ After I review, I'll tell you which findings to apply.
 
 **After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers — this persists past the review and is useful at code-write time.
 
-**Standalone**: For Pattern 3 plans, invoke `/plan-review-reuse` with the single-doc plan path. The pre-pass works on any doc shape, not just multi-doc Pattern A/B/C structures.
+**Single-doc plans**: the REUSE pre-pass works on any doc shape, not just multi-doc Pattern A/B/C structures. It runs as part of this gate under the critique branch (§4a) — **there is no separate standalone command.**
+
+> ⚠️ **`/plan-review-reuse` DOES NOT EXIST AND MUST NOT BE BUILT.** It was prescribed in three places and specified in detail in `.claude/commands/plan-review.md` as a sub-command, with worked examples — and was never invocable, because commands resolve one-file-per-command and no such file exists. **The dangling references were resolved BY THIS DISPATCH, not by minting the missing command.** This note is written here precisely so a later reader does not "fix" the absence by building it. *Specified, exemplified, and unreachable* is the failure shape; the spec is what made readers confident it existed.
 
 ---
 
@@ -344,7 +380,6 @@ In addition to the gate-violations called out inline:
 | Applying findings without the user gate | Turns review into rubber-stamping. Gate exists for the user to keep decision authority. |
 | Collapsing Pass 1 + Pass 2 into one prompt | Each pass hunts orthogonal failure modes. Bundling loses signal. |
 | AI volunteering "let me just fix the obvious ones" | Same as above — bypasses the gate. Required response: "No. Findings only." |
-| Running plan-review on Pattern 3 / Pattern 4 trivia | Cost > value. The doc-set shape isn't there. Use `/plan-review-reuse` standalone if Pattern 3 needs reuse audit. |
 | Silently overriding Layer 3 in either pass | The "Design concerns" lane is the only acceptable override path for Layer 3. In-line fixes that change a decision = silent override. |
 | Skipping the convergence re-grep | Without it, "resolved" is self-reported. The greps are cheap; run them. |
 | Re-reading the docs between Pass 1 and Pass 2 | Pass 2 explicitly says "use the context from the previous pass." Re-reading wastes the bundled-context advantage and risks divergence. |
@@ -359,7 +394,7 @@ In addition to the gate-violations called out inline:
 
 **Within PIP**:
 - [`p-is-p-00-start-here.md`](p-is-p-00-start-here.md) — the gate fires after `/p-is-p-02-documentation` per the flowchart
-- [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) — Pattern 1/2/5/6 fire the gate; Pattern 3/4 skip
+- [`p-is-p-01-planning-the-work.md`](p-is-p-01-planning-the-work.md) — every plan document fires the gate; work that produces no plan document has nothing to gate
 - [`p-is-p-02-documenting-the-implementation.md`](p-is-p-02-documenting-the-implementation.md) §"Doc Conventions for Plan-Review Compatibility" — the convention specs the review depends on (Conventions 1–5)
 - [`plan-serialization.md`](plan-serialization.md) — plan-review runs on serialized plan docs, not on draft `~/.claude/plans/` files
 
