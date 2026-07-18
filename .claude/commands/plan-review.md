@@ -32,7 +32,7 @@
    - `--from=fitness` — skip REUSE; start at Pass 1 (Fitness)
    - `--from=ownership` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Ownership-Language Audit). **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired — there is NO backward-compat alias. Old scripts/aliases referencing `--from=adversarial` will fail loudly.
    - `--doc-set=<path>` — target doc directory; defaults to most-recent `src/rnd/<project>/` containing a `00-index.md`
-   - `--skip-with-reason "<reason>"` — Pattern 3 escape hatch; logs reason to `00-index.md` "Open follow-ups" and exits without running the gate
+   - **Hard-break retirement 2026-07-18 (Rick)**: `--skip-with-reason` is **RETIRED — there is no bypass flag.** Every plan document enters the gate; the gate dispatches internally (`workflow/plan-review.md` §4a). There is **NO backward-compat alias** — a stale invocation passing `--skip-with-reason` **fails loudly** rather than silently skipping the gate. *(Not to be confused with the unrelated bare-string `skip-with-reason` per-convention and cascade-decomposition exemptions logged in `00-index.md` — see `workflow/plan-review.md` §2 and `p-is-p-02-documenting-the-implementation.md`; those are live mechanisms and are untouched by this retirement.)*
 
 4. **Auto-discovery**:
    - If `--doc-set` not given: list `src/rnd/*/00-index.md`, pick most recent, confirm with user via `ask_yes_no()` before proceeding. **On `neither`**: re-prompt with `ask_multiple_choice()` listing the available doc-sets so the user can pick explicitly. See `workflow/cosa-voice-integration.md` → "Handling Neither".
@@ -63,7 +63,6 @@
 /plan-review --from=fitness                          # resume after REUSE fixes already applied
 /plan-review --from=ownership                        # resume after Pass 1 (Fitness) fixes already applied (renamed from --from=adversarial 2026-05-15)
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-...    # target a specific milestone
-/plan-review --skip-with-reason "research-only plan, no executable work"
 ```
 
 ---

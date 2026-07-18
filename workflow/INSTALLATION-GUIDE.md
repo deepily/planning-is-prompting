@@ -2114,7 +2114,8 @@ The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Langua
 - `/plan-review --from=fitness` — skip REUSE; resume after REUSE fixes already applied
 - `/plan-review --from=ownership` — skip REUSE and Pass 1; resume after Fitness fixes already applied. **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired with no backward-compat alias.
 - `/plan-review --doc-set=<path>` — target a specific milestone doc-set
-- `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
+
+> **Hard-break retirement 2026-07-18**: `--skip-with-reason` is **RETIRED — there is no bypass flag.** Every plan document enters the gate. **No backward-compat alias**; stale invocations fail loudly.
 
 ### Install as Slash Command
 
@@ -2161,9 +2162,6 @@ The wizard or installer may ask:
 
 # Target a specific milestone
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-async-multi-lane
-
-# Pattern 3 escape hatch (research-only plan)
-/plan-review --skip-with-reason "research-only plan, no executable work"
 ```
 
 ### Key Features
