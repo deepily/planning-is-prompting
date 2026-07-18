@@ -52,6 +52,8 @@ Invoke this command when:
 - Pattern from Step 1 is Pattern 3 or 4 (small/simple work)
 - Use history.md for tracking instead
 
+> **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` (see `workflow/plan-review.md` §4a). The gate is keyed to the **document**, not to the pattern.
+
 ---
 
 ## Notes

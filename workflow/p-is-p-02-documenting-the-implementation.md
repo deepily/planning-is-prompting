@@ -1082,6 +1082,7 @@ src/rnd/jwt-oauth/
 3. **If no to dedicated docs**:
    - Use history.md for session summaries
    - Skip to execution phase
+   - **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` ([`plan-review.md`](plan-review.md) §4a). The gate is keyed to the **document**, not to the pattern.
 
 **Phase 3: Execution**
 1. Work through TodoWrite tasks
