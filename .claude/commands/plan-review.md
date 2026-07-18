@@ -56,19 +56,6 @@
 
 ---
 
-## Sub-command: `/plan-review-reuse`
-
-Standalone REUSE pre-pass for Pattern 3 plans (single-doc `src/rnd/yyyy.mm.dd-slug.md` files) or any pre-doc-creation reuse audit.
-
-- Skips Pass 1 (Fitness) and Pass 2 (Ownership-Language Audit) entirely.
-- Runs the REUSE prompt from §4 of the canonical workflow against the target doc and codebase.
-- Output: prior-art findings table, no gate (since there's only one pass).
-- User decides which findings to apply; appends "Prior art referenced" section to the target doc.
-
-Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), on a Pattern 3 plan after serialization, or as an ad-hoc audit before adding a new helper to the codebase.
-
----
-
 ## Usage
 
 ```bash
@@ -77,9 +64,6 @@ Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), 
 /plan-review --from=ownership                        # resume after Pass 1 (Fitness) fixes already applied (renamed from --from=adversarial 2026-05-15)
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-...    # target a specific milestone
 /plan-review --skip-with-reason "research-only plan, no executable work"
-
-/plan-review-reuse                                   # standalone REUSE pre-pass on auto-detected plan
-/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md   # standalone REUSE on a specific Pattern 3 plan
 ```
 
 ---

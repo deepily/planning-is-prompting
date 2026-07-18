@@ -2100,7 +2100,7 @@ The gate fires **between `/p-is-p-02-documentation` and code writing** — it is
 
 **Canonical Workflow**: planning-is-prompting → workflow/plan-review.md
 
-**Slash Commands**: `/plan-review` (full pipeline), `/plan-review-reuse` (standalone REUSE pre-pass for Pattern 3 plans)
+**Slash Commands**: `/plan-review` (full pipeline; the REUSE pre-pass runs inside the gate)
 
 ### Pass Ordering: Fitness Before Ownership-Audit
 
@@ -2115,7 +2115,6 @@ The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Langua
 - `/plan-review --from=ownership` — skip REUSE and Pass 1; resume after Fitness fixes already applied. **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired with no backward-compat alias.
 - `/plan-review --doc-set=<path>` — target a specific milestone doc-set
 - `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
-- `/plan-review-reuse` — standalone REUSE pre-pass for Pattern 3 single-doc plans
 
 ### Install as Slash Command
 
@@ -2165,9 +2164,6 @@ The wizard or installer may ask:
 
 # Pattern 3 escape hatch (research-only plan)
 /plan-review --skip-with-reason "research-only plan, no executable work"
-
-# Standalone REUSE pre-pass on a Pattern 3 single-doc plan
-/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md
 ```
 
 ### Key Features

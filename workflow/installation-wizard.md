@@ -252,10 +252,6 @@ This metadata drives the interactive menu generation in Step 2.
     {
       "name": "/plan-review",
       "description": "Full pipeline: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit). Supports --from=reuse|fitness|ownership for partial reruns (Pass 2 renamed from Adversarial 2026-05-15; --from=adversarial retired with no alias)"
-    },
-    {
-      "name": "/plan-review-reuse",
-      "description": "Standalone REUSE pre-pass for Pattern 3 single-doc plans (catches accidental reinvention of existing helpers)"
     }
   ],
   "dependencies": {
@@ -1178,7 +1174,6 @@ Available Workflows:
     Two-pass quality gate for implementation plans before any code is written
     Commands:
       • /plan-review - Full pipeline (REUSE → Fitness → Ownership-Language Audit)
-      • /plan-review-reuse - Standalone REUSE pre-pass for Pattern 3 plans
     Dependencies: Planning is Prompting Core (D); reads ~/.claude/CLAUDE.md
                   TEST OWNERSHIP MANDATE as Layer 1 anchor
     Note: Mandatory for every plan document, whatever pattern produced
