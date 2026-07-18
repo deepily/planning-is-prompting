@@ -155,8 +155,8 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 | Work Type | Duration | Pattern (Step 1) | Need Step 2? | Workflow Path |
 |-----------|----------|------------------|--------------|---------------|
-| Small feature | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **01** only → history.md |
-| Bug investigation | 3-5 days | Pattern 4: Investigation | ✗ No | → **01** only → history.md |
+| Small feature | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **01** only → history.md · **plan doc? → `/plan-review`** |
+| Bug investigation | 3-5 days | Pattern 4: Investigation | ✗ No | → **01** only → history.md · **plan doc? → `/plan-review`** |
 | Architecture design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **01** → **02** (Pattern B) |
 | Technology research | 2-3 weeks | Pattern 2: Research | ✓ Yes | → **01** → **02** (Pattern C) |
 | Large implementation | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **01** → **02** (Pattern A) |
