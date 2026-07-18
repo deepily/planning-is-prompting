@@ -86,9 +86,9 @@ Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), 
 
 ## When to Use
 
-- **Mandatory**: After `/p-is-p-02-documentation` produces a Pattern A/B/C doc-set for Pattern 1/2/5/6 plans, **before any code is written**.
-- **Optional (REUSE only)**: For Pattern 3 plans, after serialization to `src/rnd/`, before code begins.
-- **Skip**: Pattern 4 (Investigation) plans skip entirely — the doc-set shape isn't there.
+- **Mandatory**: **Every plan document enters this gate before any code is written**, whatever pattern produced it — whether it is a Pattern A/B/C doc-set from `/p-is-p-02-documentation` or a single plan doc serialized to `src/rnd/`.
+- **The dispatch is internal** (`workflow/plan-review.md` §4a): **≥ 2 independently-reviewable sections → `/plan-review-cascaded`; otherwise → the critique branch**, which **spawns one critic seat** (self-critique does not satisfy it).
+- **Nothing to gate**: work that produces **no plan document** (e.g. an investigation that never serializes one) has nothing to enter — **out of scope by construction, not by exemption.**
 
 ---
 

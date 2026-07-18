@@ -267,7 +267,7 @@ This metadata drives the interactive menu generation in Step 2.
   "creates": [
     ".claude/commands/plan-review.md"
   ],
-  "notes": "Mandatory for Pattern 1/2/5/6 plans (the patterns that fire /p-is-p-02-documentation); optional REUSE-only pre-pass available for Pattern 3 via /plan-review-reuse; Pattern 4 (Investigation) skips entirely. The gate is the doc-quality bar that DOCUMENTATION-FIRST PROTOCOL doesn't impose on its own. Depends on TEST OWNERSHIP MANDATE in ~/.claude/CLAUDE.md as Layer 1 anchor."
+  "notes": "Mandatory for every plan document, whatever pattern produced it; the gate dispatches internally (>= 2 reviewable sections -> the cascade, otherwise -> the critique branch, which spawns one critic seat). Work that produces no plan document has nothing to gate. The gate is the doc-quality bar that DOCUMENTATION-FIRST PROTOCOL doesn't impose on its own. Depends on TEST OWNERSHIP MANDATE in ~/.claude/CLAUDE.md as Layer 1 anchor."
 }
 ```
 
@@ -1181,8 +1181,10 @@ Available Workflows:
       • /plan-review-reuse - Standalone REUSE pre-pass for Pattern 3 plans
     Dependencies: Planning is Prompting Core (D); reads ~/.claude/CLAUDE.md
                   TEST OWNERSHIP MANDATE as Layer 1 anchor
-    Note: Mandatory for Pattern 1/2/5/6 plans; REUSE-only available for
-          Pattern 3 via /plan-review-reuse; Pattern 4 skips entirely
+    Note: Mandatory for every plan document, whatever pattern produced
+          it; the gate dispatches internally — ≥2 sections → cascade,
+          else → the critique branch (one critic seat). Work producing
+          no plan document has nothing to gate.
 
 ──────────────────────────────────────────────────────────
 Select workflows to install:
@@ -1823,7 +1825,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    - Replace `Planning is Prompting` → User's project name (in the project-specific configuration block)
    - Preserve the canonical reference to `planning-is-prompting → workflow/plan-review.md` (the wrapper reads this on every invocation)
    - Preserve the Layer 1 anchor reference to `~/.claude/CLAUDE.md TEST OWNERSHIP MANDATE` (this is the gate's calibration target and is project-agnostic)
-   - Note: The wrapper supports `--from=reuse|fitness|ownership` for partial reruns and a `/plan-review-reuse` sub-command for Pattern 3 single-doc plans; both are documented in the canonical workflow (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; the old `--from=adversarial` flag was retired with no backward-compat alias)
+   - Note: The wrapper supports `--from=reuse|fitness|ownership` for partial reruns, documented in the canonical workflow (Pass 2 renamed from "Adversarial" → "Ownership-Language Audit" on 2026-05-15; the old `--from=adversarial` flag was retired with no backward-compat alias)
 
 3. **Create or Update CLAUDE.md**:
 

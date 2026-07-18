@@ -2192,7 +2192,7 @@ If a convention is missing, the review's greps return clean and report false con
 
 ### Integration with Planning is Prompting Workflows
 
-Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`) **must** invoke `/plan-review` before code begins. Pattern 3 plans **may** invoke `/plan-review-reuse` standalone (REUSE pre-pass only). Pattern 4 (Investigation) plans **skip** the gate entirely — the doc-set shape isn't there.
+**Every plan document must invoke `/plan-review` before code begins**, whatever pattern produced it. The gate dispatches internally: **≥ 2 reviewable sections → the cascade; otherwise → the critique branch**, which spawns one critic seat. Work that produces **no plan document** has nothing to gate — out of scope by construction, not by exemption.
 
 The flow:
 
