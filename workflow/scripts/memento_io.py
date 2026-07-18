@@ -19,6 +19,53 @@ destroyed two irreplaceable records anyway. So nothing here is left to memory:
     Rick caught it by hand. The escape (`--no-post-game <reason>`) is always reachable
     and is RECORDED in the record itself — an escape you can take silently is not a gate.
 
+WHAT THE POST-GAME GATE DOES NOT COVER — READ THIS BEFORE TRUSTING IT.
+
+Three holes are KNOWN and UNCLOSED, and two of them are larger than anything the gate catches.
+They are stated here, plainly and up front, rather than buried as caveats, because this item
+exists BECAUSE a docstring claimed more than it enforced and a reviewer had to run the thing to
+discover it. Closing that item with a file that repeats the habit would be the joke telling
+itself. If you are about to rely on this gate, rely on it for exactly what is listed as enforced
+above and nothing beyond it.
+
+  1. THE GATE IS OPT-IN BY DEFAULT. It arms ONLY on `--slot root`. `io` is the DEFAULT slot, and
+     the io path never reaches the gate — by design, since a worker owes a retro DEPOSIT rather
+     than a post-game. What is NOT by design: the protection is one un-typed flag deep, and the
+     un-typed direction is the ungated one. A seat that omits `--slot` is not gated, is told
+     nothing, and has no way to notice.
+
+  2. THE GATE'S EVIDENCE DOES NOT TRAVEL. Arming depends on other seats' records in
+     `io/mementos/`, which this script deliberately keeps GITIGNORED (see REQUIRED_IGNORES).
+     Gitignored files do not survive a clone or a `git worktree add`. Measured 2026-07-18: 25
+     records in the working repo, 0 in a fresh worktree of the same commit — so a worktree-
+     isolated or freshly cloned seat finds no crew, never arms, and writes its memento at exit 0
+     in silence. A crewed engagement is EXACTLY when seats work in isolated trees, so the gate is
+     weakest precisely where it was built to fire.
+
+  3. THE CONTENT FLOOR CANNOT RECOGNISE A RETROSPECTIVE — IT ONLY MEASURES TEXT. Measured by
+     Rachel 2026-07-18 against this final code: a DESIGN DOC of 1,130 bytes / 19 non-blank lines
+     (Purpose / Background / Mechanism / Open questions / Alternatives / Rollout — zero
+     retrospective content) satisfies the gate, EXIT=0. The floor answers "is there enough text
+     here", while the gate is asking "was a post-game written". That is the same substitution as
+     presence-standing-in-for-a-gate, one level up, and it SURVIVES the 2026-07-18 fixes. No
+     cheap remedy is known: a required structural marker is guessable, a required section list
+     becomes boilerplate. So state the property honestly and do not over-trust it — THIS GATE
+     SEPARATES A WRITTEN RETRO FROM AN ABSENT ONE, AND CANNOT TELL A RETROSPECTIVE FROM ANY OTHER
+     DOCUMENT OF SIMILAR LENGTH.
+
+Note what 1 and 2 share, and how they differ from what the 2026-07-18 review repaired: the
+content floor and the git-clock fix are both on the EVIDENCE side — whether a retro that was
+found really counts. These are on the ARMING side — whether the gate ever asks the question. A
+gate can have flawless evidence handling and never fire. Neither is patched here; the arming
+question is Rick's to rule, not this script's to settle unilaterally.
+
+Provenance: the adversarial review that found and fixed the evidence-side defects is store row
+14b3951d (María author, Clayton reviewer, Rachel second seat). Holes 2 and 3 are Rachel's,
+found by running the gate rather than reading it — as were all four of the defects before them.
+Hole 2 is being filed as its own P1; if that row exists by the time you read this, its id
+belongs on this line. It was not yet visible in the store when this was written, and an
+unverified id is worse than none.
+
 Layout (per repo, `repo_root` = `git rev-parse --show-toplevel`):
 
     slot=io    RECORD   io/mementos/<persona>-<sid8>.md          IMMUTABLE
@@ -85,8 +132,64 @@ REQUIRED_IGNORES = [ "io/mementos/", ".claude-memento.md", ".claude-memento-*.md
 # A fleet-wide retro index would fix it properly. Nobody has built one; do not pretend
 # this fires only where a retro is genuinely missing.
 
+# WHAT THE FIRST ADVERSARIAL REVIEW FOUND (Clayton, 2026-07-18, item 14b3951d) — three defects,
+# all of them found BY RUNNING THE GATE and none of them by reading it. The author read this code
+# many times and predicted none. That is the entry that belongs above the fix:
+#
+#   (1) THE WINDOW WAS DEFEATED BY ORDINARY GIT OPERATIONS. `within_window` trusted mtime, and
+#       `git worktree add` / checkout / clone / rebase / stash-pop rewrite mtime wholesale. A retro
+#       from 2026-06-30 satisfied this gate on 2026-07-18 because a worktree had just been created.
+#       No adversary: that is what a CAREFUL seat does, and it is literally what the reviewer did in
+#       order to review honestly. The gate was defeated by the act of checking it. Fixed by asking
+#       GIT for a tracked file's age (`git log -1 --format=%at`, the AUTHOR date) and falling back
+#       to mtime only for untracked files, where mtime is the only clock there is. The first cut of
+#       this fix read `%ct` and was defeated by `rebase`, an operation named in this very paragraph
+#       — see `authored_at` for that near-miss; this narration ALSO said %ct for a while after the
+#       code said %at, which is the same drift, in the sentence describing the fix for the drift.
+#
+#   (2) A ZERO-BYTE FILE PASSED. `touch io/post-games/x.md` satisfied the gate; so did the
+#       heading-only stub an interrupted /plan-post-game actually leaves behind. This was an
+#       EXISTENCE CHECK WEARING A GATE'S CLOTHES — the exact defect class ruling R-3 names, shipped
+#       by R-3's own author. The irony was already in this file: cmd_write has ALWAYS refused an
+#       empty memento body ("nothing to record"). Presence != content was known here, and was
+#       applied to the INPUT while the EVIDENCE went unchecked. Fixed by POST_GAME_MIN_*.
+#
+#   (3) THE TEST SUITE'S POSITIVE CONTROL ENCODED THE DEFECT. Its `plant()` helper wrote the
+#       8-byte string "planted\n" and the suite asserted that satisfied the gate — 17/17 green,
+#       internally consistent, and unable to distinguish this gate from `os.path.exists()`. Every
+#       negative control sat on `qualifies()`; not one sat on the evidence side. Both polarities of
+#       the wrong half were proven, and the green was reported as if it covered the claim.
+#
+# THE STANDING LESSON, because it is now four consecutive seats: reading did not find any of this.
+# Running it did. A docstring that overstates its mechanism is what stops the next reader checking,
+# which is why the two below now claim only what is enforced.
+
 ENGAGEMENT_WINDOW_HOURS = 24
 POST_GAME_GLOBS         = [ "io/post-games/*.md", "src/rnd/*post-game*.md", "src/rnd/*postgame*.md" ]
+
+# Never evidence of a retro, however fresh: the directory's own furniture. `io/post-games/*.md`
+# matches the README that documents the directory, and a README edit is not a retrospective.
+POST_GAME_EXCLUDED_NAMES = { "readme.md", "index.md", "template.md" }
+
+# The CONTENT FLOOR (defect 2). Calibrated against all 23 retro artifacts in this repo on
+# 2026-07-18: the SMALLEST was 5,735 bytes / 32 non-blank lines. The byte floor sits ~5.7x below
+# that, so it cannot reject genuine work, while a touch (0 bytes), an interrupted stub (12 bytes)
+# and the old suite's "planted\n" (8 bytes) all fall far beneath it. Deliberately loose: this gate
+# must under-fire rather than block a re-spin at the worst possible moment, and the escape stays
+# trivially reachable. It is a FLOOR, not a quality bar — it separates "someone wrote a
+# retrospective" from "a file exists". Nothing here stops a seat determined to pad, and it is not
+# trying to; a 1,000-byte lorem ipsum passes, and that is a known non-property, not an oversight.
+#
+# BYTES CARRY THIS CHECK; LINES ARE A BACKSTOP (Rachel, 2026-07-18, measured against the corpus —
+# and the line floor's first victim was this suite's own fixture, 4 red tests). The line count was
+# 12 and it was WRONG, because bytes are style-invariant and lines are not: dense prose collapses
+# into few lines, so a substantive retro written as paragraphs got REJECTED while every realistic
+# junk case was already dying on bytes alone. Measured, the line floor's only unique catch is
+# single-line padding (1200B on one line) — contrived — and its cost was real prose. So it is now
+# 4: still enough to kill a one-line pad, far under anything a human writes, and no longer
+# pretending to be the load-bearing half of this check.
+POST_GAME_MIN_BYTES          = 1000
+POST_GAME_MIN_NONBLANK_LINES = 4
 
 
 # ---------------------------------------------------------------- helpers
@@ -287,17 +390,113 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
     return machine + "\n" + "\n".join( lines ).rstrip() + "\n"
 
 
-def within_window( path, now, hours=ENGAGEMENT_WINDOW_HOURS ):
+def authored_at( repo_root, path, now ):
     """
-    Ensures: True iff `path`'s mtime is no older than `hours` before `now`.
-             mtime is HOST TRUTH — it is the same anchor `is_fresh` already trusts,
-             and unlike a field inside the file it cannot be hand-written wrong.
+    Best available answer to "when was this file last actually WRITTEN?"
+
+    Ensures:
+        - for a TRACKED file: returns the AUTHOR timestamp of its last commit — when the work
+          was written, as distinct from when the commit object was last rebuilt
+        - for an UNTRACKED or dirty-in-worktree file: returns its mtime — for something git
+          has never seen, mtime is the only clock there is, and it has not been restamped
+          by a git operation precisely BECAUSE git does not manage it
+        - returns None when the file does not exist
+
+    WHY NOT JUST mtime (defect 1, Clayton 2026-07-18): this function used to be a one-line
+    mtime read whose docstring called mtime "HOST TRUTH ... it cannot be hand-written wrong."
+    That is true and it is beside the point. mtime cannot be hand-written, but git REWRITES IT
+    WHOLESALE on checkout, clone, `worktree add`, rebase and stash-pop. Measured: a retro last
+    committed 2026-06-30 presented an mtime of 2026-07-18 11:05:07 inside a freshly created
+    worktree, and satisfied a 24h window by 17 days. mtime answers "when did this file last
+    appear on this disk", and the gate needs "when did someone last write this".
+
+    A tracked file that is dirty in the worktree reads as mtime (uncommitted edits are real
+    work in progress, and git's clock has not caught up to them yet) — this is why the check
+    is `git log` FIRST with an mtime fallback, rather than a choice between them.
+
+    WHY %at AND NOT %ct (found by Rachel, 2026-07-18, reviewing the fix for defect 1 — the fix
+    ITSELF shipped the defect class it was repairing, and got exactly one review away from
+    landing): the first version of this function read `%ct`, the COMMITTER date. Committer date
+    is restamped to now by any operation that REPLAYS a commit — rebase, reword, amend,
+    cherry-pick, squash-before-merge. Those are on the very list of operations that broke mtime.
+    Measured: a retro correctly refused at exit 6 was accepted at exit 0 roughly twenty seconds
+    later, content byte-identical, after `git rebase -i --root` reworded its commit message;
+    author date read 2026-06-30, committer date read 2026-07-18. Swapping mtime for %ct changed
+    the instrument and kept the flaw. `%at` — author date — survived that rewrite verbatim.
+    (Narrower than "any rebase": git skips commits it finds unchanged, so only a replay that
+    actually rebuilds the commit restamps it. Narrower, still routine.)
+
+    WHAT THIS IS NOT: %at is settable via GIT_AUTHOR_DATE, so this is defeat-proof against
+    ORDINARY operations — the bar defect 1 actually set — and it is NOT tamper-proof against a
+    seat that means to lie. Stated flatly rather than implied, because a docstring claiming more
+    than it enforced is the reason this whole gate needed a second review.
+    """
+    if not path.exists(): return None
+
+    rel    = str( path.relative_to( repo_root ) )
+    result = run_git( repo_root, "log", "-1", "--format=%at", "--", rel )
+    stamp  = result.stdout.strip()
+
+    # An empty stdout means git has no commit touching this path — untracked, or newly added
+    # and never committed. Either way mtime is the honest answer, not a reason to fail.
+    if result.returncode == 0 and stamp:
+        # ...but if the working copy is dirty, the commit clock understates it. Prefer mtime then.
+        dirty = run_git( repo_root, "status", "--porcelain", "--", rel ).stdout.strip()
+        if not dirty:
+            return datetime.datetime.fromtimestamp( int( stamp ), tz=now.tzinfo )
+
+    try:
+        return datetime.datetime.fromtimestamp( path.stat().st_mtime, tz=now.tzinfo )
+    except OSError:
+        return None
+
+
+def within_window( path, now, hours=ENGAGEMENT_WINDOW_HOURS, repo_root=None ):
+    """
+    Ensures: True iff `path` was last WRITTEN no longer than `hours` before `now`, where
+             "written" is git's committer time for a clean tracked file and mtime otherwise
+             (see `authored_at` — and see defect 1 there for why mtime alone was not enough).
+             Passing repo_root=None falls back to mtime, for callers with no repo in hand.
+    """
+    if repo_root is None:
+        try:
+            written = datetime.datetime.fromtimestamp( path.stat().st_mtime, tz=now.tzinfo )
+        except OSError:
+            return False
+    else:
+        written = authored_at( repo_root, path, now )
+        if written is None: return False
+
+    return ( now - written ) <= datetime.timedelta( hours=hours )
+
+
+def is_substantive_post_game( path ):
+    """
+    Does this artifact contain a retrospective, or merely exist?
+
+    Ensures:
+        - returns (bool, detail) where detail explains a rejection in the caller's words
+        - True iff the file clears BOTH the byte floor and the non-blank-line floor
+
+    WHY THIS EXISTS (defect 2, Clayton 2026-07-18): `touch io/post-games/x.md` satisfied this
+    gate. So did a heading-only stub, which is what an interrupted /plan-post-game leaves on
+    disk — the realistic case, not the adversarial one. A gate that a zero-byte file walks
+    through is an existence check wearing a gate's clothes, and ruling R-3 names that defect
+    class by name. cmd_write has always refused an empty memento BODY for exactly this reason;
+    this applies the same standard to the EVIDENCE.
     """
     try:
-        age = now - datetime.datetime.fromtimestamp( path.stat().st_mtime, tz=now.tzinfo )
-    except OSError:
-        return False
-    return age <= datetime.timedelta( hours=hours )
+        text = path.read_text( errors="replace" )
+    except OSError as e:
+        return False, f"unreadable ({e.__class__.__name__})"
+
+    n_bytes    = len( text.encode( "utf-8" ) )
+    n_nonblank = sum( 1 for line in text.splitlines() if line.strip() )
+
+    if n_bytes < POST_GAME_MIN_BYTES or n_nonblank < POST_GAME_MIN_NONBLANK_LINES:
+        return False, ( f"{n_bytes}B / {n_nonblank} non-blank lines "
+                        f"(floor: {POST_GAME_MIN_BYTES}B / {POST_GAME_MIN_NONBLANK_LINES} lines)" )
+    return True, f"{n_bytes}B / {n_nonblank} non-blank lines"
 
 
 def crew_records( repo_root, persona_slug, now ):
@@ -328,23 +527,46 @@ def crew_records( repo_root, persona_slug, now ):
         seat = HEX8_SUFFIX_RE.sub( "", p.stem )
         if seat == persona_slug:                                  continue  # my own seat
         if seat.startswith( "rescued-" ) or seat == "unknown":    continue  # an artifact, not a seat
-        if not within_window( p, now ):                           continue
+        if not within_window( p, now, repo_root=repo_root ):      continue
         out.append( str( p.relative_to( repo_root ) ) )
     return out
 
 
 def post_game_artifacts( repo_root, now ):
     """
-    Ensures: returns the sorted repo-relative paths of post-game artifacts touched
-             inside the engagement window. A stale retro from last month is not a
-             receipt for THIS run — the window is what makes this a real check
-             rather than one that passes because the directory is non-empty.
+    Ensures: returns (accepted, rejected) — repo-relative paths of post-game artifacts
+             written inside the engagement window that also clear the content floor, and
+             a list of (path, reason) for those that matched the globs but did NOT qualify.
+
+    THE REJECTED LIST IS NOT DECORATION. A seat that wrote a stub, or whose retro is a
+    checkout away from looking fresh, must be TOLD which file was found and why it did not
+    count — otherwise the refusal reads as "the gate is broken" and the next move is to
+    reach for the escape hatch instead of finishing the retro.
+
+    Two things are enforced here, and the docstring is deliberately limited to them:
+      - RECENCY, measured with `authored_at` (git's clock for clean tracked files, mtime
+        otherwise). Not mtime alone — see defect 1 in `authored_at`.
+      - SUBSTANCE, a byte/line floor. Not a quality judgement — see `is_substantive_post_game`.
+    What is NOT enforced, stated plainly so no future reader over-trusts this: nothing here
+    reads the retro. A file of 1,000 bytes of lorem ipsum passes. This separates a written
+    retrospective from an absent or stubbed one; it cannot separate a good one from a bad one.
     """
-    out = []
+    accepted, rejected = [], []
     for pattern in POST_GAME_GLOBS:
         for p in sorted( repo_root.glob( pattern ) ):
-            if within_window( p, now ): out.append( str( p.relative_to( repo_root ) ) )
-    return sorted( set( out ) )
+            rel = str( p.relative_to( repo_root ) )
+            if p.name.lower() in POST_GAME_EXCLUDED_NAMES:
+                continue                                    # the directory's furniture, not a retro
+            if not within_window( p, now, repo_root=repo_root ):
+                rejected.append( ( rel, "last written outside the "
+                                        f"{ENGAGEMENT_WINDOW_HOURS}h window" ) )
+                continue
+            ok, detail = is_substantive_post_game( p )
+            if not ok:
+                rejected.append( ( rel, f"too thin to be a retrospective — {detail}" ) )
+                continue
+            accepted.append( rel )
+    return sorted( set( accepted ) ), sorted( set( rejected ) )
 
 
 def qualifies_for_post_game( repo_root, persona_slug, slot, now ):
@@ -363,6 +585,40 @@ def qualifies_for_post_game( repo_root, persona_slug, slot, now ):
     if slot != "root": return False, []
     evidence = crew_records( repo_root, persona_slug, now )
     return bool( evidence ), evidence
+
+
+POST_GAME_VERB_GERUND = { "write": "writing", "amend": "amending" }
+
+
+def print_post_game_refusal( evidence, near_misses, verb ):
+    """
+    Ensures: prints the exit-6 refusal for `write`/`amend` to stderr — one message, one place.
+
+    The NEAR-MISS block is the part that earns its keep. A seat that just wrote a stub, or
+    whose retro is one checkout away from looking stale, can SEE a post-game file sitting on
+    disk; if the refusal does not name that file and say why it did not count, the refusal
+    reads as a broken gate and the honest next move looks like reaching for --no-post-game.
+    Telling it exactly what fell short turns a wall into an instruction.
+    """
+    print(  "REFUSED: this engagement owes a POST-GAME and none exists.", file=sys.stderr )
+    print( f"         {len( evidence )} other seat(s) wrote records here in the last "
+           f"{ENGAGEMENT_WINDOW_HOURS}h — a crew ran, and you are "
+           f"{POST_GAME_VERB_GERUND[ verb ]} the memento", file=sys.stderr )
+    print(  "         that ends your context. The retro dies with it if you don't write it now.", file=sys.stderr )
+    for e in evidence[ :8 ]: print( f"           - {e}", file=sys.stderr )
+    if len( evidence ) > 8:  print( f"           ... and {len( evidence ) - 8} more", file=sys.stderr )
+
+    if near_misses:
+        print(  "", file=sys.stderr )
+        print(  "         Post-game files WERE found, and none of them counted:", file=sys.stderr )
+        for rel, why in near_misses[ :8 ]: print( f"           - {rel}\n               {why}", file=sys.stderr )
+        if len( near_misses ) > 8: print( f"           ... and {len( near_misses ) - 8} more", file=sys.stderr )
+
+    print(  "", file=sys.stderr )
+    print( f"         Run /plan-post-game, then re-run this {verb}.", file=sys.stderr )
+    print(  "         Or, if a retro genuinely is not owed:", file=sys.stderr )
+    print(  "           --no-post-game \"<reason>\"   (the reason is RECORDED in the memento,", file=sys.stderr )
+    print(  "                                        the mirror and the pointer — never silent)", file=sys.stderr )
 
 
 def pointer_text( record_rel, mirror_abs, record_body ):
@@ -429,20 +685,10 @@ def cmd_write( args ):
     #     Checked BEFORE anything lands: a refusal must cost the caller nothing but a
     #     re-run, and must never leave a half-written record behind.
     now              = datetime.datetime.now().astimezone()
-    owed, evidence   = qualifies_for_post_game( repo_root, persona, args.slot, now )
-    retros           = post_game_artifacts( repo_root, now ) if owed else []
+    owed, evidence     = qualifies_for_post_game( repo_root, persona, args.slot, now )
+    retros, near_misses = post_game_artifacts( repo_root, now ) if owed else ( [], [] )
     if owed and not retros and args.no_post_game is None:
-        print(  "REFUSED: this engagement owes a POST-GAME and none exists.", file=sys.stderr )
-        print( f"         {len( evidence )} other seat(s) wrote records here in the last "
-               f"{ENGAGEMENT_WINDOW_HOURS}h — a crew ran, and you are writing the memento", file=sys.stderr )
-        print(  "         that ends your context. The retro dies with it if you don't write it now.", file=sys.stderr )
-        for e in evidence[ :8 ]: print( f"           - {e}", file=sys.stderr )
-        if len( evidence ) > 8:  print( f"           ... and {len( evidence ) - 8} more", file=sys.stderr )
-        print(  "", file=sys.stderr )
-        print(  "         Run /plan-post-game, then re-run this write.", file=sys.stderr )
-        print(  "         Or, if a retro genuinely is not owed:", file=sys.stderr )
-        print(  "           --no-post-game \"<reason>\"   (the reason is RECORDED in the memento,", file=sys.stderr )
-        print(  "                                        the mirror and the pointer — never silent)", file=sys.stderr )
+        print_post_game_refusal( evidence, near_misses, "write" )
         sys.exit( 6 )
 
     rec_abs.parent.mkdir( parents=True, exist_ok=True )
@@ -605,19 +851,10 @@ def cmd_amend( args ):
     # straight past a gate that reported itself built. A gate on a door nobody walks through.
     # Its author's own object, at zero distance: the check existing is not the check working.
     now            = datetime.datetime.now().astimezone()
-    owed, evidence = qualifies_for_post_game( repo_root, persona, args.slot, now )
-    retros         = post_game_artifacts( repo_root, now ) if owed else []
+    owed, evidence      = qualifies_for_post_game( repo_root, persona, args.slot, now )
+    retros, near_misses = post_game_artifacts( repo_root, now ) if owed else ( [], [] )
     if owed and not retros and args.no_post_game is None:
-        print(  "REFUSED: this engagement owes a POST-GAME and none exists.", file=sys.stderr )
-        print( f"         {len( evidence )} other seat(s) wrote records here in the last "
-               f"{ENGAGEMENT_WINDOW_HOURS}h — a crew ran, and you are amending the memento", file=sys.stderr )
-        print(  "         that ends your context. The retro dies with it if you don't write it now.", file=sys.stderr )
-        for e in evidence[ :8 ]: print( f"           - {e}", file=sys.stderr )
-        if len( evidence ) > 8:  print( f"           ... and {len( evidence ) - 8} more", file=sys.stderr )
-        print(  "", file=sys.stderr )
-        print(  "         Run /plan-post-game, then re-run this amend.", file=sys.stderr )
-        print(  "         Or, if a retro genuinely is not owed:", file=sys.stderr )
-        print(  "           --no-post-game \"<reason>\"   (RECORDED in the amendment, never silent)", file=sys.stderr )
+        print_post_game_refusal( evidence, near_misses, "amend" )
         sys.exit( 6 )
 
     waiver = ""

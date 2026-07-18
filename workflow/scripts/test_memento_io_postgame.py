@@ -68,13 +68,51 @@ def write_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=Non
                            capture_output=True, text=True, env=env )
 
 
-def plant( path, age_hours=0.0 ):
-    """Ensures: `path` exists with an mtime `age_hours` in the past (host truth)."""
+def plant( path, age_hours=0.0, body=None ):
+    """
+    Ensures: `path` exists with an mtime `age_hours` in the past, containing `body` (default:
+             a retrospective substantial enough to clear the content floor).
+
+    THE DEFAULT BODY USED TO BE THE STRING "planted\\n" (8 bytes), AND THAT WAS THE BUG IN THIS
+    FILE (defect 3, Clayton 2026-07-18). test_fresh_post_game_satisfies_the_gate asserted that
+    8 bytes satisfied the gate, and it passed, and 17/17 green was reported as if it covered the
+    claim. Every negative control in this suite sat on `qualifies()` — whether the gate CAN fire —
+    and not one sat on the evidence side, so the suite could not distinguish the gate it was
+    testing from `os.path.exists()`. A helper that manufactures fake evidence decides what the
+    whole suite is able to detect; this one now manufactures evidence that would survive being
+    looked at, and the thin cases are written explicitly, by the tests that mean to be thin.
+    """
     path.parent.mkdir( parents=True, exist_ok=True )
-    path.write_text( "planted\n" )
+    if body is None:
+        body = ( "# Post-Game: a run that actually happened\n\n"
+                 "## What we set out to do\n" + ( "Substantive retrospective prose. " * 12 ) + "\n\n"
+                 "## What actually happened\n"  + ( "More substantive retrospective prose. " * 12 ) + "\n\n"
+                 "## Rulings\n- R-1: a thing was ruled\n- R-2: another thing was ruled\n\n"
+                 "## Lessons\n" + ( "A durable lesson worth carrying forward. " * 8 ) + "\n" )
+    path.write_text( body )
     when = time.time() - age_hours * 3600
     os.utime( path, ( when, when ) )
     return path
+
+
+def git_commit_all( repo, when_days_ago=0 ):
+    """
+    Ensures: everything in `repo` is committed, with committer+author time `when_days_ago` in
+             the past — so a test can build a file whose GIT age and MTIME age DISAGREE.
+
+    That disagreement is the entire point of the git-clock tests below: on disk mtime is the
+    only clock, but the moment git manages a file, mtime becomes a statement about when the
+    file last landed on this disk, and git's clock becomes the statement about when someone
+    last wrote it. Defect 1 was trusting the first to answer the second.
+    """
+    stamp = ( time.time() - when_days_ago * 86400 )
+    when  = time.strftime( "%Y-%m-%dT%H:%M:%S", time.localtime( stamp ) )
+    env   = dict( os.environ,
+                  GIT_AUTHOR_DATE=when,    GIT_COMMITTER_DATE=when,
+                  GIT_AUTHOR_NAME="t",     GIT_COMMITTER_NAME="t",
+                  GIT_AUTHOR_EMAIL="t@t",  GIT_COMMITTER_EMAIL="t@t" )
+    subprocess.run( [ "git", "add", "-A" ], cwd=repo, check=True, env=env )
+    subprocess.run( [ "git", "commit", "-q", "-m", "planted" ], cwd=repo, check=True, env=env )
 
 
 # ---------------------------------------------------------------- the gate FIRES
@@ -93,6 +131,113 @@ def test_stale_post_game_does_not_satisfy_a_fresh_engagement( repo ):
     plant( repo / "io" / "post-games" / "2026.06.01-old-post-game.md", age_hours=72 )
     r = write_memento( repo )
     assert r.returncode == 6, "a month-old retro is not a receipt for tonight's run"
+
+
+# ---------------------------------------------------------------- THE EVIDENCE SIDE
+#
+# THE CONTROLS THIS SUITE SHIPPED WITHOUT, AND THE DEFECTS THEY WOULD HAVE CAUGHT. Every test
+# above this line asks "can the gate fire?". Not one asked "can the gate be SATISFIED BY
+# NOTHING?" — so both shipped defects lived underneath a green suite. These are the missing half.
+
+def test_an_empty_file_is_not_a_post_game( repo ):
+    """Sam's attack, 2026-07-18: `touch io/post-games/x.md` satisfied the shipped gate."""
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    ( repo / "io" / "post-games" / "2026.07.18-run.md" ).write_text( "" )
+    r = write_memento( repo )
+    assert r.returncode == 6, "a zero-byte file is not a retrospective"
+    assert "too thin" in r.stderr, "the refusal must NAME the file it found and rejected"
+
+
+def test_a_heading_only_stub_is_not_a_post_game( repo ):
+    """The realistic version: what an INTERRUPTED /plan-post-game leaves on disk."""
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "io" / "post-games" / "2026.07.18-run.md", body="# Post-Game: \n" )
+    r = write_memento( repo )
+    assert r.returncode == 6, "a heading with no retrospective under it is not a retrospective"
+
+
+def test_a_readme_is_not_a_post_game( repo ):
+    """`io/post-games/*.md` matches the directory's own README. Editing it is not a retro."""
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "io" / "post-games" / "README.md" )        # substantive AND fresh — still not a retro
+    r = write_memento( repo )
+    assert r.returncode == 6, "the directory's furniture is not evidence a retro was written"
+
+
+def test_a_git_operation_does_not_make_a_stale_retro_look_fresh( repo ):
+    """
+    Defect 1, Clayton 2026-07-18 — the one that needed no adversary.
+
+    A retro COMMITTED 17 days ago, whose mtime is NOW because a checkout/clone/worktree-add
+    just restamped it. The shipped gate read mtime, saw 0 seconds, and let the memento land.
+    This test reproduces that exact disagreement between the two clocks: git says 17 days,
+    the filesystem says now, and the gate must believe git.
+    """
+    plant( repo / "io" / "post-games" / "2026.07.01-old-post-game.md" )
+    git_commit_all( repo, when_days_ago=17 )                 # git's clock: 17 days old
+
+    os.utime( repo / "io" / "post-games" / "2026.07.01-old-post-game.md", None )   # mtime: NOW
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )                       # a crew ran
+
+    r = write_memento( repo )
+    assert r.returncode == 6, "git's clock is the one that answers 'when did someone write this'"
+    assert "outside the" in r.stderr, "the refusal must say the retro fell outside the window"
+
+
+def test_a_history_rewrite_does_not_make_a_stale_retro_look_fresh( repo ):
+    """
+    Rachel, 2026-07-18 — the defect IN THE FIX FOR defect 1, caught one review before it landed.
+
+    The first fix read `%ct`, the COMMITTER date, which is restamped to now by any operation
+    that replays a commit: rebase, reword, amend, cherry-pick, squash-before-merge. Those are
+    on the same list of operations that broke mtime, so the fix swapped the instrument and kept
+    the defect class. Measured: refused at 6, then accepted at 0 twenty seconds later with the
+    content byte-identical, after a `git rebase -i --root` reworded the commit message.
+
+    `%at` — author date — is what survives. This test rewords the history and demands the gate
+    still refuse. Note git skips commits it finds unchanged, so the rewrite has to actually
+    replay the commit to restamp it; --root with a reworded message does.
+    """
+    plant( repo / "io" / "post-games" / "2026.07.01-old-post-game.md" )
+    git_commit_all( repo, when_days_ago=18 )
+
+    env = dict( os.environ, GIT_SEQUENCE_EDITOR="sed -i '1s/^pick/reword/'",
+                GIT_EDITOR="true", GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t" )
+    r = subprocess.run( [ "git", "rebase", "-i", "--root" ], cwd=repo,
+                        capture_output=True, text=True, env=env )
+    assert r.returncode == 0, f"the rewrite must actually run, or this test proves nothing: {r.stderr}"
+
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )                     # a crew ran
+    result = write_memento( repo )
+    assert result.returncode == 6, "author date is when it was WRITTEN; committer date is when the commit was last rebuilt"
+
+
+def test_an_uncommitted_retro_still_counts( repo ):
+    """
+    The other polarity of the same fix, and the one that matters more in practice: a retro
+    written MINUTES ago has no commit at all. If preferring git's clock silently rejected
+    untracked files, the fix for defect 1 would block every honest same-session retro — a
+    far worse failure than the one it repairs. mtime is the only clock for a file git has
+    never seen, and for that file it is the RIGHT clock.
+    """
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "io" / "post-games" / "2026.07.18-fresh-and-uncommitted.md" )   # never committed
+    r = write_memento( repo )
+    assert r.returncode == 0, r.stderr
+
+
+def test_a_committed_retro_edited_now_still_counts( repo ):
+    """
+    A retro committed long ago but EDITED in this session: git's clock understates it, and the
+    dirty-worktree fallback is what stops the fix from rejecting live work in progress.
+    """
+    plant( repo / "io" / "post-games" / "2026.07.01-post-game.md" )
+    git_commit_all( repo, when_days_ago=17 )
+    plant( repo / "io" / "post-games" / "2026.07.01-post-game.md",
+           body="# Post-Game\n\n" + ( "Rewritten just now with real content.\n" * 40 ) )
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    r = write_memento( repo )
+    assert r.returncode == 0, "an uncommitted edit is real work; git's clock has not caught up"
 
 
 # ---------------------------------------------------------------- the gate STAYS SILENT
@@ -245,3 +390,73 @@ def test_waiver_is_absent_when_no_post_game_was_not_needed( repo ):
     text = ( repo / ".claude-memento-maria-45b897f6.md" ).read_text()
     assert "post-game-waived:" not in text
     assert "POST-GAME WAIVED" not in text
+
+
+# ------------------------------------------------- ARMING-SIDE HOLES: CHARACTERIZATION ONLY
+#
+# Written by Rachel (48b59a71) during the 2026-07-18 adversarial review; applied here by Clayton,
+# who had argued AGAINST adding them and lost the argument to his own sentence — "disclosed in
+# prose and unpinned in code is the weaker half of a claim."
+#
+# The two tests below assert what the gate DOES today, NOT what it SHOULD do. Both describe KNOWN,
+# DISCLOSED, UNCLOSED holes (module docstring of memento_io.py, holes 1 and 2). Neither is an
+# endorsement, and passing them is not evidence the gate is sound — it is evidence the holes are
+# still exactly where the docstring says they are.
+#
+# WHY PIN A DEFECT AT ALL: today's entire finding is that prose claims and enforced behaviour drift
+# apart silently, and nobody notices until someone RUNS it. A characterization test converts
+# "someone must read the docstring" into "someone must consciously delete this test" — and that
+# deletion is the moment the disclosure actually gets read. When Rick rules on arming, these MUST go
+# red. That is the design: a red here means the ruling landed, and whoever lands it is forced to come
+# to this file and say so.
+#
+# The counter-argument, recorded because it was real and may yet prove right: a PASSING test can read
+# as sanction, and a future reader may see green and conclude the arming side is fine. That risk is
+# carried by the names and by this header, not by anything the runner enforces.
+#
+# NAMED so they cannot be misread as approval. Do NOT "fix" a failure here by relaxing the assertion;
+# a failure means the behaviour changed and this file owes an update.
+
+def test_UNRULED_slot_io_bypasses_the_gate_today( repo ):
+    """
+    Hole 1. `io` is the DEFAULT slot and never reaches the gate. A crewed engagement with NO
+    retrospective anywhere writes at exit 0 when --slot is omitted or io. UNRULED — Rick's call.
+    """
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )      # crew ran
+    # ...and the SAME state on the root slot is refused, which is what makes this a hole and not
+    # merely a fact about io: the two slots disagree on identical evidence.
+    assert write_memento( repo, slot="root" ).returncode == 6
+
+    r = write_memento( repo, persona="rachel", sid="48b59a71", slot="io" )
+    assert r.returncode == 0, "characterization: the io slot is ungated TODAY"
+
+
+def test_UNRULED_gitignored_crew_records_do_not_arm_a_fresh_worktree( repo ):
+    """
+    Hole 2. Crew records live in gitignored io/mementos/, so they do not survive a clone or a
+    `git worktree add`. The gate then never arms. Measured 2026-07-18: 25 records in the working
+    repo, 0 in a fresh worktree of the same commit. UNRULED — Rick's call.
+    """
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    assert write_memento( repo, slot="root" ).returncode == 6      # armed HERE
+
+    # Reproduce the REAL repo's condition: memento_io enforces this via REQUIRED_IGNORES, but a
+    # refusal exits BEFORE ensure_gitignored() runs, so in a fresh fixture nothing has written it
+    # yet. Without this line `git add -A` TRACKS the crew record, it travels, and the test measures
+    # a state that cannot exist in a real repo. (Found by the test failing. Rachel's note, kept
+    # verbatim because it is the lesson: "the hole is real, my first fixture was not" — a RED that
+    # could have been filed as 'hole 2 is worse than we thought' and would have been entirely wrong.)
+    ( repo / ".gitignore" ).write_text( "io/mementos/\n.claude-memento.md\n.claude-memento-*.md\n" )
+
+    git_commit_all( repo )
+    wt = repo.parent / "fresh-worktree"
+    subprocess.run( [ "git", "worktree", "add", str( wt ), "HEAD", "--detach" ],
+                    cwd=repo, check=True, capture_output=True )
+
+    # The evidence did not travel — that IS the hole, stated as a measurement. Asserted
+    # unconditionally: a version guarded by `if (wt/"io"/"mementos").exists()` passes vacuously
+    # when the directory is absent, which is the one shape this whole review exists to reject.
+    assert not list( wt.glob( "io/mementos/*.md" ) ), "the crew record must not have travelled"
+
+    r = write_memento( wt, persona="rachel", sid="48b59a71", slot="root" )
+    assert r.returncode == 0, "characterization: a fresh worktree finds no crew and never arms"
