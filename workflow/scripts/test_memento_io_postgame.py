@@ -156,6 +156,24 @@ def test_a_heading_only_stub_is_not_a_post_game( repo ):
     assert r.returncode == 6, "a heading with no retrospective under it is not a retrospective"
 
 
+def test_a_many_lined_but_tiny_file_is_not_a_post_game( repo ):
+    """
+    ISOLATES THE BYTE FLOOR — clears the line floor easily and must still be refused on bytes.
+
+    WHY AN ISOLATING TEST EXISTS AT ALL (Rachel, 2026-07-18): with two floors live, every junk
+    case in this suite failed BOTH of them — an empty file has 0 bytes AND 0 lines. So deleting
+    either floor left the other catching everything, the suite stayed green, and NEITHER floor was
+    individually detectable. Measured: with both floors set and no isolating test, mutating
+    POST_GAME_MIN_BYTES to 0 changed nothing — 26 passed. A redundancy that hides vacuity reads
+    exactly like defence in depth, and this suite could not tell you whether the byte floor
+    existed at all. A test only proves a check exists if it fails when ONLY that check is removed.
+    """
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "io" / "post-games" / "2026.07.18-tiny.md", body="a\nb\nc\nd\ne\nf\n" )
+    r = write_memento( repo )
+    assert r.returncode == 6, "12 bytes across 6 lines is not a retrospective"
+
+
 def test_a_readme_is_not_a_post_game( repo ):
     """`io/post-games/*.md` matches the directory's own README. Editing it is not a retro."""
     plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )

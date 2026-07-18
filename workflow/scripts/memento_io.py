@@ -180,16 +180,42 @@ POST_GAME_EXCLUDED_NAMES = { "readme.md", "index.md", "template.md" }
 # retrospective" from "a file exists". Nothing here stops a seat determined to pad, and it is not
 # trying to; a 1,000-byte lorem ipsum passes, and that is a known non-property, not an oversight.
 #
-# BYTES CARRY THIS CHECK; LINES ARE A BACKSTOP (Rachel, 2026-07-18, measured against the corpus —
-# and the line floor's first victim was this suite's own fixture, 4 red tests). The line count was
-# 12 and it was WRONG, because bytes are style-invariant and lines are not: dense prose collapses
-# into few lines, so a substantive retro written as paragraphs got REJECTED while every realistic
-# junk case was already dying on bytes alone. Measured, the line floor's only unique catch is
-# single-line padding (1200B on one line) — contrived — and its cost was real prose. So it is now
-# 4: still enough to kill a one-line pad, far under anything a human writes, and no longer
-# pretending to be the load-bearing half of this check.
+# THERE IS ONE FLOOR, AND IT IS BYTES. There was a second — a non-blank-line count — and removing
+# it is the most instructive thing that happened to this file. The short version: a line floor at 12
+# rejected real prose (it red-lit four of this suite's own tests, because dense paragraphs collapse
+# into few lines while bytes are style-invariant); lowering it to 4 fixed that and introduced a
+# worse problem; the ruling was DROP, then reversed to 4 on a good argument, then reversed BACK to
+# DROP by measurement. The measurement is the only part that matters:
+#
+#   CONFIG bytes=1000 lines=4        CONFIG bytes=1000 lines=0 (this one)
+#     mutate BYTES->0  26 passed ❌     mutate BYTES->0  2 failed ✅
+#     mutate LINES->0  26 passed ❌     mutate LINES->0  26 passed
+#
+# WITH BOTH FLOORS LIVE, NEITHER IS INDIVIDUALLY DETECTABLE. Every junk case fails BOTH (an empty
+# file has 0 bytes AND 0 lines), so deleting either leaves the other catching everything and the
+# suite reports green regardless. The suite could not tell you whether the byte floor existed.
+# Two checks covering each other look like defence in depth and report success whether or not either
+# one is there — a REDUNDANCY THAT HIDES VACUITY, which is the check-that-cannot-fail (ruling R-3)
+# with a second author, and neither author can see it from their own side. Dropping the line floor
+# is what makes the byte floor load-bearing and its removal catchable.
+#
+# What was given up, honestly: the line floor's one unique catch was single-line padding (1,600
+# bytes on one line clears bytes and would now pass). That is contrived, and more to the point it is
+# a DELIBERATE act by a seat trying to get past the gate — the exact adversary the paragraph below
+# already disclaims defending against. Paying an untestable floor to defend a disclaimed threat
+# model is a bad trade. See test_a_many_lined_but_tiny_file_is_not_a_post_game, which exists so the
+# remaining floor can never become undetectable again.
+#
+# Calibrated against all 23 retro artifacts in this repo on 2026-07-18: the SMALLEST was 5,735 bytes
+# / 32 non-blank lines. The floor sits ~5.7x below that, so it cannot reject genuine work, while a
+# touch (0 bytes), an interrupted stub (12 bytes) and the old suite's "planted\n" (8 bytes) fall far
+# beneath it. Deliberately loose: this gate must under-fire rather than block a re-spin at the worst
+# possible moment, and the escape stays trivially reachable. It is a FLOOR, not a quality bar — it
+# separates "someone wrote a retrospective" from "a file exists". Nothing here stops a seat
+# determined to pad, and it is not trying to; a 1,000-byte lorem ipsum passes, and that is a known
+# non-property, not an oversight.
 POST_GAME_MIN_BYTES          = 1000
-POST_GAME_MIN_NONBLANK_LINES = 4
+POST_GAME_MIN_NONBLANK_LINES = 0
 
 
 # ---------------------------------------------------------------- helpers
