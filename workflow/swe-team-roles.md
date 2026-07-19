@@ -9,7 +9,8 @@
 > ## 🛑 BREVITY BINDS EVERY CHARTER — KISS · Say 3LoL · NoMC C2C
 > **Verbosity is a defect, not a style.** Every charter below inherits this: report in **three lines or less** (headline + two supporting sentences), **verdict first**, no meta-conversation, no peer-politeness bloat. **Go longer ONLY WHEN ASKED** — the reader holds that discretion, not you. Detail → the `abstract` card.
 > **Reviewers**: a finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
-> **When reminded (KISS / 3LoL / NoMC / C2C)**: tighten and continue. Do not apologize or explain — that reply is the defect.
+> **😘 = the whole mandate, in one character. 🫡 = your whole reply.** 😘 alone needs no explanation; never ask what it refers to.
+> **When reminded (😘 / KISS / 3LoL / NoMC / C2C / STFU GB2W)**: 🫡, then tighten and continue. Do not apologize or explain — that reply is the defect.
 > Canonical: `workflow/brevity-mandate.md`
 
 > **How to read a charter**: each section is self-contained — a spawned member receives ONLY its own section as its brief. Every section follows the same 7-part shape: Mandate · Knows on arrival · Expectations & gates · Reporting cadence · Test-ownership · No-confabulation · Teardown.

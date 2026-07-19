@@ -24,7 +24,9 @@
 
 **Structured detail belongs in the body's fields, not in prose.** A finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
 
-**Receiving a KISS/3LoL/NoMC reminder from a peer or the user**: tighten and continue. Do **not** apologize or explain — that reply is itself the defect.
+**😘 / 🫡 work in peer comms too.** A **😘** in a DM or commons post fires the full mandate at the recipient; **🫡** is the complete reply. 😘 alone needs no explanation — never ask what it refers to.
+
+**Receiving a 😘 / KISS / 3LoL / NoMC reminder from a peer or the user**: 🫡, then tighten and continue. Do **not** apologize or explain — that reply is itself the defect. The salute is the whole acknowledgment.
 
 **Canonical**: `workflow/brevity-mandate.md` · fleet-wide reminder: `/plan-kiss`
 

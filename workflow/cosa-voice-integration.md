@@ -87,7 +87,9 @@ When the user toggles back to notification mode, Claude is explicitly informed v
 
 **Go longer ONLY WHEN ASKED.** Not when you judge the content warrants it — you do not hold that discretion, the reader does. A brevity rule whose exception is self-assessed is not a control, it is a receipt.
 
-**When the user says "KISS" / "3LoL" / "NoMC" / "C2C"**: tighten and continue. Do **not** apologize, explain, or promise to improve — that reply is itself the defect.
+**😘 is the carrier glyph**: 😘 alone, with no other text, fires the ENTIRE mandate — never ask what it refers to. **🫡 is the complete reply** — salute, then the tightened output.
+
+**When the user sends 😘 or says "KISS" / "3LoL" / "NoMC" / "C2C" / "STFU GB2W"**: 🫡, then tighten and continue. Do **not** apologize, explain, or promise to improve — that reply is itself the defect.
 
 **Canonical**: `workflow/brevity-mandate.md` · fleet-wide reminder: `/plan-kiss`
 

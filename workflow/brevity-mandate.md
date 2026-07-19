@@ -86,12 +86,32 @@ Detail goes in the abstract card, never in prose or speech.
 
 ---
 
+## 😘 / 🫡 — the two-glyph exchange
+
+**The entire mandate compresses to one emoji in each direction.**
+
+| Glyph | Direction | Means |
+|---|---|---|
+| **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. |
+| **🫡** | session → user | Received. Complying. **Nothing else is sent.** |
+
+**😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C, in full, immediately.
+
+**Attached to a message**, it scopes to that message: *"here's the summary 😘"* = give me this, short.
+
+**Why a glyph** — this is the mandate applied to itself: *a rule against verbosity whose reminder costs a paragraph is self-refuting.* One character carries the weight of the entire opening statement; the reply costs one character back. The pair is the cheapest complete exchange in the fleet.
+
+> ⇒ **Never answer 😘 with prose.** 🫡, then the tightened output. A sentence explaining that you are about to be brief is the defect wearing the cure's clothes.
+
+---
+
 ## Invoking it
 
 **Vocabulary ratified by Rick, 2026-07-19.**
 
 | Utterance | Effect |
 |---|---|
+| **😘** | **Carrier glyph — the full mandate, no text required** |
 | "KISS" | Reminder — the receiving session tightens immediately |
 | "KISS it" / "KISS that" | Verb form, usable mid-sentence — *"KISS that summary and re-send"* |
 | "Say 3LoL" / "3LoL" / "three lines or less" | Reminder, length-specific |
@@ -125,7 +145,7 @@ Too generic: *"make this function shorter"* or *"shorter commit messages please"
 
 This matches the `/plan-push` pattern — its triggers ("push push push", "coffee break's over", "get off your ass") are all distinctive multi-word phrases, never common words.
 
-**Answering a KISS reminder**: tighten and continue. Do **not** apologize, do not explain what went wrong, do not promise to do better — **that reply is itself the defect.** Acknowledge in ≤1 line or simply comply.
+**Answering any KISS reminder**: 🫡, then tighten and continue. Do **not** apologize, do not explain what went wrong, do not promise to do better — **that reply is itself the defect.** The salute is the whole acknowledgment; nothing else is owed.
 
 ---
 

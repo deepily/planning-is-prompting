@@ -9,7 +9,11 @@
 
 > **⚠️ Note**: This command delivers a fleet-wide behavioral correction. The payload is `dm_send`'d to targets and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
 
+> ## 😘 / 🫡 — the two-glyph exchange
+> **😘 ALONE, with no other text, fires the ENTIRE mandate.** Never ask what it refers to. **🫡** is the complete reply — salute, then the tightened output, nothing else. This is the mandate applied to itself: a reminder that costs a paragraph would be self-refuting.
+
 > **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
+> - **Carrier glyph**: **😘** — alone = the full mandate; attached to a message = scoped to that message (*"here's the summary 😘"*)
 > - **Acronyms**: "**KISS**", "**Say 3LoL**", "**3LoL**", "**three lines or less**", "**NoMC**", "**C2C**"
 > - **Verb forms**: "**KISS it**", "**KISS that**" (mid-sentence — *"KISS that summary"*)
 > - **Expansions**: "**cut to the chase**", "**no meta conversation**"

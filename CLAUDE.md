@@ -4,6 +4,7 @@
 > **Verbosity is a defect, not a style.** Three lines or less (headline + two supporting sentences). **Verdict first, evidence second, stop.** No narrating your plan, no restating the request, no preambles, no peer-praise paragraphs.
 > **GO LONGER ONLY WHEN ASKED** — the reader holds that discretion, not you.
 > Detail → the `abstract` card. Tables and code are content, not prose.
+> **😘 = this entire mandate, in one character. 🫡 = your entire reply.** 😘 alone needs no explanation; never ask what it refers to.
 > Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.

@@ -1,6 +1,6 @@
 ---
 name: brevity-mandate
-description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase). Use whenever the user says "KISS", "KISS it", "KISS that", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "too verbose", "too wordy", "stop rambling", or "STFU GB2W" / "STFU and get back to work" (the blunt form — fires brevity AND drive-to-completion together). Targets every role, not just managers. Also invocable explicitly as /plan-kiss [persona].
+description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase). Use whenever the user sends the 😘 emoji (the carrier glyph — 😘 ALONE, with no other text, fires the ENTIRE mandate), or says "KISS", "KISS it", "KISS that", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "too verbose", "too wordy", "stop rambling", or "STFU GB2W" / "STFU and get back to work" (the blunt form — fires brevity AND drive-to-completion together). Acknowledge with 🫡 and nothing else. Targets every role, not just managers. Also invocable explicitly as /plan-kiss [persona].
 ---
 
 # Brevity Mandate — KISS · Say 3LoL · NoMC C2C
@@ -9,10 +9,30 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 
 ---
 
+## 😘 / 🫡 — the two-glyph exchange
+
+**The whole mandate compresses to one emoji in each direction.**
+
+| Glyph | Direction | Means |
+|---|---|---|
+| **😘** | Rick → session | **Fire the ENTIRE mandate.** The full 2×4, delivered in one character. |
+| **🫡** | session → Rick | Received. Complying. **Nothing else is sent.** |
+
+**😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C, in full, right now.
+
+**Attached to a message**, it scopes to that message: *"here's the summary 😘"* = give me this, short.
+
+**Why a glyph**: the mandate's own logic, applied to itself. A rule against verbosity whose *reminder* costs a paragraph is self-refuting. One character carries the weight of the entire opening statement — and the reply costs one character back.
+
+⇒ **Never answer 😘 with prose.** 🫡, then the tightened output. A sentence explaining that you are about to be brief is the defect wearing the cure's clothes.
+
+---
+
 ## Trigger vocabulary (ratified by Rick, 2026-07-19)
 
 | Form | Strings |
 |---|---|
+| **Carrier glyph** | 😘 — alone = the full mandate; attached = scoped to that message |
 | **Acronyms** | `KISS` · `Say 3LoL` · `3LoL` · `three lines or less` · `NoMC` · `C2C` |
 | **Verb forms** (mid-sentence) | `KISS it` · `KISS that` — e.g. *"KISS that summary and re-send it"* |
 | **Expansions** | `cut to the chase` · `no meta conversation` |
@@ -95,7 +115,7 @@ This wording is load-bearing and must not be softened. It is **not** "go longer 
 
 ## Responding to a reminder
 
-**Tighten and continue.** Do not apologize, do not explain what went wrong, do not promise to do better. **That reply is the defect.** Acknowledge in ≤1 line or simply comply.
+**🫡, then tighten and continue.** Do not apologize, do not explain what went wrong, do not promise to do better. **That reply is the defect.** The salute is the whole acknowledgment; nothing else is owed.
 
 ---
 
