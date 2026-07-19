@@ -4,6 +4,34 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 
 ## 📍 Resume Here
 
+> ### ✅ **2026-07-19 (S139, María 🌸 driving · Sam 🎙️ + Krishna 🦚 + Cheech 🌿) — `claimcheck.py` BUILT in 40 min. 3 commits HELD in `skills-distillation`, nothing pushed.**
+>
+> **Rick ordered it, then ruled it over the Monday-POC standing order** — *"it does not consume a half day, it should be done in under an hour… I'll manage time, you manage getting things done well and quickly."* Sam had argued **against his own build** in §5.4 (rehearsal is the sharper risk, n=1 demo path); Rick read the trade and overrode it.
+>
+> **Verified firsthand by me at each gate** (never on report): `83ae29a` → `3c3ae46` → **`3339aac`** · blob `a73db38b` / 49,175 B / **828 passed · 1 known-red** (tunables guard, deliberately not allowlisted) / ahead 3 / worktree clean / **not pushed**. Ships `claimcheck.py`, its tests, repo-root `CLAUDE.md` (`## Receipts` convention), the plan, and **Cheech's 31-fixture adversarial corpus + harness**.
+>
+> #### The pattern that produced every real finding: **ask for a receipt, don't read the code**
+> | Found | How |
+> |---|---|
+> | **G2 tag laundering** — hard-fail gate passed `"…99.2% across 760 tests, but nobody measured it"` clean, exit 0. Bare English word satisfied the tag check. Laundered figures: **5 / 7 / 39** across the explainers. | Cheech ran it |
+> | **`~~~receipt` tilde fence** — silent green, exit 0, over a live receipt | Cheech ran it |
+> | **Exit-127 fix defeated by two characters**, then pipe laundering, then **exit 126** (`./MANDATE.md` = path to non-executable) | Cheech, 3× on one class |
+> | **A "guarded" guard that wasn't** — Krishna found the hole in his OWN guard *after* reporting it guarded, and corrected before it reached Sam's report | self-catch |
+> | **The 6/9 recall figure died twice, independently** — and neither seat replaced it with 9/9; banner says recall is **UNMEASURED**, shapes are *"a hand-picked list, not a recall figure"* | both re-derived |
+>
+> #### Three rulings worth keeping
+> 1. **Zero receipts ⇒ exit 2, banner `UNINSTRUMENTED`, not FAILED.** Red on the explainers Monday is *accurate* — they are unverified. Exiting 0 there would be the tool's own failure mode shipping inside the product.
+> 2. **Stop the blacklist: DID-IT-EXECUTE, not WHAT-DID-IT-RETURN.** 126/127 are proxies for "never ran," and a proxy list is what an adversary out-enumerates. ⚠️ **My first prescription for this was WRONG** — I ruled *"any non-zero from any stage ⇒ NOT REPRODUCES"*; `grep -c` on no match prints `0` and exits `1`, which would have rejected the repo's own committed false-world receipts. Sam checked it against the artifact before building it. **Diagnosis right, prescription wrong.**
+> 3. **A guard you exit is not a guard you passed** — the tunables red stays red; converting to `IntEnum` "would go green by leaving the instrument."
+>
+> #### 🔴 The driving lesson: **a status report is not an instrument**
+> Sam reported the build **frozen**. My own independent clock found `claimcheck.py` had grown **24%** since that freeze, plus an unbudgeted new attack family (J1–J4) uncommitted at minute 24. **His status said frozen; the filesystem said otherwise** — and I only knew because I set a second clock instead of trusting his. ⇒ **when driving, hold your own clock and read the artifact, not the report.**
+>
+> ⚠️ **AND MY OWN FALSE FINDING, ON THE RECORD**: I reported that *nothing in the repo hashed to Sam's pin* and called his receipt unattached. **Wrong — he used SHA-256, I swept with `shasum`'s SHA-1 default.** Same bytes, two algorithms. **My detector was broken, not his receipt.** Retracted within a minute. Only "ahead 8" (actual: 1) was a real error, and he had already caught it himself.
+>
+> #### Still open, deliberately
+> **Class (c) is UNFIXED and PRINTED as such**, with a test whose only job is to stop a later reader mistaking one fix for the other. Sam committed a known hole and said so in the commit message — **the honest incomplete beat the flattering complete.** Post-game owed.
+
 > ### ✅ **2026-07-19 (S139, María 🌸 + Mr Radio 🦉) — POKES SILENCED, AUDIENCE SCALPEL BUILT. `heartbeat.enabled=false` (Rick, by hand) + arbiter `09c3fcc0` HELD.**
 >
 > **Live config**: `master=true · workers=false · managers=false · operator=true` — crew silent, Rick keeps his. Verified firsthand: INI, `/health` 200, `arbiter_poke_audience_config` at `app.py:295`. 33 new tests, arbiter suite **1031 passed**. ⚠️ **Held, not pushed** — Rick pushes. ⚠️ `lupin-app.ini` carries a peer's unstaged `parallel-search` hunk: **never `git add` that file wholesale.**
