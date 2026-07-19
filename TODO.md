@@ -4,6 +4,41 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 
 ## 📍 Resume Here
 
+> ### 🌇 **2026-07-19 AFTERNOON (S139, María 🌸) — GLYPH PALETTE · FLEET INSTALL · COMMS-BUS INCIDENT · 3 LANES LIVE. Walkthrough owed this evening.**
+>
+> **Rick's cadence for the afternoon**: one most-beneficial improvement at a time, incrementally; walkthrough tonight. He was AFK ~14:00–15:00.
+>
+> #### ① The glyph palette — now 4 carriers (`0ced298` · `01a9f45` · `1821258`)
+> | Glyph | Direction | Means | Response |
+> |---|---|---|---|
+> | 😘 | user → session | Fire the entire mandate | 🫡 |
+> | 🫡 | session → user | Received. Complying. | — |
+> | 🏆 | user → session | **That was right. Do more of that.** | 🫡 |
+> | 📷 | user → session | **Document and checkpoint your work.** | 🫡, then the checkpoint |
+>
+> **📷 is the first ACTION glyph** — 😘 corrects *how you speak*, 🏆 reinforces *what you did*, 📷 *tells you to go do a thing*. **🫡 is the ONLY official ack for all three** (Rick's correction to my first cut, which said the response to 🏆 was silence — he was right: an unacknowledged reward invites a seat to invent its own acknowledgment).
+>
+> #### ② Distribution audit — 43 repos scanned (`7c0bf36` · `4986e57`)
+> **The mandate TEXT was already universal** (live `~/.claude/CLAUDE.md`, auto-loaded everywhere). **The tooling was not**: the `brevity-mandate` skill and `/plan-kiss` existed in **1 of 43 repos** — this one — and `~/.claude/commands/` did not exist at all. ⇒ saying "KISS" in lupin or skills-distillation fired nothing.
+> **Fixed by installing to USER scope**, not per-repo copies: `~/.claude/skills/brevity-mandate/` + `~/.claude/commands/plan-kiss.md`. One copy, no drift; this repo stays canonical. Verified byte-identical.
+> ⚠️ **And the audit found a real defect**: `global/CLAUDE.md` — **the install template** — had drifted and still instructed installers to *"reach for the NATIVE harness task tool first… it auto-mirrors into the durable store."* **The mirror was RETIRED at the 2026-06-17 cutover.** Any repo installing from it received retired guidance that silently loses owed work. Refreshed verbatim from live.
+> ⚠️ **User-scope installs are THIS MACHINE ONLY** — they travel with `~/.claude`, not the repo. Worth a line in the install guide before a multi-host fleet bites.
+>
+> #### ③ 🔴 INCIDENT — fleet comms bus down ~15 min, recovered
+> Every DM and notify timing out on `:7999`. **Not a hang — `lupin-rest-dev` had FAILED STARTUP** at 13:24: `alembic: Can't locate revision a3b4c5d6e7f8`. That id is an **absorbed** revision (folded into the `000000000000` baseline); Mr Radio's park migration was *first authored* with it (note still at line 52 of `c1a7f0e2b9d4_…`). The id was **already corrected on disk — nobody had restarted since.**
+> **Why it read as a hang**: docker-proxy holds the port open whether or not the app started. **An open port that never answers.**
+> **Restarted it** (down, serving nothing ⇒ standing authority). Verified: `/health` 200, both DBs consistent, `lupin-rest-test` healthy throughout (it doesn't mount the repo).
+> ⚠️ **SIDE EFFECT**: startup ran the upgrade — `lupin_db_dev` `f2a3b4c5d6e7` → `c1a7f0e2b9d4`. **The park migration is LIVE in dev and still UNTRACKED in git.** I intended a restart, not a deploy. Mr Radio told.
+> **During the outage I wrote Rio's review to disk rather than sit on the dead bus** — `parallel-search/src/rnd/2026.07.19-freetext-scoping-spec/REVIEW-maria-2026.07.19.md`.
+>
+> #### ④ Three lanes live — all commits HELD, nothing pushed
+> - **Mr Radio 🦉 — `parked` store status** (FIRST; root cause of the morning's poke inaccuracy). I refuted his count in the direction he didn't expect: **18 of 72 queued rows forbid being worked, not his 15 of 78**; he under-counted (case-sensitive predicate). Ruled: `parked` is the right primitive — live `blocked_by` kinds are persona/user/item, so *"a human ruled this not-now"* is **unrepresentable in the field the readiness predicate reads**. ⚠️ **Rick overruled my `unpark_when` field** — `next_chase_ts` already exists on 85/85 rows. Caught mid-build; the brief carrying the field never reached a worker.
+> - **Rio ⚡ — free-text demo scoping** (parallel-search). All 4 questions + 2 unstated assumptions accepted. **Reversed his `MAX_CRITERIA` 4→6**: the rehearsed path shows Rick 4×6, he'd type 6 by analogy and eat **a FATAL on stage**. Flagged his real defect: a paraphrase **silently routes him from the SAFE path to the RISKY one** — same shape as the silent truncation he banned four sections earlier. Scoper now **pinned to 3.1-pro explicitly** so a future flash swap can't reach the one stage whose failure kills the live path.
+> - **Sam 🎙️ — grounding-density gate** (SECOND, holding, no code). §0 ruled: *an absent check leaves a gap; a present check whose passing condition is satisfied by the failure **manufactures** a 5.*
+>
+> #### The afternoon's one recurring axis
+> **Silent-wrong-answer vs loud-wrong-answer.** It decided Rio's Q4, his active-grid stamp, my `UNINSTRUMENTED` exit-2 ruling this morning, and Mr Radio's whole `parked` proposal. Not graduating it — **noting that it recurred across three independent lanes in one afternoon**, which is the accumulation bar.
+
 > ### ✅ **2026-07-19 (S139, María 🌸 driving · Sam 🎙️ + Krishna 🦚 + Cheech 🌿) — `claimcheck.py` BUILT in 40 min. 3 commits HELD in `skills-distillation`, nothing pushed.**
 >
 > **Rick ordered it, then ruled it over the Monday-POC standing order** — *"it does not consume a half day, it should be done in under an hour… I'll manage time, you manage getting things done well and quickly."* Sam had argued **against his own build** in §5.4 (rehearsal is the sharper risk, n=1 demo path); Rick read the trade and overrode it.
