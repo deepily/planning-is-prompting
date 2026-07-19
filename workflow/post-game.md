@@ -8,6 +8,15 @@
 - **After a substantive solo session** — a design session, a bug-fix run, a tricky investigation: anything with lessons worth keeping.
 - **On demand** — when the user (or a manager) asks for "the post-game," "a retro," or "the debrief."
 
+> ## 🛑 THE POST-GAME IS THE MOST VERBOSE RITUAL WE RUN — KISS · Say 3LoL · NoMC C2C
+> Retros breed monologues: the form invites reflection, and reflection invites meta-conversation. **The findings are exempt from 3LoL; the FRAMING is not.**
+> - **Every deposit, every roundtable contribution: three lines or less** — headline + two supporting sentences. Not three paragraphs.
+> - **A lesson is a claim + its receipt.** Cut "I've been thinking about…", "it strikes me that…", "I want to be careful to acknowledge…".
+> - **No mutual appreciation.** Crediting a seat is one clause, not a paragraph. (See also: the 2026-07-17 finding that post-games *systematically flatter the seat being harvested* — brevity is a partial control on that too.)
+> - **The synthesis doc is content-shaped** and may run long. **NoMC still applies.**
+>
+> Canonical: `workflow/brevity-mandate.md`
+
 **When NOT to use**: a trivial change with no lesson (a typo fix, a one-line doc tweak). For those, the *lightweight note* tier (one line in `history.md`) IS the post-game — see §3.
 
 **Status**: ✅ v1.0 (2026-06-29, María 🌸 Workflow Steward) — extracted from the embedded post-game rules (`swe-team-spin-up.md` §5 + `swe-team-roles.md` §Steward + cascade Stage 9) into a first-class standalone workflow. **5 design decisions ratified by Rick (2026-06-29, guided walkthrough) — see §0.** Companion `/plan-post-game` command + auto-activating skill. HELD for commit.

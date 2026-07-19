@@ -6,6 +6,10 @@
 1. **Spin-up** — fed to a session as part of its brief (the `/spin-up-swe-team` charters, a manager's standing config, or any session that reads its role on start).
 2. **The poke** — re-anchored every time the heartbeat stop-poke or arbiter poke taps a session's shoulder. The poke is the higher-leverage surface: the spin-up framing decays into the back of context, but the poke is read *fresh every tick*.
 
+> ## 🛑 BREVITY BINDS EVERY ROLE — KISS · Say 3LoL · NoMC C2C
+> **Verbosity is a defect, not a style.** Whatever your role, you report in **three lines or less** (headline + two supporting sentences), lead with the verdict, and cut the meta-conversation. **Go longer ONLY WHEN ASKED** — you do not hold that discretion, the reader does. Detail goes in the `abstract` card, never in prose or speech.
+> Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+
 **Relationship to other workflows**: the goal is the *why*; the *how* and the *envelope* live elsewhere — `manager-autonomy.md` (authority tiers, MANAGE-not-BUILD), `task-store-discipline.md` (owed work, receipts, `done`), `swe-team-roles.md` (per-role charters). This doc is the single canonical source for the goal **text**; consumers (spin-up briefs, poke strings) **quote or echo** it rather than re-paraphrasing, so the wording cannot drift.
 
 ---

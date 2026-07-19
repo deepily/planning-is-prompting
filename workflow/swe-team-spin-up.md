@@ -6,6 +6,16 @@
 
 **Status**: ✅ Ratified 2026-06-06 (Rick, via guided walkthrough — all 7 design decisions) · 🛡️ **BATTLE-TESTED 2026-06-06** — first real run (Heartbeat Arbiter v2.1, Thread B) shipped: committed `7973376`, live-apply 88 tests green. Design record + ruling table: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6; first-run post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md`. Authored by María 🌸 (Workflow Steward).
 
+> ## 🛑 EVERY SPAWN BRIEF CARRIES THE BREVITY RIDER — non-negotiable
+> Workers inherit habits at birth; a worker that never grew the verbose habit is cheaper than one that must unlearn it. **Paste this into every member's brief, verbatim:**
+> ```
+> BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C.
+> Verdict first, evidence second, stop. Three lines or less
+> (headline + two supporting sentences). Go longer ONLY WHEN ASKED.
+> Detail goes in the abstract card, never in prose or speech.
+> ```
+> Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+
 **Relationship to other workflows**:
 - **Manager Spawn/Harvest Autonomy** (`src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md`) is the *can-spawn* **mechanics** half ("spawn freely; edit carefully"; the standing/gated/hygiene envelope). **This workflow is the composition** — "spawn THIS roster with THESE roles." They compose: autonomy *authorizes*; this workflow *specifies the shape*.
 - The **cascaded plan-review cast** (`workflow/plan-review-cascaded*.md`) is *review-shaped* (N personas reviewing a plan section-by-section). The SWE team is *build-shaped*. Some role overlap (reviewer/steward), different lifecycle — distinct but cross-referenced.

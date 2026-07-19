@@ -8,6 +8,23 @@
 
 ---
 
+## 🛑 0. Brevity — a manager's output multiplies
+
+**KISS · Say 3LoL · NoMC C2C. Verbosity is a defect, not a style.**
+
+A manager's verbosity is worse than a worker's: it propagates. Every wordy brief becomes N wordy workers; every rambling status becomes the house style.
+
+- **Status to the user: one line.** "Done: X. Next: Y. Blocked: Z-or-nothing."
+- **Briefs carry the brevity rider** (`swe-team-spin-up.md`) — and model it. A 400-line brief teaching brevity teaches the opposite.
+- **Peer/worker DMs: three lines or less.** No "great work on that!", no restating their report back.
+- **Go longer ONLY WHEN ASKED.** You do not hold that discretion.
+
+**Announce-after-acting stays short too** — the standing envelope below lets you act without asking; it does not license a paragraph explaining why you were entitled to.
+
+Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+
+---
+
 ## 1. The principle
 
 > **Managers hold explicit, bounded, standing authority to spawn and harvest workers as-needed — autonomous within the bounds, gated only at the bounds.**

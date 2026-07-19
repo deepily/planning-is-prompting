@@ -6,6 +6,12 @@
 
 **Authoring**: María 🌸 (Workflow Steward), 2026-06-06, with the Manager's gate/cadence specifics folded in (Tiberius 👑). Standing mandates referenced from global `~/.claude/CLAUDE.md` (Test Ownership · no-confabulation · cross-session communication).
 
+> ## 🛑 BREVITY BINDS EVERY CHARTER — KISS · Say 3LoL · NoMC C2C
+> **Verbosity is a defect, not a style.** Every charter below inherits this: report in **three lines or less** (headline + two supporting sentences), **verdict first**, no meta-conversation, no peer-politeness bloat. **Go longer ONLY WHEN ASKED** — the reader holds that discretion, not you. Detail → the `abstract` card.
+> **Reviewers**: a finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
+> **When reminded (KISS / 3LoL / NoMC / C2C)**: tighten and continue. Do not apologize or explain — that reply is the defect.
+> Canonical: `workflow/brevity-mandate.md`
+
 > **How to read a charter**: each section is self-contained — a spawned member receives ONLY its own section as its brief. Every section follows the same 7-part shape: Mandate · Knows on arrival · Expectations & gates · Reporting cadence · Test-ownership · No-confabulation · Teardown.
 
 ---

@@ -69,6 +69,30 @@ Claude must NEVER call `enable_speakerphone()` or `disable_speakerphone()` on it
 
 When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
 
+### 🛑 KISS · Say 3LoL · NoMC C2C — the mandate now covers the TERMINAL too (2026-07-19)
+
+**Verbosity is a defect, not a style.** The TTS brevity mandate below has always governed the **spoken** channel. Rick's 2026-07-19 directive extends brevity to the **terminal reply** as well — the channel this doc previously left deliberately rich.
+
+**What changed, precisely** — do not read this as a contradiction of the two-channel asymmetry below:
+
+| Channel | Before | Now |
+|---|---|---|
+| Spoken `message` | 3 sentences, stripped | **unchanged** — 3 sentences, stripped |
+| `abstract` card | richly formatted, uncapped | **unchanged** — still the detail valve |
+| **Terminal reply** | "stays markdown-rich" | **Say 3LoL: 3 lines of PROSE** — headline + two supporting sentences |
+
+**The asymmetry survives.** `abstract` is still where detail belongs. What is now capped is **terminal prose** — the paragraphs of narration, hedging, and recap that surround the useful content.
+
+**Tables, code blocks, and structured output are CONTENT, not prose** — they do not count against the 3-line budget. A reply of one headline plus a findings table is compliant. Three paragraphs explaining that table is not.
+
+**Go longer ONLY WHEN ASKED.** Not when you judge the content warrants it — you do not hold that discretion, the reader does. A brevity rule whose exception is self-assessed is not a control, it is a receipt.
+
+**When the user says "KISS" / "3LoL" / "NoMC" / "C2C"**: tighten and continue. Do **not** apologize, explain, or promise to improve — that reply is itself the defect.
+
+**Canonical**: `workflow/brevity-mandate.md` · fleet-wide reminder: `/plan-kiss`
+
+---
+
 ### TTS Response Brevity Mandate
 
 **Promoted from real-use observation (2026-05-04, after ~1 week of conversation-mode use)**: spoken responses that are verbatim copies of the markdown terminal reply feel "like documentation read aloud." That's the failure mode this mandate corrects.

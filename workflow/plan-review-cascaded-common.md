@@ -8,6 +8,26 @@
 
 ---
 
+## 🛑 §Brevity — binds every cascade seat [SHARED]
+
+**KISS · Say 3LoL · NoMC C2C. Verbosity is a defect, not a style.**
+
+| Artifact | Shape |
+|---|---|
+| **A finding** | `headline / failure scenario / fix` — three parts, not three paragraphs |
+| **A stage report** | verdict line, then the findings table. No preamble, no recap of the stage's own purpose. |
+| **An escalation abstract** | the ask first, evidence second, stop |
+| **A concurrence / declination** | one line + the reason. "I concur" needs no paragraph. |
+| **Manager routing** | who / what / by when. Nothing else. |
+
+**Go longer ONLY WHEN ASKED** — a seat does not authorize its own length. Detail goes in the `abstract` card or the structured body, never in prose or speech.
+
+**Reviewers specifically**: the temptation is to prove rigor by volume. **Rigor is proven by the failure scenario, not by the word count.** A three-line finding with a concrete repro beats a page of qualified prose.
+
+Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+
+---
+
 ## §Step 0 — Cascade Preparation (Shared Acceptance Criteria) [SHARED]
 
 **Canonical input spec**: see `workflow/plan-review-cascaded-input-spec.md` for the full 4-property spec a planning doc must satisfy + the 6-criterion Step 0 light-review rubric + the remediation flowchart for non-compliance. This §Step 0 carries the shared acceptance criteria; the input-spec doc reframes the same material for planner-side audience and adds the Mr-Radio-ratified 4a/4b split (planner-pre-satisfiable vs intrinsically-Step-0).

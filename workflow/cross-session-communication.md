@@ -11,6 +11,25 @@
 
 ---
 
+## 🛑 BREVITY IN PEER COMMS — KISS · Say 3LoL · NoMC C2C
+
+**Peer-to-peer is where verbosity breeds worst.** A DM to a colleague feels informal, so it grows courtesy, context-setting, and mutual appreciation — none of which the recipient needs and all of which they pay for.
+
+| Rule | Applies to |
+|---|---|
+| **Say 3LoL** — headline + two supporting sentences | `dm_send` body · `commons_post` · `commons_ask_*` |
+| **NoMC C2C** — no "thanks so much for the thorough review," no restating their message back, no "just wanted to check in" | every peer surface |
+| **Lead with the ASK or the VERDICT** | the first line answers "why did you open this message?" |
+| **Go longer ONLY WHEN ASKED** | not when *you* judge it warranted |
+
+**Structured detail belongs in the body's fields, not in prose.** A finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
+
+**Receiving a KISS/3LoL/NoMC reminder from a peer or the user**: tighten and continue. Do **not** apologize or explain — that reply is itself the defect.
+
+**Canonical**: `workflow/brevity-mandate.md` · fleet-wide reminder: `/plan-kiss`
+
+---
+
 ## 1. The three surfaces
 
 | Surface | Direction | Mechanism | Status |
