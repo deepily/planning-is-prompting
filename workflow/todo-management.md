@@ -4,6 +4,13 @@
 
 **Canonical Location**: planning-is-prompting → workflow/todo-management.md
 
+> ## 😘 BREVITY GATE — Decisions Log entries
+> **One ruling per bullet, ≤3 sentences.** A session that produced five rulings writes **five bullets**, not one mega-bullet. Canonical: `workflow/brevity-mandate.md`.
+>
+> **State the ruling and its rule-of-record; route the narrative elsewhere** — `io/post-games/` for the retro, `src/rnd/` for design reasoning, the store for owed work. The Decisions Log answers *"what was decided and why"* in a form someone can scan a year later, not *"what happened all day."*
+>
+> ⚠️ Added 2026-07-19 — the S139 entry packed five rulings into a single unreadable bullet on the same day its author landed the brevity mandate.
+
 > **⚠️ Conversation Mode**: this workflow uses `notify()` and `ask_multiple_choice()` for todo operations — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Long todo lists go to `abstract`; speak the count and headline ("4 pending items, top one is the wizard wiring").
 
 ---

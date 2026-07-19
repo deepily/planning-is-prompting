@@ -13,7 +13,8 @@
 > - **Every deposit, every roundtable contribution: three lines or less** — headline + two supporting sentences. Not three paragraphs.
 > - **A lesson is a claim + its receipt.** Cut "I've been thinking about…", "it strikes me that…", "I want to be careful to acknowledge…".
 > - **No mutual appreciation.** Crediting a seat is one clause, not a paragraph. (See also: the 2026-07-17 finding that post-games *systematically flatter the seat being harvested* — brevity is a partial control on that too.)
-> - **The synthesis doc is content-shaped** and may run long. **NoMC still applies.**
+> - **The synthesis doc in `io/post-games/` is the ONE genuinely uncapped prose surface** — it is the archive, and detail belongs here rather than leaking into `history.md`. **NoMC still applies.**
+> - ⚠️ **Its `history.md` entry is NOT uncapped**: headline + ≤5 findings, ≤2 sentences each, plus a **pointer** to the retro. `history.md` is an index; this doc is the archive. Reproducing one in the other preserves nothing and burns the 25k budget.
 >
 > Canonical: `workflow/brevity-mandate.md`
 

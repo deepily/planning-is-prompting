@@ -231,6 +231,27 @@ INFO: No related TODO items found (no action needed)
 
 ---
 
+## 😘 Step 3.9: BREVITY GATE — before you write a word into history.md or TODO.md
+
+**KISS · Say 3LoL · NoMC C2C.** `workflow/brevity-mandate.md` governs written artifacts, **not just replies**.
+
+| Artifact | HARD CAP |
+|---|---|
+| `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+| `history.md` Checkpoint line | **one line**, semicolon-separated |
+| `history.md` Files line | **paths only**, no per-file commentary |
+| Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
+
+**`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
+
+**Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop — it is long enough.**
+
+> ⚠️ **This gate exists because it was violated by the session that wrote the mandate.** S139 (2026-07-19) landed the brevity mandate and then filed an ~1,100-word history entry; Rick caught it. The first draft of `brevity-mandate.md` had exempted history/retro docs as "content-shaped" — **a self-assessed exception, the exact thing the mandate forbids.** Do not restore that exemption.
+
+**A 😘 from anyone at this step means: cut the entry, then commit.**
+
+---
+
 ## Step 4: Add Checkpoint Entry to history.md
 
 **Add checkpoint entry under current session:**

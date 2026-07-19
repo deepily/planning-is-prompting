@@ -2,6 +2,21 @@
 
 **Purpose**: Prevent history.md from exceeding 25,000 token limits through adaptive archival strategy that monitors token count, forecasts growth, and automatically archives when needed.
 
+> ## 😘 PREVENTION BEATS ARCHIVAL — cap the entry, not just the file
+> This workflow manages the 25k ceiling **after** entries are written. `workflow/brevity-mandate.md` caps them **at write time**, which is strictly cheaper: **every bloated entry accelerates the next forced archive.**
+>
+> | Artifact | HARD CAP |
+> |---|---|
+> | RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+> | Checkpoint line | **one line**, semicolon-separated |
+> | Files line | **paths only**, no per-file commentary |
+>
+> **`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/` (the real archive, uncapped), `src/rnd/<date>-<slug>.md`, or the task-store. The entry carries a **pointer** — an entry that reproduces the retro has not preserved it, it has duplicated it into the one file with a hard token budget.
+>
+> **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
+>
+> ⚠️ Added 2026-07-19 after Rick caught an ~1,100-word entry written by the session that was landing the brevity mandate. Its first draft had exempted history docs as "content-shaped" — **a self-assessed exception, which the mandate forbids.**
+
 **When to use**:
 - Integrated into session-end rituals (automatic health check)
 - Manual invocation via `/history-management` slash command

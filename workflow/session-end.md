@@ -2,6 +2,23 @@
 
 This document contains the comprehensive end-of-session workflow extracted from the global and local Claude.MD configuration files. This prompt should be executed when wrapping up work sessions.
 
+> ## 😘 BREVITY GATE — applies to every document this ritual writes
+> **KISS · Say 3LoL · NoMC C2C** govern **written artifacts**, not just replies. Canonical: `workflow/brevity-mandate.md`.
+>
+> | Artifact | HARD CAP |
+> |---|---|
+> | `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+> | `history.md` Checkpoint line | **one line**, semicolon-separated |
+> | `history.md` Files line | **paths only**, no per-file commentary |
+> | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
+> | Commit message body | the WHY and what it FALSIFIED — not a file-by-file tour |
+>
+> **`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. Duplicating the retro into the one file with a hard 25k ceiling (`history-management.md`) just accelerates the next forced archive.
+>
+> **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
+>
+> ⚠️ **This gate exists because the session that WROTE the brevity mandate violated it** — S139 (2026-07-19) filed an ~1,100-word history entry the same hour; Rick caught it. The mandate's first draft had exempted history/retro docs as "content-shaped," **a self-assessed exception — the exact move the mandate forbids.** Do not restore it.
+
 ## Overview
 
 At the end of our work sessions, perform the following wrapup ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:

@@ -66,7 +66,43 @@ Everything defaults to **3 lines**. These are targets, not ceilings-with-headroo
 | `commons_post` | 3 lines + structured body | Same rule as DM. |
 | Review finding | Headline + failure scenario + fix | Three parts. Not three paragraphs. |
 | Status / progress | 1 line | "Done: X. Next: Y." |
-| Retro / post-game doc | Content-shaped | Exempt from 3LoL — but NOT from NoMC. Cut the meta, keep the findings. |
+| **`history.md` entry** | **headline + ≤5 findings, ≤2 sentences each** | **HARD CAP. See below.** |
+| **Decisions Log entry** | **one ruling per bullet, ≤3 sentences** | Multiple rulings = multiple bullets, not one mega-bullet. |
+| Retro / post-game doc | Content-shaped | The one genuinely uncapped prose surface — it is the archive. Still NoMC. |
+
+---
+
+## 📓 WRITTEN ARTIFACTS ARE NOT EXEMPT — the loophole, named
+
+**The first draft of this document exempted retros and history entries as "content-shaped."** That exemption was written by the same model the mandate exists to correct, and it is exactly the self-assessed escape clause Rick's *"only when ASKED"* amendment forbids. **Caught 2026-07-19 by Rick, on the very session that wrote the rule** — the S139 `history.md` entry ran ~1,100 words while its author was landing a brevity mandate.
+
+> **A long history entry is not thoroughness. It is an un-audited monologue with a timestamp.**
+
+### The cap
+
+| Artifact | Cap |
+|---|---|
+| `history.md` **RESUME HERE** | Headline sentence + **≤5 numbered findings**, **≤2 sentences each** |
+| `history.md` **Checkpoint line** | One line. Semicolon-separated, not a paragraph. |
+| `history.md` **Files line** | Paths only. No commentary per file. |
+| **Decisions Log** bullet | One ruling, **≤3 sentences**. Split multi-ruling sessions into multiple bullets. |
+
+### Where the detail goes — the same routing rule as everywhere else
+
+**Detail is not deleted. It is routed.**
+
+| Content | Destination |
+|---|---|
+| Full narrative, receipts, cross-examination, provenance | `io/post-games/` retro (uncapped — this is the archive) |
+| Design reasoning, measurements, option analysis | `src/rnd/<date>-<slug>.md` |
+| Owed work, status, ownership | the task-store (`task_create` / `task_amend`) |
+| **A pointer to each of the above** | `history.md` — **the index, not the archive** |
+
+⇒ **`history.md` is an INDEX.** Its job is to let a rehydrating session find the right artifact in ten seconds — not to *be* that artifact. An entry that reproduces the retro has not preserved the retro; it has duplicated it in the one file with a hard token budget (see `history-management.md` — the 25k ceiling is real, and every bloated entry accelerates the next archive).
+
+### Self-check before writing any history entry
+
+*Could a rehydrating session act correctly on this entry alone? If yes, stop — it is long enough. If it needs more, that is what the pointer is for.*
 
 **The `abstract` is the pressure valve.** Brevity does not mean losing detail — it means routing detail to the surface built for it. A 3-line spoken payload with a rich `abstract` card carries MORE than a rambling paragraph.
 
