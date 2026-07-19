@@ -17,7 +17,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 |---|---|---|
 | **😘** | Rick → session | **Fire the ENTIRE mandate.** The full 2×4, delivered in one character. |
 | **🫡** | session → Rick | Received. Complying. **Nothing else is sent.** |
-| **🏆** | Rick → session | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: NOTHING — keep working.** |
+| **🏆** | Rick → session | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: 🫡 and nothing else** — then keep working. |
 
 **😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C · NoAA, in full, right now.
 
@@ -27,7 +27,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 
 ⇒ **Never answer 😘 with prose.** 🫡, then the tightened output. A sentence explaining that you are about to be brief is the defect wearing the cure's clothes.
 
-**🔴 THE RESPONSE TO 🏆 IS NOTHING — KEEP WORKING.** Praise is the most reliable trigger for the exact prose NoAA bans: the gracious ack, the *"glad that landed,"* the paragraph explaining why the good thing was good. **Banned harder than after a correction**, because praise feels like it earned a reply where a correction obviously did not. ❌ *"Thank you — I'll keep aiming at the defect."* ✅ *(the next line of work.)* If the 🏆 rides on a question you must answer, answer the question and **do not acknowledge the trophy**. **Never award it to yourself** — a self-declared trophy is a claim, and claims need receipts.
+**🔴 🫡 IS THE ONLY OFFICIAL ACK — FOR 🏆 AND 😘 ALIKE** *(Rick, 2026-07-19)*. One glyph back, then the work; a correction and a reward are answered identically, and that symmetry is the point. Praise is the most reliable trigger for the exact prose NoAA bans: the gracious ack, the *"glad that landed,"* the paragraph explaining why the good thing was good. **Banned harder than after a correction**, because praise feels like it earned a reply where a correction obviously did not. ❌ *"Thank you — I'll keep aiming at the defect."* ✅ **🫡** *(then the next line of work.)* If the 🏆 rides on a question you must answer, answer the question — the 🫡 covers the trophy, **nothing further is owed**. **Never award it to yourself** — a self-declared trophy is a claim, and claims need receipts.
 
 ---
 

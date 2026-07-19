@@ -156,7 +156,7 @@ Detail goes in the abstract card, never in prose or speech.
 |---|---|---|---|
 | **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | 🫡, then the tightened output |
 | **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — |
-| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **Nothing. Keep working.** |
+| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **🫡 and nothing else** — then keep working |
 
 **😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA, in full, immediately.
 
@@ -172,14 +172,16 @@ Detail goes in the abstract card, never in prose or speech.
 
 **🏆 means: that specific thing was right — the ruling, the receipt, the catch, the refusal — do more of it.** It is *reinforcement aimed at a behavior*, not gratitude aimed at a person. Attached to a message it marks **that** move: *"good call on the pipe test 🏆"*.
 
-> ### 🔴 **THE RESPONSE TO 🏆 IS NOTHING. KEEP WORKING.**
+> ### 🔴 **🫡 IS THE ONLY OFFICIAL ACK — FOR 🏆 AND FOR 😘 ALIKE** *(Rick, 2026-07-19)*
 >
-> **This is the rule the glyph exists to protect.** A reward is the single most reliable trigger for the exact prose NoAA bans — the gracious acknowledgment, the *"glad that landed,"* the paragraph explaining why the good thing was good and how it will be repeated. **All of it is banned here, and banned harder than after a correction**, because praise feels like it has earned a reply where a correction obviously has not.
+> **One glyph back. Then the work.** The salute is the *entire* acknowledgment in both directions — a correction and a reward are answered identically, and that symmetry is the point.
+>
+> **This is the rule the trophy exists to protect.** A reward is the single most reliable trigger for the exact prose NoAA bans — the gracious acknowledgment, the *"glad that landed,"* the paragraph explaining why the good thing was good and how it will be repeated. **All of it is banned here, and banned harder than after a correction**, because praise feels like it has earned a reply where a correction obviously has not.
 >
 > ❌ *"Thank you — I'll keep aiming at the defect rather than the suite."*
-> ✅ *(the next line of work)*
+> ✅ **🫡** *(then the next line of work)*
 >
-> **If a reply is unavoidable** — the 🏆 arrives attached to a question you must answer — **answer the question and do not acknowledge the trophy at all.**
+> **If the 🏆 rides on a question you must answer**: answer the question. The 🫡 covers the trophy; **nothing further is owed to it.**
 
 **Do not award it to yourself and do not fish for it.** A session that reports its own work as trophy-worthy has converted a reward into a claim, and claims need receipts. The glyph is the user's to give; the work is yours to make checkable.
 

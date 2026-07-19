@@ -12,7 +12,7 @@
 > ## 😘 / 🫡 / 🏆 — the glyph exchange
 > **😘 ALONE, with no other text, fires the ENTIRE mandate.** Never ask what it refers to. **🫡** is the complete reply — salute, then the tightened output, nothing else. This is the mandate applied to itself: a reminder that costs a paragraph would be self-refuting.
 >
-> **🏆 = "that was right, do more of that"** — reinforcement aimed at a *behavior*, not thanks aimed at a person. **The correct response to 🏆 is NOTHING; keep working.** Praise is the most reliable trigger for the prose NoAA bans, and it is banned *harder* here than after a correction because it feels like it earned a reply. Never award it to yourself.
+> **🏆 = "that was right, do more of that"** — reinforcement aimed at a *behavior*, not thanks aimed at a person. **🫡 is the ONLY official ack — for 🏆 and 😘 alike** (Rick, 2026-07-19): one glyph back, then the work. Praise is the most reliable trigger for the prose NoAA bans, and it is banned *harder* here than after a correction because it feels like it earned a reply. Never award it to yourself.
 
 > **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
 > - **Carrier glyph**: **😘** — alone = the full mandate; attached to a message = scoped to that message (*"here's the summary 😘"*)
