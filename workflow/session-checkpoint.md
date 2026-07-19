@@ -11,6 +11,30 @@
 
 **Key Behavior**: By invoking session-checkpoint, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
 
+**Glyph**: **📷** is the one-character form of this workflow. 🫡, then the checkpoint — report only when it is **done**, with what was committed and the sha. See `brevity-mandate.md` § the glyph exchange.
+
+---
+
+## ⚠️ VOCABULARY — "HELD" MEANS **COMMITTED, NOT PUSHED**
+
+**This is a definition, not a preference.** It cost a near-miss on 2026-07-19 and the ambiguity is invisible until it bites.
+
+| Term | Means | Does NOT mean |
+|---|---|---|
+| **HELD** | **Committed** to the local branch, **not pushed** to origin | *"not pushed"* alone · *"finished but sitting in the worktree"* |
+| **Pushed** | On origin. **The user's call, always** | — |
+| **Dirty / untracked** | Not committed. **Not held. Not safe.** | anything durable |
+
+**Why the distinction is load-bearing — an uncommitted green is a rumor:**
+
+- A `shasum` of a **worktree file** describes whatever exists this second. `git show HEAD:<path> | shasum` re-derives **forever**. Report the second one.
+- An **untracked** file plus an applied effect is the worst pairing available: a container rebuild or `git clean` keeps the effect and **loses the source**. (2026-07-19: an alembic migration was untracked on disk while already stamped into the live dev DB.)
+- Test counts, benchmarks, and review verdicts all reference a tree. **If that tree was never committed, no one can reproduce the claim** — including the author, an hour later.
+
+> ⇒ **Before reporting any work as HELD**: `git status --porcelain` returns **zero** lines, and the sha you quote came out of `git show HEAD:…`, not the file.
+
+**Staging**: commit **selectively by path**. Never `git add -A` / `git add .` — other sessions' work lives in the same tree (see § Parallel Session Safety).
+
 ---
 
 ## Overview
