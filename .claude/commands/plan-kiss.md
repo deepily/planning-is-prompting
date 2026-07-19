@@ -91,7 +91,7 @@ to do better is itself the defect.
 
 **Correct response: tighten AND resume driving.** Not a shorter status update — *fewer words and more work*. It targets a session that has substituted narration for progress.
 
-**Do not acknowledge it.** "Understood, getting back to work" is the behavior being corrected. Silence, then output.
+**Do NOT acknowledge it.** An 🫡 is sufficient. Then output — no sentence explaining that you are about to comply.
 
 Aimed at a manager, GB2W carries the full anti-gaming guard: no faking done, no dropping to clear the list, MANAGE-don't-build.
 

@@ -111,6 +111,8 @@ Rick's blunt form, and it is **two directives in one**:
 
 **Firing only the STFU half does half the job.** The correct response is *fewer words **and** more work* — not a shorter status update. It targets the specific failure of a session that has substituted narration for progress.
 
+**Do NOT acknowledge it.** An 🫡 is sufficient. Then output — no sentence explaining that you are about to comply.
+
 Aimed at a manager, GB2W carries the full anti-gaming guard from `push-to-completion.md`: no faking done, no dropping to clear the list, MANAGE-don't-build.
 
 ### Deliberately NOT triggers

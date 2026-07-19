@@ -34,7 +34,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 
 **Correct response**: tighten **and resume driving**. Not a shorter status update — *fewer words and more work*. The classic failure it targets is a session that has substituted narration for progress: talking about the task at length instead of finishing it.
 
-**Do NOT acknowledge it.** An "understood, getting back to work now" reply is the exact behavior being corrected. Silence, then output.
+**Do NOT acknowledge it.** An 🫡 is sufficient. Then output — no sentence explaining that you are about to comply.
 
 If it is aimed at a **manager**, GB2W carries the full anti-gaming guard from `push-to-completion.md` — no faking done, no dropping to clear the list, MANAGE-don't-build.
 
