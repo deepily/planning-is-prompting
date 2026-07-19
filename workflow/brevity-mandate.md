@@ -148,14 +148,15 @@ Detail goes in the abstract card, never in prose or speech.
 
 ---
 
-## 😘 / 🫡 — the two-glyph exchange
+## 😘 / 🫡 / 🏆 — the glyph exchange
 
-**The entire mandate compresses to one emoji in each direction.**
+**The entire mandate compresses to one emoji in each direction — correction AND reward.**
 
-| Glyph | Direction | Means |
-|---|---|---|
-| **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. |
-| **🫡** | session → user | Received. Complying. **Nothing else is sent.** |
+| Glyph | Direction | Means | Correct response |
+|---|---|---|---|
+| **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | 🫡, then the tightened output |
+| **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — |
+| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **Nothing. Keep working.** |
 
 **😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA, in full, immediately.
 
@@ -164,6 +165,25 @@ Detail goes in the abstract card, never in prose or speech.
 **Why a glyph** — this is the mandate applied to itself: *a rule against verbosity whose reminder costs a paragraph is self-refuting.* One character carries the weight of the entire opening statement; the reply costs one character back. The pair is the cheapest complete exchange in the fleet.
 
 > ⇒ **Never answer 😘 with prose.** 🫡, then the tightened output. A sentence explaining that you are about to be brief is the defect wearing the cure's clothes.
+
+### 🏆 — the reward glyph (Rick, 2026-07-19)
+
+**The mandate had a stick and no carrot.** 🏆 is the carrot, and it is deliberately the same shape as the stick: **one character, no prose, no ceremony.**
+
+**🏆 means: that specific thing was right — the ruling, the receipt, the catch, the refusal — do more of it.** It is *reinforcement aimed at a behavior*, not gratitude aimed at a person. Attached to a message it marks **that** move: *"good call on the pipe test 🏆"*.
+
+> ### 🔴 **THE RESPONSE TO 🏆 IS NOTHING. KEEP WORKING.**
+>
+> **This is the rule the glyph exists to protect.** A reward is the single most reliable trigger for the exact prose NoAA bans — the gracious acknowledgment, the *"glad that landed,"* the paragraph explaining why the good thing was good and how it will be repeated. **All of it is banned here, and banned harder than after a correction**, because praise feels like it has earned a reply where a correction obviously has not.
+>
+> ❌ *"Thank you — I'll keep aiming at the defect rather than the suite."*
+> ✅ *(the next line of work)*
+>
+> **If a reply is unavoidable** — the 🏆 arrives attached to a question you must answer — **answer the question and do not acknowledge the trophy at all.**
+
+**Do not award it to yourself and do not fish for it.** A session that reports its own work as trophy-worthy has converted a reward into a claim, and claims need receipts. The glyph is the user's to give; the work is yours to make checkable.
+
+**Why it lives inside the brevity mandate rather than beside it**: an unreciprocated reward is *cheaper* than a reciprocated one, and reciprocation is the failure mode. **The glyph is only a compression if nothing comes back.**
 
 ---
 

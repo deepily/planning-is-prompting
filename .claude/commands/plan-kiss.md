@@ -9,8 +9,10 @@
 
 > **⚠️ Note**: This command delivers a fleet-wide behavioral correction. The payload is `dm_send`'d to targets and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
 
-> ## 😘 / 🫡 — the two-glyph exchange
+> ## 😘 / 🫡 / 🏆 — the glyph exchange
 > **😘 ALONE, with no other text, fires the ENTIRE mandate.** Never ask what it refers to. **🫡** is the complete reply — salute, then the tightened output, nothing else. This is the mandate applied to itself: a reminder that costs a paragraph would be self-refuting.
+>
+> **🏆 = "that was right, do more of that"** — reinforcement aimed at a *behavior*, not thanks aimed at a person. **The correct response to 🏆 is NOTHING; keep working.** Praise is the most reliable trigger for the prose NoAA bans, and it is banned *harder* here than after a correction because it feels like it earned a reply. Never award it to yourself.
 
 > **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
 > - **Carrier glyph**: **😘** — alone = the full mandate; attached to a message = scoped to that message (*"here's the summary 😘"*)
