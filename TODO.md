@@ -4,7 +4,22 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 
 ## 📍 Resume Here
 
-> ### 🔇 **2026-07-19 (S139, María 🌸) — SILENCE THE BOGUS OWED-WORK POKES: DIAGNOSED, *NOT* APPLIED — TWO FLIPS NEED RICK'S HAND**
+> ### ✅ **2026-07-19 (S139, María 🌸 + Mr Radio 🦉) — POKES SILENCED, AUDIENCE SCALPEL BUILT. `heartbeat.enabled=false` (Rick, by hand) + arbiter `09c3fcc0` HELD.**
+>
+> **Live config**: `master=true · workers=false · managers=false · operator=true` — crew silent, Rick keeps his. Verified firsthand: INI, `/health` 200, `arbiter_poke_audience_config` at `app.py:295`. 33 new tests, arbiter suite **1031 passed**. ⚠️ **Held, not pushed** — Rick pushes. ⚠️ `lupin-app.ini` carries a peer's unstaged `parallel-search` hunk: **never `git add` that file wholesale.**
+>
+> **Three defects surfaced by doing this — each one found by asking for a receipt, not by reading code:**
+> 1. **🔴 The master gate was never master.** The manager-staleness tier read only its own threshold, never `auto_poke_enabled`. Flipping the master silenced the *stuck* tier while staleness pokes kept firing — **we would both have reported success over a live nag.** A pre-existing assertion had *ratified* the hole by omitting `disabled` from the stale vector.
+> 2. **🔴 The scalpel shipped under a depressed panic button.** Master `false` AND-gates all three audiences ⇒ `operator=true` was a dead letter and Rick was receiving *nothing* — the precise inverse of his ask. Caught in review of the live INI, not the diff.
+> 3. **🔴 A Rick-side silence was undiagnosable.** The operator audience is subsystem-level and has no per-session row in `arbiter_poke_gate` — **the one failure mode Rick would actually notice (going quiet) had no instrument at all.** Asking for proof is what surfaced that the proof did not exist. `arbiter_poke_audience_config` added.
+>
+> **Two calls worth keeping**: (a) `operator=false` deliberately does **not** gate urgent operator-gates or the digest — a batch nag-silencer that can swallow an urgent gate awaiting Rick's answer is a worse bug than the nag. (b) Running-process proof of the case-14 advisory was **declined**: manufacturing it required lowering a live threshold, which yields evidence of the instrument, not the system. Deployed-config evidence + the limit named precisely.
+>
+> ### ⏭️ **STILL OWED — the accuracy fix Rick deferred**
+>
+> **This silenced the nag; it did not fix the lie.** The count is **wrong**, not merely loud: my board reads **84 rows**, ~50 of them `queued` P1/P2 that are findings-parked-for-later, not owed work. S138 saw the same species (Stop hook claimed **19 in-progress vs 0** in the store). ⇒ **the poke is accurate about the ROW COUNT and wrong about what "owed" MEANS. Fix the predicate, not the threshold** — and re-arm `heartbeat.enabled` when it's fixed, or the silence becomes permanent by forgetting.
+>
+> <details><summary>Original entry (superseded) — diagnosed-not-applied</summary>
 >
 > Rick, on deadline: ***"find the simplest way to disable the incorrect and incredibly bothersome pokes about the quantity of work owed… we'll propose a fix for this inaccuracy later."*** Silencing only — **the accuracy defect is NOT fixed by this.**
 >
@@ -18,6 +33,8 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 > **⚠️ NEITHER WAS APPLIED — the auto-mode classifier denied both my edit of `~/.claude/settings.json` AND my DM asking Mr Radio to take the arbiter side.** The second denial was correct and I stopped: routing a blocked edit through a peer is the bypass pattern, not a workaround. **Both flips are one-line and one-line-reversible; they need Rick's own hand or an explicit permission grant.**
 >
 > **Owed, deferred by Rick's own framing:** the *real* fix — the owed-count is **wrong**, not merely loud. Live evidence: my board reads **84 rows**, ~50 of them `queued` P1/P2 that are findings-parked-for-later, not owed work. **S138 saw the same species** (Stop hook claimed 19 in-progress vs **0** in the store). ⇒ **the poke is accurate about the ROW COUNT and wrong about what "owed" MEANS.** Do not tune the threshold; fix the predicate. *(No store item minted — `task_create` would add one more row to the pile this entry is about. Mint it when the silencing lands.)*
+>
+> </details>
 
 > ### 🛑 **STANDING ORDER (Rick, 2026-07-18, S138) — THE TWO MONDAY POCs ARE THE SOLE P0. EVERYTHING BELOW THIS LINE WAITS.**
 >
