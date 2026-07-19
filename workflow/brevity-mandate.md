@@ -88,12 +88,40 @@ Detail goes in the abstract card, never in prose or speech.
 
 ## Invoking it
 
+**Vocabulary ratified by Rick, 2026-07-19.**
+
 | Utterance | Effect |
 |---|---|
-| "KISS" / "keep it short" | Reminder — the receiving session tightens immediately |
-| "Say 3LoL" / "three lines or less" | Reminder, length-specific |
-| "NoMC" / "C2C" / "cut to the chase" | Reminder, meta-conversation-specific |
-| `/plan-kiss` | Fires the FULL payload at a named persona or all active sessions (broadcast, mirrors `/plan-push`) |
+| "KISS" | Reminder — the receiving session tightens immediately |
+| "KISS it" / "KISS that" | Verb form, usable mid-sentence — *"KISS that summary and re-send"* |
+| "Say 3LoL" / "3LoL" / "three lines or less" | Reminder, length-specific |
+| "NoMC" / "C2C" / "cut to the chase" / "no meta conversation" | Reminder, meta-conversation-specific |
+| "too verbose" / "too wordy" / "stop rambling" | Plain-language complaint form |
+| **"STFU GB2W"** | **Compound — brevity AND drive-to-completion. See below.** |
+| `/plan-kiss [persona]` | Fires the FULL payload at a named persona or all active sessions (broadcast, mirrors `/plan-push`) |
+
+### 🔴 `STFU GB2W` — Shut The Fuck Up and Get Back To Work
+
+Rick's blunt form, and it is **two directives in one**:
+
+| Half | Means | Mandate |
+|---|---|---|
+| **STFU** | stop the verbosity, now | this document |
+| **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
+
+**Firing only the STFU half does half the job.** The correct response is *fewer words **and** more work* — not a shorter status update. It targets the specific failure of a session that has substituted narration for progress.
+
+Aimed at a manager, GB2W carries the full anti-gaming guard from `push-to-completion.md`: no faking done, no dropping to clear the list, MANAGE-don't-build.
+
+### Deliberately NOT triggers
+
+`keep it short` · `keep it sweet` · `get to the point` · `shorter` — **pruned by Rick, 2026-07-19.**
+
+Too generic: *"make this function shorter"* or *"shorter commit messages please"* would fire a **fleet-wide broadcast** on a turn that was never about verbosity.
+
+> **A false trigger costs more than a missing one.** The command can always be typed; a broadcast cannot be un-sent.
+
+This matches the `/plan-push` pattern — its triggers ("push push push", "coffee break's over", "get off your ass") are all distinctive multi-word phrases, never common words.
 
 **Answering a KISS reminder**: tighten and continue. Do **not** apologize, do not explain what went wrong, do not promise to do better — **that reply is itself the defect.** Acknowledge in ≤1 line or simply comply.
 

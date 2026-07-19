@@ -1,11 +1,42 @@
 ---
 name: brevity-mandate
-description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase). Use whenever the user says "KISS", "keep it short", "keep it sweet", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "you're being too verbose", "too wordy", "stop rambling", "get to the point", "shorter", or otherwise corrects verbosity in this session or across the fleet. Targets every role (not just managers). Also invocable explicitly as /plan-kiss [persona].
+description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase). Use whenever the user says "KISS", "KISS it", "KISS that", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "too verbose", "too wordy", "stop rambling", or "STFU GB2W" / "STFU and get back to work" (the blunt form — fires brevity AND drive-to-completion together). Targets every role, not just managers. Also invocable explicitly as /plan-kiss [persona].
 ---
 
 # Brevity Mandate — KISS · Say 3LoL · NoMC C2C
 
 **Canonical workflow**: `planning-is-prompting → workflow/brevity-mandate.md` — read it in full on invocation. This skill is the activation surface, not the source of truth.
+
+---
+
+## Trigger vocabulary (ratified by Rick, 2026-07-19)
+
+| Form | Strings |
+|---|---|
+| **Acronyms** | `KISS` · `Say 3LoL` · `3LoL` · `three lines or less` · `NoMC` · `C2C` |
+| **Verb forms** (mid-sentence) | `KISS it` · `KISS that` — e.g. *"KISS that summary and re-send it"* |
+| **Expansions** | `cut to the chase` · `no meta conversation` |
+| **Complaints** | `too verbose` · `too wordy` · `stop rambling` |
+| **Blunt** | `STFU GB2W` · `STFU and get back to work` — **see below, this one is special** |
+
+**Deliberately NOT triggers** (Rick pruned them, 2026-07-19): `keep it short`, `keep it sweet`, `get to the point`, `shorter`. Too generic — "make this function shorter" would fire a fleet broadcast over a refactoring request. **A false trigger costs more than a missing one: the command can always be typed, but a broadcast cannot be un-sent.**
+
+---
+
+## 🔴 `STFU GB2W` fires TWO directives — do not do only half
+
+**Shut The Fuck Up and Get Back To Work.** Rick's blunt form. It is a compound, and each half routes to a different mandate:
+
+| Half | Means | Mandate |
+|---|---|---|
+| **STFU** | stop the verbosity, now | this skill — KISS · 3LoL · NoMC C2C |
+| **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` — drive to a terminal state, with receipts |
+
+**Correct response**: tighten **and resume driving**. Not a shorter status update — *fewer words and more work*. The classic failure it targets is a session that has substituted narration for progress: talking about the task at length instead of finishing it.
+
+**Do NOT acknowledge it.** An "understood, getting back to work now" reply is the exact behavior being corrected. Silence, then output.
+
+If it is aimed at a **manager**, GB2W carries the full anti-gaming guard from `push-to-completion.md` — no faking done, no dropping to clear the list, MANAGE-don't-build.
 
 ---
 

@@ -9,7 +9,14 @@
 
 > **⚠️ Note**: This command delivers a fleet-wide behavioral correction. The payload is `dm_send`'d to targets and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
 
-> **Activation**: this is the explicit fallback. The mandate also fires from the bare acronyms — "**KISS**", "**Say 3LoL**", "**three lines or less**", "**NoMC**", "**C2C**", "**cut to the chase**", "**keep it short**" — via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md`.
+> **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
+> - **Acronyms**: "**KISS**", "**Say 3LoL**", "**3LoL**", "**three lines or less**", "**NoMC**", "**C2C**"
+> - **Verb forms**: "**KISS it**", "**KISS that**" (mid-sentence — *"KISS that summary"*)
+> - **Expansions**: "**cut to the chase**", "**no meta conversation**"
+> - **Complaints**: "**too verbose**", "**too wordy**", "**stop rambling**"
+> - **Blunt**: "**STFU GB2W**" — *Shut The Fuck Up and Get Back To Work* ⚠️ **compound, see below**
+>
+> **Deliberately NOT triggers** (pruned by Rick): "keep it short", "keep it sweet", "get to the point", "shorter" — too generic; *"make this function shorter"* would fire a fleet broadcast over a refactoring request. A false trigger costs more than a missing one: the command can be typed, but a broadcast cannot be un-sent.
 
 ---
 
@@ -73,6 +80,23 @@ to do better is itself the defect.
 
 ---
 
+## ⚠️ `STFU GB2W` is a COMPOUND — fire both halves
+
+**Shut The Fuck Up and Get Back To Work.** Each half routes to a different mandate:
+
+| Half | Means | Mandate |
+|---|---|---|
+| **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C |
+| **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
+
+**Correct response: tighten AND resume driving.** Not a shorter status update — *fewer words and more work*. It targets a session that has substituted narration for progress.
+
+**Do not acknowledge it.** "Understood, getting back to work" is the behavior being corrected. Silence, then output.
+
+Aimed at a manager, GB2W carries the full anti-gaming guard: no faking done, no dropping to clear the list, MANAGE-don't-build.
+
+---
+
 ## Usage
 
 ```bash
@@ -80,7 +104,7 @@ to do better is itself the defect.
 /plan-kiss tiberius     # one persona
 ```
 
-Or by utterance: "KISS", "Say 3LoL", "NoMC", "C2C", "cut to the chase", "keep it short".
+Or by utterance: "KISS" · "KISS it" / "KISS that" · "Say 3LoL" · "NoMC" · "C2C" · "cut to the chase" · "too verbose" · "STFU GB2W".
 
 ---
 
