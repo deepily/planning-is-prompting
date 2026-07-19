@@ -18,6 +18,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 | **😘** | Rick → session | **Fire the ENTIRE mandate.** The full 2×4, delivered in one character. |
 | **🫡** | session → Rick | Received. Complying. **Nothing else is sent.** |
 | **🏆** | Rick → session | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: 🫡 and nothing else** — then keep working. |
+| **📷** | Rick → session | **Document and checkpoint your work** — the one-character form of `/plan-session-checkpoint`. An ACTION glyph, not a behavior glyph. **Correct response: 🫡, then the checkpoint** — report only when done, with what was committed and the sha. *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.* |
 
 **😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C · NoAA, in full, right now.
 

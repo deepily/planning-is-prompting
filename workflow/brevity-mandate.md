@@ -157,6 +157,7 @@ Detail goes in the abstract card, never in prose or speech.
 | **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | 🫡, then the tightened output |
 | **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — |
 | **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **🫡 and nothing else** — then keep working |
+| **📷** | user → session | **Document and checkpoint your work.** Snapshot the state now. | **🫡**, then the checkpoint — report only when it's done |
 
 **😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA, in full, immediately.
 
@@ -182,6 +183,16 @@ Detail goes in the abstract card, never in prose or speech.
 > ✅ **🫡** *(then the next line of work)*
 >
 > **If the 🏆 rides on a question you must answer**: answer the question. The 🫡 covers the trophy; **nothing further is owed to it.**
+
+### 📷 — the checkpoint glyph (Rick, 2026-07-19)
+
+**📷 = document and checkpoint your work. Snapshot the state, now.** Reach a safe point, write the tracking docs, commit **held**. It is the one-character form of `/plan-session-checkpoint`.
+
+**It is an ACTION glyph, not a behavior glyph.** 😘 corrects *how* you speak; 🏆 reinforces *what* you did; **📷 tells you to go do a specific thing.** Same compression, different category.
+
+**Response: 🫡 — then the checkpoint. Report only when it is done.** Do not narrate the plan, do not list what you're about to commit, do not ask which files. The salute, the work, then a receipt: what was committed, and the sha.
+
+> ⇒ **A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.** The glyph asks for an artifact on disk, not a paragraph about one.
 
 **Do not award it to yourself and do not fish for it.** A session that reports its own work as trophy-worthy has converted a reward into a claim, and claims need receipts. The glyph is the user's to give; the work is yours to make checkable.
 
