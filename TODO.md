@@ -52,7 +52,11 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 > | 8 | **Tiffany's red-first** — injection landed on a key the assertion never reads ⇒ **went green** | the anti-false-confidence mechanism manufacturing false confidence | Rio |
 > | 9 | **Cheech's env leak** — inline `GOOGLE_GENAI_MODEL` manufactured a 67-pass green while two lanes were dead | a receipt that measured the harness, not the system | Rio |
 >
-> **NINE, across three independent lanes and two repos, in one day.** Well past the accumulation bar. ⚠️ **Still NOT graduated — that is Rick's call at the walkthrough**, and Rio is bringing his three with the instances attached rather than a recommendation.
+> | **10** | **A TEST WENT STALE WITHOUT GOING RED** — Cheech changed the routing contract under Tiffany's test; her assertion stayed true under *both* designs, so it kept passing while its docstring described behavior the code no longer had | **DISTINCT SHAPE — ruled, not a subclass.** Rows 1–9 are *"the check cannot SEE the failure."* This is *"the check still passes and no longer MEANS what it says."* Red-first proves a test **can** fail; nothing proves it still tests what its name claims. **No runner catches this — only a human read.** | Rio |
+>
+> ⚠️ **AN ELEVENTH IS ALREADY LATENT, in the fix for #6.** The active-grid ownership guard ships with `owner=` **optional** (required would break two lanes mid-flight), so **unstamped reads pass freely** — a guard that silently does nothing on exactly the path it exists to protect. The stated mitigation is a binding obligation on Cheech, which is *a rule someone remembers* — the thing the context manager was built to replace. **Ruled**: an unstamped read must **log loudly** with the caller, so an inert guard is *visible* rather than assumed-active. Keep the optional arg; make the ungated case announce itself.
+>
+> **TEN, across three independent lanes and two repos, in one day** — plus an eleventh caught latent inside the fix for the sixth. Well past the accumulation bar. ⚠️ **Still NOT graduated — that is Rick's call at the walkthrough**, and Rio is bringing his three with the instances attached rather than a recommendation.
 >
 > **The two rules already written from it** (Rio's spec, as rules not practice): a red-first is proven only when the observed failure diagnostic **names the asserted-on key**; and **a suite receipt states the env it ran in**, or it is a clean-env re-run.
 
