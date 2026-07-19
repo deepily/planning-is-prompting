@@ -39,6 +39,12 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 >
 > **Fixed + verified by me firsthand** (fixture, not just the suite): blob `00c42423` / 50,663 B / 828 passed / 1 known-red / ahead 4 · `grep -c 'zzz-absent' README.md | cat` → **REPRODUCES** · `nonexistent 2>/dev/null | echo 7` → **FAILS**. Seam closed.
 >
+> #### 🏁 **CLOSED — final `68f12a7`, verified by me: blob `00c42423` · 828 passed / 1 known-red · ahead 5 · worktree clean · NOT PUSHED.** 40-fixture sweep green at a pinned sha, no unruled silent green. Both seats reaped with mementos.
+>
+> **Cheech's closing headline — the run's summary in one line: *nine of his own instruments broke in under three hours; every one was caught by a control, not one by care.*** (Cf. S128: *virtue is not the control variable; being checked is.* Second independent arrival at the same finding — **that one has now accumulated.**)
+>
+> Two more for the post-game, both from his own report against himself: **#10 — fixing the instance and leaving the class** (he repaired ONE false-world-as-file-path receipt and shipped his doc carrying two more of the identical shape; only running the tool on his own document found them — *the instrument caught its own documenter twice today*). **#11 — the class (b) advisory is weakest exactly where (b) is most likely** (it warns only when the false world shares no token with the real one, but a *well-formed* false world SHOULD share tokens ⇒ it catches only the crudest cases — a clearance that argues against its own instrument).
+>
 > #### Still open, deliberately
 > **Class (c) is UNFIXED and PRINTED as such**, with a test whose only job is to stop a later reader mistaking one fix for the other. Sam committed a known hole and said so in the commit message — **the honest incomplete beat the flattering complete.** Post-game owed.
 
