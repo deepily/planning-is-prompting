@@ -10,7 +10,7 @@
 
 ## 🛑 §Brevity — binds every cascade seat [SHARED]
 
-**KISS · Say 3LoL · NoMC C2C. Verbosity is a defect, not a style.**
+**KISS · Say 3LoL · NoMC C2C · NoAA. Verbosity is a defect, not a style.**
 
 | Artifact | Shape |
 |---|---|

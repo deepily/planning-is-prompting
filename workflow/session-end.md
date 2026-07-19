@@ -3,7 +3,7 @@
 This document contains the comprehensive end-of-session workflow extracted from the global and local Claude.MD configuration files. This prompt should be executed when wrapping up work sessions.
 
 > ## 😘 BREVITY GATE — applies to every document this ritual writes
-> **KISS · Say 3LoL · NoMC C2C** govern **written artifacts**, not just replies. Canonical: `workflow/brevity-mandate.md`.
+> **KISS · Say 3LoL · NoMC C2C · NoAA** govern **written artifacts**, not just replies. Canonical: `workflow/brevity-mandate.md`.
 >
 > | Artifact | HARD CAP |
 > |---|---|
