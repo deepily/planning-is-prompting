@@ -36,8 +36,25 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 > - **Rio ⚡ — free-text demo scoping** (parallel-search). All 4 questions + 2 unstated assumptions accepted. **Reversed his `MAX_CRITERIA` 4→6**: the rehearsed path shows Rick 4×6, he'd type 6 by analogy and eat **a FATAL on stage**. Flagged his real defect: a paraphrase **silently routes him from the SAFE path to the RISKY one** — same shape as the silent truncation he banned four sections earlier. Scoper now **pinned to 3.1-pro explicitly** so a future flash swap can't reach the one stage whose failure kills the live path.
 > - **Sam 🎙️ — grounding-density gate** (SECOND, holding, no code). §0 ruled: *an absent check leaves a gap; a present check whose passing condition is satisfied by the failure **manufactures** a 5.*
 >
-> #### The afternoon's one recurring axis
-> **Silent-wrong-answer vs loud-wrong-answer.** It decided Rio's Q4, his active-grid stamp, my `UNINSTRUMENTED` exit-2 ruling this morning, and Mr Radio's whole `parked` proposal. Not graduating it — **noting that it recurred across three independent lanes in one afternoon**, which is the accumulation bar.
+> #### 🔬 The day's one recurring axis — **the auditable list, for the walkthrough**
+>
+> **Silent-wrong-answer vs loud-wrong-answer.** I first said "three instances," then "five." **Both were wrong — I never counted.** Enumerated, with the row that proves each. *(This is the rule I imposed on Mr Radio this morning — a number nobody can audit is worthless — applied to my own claim.)*
+>
+> | # | Instance | Shape | Lane |
+> |---|---|---|---|
+> | 1 | `claimcheck` zero-receipts exiting **0** | a document with no instruments reads as clean | Sam |
+> | 2 | **G2 tag laundering** — `"…99.2% across 760 tests, but nobody measured it"` passed, exit 0 | a hard-fail gate silently permissive on ordinary prose | Sam |
+> | 3 | **`~~~receipt` tilde fence** — silent green over a live receipt | parser skips, reports clean | Sam |
+> | 4 | **`pipefail` back door** — my *withdrawn* rule shipped as a side effect | a reversal nobody watched the code for | Sam / me |
+> | 5 | **Rio Q4** — paraphrase silently routes from the SAFE demo path to the RISKY one | silent fallthrough | Rio |
+> | 6 | **Active-grid concurrency** — a second session mutates the grid, table renders from someone else's criteria | silent wrong answer | Rio |
+> | 7 | **`parked`** — `queued`/`blocked_by=[]` rows present as READY while their bodies forbid working them | the hold is unrepresentable where the predicate reads | Mr Radio |
+> | 8 | **Tiffany's red-first** — injection landed on a key the assertion never reads ⇒ **went green** | the anti-false-confidence mechanism manufacturing false confidence | Rio |
+> | 9 | **Cheech's env leak** — inline `GOOGLE_GENAI_MODEL` manufactured a 67-pass green while two lanes were dead | a receipt that measured the harness, not the system | Rio |
+>
+> **NINE, across three independent lanes and two repos, in one day.** Well past the accumulation bar. ⚠️ **Still NOT graduated — that is Rick's call at the walkthrough**, and Rio is bringing his three with the instances attached rather than a recommendation.
+>
+> **The two rules already written from it** (Rio's spec, as rules not practice): a red-first is proven only when the observed failure diagnostic **names the asserted-on key**; and **a suite receipt states the env it ran in**, or it is a clean-env re-run.
 
 > ### ✅ **2026-07-19 (S139, María 🌸 driving · Sam 🎙️ + Krishna 🦚 + Cheech 🌿) — `claimcheck.py` BUILT in 40 min. 3 commits HELD in `skills-distillation`, nothing pushed.**
 >
