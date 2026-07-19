@@ -29,6 +29,16 @@ Last updated: 2026-07-18 (**Session 138** (María 🌸 `f0a9787c`) — **post-di
 >
 > ⚠️ **AND MY OWN FALSE FINDING, ON THE RECORD**: I reported that *nothing in the repo hashed to Sam's pin* and called his receipt unattached. **Wrong — he used SHA-256, I swept with `shasum`'s SHA-1 default.** Same bytes, two algorithms. **My detector was broken, not his receipt.** Retracted within a minute. Only "ahead 8" (actual: 1) was a real error, and he had already caught it himself.
 >
+> #### ⛔ **4th commit `85f6a99` — MY WITHDRAWN RULE SHIPPED ANYWAY, THROUGH THE BACK DOOR**
+>
+> `set -o pipefail` promotes any non-zero stage to the pipeline's status — **which IS the rule I proposed, Sam refuted, and I withdrew within a minute.** It went in regardless, as a side effect of closing the dead-stage seam, and was live in `3339aac`: `grep -c absent FILE | cat` → **FAILS** on the right answer. It had already bitten Cheech's own corpus doc.
+>
+> ⚠️ **BOTH our verifications missed it for the identical reason: we tested UNPIPED.** `pipefail` cannot engage without a pipe, so the check and the defect could never meet.
+>
+> ⇒ **A WITHDRAWN DECISION IS NOT A REMOVED DECISION.** Nobody watched the implementation for it precisely *because* we both believed it was dead. **This is the strongest item of the run — post-game #9, above all 8 on Sam's list.**
+>
+> **Fixed + verified by me firsthand** (fixture, not just the suite): blob `00c42423` / 50,663 B / 828 passed / 1 known-red / ahead 4 · `grep -c 'zzz-absent' README.md | cat` → **REPRODUCES** · `nonexistent 2>/dev/null | echo 7` → **FAILS**. Seam closed.
+>
 > #### Still open, deliberately
 > **Class (c) is UNFIXED and PRINTED as such**, with a test whose only job is to stop a later reader mistaking one fix for the other. Sam committed a known hole and said so in the commit message — **the honest incomplete beat the flattering complete.** Post-game owed.
 
