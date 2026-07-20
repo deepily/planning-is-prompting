@@ -612,7 +612,7 @@ The cascade workflow now formally recognizes **5 distinct failure modes** (4 doc
 
 1. **Worker dormancy** (Run 1 carry): peer session stops posting; addressed by `stall_threshold_minutes` + universal-step-zero disk-read
 2. **Read-side truncation** (Run 1 NEW): `commons_read` API truncates long entries; addressed by disk-read defense-in-depth + Rio's fix in Lupin
-3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by external scheduler daemon
+3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by the **standing arbiter + per-session Stop-hook** (the external scheduler daemon that originally addressed it was retired 2026-06-29 — do not launch one)
 4. **Write-side commons truncation** (Run 1 carry): long `commons_post` bodies truncated on disk; addressed by Rio's fix
 5. **Anthropic rate-limit on reviewer** (Run 3 NEW): single-account hits per-Anthropic-account quota; reviewer stuck >78 min; addressed by Manager Reassignment Latitude rule above — reassign to peer rather than partial-close
 

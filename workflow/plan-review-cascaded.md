@@ -23,7 +23,9 @@ Before invoking this workflow:
 1. **5 Claude Code sessions launched** (typically 5 tmux panes). Each session is a peer; the cosa-voice MCP server allocates a persona to each (María, Tiberius, etc.)
 2. **The user designates one session as the manager** by invoking `/plan-review-cascaded` in that session — that session becomes the manager and drives this playbook
 3. **The user provides an input plan** to be reviewed (a path to a markdown plan, or pasted content)
-4. **External heartbeat scheduler running** (added 2026-05-18 post-Run-1 workflow update): a scheduler outside CC pokes the manager every 2-3 min during active cascade to compensate for turn-based-CC's lack of autonomous ticks. See §6.4 for the integration spec. If no scheduler is running, the cascade can still execute but will accumulate significant detection-delay; for production runs the scheduler is mandatory.
+4. **A waker is running — the standing arbiter, NOT a per-cascade daemon** (added 2026-05-18; **rewritten 2026-07-20** to match §6.4). Turn-based CC has no autonomous ticks, so the cascade needs an external waker to poke the manager. **That waker is the standing arbiter daemon plus the per-session Stop-hook** — verify it is up (`lupin_arbiter_app` on `:8001`) rather than standing anything up. **Do NOT launch a per-cascade scheduler**: the interim `cascade_heartbeat_scheduler.py` daemon was RETIRED on Rick's GO 2026-06-29 and is fenced HISTORICAL in §6.4. What makes a run chaseable is the Step 0.4 task-item ledger (`correlation_key` + `accountable_manager` on every step item), not a dedicated daemon.
+
+   > ⚠️ **This line previously read "for production runs the scheduler is mandatory"** — surviving text from before the 2026-06-29 retirement, which contradicted §6.4 in the same document. Corrected 2026-07-20 after it caused a Workflow Steward to raise a false blocking risk twice on a live run (found by Clayton 😎, cascade manager). A prerequisite that outlives the mechanism it names does not read as stale; it reads as an unmet requirement.
 5. **Participant context-clearing — explicit pre-cascade setup step (added 2026-05-28 post-Run-5 PG-1)**: cascade participants (all reviewers; arguably the Manager too) should `/clear` before taking their seat so the review is cold/uncontaminated. **Who clears**: every reviewer not satisfying the §Cold-cast fork 4-criteria orthogonal-context-acceptable test (see `plan-review-cascaded-common.md`). **When**: between Step 0 light-review PASS and Step 4 role-ack. **Why**: prior-context contamination causes reviewer bias — findings sharpened by what the reviewer already knew vs what the section itself demands. Empirical anchor: Run 5 — Rachel correctly recused from Stage 1 citing the cold-cast practice; codifying as explicit setup step prevents future cast members from skipping the `/clear` by default.
 
 ## Briefing delivery (optional Workflow Steward pattern)
@@ -370,7 +372,7 @@ When manager calls a vote per §5 turn cap:
 
 **Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
 
-**See also**: §Heartbeat Handling in the detailed Manager Behavior section below for the integration pattern with the external scheduler.
+**See also**: §Heartbeat Handling in the detailed Manager Behavior section below — for the manager's **on-poke response discipline**, which is still live. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
 
 ### 6.5 Status pushes
 
@@ -766,11 +768,17 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 **Quorum**: 3 of 4 substantive personas must vote within the window. Fewer = manager extends window once by 5 minutes; if still under quorum, escalate via Trigger 7 (pipeline stall — at least one persona is phantom).
 
-### Heartbeat Handling (external-scheduler integration)
+### Heartbeat Handling (arbiter-driven)
 
-**Rewritten 2026.05.18 after Run 1 postmortem.** The original draft (manager-fires-its-own-pings) was fundamentally incompatible with Claude Code's turn-based runtime model — sessions cannot autonomously tick. The workflow now centers on an **external scheduler** that pokes the manager on a cadence, and the **manager's response discipline** on each poke.
+> ⛔ **THE PER-CASCADE EXTERNAL SCHEDULER IS RETIRED (Rick GO 2026-06-29). DO NOT STAND ONE UP.**
+> **The live waker is the standing arbiter daemon + the per-session Stop-hook** — verify it is up (`lupin_arbiter_app` on `:8001`); do not launch anything. See §6.4, which is the authority for this subsection.
+> **The manager's on-poke *behaviour* below is unchanged and still live** — universal-step-zero disk-read, phantom detection, suppression-during-user-pause. Only the *waker* changed: it now runs on the arbiter's poke, not a self-launched daemon's. **The "Scheduler shape" spec that follows is preserved as historical record, not as instruction.**
+>
+> *Fenced 2026-07-20 (found by Clayton 😎, cascade manager). This subsection sat unfenced and present-tense in the **Manager Behavior** section — the one the Manager System Prompt tells a Manager to load — while §6.4 five hundred lines away carried the retirement. A Manager entering here read live instruction to stand up the forbidden daemon and never reached the banner.*
 
-**Scheduler shape** (lives outside CC; integration spec only here):
+**Rewritten 2026.05.18 after Run 1 postmortem** *(⚠️ historical per the banner above — superseded 2026-06-29)*. The original draft (manager-fires-its-own-pings) was fundamentally incompatible with Claude Code's turn-based runtime model — sessions cannot autonomously tick. That is *why* an external waker is needed at all; the waker is now the standing arbiter.
+
+**Scheduler shape** (🗄️ HISTORICAL — the retired interim daemon's spec, preserved as record; do NOT implement):
 
 - Implementation: cron, scheduled remote agent via the `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
 - Per-tick action: `commons_send_to(recipient=<manager_persona>, body="heartbeat", expect_reply=False)`

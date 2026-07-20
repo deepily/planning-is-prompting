@@ -15,13 +15,13 @@
 | **Pure authoring** | Intent statement + must-reuse list + immutable constraints + target deliverables | Full implementation plan with sections, ACs, EXECUTOR tags | Greenfield projects, design-from-scratch work |
 | **Hybrid** (design-to-implementation) | Ratified design doc + sub-feature partitioning + outstanding Q-decisions | Implementation plan with Q-decisions cascade-resolved + ACs derived | Phase-shaped projects (e.g., Lupin Phase 6C), design-doc-stalled-at-Q-decisions cases |
 
-**Status**: v1 — markdown-driven, no orchestration code beyond the heartbeat daemon (inherited from `/plan-review-cascaded`). Ships 2026-05-19 post-Run-2 workflow ratification.
+**Status**: v1 — markdown-driven, **no orchestration code at all** (the heartbeat daemon this line once named was RETIRED 2026-06-29; the standing arbiter is the waker). Ships 2026-05-19 post-Run-2 workflow ratification.
 
 ---
 
 ## Prerequisites
 
-All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, heartbeat daemon, dual-delivery briefing pattern when a Workflow Steward participates). PLUS:
+All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, **a running waker — the standing arbiter, ⛔ NOT a per-cascade heartbeat daemon, which is retired**, dual-delivery briefing pattern when a Workflow Steward participates). PLUS:
 
 - **One of**:
   - **(Pure authoring mode)**: intent statement, must-reuse list, immutable constraints, target deliverables
