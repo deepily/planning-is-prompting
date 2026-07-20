@@ -142,6 +142,12 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 **Why the append and not "the Manager tells them"**: 2026-07-16 — a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist; **the bounce reported itself with the live roster attached and was read and moved past.** Three of four briefs carried a defect. ⇒ **Two hops, both lossy. In the append, the brief IS the delivery — a manager cannot omit what a manager does not assemble.**
 
+### 7.2 A command never defines an obligation — state the obligation in its own scope
+
+**A brief MUST state each obligation in the obligation's own scope, and may give a command only as an ILLUSTRATION of it — never as its definition.** If the obligation is *"do not regress the tree,"* the baseline command in the brief must run the TREE; if a narrower command is given for speed, the brief says explicitly that it is a subset and names the full scope.
+
+**Anchor (2026-07-16, store `74c16374`):** all five Session-14 briefs carried *"Baseline 392 passed (`pytest src/tests/unit`) — do not regress"* — **a unit-scoped command beside a whole-tree obligation. The command silently redefined the obligation.** One seat never ran the integration tier all session and reported "no regressions" — a claim about 414 tests — off a 392-test run. His words: *"My 'no regressions' was true by luck."* Corollary: **do not rely on one role's charter to compensate for a brief that under-scopes every other role** — that is luck wearing the costume of design. Companion mechanism: the R-5 adversarial brief review (store `978b27ac`) — hand the Reviewer the brief before the work begins with one instruction: *"find the obligation whose scope is narrower than the noun beside it."*
+
 ---
 
 ## 8. Build & install status
