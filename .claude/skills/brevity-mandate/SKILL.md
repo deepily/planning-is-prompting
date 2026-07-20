@@ -1,9 +1,9 @@
 ---
 name: brevity-mandate
-description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase), NoAA (No Aphorisms or Apologies). Use whenever the user sends the 😘 emoji (the carrier glyph — 😘 ALONE, with no other text, fires the ENTIRE mandate), or says "KISS", "KISS it", "KISS that", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "NoAA", "no aphorisms", "no apologies", "too verbose", "too wordy", "stop rambling", or "STFU GB2W" / "STFU and get back to work" (the blunt form — fires brevity AND drive-to-completion together). Acknowledge with 🫡 and nothing else. Targets every role, not just managers. Also invocable explicitly as /plan-kiss [persona].
+description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 3LoL (Say it in Three Lines or Less), NoMC C2C (No Meta Conversation, Cut to the Chase), NoAA (No Aphorisms or Apologies), NoDrama (state the defect, the fix, the receipt — cut the stakes clause). Use whenever the user sends the 😘 emoji (the carrier glyph — 😘 ALONE, with no other text, fires the ENTIRE mandate), or says "KISS", "KISS it", "KISS that", "Say 3LoL", "3LoL", "three lines or less", "NoMC", "C2C", "cut to the chase", "no meta conversation", "NoAA", "no aphorisms", "no apologies", "NoDrama", "no drama", "not dramatic", "too dramatic", "too verbose", "too wordy", "stop rambling", or "STFU GB2W" / "STFU and get back to work" (the blunt form — fires brevity AND drive-to-completion together). Acknowledge with 🫡 and nothing else. Targets every role, not just managers. Also invocable explicitly as /plan-kiss [persona].
 ---
 
-# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA
+# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama
 
 **Canonical workflow**: `planning-is-prompting → workflow/brevity-mandate.md` — read it in full on invocation. This skill is the activation surface, not the source of truth.
 
@@ -20,7 +20,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 | **🏆** | Rick → session | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: 🫡 and nothing else** — then keep working. |
 | **📷** | Rick → session | **Document and checkpoint your work** — the one-character form of `/plan-session-checkpoint`. An ACTION glyph, not a behavior glyph. **Correct response: 🫡, then the checkpoint** — report only when done, with what was committed and the sha. *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.* |
 
-**😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C · NoAA, in full, right now.
+**😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama, in full, right now.
 
 **Attached to a message**, it scopes to that message: *"here's the summary 😘"* = give me this, short.
 
@@ -53,7 +53,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 
 | Half | Means | Mandate |
 |---|---|---|
-| **STFU** | stop the verbosity, now | this skill — KISS · 3LoL · NoMC C2C · NoAA |
+| **STFU** | stop the verbosity, now | this skill — KISS · 3LoL · NoMC C2C · NoAA · NoDrama |
 | **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` — drive to a terminal state, with receipts |
 
 **Correct response**: tighten **and resume driving**. Not a shorter status update — *fewer words and more work*. The classic failure it targets is a session that has substituted narration for progress: talking about the task at length instead of finishing it.
@@ -81,6 +81,8 @@ If it is aimed at a **manager**, GB2W carries the full anti-gaming guard from `p
 - **KISS** — Keep It Short/Sweet.
 - **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences.
 - **NoMC C2C** — No Meta Conversation, Cut to the Chase.
+- **NoAA** — No Aphorisms or Apologies.
+- **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause. Covers code, documentation AND interpersonal comms (Rick, 2026-07-19).
 
 **Lead with the verdict. Evidence second. Stop.**
 

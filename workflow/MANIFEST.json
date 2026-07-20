@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-07-19T18:36:15-04:00",
+  "generator": "workflow/scripts/pip_manifest.py",
+  "command_count": 40,
+  "commands": {
+    "p-is-p-00-start-here.md": {
+      "sha256": "4bb75aaa44f98a50495df1cbc04c59d5563a416e0d905dc1ac1d828c7cae426d",
+      "version": "1.0"
+    },
+    "p-is-p-01-planning.md": {
+      "sha256": "b255a19d0de6c7289f3ee993aff4c8c33921a9c166e03a37b4f2c2b824367d2c",
+      "version": "1.0"
+    },
+    "p-is-p-02-documentation.md": {
+      "sha256": "902e4f365c7232c1e2a17583838979975829118b337004838d9179435dbae088",
+      "version": "1.0"
+    },
+    "plan-about.md": {
+      "sha256": "ef455b5cb8c1eec97d7605af384eabcdb20883c1af1461627fe8a97c83f8272d",
+      "version": "1.0"
+    },
+    "plan-authoring-cascaded.md": {
+      "sha256": "d1a8a17c0490b8793c37f87d5b33bddf749756084a2a080984349cf33fc490ec",
+      "version": "1.0"
+    },
+    "plan-backup-check.md": {
+      "sha256": "9fe4cd942f06f1243cc1609d979a073f197d93f950d5da17751b848d21899163",
+      "version": "1.0"
+    },
+    "plan-backup-write.md": {
+      "sha256": "95ebf5ca10e1d1eb0b410a4ec676a331778cf8ec41335620a6044d2226a26c61",
+      "version": "1.0"
+    },
+    "plan-backup.md": {
+      "sha256": "303206b5ba23a518ed848083b15e34165d0ff48d1a4d040432e617e12e37adfd",
+      "version": "1.0"
+    },
+    "plan-branch-pr-and-merge.md": {
+      "sha256": "495709f7e7ba22a31e843c3137cf7f1ba55109248f23f384c4785142341cb641",
+      "version": "1.0"
+    },
+    "plan-bug-fix-mode-close.md": {
+      "sha256": "b0ddafe0f741e31fe65c54ef1882e92419fdb590343325138075f669e6147944",
+      "version": "1.0"
+    },
+    "plan-bug-fix-mode-continue.md": {
+      "sha256": "773e6a81cc3e1ba72588c5ab3547c4a87be8e2b313e42e6677aa830b10e8e5de",
+      "version": "1.0"
+    },
+    "plan-bug-fix-mode-start.md": {
+      "sha256": "5327ef3a82c1751a5ebc002e797163cbb030859e90c3cc52eef3d5017efd3935",
+      "version": "1.0"
+    },
+    "plan-bug-fix-mode-wrap.md": {
+      "sha256": "2b81e307d4eeb574e2ec59eba57cb8b38e3790d9a36c87168b84fcdafaafb933",
+      "version": "1.0"
+    },
+    "plan-bug-fix-mode.md": {
+      "sha256": "4e51dc8206823759ddb0b2bda6eb7cfedc8c840cf66f5d837b824e7a1a3792d1",
+      "version": "1.0"
+    },
+    "plan-decide.md": {
+      "sha256": "884476cedb54c0b431fe1ff353cbf10bed54f1346028c566fffaa07b1af62b3d",
+      "version": "1.0"
+    },
+    "plan-history-management.md": {
+      "sha256": "d289720031142dbf298af6e34c93c56fd5f6f5b62ae168a4f938d14d92bb0b42",
+      "version": "1.0"
+    },
+    "plan-install-wizard.md": {
+      "sha256": "46ca285356d67d53643c84ef653e43b353ea77dfdfa959f318e170a5eba44da0",
+      "version": "1.0"
+    },
+    "plan-kiss.md": {
+      "sha256": "4b13a12549f1fd08cd044c8128620f45c999265da9829cd70fd7d85fdd9b204a",
+      "version": "1.0"
+    },
+    "plan-loc-delta-global.md": {
+      "sha256": "2d7e47fc52b36a11b39b225ebb1f003f69e089ed3e29e9e4a128fc7f135e41dd",
+      "version": "1.1"
+    },
+    "plan-mandate.md": {
+      "sha256": "a7f99ed5c5de9a378445c48deaac26acf3015b51621df37b402ba33034ff5802",
+      "version": "1.1"
+    },
+    "plan-memento.md": {
+      "sha256": "b124e68f6020a5ab5ade53b6b262bfd74d60facad05e11c6778efadee8fb1e0a",
+      "version": "2.0"
+    },
+    "plan-post-game.md": {
+      "sha256": "1feb8c0fb300fdcc849c4ba5cad479aee8d2b32bebdecfe292983b24a443fdf4",
+      "version": "0.1 (draft \u2014 held for Rick's review)"
+    },
+    "plan-push.md": {
+      "sha256": "ed60d409048139da85be85fdbf1fcf5a286d60779bdac3ca5d2ffe7ab77c3415",
+      "version": "1.0"
+    },
+    "plan-review-cascaded.md": {
+      "sha256": "60519b192b1e29284f943162a9128eefc1e4085114a9d0a6e5a36027f2a8c879",
+      "version": "1.0"
+    },
+    "plan-review.md": {
+      "sha256": "06ed01bf7270fad22ac6d938c98a51888f07c60c5848882b5bb9af8e6d061fdd",
+      "version": "1.0"
+    },
+    "plan-session-checkpoint.md": {
+      "sha256": "c3e54e34e0cff331921008ab0fcb04ee6131515f636b34a9ba1936c63664e471",
+      "version": "1.0"
+    },
+    "plan-session-end.md": {
+      "sha256": "e93234ed6b2a0551eca0b21a09fc39c305e03874c05845adabc488333c03d341",
+      "version": "1.0"
+    },
+    "plan-session-start.md": {
+      "sha256": "7b9d9ecf23bf48530a143dd847540b2bc76b6253677220cdea0273cb6cbaa1ba",
+      "version": "1.1"
+    },
+    "plan-skills-management-audit.md": {
+      "sha256": "1b80892d67a2cdd46143dff90811e063e209ceff7d9b8826482b3b28ad3b5b19",
+      "version": "1.0"
+    },
+    "plan-skills-management-create.md": {
+      "sha256": "a2b262b0094c8a4c415e2702e0878736da8d6ac66752a40cc41538643f1d2801",
+      "version": "1.0"
+    },
+    "plan-skills-management-delete.md": {
+      "sha256": "436ea5e08164fe3398211074ba868a0fe9595115451b1a26d615b073ac99b5a4",
+      "version": "1.0"
+    },
+    "plan-skills-management-discover.md": {
+      "sha256": "1394067922d8ccb18092db0a8e136d119e9105d3056233f511f46231abca9daa",
+      "version": "1.0"
+    },
+    "plan-skills-management-edit.md": {
+      "sha256": "b2440894ec16adb5e0d2e8e4ec59eb831e87368f25bdd1f186658999b6f17697",
+      "version": "1.0"
+    },
+    "plan-skills-management.md": {
+      "sha256": "d54b52a070f3ddfaa95c3c21f2101c7159305fec1caeca5a4d063380ebdfab41",
+      "version": "1.1"
+    },
+    "plan-test-baseline.md": {
+      "sha256": "18ce380c15abdb32d71ebf18de89b9ea71d5dfc06bd0e6cea65248a23577fab4",
+      "version": "1.0"
+    },
+    "plan-test-harness-update.md": {
+      "sha256": "d89d7c67671819655e2cf44227531c7a62a0469098459e46cbf8b97c72c89192",
+      "version": "1.0"
+    },
+    "plan-test-remediation.md": {
+      "sha256": "be346948f6bb9a9c1f109a3a5488843b9b4d394b2f7fb954136ed7375b62c50b",
+      "version": "1.0"
+    },
+    "plan-todo.md": {
+      "sha256": "e6f8bab4ea25fc1f408b521f0021f73d85cbdf5589b40ba34b38530b50f0e5c4",
+      "version": "1.1"
+    },
+    "plan-uninstall-wizard.md": {
+      "sha256": "85c6111a2720a3ab2216da98fd1290607752b4298e7e600c6d95959db6b96c0c",
+      "version": "1.0"
+    },
+    "plan-workflow-audit.md": {
+      "sha256": "deb0c9c6a31b11cab7f95c35208b45d0c0aeea1cf7065d54bb7b7a8c2a9a6969",
+      "version": "1.0"
+    }
+  }
+}

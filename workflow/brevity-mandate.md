@@ -1,8 +1,10 @@
-# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA
+# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama
 
 **Purpose**: Stop the token burn. This is the canonical source for the fleet's brevity rules; every other surface restates a rider that points here.
 
 **Status**: LIVE — Rick's directive, 2026-07-19. Not a style preference. A defect classification.
+
+**Scope note**: the last two rules (`NoAA`, `NoDrama`) govern **register** — *how* you write — rather than length. They live here because this is the artifact that reaches every session. The title is narrower than the contents; that is known debt, not an oversight.
 
 ---
 
@@ -14,6 +16,7 @@
 > **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences.
 > **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 > **NoAA** — No Aphorisms or Apologies.
+> **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause.
 >
 > **Lead with the verdict. Evidence second. Stop.**
 >
@@ -79,6 +82,33 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 
 ---
 
+### 🔴 NoDrama — state the defect, the fix, the receipt
+
+**Rick's directive, 2026-07-19, verbatim**: *"I absolutely hate it when people get overly dramatic about speed bumps… Let me be very clear about that kind of talk or language. It's counterproductive and I will spin you down if you do that again."*
+
+**The trigger**: a peer wrote *"hiding a defect that would have killed Monday's demo."*
+
+**Scope — both surfaces, not just speech.** Rick: *"It has no place in our work either in the code/documentation nor in our interpersonal communications."* That covers defect writeups, review verdicts, commit messages, standing-rule text, plan docs, DMs, notifies, and speech.
+
+**The form**:
+
+| ❌ | ✅ |
+|---|---|
+| "A defect that **would have killed Monday's demo**" | "The test DB lacked `park_reason`; the run requires it; precondition added." |
+| "This **nearly shipped** and **would have taken down** the fleet" | "Shipped path had no guard on the null arm. Guard added, mutant-verified red." |
+| "**Critical** finding — we **dodged a bullet** here" | "27 of 36 files differ; 23 report a matching version." |
+
+**Three tells** — if a clause does any of these, cut it:
+1. It asserts a **counterfactual consequence** ("would have killed / taken down / broken")
+2. It layers a **severity adjective** onto a finding that already states its own facts
+3. It would survive deletion with **zero loss of information about the defect or the fix**
+
+**Why this is a control and not a manners rule**: a finding stated as mechanism holds its value at any stakes level. A finding stated as catastrophe gets **discounted the moment the stakes turn out to be lower** — and the reader now has to re-derive the facts to decide whether the alarm was real. The drama does not add urgency; it adds a verification step.
+
+⇒ **Write the rule as mechanism + receipt. No consequence clause.** Applies to the rules themselves: a standing rule that leans on its worst-case story is weaker than one that states its mechanism.
+
+---
+
 ## Defaults by surface
 
 Everything defaults to **3 lines**. These are targets, not ceilings-with-headroom.
@@ -141,7 +171,7 @@ Workers inherit habits at birth. **Every spawn brief carries the three acronyms*
 Minimum brief rider:
 
 ```
-BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA.
+BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama.
 Verdict first, evidence second, stop. Go longer ONLY WHEN ASKED.
 Detail goes in the abstract card, never in prose or speech.
 ```
@@ -159,7 +189,7 @@ Detail goes in the abstract card, never in prose or speech.
 | **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **🫡 and nothing else** — then keep working |
 | **📷** | user → session | **Document and checkpoint your work.** Snapshot the state now. | **🫡**, then the checkpoint — report only when it's done |
 
-**😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA, in full, immediately.
+**😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama, in full, immediately.
 
 **Attached to a message**, it scopes to that message: *"here's the summary 😘"* = give me this, short.
 

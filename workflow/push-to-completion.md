@@ -8,7 +8,7 @@
 
 ---
 
-> **🛑 Companion command**: `/plan-kiss` fires the **brevity mandate** (KISS · Say 3LoL · NoMC C2C · NoAA) at the fleet the same way this one fires the drive-to-completion order. Same broadcast shape, different defect: `/plan-push` fixes a manager who won't *move*; `/plan-kiss` fixes one who won't *stop talking*. Canonical: `workflow/brevity-mandate.md`.
+> **🛑 Companion command**: `/plan-kiss` fires the **brevity mandate** (KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama) at the fleet the same way this one fires the drive-to-completion order. Same broadcast shape, different defect: `/plan-push` fixes a manager who won't *move*; `/plan-kiss` fixes one who won't *stop talking*. Canonical: `workflow/brevity-mandate.md`.
 >
 > **This directive is itself subject to KISS.** Proof of work is receipts — commit hashes, task IDs, test counts — **not** narrative. A manager answering the Riot Act with three paragraphs of explanation has failed it twice.
 

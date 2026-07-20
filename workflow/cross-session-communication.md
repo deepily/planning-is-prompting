@@ -11,7 +11,7 @@
 
 ---
 
-## 🛑 BREVITY IN PEER COMMS — KISS · Say 3LoL · NoMC C2C · NoAA
+## 🛑 BREVITY IN PEER COMMS — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama
 
 **Peer-to-peer is where verbosity breeds worst.** A DM to a colleague feels informal, so it grows courtesy, context-setting, and mutual appreciation — none of which the recipient needs and all of which they pay for.
 

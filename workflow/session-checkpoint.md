@@ -257,7 +257,7 @@ INFO: No related TODO items found (no action needed)
 
 ## 😘 Step 3.9: BREVITY GATE — before you write a word into history.md or TODO.md
 
-**KISS · Say 3LoL · NoMC C2C · NoAA.** `workflow/brevity-mandate.md` governs written artifacts, **not just replies**.
+**KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama.** `workflow/brevity-mandate.md` governs written artifacts, **not just replies**.
 
 | Artifact | HARD CAP |
 |---|---|

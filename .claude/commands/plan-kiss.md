@@ -1,6 +1,6 @@
 # KISS — The Brevity Mandate
 
-**Purpose**: Fire the full brevity mandate — **KISS · Say 3LoL · NoMC C2C · NoAA** — at a named session or the whole fleet. The on-demand enforcement arm of "verbosity is a defect, not a style."
+**Purpose**: Fire the full brevity mandate — **KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama** — at a named session or the whole fleet. The on-demand enforcement arm of "verbosity is a defect, not a style."
 
 **Project**: planning-is-prompting (meta-repository)
 **Version**: 1.0
@@ -70,6 +70,8 @@ VERBOSITY IS A DEFECT, NOT A STYLE. We are on deadline.
   KISS      — Keep It Short/Sweet.
   Say 3LoL  — Say it in Three Lines or Less: headline + two supporting sentences.
   NoMC C2C  — No Meta Conversation, Cut to the Chase.
+  NoAA      — No Aphorisms or Apologies.
+  NoDrama   — State the defect, the fix, the receipt. Cut the stakes clause.
 
 LEAD WITH THE VERDICT. EVIDENCE SECOND. STOP.
 
@@ -96,7 +98,7 @@ to do better is itself the defect.
 
 | Half | Means | Mandate |
 |---|---|---|
-| **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C · NoAA |
+| **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C · NoAA · NoDrama |
 | **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
 
 **Correct response: tighten AND resume driving.** Not a shorter status update — *fewer words and more work*. It targets a session that has substituted narration for progress.

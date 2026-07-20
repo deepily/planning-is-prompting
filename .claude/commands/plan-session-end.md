@@ -53,7 +53,7 @@
 ## Usage
 
 ```bash
-/plan-session-end                          # default: full ritual including Day's Work Summary + baseline
+/plan-session-end                          # default: full ritual including LoC Delta Summary + baseline
 /plan-session-end --no-summary             # skip Step 6 entirely (fast wrap-up)
 /plan-session-end --no-baseline            # render summary without repo-baseline comparison
 /plan-session-end --no-summary --no-baseline  # equivalent to --no-summary alone
