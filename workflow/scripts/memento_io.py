@@ -309,6 +309,24 @@ def short_sid( session_id ):
     return sid
 
 
+def sid_of_record( rec_abs ):
+    """
+    Extract the SESSION ID a record's own filename declares.
+
+    Both slots encode identity in the filename — `<persona>-<sid>.md` (io) and
+    `.claude-memento-<persona>-<sid>.md` (root) — so the record itself carries the
+    answer to "whose session wrote this?" without reading a pointer or a stamp.
+
+    Requires:
+        - rec_abs is a Path to a record produced by record_rel_path()
+    Ensures:
+        - returns the 8-char short session id encoded in the filename
+        - returns None when the name does not carry one (hand-made or legacy record)
+    """
+    m = re.search( r"-([0-9a-f]{8})$", Path( rec_abs ).stem )
+    return m.group( 1 ) if m else None
+
+
 def sha256_of( path ):
     """
     Ensures: returns the hex sha256 of the file at `path`.
@@ -887,6 +905,41 @@ def cmd_amend( args ):
     if rec_abs is None:
         sys.exit( f"no record to amend for persona={persona} slot={args.slot} in {repo_root}" )
 
+    # TARGETING CHECK — `amend` accepted --session-id and NEVER CONSULTED IT (2026-07-18,
+    # store eda57c05). It resolves by FOLLOWING THE POINTER, so it appended to whoever wrote
+    # last: a post-game waiver landed in another seat's record, EXIT 0, success banner naming
+    # her file. Immutability was enforced on `write` (which derives its path from identity)
+    # and bypassed on `amend` — THE PATH THAT CARRIES THE TRAFFIC, since a record existing is
+    # exactly what makes every later update an amend.
+    #
+    # BOTH SLOTS. `io` was twice cleared as safe because two independent controls asked
+    # whether an amend crosses PERSONAS — it does not. Neither asked whether it crosses
+    # SESSIONS WITHIN a persona. It does: the io POINTER is persona-scoped while the io
+    # RECORD is session-scoped, so a re-spun seat amends its own PREDECESSOR's record.
+    # Two controls agreeing on the wrong axis is what produced the confidence to write
+    # "do not widen this" into the record.
+    rec_sid = sid_of_record( rec_abs )
+    if rec_sid is not None and rec_sid != sid and not args.allow_foreign_record:
+        print( f"REFUSED: --session-id {sid} does not own the record this would amend.", file=sys.stderr )
+        print( f"         resolved record : {rec_abs}", file=sys.stderr )
+        print( f"         its session id  : {rec_sid}", file=sys.stderr )
+        print( f"         yours           : {sid}", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  The pointer for this (slot, persona) names another session's record, so this", file=sys.stderr )
+        print(  "  amendment would land in a file you did not write — stamped correctly, and in", file=sys.stderr )
+        print(  "  the wrong place. That SCATTERS your state: the record you wrote, the record", file=sys.stderr )
+        print(  "  you amended, and whatever the pointer names can be three different files.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  WHAT TO DO — write, do not amend:", file=sys.stderr )
+        print(  "      memento_io.py write --slot <slot> --persona <you> --session-id <yours>", file=sys.stderr )
+        print(  "  `write` derives its path from YOUR identity, so it cannot land on a foreign", file=sys.stderr )
+        print(  "  record. This is the fresh-record path for a re-spun seat.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  If you genuinely mean to append to another session's record (a deliberate", file=sys.stderr )
+        print(  "  cross-seat annotation), pass --allow-foreign-record and it will proceed,", file=sys.stderr )
+        print(  "  stamped with your identity.", file=sys.stderr )
+        sys.exit( 7 )
+
     body = Path( args.content_file ).read_text() if args.content_file else sys.stdin.read()
     if not body.strip():
         sys.exit( "REFUSED: amendment body is empty — nothing to add." )
@@ -1166,6 +1219,9 @@ def build_parser():
     a.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
     a.add_argument( "--no-post-game", metavar="REASON", default=None,
                     help="waive the post-game gate; REASON is RECORDED in the amendment, never silent" )
+    a.add_argument( "--allow-foreign-record", action="store_true",
+                    help="proceed even when the resolved record belongs to another SESSION "
+                         "(deliberate cross-seat annotation); without this, a mismatch refuses at exit 7" )
     a.set_defaults( func=cmd_amend )
 
     r = sub.add_parser( "resolve", help="print the current record path (follows the pointer)" )
