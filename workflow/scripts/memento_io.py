@@ -28,11 +28,15 @@ discover it. Closing that item with a file that repeats the habit would be the j
 itself. If you are about to rely on this gate, rely on it for exactly what is listed as enforced
 above and nothing beyond it.
 
-  1. THE GATE IS OPT-IN BY DEFAULT. It arms ONLY on `--slot root`. `io` is the DEFAULT slot, and
-     the io path never reaches the gate — by design, since a worker owes a retro DEPOSIT rather
-     than a post-game. What is NOT by design: the protection is one un-typed flag deep, and the
-     un-typed direction is the ungated one. A seat that omits `--slot` is not gated, is told
-     nothing, and has no way to notice.
+  1. ~~THE GATE IS OPT-IN BY DEFAULT.~~ CLOSED 2026-07-21 (Rick's ruling; see `--slot` at the
+     bottom of this file). It still arms ONLY on `--slot root` — that scoping is BY DESIGN, since
+     a worker owes a retro DEPOSIT rather than a post-game, and it was never the defect. The
+     defect was that `--slot` DEFAULTED to `io`, so omitting it silently selected the ungated
+     path: the un-typed direction was the unprotected one, and a seat that omitted the flag was
+     not gated, was told nothing, and had no way to notice. `--slot` is now REQUIRED; a bare call
+     exits 2. Note the size of the real hole vs the size it was first filed at: every prescribed
+     call site already typed the slot, so the default was load-bearing for nobody and silent for
+     anyone who skipped it.
 
   2. THE GATE'S EVIDENCE DOES NOT TRAVEL. Arming depends on other seats' records in
      `io/mementos/`, which this script deliberately keeps GITIGNORED (see REQUIRED_IGNORES).
@@ -41,6 +45,30 @@ above and nothing beyond it.
      isolated or freshly cloned seat finds no crew, never arms, and writes its memento at exit 0
      in silence. A crewed engagement is EXACTLY when seats work in isolated trees, so the gate is
      weakest precisely where it was built to fire.
+
+     ⛔ STATED PLAINLY, BY RICK'S RULING 2026-07-21 — THIS HOLE IS OPEN AND IS NOT BEING FIXED:
+     **A WORKTREE-ISOLATED OR FRESHLY-CLONED SEAT IS UNGATED. Do not read this gate's silence as
+     coverage of crewed work.** The ruling is to say so rather than to build, so that nobody
+     infers protection that is not there.
+
+     Why not the obvious fix. The 2026-07-21 ruling first chose "read the evidence from the task
+     store instead of the filesystem" — the store being server-side, it travels to every worktree
+     by construction. THAT PREMISE WAS THEN MEASURED AND IS FALSE, before anything was built:
+     A POST-GAME LEAVES NO STORE ROW AT ALL. There is no `post_game` item_class, no correlation
+     convention, and no field a post-game writes by construction; `item_class="gate"` returns 8
+     rows, all USER-approval gates. The rows that mention a post-game are hand-titled free text in
+     at least three shapes, and a gate cannot query that. Measured against 22 post-game artifacts
+     on disk (2026.05.22 → 07.20) and 120 `plan` rows including terminal.
+     ⇒ The store cannot carry evidence it never receives, and THE FILESYSTEM WAS NEVER THE WRONG
+     CHOICE — it is the only surface that carries the artifact.
+     (Scope boundary: the `plan` project's rows and the `gate` class were measured; every
+     item_class store-wide was NOT enumerated, and another repo's post-game convention was not
+     checked. A post-game that reliably writes a queryable row would refute this — attack it there.)
+
+     The two rejected alternatives, recorded so they are not re-proposed as new: committing the
+     crew records would put every session's handoff notes in repo history permanently, against
+     this script's own REQUIRED_IGNORES; making a post-game ALSO file a store row puts a human
+     step in front of the evidence, which is the same class of failure this gate exists to catch.
 
   3. THE CONTENT FLOOR CANNOT RECOGNISE A RETROSPECTIVE — IT ONLY MEASURES TEXT. Measured by
      Rachel 2026-07-18 against this final code: a DESIGN DOC of 1,130 bytes / 19 non-blank lines
