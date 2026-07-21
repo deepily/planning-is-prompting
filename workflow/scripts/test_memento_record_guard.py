@@ -439,13 +439,41 @@ def _import_guard():
         sys.path.remove( str( SCRIPTS_DIR ) )
 
 
-def test_git_toplevel_returns_none_when_no_ancestor_exists():
+def test_git_toplevel_returns_none_when_no_ancestor_exists( tmp_path, monkeypatch ):
     """
-    A path with no existing ancestor at all — the walk-up exhausts. `git -C` needs a directory
-    that exists, and there is none, so the honest answer is "I cannot tell" => ALLOW.
+    A path whose walk-up reaches a directory outside any git tree — `git -C` then fails, so the
+    honest answer is "I cannot tell" => ALLOW.
+
+    🔴 THIS TEST USED TO BE A COIN FLIP, AND IT MADE THE EXACT MISTAKE ITS OWN MODULE DOCUMENTS.
+    It passed the RELATIVE path `"io/mementos/nowhere.md"` and claimed "no existing ancestor at
+    all" — but a relative path's ancestors terminate at `.`, which always exists. So the walk-up
+    stopped at the INVOKING CWD and the verdict became a function of where pytest was started:
+
+        same commit, nothing stashed:
+            cwd = planning-is-prompting root   -> FAILED   (`.` is in a repo; git answers)
+            cwd = a dir outside any git repo   -> passed   (git fails; None)
+
+    Measured by Clayton 😎 2026-07-21 and reproduced here before this fix. The premise "no
+    existing ancestor" is UNACHIEVABLE for a relative path, so the assertion was never testing
+    what it said.
+
+    ⚠️ AND THE HOUSE DOCTRINE IS WHAT HID IT. This suite is run from the registered scratch
+    project — a directory deliberately chosen to sit outside any git tree, precisely so a
+    stray `conftest.py` cannot inject a false green. That same property made this test pass
+    every time it was run correctly. **The safeguard against one false green manufactured
+    another.**
+
+    The module docstring warned about exactly this class, eighteen lines from the code under
+    test: *"a relative path's verdict is entirely a function of the cwd it is resolved
+    against."* Rio wrote that about the guard; the test then did it anyway.
+
+    So the premise is now ESTABLISHED rather than assumed: an absolute path under `tmp_path`
+    (pytest's tmp root is not a git tree), with the cwd pinned there too so no ambient repo can
+    answer for it. The assertion is now true for the stated reason, in any cwd.
     """
     g = _import_guard()
-    assert g.git_toplevel( "io/mementos/nowhere.md" ) is None
+    monkeypatch.chdir( tmp_path )
+    assert g.git_toplevel( str( tmp_path / "io" / "mementos" / "nowhere.md" ) ) is None
 
 
 def test_git_toplevel_returns_none_when_git_is_unavailable( monkeypatch, tree ):

@@ -549,6 +549,103 @@ def test_every_class_can_fire_in_one_run( repo, monkeypatch, capsys ):
     assert "OK          : 2/4" in out
 
 
+# ---------------------------------------------------------------- the anti-flip receipt
+
+def test_verify_stamps_a_receipt_even_on_a_findings_run( repo, monkeypatch, capsys ):
+    """
+    The receipt records that the CHECKER RAN, never that the corpus was clean — two different
+    facts. Conflating them would make the banner fire forever on any repo carrying a standing
+    finding (lupin has 7), which is the alarm-fatigue shape this row exists to avoid.
+    """
+    monkeypatch.setattr( memento_io, "MIRROR_HOME", repo.mirror_home )
+    repo.bare_slot()                                   # guarantees a finding
+    receipt = memento_io.verify_receipt_path( repo.root )
+    assert not receipt.exists()
+
+    code, _ = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_FINDINGS
+    assert receipt.exists(), "a findings run must still record that verify ran"
+
+
+def test_staleness_states( repo, monkeypatch ):
+    """
+    The four states the banner keys on, each asserted for its own reason.
+
+    The two "not stale" answers are the ones worth pinning: a garbled receipt and a
+    clock-skewed one are bugs in the receipt, and crying wolf over either would train the
+    reader to skim the banner that matters.
+    """
+    import datetime
+    monkeypatch.setattr( memento_io, "MIRROR_HOME", repo.mirror_home )
+    receipt = memento_io.verify_receipt_path( repo.root )
+    receipt.parent.mkdir( parents=True, exist_ok=True )
+    now = datetime.datetime.now().astimezone()
+
+    stale, human = memento_io.verify_staleness( repo.root )
+    assert ( stale, human ) == ( True, None ), "never verified is the WORST case, not an exempt one"
+
+    receipt.write_text( ( now - datetime.timedelta( hours=1 ) ).isoformat() )
+    assert memento_io.verify_staleness( repo.root )[ 0 ] is False
+
+    receipt.write_text( ( now - datetime.timedelta( hours=100 ) ).isoformat() )
+    stale, human = memento_io.verify_staleness( repo.root )
+    assert stale is True and human == "4d 4h"
+
+    receipt.write_text( "not a timestamp at all" )
+    assert memento_io.verify_staleness( repo.root ) == ( False, None ), "a garbled receipt is not an alarm"
+
+    receipt.write_text( ( now + datetime.timedelta( hours=5 ) ).isoformat() )
+    assert memento_io.verify_staleness( repo.root ) == ( False, None ), "clock skew is not an alarm"
+
+
+def test_the_banner_says_NEVER_and_STALE_differently( repo, monkeypatch, capsys ):
+    """
+    A first draft printed "NO verify HAS RUN … last run: 4d 4h ago", which contradicts itself
+    inside one sentence — and a banner a reader must reconcile is a banner they learn to skim.
+    Never-run and gone-stale get their own words, and this pins that they stay distinct.
+    """
+    import datetime
+    monkeypatch.setattr( memento_io, "MIRROR_HOME", repo.mirror_home )
+
+    memento_io.print_verify_staleness_banner( repo.root )
+    never = capsys.readouterr().err
+    assert "HAS NEVER RUN" in never
+
+    receipt = memento_io.verify_receipt_path( repo.root )
+    receipt.parent.mkdir( parents=True, exist_ok=True )
+    receipt.write_text( ( datetime.datetime.now().astimezone() - datetime.timedelta( hours=100 ) ).isoformat() )
+    memento_io.print_verify_staleness_banner( repo.root )
+    stale = capsys.readouterr().err
+    assert "HAS NOT RUN AGAINST THIS REPO IN 4d 4h" in stale
+    assert "HAS NEVER RUN" not in stale
+
+
+def test_a_fresh_receipt_prints_nothing_at_all( repo, monkeypatch, capsys ):
+    """
+    THE ARM THAT KEEPS THIS FROM BECOMING WALLPAPER. An always-on banner is indistinguishable
+    from no banner within a day. It must be completely silent when the checker is being called.
+    """
+    import datetime
+    monkeypatch.setattr( memento_io, "MIRROR_HOME", repo.mirror_home )
+    receipt = memento_io.verify_receipt_path( repo.root )
+    receipt.parent.mkdir( parents=True, exist_ok=True )
+    receipt.write_text( datetime.datetime.now().astimezone().isoformat() )
+
+    memento_io.print_verify_staleness_banner( repo.root )
+    assert capsys.readouterr().err == ""
+
+
+def test_the_banner_reports_and_never_refuses( repo, monkeypatch, capsys ):
+    """
+    It must not block a write. A memento write refused in order to complain about an audit
+    trades a RECORD for a NAG — the wrong trade in the direction that loses data, and the same
+    reasoning that keeps the SessionStart hook non-fatal.
+    """
+    monkeypatch.setattr( memento_io, "MIRROR_HOME", repo.mirror_home )
+    assert memento_io.print_verify_staleness_banner( repo.root ) is None
+    assert "HAS NEVER RUN" in capsys.readouterr().err
+
+
 def test_cli_and_inproc_agree( repo, monkeypatch, capsys ):
     """
     The two instruments, on one repo, asserted to agree. If they ever diverge the CLI arm is

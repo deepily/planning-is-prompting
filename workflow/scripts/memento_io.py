@@ -875,6 +875,13 @@ def cmd_write( args ):
         - SystemExit(non-zero) on any failed leg — a record NEVER lands unmirrored
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+
+    # THE ANTI-FLIP BANNER, FIRST THING AND BEFORE ANY WORK. This is the seat's re-spin moment
+    # — the point of highest attention in the whole lifecycle — and it is the only surface that
+    # reports the CHECKER'S SILENCE without depending on the checker's caller existing. It
+    # never blocks: the write proceeds either way. See verify_staleness().
+    print_verify_staleness_banner( repo_root )
+
     persona   = slugify( args.persona )
     sid       = short_sid( args.session_id )
     written   = datetime.datetime.now().astimezone().isoformat( timespec="seconds" )
@@ -1564,6 +1571,106 @@ def is_pointer_file( path ):
         return False
 
 
+VERIFY_RECEIPT_NAME  = ".last-verified"
+VERIFY_STALE_SECONDS = 72 * 3600              # ruled by Mr. Radio 🦉 2026-07-21 (row 1dd41cde)
+
+
+def verify_receipt_path( repo_root ):
+    """
+    Ensures: returns the out-of-repo path where `verify` records that it ran for this repo —
+             beside the mirror it audits, never in the tree (a receipt in the tree would be
+             gitignored, would not survive a clone, and would tempt someone to commit it).
+    """
+    return MIRROR_HOME / repo_root.name / VERIFY_RECEIPT_NAME
+
+
+def stamp_verify_receipt( repo_root ):
+    """
+    Ensures: records that `verify` ran, best-effort. A receipt that cannot be written must
+             never fail the audit — the audit's answer is the product and the receipt is
+             bookkeeping — so the error is swallowed deliberately rather than by accident.
+    """
+    path = verify_receipt_path( repo_root )
+    try:
+        path.parent.mkdir( parents=True, exist_ok=True )
+        path.write_text( datetime.datetime.now().astimezone().isoformat( timespec="seconds" ) + "\n" )
+    except OSError:
+        pass
+
+
+def verify_staleness( repo_root, now=None ):
+    """
+    Answer "how long since `verify` last ran against this repo?"
+
+    THIS IS THE ANTI-FLIP MECHANISM AND IT IS THE POINT OF ROW 1dd41cde.
+
+    `verify` gets called by a SessionStart hook. That hook lives in `~/.claude/settings.json` —
+    user-scope, outside every repo, invisible to every test suite, one edit from gone. If the
+    caller disappears the checker goes quiet, and the quiet reads as health: precisely the
+    failure that cost eight days of silent mirror staleness in row a18bfec9.
+
+    A second caller cannot fix that — answering "what if the caller vanishes" with another
+    caller is the original defect with extra steps. So the assertion moves OUT of configuration
+    and INTO code that is already tested and already run: `write` is the verb every seat
+    executes at every re-spin, and it reports the checker's silence.
+
+    ⇒ deleting the hook buys a banner within ONE re-spin instead of silence for eight days,
+      and deleting the banner reddens a test.
+
+    ⚠️ ITS LIMIT, STATED RATHER THAN BURIED: a determined edit removes both. This is not
+      tamper-proofing and does not claim to be. It converts SILENT decay into LOUD decay.
+
+    Requires:
+        - repo_root is a resolved repo root
+    Ensures:
+        - returns (is_stale, human_age); human_age is None when there is no usable receipt
+        - returns (True, None) when the receipt is MISSING — never-verified is the worst case,
+          not an exempt one
+        - returns (False, None) on an unreadable or garbled receipt, and on clock skew: those
+          are bugs in the receipt, and crying wolf over them would train the reader to skip
+          the banner that matters
+    """
+    path = verify_receipt_path( repo_root )
+    if not path.exists(): return ( True, None )
+
+    now = now or datetime.datetime.now().astimezone()
+    try:
+        stamped = datetime.datetime.fromisoformat( path.read_text().strip() )
+    except ( OSError, ValueError ):
+        return ( False, None )
+
+    age = ( now - stamped ).total_seconds()
+    if age < 0: return ( False, None )                       # clock skew: not a finding
+    hours = int( age // 3600 )
+    human = f"{hours // 24}d {hours % 24}h" if hours >= 24 else f"{hours}h"
+    return ( age > VERIFY_STALE_SECONDS, human )
+
+
+def print_verify_staleness_banner( repo_root ):
+    """
+    Ensures: prints the staleness banner to stderr when `verify` has not run recently, and
+             prints NOTHING when it has. Reports; never refuses. A memento write must always
+             be allowed to proceed — refusing one to complain about an audit would trade a
+             record for a nag, which is the wrong trade in the direction that loses data.
+    """
+    stale, human = verify_staleness( repo_root )
+    if not stale: return
+
+    # TWO HEADLINES, BECAUSE THEY ARE TWO DIFFERENT FACTS. The first draft said "NO verify HAS
+    # RUN … last run: 4d 4h ago", which contradicts itself in its own sentence — and a banner a
+    # reader has to reconcile is a banner they learn to skim. Never-run and gone-stale get their
+    # own words.
+    headline = ( "!!! `verify` HAS NEVER RUN AGAINST THIS REPO."
+                 if human is None else
+                 f"!!! `verify` HAS NOT RUN AGAINST THIS REPO IN {human}." )
+    print( "", file=sys.stderr )
+    print( headline, file=sys.stderr )
+    print(  "    The mirror-divergence checker is not being called. Findings accumulate unseen;", file=sys.stderr )
+    print(  "    that is how a mirror went eight days stale with nothing reporting it (a18bfec9).", file=sys.stderr )
+    print( f"    Run: memento_io.py verify --repo {repo_root}", file=sys.stderr )
+    print( "", file=sys.stderr )
+
+
 def iter_mirror_mementos( repo_root ):
     """
     Ensures: yields every mirrored memento as a path RELATIVE TO THE MIRROR ROOT, i.e. in the
@@ -1745,6 +1852,12 @@ def cmd_verify( args ):
     if args.show_ok:
         for rel in ok_recs: print( f"  OK            {rel}" )
     print( f"--- FINDINGS    : {len( findings )}" )
+
+    # THE RECEIPT IS STAMPED ON A FINDINGS RUN TOO, DELIBERATELY. It records that the CHECKER
+    # RAN, not that the corpus was clean — those are different facts, and conflating them would
+    # make the banner fire forever on any repo with a standing finding, which is the
+    # alarm-fatigue shape this row exists to avoid.
+    stamp_verify_receipt( repo_root )
     return 0 if not findings else 1
 
 
