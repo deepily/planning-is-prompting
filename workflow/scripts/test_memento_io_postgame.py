@@ -1281,8 +1281,26 @@ def test_UNRULED_gitignored_crew_records_do_not_arm_a_fresh_worktree( repo ):
     # when the directory is absent, which is the one shape this whole review exists to reject.
     assert not list( wt.glob( "io/mementos/*.md" ) ), "the crew record must not have travelled"
 
+    # 🔴 HOLE 2 IS NOW CLOSED, AS A SIDE EFFECT OF af0c5700 — and the side effect is the
+    # point of this comment. Until 2026-07-21 this asserted `returncode == 0`: a fresh
+    # worktree resolved its repo root to ITSELF (`--show-toplevel`), looked for crew
+    # records in `<worktree>/io/mementos/`, found the empty gitignored directory, and the
+    # post-game gate never armed. `find_repo_root` now resolves a worktree to the MAIN
+    # repo, so the gate sees the crew record that never travelled and arms correctly.
+    #
+    # THE EVIDENCE STILL DOES NOT TRAVEL — the assertion above is unchanged and still
+    # passes. What changed is that the gate no longer LOOKS in the place the evidence
+    # cannot be. Hole 2 was never "the records should travel"; it was "the gate reads the
+    # wrong directory", which is the same defect af0c5700 names one verb over.
+    #
+    # ⚠️ THIS WAS AN UNRULED HOLE ("UNRULED — Rick's call") AND A RESOLVER FIX RULED IT.
+    # Recorded loudly rather than quietly re-baselined: a test whose expectation flips
+    # from 0 to 6 without a sentence saying why is indistinguishable from a test edited
+    # to make a suite green. Escalated with the commit; if Rick rules hole 2 should stay
+    # open, the remedy is a scope decision on the gate, NOT a revert of the resolver —
+    # the resolver is fixing a measured near-term loss (2 prunable worktrees under /tmp).
     r = write_memento( wt, persona="rachel", sid="48b59a71", slot="root" )
-    assert r.returncode == 0, "characterization: a fresh worktree finds no crew and never arms"
+    assert r.returncode == 6, "af0c5700: the worktree now resolves to the MAIN repo, so the gate ARMS"
 
 
 # ------------------------------------------------- THE INVARIANT'S OWN UNCOVERED BRANCHES

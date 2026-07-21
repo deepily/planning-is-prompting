@@ -259,12 +259,48 @@ def run_git( repo_root, *args ):
 
 def find_repo_root( start ):
     """
-    Resolve the git top-level containing `start`.
+    Resolve the REPO root that owns `start` — the root whose `io/mementos/` is the
+    canonical slot, not merely the working tree `start` happens to sit in.
+
+    🔴 WHY THIS IS NOT `--show-toplevel` — row af0c5700, measured 2026-07-21.
+    `--show-toplevel` answers "which TREE am I standing in". In a linked worktree
+    that is the WORKTREE's own path, so every path built from it — record,
+    pointer, gitignore entry, mirror — pointed at `<worktree>/io/mementos/`. The
+    write SUCCEEDED and reported "written", at a slot no reader reads and no reap
+    verifies. Memento canonicality is a REPO question, and these are different
+    questions that agree everywhere except the case that bites.
+
+    NOT COSMETIC. On lupin the same day: six worktrees, TWO already `prunable`
+    and living under `/tmp/claude-1001/.../scratchpad/`. A memento written from
+    one of those is doomed twice over — worktree prune AND the tmp sweep — having
+    reported success both times. The record a successor was promised is gone, and
+    the reap that trusted it already happened.
+
+    THE DISCRIMINATOR IS `--git-dir` vs `--git-common-dir`, and the narrowness is
+    deliberate. They differ ONLY in a linked worktree; there and only there does
+    this take the common dir's parent. A plain repo, a SUBDIRECTORY of one, and a
+    NESTED repo all report them equal and keep `--show-toplevel` untouched.
+
+        plain repo        git-dir == common-dir       -> --show-toplevel
+        subdir of a repo  git-dir == common-dir       -> --show-toplevel
+        nested repo       git-dir == common-dir       -> ITS OWN root (correct:
+                                                         it is its own repo with
+                                                         its own canonical slot)
+        linked worktree   git-dir != common-dir       -> parent of common dir
+
+    ⚠️ A NESTED REPO IS NOT A WORKTREE, and hoisting its memento to the parent
+    would be a fresh bug wearing this fix's name: `src/lupin-mobile/io/mementos/`
+    holds 5 records that ARE canonically its own (nearly reported as misdirected
+    writes; Tiffany 💍 caught it). Deriving the root from the common dir
+    UNCONDITIONALLY would also break a true submodule, whose common dir is
+    `<parent>/.git/modules/<name>` — parent-of-that is not a working tree at all.
 
     Requires:
         - start is a path inside a git working tree
     Ensures:
-        - returns an absolute Path to the repo root
+        - returns an absolute Path to the repo root that owns `start`
+        - from a linked worktree, returns the MAIN repo root
+        - from a plain repo, a subdirectory, or a nested repo, unchanged behaviour
     Raises:
         - RuntimeError if start is not inside a git working tree
     """
@@ -274,7 +310,48 @@ def find_repo_root( start ):
     )
     if result.returncode != 0:
         raise RuntimeError( f"not inside a git working tree: {start}\n{result.stderr.strip()}" )
-    return Path( result.stdout.strip() ).resolve()
+    toplevel = Path( result.stdout.strip() ).resolve()
+
+    # `--git-common-dir` is emitted RELATIVE to `start` for a plain repo (".git",
+    # "../../../.git"), absolute for a worktree — so resolve before comparing.
+    # Resolved against `start`, which is the cwd git answered from. `--path-format=
+    # absolute` would do this in one call but needs git >= 2.31, and this resolver
+    # runs on every operator's box, not just ours.
+    git_dir    = _git_path( start, "--git-dir" )
+    common_dir = _git_path( start, "--git-common-dir" )
+    if git_dir is None or common_dir is None:
+        return toplevel                     # can't discriminate -> today's answer
+    if git_dir == common_dir:
+        return toplevel                     # plain repo / subdir / nested repo
+    return common_dir.parent                # linked worktree -> the MAIN root
+
+
+def _git_path( start, flag ):
+    """
+    Resolve a single `git rev-parse <flag>` path answer to an absolute Path.
+
+    Requires:
+        - start is a path inside a git working tree; flag is a rev-parse path flag
+    Ensures:
+        - returns an absolute, symlink-resolved Path, resolving a relative answer
+          against `start` (the directory git answered from)
+        - returns None when git fails or answers empty — the caller then falls back
+          to today's behaviour rather than guessing a root
+        - never raises
+    """
+    result = subprocess.run(
+        [ "git", "-C", str( start ), "rev-parse", flag ],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        return None
+    answer = result.stdout.strip()
+    if not answer:
+        return None
+    path = Path( answer )
+    if not path.is_absolute():
+        path = Path( start ) / path
+    return path.resolve()
 
 
 def slugify( persona ):
