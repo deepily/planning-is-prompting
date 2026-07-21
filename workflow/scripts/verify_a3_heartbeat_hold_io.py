@@ -286,7 +286,21 @@ TTL_REDS = {
     "test_the_refusal_message_is_write_holds_own_words",
     "test_quick_smoke_test_passes",
 }
-VERIFY_REDS = { "test_a_hold_that_lands_but_would_not_be_honored_is_not_a_success" }
+# Detector 2's killing set GREW when the A-1 rollback landed: the rollback lives INSIDE the
+# `if not is_honored( read_back ):` branch, so stripping that branch now kills the rollback arms
+# too. Recorded as the post-rollback set rather than left permanently red against the pre-fix
+# one — a harness with a standing FAIL trains its reader to skip FAILs, which is the alarm that
+# is always on. The arm still discriminates in BOTH directions: it goes red if the set shrinks
+# (a rollback arm stopped exercising detector 2) and red if it grows (something new landed in
+# that branch unreviewed). Superseded at lupin `378f1499`; the pre-rollback set was
+# { test_a_hold_that_lands_but_would_not_be_honored_is_not_a_success } alone.
+VERIFY_REDS = {
+    "test_a_hold_that_lands_but_would_not_be_honored_is_not_a_success",
+    "test_a_failed_verify_restores_the_previous_hold_byte_for_byte",
+    "test_a_failed_verify_does_not_resurrect_a_stale_prior_hold",
+    "test_a_failed_verify_restores_an_already_unhonorable_prior_rather_than_deleting_it",
+    "test_a_failed_verify_unlinks_when_there_was_no_prior_hold",
+}
 
 # (file, edits, why, EXPECTED RED SET). The expected set is the HALF-ASSERTION FIX: an arm
 # that only counts reds passes when a mutation kills five DIFFERENT tests. "Verify the 5 are
