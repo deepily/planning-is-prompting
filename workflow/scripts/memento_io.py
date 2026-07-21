@@ -1575,9 +1575,24 @@ def cmd_verify( args ):
         # every memento write. A mirrored bare slot is still one write away from being gone
         # in-repo, so a clean mirror does not retire the finding.
         if is_bare_slot( repo_root, rel ):
+            # THE REMEDY IS TWO STEPS AND THE FIRST ONE DOES NOT CLEAR THIS FINDING. Written
+            # here as one line pointing at `migrate --apply`, then corrected after running it on
+            # the real corpus: migrate TWINS a bare slot and never removes it, so all 7 findings
+            # survived a successful migration (18 UNMIRRORED and 3 DRIFTED did clear). A remedy
+            # line that does not clear the finding it is attached to trains its reader to
+            # disbelieve the finding, which is worse than printing no remedy at all.
+            #
+            # `regenerate-pointer` is NOT the second step either — measured, it REFUSES with
+            # "no record found": a `-legacy-<date>` twin is not a session-id'd record, so
+            # `resolve` cannot see it. Only a real `write` restores a pointer here, and it needs
+            # a session id no heuristic can supply — which is the same reason this verb reports
+            # instead of repairing.
             findings.append( ( "BARE-SLOT", rel, [
                 "record content sitting at a POINTER path — the next pointer write overwrites it",
-                f"remedy: memento_io.py migrate --repo {repo_root} --apply   (twins it, then mirrors both)",
+                f"step 1, PRESERVE: memento_io.py migrate --repo {repo_root} --apply",
+                "         twins the content immutably. THIS FINDING REMAINS — migrate never removes a bare slot.",
+                "step 2, CLEAR:    memento_io.py write --slot io --persona <p> --session-id <sid>",
+                "         lands a record and writes a real pointer over this path. The session id is yours to supply.",
             ] ) )
 
         if not mir_abs.exists():

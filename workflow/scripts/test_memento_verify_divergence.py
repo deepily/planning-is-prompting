@@ -319,7 +319,34 @@ def test_bare_slot_is_reported_even_when_perfectly_mirrored( repo, monkeypatch, 
     assert "BARE-SLOT" in out and rel in out
     assert "UNMIRRORED" not in out                    # it IS mirrored; only the path is wrong
     assert "DRIFTED"    not in out
-    assert "migrate" in out                           # the line carries its own remedy
+    assert "step 1, PRESERVE" in out and "step 2, CLEAR" in out
+
+
+def test_the_bare_slot_remedy_does_not_promise_what_step_one_cannot_deliver( repo, monkeypatch, capsys ):
+    """
+    THE CORRECTION, PINNED — this line was wrong when it shipped and the corpus said so.
+
+    It first read `remedy: migrate --apply`, full stop. Run against the real lupin corpus, that
+    migration cleared 18 UNMIRRORED and 3 DRIFTED and left ALL SEVEN bare slots standing, because
+    migrate TWINS a bare slot and never removes it. A remedy that does not clear the finding it
+    is printed under teaches its reader to disbelieve the finding.
+
+    So the text now names two steps and says out loud that step 1 leaves the finding in place.
+    This test plants exactly the post-migrate state — bare slot, mirrored, with its immutable
+    twin already beside it — and asserts the finding SURVIVES, which is the behaviour the
+    corrected wording describes.
+    """
+    rel = repo.bare_slot( "arnold.md", mirrored=True )
+    twin = "arnold-legacy-2026.07.20-010202.md"       # what migrate --apply produces
+    ( repo.mem / twin ).write_text( ( repo.mem / "arnold.md" ).read_text() )
+    ( repo.mir / twin ).write_text( ( repo.mem / "arnold.md" ).read_text() )
+
+    code, out = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_FINDINGS, "a migrated bare slot is still a bare slot"
+    assert "BARE-SLOT" in out and rel in out
+    assert "THIS FINDING REMAINS" in out
+    assert "UNMIRRORED" not in out                    # migrate did its half; that half is done
+    assert "OK          : 2/2" in out                 # both files mirror-clean, and still a finding
 
 
 def test_bare_slot_finding_disappears_once_the_name_is_qualified( repo, monkeypatch, capsys ):
