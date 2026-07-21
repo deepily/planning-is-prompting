@@ -1571,6 +1571,42 @@ def is_pointer_file( path ):
         return False
 
 
+# BARE-SLOT EXEMPTIONS — an ALLOWLIST WITH A DATED REASON PER LINE, ruled by Mr. Radio 🦉
+# 2026-07-21 (row 1dd41cde), on the precedent Rick ratified the same day for the TypeScript
+# coverage gate.
+#
+# WHY AN ALLOWLIST AND NOT A "DOCUMENTED RESIDUE". These four slots cannot be cleared: clearing
+# a bare slot requires `write --persona <p> --session-id <sid>`, and these belong to dead or
+# overflow personas whose session ids would have to be INVENTED. Leaving them as permanent
+# findings was the alternative, and it is worse — a checker that can never reach zero teaches
+# its reader to ignore the number, which is the same alarm-fatigue failure this row exists to
+# avoid. An exemption that is NAMED, DATED and REASONED is visible; a finding nobody can ever
+# close is just noise that looks like rigour.
+#
+# ⚠️ EXEMPT IS NOT INVISIBLE. Every entry PRINTS on every run under its own heading with its
+# reason attached. An exemption you cannot see is indistinguishable from a bug in the checker.
+#
+# ⚠️ ADDING A FIFTH ENTRY REDS THE SUITE ON PURPOSE. `test_exemptions_are_exactly_the_ruled_set`
+# pins this dict, so a new exemption cannot be waved in as routine maintenance — someone has to
+# change the test, which is where a human notices. The reason string must also start with an
+# ISO date and name who ruled it; that is enforced, not requested.
+BARE_SLOT_EXEMPTIONS = {
+    "io/mementos/sam.md":
+        "2026-07-21 Mr. Radio — overflow persona, no live seat. Overflow names are re-granted "
+        "after a reap, so any session id written here would misdirect a future worker.",
+    "io/mementos/extra-2-854fde50-persona-null.md":
+        "2026-07-21 Mr. Radio — overflow slot whose persona resolved to null; the seat is gone "
+        "and its session id cannot be recovered from the record.",
+    "io/mementos/70cbff3e-focus-mode-prep.md":
+        "2026-07-21 Mr. Radio — session-prefixed prep artifact from a dead seat; not a persona "
+        "slot, so no persona/session pair exists to write it properly.",
+    "io/mementos/766bb609-persona-voice-prep.md":
+        "2026-07-21 Mr. Radio — session-prefixed prep artifact from a dead seat; same shape as "
+        "70cbff3e above.",
+}
+
+EXEMPTION_DATE_RE = re.compile( r"^\d{4}-\d{2}-\d{2} \S" )
+
 VERIFY_RECEIPT_NAME  = ".last-verified"
 VERIFY_STALE_SECONDS = 72 * 3600              # ruled by Mr. Radio 🦉 2026-07-21 (row 1dd41cde)
 
@@ -1750,6 +1786,7 @@ def cmd_verify( args ):
 
     findings = []                                        # (class, rel, [detail lines])
     ok_recs  = []
+    exempted = []                                        # bare slots ruled exempt, still printed
     for rel in records:
         src     = repo_root / rel
         mir_abs = mirror_path_for( repo_root, rel )
@@ -1758,7 +1795,11 @@ def cmd_verify( args ):
         # hazard: the record sits at a path the pointer writer overwrites UNCONDITIONALLY on
         # every memento write. A mirrored bare slot is still one write away from being gone
         # in-repo, so a clean mirror does not retire the finding.
-        if is_bare_slot( repo_root, rel ):
+        if is_bare_slot( repo_root, rel ) and rel.as_posix() in BARE_SLOT_EXEMPTIONS:
+            # RULED EXEMPT, AND STILL PRINTED. See BARE_SLOT_EXEMPTIONS for why these four
+            # cannot be cleared and why a permanent unclearable finding was the worse option.
+            exempted.append( rel )
+        elif is_bare_slot( repo_root, rel ):
             # THE REMEDY IS TWO STEPS AND THE FIRST ONE DOES NOT CLEAR THIS FINDING. Written
             # here as one line pointing at `migrate --apply`, then corrected after running it on
             # the real corpus: migrate TWINS a bare slot and never removes it, so all 7 findings
@@ -1848,6 +1889,16 @@ def cmd_verify( args ):
 
     # PRINT THE CLEAN CASES. Counts always; the full roster under --show-ok. A reader who cannot
     # see WHAT was checked cannot tell a clean bill of health from a checker that skipped it.
+    # EXEMPT IS PRINTED, ALWAYS, WITH ITS REASON. An exemption you cannot see is
+    # indistinguishable from a bug in the checker — and the whole argument for allowlisting
+    # these rather than carrying them as permanent findings was that a NAMED, DATED, REASONED
+    # exclusion is honest where an unclearable finding is just noise. Hiding them would give
+    # back the dishonesty the exemption was meant to remove.
+    print( f"--- EXEMPT      : {len( exempted )} bare slot(s) ruled not-clearable" )
+    for rel in exempted:
+        print( f"  EXEMPT        {rel}" )
+        print( f"                {BARE_SLOT_EXEMPTIONS[ rel.as_posix() ]}" )
+
     print( f"--- OK          : {len( ok_recs )}/{len( records )} record(s) byte-identical to their mirror" )
     if args.show_ok:
         for rel in ok_recs: print( f"  OK            {rel}" )

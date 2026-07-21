@@ -549,6 +549,74 @@ def test_every_class_can_fire_in_one_run( repo, monkeypatch, capsys ):
     assert "OK          : 2/4" in out
 
 
+# ---------------------------------------------------------------- the ruled exemptions
+
+def test_exemptions_are_exactly_the_ruled_set():
+    """
+    THE ALLOWLIST IS PINNED SO A FIFTH ENTRY CANNOT ARRIVE AS ROUTINE MAINTENANCE.
+
+    Ruled by Mr. Radio 🦉 2026-07-21 on the precedent Rick ratified the same day for the
+    TypeScript coverage gate: an explicit allowlist, a dated reason per line, and a test that
+    fails if anyone adds one without a ruling. Adding an exemption should cost a conversation,
+    and the only way to make it cost one is to make it red something a human must then edit.
+    """
+    assert set( memento_io.BARE_SLOT_EXEMPTIONS ) == {
+        "io/mementos/sam.md",
+        "io/mementos/extra-2-854fde50-persona-null.md",
+        "io/mementos/70cbff3e-focus-mode-prep.md",
+        "io/mementos/766bb609-persona-voice-prep.md",
+    }, "an exemption was added or removed without updating this test — which is the point"
+
+
+def test_every_exemption_carries_a_dated_reason():
+    """
+    A bare "exempt" is an unexplained hole. Each entry must open with an ISO date followed by
+    who ruled it, so a reader a year from now can ask whether the reason still holds instead of
+    guessing why the line exists. Enforced, not requested.
+    """
+    for path, reason in memento_io.BARE_SLOT_EXEMPTIONS.items():
+        assert memento_io.EXEMPTION_DATE_RE.match( reason ), \
+            f"{path}: reason must start 'YYYY-MM-DD <who>' — got {reason[ :40 ]!r}"
+        assert len( reason ) > 60, f"{path}: a one-word reason is not a reason"
+
+
+def test_an_exempt_bare_slot_is_not_a_finding_but_is_still_printed( repo, monkeypatch, capsys ):
+    """
+    The two halves of the ruling, asserted together because either alone is wrong.
+
+    NOT A FINDING — otherwise the count can never reach zero, and a checker that can never be
+    clean teaches its reader to ignore the number. That was the whole argument for allowlisting
+    over "documented residue".
+
+    STILL PRINTED, WITH ITS REASON — an exemption you cannot see is indistinguishable from a
+    bug in the checker, and hiding it would give back exactly the dishonesty the exemption was
+    meant to remove.
+    """
+    monkeypatch.setitem( memento_io.BARE_SLOT_EXEMPTIONS,
+                         "io/mementos/arnold.md", "2026-07-21 Test — pinned for this case only" )
+    repo.bare_slot( "arnold.md", mirrored=True )
+    repo.clean_record()
+
+    code, out = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_CLEAN, "an exempt slot must not keep the finding count above zero"
+    assert "FINDINGS    : 0" in out
+    assert "EXEMPT        io/mementos/arnold.md" in out
+    assert "2026-07-21 Test" in out, "the reason must travel with the exemption"
+
+
+def test_a_non_exempt_bare_slot_is_still_a_finding( repo, monkeypatch, capsys ):
+    """
+    NEGATIVE ARM. The allowlist must exempt exactly what it names and nothing else — a
+    predicate that exempted every bare slot would pass the test above and be worthless.
+    """
+    repo.bare_slot( "someone-else.md", mirrored=True )
+
+    code, out = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_FINDINGS
+    assert "BARE-SLOT" in out
+    assert "EXEMPT      : 0" in out
+
+
 # ---------------------------------------------------------------- the anti-flip receipt
 
 def test_verify_stamps_a_receipt_even_on_a_findings_run( repo, monkeypatch, capsys ):
