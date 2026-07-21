@@ -63,7 +63,7 @@ Short form (what actually goes in the broadcast box), pointing at the full order
 
 1. **Fire the resume broadcast** (user's direct word — proven verbatim 2026-07-02, broadcast `72f19dd0`):
 
-   > @all — RESUME WORK (this is my direct word, lifting the <date> pause order). Release your holds: rewrite your hold file back to your normal working form (drop `awaiting: "user:<name>"` — use your usual `cadence:`/`none` value and normal TTL) and pick up your board exactly where you left it — statuses were never changed, so `in_progress` items are live again. Managers: re-verify crew state before re-driving (a worker may have re-spun during the pause). No ACK storm needed — your first receipt of resumed work is your ACK.
+   > @all — RESUME WORK (this is my direct word, lifting the <date> pause order). Release your holds **with the verb, not by hand** — re-run `heartbeat_hold_io.py write` in your normal working form (drop `awaiting: "user:<name>"` for your usual `cadence:`/`none` value and your normal TTL). **Re-running `write` is a REFRESH, not a refusal** — it replaces your hold in place; do not hand-edit the JSON. Then pick up your board exactly where you left it — statuses were never changed, so `in_progress` items are live again. Managers: re-verify crew state before re-driving (a worker may have re-spun during the pause). No ACK storm needed — your first receipt of resumed work is your ACK.
 
 2. **Restart the arbiter**:
    ```bash
@@ -74,7 +74,25 @@ Short form (what actually goes in the broadcast box), pointing at the full order
 ## 4. Session-side compliance (what a session receiving the order does)
 
 1. Reach the nearest safe checkpoint (never leave a broken compile / half-written file).
-2. Write the hold file: `.heartbeat-hold-<FULL-session-id>.json` with `work_owed: true`, `awaiting: "user:<name>"`, `ttl_seconds: 14400`, and a reason citing the broadcast id.
+2. **Write the hold with the VERB, not by hand:**
+
+   ```bash
+   python3 $LUPIN_ROOT/src/lupin_cli/claude_code/hooks/lib/heartbeat_hold_io.py write \
+       --session-id "<FULL-session-id>" --persona "<your persona>" \
+       --ttl-seconds 14400 --awaiting "user:<name>" \
+       --reason "pause order <broadcast-id>" \
+       --base-dir "<YOUR project root>"
+   ```
+
+   The verb writes the schema, **refuses** a ttl that cannot defend you, and **reads the hold back through the reader the Stop hook uses** — a hold that would not be honored is reported as a FAILURE, not a success. **Do not hand-write `.heartbeat-hold-<id>.json`.** Measured 2026-07-16: 22 hand-written holds carried an unusable ttl, defended nothing, and were poked for four weeks in silence — not one had gone through the writer.
+
+   > ⚠️ **`--base-dir` IS REQUIRED IF YOU ARE NOT A LUPIN SESSION — omit it and your hold lands in lupin's tree, not yours.** The default resolves via `cu.get_project_root()`, which is hardwired to `LUPIN_ROOT`. `heartbeat_hold.py:157-158` documents the consequence in its own words: *"Resolving it from the hardwired LUPIN_ROOT made every NON-lupin session's hold land under lupin."* **Measured 2026-07-21** from a `plan` session: `read` with no `--base-dir` returned *"no hold found"* for a hold sitting in that session's own project root; the same `read` with `--base-dir` returned `honored yes`. Same file, same session, opposite verdicts.
+   >
+   > ⚠️ **The verb writes the SCHEMA ONLY — it has no cargo parameter.** If you have continuity payload for your successor (`note_to_my_successor`, `board`, `harvest_state`, `the_nights_finding`), it does **not** belong in a hold and the verb will not carry it. **Put it in a memento** (`memento_io.py write`), which is mirrored, pointed, and readable by a successor. A hold is a liveness artifact with a TTL; a memento is the continuity record. **Writing continuity into a hold filename is exactly what produced 56 schema-invisible "mementos wearing a hold's clothes" across the fleet** — see `workflow/memento-management.md`.
+
+   **Re-running `write` is a REFRESH, not a refusal** — it replaces your hold in place. A reader expecting memento-style immutability will reach for a hand-edit instead; that is the failure this step exists to prevent.
+
+   *Schema reference only — **NOT the instruction**, do not hand-author it:* the artifact is `.heartbeat-hold-<FULL-session-id>.json` carrying `work_owed`, `awaiting`, `ttl_seconds`, `held_at`, `reason`. Recorded so a reader can recognize and debug one, never so a reader can write one.
 3. ACK once (one line), then silence.
 4. On ANY wake: re-assert the hold; do not resume; do not treat a poke as permission.
 5. On the user's resume broadcast: rewrite the hold to the normal working form, resume the board as-was, managers re-verify crew before re-driving.
