@@ -549,6 +549,85 @@ def test_every_class_can_fire_in_one_run( repo, monkeypatch, capsys ):
     assert "OK          : 2/4" in out
 
 
+# ---------------------------------------------------------------- the misdirected sweep
+
+def _init_repo( path ):
+    """Ensures: `path` exists and is a git repo with an io/mementos slot."""
+    ( path / "io" / "mementos" ).mkdir( parents=True, exist_ok=True )
+    subprocess.run( [ "git", "init", "-q" ], cwd=path, check=True )
+    subprocess.run( [ "git", "commit", "-q", "--allow-empty", "-m", "init" ], cwd=path,
+                    check=True, capture_output=True,
+                    env={ **os.environ, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                          "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t" } )
+
+
+def test_an_in_repo_decoy_directory_is_misdirected( repo ):
+    """
+    Store row af0c5700: a RELATIVE write from a subdirectory creates its own parents and lands
+    at a real sibling `io/mementos/` that nobody reads. Only a tree walk finds this one.
+    """
+    decoy = repo.root / "src" / "cosa" / "rest" / "io" / "mementos"
+    decoy.mkdir( parents=True )
+    ( decoy / "krishna-cafe1234.md" ).write_text( "# misdirected\n" )
+
+    hits, searched = memento_io.find_misdirected_mementos( repo.root )
+    assert [ p.name for p in hits ] == [ "krishna-cafe1234.md" ]
+    assert "io/mementos" in searched
+
+
+def test_a_nested_repos_own_slot_is_NOT_misdirected( repo ):
+    """
+    🔴 WITHOUT THIS EXCLUSION THE SWEEP IS 100% FALSE POSITIVES ON LUPIN. The first version
+    flagged all five records in `src/lupin-mobile/io/mementos/` — a directory that sits under
+    the lupin tree, so a path comparison calls it misdirected, while `lupin-mobile` is a NESTED
+    REPO whose own git toplevel makes that its CANONICAL slot.
+
+    Canonicality is a question for the file's OWN repo. Same lesson as `--show-toplevel` vs
+    `--git-common-dir`, reached from the opposite direction.
+    """
+    nested = repo.root / "vendor" / "nested"
+    nested.mkdir( parents=True )
+    _init_repo( nested )
+    ( nested / "io" / "mementos" / "someone-11112222.md" ).write_text( "# its own slot\n" )
+
+    hits, _ = memento_io.find_misdirected_mementos( repo.root )
+    assert hits == [], "a nested repo's own canonical slot is not a misdirection"
+
+
+def test_a_linked_worktree_memento_is_misdirected_even_outside_the_repo_dir( repo, tmp_path ):
+    """
+    CLAYTON'S CORRECTION, PINNED. The sweep was first designed as `**/io/mementos/*.md` from the
+    repo root — a TREE WALK ANSWERING A REPO QUESTION, which finds worktrees that happen to sit
+    under the repo directory and misses every one that does not.
+
+    Measured on lupin the same day: 6 worktrees, 2 of them under `/tmp`, both already
+    `prunable` — so a memento written there is destroyed twice over having reported success
+    both times. This plants the worktree OUTSIDE the repo directory, which is the case a walk
+    structurally cannot see.
+    """
+    _init_repo( repo.root )
+    outside = tmp_path / "far-away-worktree"
+    subprocess.run( [ "git", "worktree", "add", "-q", str( outside ), "-b", "probe" ],
+                    cwd=repo.root, check=True, capture_output=True )
+    ( outside / "io" / "mementos" ).mkdir( parents=True )
+    ( outside / "io" / "mementos" / "clayton-deadbeef.md" ).write_text( "# in a worktree\n" )
+
+    hits, searched = memento_io.find_misdirected_mementos( repo.root )
+    assert [ p.name for p in hits ] == [ "clayton-deadbeef.md" ]
+    assert str( outside ) in searched, "the searched space must NAME the worktree it covered"
+
+
+def test_the_null_names_its_search_space( repo ):
+    """
+    A null that does not state its boundary reads as "nothing is wrong" when it may only mean
+    "I did not look there" — and this sweep's boundary was WRONG in its first design. So the
+    searched space is returned and printed even when there are zero hits.
+    """
+    hits, searched = memento_io.find_misdirected_mementos( repo.root )
+    assert hits == []
+    assert str( repo.root ) in searched and "linked worktree" in searched
+
+
 # ---------------------------------------------------------------- the ruled exemptions
 
 def test_exemptions_are_exactly_the_ruled_set():

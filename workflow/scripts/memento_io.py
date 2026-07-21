@@ -1707,6 +1707,107 @@ def print_verify_staleness_banner( repo_root ):
     print( "", file=sys.stderr )
 
 
+def linked_worktrees( repo_root ):
+    """
+    Enumerate this repo's linked worktrees — the ones `git` knows about, wherever they live.
+
+    ⚠️ WHY THIS IS NOT A DIRECTORY WALK, AND THE CORRECTION IS CLAYTON'S (2026-07-21). The
+    first design for the misdirected sweep was `**/io/mementos/*.md` from the repo root. That
+    is a TREE WALK ANSWERING A REPO QUESTION — the same category error as resolving canonicality
+    with `--show-toplevel`, one layer up. It would find worktrees that happen to sit under the
+    repo directory and MISS every one that does not. Measured on lupin the same day: 6
+    worktrees, and 2 of them live under `/tmp` — both already `prunable`, so a memento written
+    there is destroyed twice over having reported success both times.
+
+    ⇒ the search space is what `git` says it is, not what the filesystem layout suggests.
+
+    Requires:
+        - repo_root is a resolved repo root
+    Ensures:
+        - yields absolute Paths of LINKED worktrees only (the main tree is excluded — it is the
+          canonical slot, not a misdirection target)
+        - yields nothing when git is unavailable, times out, or reports nothing; the caller
+          states the boundary of its own null rather than presenting an empty result as proof
+    """
+    try:
+        result = subprocess.run( [ "git", "-C", str( repo_root ), "worktree", "list", "--porcelain" ],
+                                 capture_output=True, text=True, timeout=10 )
+    except ( OSError, subprocess.SubprocessError ):
+        return
+    if result.returncode != 0: return
+
+    for line in result.stdout.splitlines():
+        if not line.startswith( "worktree " ): continue
+        path = Path( line[ len( "worktree " ): ].strip() ).resolve()
+        if path != repo_root.resolve(): yield path
+
+
+def find_misdirected_mementos( repo_root ):
+    """
+    Find memento records that landed somewhere a reader will never look.
+
+    TWO SEARCH SPACES, BECAUSE THERE ARE TWO WAYS TO MISS THE CANONICAL SLOT and neither
+    covers the other:
+
+      (a) IN-REPO DECOY DIRECTORIES — `<repo>/src/cosa/rest/io/mementos/` and friends. A
+          RELATIVE write from a subdirectory creates its own parents and succeeds at a real
+          sibling directory (store row af0c5700). Only a tree walk finds these.
+      (b) LINKED WORKTREES — a seat working in a worktree whose `io/mementos/` is NOT the
+          canonical slot. Only `git worktree list` finds these, and it finds them wherever
+          they live. See linked_worktrees().
+
+    Requires:
+        - repo_root is a resolved repo root
+    Ensures:
+        - returns (hits, searched) where hits is a list of absolute Paths and `searched` is a
+          human description of the SPACE that was covered
+        - the canonical slot itself is never a hit
+        - `searched` is returned even when hits is empty, because a null that does not name its
+          search space reads as "nothing is wrong" when it may only mean "I did not look there"
+    """
+    canonical = ( repo_root / "io" / "mementos" ).resolve()
+    hits      = []
+
+    def is_misdirected( p ):
+        """
+        Ensures: True iff `p` is off the canonical slot AND belongs to THIS repo.
+
+        ⚠️ THE NESTED-REPO EXCLUSION IS NOT AN EDGE CASE — WITHOUT IT THIS SWEEP IS 100% FALSE
+        POSITIVES ON LUPIN. The first version flagged all five records in
+        `src/lupin-mobile/io/mementos/`. That directory sits under the lupin tree, so a path
+        comparison calls it misdirected — but `lupin-mobile` is a NESTED REPO with its own git
+        toplevel, so that IS its canonical slot and those records are exactly where they belong.
+        (Established earlier the same day while answering Clayton on af0c5700, and then very
+        nearly re-broken here by a predicate that only looked at path shape.)
+
+        ⇒ canonicality is a question for the file's OWN repo — the same lesson as
+          `--show-toplevel` vs `--git-common-dir`, arrived at from the opposite direction.
+        """
+        if p.parent.resolve() == canonical: return False
+        try:
+            top = subprocess.run( [ "git", "-C", str( p.parent ), "rev-parse", "--show-toplevel" ],
+                                  capture_output=True, text=True, timeout=10 )
+        except ( OSError, subprocess.SubprocessError ):
+            return False                                  # cannot resolve => do not accuse
+        if top.returncode != 0: return False
+        return Path( top.stdout.strip() ).resolve() == repo_root.resolve()
+
+    for p in sorted( repo_root.rglob( "io/mementos/*.md" ) ):
+        if is_misdirected( p ): hits.append( p )
+
+    # Worktrees are found by ENUMERATION, not by walking, and their records are misdirected by
+    # construction: a linked worktree's `io/mementos/` belongs to this repo yet is not the
+    # canonical slot — and `git worktree prune` deletes it.
+    worktrees = list( linked_worktrees( repo_root ) )
+    for wt in worktrees:
+        for p in sorted( wt.rglob( "io/mementos/*.md" ) ):
+            if p.parent.resolve() != canonical and p not in hits: hits.append( p )
+
+    searched = ( f"{repo_root}/**/io/mementos/ plus {len( worktrees )} linked worktree(s)"
+                 + ( f" ({', '.join( str( w ) for w in worktrees )})" if worktrees else "" ) )
+    return hits, searched
+
+
 def iter_mirror_mementos( repo_root ):
     """
     Ensures: yields every mirrored memento as a path RELATIVE TO THE MIRROR ROOT, i.e. in the
@@ -1894,6 +1995,19 @@ def cmd_verify( args ):
     # these rather than carrying them as permanent findings was that a NAMED, DATED, REASONED
     # exclusion is honest where an unclearable finding is just noise. Hiding them would give
     # back the dishonesty the exemption was meant to remove.
+    # MISDIRECTED — records that landed where nobody reads. Reported as FINDINGS because,
+    # unlike an orphan mirror, this one HAS a non-destructive remedy: move the content to the
+    # canonical slot via `write`. The searched space prints even when the result is empty,
+    # because a null that does not name its boundary reads as "nothing is wrong" when it may
+    # only mean "I did not look there" — and this sweep's boundary was wrong in its first
+    # design (a tree walk cannot see a worktree under /tmp).
+    misdirected, searched = find_misdirected_mementos( repo_root )
+    print( f"--- MISDIRECTED : {len( misdirected )}   searched: {searched}" )
+    for p in misdirected:
+        print( f"  MISDIRECTED   {p}" )
+        print( f"                not at the canonical slot {repo_root / 'io' / 'mementos'} — nobody reads this path" )
+        findings.append( ( "MISDIRECTED", p, [] ) )
+
     print( f"--- EXEMPT      : {len( exempted )} bare slot(s) ruled not-clearable" )
     for rel in exempted:
         print( f"  EXEMPT        {rel}" )
