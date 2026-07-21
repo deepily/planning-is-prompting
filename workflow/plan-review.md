@@ -96,6 +96,26 @@ The critique MUST produce ONE of:
 
 > **Why the bar is the feature**: without it, *"reviewer glanced, looks good"* is **a check that cannot fail** — a control whose passing state is indistinguishable from its own absence. The branch would then certify plans while measuring nothing.
 
+### 📌 THIS BAR IS NO LONGER PLAN-REVIEW-SCOPED (Rick, 2026-07-21 — `79cf5c2c`)
+
+**The 0% figure was never a fact about plan review. It is a fact about READING** — ten-plus failures, three seats, one day, none found by reading, including four the critic seat authored and read back. Canonizing it in one tier left every other *"I looked at it and it seems fine"* on the board accepting the exact method the lesson disqualifies.
+
+It now binds, **stated at each tier's own surface rather than as one global sentence somebody has to remember applies to them**:
+
+| tier | where it is stated |
+|---|---|
+| plan review | **here**, §4a (origin) |
+| code review | [`swe-team-roles.md`](swe-team-roles.md) § Reviewer |
+| cascade stage handoffs | [`plan-review-cascaded-common.md`](plan-review-cascaded-common.md) § Light-review gate |
+| reap sign-offs | [`post-game.md`](post-game.md) § 3.5.2 |
+| memento review / rehydrate | [`memento-management.md`](memento-management.md) § element 9 |
+
+**Doc review has no separate surface** — a reviewed doc enters this gate, so §4a already is it. Recorded so the absence reads as checked rather than forgotten.
+
+**The cost objection is closed by measurement, not argument**: **~24s** for one heavy-form account, with one demonstrated catch in its first application. ⚠️ **Carry the scope boundary with the number** (per `0c7c6779`): that is account-WRITING for a claim whose runs were already done, measured **once**, **in this tier**. It is the measured cost of the FORM — not of the bar in any tier it was just widened to.
+
+⚠️ **`ec8defde` is not precedent against this.** It addressed M1 build-plan precision, not review rigor; the seat who cited it that way **retracted the citation himself** — *"a true claim buying coverage it does not have."* Whatever the argument for narrowing the bar later is, it must be made on its own merits.
+
 ---
 
 ## 4. Pre-pass: REUSE Detection

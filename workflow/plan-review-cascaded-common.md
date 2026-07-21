@@ -78,6 +78,14 @@ Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "cons
 
 **Cost**: ~15-20 min reviewer-time.
 
+> **⛔ RAN-NOT-READ — BINDS THIS GATE AND EVERY CASCADE STAGE HANDOFF.** *An account whose only method is reading is not an account. State what you RAN, not what you considered. A receipt shows the work happened; it does not show the work bore on the claim. The reader is the check on relevance.*
+>
+> **This tier as of Rick's 2026-07-21 ruling** (`79cf5c2c`), which widened the bar from `plan-review.md` §4a to every tier that accepts an account.
+>
+> ⇒ **A thumbs-up is a VERDICT, and this gate's output as specified above is a verdict.** It does not satisfy the bar on its own. Each of the six criteria is a **checkable claim about the input**, not an impression of it — criterion 1 is answered by tracing the dependency in both directions, criterion 4 by opening the cited source, criterion 5 by walking the order. **Say which you ran.**
+>
+> **Handoff corollary — the reason this matters more in a cascade than anywhere else**: a stage hands its conclusion to the next stage, which builds on it without re-deriving it. **An unexamined verdict does not stay one stage wide.** The measured shape: a figure was relayed to four seats and a hold, a ruling, a build gate and a commit sequence were built on it before anyone re-derived it — **and it was wrong.** Carry what you RAN across the handoff, not only what you concluded.
+
 ### Manager response to light-review findings (1-revision-turn cap)
 
 If reviewer thumbs-up: cascade state flips to `cascade_input_ready` (new closure_action enum value; see defaults.md).

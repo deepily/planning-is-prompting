@@ -1534,8 +1534,16 @@ def build_parser():
 
     def common( sp ):
         sp.add_argument( "--repo", type=Path, default=None, help="repo path (default: cwd)" )
-        sp.add_argument( "--slot", choices=[ "io", "root" ], default="io",
-                         help="io = spawned-worker slot (default); root = self-/clear slot" )
+        # NO DEFAULT, BY RULING (Rick 2026-07-21, /plan-decide D4). The gate arms only on
+        # `root` — BY DESIGN, since a worker owes a retro DEPOSIT, not the engagement's
+        # post-game. That scoping is correct and is NOT what was wrong. What was wrong is
+        # that omitting the flag SILENTLY selected the ungated slot: the un-typed direction
+        # was the unprotected one, and nothing said so. Every documented call site already
+        # types the slot (memento-management.md:173/189/247/307/308, plan-memento.md:37/56/60),
+        # so requiring it breaks no prescribed workflow — it only stops a bare call from
+        # landing ungated without anyone noticing. Making it REQUIRED is the whole fix.
+        sp.add_argument( "--slot", choices=[ "io", "root" ], required=True,
+                         help="REQUIRED (no default): io = spawned-worker slot; root = self-/clear slot" )
 
     w = sub.add_parser( "write", help="write RECORD + MIRROR + POINTER in one call" )
     common( w )

@@ -1480,3 +1480,89 @@ def test_write_hard_fails_when_the_landed_record_is_not_gitignored( repo, monkey
     with pytest.raises( SystemExit ) as exc:
         m.cmd_write( a )
     assert exc.value.code == 5, f"a trackable record was accepted: exit={exc.value.code}"
+
+
+# ------------------------------------------------- the SLOT is REQUIRED (Rick 2026-07-21, D4)
+#
+# THE DEFECT THIS CLOSES, stated narrowly because the row it came from overstated it:
+# `--slot` used to default to `io`, and the post-game gate arms only on `root`. The
+# root-only scoping is CORRECT and by design — a spawned worker owes a retro DEPOSIT,
+# not the engagement's post-game. What was wrong is that OMITTING the flag silently
+# selected the ungated slot. The un-typed direction was the unprotected one.
+#
+# Measured before the fix: every documented call site already typed the slot
+# (memento-management.md:173/189/247/307/308, plan-memento.md:37/56/60), so the
+# default was load-bearing for NOBODY and silent for anybody who skipped it.
+#
+# THESE ARE NEGATIVE CONTROLS. Restore `default="io"` and the first three go RED;
+# that is the only thing that makes them worth having. The fourth exists so a fix
+# that required the flag by BREAKING the flag cannot pass.
+
+# ⚠️ THE `other_args` HERE IS THE WHOLE POINT, AND THE FIRST VERSION OF THIS TEST DID NOT HAVE IT.
+# Written as `[subcmd, "--persona", "maria"]`, three of the five parametrizations went GREEN
+# under the mutation (default="io" restored) — because `write`/`amend`/`adopt` ALSO require
+# `--session-id`, so a bare call exits 2 on the MISSING SESSION ID and the assertion could not
+# tell the two refusals apart. It was RED FOR THE WRONG REASON, which is the same thing as not
+# testing. Caught by running the mutation, not by reading the test — which is the point of
+# candidate 2 ("a verdict with an empty body is a defect") and of the ran-not-read bar.
+# Every other required arg is supplied below so `--slot` is the ONLY thing missing.
+@pytest.mark.parametrize( "subcmd,other_args", [
+    ( "write",              [ "--persona", "maria", "--session-id", "d3254802" ] ),
+    ( "amend",              [ "--persona", "maria", "--session-id", "d3254802" ] ),
+    ( "adopt",              [ "--persona", "maria", "--session-id", "d3254802" ] ),
+    ( "resolve",            [ "--persona", "maria" ] ),
+    ( "regenerate-pointer", [ "--persona", "maria" ] ),
+] )
+def test_omitting_slot_is_refused_on_every_slotted_subcommand( subcmd, other_args ):
+    """
+    Ensures: a bare invocation FAILS LOUD (argparse exit 2) instead of silently
+             taking the ungated slot — on every subcommand that takes a slot, and
+             for the RIGHT reason: `--slot` is the only argument withheld.
+    """
+    r = subprocess.run( [ sys.executable, str( SCRIPT ), subcmd ] + other_args,
+                        capture_output=True, text=True )
+    assert r.returncode == 2, f"{subcmd} accepted a call with no --slot: exit={r.returncode}"
+
+    # RED-FOR-THE-RIGHT-REASON, and the assertion must read the ERROR LINE, not stderr as a
+    # whole: argparse's USAGE block names every flag the subcommand takes, so a naive
+    # `"--persona" not in r.stderr` matches the usage text and fails on a correct refusal.
+    # That was this test's SECOND vacuous form, found the same way as the first — by running
+    # it, not by reading it.
+    err = [ ln for ln in r.stderr.splitlines() if "error:" in ln ]
+    assert err, f"{subcmd} exited 2 with no error line at all: {r.stderr!r}"
+    assert "--slot" in err[ 0 ], f"{subcmd} refused without naming the missing flag: {err[ 0 ]!r}"
+    assert "--session-id" not in err[ 0 ] and "--persona" not in err[ 0 ], \
+        f"{subcmd} refused for a DIFFERENT missing arg — this control is vacuous: {err[ 0 ]!r}"
+
+
+def test_the_refusal_names_no_escape_command():
+    """
+    Ensures: the refusal text does not hand the operator a command to run.
+
+    WHY THIS IS A TEST AND NOT A COMMENT: `955f7eb4`'s draft rule says a guard's own
+    recommended ESCAPE is an INSTRUCTION and must be run before it ships. The cheapest
+    way to satisfy that for this refusal is to NOT RECOMMEND ANYTHING — argparse prints
+    a usage line, not a remedy. This test pins that, so a later "helpful" addition to
+    the error text has to be audited rather than slipped in.
+    """
+    r = subprocess.run( [ sys.executable, str( SCRIPT ), "write", "--persona", "maria" ],
+                        capture_output=True, text=True )
+    assert "memento_io.py write --persona" not in r.stderr, \
+        "the refusal now recommends a command; it is an escape and must be audited per 955f7eb4"
+
+
+def test_a_typed_slot_still_works_in_both_directions( repo ):
+    """
+    Ensures: requiring the flag did not break the flag. Both slots still resolve.
+
+    This is the control on the FIX, not on the defect: a change that made `--slot`
+    mandatory by breaking its parsing would pass every assertion above.
+    """
+    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    for slot in ( "io", "root" ):
+        r = subprocess.run( [ sys.executable, str( SCRIPT ), "write", "--repo", str( repo ),
+                              "--slot", slot, "--persona", "maria", "--session-id", "d3254802",
+                              "--no-post-game", "negative-control for the required-slot fix" ],
+                            input="# Memento\n\nbody text\n", cwd=repo,
+                            capture_output=True, text=True, env=env )
+        assert r.returncode == 0, f"--slot {slot} broke: exit={r.returncode} {r.stderr}"

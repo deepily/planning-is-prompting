@@ -172,6 +172,14 @@ The evidence is the 2026-07-13 `cascade-eval-first` run, whose most durable arti
 
 A Manager who *can* get the ack and takes the lapse instead has satisfied the letter of this gate and defeated its purpose.
 
+> **⛔ RAN-NOT-READ, AT THE REAP SIGN-OFF — an account whose only method is reading is not an account. State what you RAN, not what you considered. A receipt shows the work happened; it does not show the work bore on the claim. The reader is the check on relevance.**
+>
+> **This tier as of Rick's 2026-07-21 ruling** (`79cf5c2c`), which widened the bar from plan review to **every tier that accepts an account** — reap sign-offs among them, and this one has the largest blast radius per miss: **a reap is irreversible, and the account is the last thing anyone writes about that seat.**
+>
+> ⇒ A `harvest-complete` ack whose method is *"I read the deposits and they look complete"* **does not satisfy this gate.** State what you checked and how — which deposits you opened, what you queried, what a MISSING element would have looked like and whether your check could have shown it. **An ack that cannot come back incomplete is indistinguishable from no ack at all**, and it is the strong door in §3.5.2 that is supposed to be strong.
+>
+> *(Consistent with §3.3's ranking, not a competitor to it: mechanism ② — provenance-carrying deposits — is what makes this ack cheap to satisfy honestly. A deposit that already records **how the seat came to know** turns the ack into a read of real evidence rather than an impression of one.)*
+
 **Why the ranking is written down rather than left to judgment (the provenance, and it is the whole argument).** At the 2026-07-17 M1 teardown the Manager stood at this gate with **five seats still standing on it** and the lapse available to him. He **declined it**, and said why: *"Your own §3.5.2 gives me (b) 'a declared window has lapsed' as sufficient. I'm DECLINING to use it: five seats are standing on it, and **a lapsed timer is the weakest of the two doors.**"* The Steward's answer — *"the gate says a window that lapses is a VALID reason to reap; it does not say it's the GOOD one"* — was correct **and was nowhere in the text.** His reply is the ruling:
 
 > **"A rule that offers a weak door and a strong one, without saying which is which, will get the weak one taken."**
