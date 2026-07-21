@@ -1487,39 +1487,173 @@ def is_pointer_file( path ):
         return False
 
 
+def iter_mirror_mementos( repo_root ):
+    """
+    Ensures: yields every mirrored memento as a path RELATIVE TO THE MIRROR ROOT, i.e. in the
+             same coordinate space `iter_repo_mementos` yields — so the two sets are directly
+             comparable and an ORPHAN MIRROR (a mirror whose in-repo record is gone) is a set
+             difference rather than a guess.
+
+             Yields nothing when the mirror root does not exist; "this repo has never been
+             mirrored" is a finding for the caller to name, not an exception to raise here.
+    """
+    mir_root = MIRROR_HOME / repo_root.name
+    if not mir_root.is_dir(): return
+    for p in sorted( mir_root.rglob( "*.md" ) ):
+        yield p.relative_to( mir_root )
+
+
 def cmd_verify( args ):
     """
-    Audit a repo: is every RECORD on disk mirrored out-of-repo, byte-for-byte?
+    Audit a repo's memento surface and make every divergence LOUD.
 
-    Pointers are EXCLUDED and that is not an oversight: a pointer is a derived copy of a
-    record that IS mirrored, and it is regenerable from the directory at any time. Losing
-    one costs nothing, so demanding a mirror for it would raise a failure that isn't one —
-    and a checker that cries wolf is a checker nobody reads.
+    WHY THIS GREW (store row a18bfec9, Tiffany 💍 2026-07-21). A memento hand-written to the
+    BARE derivable slot `io/mementos/<persona>.md` lands a RECORD at a POINTER path: no
+    pointer header, and — the part that cost eight days — NO MIRROR UPDATE. Measured on
+    2026-07-21: the lupin mirror still held a *different, older* bare-slot record from
+    2026-07-13. Two in-repo overwrites went unmirrored and NOTHING REPORTED IT.
 
+    The earlier `verify` was not absent and it was not broken — run by hand it DID flag those
+    slots. It had three gaps, and they are what this rewrite closes:
+
+      1. IT COULD NOT NAME THE CAUSE. A bare-slot record read out as a bare `DRIFTED`,
+         indistinguishable from any other stale mirror, so the line carried no remedy and the
+         reader had to re-derive the mechanism from the filename.
+      2. IT COULD ONLY LOOK ONE WAY. It walked the repo and asked "is this mirrored?" — never
+         the mirror, asking "does this still exist in the repo?" An ORPHAN MIRROR is the
+         signature of a record that was clobbered or deleted in-repo, i.e. exactly the damage
+         the mirror exists to survive, and it was invisible.
+      3. A SCAN OF NOTHING LOOKED LIKE A CLEAN SCAN. `0/0 records mirrored` exited 0, the same
+         green as `217/217`. A wrong --repo, a fresh clone (the directory is GITIGNORED, so it
+         does not survive one), or a renamed directory all reported success. That is the
+         guard-certifying-itself shape and it is now exit 4.
+
+    WHAT IT DELIBERATELY DOES NOT DO — RANK THE TWO COPIES. When repo and mirror disagree, this
+    prints both digests and REFUSES to say which is newer, because neither available timestamp
+    means what a reader assumes:
+        · the `Written:` header is stamped by `stamp_header` AT WRITE TIME, so a record
+          promoted today from yesterday's content carries today's date over yesterday's words
+          (measured: `tiffany-7341227d.md`). It dates the WRITE, never the AUTHORSHIP.
+        · mtime dates the last COPY — `shutil.copy2` propagates it, a rescue rewrites it.
+    A checker that picked a winner from either would resolve divergences confidently and
+    sometimes backwards. Naming the disagreement is the honest ceiling; the human reads both.
+
+    Pointers are excluded from the mirror requirement and that is still not an oversight: a
+    pointer is a derived copy of a record that IS mirrored, regenerable from the directory at
+    any time, so demanding a mirror for one would raise a failure that isn't one.
+
+    Requires:
+        - --repo (or cwd) is inside a git working tree
     Ensures:
-        - prints one line per unmirrored/drifted RECORD
-        - exit 0 iff every record in the repo has a byte-identical mirror
+        - prints one classified line per FINDING: BARE-SLOT / UNMIRRORED / DRIFTED
+        - prints ORPHAN MIRRORS as a NOTICE with a count on every run — visible always, fatal
+          never, because the mirror is an archive and an orphan's only "remedy" is deleting it
+        - prints the CLEAN cases too — the scanned counts always, and every clean record under
+          --show-ok — so "all consistent" can never be mistaken for "scanned nothing"
+        - writes nothing, moves nothing, deletes nothing: this verb is READ-ONLY
+        - exit 0 iff at least one memento file was scanned and no finding was raised
+        - exit 1 when any finding was raised
+        - exit 4 when the repo's scan set was EMPTY (nothing to be clean about)
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
-    total = ok = pointers = 0
-    bad   = []
-    for rel in iter_repo_mementos( repo_root ):
-        src = repo_root / rel
-        if is_pointer_file( src ):
-            pointers += 1
-            continue
-        total  += 1
+    mir_root  = MIRROR_HOME / repo_root.name
+
+    files    = list( iter_repo_mementos( repo_root ) )
+    records  = []
+    pointers = []
+    for rel in files:
+        ( pointers if is_pointer_file( repo_root / rel ) else records ).append( rel )
+
+    findings = []                                        # (class, rel, [detail lines])
+    ok_recs  = []
+    for rel in records:
+        src     = repo_root / rel
         mir_abs = mirror_path_for( repo_root, rel )
+
+        # BARE-SLOT is reported INDEPENDENTLY of mirror parity, because it is a different
+        # hazard: the record sits at a path the pointer writer overwrites UNCONDITIONALLY on
+        # every memento write. A mirrored bare slot is still one write away from being gone
+        # in-repo, so a clean mirror does not retire the finding.
+        if is_bare_slot( repo_root, rel ):
+            findings.append( ( "BARE-SLOT", rel, [
+                "record content sitting at a POINTER path — the next pointer write overwrites it",
+                f"remedy: memento_io.py migrate --repo {repo_root} --apply   (twins it, then mirrors both)",
+            ] ) )
+
         if not mir_abs.exists():
-            bad.append( f"  UNMIRRORED  {rel}" )
+            findings.append( ( "UNMIRRORED", rel, [
+                f"no mirror at {mir_abs}",
+                f"remedy: memento_io.py migrate --repo {repo_root} --apply",
+            ] ) )
         elif sha256_of( mir_abs ) != sha256_of( src ):
-            bad.append( f"  DRIFTED     {rel}" )
+            findings.append( ( "DRIFTED", rel, [
+                f"repo   sha256 {sha256_of( src )[ :16 ]}  mtime {mtime_stamp( src )}",
+                f"mirror sha256 {sha256_of( mir_abs )[ :16 ]}  mtime {mtime_stamp( mir_abs )}",
+                "NOT RANKED — `Written:` is stamped at write time and mtime is copy time;"
+                " neither dates the CONTENT. Read both before choosing.",
+            ] ) )
         else:
-            ok += 1
-    print( f"=== verify {repo_root}: {ok}/{total} records mirrored to {MIRROR_HOME / repo_root.name}"
-           f"  ({pointers} pointer(s) skipped — derived, regenerable, nothing to lose)" )
-    for line in bad: print( line )
-    return 0 if not bad else 1
+            ok_recs.append( rel )
+
+    # THE OTHER DIRECTION. Everything above walks the repo; nothing above would notice a record
+    # that VANISHED from it. Pointers are excluded from this side too — a mirrored pointer whose
+    # slot was later re-pointed is derived churn, not loss.
+    repo_set = set( files )
+    orphans  = [ rel for rel in iter_mirror_mementos( repo_root )
+                 if rel not in repo_set and not is_pointer_file( mir_root / rel ) ]
+
+    print( f"=== verify {repo_root}" )
+    print( f"--- mirror root : {mir_root}" )
+    print( f"--- scanned     : {len( files )} in-repo memento file(s) "
+           f"= {len( records )} record(s) + {len( pointers )} pointer(s), "
+           f"plus {len( orphans )} orphan mirror(s)" )
+
+    # EXIT 4, AND IT IS THE POINT OF THE REWRITE. A scan set of zero has nothing to be clean
+    # about, so reporting it as clean is a lie the old exit code told. Named before the findings
+    # loop because there cannot BE findings here — the silence is the finding.
+    #
+    # The condition is the REPO's file count alone, deliberately: a repo holding nothing while
+    # the mirror holds records is the WORST version of this state, not an exempt one — every
+    # record is gone from the tree — so the orphan list prints here as the diagnosis rather than
+    # buying an exit 0.
+    if not files:
+        print( "!!! NOTHING SCANNED — this is NOT a clean result." )
+        print( f"    No memento files under {repo_root / 'io' / 'mementos'} and none at the repo root." )
+        print( "    Likely: wrong --repo, or a fresh clone/worktree (the directory is GITIGNORED "
+               "BY DESIGN and does not survive one)." )
+        if orphans:
+            print( f"    The mirror holds {len( orphans )} record(s) this repo does not — "
+                   "it is currently the ONLY copy of them:" )
+            for rel in orphans: print( f"      {mir_root / rel}" )
+        return 4
+
+    for cls, rel, details in findings:
+        print( f"  {cls:<14}{rel}" )
+        for line in details: print( f"                {line}" )
+
+    # ORPHAN MIRRORS ARE A NOTICE, NOT A FINDING — and the demotion was measured, not assumed.
+    # Built first as a finding, it fired 10 times on a green peer suite whose fixture shares one
+    # mirror home across tests. Chasing that surfaced the real reason it cannot carry an exit
+    # code: THE MIRROR IS AN ARCHIVE BY DESIGN. It exists to survive `git clean -xdf`, so a
+    # record that legitimately leaves the repo — archived, moved, cleaned — leaves an orphan
+    # FOREVER, and the only act that would clear it is deleting the safety copy. A finding whose
+    # sole remedy is destroying the thing it protects is one people learn to ignore, or worse,
+    # obey. So it prints on EVERY run, with names and a count, and never fails the build:
+    # visible always, fatal never. What it is genuinely good for is answering "did something
+    # vanish from the repo?" — a question a human must judge, which is why it stops at telling.
+    print( f"--- ORPHAN MIRRORS (notice, not a finding — the mirror is an archive): {len( orphans )}" )
+    for rel in orphans:
+        print( f"  ORPHAN-MIRROR {rel}" )
+        print( f"                mirrored at {mir_root / rel} with NO in-repo counterpart" )
+        print(  "                deleted, renamed, or clobbered in-repo — the mirror is now the only copy" )
+
+    # PRINT THE CLEAN CASES. Counts always; the full roster under --show-ok. A reader who cannot
+    # see WHAT was checked cannot tell a clean bill of health from a checker that skipped it.
+    print( f"--- OK          : {len( ok_recs )}/{len( records )} record(s) byte-identical to their mirror" )
+    if args.show_ok:
+        for rel in ok_recs: print( f"  OK            {rel}" )
+    print( f"--- FINDINGS    : {len( findings )}" )
+    return 0 if not findings else 1
 
 
 # ---------------------------------------------------------------- cli
@@ -1590,8 +1724,12 @@ def build_parser():
     m.add_argument( "--apply", action="store_true", help="actually write (default: dry run)" )
     m.set_defaults( func=cmd_migrate )
 
-    v = sub.add_parser( "verify", help="audit: is every memento mirrored, byte-for-byte?" )
-    v.add_argument( "--repo", type=Path, default=None )
+    v = sub.add_parser( "verify", help="audit: bare slots, mirror parity, orphan mirrors (READ-ONLY)" )
+    v.add_argument( "--repo",    type=Path, default=None )
+    v.add_argument( "--show-ok", action="store_true",
+                    help="list every clean record by name, not just the count — makes the "
+                         "scanned set visible so a clean bill of health cannot be confused "
+                         "with a checker that skipped it" )
     v.set_defaults( func=cmd_verify )
 
     return p
