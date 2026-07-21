@@ -352,12 +352,85 @@ def record_rel_path( slot, persona_slug, sid ):
     raise ValueError( f"unknown slot {slot!r} (expected 'io' or 'root')" )
 
 
+class PointerCollision( Exception ):
+    """
+    A (slot, persona) whose POINTER path is byte-identical to some RECORD's path.
+
+    Carried as its own type, not a ValueError, so `main()` can give it a DEDICATED exit code
+    and print its message verbatim. A refusal that arrives as a generic ERROR line reads as a
+    bug in the script rather than as an instruction to the caller.
+    """
+
+
 def pointer_rel_path( slot, persona_slug ):
     """
-    Ensures: returns the repo-relative POINTER path for (slot, persona).
-    Raises: ValueError on an unknown slot.
+    Resolve the repo-relative POINTER path for (slot, persona) — and REFUSE when that path
+    would collide with a RECORD path.
+
+    THE DEFECT THIS REFUSES (F-1, Rio 2026-07-21, P1 — RECORD DESTRUCTION, reproduced twice).
+    `record_rel_path` emits `io/mementos/<slug>-<sid8>.md`. This function emitted
+    `io/mementos/<slug>.md` with NOTHING checking that <slug> was not itself record-shaped. So
+    a persona whose slug ENDS in `-<8 hex>` produced a pointer path structurally identical to
+    another persona's RECORD path — and the pointer write is UNCONDITIONAL. Measured:
+
+        write --persona "arnold"          --session-id 20260721   -> record, 238B of testimony
+        write --persona "arnold 20260721" --session-id aaaabbbb
+            POINTER io/mementos/arnold-20260721.md   <- THE VICTIM RECORD
+            sha d63100dfb6bd -> 6bf2de2bf6f8   238B -> 702B of pointer boilerplate.  EXIT 0.
+
+    Silent. Exit 0. Success banner. The immutability guard in `cmd_write` covers the RECORD
+    path (`if rec_abs.exists(): exit 3`) and NOTHING covered the POINTER path, so the one
+    overwrite this entire design exists to make unspellable was spellable through the pointer.
+    Layer 3 is structurally blind to it: this script writes with `open()` through Bash and
+    issues no Write/Edit tool call, so no PreToolUse hook ever fires.
+
+    WHY THE FIX IS HERE AND NOT AT A CALL SITE. `adopt` is where it was demonstrated, and
+    fixing `adopt` would have been fixing the DEMONSTRATION instead of the defect: `write`,
+    `amend` and `adopt` all route through `sync_record`, and the collision lives in the path
+    CONSTRUCTOR, not in any caller. A 33-file rescue batch was queued as 33 `write` calls —
+    i.e. 33 unconditional pointer writes — and a call-site fix on `adopt` would have left it
+    fully loaded. One choke point, every verb, no verb able to opt out.
+
+    Requires:
+        - slot is "io" or "root"; persona_slug is a slugified persona
+    Ensures:
+        - returns the repo-relative POINTER path for (slot, persona)
+        - the returned path is NEVER a valid RECORD path
+        - slot="root" cannot collide by construction: its pointer is the fixed name
+          `.claude-memento.md` while its records are `.claude-memento-<slug>-<sid8>.md`
+    Raises:
+        - PointerCollision if the io-slot pointer path would BE a record path
+        - ValueError on an unknown slot
     """
-    if slot == "io":   return Path( "io/mementos" ) / f"{persona_slug}.md"
+    if slot == "io":
+        if HEX8_SUFFIX_RE.search( persona_slug ):
+            raise PointerCollision(
+                f"REFUSED: persona {persona_slug!r} would give this pointer a RECORD's path.\n"
+                f"         pointer would be : io/mementos/{persona_slug}.md\n"
+                f"         which IS the record path of persona "
+                f"{HEX8_SUFFIX_RE.sub( '', persona_slug )!r}, session "
+                f"{persona_slug[ -8: ]}.\n"
+                 "\n"
+                 "  The pointer is rewritten on EVERY write, and it is written UNCONDITIONALLY.\n"
+                 "  Proceeding would overwrite that record with pointer boilerplate — silently,\n"
+                 "  at exit 0, with a success banner. Measured 2026-07-21: 238 bytes of a dead\n"
+                 "  session's testimony replaced by 702 bytes of header.\n"
+                 "\n"
+                 "  YOU ALMOST CERTAINLY PUT THE SESSION ID IN THE PERSONA. It belongs in its\n"
+                 "  own flag, and then no collision exists:\n"
+                f"      --persona \"{HEX8_SUFFIX_RE.sub( '', persona_slug ).replace( '-', ' ' )}\" "
+                f"--session-id {persona_slug[ -8: ]}\n"
+                 "\n"
+                 "  Rescuing another seat's fragment? Same shape — the ORIGINAL persona name in\n"
+                 "  --persona, the record's OWN 8-hex id in --session-id:\n"
+                 "      --persona \"rescued maria\" --session-id 35446389\n"
+                 "\n"
+                 "  If this persona name is genuinely yours and genuinely ends in 8 hex\n"
+                 "  characters, rename it. There is no flag for this and that is deliberate:\n"
+                 "  every escape would be a way to spell the overwrite."
+            )
+        return Path( "io/mementos" ) / f"{persona_slug}.md"
+
     if slot == "root": return Path( ".claude-memento.md" )
     raise ValueError( f"unknown slot {slot!r} (expected 'io' or 'root')" )
 
@@ -741,9 +814,29 @@ def cmd_write( args ):
 
     # 1. IMMUTABILITY — the overwrite is not spellable, and not a thing to remember.
     if rec_abs.exists():
+        # WHAT THIS MESSAGE USED TO SAY, and why it was the most dangerous line in the file
+        # (F3, María 2026-07-21): "(Same persona, same session? Append to it by hand, or write
+        # a new session's record.)". "Append by hand" IS the raw-`Write` bypass — the one path
+        # that lands a record with no mirror and no pointer. The refusal an operator is most
+        # likely to read was RECOMMENDING the failure mode the whole design exists to remove,
+        # and it recommended it at exactly the moment they were looking for a way through.
+        # A guard that names the bypass is worse than no guard; it is a guard with directions.
         print( f"REFUSED: record already exists — {rec_abs}", file=sys.stderr )
         print(  "         A record is IMMUTABLE. Nothing overwrites it, including you.", file=sys.stderr )
-        print( f"         (Same persona, same session? Append to it by hand, or write a new session's record.)", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  Same persona, same session? You want `amend` — it APPENDS under its own", file=sys.stderr )
+        print(  "  stamp, then re-mirrors and re-points, in ONE call or it fails loud:", file=sys.stderr )
+        print( f"      memento_io.py amend --slot {args.slot} --persona {args.persona!r} "
+               f"--session-id {sid}", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  Record exists but has no mirror or a stale pointer (an ORPHAN — a record", file=sys.stderr )
+        print(  "  written by a raw tool)? `adopt` — it mirrors and re-points, copy-only:", file=sys.stderr )
+        print( f"      memento_io.py adopt --slot {args.slot} --persona {args.persona!r} "
+               f"--session-id {sid}", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  Do NOT edit or append to the record with a raw tool. That lands your text", file=sys.stderr )
+        print(  "  with a STALE mirror and a stale pointer — the two surfaces anything else", file=sys.stderr )
+        print(  "  reads. It looks like it worked.", file=sys.stderr )
         sys.exit( 3 )
 
     # 1b. POST-GAME GATE (R-1) — refuse to end a crewed engagement with no retro.
@@ -789,6 +882,10 @@ def cmd_write( args ):
     if problems:
         for p in problems: print( f"FAILED: {p}", file=sys.stderr )
         sys.exit( 5 )
+
+    # THE INVARIANT, at the seam — see assert_pointer_names_newest. Asserted AFTER the surfaces
+    # land and BEFORE the success banner, so a violation is never reported as a success.
+    assert_pointer_names_newest( repo_root, args.slot, persona )
 
     print( f"RECORD   {rec_abs}" )
     print( f"MIRROR   {mir_abs}" )
@@ -901,6 +998,12 @@ def cmd_amend( args ):
     sid       = short_sid( args.session_id )
     stamped   = datetime.datetime.now().astimezone().isoformat( timespec="seconds" )
 
+    # POINTER-COLLISION CHECK, BEFORE THE APPEND. `sync_record` reaches this same path only
+    # AFTER the amendment has been written to the record, so relying on it there would leave a
+    # mutated record behind a refusal. Stated explicitly rather than left to the fact that
+    # resolve_record happens to call it first. See pointer_rel_path (F-1).
+    pointer_rel_path( args.slot, persona )
+
     rec_abs = resolve_record( repo_root, args.slot, persona )
     if rec_abs is None:
         sys.exit( f"no record to amend for persona={persona} slot={args.slot} in {repo_root}" )
@@ -975,10 +1078,241 @@ def cmd_amend( args ):
 
     rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
 
+    assert_pointer_names_newest( repo_root, args.slot, persona )
+
     print( f"RECORD   {rec_abs}  (appended; nothing overwritten)" )
     print( f"MIRROR   {mir_abs}  (re-synced in the same call)" )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
     print( f"sha256   {sha256_of( rec_abs )}  (record == mirror)" )
+    return 0
+
+
+def current_pointer_record( repo_root, slot, persona_slug ):
+    """
+    What record does the POINTER for (slot, persona) name RIGHT NOW?
+
+    Distinct from `resolve_record`, which falls back to newest-by-mtime when the pointer is
+    missing or dangling. This one answers only the literal question — what is written in the
+    pointer — because a caller deciding whether it is about to REGRESS the pointer must not
+    have the answer quietly repaired underneath it.
+
+    Requires:
+        - slot is "io" or "root"; persona_slug is a slugified persona
+    Ensures:
+        - returns the absolute Path the pointer's `current:` line names
+        - returns None when there is no pointer, or it carries no `current:` line
+        - the returned path MAY NOT EXIST — a dangling pointer is a real state, and callers
+          check for themselves rather than being handed a silent substitution
+    """
+    ptr_abs = repo_root / pointer_rel_path( slot, persona_slug )
+    if not ptr_abs.exists(): return None
+
+    for line in ptr_abs.read_text().splitlines()[ :5 ]:
+        m = re.match( r"<!--\s*current:\s*(.+?)\s*-->", line )
+        if m: return repo_root / m.group( 1 )
+    return None
+
+
+def assert_pointer_names_newest( repo_root, slot, persona_slug, deliberate_older=False ):
+    """
+    THE INVARIANT, asserted at the seam every write crosses: after any verb touches a persona's
+    surfaces, that persona's POINTER names that persona's NEWEST record.
+
+    WHY AN INVARIANT AND NOT A THIRD GUARD (Rio and Rachel, converging independently 2026-07-21).
+    Three separate routes were found in one afternoon that all end at the same place — `resolve`
+    naming an older record while newer state sits unreachable on disk, i.e. a seat detached from
+    its own latest memento:
+
+        F-1              the pointer path IS a record path -> the record is destroyed
+        adopt backward   the pointer is moved to an OLDER record, exit 0
+        persona fork     `--persona "arnold reviewer"` forks `arnold.md` -> `arnold-reviewer.md`
+
+    Three guards can each be individually correct and still leave a FOURTH route open. One
+    invariant asserted where all of them cross cannot — and it makes the next route fail loudly
+    instead of being found by a fourth person on a fourth afternoon.
+
+    THIS DOES NOT REPLACE THE F-1 CONSTRUCTOR GUARD, and reading it that way would be a real
+    mistake: F-1 DESTROYS BYTES. This check would observe the consequence after the record is
+    already gone. Destruction is guarded at the constructor; this is the net underneath.
+
+    WHAT IT DOES NOT COVER — said out loud so no reader assumes it covers the family. THE PERSONA
+    FORK PASSES THIS CHECK. `--persona "arnold reviewer"` is a DIFFERENT persona slug with its own
+    pointer, and that pointer correctly names its own newest record — the invariant holds for both
+    personas while `arnold`'s state is split across two. Measured, and it is why the fork is filed
+    separately (persona-overload / `--label`, Rio's checklist section 5.2) rather than treated as
+    fixed here:
+
+        write --persona "arnold"          --session-id 11111111  -> pointer arnold.md
+        write --persona "arnold reviewer" --session-id 22222222  -> pointer arnold-reviewer.md
+        resolve --persona "arnold"                               -> arnold-11111111.md  (STALE)
+
+    The fork and the two routes above share a CAUSE, not a SIGNATURE: `is_record_path` returns
+    False for `arnold-reviewer.md` — a forked pointer is a perfectly ordinary pointer name — so
+    the F-1 guard is structurally blind to it and so is this.
+
+    Requires:
+        - slot is "io" or "root"; persona_slug is a slugified persona
+        - called AFTER the record, mirror and pointer have all been written
+    Ensures:
+        - returns silently when the pointer names the newest record for this persona
+        - returns silently when deliberate_older is set (the caller passed --allow-older and
+          the divergence is a recorded choice, not a defect)
+        - returns silently when there is no pointer and no record to compare
+    Raises:
+        - SystemExit(11) naming both records when the invariant does not hold
+    """
+    if deliberate_older: return
+
+    newest = newest_record( repo_root, slot, persona_slug )
+    named  = current_pointer_record( repo_root, slot, persona_slug )
+    if newest is None or named is None: return
+    if named.resolve() == newest.resolve(): return
+
+    print(  "FAILED: INVARIANT VIOLATED — the pointer does not name the newest record.", file=sys.stderr )
+    print( f"        pointer names : {named.name}", file=sys.stderr )
+    print( f"        newest record : {newest.name}", file=sys.stderr )
+    print(  "", file=sys.stderr )
+    print(  "  `resolve` and every naive reader follow the pointer, so the newer record is on", file=sys.stderr )
+    print(  "  disk and UNREACHABLE — a re-spun seat would inherit the older state silently.", file=sys.stderr )
+    print(  "  Nothing was destroyed; both records are intact. Repair the pointer with:", file=sys.stderr )
+    print( f"      memento_io.py regenerate-pointer --slot {slot} --persona {persona_slug!r}", file=sys.stderr )
+    print(  "", file=sys.stderr )
+    print(  "  This check exists because THREE separate routes to this state were found on one", file=sys.stderr )
+    print(  "  afternoon. If you reached it by a fourth, that is the finding — report it.", file=sys.stderr )
+    sys.exit( 11 )
+
+
+def cmd_adopt( args ):
+    """
+    ADOPT an ORPHAN record — mirror it and re-point at it, in ONE call. Copy-only.
+
+    AN ORPHAN IS WHAT A RAW `Write` LEAVES BEHIND. The record is on disk and the two surfaces
+    that make it findable are not: no out-of-repo MIRROR (so `git clean -xdf` takes it and
+    nothing else has a copy) and no POINTER (so `resolve` and every naive reader still name the
+    PREVIOUS record). It is gitignored, so `git status` says nothing either. It looks written.
+
+    WHAT THIS VERB REPLACES, and why the replacement is the whole point (F4, re-cut by Mr. Radio
+    2026-07-21 on María's objection). The documented repair recipe was `cp` -> rebuild -> `rm` ->
+    `write`, and the first draft of this fix made that recipe into a `repair` verb: back up,
+    verify, REPLACE. The destructive leg never needed to exist. An orphan does not need its bytes
+    changed — it needs its MIRROR and its POINTER, which `sync_record()` already writes in one
+    call and already verifies by sha256. So the fix is to EXPOSE what is already there, not to
+    mint a new destructive path. The objection that ended `repair`: a "replace" leg would have
+    made the overwrite of an immutable record SPELLABLE, inside the one script whose entire
+    thesis is that it is not — and invisible to the Layer-3 guard, because this script runs
+    through Bash and issues no Write/Edit tool call.
+
+    TARGETING: `--session-id` names the record's OWN session (it is in the filename), and adopt
+    resolves the path FROM identity rather than by following the pointer. That is deliberate and
+    it is why there is no foreign-record hazard here: `amend` had one precisely BECAUSE it
+    resolved via the pointer and could append to whoever wrote last (store eda57c05, fixed
+    2026-07-18). A verb that derives its target from the identity you assert cannot land on a
+    record that identity does not name. The check below enforces that the derived path is a
+    record and exists — it never widens to "whatever the pointer says".
+
+    Requires:
+        - a record already exists at the path (slot, persona, session-id) derives
+    Ensures:
+        - the record's BYTES ARE NOT TOUCHED — this verb only ever copies and re-points
+        - the out-of-repo mirror is byte-identical to the record when this returns 0
+        - the pointer for (slot, persona) names and carries this record
+        - re-running is a no-op — adopting an already-adopted record is safe and idempotent
+        - the pointer only ever moves FORWARD (to a record at least as new as the one it
+          already names) unless --allow-older is passed
+    Raises:
+        - SystemExit(1) if no record exists at the derived path
+        - SystemExit(5) if the mirror does not match the record afterwards
+        - SystemExit(9) if the pointer path would collide with a record path
+        - SystemExit(10) if this would regress the pointer to an older record
+
+    A VERB PROVEN SAFE IN THE DIRECTION ITS AUTHOR IMAGINED (Finding 3, Rachel 2026-07-21).
+    `test_adopt_repairs_a_stale_pointer` proved the pointer moves FORWARD — a stale pointer
+    naming an older record gets corrected to the newer one. Nothing tested the REVERSE, and the
+    reverse was exit 0, silent, on both streams: adopting an older record re-pointed to it and
+    left the newer record on disk and unreachable. That is the same "on disk and invisible to
+    the mechanism that reads mementos" failure this verb exists to REPAIR, reached through the
+    safe verb. The gap was not in the care taken; it was in the SHAPE of the test — one call,
+    one direction exercised.
+
+    It matters because `adopt` is about to be the BULK path: a 33-file orphan sweep runs it in
+    a loop over records whose relative age nothing checks, for personas whose live seats may
+    have written since — so a re-spun seat would inherit an older memento, silently.
+
+    ORDERING IS BY MTIME, and that is honest here specifically: io-slot records are gitignored
+    (REQUIRED_IGNORES), so git never manages them and never restamps their mtime. This is the
+    same reasoning `authored_at` uses to prefer mtime for untracked files — for something git
+    has never seen, mtime is the only clock there is, and it has not been rewritten by a
+    checkout precisely BECAUSE git does not manage it.
+    """
+    repo_root = find_repo_root( args.repo or Path.cwd() )
+    persona   = slugify( args.persona )
+    sid       = short_sid( args.session_id )
+
+    # POINTER-COLLISION CHECK, RUN EARLY AND FOR ITS SIDE EFFECT — `sync_record` computes this
+    # same path AFTER it has already copied the mirror, so calling it here is what guarantees a
+    # collision refusal costs the caller nothing but a re-run. See pointer_rel_path (F-1).
+    pointer_rel_path( args.slot, persona )
+
+    rec_rel = record_rel_path( args.slot, persona, sid )
+    rec_abs = repo_root / rec_rel
+
+    if not rec_abs.exists():
+        print( f"REFUSED: no record to adopt — {rec_abs}", file=sys.stderr )
+        print(  "         `adopt` mirrors and re-points a record that ALREADY EXISTS. It does", file=sys.stderr )
+        print(  "         not create one — nothing here writes record bytes.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "         Creating a memento? That is `write`, and it does all three surfaces:", file=sys.stderr )
+        print( f"             memento_io.py write --slot {args.slot} --persona {args.persona!r} "
+               f"--session-id {sid}", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "         Adopting an orphan someone else's session wrote? Pass THAT session's", file=sys.stderr )
+        print(  "         id — it is in the record's own filename, after the persona slug.", file=sys.stderr )
+        sys.exit( 1 )
+
+    # REGRESSION CHECK — refuse to move the pointer BACKWARD (Finding 3, Rachel 2026-07-21).
+    currently = current_pointer_record( repo_root, args.slot, persona )
+    if ( currently is not None and currently != rec_abs and currently.exists()
+         and currently.stat().st_mtime > rec_abs.stat().st_mtime and not args.allow_older ):
+        print(  "REFUSED: this adopt would move the pointer BACKWARD, to an OLDER record.", file=sys.stderr )
+        print( f"         pointer names now : {currently.name}", file=sys.stderr )
+        print( f"         you are adopting  : {rec_abs.name}   (older)", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  The newer record would stay on disk and STOP BEING REACHABLE: `resolve` and", file=sys.stderr )
+        print(  "  every naive reader follow the pointer, so a re-spun seat would silently", file=sys.stderr )
+        print(  "  inherit the older state. That is the same 'on disk and invisible to the", file=sys.stderr )
+        print(  "  mechanism that reads mementos' failure this verb exists to REPAIR.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  Sweeping a batch of orphans? Adopt them OLDEST-FIRST and this never fires —", file=sys.stderr )
+        print(  "  each pointer ends on the newest record for its persona.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  Genuinely mean to point at the older one (the newer record is corrupt, or a", file=sys.stderr )
+        print(  "  mistake)? Say so explicitly:", file=sys.stderr )
+        print( f"      memento_io.py adopt --slot {args.slot} --persona {args.persona!r} "
+               f"--session-id {sid} --allow-older", file=sys.stderr )
+        print(  "  Nothing is destroyed either way — a pointer is regenerable, and", file=sys.stderr )
+        print(  "  `regenerate-pointer` rebuilds it from the newest record at any time.", file=sys.stderr )
+        sys.exit( 10 )
+
+    before = sha256_of( rec_abs )
+    rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
+    after  = sha256_of( rec_abs )
+
+    # BELT AND SUSPENDERS ON THE ONE PROPERTY THIS VERB PROMISES. `sync_record` verifies the
+    # mirror; nothing verified that the RECORD came through untouched, and "copy-only" is the
+    # entire claim being made here. Asserting it by execution costs one hash.
+    if before != after:
+        print( f"FAILED: adopt changed the record's bytes — {rec_abs}", file=sys.stderr )
+        print( f"        before {before[ :12 ]}  after {after[ :12 ]}", file=sys.stderr )
+        sys.exit( 5 )
+
+    # deliberate_older: `--allow-older` makes the divergence a RECORDED CHOICE, not a defect.
+    # The invariant still runs on every other adopt, including the whole bulk-sweep path.
+    assert_pointer_names_newest( repo_root, args.slot, persona, deliberate_older=args.allow_older )
+
+    print( f"RECORD   {rec_abs}  (UNCHANGED — adopt never writes record bytes)" )
+    print( f"MIRROR   {mir_abs}  (written/refreshed in this call)" )
+    print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
+    print( f"sha256   {after}  (record == mirror)" )
     return 0
 
 
@@ -1224,6 +1558,15 @@ def build_parser():
                          "(deliberate cross-seat annotation); without this, a mismatch refuses at exit 7" )
     a.set_defaults( func=cmd_amend )
 
+    ad = sub.add_parser( "adopt", help="ADOPT an orphan record: mirror + pointer, in ONE call (copy-only, nothing overwritten)" )
+    common( ad )
+    ad.add_argument( "--persona",    required=True )
+    ad.add_argument( "--session-id", required=True, help="the record's OWN session id (from its filename)" )
+    ad.add_argument( "--allow-older", action="store_true",
+                     help="proceed even when this would move the pointer BACKWARD to an older "
+                          "record; without this, a regression refuses at exit 10" )
+    ad.set_defaults( func=cmd_adopt )
+
     r = sub.add_parser( "resolve", help="print the current record path (follows the pointer)" )
     common( r )
     r.add_argument( "--persona", required=True )
@@ -1250,6 +1593,11 @@ def main():
     args = build_parser().parse_args()
     try:
         return args.func( args )
+    except PointerCollision as e:
+        # Its own exit code and its message VERBATIM — a refusal that arrives as a generic
+        # "ERROR: …" line reads as a bug in the script rather than an instruction to the caller.
+        print( str( e ), file=sys.stderr )
+        return 9
     except ( RuntimeError, ValueError ) as e:
         print( f"ERROR: {e}", file=sys.stderr )
         return 2

@@ -46,6 +46,11 @@ wheels/
 # Testing
 .pytest_cache/
 .coverage
+# `.coverage` alone does NOT match the PER-PROCESS files that `parallel = True` writes
+# (`.coverage.<host>.<pid>.<rand>`) — and a subprocess-driven suite makes dozens of them per
+# run. 63 landed untracked on 2026-07-21, one `git add -A` away from being committed.
+.coverage.*
+coverage.xml
 htmlcov/
 .tox/
 

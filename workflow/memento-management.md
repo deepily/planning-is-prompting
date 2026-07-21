@@ -240,6 +240,20 @@ Un-gitignoring `io/mementos/` (so the files are tracked and therefore not cleana
 
 The mirror **dominates** that option on both axes: **more** durability (clean-*proof*, not merely recoverable) at **zero** candor cost. It never ships, never gets reviewed. And machine-local is **correct**, not a limitation — a memento is about a session **on this machine**; it has never needed to travel with a clone.
 
+**RESTORING FROM THE MIRROR — the one step that is NOT optional afterwards.** A restore is a copy back to the same repo-relative path (the mirror preserves it, so there is no mapping to remember):
+
+```bash
+cp ~/.claude/mementos/<repo>/io/mementos/<persona>-<sid8>.md  <repo>/io/mementos/
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py regenerate-pointer \
+    --slot io --persona "<persona>"          # <- REQUIRED, not housekeeping
+```
+
+**Run `regenerate-pointer` after every restore.** `cp` stamps the restored file with a **fresh mtime**, and mtime is the ordering clock `adopt` uses to decide which record is newest (io records are gitignored, so git never manages or restamps them — measured 2026-07-21 across 215 files: mtime ordering and `written_at` ordering agreed on every position, and 55% of record-shaped files carry no `written_at` at all, so mtime is not merely adequate, it is the only clock that exists for the whole corpus). Without the re-point, **a restored record looks NEWER than genuinely newer state**, and the pointer prefers it.
+
+Nothing is destroyed if you forget — the invariant catches it loudly (`memento_io.py` exits 11, names both records, and names this same command). But it catches it the **next** time somebody writes, not now, so the honest place to spend one command is here.
+
+Worth stating plainly, because it is the sharpest thing about this layer: **the single operation that defeats the clock is the same operation that saves the record.** The mirror-restore is load-bearing *and* it has a cost. Both are true.
+
 ### §3.6 What this does NOT protect — stated out loud, because an unstated gap is how the bug survived
 
 - **THE TOOL-CALL BYPASS PATH — closed for `Write` AND `Edit`, once the hook is installed.** Nothing used to gate a bare `Write` to a memento path. **Proven by execution**, not assumed: a memento was written to `io/mementos/maria-35446389.md` with a plain `Write` tool call, no `/plan-memento`, no script — **and it landed.** A convention carried by a command is **a rule the moment someone doesn't run the command.**
