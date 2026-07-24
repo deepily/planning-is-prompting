@@ -4,6 +4,11 @@ Last updated: 2026-07-21 (**Session 143** (María 🌸 `d3254802`) — **`/plan-
 
 ## 📍 Resume Here
 
+> ### 🌙 **2026-07-23 (S145, María 🌸) — PIP shipped to the test VM · night wrap (backup + push)**
+> - **`src/scripts/pip-vm.sh` built + shipped.** Sync-only bundle deploy of PIP to `lupin-host-test` (git checkout at `/mnt/lupin-data/planning-is-prompting`, sibling of lupin). First-run **bootstrap** clones from the bundle; later runs fetch+checkout. Committed `f26e87a`; VM verified at `wip-v0.1.9-2026.06.23-tracking-lupin @ f26e87a` (parity with dev). Store `00e2499d`→done.
+> - **Reference**: modeled on lupin `src/scripts/lupin-vm.sh @ da64318e` (Mr Radio's `do_push_bundle`). Mr Radio's lupin deploy landed in parallel (v0.1.8 drift wiped via Rick-approved `reset --hard`, servers green).
+> - **S143 board still stands below** — parked rows come due 07-24; nothing new owed. TODO.md oversized (403 lines); archival still deferred per the stand-down, re-raise at the 07-24 chase.
+>
 > ### 🌙 **2026-07-21 (S143, María 🌸) — BOARD PARKED UNDER RICK'S STAND-DOWN · nothing owed until 07-24**
 > - **All 8 walkthrough rulings are RECORDED; 2 are BUILT.** Every remaining row is parked with Rick's own words (*"do not build anything at this point — all inference tokens to Sam's skills-distillation work"*) and a **07-24 chase**. `76f26f9b` parked to **08-04**. Hold declared, `work_owed:false`.
 > - **On the 07-24 chase, in this order**: `0c7c6779` + `240f7c29` both need an **authoring seat that is NOT María** (declared conflict — routing is mine, writing is not). `44e62537`'s build is gated on Rio, heads-down. `547f6565` still carries **H3** (content floor is a length check wearing a retrospective check's clothes) + 2 residuals, all untouched by either ruling.
