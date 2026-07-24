@@ -58,6 +58,16 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
+# Claude project-scope MCP registration — NEVER commit: it hardcodes ABSOLUTE
+# per-machine paths (interpreter, script, PYTHONPATH, LUPIN_ROOT), so a committed
+# copy cannot be correct on more than one machine. cosa-voice is a per-machine
+# USER-scope MCP (see lupin install-cosa-voice.sh). Committed here until 2026-07-24,
+# it pinned dev-box /mnt/DATA01 paths into every checkout — on the GCP test VM the
+# foreign-uid PIP tree made `claude mcp remove -s project` fail with EACCES and
+# raised a stale scope-conflict against the VM's correct user-scope entry.
+# Same anti-pattern killed in lupin (98a1ac7f).
+.mcp.json
+
 # Claude session manifest (parallel session tracking)
 .claude-session.md
 
