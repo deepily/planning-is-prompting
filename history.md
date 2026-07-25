@@ -1,6 +1,18 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 145 (2026-07-23) — planning-is-prompting shipped to the test VM as a real git checkout via a new sync-only bundle script; parity with dev verified firsthand** (María 🌸 `a2ce9a25`, chorus).
+**RESUME HERE**: **Session 146 (2026-07-24) — a committed `.mcp.json` untracked; the "pruning" was one file, not a doc sweep** (María 🌸 `d5d3f4b5`, chorus).
+
+1. **`.mcp.json` was git-TRACKED with dev-box absolute paths** (`/mnt/DATA01/.../lupin/src/cosa/.venv/bin/python`, plus `PYTHONPATH`/`LUPIN_ROOT`), so every checkout inherited them. On the VM's foreign-uid PIP tree that produced EACCES on `claude mcp remove -s project` and a stale scope-conflict against the correct user-scope cosa-voice.
+2. **Second instance of the anti-pattern; lupin was the first** (`98a1ac7f`, Mr Radio). One delta: lupin already had the `.gitignore` entry and needed only the untrack — **PIP had neither**, so this adds the ignore line as well.
+3. **Verified the file was not load-bearing BEFORE deleting it.** This box's cosa-voice is a **Local config** registration, independent of `.mcp.json` — re-checked ✔ Connected after `git rm`. A project `.mcp.json` is not the only registration source, and assuming it was would have made the delete look risky when it wasn't.
+4. **Scope came from the task body, not a conversation.** Rick said "pruning"; Mr Radio's store row `c1496cea` carried target + criterion + repro + hard-keep set, so the whole job was two DMs and one commit — no back-and-forth to reconstruct intent.
+5. **The 07-24 chases came due today.** 11 rows parked under the S143 stand-down have passed their `next_chase_ts` and rejoined the owed count (9 × P1). Untouched this session — flagged, not worked.
+
+#### Checkpoint | 2026.07.24 | S146 — `.mcp.json` untracked + gitignored (`58bd6b1`, mirrors lupin `98a1ac7f`) · Local-config scope verified independent before delete · store `c1496cea`→done · 11 stand-down rows expired back onto the board, unworked
+**Files**: .gitignore · .mcp.json (deleted) · history.md · TODO.md · .claude-session.md
+**Commit**: `58bd6b1` + this
+
+**Previously**: **Session 145 (2026-07-23) — planning-is-prompting shipped to the test VM as a real git checkout via a new sync-only bundle script; parity with dev verified firsthand** (María 🌸 `a2ce9a25`, chorus).
 
 1. **`src/scripts/pip-vm.sh` built** — sync-only variant of lupin's bundle mechanism (`lupin-vm.sh` @ `da64318e`, Mr Radio): bundle → scp → clone/fetch → checkout, no deploy/restart (PIP has no service). Adds a first-run **bootstrap** lupin's `do_push_bundle` lacks (it assumes an existing VM checkout to fetch into; PIP is greenfield, so run 1 clones from the bundle, later runs fetch+checkout). Origin pinned to the persistent bundle so a plain `git fetch` on the VM survives handoff.
 2. **Shipped on Rick's direct greenlight; parity verified, not assumed.** Held the live push while he was offline (outward-facing test VM on a peer relay); he cleared it via broadcast, I fired it, the bootstrap clone succeeded first try, and the script echoed VM branch+tip = `wip-v0.1.9-2026.06.23-tracking-lupin` @ `f26e87a`, identical to dev. Mr Radio's lupin deploy landed in parallel — old v0.1.8 checkout had 377-mod + 2448-untracked drift, deploy aborted clean, Rick approved `reset --hard` (no `git clean` → data/env/keys survived), both servers green.
