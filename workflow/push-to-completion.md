@@ -2,7 +2,19 @@
 
 **Purpose**: A hard, categorical directive the user fires at a manager (or managers) to drive their board to **zero — with proof of work**. It exists to jolt a *lazy or passive manager* off the fence: no parking, no waiting to be tapped, no gaming the list to look done. The manager's only two acceptable end-states are (a) a **zero board with receipts**, or (b) a board where **every survivor names exactly who or what blocks it**.
 
-**When to use**: The user invokes it by utterance — "**push push push**", "**push push push to completion**", "**drive it to completion**", "**push to completion**", "**get off your ass**", "**coffee break's over**" — or explicitly as `/plan-push`. It is aimed at a **manager-role** session (fleet Manager or cascade Manager). If the user names a manager, address that one; if not, it applies to every active manager who owes open work.
+**When to use**: The user invokes it by utterance — "**push push push**", "**push push push to completion**", "**drive it to completion**", "**push to completion**", "**get off your ass**", "**coffee break's over**" — by the **☕ glyph** (see below), or explicitly as `/plan-push`. It is aimed at a **manager-role** session (fleet Manager or cascade Manager). If the user names a manager, address that one; if not, it applies to every active manager who owes open work.
+
+> ### ☕ — the one-character form *(Rick, 2026-07-25)*
+>
+> **☕ alone fires this entire directive.** No accompanying text is required; never ask what it refers to. Attached to a message it scopes to that board: *"three P1s untouched since Tuesday ☕"*.
+>
+> **The glyph compresses a sentence already in the directive** — its verbatim text opens *"Coffee break's OVER — get off your ass and get back to work."* ☕ is that line's shorthand, the same way 📷 is the shorthand for `/plan-session-checkpoint`.
+>
+> **Response: 🫡 on receipt, receipts on delivery.** The salute is the entire *acknowledgment* — no "understood, getting right on it," no plan narration, no inventory of what you are about to do. But **the salute does not discharge the order.** Unlike 📷, which asks for one artifact and ends, ☕ asks you to drive a whole board to terminal, and **§ The Operational Contract** below is what comes back when it is done.
+>
+> ⚠️ **Compressing the trigger must never compress the receipt.** A one-character Riot Act answered with one character and nothing further is a Riot Act with its teeth removed — the Anti-Gaming Guard is carried entirely by the report.
+>
+> Glossary + full palette: `workflow/brevity-mandate.md` § the glyph exchange.
 
 **What it is NOT**: It is not permission to cut corners, drop hard items, downscope silently, or rubber-stamp work to empty the queue. Speed **without** proof is the failure mode this command is built to prevent, not cause.
 

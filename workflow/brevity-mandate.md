@@ -178,16 +178,19 @@ Detail goes in the abstract card, never in prose or speech.
 
 ---
 
-## 😘 / 🫡 / 🏆 — the glyph exchange
+## 😘 / 🫡 / 🏆 / 📷 / ☕ — the glyph exchange
 
 **The entire mandate compresses to one emoji in each direction — correction AND reward.**
 
-| Glyph | Direction | Means | Correct response |
-|---|---|---|---|
-| **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | 🫡, then the tightened output |
-| **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — |
-| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | **🫡 and nothing else** — then keep working |
-| **📷** | user → session | **Document and checkpoint your work.** Snapshot the state now. | **🫡**, then the checkpoint — report only when it's done |
+**This table is the fleet's glyph glossary.** It lives inside the brevity mandate rather than in a doc of its own for one reason: **a new doc starts at zero distribution.** This file is already installed at user scope and auto-loaded in every repo; a `glyph-palette.md` would have to earn that reach from scratch. Same call, same reason, as NoDrama living here rather than beside it. The **Routes to** column carries the taxonomy the filename doesn't.
+
+| Glyph | Direction | Means | Routes to | Correct response |
+|---|---|---|---|---|
+| **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | this doc | 🫡, then the tightened output |
+| **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — | — |
+| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | this doc | **🫡 and nothing else** — then keep working |
+| **📷** | user → session | **Document and checkpoint your work.** Snapshot the state now. | `session-checkpoint.md` | **🫡**, then the checkpoint — report only when it's done |
+| **☕** | user → session | **Coffee break's OVER — get back to work.** The Riot Act. | `push-to-completion.md` | **🫡**, then **drive the board + deliver the receipts** |
 
 **😘 alone, with no accompanying text, is the complete instruction.** Never ask what it refers to. Never reply "did you mean the brevity mandate?" It means KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama, in full, immediately.
 
@@ -227,6 +230,26 @@ Detail goes in the abstract card, never in prose or speech.
 **Do not award it to yourself and do not fish for it.** A session that reports its own work as trophy-worthy has converted a reward into a claim, and claims need receipts. The glyph is the user's to give; the work is yours to make checkable.
 
 **Why it lives inside the brevity mandate rather than beside it**: an unreciprocated reward is *cheaper* than a reciprocated one, and reciprocation is the failure mode. **The glyph is only a compression if nothing comes back.**
+
+### ☕ — the Riot Act glyph (Rick, 2026-07-25)
+
+**☕ = Coffee break's OVER — get off your ass and get back to work.** It is the one-character form of `/plan-push`, and it fires the full directive in `workflow/push-to-completion.md`.
+
+**The glyph compresses a sentence that was already there.** The Riot Act's verbatim directive opens with those exact words; ☕ is its shorthand, not a new metaphor bolted on. Same relationship 📷 has to `/plan-session-checkpoint`.
+
+**Aimed at a manager-role session.** Named manager if the user names one; otherwise every active manager who owes open work. Attached to a message it scopes to that board: *"three P1s untouched since Tuesday ☕"*.
+
+> ### 🔴 **☕ IS THE ONE GLYPH WHOSE ANSWER IS NOT 🫡-AND-SILENCE**
+>
+> **🫡 on receipt. Receipts on delivery.** The salute is still the entire *acknowledgment* — no "understood, getting right on it," no plan narration, no list of what you're about to do. But ☕'s action does not terminate the way 📷's does. **📷 asks for one artifact; ☕ asks you to drive a whole board to terminal**, and `push-to-completion.md` requires **proof of work** at the end of it.
+>
+> **What comes back when the work is done** (never before): the board inventory, each item's terminal state, and an **artifact-delta per claim** — a commit, a test table, a store transition. Not adjectives.
+>
+> ⚠️ **This is the failure mode the compression invites.** A one-character Riot Act answered with one character and nothing further is a Riot Act with its teeth removed: the **Anti-Gaming Guard** (no faking done, no drop-or-downscope to clear the list, no rubber-stamps, MANAGE-don't-build, blocked-never-silent) is carried entirely by the report. **Compressing the trigger must never compress the receipt.**
+
+**Do not fire it at yourself, and do not pre-empt it** by announcing that you are about to get back to work. A session that narrates its own diligence is spending the tokens the glyph exists to save.
+
+**Note the inverse reading, and why it is accepted**: ☕ alone can parse as *"take a break"* — the literal opposite of the directive. 😘/🏆/📷 have no such twin. It is accepted because the glyph is only ever fired **at** a manager who is already idle, where context resolves it, and because a disambiguating compound (☕🚫) would cost the one-character property that makes the whole palette worth having.
 
 ---
 
@@ -299,6 +322,7 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 | Workflow | `workflow/swe-team-spin-up.md` + `swe-team-roles.md` | Spawn-brief rider |
 | Workflow | `workflow/post-game.md` + `plan-review-cascaded-common.md` | Ritual rider |
 | Workflow | `workflow/manager-autonomy.md` + `push-to-completion.md` | Manager posture |
+| Glyph | `workflow/push-to-completion.md` + `/plan-push` + its skill | **☕ carrier glyph** — the palette's only entry routing OUT of this doc |
 
 **Deliberately NOT landed**: `session-start.md` / `session-end.md` — already checklist-shaped, low marginal value (Rick's call, 2026-07-19).
 
@@ -307,3 +331,4 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 ## Version History
 
 - **1.0 (2026-07-19)**: Initial. Rick's directive + his escape-clause amendment ("only when ASKED"). Landing sites ruled via checkbox walkthrough.
+- **1.1 (2026-07-25)**: **☕ seated as the 5th glyph** (Rick) — the Riot Act's one-character form, routing to `push-to-completion.md`. Two rulings: (a) its response is **🫡 on receipt, receipts on delivery** — the only glyph whose salute does not discharge the order, because ☕'s action does not terminate the way 📷's does and the Anti-Gaming Guard is carried entirely by the report; (b) **the palette stays inside this doc** rather than graduating to `glyph-palette.md` — a new doc starts at zero distribution, the same argument that put NoDrama here. Table gains a **Routes to** column so the taxonomy survives the filename. Also closed a distribution gap found in the same pass: `push-to-completion` had **no user-scope install** (skill + `/plan-push` existed in this repo only), so ☕ would have advertised a route that could not fire in most repos.

@@ -16,7 +16,9 @@
 >
 > **📷 = "document and checkpoint your work"** — the one-character form of `/plan-session-checkpoint`. An **action** glyph, not a behavior glyph. 🫡, then the checkpoint; report only when done, with the sha. *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.*
 >
-> **🫡 is the ONLY official ack — for 😘, 🏆 and 📷 alike** (Rick, 2026-07-19): one glyph back, then the work.
+> **☕ = "coffee break's over, get back to work"** — the one-character form of `/plan-push`, the Riot Act, fired at a **manager**. Routes to `workflow/push-to-completion.md`, not to this mandate. **🫡 on receipt, receipts on delivery** — ⚠️ the one glyph whose salute does **not** discharge the order: 📷 asks for one artifact and ends, ☕ asks you to drive a whole board to terminal and come back with proof of work. *Compressing the trigger must never compress the receipt.*
+>
+> **🫡 is the ONLY official ack — for 😘, 🏆, 📷 and ☕ alike** (Rick, 2026-07-19 · ☕ added 2026-07-25): one glyph back, then the work.
 
 > **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
 > - **Carrier glyph**: **😘** — alone = the full mandate; attached to a message = scoped to that message (*"here's the summary 😘"*)

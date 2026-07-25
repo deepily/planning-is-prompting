@@ -9,16 +9,17 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 
 ---
 
-## 😘 / 🫡 / 🏆 — the glyph exchange
+## 😘 / 🫡 / 🏆 / 📷 / ☕ — the glyph exchange
 
-**The whole mandate compresses to one emoji in each direction.**
+**The whole mandate compresses to one emoji in each direction. This table is the fleet's glyph glossary** — it lives here because this skill is installed at user scope and reaches every repo; a standalone palette doc would start at zero distribution.
 
-| Glyph | Direction | Means |
-|---|---|---|
-| **😘** | Rick → session | **Fire the ENTIRE mandate.** The full 2×4, delivered in one character. |
-| **🫡** | session → Rick | Received. Complying. **Nothing else is sent.** |
-| **🏆** | Rick → session | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: 🫡 and nothing else** — then keep working. |
-| **📷** | Rick → session | **Document and checkpoint your work** — the one-character form of `/plan-session-checkpoint`. An ACTION glyph, not a behavior glyph. **Correct response: 🫡, then the checkpoint** — report only when done, with what was committed and the sha. *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.* |
+| Glyph | Direction | Routes to | Means |
+|---|---|---|---|
+| **😘** | Rick → session | this mandate | **Fire the ENTIRE mandate.** The full 2×4, delivered in one character. |
+| **🫡** | session → Rick | — | Received. Complying. **Nothing else is sent.** |
+| **🏆** | Rick → session | this mandate | **That was right. Do more of that.** Reinforcement aimed at a behavior, not thanks aimed at a person. **Correct response: 🫡 and nothing else** — then keep working. |
+| **📷** | Rick → session | `session-checkpoint.md` | **Document and checkpoint your work** — the one-character form of `/plan-session-checkpoint`. An ACTION glyph, not a behavior glyph. **Correct response: 🫡, then the checkpoint** — report only when done, with what was committed and the sha. *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.* |
+| **☕** | Rick → session | `push-to-completion.md` | **Coffee break's OVER — get back to work.** The Riot Act, one-character form of `/plan-push`; compresses the Directive's own opening line. Aimed at a manager. **Correct response: 🫡 on receipt, receipts on delivery** — the salute is the whole acknowledgment but does **not** discharge the order; drive the board, then report with artifact-deltas. *Compressing the trigger must never compress the receipt.* |
 
 **😘 ALONE, with no accompanying text, is the complete instruction.** Do not ask what it refers to, do not request clarification, do not reply "did you mean the brevity mandate?" — it means KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama, in full, right now.
 
@@ -37,6 +38,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 | Form | Strings |
 |---|---|
 | **Carrier glyph** | 😘 — alone = the full mandate; attached = scoped to that message |
+| **Sibling glyphs** (not this mandate) | 🏆 reward · 📷 checkpoint · ☕ Riot Act → `/plan-push`. Listed so a session reading this table recognizes them; ☕ routes to `push-to-completion.md`, not here |
 | **Acronyms** | `KISS` · `Say 3LoL` · `3LoL` · `three lines or less` · `NoMC` · `C2C` |
 | **Verb forms** (mid-sentence) | `KISS it` · `KISS that` — e.g. *"KISS that summary and re-send it"* |
 | **Expansions** | `cut to the chase` · `no meta conversation` |

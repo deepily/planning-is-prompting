@@ -9,7 +9,9 @@
 
 > **⚠️ Note**: This command delivers a severe manager poke. In conversation/speakerphone mode the whip is `dm_send`'d to the target manager(s) and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
 
-> **Activation**: this is the explicit fallback. The same directive auto-activates from natural phrases — "**push push push**", "**push push push to completion**", "**push to completion**", "**drive it to completion**", "**get off your ass**", "**coffee break's over**" — via the Agent Skill `.claude/skills/push-to-completion/SKILL.md`.
+> **Activation**: this is the explicit fallback. The same directive auto-activates from the **☕ glyph** and from natural phrases — "**push push push**", "**push push push to completion**", "**push to completion**", "**drive it to completion**", "**get off your ass**", "**coffee break's over**" — via the Agent Skill `.claude/skills/push-to-completion/SKILL.md`.
+
+> **☕ = this entire command, in one character** *(Rick, 2026-07-25)*. ☕ alone needs no accompanying text — never ask what it refers to. **Response: 🫡 on receipt, receipts on delivery** — the salute is the whole acknowledgment, but unlike 📷 it does **not** discharge the order; the board still gets driven and the Operational Contract report still comes back. *Compressing the trigger must never compress the receipt.* Palette: `workflow/brevity-mandate.md` § the glyph exchange.
 
 ---
 
