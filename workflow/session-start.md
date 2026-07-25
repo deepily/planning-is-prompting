@@ -100,8 +100,8 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 ### Reference
 
 - **Plan document**: `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`
-- **Server allocator**: `src/cosa/rest/voice_persona_helpers.py` — function `pick_preferred_persona_from_env(project)` + extended `allocate_persona_for_session()`
-- **Server tests**: `src/tests/unit/test_voice_persona_request.py` — class `TestPreferredPersonaFromEnv` (7 tests)
+- **Server allocator**: `src/cosa/rest/voice_persona_helpers.py` — function `pick_persona_chain_from_env( project )` + extended `allocate_persona_for_session()`
+- **Server tests**: `src/tests/unit/test_voice_persona_request.py` — class `TestPickPersonaChainFromEnv` (run the file for the count; do not read one off this page)
 - **Workflow defaults rationale**: memory entry `feedback_workflow_defaults_travel_with_workflow.md` — *why* the prefix is `COSA_VOICE_*` and not `P_IS_P_*`
 
 ---
@@ -279,7 +279,7 @@ Persona name and voice ID are **bound by design** — they are a 5-tuple `(name,
 
 - **Server endpoint**: `POST /api/cosa-voice/voice-persona/{session_id}/allocate?requested_persona_name=<name>&previous_persona_name=<optional>` (Lupin)
 - **Server helpers**: `src/cosa/rest/voice_persona_helpers.py` — `pick_requested_persona`, `allocate_requested_persona_for_session`, `_find_persona_in_pool`
-- **Tests**: `src/tests/unit/test_voice_persona_request.py` (42 tests covering helpers + route paths + Pydantic validation + bridge-write failures + push tolerance)
+- **Tests**: `src/tests/unit/test_voice_persona_request.py` — covers helpers + route paths + Pydantic validation + bridge-write failures + push tolerance. **Run it for the count.** A number written here was 42 when authored and 58 the next time anyone checked; a count in prose ages the moment the suite grows, and nothing goes red when it does.
 - **Slash-command shim**: `.claude/commands/plan-session-start.md` (project-scope) — passes `$ARGS` through to this Preliminary
 
 ---

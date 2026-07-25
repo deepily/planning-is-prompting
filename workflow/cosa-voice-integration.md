@@ -168,7 +168,7 @@ What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file loca
 **When it is NOT (default path — leave the flag off):**
 - Routine status closes, summaries, numeric/file inventories, audit findings, decision-support — these go to `abstract` + doc-links with a capped, headline spoken line. No override.
 
-**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented + 11/11 unit tests green (Tiberius, DM `14f9e3c8`).
+**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented; unit-tested at `lupin/src/tests/unit/lupin_mcp/test_spoken_brevity_cap.py` — **run that file for the count.** *(This line previously read "11/11 unit tests green (Tiberius, DM `14f9e3c8`)" — a count whose only receipt was a DM, naming no suite anyone could re-derive it from. The suite it turned out to mean is above, and it does not hold 11 tests.)* <!-- claim-is-historical -->
 
 ### Priority="high" Mandate Intensified
 

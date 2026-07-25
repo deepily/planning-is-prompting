@@ -266,7 +266,27 @@ Worth stating plainly, because it is the sharpest thing about this layer: **the 
 
 - **THE TOOL-CALL BYPASS PATH — closed for `Write` AND `Edit`, once the hook is installed.** Nothing used to gate a bare `Write` to a memento path. **Proven by execution**, not assumed: a memento was written to `io/mementos/maria-35446389.md` with a plain `Write` tool call, no `/plan-memento`, no script — **and it landed.** A convention carried by a command is **a rule the moment someone doesn't run the command.**
 
-  `workflow/scripts/memento_record_guard.py` refuses **`Write`, `Edit` and `MultiEdit`** against an **existing record**, and allows everything else — a new record, any pointer (blocking one would break Layer 2), any other file, any other tool. Unit-tested **13/13 in both directions**. It leaves **exactly one** way to change a record: `memento_io.py amend`.
+  `workflow/scripts/memento_record_guard.py` refuses **`Write`, `Edit` and `MultiEdit`** on four counts, and allows everything else:
+
+  | # | REFUSES | why |
+  |---|---|---|
+  | — | a write onto an **EXISTING record** | `Write` truncates it, `Edit` mutates it and silently strands the mirror |
+  | **F1** | a write that **CREATES a record** | lands an orphan: no mirror, no pointer, invisible to `git status` |
+  | **F5** | any memento write — record **or pointer** — to a **non-canonical slot** | the `Write` tool makes its own parent dirs, so a relative path lands wherever cwd happened to be |
+  | — | overwriting a **canonical pointer that currently holds unmirrored RECORD content** | that write would be the last thing that ever happened to it |
+
+  **ALLOWS**: any ordinary canonical pointer write (blocking one would break Layer 2 — the pointer is rewritten on *every* memento write), any other file, any other tool, anything outside a git tree, and any input it cannot resolve. It fails **open** by design.
+
+  It leaves **exactly one** way to change a record: `memento_io.py amend`.
+
+  > **The coverage claim that used to sit on this line is deleted, and the deletion is the point.** It read *"Unit-tested 13/13 in both directions"* — asserted about a file that had **zero** checked-in tests, and it stayed true-looking for as long as nobody re-derived it (store rows `cecfc428` / `04ba95d4`). Worse, the behaviour sentence beside it described the **pre-fix, inverted** guard: it said a new record and any pointer were *allowed*, which is exactly the coverage `929146d` inverted back. **A precise number closes the question a vague one would have invited someone to check.** So this document no longer states a count. The suite is named instead, because a suite can go red and a sentence cannot: <!-- claim-is-historical -->
+  >
+  > ```bash
+  > python3 -m pytest workflow/scripts/test_memento_record_guard.py \
+  >                   workflow/scripts/test_memento_guard_unmirrored_pointer.py -q
+  > ```
+  >
+  > Read the count off that command, never off this page.
 
   > ⚠️ **THE SETTINGS MATCHER MUST BE `"Write|Edit"`, NOT `"Write"`.** A `"Write"`-only matcher means the `Edit` branch **never runs** while the config *looks* guarded. **That is worse than no guard, because it is a guard someone will trust.** *(This is not hypothetical: the first draft of the settings entry said `"Write"`, and the `Edit` vector was found only because the guard was RUN before it was installed.)*
 

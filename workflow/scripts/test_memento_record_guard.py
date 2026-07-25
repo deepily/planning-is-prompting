@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-test_memento_guard_canonical_slot.py — ACs 9–17 of Mini Plan 01/01b (F5, the canonical-slot check).
+test_memento_record_guard.py — ACs 9–17 of Mini Plan 01/01b (F5, the canonical-slot check).
 
 Run (from a NEUTRAL REGISTERED directory — NEVER /tmp, NEVER ~):
 
     cd /mnt/DATA01/include/www.deepily.ai/projects/scratchpad/<session_id_8>
     PYTHONPATH= /mnt/DATA01/include/www.deepily.ai/projects/lupin/.venv/bin/python3 -m pytest \\
-        /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/workflow/scripts/test_memento_guard_canonical_slot.py -q
+        /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/workflow/scripts/test_memento_record_guard.py -q
 
 WHY A SEPARATE FILE FROM test_memento_io_postgame.py: that suite tests `memento_io.py` (the
 sanctioned VERB). This one tests `memento_record_guard.py` (the PreToolUse HOOK on the bypass
