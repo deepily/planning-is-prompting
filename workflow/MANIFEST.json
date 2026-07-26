@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-19T18:36:15-04:00",
+  "generated_at": "2026-07-26T15:20:29-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -72,7 +72,7 @@
       "version": "1.0"
     },
     "plan-kiss.md": {
-      "sha256": "4b13a12549f1fd08cd044c8128620f45c999265da9829cd70fd7d85fdd9b204a",
+      "sha256": "6d7b89e48849336b080fdab09cd98ce845efbcd6206a9dd1d0393705bb166f24",
       "version": "1.0"
     },
     "plan-loc-delta-global.md": {
@@ -80,11 +80,11 @@
       "version": "1.1"
     },
     "plan-mandate.md": {
-      "sha256": "a7f99ed5c5de9a378445c48deaac26acf3015b51621df37b402ba33034ff5802",
-      "version": "1.1"
+      "sha256": "fc32f905cac28196b5bdeb50071a15efc7292798e9cd61e087eed5f02d1e2beb",
+      "version": "1.2"
     },
     "plan-memento.md": {
-      "sha256": "b124e68f6020a5ab5ade53b6b262bfd74d60facad05e11c6778efadee8fb1e0a",
+      "sha256": "bc56934f306ce6408e0560c62cac94a9c6ef4b0097cc775030a16442edf78adf",
       "version": "2.0"
     },
     "plan-post-game.md": {
@@ -92,7 +92,7 @@
       "version": "0.1 (draft \u2014 held for Rick's review)"
     },
     "plan-push.md": {
-      "sha256": "ed60d409048139da85be85fdbf1fcf5a286d60779bdac3ca5d2ffe7ab77c3415",
+      "sha256": "5aba78280cfa407d3b7db4263d3d7975d7fc9794a7af7474c898274f858daf37",
       "version": "1.0"
     },
     "plan-review-cascaded.md": {

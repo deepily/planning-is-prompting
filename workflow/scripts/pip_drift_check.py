@@ -122,18 +122,34 @@ def manifest_age_days( manifest ):
     return max( 0, ( datetime.now( timezone.utc ) - generated ).days )
 
 
-def classify( installed_path, canonical_entry, canonical_text ):
+def classify( installed_path, canonical_entry, canonical_text, is_self_scan=False ):
     """
     Classify one installed command against its canonical entry.
+
+    ⚠️ THE SELF-SCAN CASE, and why it needs its own detail string (2026-07-26).
+    The DEFAULT target is `./.claude/commands`, which is exactly where
+    `canonical_text` is read from — so on a default run `installed_path` and the
+    canonical file ARE THE SAME FILE. `diff_lines` is then **0 by construction**,
+    and the report said *"content differs … 0 lines differ"*, which is a
+    contradiction a reader cannot act on.
+
+    Nothing was wrong with the VERDICT: the sha still differs from the manifest,
+    which genuinely means the canonical file changed since the manifest was
+    generated. Only the EXPLANATION was vacuous — it described a comparison that
+    had not been made. A number computed against itself is not a measurement, and
+    printing one beside a real finding teaches the reader to discount both.
 
     Requires:
         - installed_path names an existing readable file
         - canonical_entry has 'sha256' and 'version'
         - canonical_text is the canonical file's text
+        - is_self_scan is True when installed_path IS the canonical file
 
     Ensures:
         - returns ( state, detail ) where state is one of STATE_ORDER and
           detail is a human-readable qualifier (may be empty)
+        - on a self-scan the detail names the manifest as the stale party and
+          NEVER reports a line-diff, because no cross-file diff was performed
     """
     text   = installed_path.read_text( encoding="utf-8" )
     digest = hashlib.sha256( installed_path.read_bytes() ).hexdigest()
@@ -154,6 +170,15 @@ def classify( installed_path, canonical_entry, canonical_text ):
             canonical_text.splitlines(), text.splitlines(), lineterm="", n=0
         ) if line.startswith( ( "+", "-" ) ) and not line.startswith( ( "+++", "---" ) )
     )
+
+    # On a self-scan the file was never compared to anything but the manifest, so
+    # say THAT. Reporting "0 lines differ" here described a diff of the file
+    # against itself and read as a contradiction beside "content differs".
+    if is_self_scan:
+        suffix = "canonical file changed since the manifest was generated — regenerate with pip_manifest.py"
+        if local_version == canon_version:
+            return ( "VERSION_LIES", f"both v{canon_version} · {suffix}" )
+        return ( "STALE", f"v{local_version} vs manifest v{canon_version} · {suffix}" )
 
     if local_version == canon_version:
         return ( "VERSION_LIES", f"both v{canon_version} · {diff_lines} lines differ" )
@@ -186,8 +211,12 @@ def check_target( target, root, manifest ):
             results[ "MISSING" ].append( ( name, "" ) )
             continue
 
-        canonical_text  = ( commands_dir / name ).read_text( encoding="utf-8" )
-        state, detail   = classify( installed, entry, canonical_text )
+        canonical_file  = commands_dir / name
+        canonical_text  = canonical_file.read_text( encoding="utf-8" )
+        # SAME FILE on the default (self) scan — see classify()'s § THE SELF-SCAN CASE.
+        # Resolved on both sides so a symlinked or relative target is still recognised.
+        is_self_scan    = installed.resolve() == canonical_file.resolve()
+        state, detail   = classify( installed, entry, canonical_text, is_self_scan=is_self_scan )
         results[ state ].append( ( name, detail ) )
         scanned += 1
 
