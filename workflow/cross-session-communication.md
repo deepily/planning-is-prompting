@@ -272,6 +272,44 @@ Sample recent escalations and ask of each: *did the boundary survive the hop?* C
 
 ---
 
+## 4.6 Reading an instrument's verdict — the evidence, not the conclusion
+
+> **Read an instrument's EVIDENCE before its CONCLUSION. A verdict with an empty body is a defect.**
+
+Store row `240f7c29`, candidate 2. Ruled graduation-eligible by Rick 2026-07-21 (D8 of 8), authored by a seat other than the rule's originator.
+
+### 🔴 THE MECHANISM, and Rick's ruling requires it to travel with the rule
+
+Clayton reported **"938/957 passed."** True, and it omitted the 1 red. **He did not catch it by re-reading his own output more carefully — a separate seat whose job was to distrust the summary caught it.**
+
+> **The structural fix for a reporting-honesty miss is A READER WHO DISTRUSTS THE SUMMARY, not "report more carefully."**
+
+That is the whole rule. An exhortation to check your own work fails here for the same reason it failed in §4.5: **the seat writing the summary is the seat least able to see what it omitted**, and every instance below was committed by someone actively hunting this exact failure.
+
+⇒ Operationally: when a peer hands you a verdict, **ask for the body before you act on the headline.** "938/957" and "all green" are the same sentence to a reader who never sees the 19.
+
+### IT RUNS IN BOTH DIRECTIONS — and the second was found later
+
+**(a) THE INSTRUMENT UNDER-REPORTS.** A verdict that omits its own contradicting evidence.
+· a search control written so it could not fail (`head -3 &&` swallowing the exit status)
+· **"938/957 passed"** — a pass-rate standing in for a result, with the red inside the ratio
+
+**(b) THE INSTRUMENT KNOWS MORE THAN YOU DO, and you are about to overrule it.** A guard fix implemented exactly as its row prescribed turned **nine existing tests red**. The reflex — *tests can pin a defect in place*, a TRUE rule with its own scar — would have rewritten all nine and shipped an outage into tooling every project installs. **The tests were right; the row's prescribed remedy was unimplementable as written, and only the suite knew.**
+
+⇒ (a) is a verdict that omitted its evidence. **(b) is a verdict that SUPPLIED evidence its reader had not thought of.** *"Read the evidence before the conclusion"* is aimed squarely at (a) and says nothing about (b) — where the danger is not that you will believe too much, but that you will believe yourself.
+
+### ⇒ THE TIE-BREAKER when two true rules point opposite ways
+
+> **A test — or a doc, or a row — that encodes WHY it permits something is a SPEC. One that encodes only THAT it permits something is a DESCRIPTION.**
+>
+> **You can overrule a description. You cannot overrule a spec without answering its argument.**
+
+The nine reds carried docstrings explaining *why* a pointer write isolates a particular check. **That is what distinguished "the suite is stale" from "the suite is right."** Without the why, nine tests would have been rewritten and the outage shipped.
+
+⇒ So this rule has a WRITING obligation attached, not only a reading one: **state why you permit what you permit.** The next reader weighing their own conviction against your test has nothing else to weigh it with — and that reader may be you.
+
+---
+
 ## 5. Anti-patterns
 
 ### Loop hazards
