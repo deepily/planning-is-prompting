@@ -69,6 +69,25 @@ CLAIM_PATTERNS = [
     re.compile( r"\(\s*\d+\s+tests?\b", re.IGNORECASE ),
     # "all 31 tests pass"  /  "17 tests green"
     re.compile( r"\b\d+\s+tests?\s+(?:pass|passing|green|are\s+green)\b", re.IGNORECASE ),
+    # "**16 tests, 6 mutations 6 correct reds**"  /  "the module ships 24 tests."
+    #
+    # ⚠️ ADDED 2026-07-26 BECAUSE THE FOUR PATTERNS ABOVE MISSED A LIVE OFFENDER — and the
+    # offender was written by this gate's own repo-mate, in `push-to-completion.md`, on a day
+    # spent fixing stale claims. The four harvested shapes all require a NEIGHBOUR: a slash
+    # ("13/13"), an opening paren ("(14 tests"), or a following verb ("31 tests pass"). A bare
+    # count followed by a COMMA — "16 tests, 6 mutations 6 correct reds" — satisfies none of
+    # them and sailed straight through.
+    #
+    # ⇒ The header above says each pattern "was harvested from a REAL offender … an invented
+    #   pattern matches nothing and reports clean." That discipline is right and it has a cost
+    #   nobody wrote down: **a harvested set matches the shapes that were already on disk, and
+    #   the next writer is not obliged to reuse them.** Four true positives read as coverage.
+    #
+    # So this one is deliberately the GENERAL shape rather than a fifth harvested variant —
+    # any digit-followed-by-"test(s)". It is the widest pattern here and it will catch prose
+    # that is merely descriptive; that is what EXEMPT_MARK is for, and every exemption stays
+    # greppable in one command.
+    re.compile( r"\b\d+\s+tests?\b", re.IGNORECASE ),
 ]
 
 
@@ -108,12 +127,28 @@ def test_the_scanner_can_actually_fail( tmp_path, monkeypatch ):
         "Implemented + 11/11 unit tests green (Tiberius)."   : True,
         "`test_voice_persona_request.py` (42 tests covering)": True,
         "all 31 tests pass on the merge gate"                : True,
+        # THE LIVE ESCAPE, verbatim from push-to-completion.md v1.2 on 2026-07-26. The four
+        # harvested patterns ALL missed it: no slash, no opening paren, and a COMMA where they
+        # expect a verb. It shipped into a workflow doc on a day spent fixing stale claims,
+        # and the gate reported clean.
+        "**16 tests, 6 mutations 6 correct reds** — arm 6"   : True,
         "unit-tested thoroughly, see the suite"              : False,   # vague: passes, by design
         "we mirrored 209/209 records that day"               : False,   # not a TEST count
+        "the suite is named, never counted"                  : False,   # the prescribed phrasing
     }
     for line, should_hit in known_bad.items():
         hit = any( p.search( line ) for p in CLAIM_PATTERNS )
         assert hit is should_hit, f"pattern set misclassified: {line!r} (expected hit={should_hit})"
+
+    # ⚠️ AND THE ESCAPE MUST BE CAUGHT BY THE NEW PATTERN SPECIFICALLY — not incidentally by
+    # one of the four that already missed it in the field. Without this, deleting the widening
+    # would leave the assertion above still green via some other pattern, and the regression
+    # would be invisible.
+    escaped = "**16 tests, 6 mutations 6 correct reds** — arm 6"
+    caught_by = [ i for i, p in enumerate( CLAIM_PATTERNS ) if p.search( escaped ) ]
+    assert caught_by == [ len( CLAIM_PATTERNS ) - 1 ], (
+        f"the 2026-07-26 escape must be caught by the WIDENED pattern alone, got indices {caught_by}"
+    )
 
     # And the exemption must actually exempt.
     doc = tmp_path / "workflow" / "fake.md"

@@ -856,7 +856,7 @@ Ready for planned changes. Use /plan-test-remediation after modifications.
 
 ### No Tests Detected
 
-**Problem**: Test script runs but reports 0 tests
+**Problem**: Test script runs but reports 0 tests <!-- claim-is-historical: a troubleshooting SYMPTOM, not a coverage claim -->
 
 **Possible Causes**:
 - Test script requires arguments not provided
