@@ -81,6 +81,25 @@ The hook covers your own harness task list. Create EXPLICITLY via the MCP verb w
 
 Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never spoofable.
 
+### 3.1 Filing hygiene — INLINE THE DECISIVE EXCERPT (binding on every seat)
+
+> **When a row's NEXT STEP depends on an artifact, paste the decisive excerpt INTO the row body at filing time.** A path is not evidence. `/tmp` paths, session scratchpads, worktrees and `--bg` log files are all EPHEMERAL by construction: the row outlives them, and a NEXT STEP pointing at a vanished file is a row that expired without saying so.
+
+Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
+
+**THE REASON IS AN ASYMMETRY, NOT TIDINESS** — and the asymmetry is the whole argument:
+
+| | cost |
+|---|---|
+| the FILER, artifact in hand | **seconds** — one paste |
+| the PICKER-UPPER, artifact gone | **hours**, PLUS a scheduling dependency to regenerate it (in the founding case, a manager-gated quiet-tree window — a scarce resource) |
+
+⇒ **The cost lands on the person with the least context and the least ability to pay it.** That is what makes it a rule rather than a preference.
+
+**Rejected alternatives, recorded so they are not re-proposed:** moving artifacts to a durable path only MOVES the rot (something still has to survive, and nothing guarantees it); building machinery to snapshot artifacts buys tooling for a problem that does not recur often enough to earn it; and "just regenerate it later" has already cost the fleet once.
+
+⚠️ **THE RULE APPLIES TO ITS OWN RULING.** Row `644313b9` was deliberately NOT closed when this was ruled, because at that moment the ruling existed only in a DM and in outgoing spawn briefs — *an unwritten convention, which is precisely the failure mode the row was filed about, one level up.* Closing on "it was ruled" would have made the doctrine the next artifact to expire silently. **This section IS the close condition.** A seat that never saw the DM now files correctly.
+
 ## 4. Transitions — the receipts discipline
 
 - **`→done` REQUIRES `receipt_refs`** — key-whitelisted + shape-validated server-side (`commit` 7–40 hex · `qid` uuid · `test_run` id · `doc_path` exists · `log_line` `<path>:<lineno>` exists). A bare "trust me" completion is REJECTED with the server's errors verbatim. This is the no-confabulation rule, mechanized: if you can't cite a receipt, the work isn't done.
