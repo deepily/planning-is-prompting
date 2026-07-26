@@ -193,7 +193,20 @@ REQUIRED_IGNORES = [ "io/mementos/", ".claude-memento.md", ".claude-memento-*.md
 # which is why the two below now claim only what is enforced.
 
 ENGAGEMENT_WINDOW_HOURS = 24
-POST_GAME_GLOBS         = [ "io/post-games/*.md", "src/rnd/*post-game*.md", "src/rnd/*postgame*.md" ]
+# ⚠️ THE `**/` FORMS ARE LOAD-BEARING, NOT BELT-AND-BRACES (row 47a5b286, 2026-07-25).
+# This list used to hold only the FLAT `src/rnd/*` forms. Lupin files its R&D under VERSIONED
+# subdirectories — `src/rnd/v0.1.9/2026.07.20-…-post-game.md` — which a single-level glob cannot
+# see. Measured at filing: FOUR real post-games sat in `src/rnd/v0.1.9/` and the gate matched
+# ZERO of them, so it refused a write, the author wrote the retro, and it refused again.
+#
+# ⇒ A GATE THAT CANNOT SEE THE THING IT DEMANDS IS NOT STRICT, IT IS BROKEN — and it fails toward
+#   the escape: the honest next move looks like reaching for `--no-post-game`, which is how a
+#   real gate teaches people to route around it. `pathlib.glob` treats `**/` as zero-or-more
+#   directories, so each `**/` form SUBSUMES its flat sibling; both are kept anyway, because a
+#   reader scanning this list should not have to know that rule to believe the flat case works.
+POST_GAME_GLOBS         = [ "io/post-games/*.md", "io/post-games/**/*.md",
+                            "src/rnd/*post-game*.md", "src/rnd/**/*post-game*.md",
+                            "src/rnd/*postgame*.md",  "src/rnd/**/*postgame*.md" ]
 
 # Never evidence of a retro, however fresh: the directory's own furniture. `io/post-games/*.md`
 # matches the README that documents the directory, and a README edit is not a retrospective.
