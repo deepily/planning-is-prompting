@@ -252,6 +252,20 @@ And he had INHERITED the lesson four hours earlier from his predecessor's mement
 
 Nine reds carrying a reason you had not thought of are a spec disagreeing with you. Nine reds carrying no reason are just red. **Write the why, or the next reader — who may be you — will have nothing to weigh against their own conviction.**
 
+### ⚠️ IT MUST BIND ON FIGURES, NOT ONLY ON NARRATIVES
+
+Rick's ruling (D1 of 8, 2026-07-21) names this constraint explicitly, and it is the one an exhortation cannot satisfy.
+
+**Instance 6**: a row body said *"rescue set is **33** cargo-bearing"* — and carried its own caveat **in the same paragraph**: *"Corpus is LIVE (43→44→45 during review). No hardcoded counts anywhere."* A manager relayed **"33 files" into four separate briefs** and built a hold, a ruling, a build gate and a commit sequence on it. Nothing summed to 33 on any predicate; the real number in his lane was 6.
+
+> **The caveat survived ZERO hops. It was available, adjacent, and simply not carried.**
+
+⇒ A rule that reminds you to restate the boundary **would not have fired**, because he was not summarizing — **he was quoting a number.** Numbers feel like facts in a way sentences do not: a figure looks already-compressed, so nothing about repeating it feels like a promotion.
+
+⇒ **THEREFORE: a figure crossing a level carries its predicate or it does not cross.** Not "33 files" — **"33 by `hold_cargo_keys()` over 41 roots, corpus live and moving."** If you cannot state the predicate in the same breath, you are relaying testimony, not a measurement, and you must say which.
+
+⇒ And note what caught it: not review, not care, not a reader — **a mechanism.** The guard's `exit 3` on the first write. Nobody was going to catch it by reading; the number was plausible, sourced, and repeated by a manager. Had the batch run on the brief it would have taken **11 refusals mid-run**, and the likeliest reading of 11 refusals is *"the fix is broken, stop"* — **a false number would have discredited a correct fix.**
+
 ### How to check it
 
 Sample recent escalations and ask of each: *did the boundary survive the hop?* Compare the claim as it reached the wider audience against the claim as it was originally measured. The failure is legible in the artifact; that is what makes this testable rather than aspirational.
