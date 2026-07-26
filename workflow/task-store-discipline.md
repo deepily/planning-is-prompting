@@ -131,6 +131,35 @@ Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
 
 **Known filter gap (§11-D) — no one-shot "any-open" set.** `status` is single-value exact-match, so there is no single filter for "all non-terminal." To see ALL your open work, either run the cheap terse passes above (`in_progress` → `queued` → `blocked`) or query `owner_persona=me, terse=True` and drop the terminal rows client-side. A native `status__in` / `any_open` filter is an OPTIONAL lupin-side enhancement (logged §11-D) — a convenience, NOT a blocker; the scoped two-pass already collapses the board.
 
+### 6.1 STEP 0 — a scoped NON-terse read before the first action in a domain
+
+> **`terse=True` is right about tokens and SILENT about load-bearing bodies. This subsection is the mechanism that covers the gap — not a reminder to be careful.**
+
+**THE TENSION, stated plainly.** §6 mandates `terse=True` for every board glance and says to reach for the full shape *"only when you actually need a row's body."* **You cannot know a body is load-bearing from its title. That is the entire failure mode** — a scoped instrument (`terse=True`) sitting beside an unscoped obligation (know what you owe · know what has already been done · know who holds the seat).
+
+**WHAT IT COST, once, measurably** (store row `5a8aa45b`, filed by Sam against himself 2026-07-16). A terse glance returned the title *"gpt-oss STREAMS ITS CHAIN-OF-THOUGHT — a naive judge harness"*. He read it as a parked warning for a future builder. The body he did not open carried **an already-completed live probe of both judges** and **a standing order naming who may make GCP spend calls.** He re-ran the finished experiment, and violated an order he had never read — *in the sentence the order forbids* (*"don't reason your way to 'this one's cheap and safe'"*). **A standing order lives in a BODY. It is invisible to the query the doctrine tells you to run.**
+
+**⚠️ AND A TITLE CAN BE FALSE, NOT MERELY LOSSY — PERMANENTLY.** Row `8fc44a98`'s 60-char title asserts *"3 already sent outsi[de]"*. Nothing was ever sent anywhere; the full retraction is in the body. That row is now `done` — **terminal, so it cannot transition; `task_amend` appends to body only; there is no title-edit verb; and the prescribed repair was drop-and-recreate, which a `done` row cannot accept.** Every mandated terse glance shows the falsehood and nothing shows the correction, and **no mechanism this store has can now fix it.** Three correct rules — terminal means terminal, amend appends, titles are capped — compose into a remedy nobody can reach.
+
+### ⇒ THE MECHANISM
+
+> **Before the first build / probe / spend action in a domain, run ONE `task_query` scoped to that domain with `terse=False`, and read the bodies. Write it into the plan document AS A NUMBERED STEP.**
+
+```python
+# Step 0 of the plan — narrow filter, full bodies. NOT the unfiltered board.
+task_query( project="<domain>", status="queued", terse=False )
+```
+
+**Three properties, and each is doing work:**
+
+1. **SCOPED, so it is affordable.** The filter is narrow — this does NOT re-open the unfiltered board §6 rightly forbids. The anti-pattern §6 kills is the *unscoped* read, not the *un-terse* one, and conflating those is what left this gap open.
+2. **NUMBERED, so it is a step and not a virtue.** An obligation that lives only in a seat's judgment is discharged by the seat that feels prepared — which is exactly the seat that skips it.
+3. **IN THE PLAN DOC, so someone ELSE can see whether it ran.** This is the load-bearing property. The failure it prevents is *"I did not know what was already known,"* and **a seat cannot audit itself for what it never saw.** Putting the step in a reviewed artifact moves the check to a reader who can compare the plan against the board — the same structure as any reporting-honesty control (see cross-session-communication.md §4.6).
+
+**WHEN IT APPLIES:** any plan that will spend, probe a metered or shared surface, touch another seat's lane, or build in a domain where prior work may exist. **NOT** every conversational turn — the daily owed-work reflex in §6 stays terse.
+
+---
+
 ## 7. Correlation — what sessions must know
 
 - Same-subject rewrites UPSERT (no duplicates); a changed subject supersedes (old item `→dropped` reason `superseded-by-rewrite`). On Task\*-tool harnesses the hook payload carries the stable harness task id, so derivation precedence (a) applies universally and the (b) content-hash fallback is dormant (Tiffany flag #2).
