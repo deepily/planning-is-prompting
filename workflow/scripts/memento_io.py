@@ -600,7 +600,8 @@ def ensure_gitignored( repo_root, rel_path, apply_fix=True, verbose=True ):
 
 # ---------------------------------------------------------------- header stamping
 
-def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None ):
+def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None,
+                  correlation=None ):
     """
     Guarantee the record carries its own provenance (element-1: session_id + written_at).
 
@@ -614,6 +615,9 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
         - returned text begins with a `<!-- memento-record: ... -->` line carrying
           persona, session_id, written_at and slot
         - returned text contains a `**Written by**:` line naming persona + session id
+        - when `correlation` is given, the returned text carries it as its own machine line
+          (547f6565 H3 — see POST_GAME_CORRELATION_STAMP: the stamp is the reader the
+          waiver never had)
     """
     machine = ( f"<!-- memento-record: persona={persona} session_id={sid} "
                 f"written_at={written_at} slot={slot} -->" )
@@ -621,10 +625,13 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
         machine += ( "\n<!-- post-game-waived: "
                      f"by={persona} session_id={sid} at={written_at} "
                      f"reason={no_post_game_reason!r} -->" )
+    if correlation is not None:
+        machine += "\n" + correlation
 
     lines = body.lstrip( "\n" ).splitlines()
     lines = [ l for l in lines if not l.startswith( "<!-- memento-record:" ) ]
     lines = [ l for l in lines if not l.startswith( "<!-- post-game-waived:" ) ]
+    lines = [ l for l in lines if not l.startswith( POST_GAME_CORRELATION_STAMP ) ]
 
     if no_post_game_reason is not None:
         lines.append( "" )
@@ -843,6 +850,145 @@ def qualifies_for_post_game( repo_root, persona_slug, slot, now ):
     return bool( evidence ), evidence
 
 
+# ---- H3: the content floor cannot tell a retrospective from a design doc -------------
+#
+# `547f6565` H3, filed by Rachel 🕊️ and reproduced by Clayton 😎 2026-07-18: the content
+# floor is a LENGTH check wearing a retrospective check's clothes. A ~1.2KB design doc —
+# Purpose / Background / Proposed mechanism / Open questions / Alternatives / Rollout, ZERO
+# retrospective content — clears it, EXIT=0. That is the artifact class this very workstream
+# produces. Disclosed in the docstring 07-18, never closed.
+#
+# THE OBVIOUS FIX IS REFUTED, AND IT WAS REFUTED BY MEASUREMENT, NOT BY OPINION.
+# Measured 2026-07-26 (María, fae1bbc4) over this repo's whole corpus — 24 real post-games
+# vs the 107 other src/rnd documents, which are exactly the design docs H3 names:
+#
+#   AXIS 1, retrospective VOCABULARY (retro/lesson/got-wrong/surprised/receipts/corrected,
+#   9 signal families). NO THRESHOLD SEPARATES THE TWO POPULATIONS:
+#       >=1 signal  ->  0/24 real retros refused, but 82/107 design docs PASS (77%)
+#       >=3 signals ->  5/24 real retros REFUSED,     27/107 design docs pass
+#       >=6 signals -> 24/24 real retros REFUSED,      0/107 design docs pass
+#   The seats who write the retros write the design docs, in the same register. The
+#   vocabulary is shared, so an instrument aimed at vocabulary is aimed at the wrong axis —
+#   and its confidence is unaffected by being wrong, which is what makes it worse than a
+#   weak instrument.
+#
+#   AXIS 2, "does it carry a session-id token" -> 88/107 design docs carry one too. ROW ids
+#   and SESSION ids share the 8-hex shape. The shape does not know what it names.
+#
+# ⇒ WHAT IS BUILT INSTEAD, AND WHAT IT DELIBERATELY IS NOT
+# The gate already holds, at fire time, the thing no content check can infer: the CONCRETE
+# LIST OF CREW RECORDS that armed it. A retrospective about tonight's run names tonight's
+# seats; a design doc names them only by coincidence. That is a CORRELATION check, and it is
+# the one axis that is not a proxy.
+#
+# It is computed, STAMPED, and DISCLOSED — it is NOT a refusal, and that is a decision, not
+# a shortcut:
+#   · This module's stated stance is that the gate must UNDER-fire rather than block a
+#     re-spin at the worst possible moment (see POST_GAME_MIN_BYTES). A new refusal whose
+#     false-refusal rate I cannot bound violates that stance.
+#   · I CANNOT bound it. Correlation is only testable PROSPECTIVELY: history does not record
+#     which crew armed which retro, so there is no corpus to calibrate against. The proxy I
+#     could measure (does a retro name any persona still on disk) refused 5 of 24 — and that
+#     number is confounded, because `io/mementos/` holds 6 personas today while the corpus
+#     spans months of seats whose records are long gone. An under-powered proxy is not
+#     evidence of a false-refusal rate; it is evidence that I do not have one.
+#   · The stamp is what makes the number obtainable. Every gated write now records whether
+#     its retro correlated, on the record, the mirror and the pointer. After N engagements
+#     the promote-to-refusal decision is a query instead of a guess.
+#
+# ⚠️ AND THE STAMP HAS A READER BY CONSTRUCTION, which is the whole reason it is a stamp and
+# not a warning line. `2df66816` on this same gate: a WAIVER is written and never READ —
+# nothing consumes waiver reasons. A correlation warning printed to stderr would have been
+# that defect a second time, filed by the seat that catalogues it. The record is durable,
+# mirrored, and read by every successor; stderr is read once, by someone in a hurry.
+POST_GAME_CORRELATION_STAMP = "<!-- post-game-correlation:"
+
+
+def seat_tokens( evidence ):
+    """
+    The naming vocabulary of the crew that armed this gate.
+
+    Requires:
+        - evidence is the list of repo-relative crew record paths from crew_records()
+    Ensures:
+        - returns (slugs, sids) — the persona slugs and 8-hex session ids those records carry
+        - a record filename that does not carry the `-<8hex>` suffix contributes nothing
+          (crew_records() already excludes those, so this is belt-and-braces, not a filter)
+    """
+    slugs, sids = set(), set()
+    for rel in evidence:
+        stem = Path( rel ).stem
+        if not HEX8_SUFFIX_RE.search( stem ): continue
+        slugs.add( HEX8_SUFFIX_RE.sub( "", stem ) )
+        sids.add( stem[ -8: ] )
+    return slugs, sids
+
+
+def post_game_correlation( repo_root, retros, evidence ):
+    """
+    Does the accepted retrospective NAME the seats it retrospects?
+
+    Requires:
+        - retros is the accepted post-game list from post_game_artifacts()
+        - evidence is the crew record list that armed the gate
+    Ensures:
+        - returns (correlated, detail) where `correlated` is True iff at least ONE accepted
+          retro names at least ONE arming seat (persona slug or that seat's session id)
+        - detail is a list of (retro_rel, sorted matched-seat tokens) for every accepted retro,
+          INCLUDING the ones that matched nothing — a per-artifact zero is the finding, and a
+          function that reports only its hits cannot be distinguished from one that found none
+        - an unreadable retro contributes no matches and is not an error: this observes, it
+          does not gate, so it must never turn a readable-file problem into a refused write
+    """
+    slugs, sids = seat_tokens( evidence )
+    detail      = []
+    for rel in retros:
+        try:
+            low = ( repo_root / rel ).read_text( errors="replace" ).lower()
+        except OSError:
+            detail.append( ( rel, [] ) )
+            continue
+        matched = { s for s in slugs if re.search( rf"\b{re.escape( s )}\b", low ) }
+        matched |= { s for s in sids if s in low }
+        detail.append( ( rel, sorted( matched ) ) )
+    return any( m for _, m in detail ), detail
+
+
+def correlation_stamp( correlated, detail ):
+    """
+    Ensures: returns the machine-readable correlation comment for the record header,
+             or None when there is nothing to say (no gated write happened)
+    """
+    if not detail: return None
+    named = sorted( { m for _, ms in detail for m in ms } )
+    return ( f"{POST_GAME_CORRELATION_STAMP} correlated={str( correlated ).lower()} "
+             f"retros={len( detail )} seats_named={','.join( named ) if named else 'none'} -->" )
+
+
+def print_correlation_disclosure( correlated, detail, evidence ):
+    """
+    Ensures: prints the correlation result to stderr — the ACCEPT path's one disclosure
+
+    This is not a warning that gates anything. It says what the gate can and cannot tell,
+    at the moment a seat is looking at it, so an uncorrelated retro is visible rather than
+    silently equivalent to a correlated one.
+    """
+    if not detail: return
+    if correlated:
+        named = sorted( { m for _, ms in detail for m in ms } )
+        print( f"post-game: accepted, and it names the crew it retrospects ({', '.join( named )}).",
+               file=sys.stderr )
+        return
+    print(  "post-game: accepted on the CONTENT FLOOR ALONE — it names none of the seats "
+            "that armed this gate.", file=sys.stderr )
+    print( f"           armed by {len( evidence )} record(s); accepted retro(s): "
+           f"{', '.join( rel for rel, _ in detail )}", file=sys.stderr )
+    print(  "           The floor separates a written retrospective from an absent one. It "
+            "cannot tell", file=sys.stderr )
+    print(  "           a retrospective from a design doc of similar length (547f6565 H3). "
+            "Recorded, not refused.", file=sys.stderr )
+
+
 POST_GAME_VERB_GERUND = { "write": "writing", "amend": "amending" }
 
 
@@ -974,6 +1120,11 @@ def cmd_write( args ):
         print_post_game_refusal( evidence, near_misses, "write" )
         sys.exit( 6 )
 
+    # 1c. H3 CORRELATION (547f6565) — observed and RECORDED on the accept path, never a
+    #     refusal. The content floor cannot tell a retrospective from a design doc; this
+    #     says so on the record instead of leaving the two indistinguishable.
+    correlated, corr_detail = post_game_correlation( repo_root, retros, evidence ) if retros else ( False, [] )
+
     rec_abs.parent.mkdir( parents=True, exist_ok=True )
 
     # 2. CANDOR GUARD — a record that git can see is a record someone commits.
@@ -983,7 +1134,8 @@ def cmd_write( args ):
     ensure_gitignored( repo_root, ptr_rel )
 
     text = stamp_header( body, persona, sid, args.slot, written,
-                         no_post_game_reason=args.no_post_game if owed else None )
+                         no_post_game_reason=args.no_post_game if owed else None,
+                         correlation=correlation_stamp( correlated, corr_detail ) )
 
     # 3. RECORD
     rec_abs.write_text( text )
@@ -1012,6 +1164,7 @@ def cmd_write( args ):
     # land and BEFORE the success banner, so a violation is never reported as a success.
     assert_pointer_names_newest( repo_root, args.slot, persona )
 
+    print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}" )
     print( f"MIRROR   {mir_abs}" )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
@@ -1185,6 +1338,11 @@ def cmd_amend( args ):
         print_post_game_refusal( evidence, near_misses, "amend" )
         sys.exit( 6 )
 
+    # H3 CORRELATION (547f6565) — same treatment as `write`, and for the same reason this
+    # gate is on `amend` at all: this is the path that carries the traffic.
+    correlated, corr_detail = post_game_correlation( repo_root, retros, evidence ) if retros else ( False, [] )
+    corr_stamp              = correlation_stamp( correlated, corr_detail )
+
     waiver = ""
     if owed and args.no_post_game is not None:
         waiver = ( f"<!-- post-game-waived: by={persona} session_id={sid} at={stamped} "
@@ -1196,6 +1354,7 @@ def cmd_amend( args ):
               f"<!-- memento-amendment: by={persona} session_id={sid} amended_at={stamped} -->\n"
               f"**AMENDED** {stamped} — {persona} ({sid})\n\n"
               f"{waiver}"
+              f"{corr_stamp + chr( 10 ) if corr_stamp else ''}"
               f"{body.strip()}\n" )
 
     with rec_abs.open( "a" ) as fh:
@@ -1205,6 +1364,7 @@ def cmd_amend( args ):
 
     assert_pointer_names_newest( repo_root, args.slot, persona )
 
+    print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}  (appended; nothing overwritten)" )
     print( f"MIRROR   {mir_abs}  (re-synced in the same call)" )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )

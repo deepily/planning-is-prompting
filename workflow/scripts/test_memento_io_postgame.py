@@ -1584,3 +1584,136 @@ def test_a_typed_slot_still_works_in_both_directions( repo ):
                             input="# Memento\n\nbody text\n", cwd=repo,
                             capture_output=True, text=True, env=env )
         assert r.returncode == 0, f"--slot {slot} broke: exit={r.returncode} {r.stderr}"
+
+
+# ---------------------------------------------------------------- H3: CORRELATION (547f6565)
+#
+# H3 says the content floor is a LENGTH check wearing a retrospective check's clothes: a ~1.2KB
+# design doc with zero retrospective content clears it, EXIT=0. The obvious fix — score the
+# retrospective VOCABULARY — was refuted by measurement before a line was written (24 real
+# post-games vs 107 src/rnd design docs in this repo; no threshold separates them, because the
+# seats who write the retros write the design docs in the same register). See the comment block
+# above POST_GAME_CORRELATION_STAMP in memento_io.py for the numbers.
+#
+# So what is tested here is the axis that is NOT a proxy: the gate holds the concrete list of
+# crew records that armed it, and a retrospective about tonight's run names tonight's seats.
+#
+# ⚠️ THE MOST IMPORTANT ASSERTIONS IN THIS SECTION ARE THE ONES THAT ASSERT EXIT 0. Correlation
+# is RECORDED, never enforced — a refusal whose false-refusal rate cannot be bounded violates
+# this module's own under-fire stance. A future seat who "tightens" this into a gate breaks
+# test_an_uncorrelated_retro_is_ACCEPTED, which is there to make that a deliberate act.
+
+CREW_RECORD = "cheech-1af4b598.md"
+CREW_SLUG   = "cheech"
+CREW_SID    = "1af4b598"
+
+# The artifact class H3 names, at the length H3 measured: a design doc, zero retrospective
+# content. It clears the byte floor — that is the defect, and it is reproduced here rather
+# than asserted.
+DESIGN_DOC = ( "# Design: a mechanism that does not exist yet\n\n"
+               "## Purpose\n"           + ( "What this proposes to build. " * 10 ) + "\n\n"
+               "## Background\n"        + ( "The situation motivating it. " * 10 ) + "\n\n"
+               "## Proposed mechanism\n" + ( "How the thing would work. "   * 10 ) + "\n\n"
+               "## Open questions\n- one\n- two\n\n"
+               "## Alternatives\n"      + ( "Other shapes considered. "     * 8 )  + "\n\n"
+               "## Rollout\n"           + ( "How it would ship. "           * 8 )  + "\n" )
+
+
+def _crewed( repo, retro_body=None ):
+    """Ensures: a repo where a crew ran AND a floor-clearing post-game exists."""
+    plant( repo / "io" / "mementos" / CREW_RECORD )
+    plant( repo / "io" / "post-games" / "2026.07.26-run.md", body=retro_body )
+    return repo
+
+
+def _record_text( repo ):
+    return next( repo.glob( ".claude-memento-*.md" ) ).read_text()
+
+
+def test_an_uncorrelated_retro_is_ACCEPTED( repo ):
+    """
+    Ensures: a retro naming none of the arming seats still exits 0.
+
+    THE DESIGN DECISION, PINNED. Correlation observes; it does not gate. If this ever goes
+    red, someone has promoted an unbounded check into a refusal at the worst possible moment
+    for the seat hitting it.
+    """
+    r = write_memento( _crewed( repo ) )
+    assert r.returncode == 0, f"correlation must never refuse: {r.stderr}"
+
+
+def test_an_uncorrelated_retro_is_stamped_uncorrelated( repo ):
+    r = write_memento( _crewed( repo ) )
+    assert r.returncode == 0
+    assert "correlated=false" in _record_text( repo )
+    assert "seats_named=none"  in _record_text( repo )
+    assert "names none of the seats" in r.stderr        # disclosed where the seat can see it
+
+
+def test_a_retro_naming_the_crew_persona_is_stamped_correlated( repo ):
+    """The discriminating input: same length, same floor, one word different."""
+    body = ( "# Post-Game\n\n## What happened\n"
+             f"{CREW_SLUG} ran the implementer lane and hit the guard. " * 12 + "\n\n"
+             "## Lessons\n" + ( "A durable lesson. " * 12 ) + "\n" )
+    r = write_memento( _crewed( repo, retro_body=body ) )
+    assert r.returncode == 0
+    assert "correlated=true"        in _record_text( repo )
+    assert f"seats_named={CREW_SLUG}" in _record_text( repo )
+
+
+def test_a_retro_naming_only_the_session_id_also_correlates( repo ):
+    """
+    A retro can name the seat by its session id instead of its persona. Both are the seat.
+    """
+    body = ( "# Post-Game\n\n## What happened\n"
+             f"The seat at {CREW_SID} carried the lane and it went long. " * 12 + "\n\n"
+             "## Lessons\n" + ( "A durable lesson. " * 12 ) + "\n" )
+    r = write_memento( _crewed( repo, retro_body=body ) )
+    assert r.returncode == 0
+    assert "correlated=true"       in _record_text( repo )
+    assert f"seats_named={CREW_SID}" in _record_text( repo )
+
+
+def test_the_H3_design_doc_clears_the_floor_and_is_marked_uncorrelated( repo ):
+    """
+    H3's exact artifact, reproduced: a design doc of retro-ish length, zero retrospective
+    content. It STILL PASSES — the floor cannot tell. What is new is that the record now
+    says so, instead of the two cases being indistinguishable.
+    """
+    assert len( DESIGN_DOC.encode( "utf-8" ) ) > 1000, "fixture must clear the byte floor to reproduce H3"
+    r = write_memento( _crewed( repo, retro_body=DESIGN_DOC ) )
+    assert r.returncode == 0                            # the H3 defect, still true, now visible
+    assert "correlated=false" in _record_text( repo )
+
+
+def test_a_solo_write_carries_NO_correlation_stamp( repo ):
+    """
+    The negative control that makes the stamp mean something. No crew ran, no gate fired,
+    so there is nothing to correlate — a stamp here would be an unconditional decoration
+    and every `correlated=false` in the corpus would be uninterpretable.
+    """
+    plant( repo / "io" / "post-games" / "2026.07.26-run.md" )
+    r = write_memento( repo )
+    assert r.returncode == 0
+    assert "post-game-correlation" not in _record_text( repo )
+    assert "post-game:" not in r.stderr
+
+
+def test_amend_stamps_correlation_too( repo ):
+    """
+    `amend` is the path that carries the traffic — a same-session re-spin never reaches
+    `write`. A correlation stamp on `write` alone would be a stamp on a door nobody
+    walks through, which is the exact defect the R-1 gate itself was built with.
+    """
+    _crewed( repo )
+    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    base = [ sys.executable, str( SCRIPT ), "--repo", str( repo ) ]
+    first = subprocess.run( base[ :2 ] + [ "write" ] + base[ 2: ] +
+                            [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ],
+                            input="# Memento\n\nbody\n", cwd=repo, capture_output=True, text=True, env=env )
+    assert first.returncode == 0, first.stderr
+    r = subprocess.run( base[ :2 ] + [ "amend" ] + base[ 2: ] +
+                        [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ],
+                        input="more state\n", cwd=repo, capture_output=True, text=True, env=env )
+    assert r.returncode == 0, r.stderr
+    assert _record_text( repo ).count( "post-game-correlation" ) == 2   # write's, then amend's
