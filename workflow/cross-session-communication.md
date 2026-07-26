@@ -218,6 +218,46 @@ Rick's own ruling on that row is the part worth carrying: the transport defect w
 
 ---
 
+## 4.5 Promoting a claim UP a level — the boundary must travel with it
+
+> **When you promote a claim to a wider audience — worker → manager, manager → the user, finding → summary — restate the SCOPE BOUNDARY in the same sentence as the claim, never in a later paragraph and never only in the source it came from.**
+
+Store row `0c7c6779`. Ruled graduation-eligible by Rick 2026-07-21 (D8).
+
+### Why this is a MECHANISM and not an exhortation
+
+Every instrument in this fleet has a guard: store-count asserts, mutation probes, planted-junk controls, negative controls. **The summary step has none — and it is the only step every finding passes through.**
+
+Clayton's evidence, against himself: he wrote *"NO INSTRUMENT EXISTS. A green here means NOTHING about that class"* into his own harness, then signed a property whose truth required exactly that class to be covered — measured with the instrument he had just declared blind. His words:
+
+> **"Writing the caveat felt like discharging the obligation. It wasn't. It only made the failure legible afterward."**
+
+And he had INHERITED the lesson four hours earlier from his predecessor's memento — *"label them WHEN YOU LEAST FEEL LIKE IT"* — and committed the failure anyway. **An inherited lesson that did not transfer is evidence about the transmission, not about the seat.** Five instances, three seats, one day.
+
+⇒ So the rule is not "remember your caveats." It is **grammatical**: put the boundary and the claim in one sentence, so that compressing the claim compresses the boundary too. A caveat in its own paragraph is a caveat the summary step deletes. **A caveat survives one hop and dies in the SUMMARY.**
+
+### ⚠️ IT RUNS IN BOTH DIRECTIONS, and the second one is newer
+
+**(a) The instrument UNDER-reports and you promote the verdict without its contradicting evidence.** The original class: a bounded number promoted as a finding, a case-sensitive grep whose filter deleted the matches, a live-state fact quoted in the present tense two minutes after it stopped being true.
+
+**(b) The instrument knows MORE than you do, and you are about to overrule it.** A guard fix implemented exactly as its own row prescribed turned NINE existing tests red. The reflex — *tests can pin a defect in place*, which is a TRUE rule with its own scar — would have rewritten all nine and shipped an outage into tooling every project installs. **The tests were right and the row's prescribed remedy was unimplementable as written.**
+
+⇒ **Two true rules pointing opposite ways.** "Read the evidence before the conclusion" is aimed at (a) and says nothing about (b). The tie was broken by the tests' docstrings: they explained **why** they allowed a thing, not merely **that** they did.
+
+### ⇒ THE DISCRIMINATOR, and it is the load-bearing part
+
+> **A test — or a doc, or a row — that encodes WHY it permits something is a SPEC. One that encodes only THAT it permits something is a DESCRIPTION.**
+>
+> **You can overrule a description. You cannot overrule a spec without answering its argument.**
+
+Nine reds carrying a reason you had not thought of are a spec disagreeing with you. Nine reds carrying no reason are just red. **Write the why, or the next reader — who may be you — will have nothing to weigh against their own conviction.**
+
+### How to check it
+
+Sample recent escalations and ask of each: *did the boundary survive the hop?* Compare the claim as it reached the wider audience against the claim as it was originally measured. The failure is legible in the artifact; that is what makes this testable rather than aspirational.
+
+---
+
 ## 5. Anti-patterns
 
 ### Loop hazards
