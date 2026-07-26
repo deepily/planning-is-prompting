@@ -46,7 +46,7 @@ gather → order(desc priority) → [ per decision: frame → ask → record ] �
 1. **Gather** — collect every *in-scope* unresolved decision from the sources above: the **live conversation** (reconstruct the open forks from context — no file required), the **`## Pending Decisions`** queue, and/or a **doc harvest**. In a live design chat, source 1 alone is enough. Dedupe across sources.
 2. **Order** — descending by priority. Apply the decision-class taxonomy: surface genuine *user-decisions* (irreversible / outward-facing · prod-behavior needing a product/UX call · genuine ambiguity · scope expansion); pure mandated work is *sequencing*, not a gate. Don't manufacture gates.
 3. **Frame** (live, per decision) — 2–4 options; **pros AND cons for each**; the **recommended option first** with `(Recommended)` in its label; one-line recommendation rationale. All of this goes in the `abstract`; the spoken `question` stays a one-line headline (TTS-brevity).
-4. **Ask** — `ask_multiple_choice`, `priority="high"`, a sane `timeout_seconds`, and a `default` keyed by header = the recommended option's exact label (so an AFK user still lands on the recommendation). Use `multiSelect=true` when options are not mutually exclusive.
+4. **Ask** — `ask_multiple_choice`, `priority="high"`, a sane `timeout_seconds`, and a `default` keyed by header = the recommended option's exact label (so a **timed-out** ask still lands on the recommendation — but see the AFK caveat below; it does **not** cover an absent user). Use `multiSelect=true` when options are not mutually exclusive.
 5. **Record** — append the ruling to the **Decisions Log** (below) and, where a relevant doc exists, capture it inline there too. Remove the resolved item from `## Pending Decisions`.
 6. **Recap** — a brief close: spoken headline + a rulings table in the `abstract`.
 
@@ -72,9 +72,30 @@ Plus **inline capture** into the relevant doc when one exists (e.g. a `§ Ratifi
 - **Framing Contract is mandatory** — never a bare menu; pros + cons + recommendation every time (`workflow/cosa-voice-integration.md`).
 - **TTS-brevity** — the spoken `question` is a one-line headline; all detail in `abstract`. Honor the per-turn cap.
 - **No rubber-stamp gates** — present real choices, not confirmations; don't escalate a non-decision (mandated in-scope work is not a user gate).
-- **AFK-safe** — always pass a `default` = the recommended label so a timeout still yields the recommendation.
+- **Always pass a `default`** = the recommended label, so a **timeout** still yields the recommendation. ⚠️ **This is NOT the same as AFK-safe, and for `ask_multiple_choice` it is not sufficient — see the box below.**
 - **One at a time** — blocking, sequential, descending priority. The user asked to be *walked through*, not handed a wall.
 - **Visibility** — when running attention-demanding asks, the asks themselves reach the user (TTS); record as you go so progress survives an interruption.
+
+---
+
+## ⚠️ THIS WALKTHROUGH IS NOT AFK-SAFE (measured 2026-07-26)
+
+**Do not run `/plan-decide` unattended expecting the recommendations to be applied.** If the user has no live UI connection, the **first** `ask_multiple_choice` fails hard and you come back to *zero* answers — not to a set of ratified defaults.
+
+**Two different paths, and a caller-side `default` only covers one:**
+
+| path | what happens | does `default` save it? |
+|---|---|---|
+| **Timeout** — user connected but does not answer in time | returns `{"answers": <default>, "default_used": true, "answered": false}` | ✅ **yes** |
+| **Offline** — no live UI connection for the user | server raises **`503 "User is offline and no default response provided"`** | ❌ **no, not for this verb** |
+
+**Why the offline path is not covered.** The server decides it against a **server-side** `response_default` (`cosa/rest/routers/notifications.py:990-1014`). `ask_yes_no` plumbs that field; **`ask_multiple_choice` never sends it** (`lupin_mcp/cosa_voice_mcp.py:1504` passes it on the YES_NO path only — the file's own comments at `:1718`/`:1732` say the MULTIPLE_CHOICE path never plumbs it). So the server evaluates a field the client never sent, and an absent user 503s **whether or not you passed a `default`**.
+
+**This claim survived an afternoon of looking wrong.** Calls made *with* a `default` succeeded repeatedly — because the user happened to be at the desk, so the offline branch never evaluated at all. Four green results that were green for a reason unrelated to what they appeared to test. Treat "it worked when I tried it" as **no evidence** here unless you know the user was away.
+
+**What would restore the guarantee**: plumbing `response_default` on the MULTIPLE_CHOICE path the way YES_NO already does. Tracked on cosa-voice row `eeba4858`. **When that lands, restore the AFK-safe claim deliberately — do not let it creep back in** because the tool docstring still advertises it. *(Workflow row: `755910c4`.)*
+
+**Until then**: run the walkthrough when the user is reachable, or expect to re-run it.
 
 ---
 

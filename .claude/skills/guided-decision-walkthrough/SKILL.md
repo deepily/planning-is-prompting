@@ -21,7 +21,7 @@ Drive a series of informed decisions for the user, one at a time, framed with pr
 
 4. **For each decision** (state "decision N of M"):
    - **Frame live**: 2–4 options; pros AND cons each; **recommended option first** with `(Recommended)` in its label; one-line rationale. All detail in `abstract`; the spoken `question` is a one-line headline (TTS-brevity).
-   - **Ask**: `ask_multiple_choice`, `priority="high"`, a sane `timeout_seconds`, and a `default` keyed by header = the recommended option's exact label (AFK-safe). `multiSelect=true` when options aren't mutually exclusive.
+   - **Ask**: `ask_multiple_choice`, `priority="high"`, a sane `timeout_seconds`, and a `default` keyed by header = the recommended option's exact label (covers a **timeout** — ⚠️ **not** an absent user; see below). `multiSelect=true` when options aren't mutually exclusive.
    - **Record**: append the ruling to `## Decisions Log` (ADR-lite: `YYYY-MM-DD — decision → ruling. Why: …`) and inline into the relevant doc when one exists; remove the item from `## Pending Decisions`.
 
 5. **Recap** — brief spoken headline + a rulings table in the `abstract`.
@@ -30,7 +30,17 @@ Drive a series of informed decisions for the user, one at a time, framed with pr
 
 - Framing Contract is mandatory — pros + cons + recommendation every time, never a bare menu.
 - TTS-brevity — spoken `question` is a headline; detail in `abstract`.
-- No rubber-stamp gates; AFK-safe defaults; one-at-a-time, blocking, descending priority.
+- No rubber-stamp gates; always pass a `default`; one-at-a-time, blocking, descending priority.
+
+## ⚠️ NOT AFK-SAFE (measured 2026-07-26)
+
+**Do not run this unattended.** If the user has no live UI connection, the **first** `ask_multiple_choice` returns a hard `503` and you get *zero* answers — not the recommended defaults.
+
+A caller-side `default` covers the **timeout** path only. The **offline** path is decided server-side against a `response_default` that `ask_multiple_choice` **never sends** — `ask_yes_no` plumbs it, this verb does not (`lupin_mcp/cosa_voice_mcp.py:1504`; server branch at `cosa/rest/routers/notifications.py:990-1014`). So an absent user 503s whether or not you passed a `default`.
+
+⚠️ **"It worked when I tried it" is not evidence here** unless you know the user was away — with the user at the desk the offline branch never evaluates, so a `default` appears to work while proving nothing.
+
+Fix tracked on `eeba4858` (cosa-voice); restore this claim deliberately when it lands. Workflow row: `755910c4`. Full detail: `workflow/decision-walkthrough.md`.
 
 ## Project configuration
 
