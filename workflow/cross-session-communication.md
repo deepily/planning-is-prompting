@@ -204,6 +204,18 @@ flowchart TD
 
 The mandatory `broadcast-acks` topic post happens in both cases — that's infrastructure (handled by the listener-side broadcast handler), not session guidance.
 
+### ⭐ Acting on a DIRECTLY-ADDRESSED order — announce that you received one
+
+**When a seat acts on an order the user gave it directly — a private `@`, a voice aside, anything not on a shared channel — it MUST tell the coordinating seat (Steward / Manager) that it RECEIVED one.** Not the contents. Just: *"Rick @'d me directly with a go; I'm spawning."*
+
+**WHY THIS IS A RULE AND NOT A COURTESY** (store row `841b3d21`, 2026-07-16). Two seats read one broadcast and got different text — one received a go-ahead addendum, the other did not, and *neither end could tell*. The Steward's coordination mechanism was structurally blind to an authorization that had genuinely been issued. It ran for **two hours** before the divergence surfaced, and it surfaced only because the two seats happened to compare payloads.
+
+Rick's own ruling on that row is the part worth carrying: the transport defect was a **truncation**, not a fan-out — i.e. *the mechanism was less broken than the alarm claimed*, and the coordination gap was real anyway. **One line at the moment of acting would have caught it two hours earlier, and it is correct regardless of which party turns out to be right about the transport.**
+
+⇒ The general shape: **a coordinating seat cannot see an authorization delivered on a channel it does not read.** Silence from you is indistinguishable from silence from the user. Announcing receipt costs one clause and collapses that ambiguity immediately.
+
+⚠️ **This is a REPORT OF RECEIPT, never a relay of authority.** Saying "I was given a go" tells the Steward where you got your mandate; it does not extend that mandate to anyone else, and no peer may act on your announcement as if the user had spoken to them. Authorization is not launderable through a third seat.
+
 ---
 
 ## 5. Anti-patterns
