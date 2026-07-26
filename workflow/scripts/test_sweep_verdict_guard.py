@@ -72,20 +72,51 @@ def test_the_historical_quote_only_verdict_is_REFUSED():
     assert "NO artifact citation" in result.reason
 
 
-def test_a_keep_verdict_citing_only_UNRESOLVABLE_things_is_REFUSED():
+def test_a_keep_verdict_citing_only_UNRESOLVABLE_things_PASSES_loudly():
     """
-    A citation that does not resolve is not evidence. `deadbeef` is hex and sha-shaped and
-    resolves to nothing — the shape of a citation is not a citation.
+    ⚠️ THIS ASSERTION WAS INVERTED on 2026-07-26 (row `485c0b0f`). v1 asserted REFUSED here.
+    "My change broke a test so I edited the test" is the shape that deserves a reader's
+    suspicion, so the reasoning is written here rather than in a commit message:
+
+    v1's belief was *"a citation that does not resolve is not evidence."* That is true of a
+    FABRICATED citation and false of a REAL one read in the wrong venue — and this gate cannot
+    tell them apart. Measured: a verdict citing two genuinely real artifacts was REFUSED when
+    the gate ran against the wrong `repo_root`, and again under `/tmp` (which exists, so the
+    `os.path.isdir` guard passed, and then nothing resolved).
+
+    Refusing here is crying wolf at a venue mismatch — the most ambiguous arm there is. The
+    unresolvable list is REPORTED so the reader can act on it; the caller who genuinely wants
+    the strict arm asks for it (see the strict-arm test below).
+
+    The refusal that matters is unaffected: a verdict citing NOTHING still refuses, everywhere.
     """
     result = check_sweep_verdict(
         "KEEP — still open. Verified against deadbeef and src/rnd/no-such-file.md.",
         row_body="unrelated",
         repo_root=REPO_ROOT,
     )
-    assert result.refused is True
-    assert "none exist" in result.reason
+    assert result.refused is False
     assert result.resolved_citations == []
     assert len( result.unresolved_citations ) == 2
+    assert any( "wrong repo" in note for note in result.notes ), (
+        "a pass that hides what it could not check is worse than a refusal — say it out loud"
+    )
+
+
+def test_the_strict_arm_is_AVAILABLE_but_never_the_only_path():
+    """
+    A blocking arm with no override is the unreachable-remedy trap. So the strict behaviour v1
+    hard-coded still EXISTS — it is simply opt-in, and the caller who selects it has, by
+    selecting it, asserted the venue is right.
+    """
+    result = check_sweep_verdict(
+        "KEEP — still open. Verified against deadbeef and src/rnd/no-such-file.md.",
+        row_body="unrelated",
+        repo_root=REPO_ROOT,
+        strict_citation_resolution=True,
+    )
+    assert result.refused is True
+    assert "strict_citation_resolution=True" in result.reason
 
 
 # ── ARM 2: the pass — without this, ARM 1 cannot be distinguished from refuse-everything ──────
@@ -172,25 +203,64 @@ def test_a_terminal_marker_beats_an_incidental_keep_word():
     assert result.refused is False
 
 
-# ── Which way the instrument lies: ambiguity must PASS ────────────────────────────────────────
+# ── THE VENUE ARM — the sixth mutation, and the defect that produced this whole section ───────
+#
+# v1 had two tests here asserting that the HISTORICAL QUOTE-ONLY verdict passes when repo_root is
+# None or nonexistent. Both were inverted on 2026-07-26 (row `485c0b0f`): "does this verdict name
+# anything at all" is a question NO repo_root can mis-answer, so that arm is venue-INDEPENDENT and
+# must fire everywhere. The venue-dependence those tests were reaching for belongs on the
+# resolution arm, which is what the tests below now pin.
 
-def test_no_repo_root_PASSES_with_the_ambiguity_named():
+def test_a_CORRECT_verdict_against_the_WRONG_repo_root_must_PASS( tmp_path ):
+    """
+    THE SIXTH MUTATION ARM, and the measurement that filed `485c0b0f`.
+
+    A verdict citing two genuinely real artifacts, evaluated against a directory that EXISTS
+    (clearing the `os.path.isdir` guard) but resolves nothing. v1 returned REFUSED here — a real
+    verdict rejected for being read in the wrong room, in the one direction the module docstring
+    forbade. If this ever goes red again, the venue defect is back.
+    """
+    verdict = ( "KEEP — re-read 011c32f and workflow/push-to-completion.md; the claim holds." )
+
+    right = check_sweep_verdict( verdict, row_body="unrelated", repo_root=REPO_ROOT )
+    wrong = check_sweep_verdict( verdict, row_body="unrelated", repo_root=str( tmp_path ) )
+
+    assert right.refused is False, "sanity: the verdict is genuinely well-cited in its own repo"
+    assert right.resolved_citations, "sanity: the fixture must actually resolve somewhere"
+    assert wrong.refused is False, (
+        "a correct verdict read against the wrong repo_root must PASS — refusing it is the "
+        "485c0b0f defect, and it fails toward the direction this gate forbids"
+    )
+    assert len( wrong.unresolved_citations ) == 2, "and the gap must be reported, not swallowed"
+
+
+def test_no_repo_root_PASSES_a_CITED_verdict_with_the_ambiguity_named():
     """
     A gate that refuses what it cannot check gets disabled within a day (`54924128`: a false
-    alarm has no mechanism to correct it and teaches readers to ignore the flag).
+    alarm has no mechanism to correct it and teaches readers to ignore the flag). With no
+    resolver, a verdict that names artifacts is un-checkable, not false.
     """
     result = check_sweep_verdict(
-        THE_HISTORICAL_QUOTE_ONLY_VERDICT, row_body="anything", repo_root=None
+        "KEEP — re-opened workflow/push-to-completion.md; still open.",
+        row_body="anything", repo_root=None
     )
     assert result.refused is False
     assert any( "resolution disabled" in note for note in result.notes )
+    assert result.unresolved_citations == [ "workflow/push-to-completion.md" ]
 
 
-def test_a_nonexistent_repo_root_also_PASSES():
-    result = check_sweep_verdict(
-        THE_HISTORICAL_QUOTE_ONLY_VERDICT, row_body="x", repo_root="/no/such/dir/anywhere"
-    )
-    assert result.refused is False
+def test_the_QUOTE_ONLY_verdict_is_refused_at_EVERY_venue( tmp_path ):
+    """
+    The primary arm is venue-independent — that is the property, not an implementation detail.
+    v1 passed the historical verdict whenever the repo could not be interrogated, which meant
+    the exact defect this gate exists for was reachable by running it from the wrong directory.
+    """
+    for venue in ( REPO_ROOT, None, "/no/such/dir/anywhere", str( tmp_path ) ):
+        result = check_sweep_verdict(
+            THE_HISTORICAL_QUOTE_ONLY_VERDICT, row_body="anything", repo_root=venue
+        )
+        assert result.refused is True, f"quote-only verdict must refuse at venue {venue!r}"
+        assert "NO artifact citation" in result.reason
 
 
 # ── Contract ──────────────────────────────────────────────────────────────────────────────────
