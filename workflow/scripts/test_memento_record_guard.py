@@ -62,7 +62,7 @@ POINTER_NAME = "krishna.md"          # no -<8 hex> suffix => POINTER, invisible 
 
 # ---------------------------------------------------------------- instruments
 
-def _payload( path, tool="Write", payload_cwd=None ):
+def _payload( path, tool="Write", payload_cwd=None, content=None ):
     """
     Requires:
         - path is a filesystem path (str or Path), absolute OR relative
@@ -74,10 +74,14 @@ def _payload( path, tool="Write", payload_cwd=None ):
     """
     p = { "tool_name": tool, "tool_input": { "file_path": str( path ) } }
     if payload_cwd is not None: p[ "cwd" ] = str( payload_cwd )
+    # `content` is what the call is ABOUT TO WRITE. Omitted by default so every pre-existing
+    # test keeps its exact prior payload shape — F1b's discriminator reads this key and must
+    # fail OPEN when it is absent, which is precisely what those tests then attest.
+    if content is not None: p[ "tool_input" ][ "content" ] = content
     return p
 
 
-def run_guard_cli( path, tool="Write", cwd=None, payload_cwd=None ):
+def run_guard_cli( path, tool="Write", cwd=None, payload_cwd=None, content=None ):
     """
     Ensures:
         - runs the hook the way the harness runs it: a subprocess, JSON on stdin
@@ -89,12 +93,12 @@ def run_guard_cli( path, tool="Write", cwd=None, payload_cwd=None ):
           distinction is the whole subject of the relative-path section below
     """
     return subprocess.run( [ sys.executable, str( GUARD ) ],
-                           input=json.dumps( _payload( path, tool, payload_cwd ) ),
+                           input=json.dumps( _payload( path, tool, payload_cwd, content ) ),
                            capture_output=True, text=True,
                            cwd=str( cwd or SCRIPTS_DIR ) )
 
 
-def run_guard_inproc( path, tool="Write", monkeypatch=None, capsys=None, payload_cwd=None ):
+def run_guard_inproc( path, tool="Write", monkeypatch=None, capsys=None, payload_cwd=None, content=None ):
     """
     Ensures:
         - drives `memento_record_guard.main()` in-process so `coverage` can see the branches
@@ -113,7 +117,7 @@ def run_guard_inproc( path, tool="Write", monkeypatch=None, capsys=None, payload
         sys.path.remove( str( SCRIPTS_DIR ) )
 
     import io as _io
-    monkeypatch.setattr( sys, "stdin", _io.StringIO( json.dumps( _payload( path, tool, payload_cwd ) ) ) )
+    monkeypatch.setattr( sys, "stdin", _io.StringIO( json.dumps( _payload( path, tool, payload_cwd, content ) ) ) )
     code = memento_record_guard.main()
     return code, capsys.readouterr().err
 
@@ -836,3 +840,84 @@ def test_ac17_stray_dir_is_gone_from_the_lupin_tree():
     if STRAY.exists():
         leftovers = [ str( p ) for p in STRAY.rglob( "*" ) if p.is_file() ]
         pytest.fail( f"AC17 open: {STRAY} still on disk. Files under it: {leftovers or 'none (empty)'}" )
+
+
+# ---------------------------------------------------------------- F1b: the FILENAME hole
+#
+# Row c260f8fe. F1 asks "is this a RECORD?" using the NARROW naming pattern, so a memento
+# written under an invented name was never seen as a record and sailed through. Measured, same
+# session, two seats, same intent:
+#
+#     clayton-16d6b7ec.md                      CONFORMING  -> refused; he used the script
+#     2026.07.21-extra-2-c44ab9da-memento.md   INVENTED    -> guard never fired. Record on disk,
+#                                                             NO pointer, NO mirror, and
+#                                                             io/mementos is gitignored.
+#
+# DEVIATING FROM THE CONVENTION BOUGHT YOU PAST THE CHECK. Being unusual was the one thing that
+# defeated it.
+#
+# ⚠️ THE FIX READS CONTENT, NOT THE FILENAME, AND THAT IS FORCED. A pointer is `<persona>.md`
+#    and an invented record name has no session-id suffix either — the two are IDENTICAL as
+#    strings. The first attempt refused every CREATE at a canonical memento path and turned NINE
+#    of the tests above red. Those tests are NOT asserting the hole: they use a pointer write to
+#    isolate F5, and a pointer create is legitimate. The filename genuinely cannot discriminate.
+
+INVENTED_NAME = "2026.07.21-extra-2-c44ab9da-memento.md"     # the real orphan, verbatim
+POINTER_BODY  = "<!-- MEMENTO POINTER -->\nsee the record\n"
+RECORD_BODY   = "# my memento\nboard state, note to my successor\n"
+
+
+def test_f1b_an_invented_filename_carrying_RECORD_content_is_refused( tree, monkeypatch, capsys ):
+    """THE HOLE. This exact filename produced an orphan with no pointer and no mirror."""
+    target = tree.root / "io" / "mementos" / INVENTED_NAME
+    assert_blocked( run_guard_cli( target, content=RECORD_BODY ),
+                    run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys,
+                                      content=RECORD_BODY ),
+                    must_name="CREATING a memento RECORD" )
+
+
+def test_f1b_the_SAME_filename_carrying_POINTER_content_is_allowed( tree, monkeypatch, capsys ):
+    """
+    THE DISCRIMINATOR, proven on the identical path. Same filename, opposite verdict — so the
+    rule provably keys on CONTENT and not on the name, which a filename-only test cannot show.
+    """
+    target = tree.root / "io" / "mementos" / INVENTED_NAME
+    assert_allowed( run_guard_cli( target, content=POINTER_BODY ),
+                    run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys,
+                                      content=POINTER_BODY ) )
+
+
+def test_f1b_a_brand_new_POINTER_create_stays_allowed( tree, monkeypatch, capsys ):
+    """
+    THE OUTAGE CONTROL. Layer 2 rewrites the pointer on every memento write; a guard that
+    refuses that is an outage, and an outage gets disabled.
+    """
+    target = tree.root / "io" / "mementos" / "brand-new-persona.md"
+    assert_allowed( run_guard_cli( target, content=POINTER_BODY ),
+                    run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys,
+                                      content=POINTER_BODY ) )
+
+
+def test_f1b_a_payload_with_NO_content_fails_OPEN( tree, monkeypatch, capsys ):
+    """
+    UNJUDGEABLE MUST ALLOW. The guard's standing posture is that it never blocks what it cannot
+    understand. A payload carrying no readable content is a shape it cannot judge — and this is
+    also what keeps every pre-existing test in this file, none of which sends content, honest.
+    """
+    target = tree.root / "io" / "mementos" / "brand-new-persona.md"
+    assert_allowed( run_guard_cli( target ),
+                    run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys ) )
+
+
+@pytest.mark.parametrize( "content,expected", [
+    ( RECORD_BODY,                          True  ),
+    ( POINTER_BODY,                         False ),
+    ( "\n\n" + POINTER_BODY,                False ),   # leading blank lines must not defeat it
+    ( "",                                   False ),   # empty -> unjudgeable
+    ( None,                                 False ),   # absent -> unjudgeable
+    ( 42,                                   False ),   # non-string -> unjudgeable, never raises
+] )
+def test_f1b_content_is_a_record_predicate( content, expected ):
+    """The predicate alone, including every arm that must fail OPEN."""
+    import memento_record_guard as guard
+    assert guard.content_is_a_record( { "content": content } ) is expected

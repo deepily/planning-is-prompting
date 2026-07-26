@@ -591,6 +591,56 @@ def canonical_slot_violation( abs_path ):
 # false contract no matter how it is labelled. History belongs beside the contract, never
 # within it.
 
+def content_is_a_record( tool_input ):
+    """
+    Decide, from the BYTES THE CALL IS ABOUT TO WRITE, whether a create at a canonical memento
+    path is a RECORD (refuse) or a POINTER (allow).
+
+    WHY CONTENT AND NOT FILENAME (row c260f8fe). F1 asks "is this a RECORD?" using the narrow
+    naming pattern, so a memento written under an invented name was never seen as a record and
+    sailed through. Measured, same session, two seats, same intent:
+
+        clayton-16d6b7ec.md                      CONFORMING  -> refused; he used the script
+        2026.07.21-extra-2-c44ab9da-memento.md   INVENTED    -> guard never fired. Record on
+                                                                disk, NO pointer, NO mirror —
+                                                                and io/mementos is gitignored,
+                                                                so `git clean -xdf` takes it and
+                                                                nothing can find it first.
+
+    ⇒ DEVIATING FROM THE CONVENTION BOUGHT YOU PAST THE CHECK. Being unusual was the one thing
+      that defeated it. The row's own remedy: **directory membership is the property; filename is
+      the spelling** — a rule about spelling is satisfied by respelling.
+
+    ⚠️ FILENAME CANNOT DISCRIMINATE HERE, AND THAT IS WHY THIS READS CONTENT. A pointer is
+       `<persona>.md` — no session-id suffix — and an invented record name has no suffix either.
+       The two are IDENTICAL as strings. `memento_io.py` solved this long ago and this reuses its
+       rule verbatim: identity comes from the file's own first line, not from its name
+       (`is_pointer_file` does exactly this for files that already exist). On a CREATE the file
+       is not there to read — but the CALL is carrying the bytes, so the same question is
+       answerable one moment earlier.
+
+    ⚠️ AND IT MUST FAIL OPEN, WHICH IS WHY A MISSING `content` IS NOT A RECORD. The guard's
+       standing posture is that it never blocks what it cannot understand — a guard that blocks
+       correct work is an outage, and an outage gets disabled. A payload with no readable content
+       is a shape this hook cannot judge, so it declines to judge it.
+
+    Requires:
+        - tool_input is the tool call's `tool_input` dict (any shape; never trusted)
+
+    Ensures:
+        - returns False when `content` is absent, not a string, or empty — UNJUDGEABLE, allow
+        - returns False when the content's FIRST LINE starts with POINTER_MARK — a pointer,
+          which Layer 2 legitimately writes and which destroys nothing
+        - returns True otherwise — memento-shaped bytes at a canonical memento path under a name
+          F1's pattern does not recognise, i.e. exactly the orphan this closes
+        - never raises
+    """
+    content = ( tool_input or { } ).get( "content" )
+    if not isinstance( content, str ) or not content:
+        return False
+    return not content.lstrip().startswith( POINTER_MARK )
+
+
 def is_pointer_file( path ):
     """
     Determine whether the file AT `path` identifies itself as a pointer on its first line.
@@ -716,12 +766,39 @@ def main():
             print( SLOT_DENIAL.format( path=abs_path, expected=expected ), file=sys.stderr )
             return 2
 
-    # A CANONICAL POINTER PATH — allowed, but no longer UNCONDITIONALLY. See the three-part
-    # predicate below; if it does not fire, this still returns 0 exactly as it always did.
+    # A CANONICAL POINTER PATH — allowed, but no longer UNCONDITIONALLY, and no longer on a
+    # CREATE. Two guards below; if neither fires, this still returns 0 exactly as it always did.
     if not is_record_path( abs_path ):
         if destroys_the_last_copy( abs_path ):
             print( UNMIRRORED_POINTER_DENIAL.format(
                 path=abs_path, repo=git_toplevel( abs_path ) or "<repo>" ), file=sys.stderr )
+            return 2
+        # F1b — THE FILENAME HOLE (row c260f8fe). F1 above asks "is this a RECORD?" using the
+        # NARROW naming pattern, so a memento written under a name that does not match the
+        # convention was never seen as a record at all and fell to this branch, where a
+        # non-existent target destroys nothing and returned ALLOW.
+        #
+        # ⇒ DEVIATING FROM THE CONVENTION BOUGHT YOU PAST THE CHECK. Being unusual was the one
+        #   thing that defeated it. Measured, same session, two seats, same intent:
+        #     clayton-16d6b7ec.md                       CONFORMING   -> refused, used the script
+        #     2026.07.21-extra-2-c44ab9da-memento.md    INVENTED     -> guard never fired;
+        #                                                              record on disk, NO pointer,
+        #                                                              NO mirror, and io/mementos
+        #                                                              is gitignored
+        #
+        # THE ROW'S OWN FIX, ADOPTED VERBATIM: **directory membership is the property; filename is
+        # the spelling.** A rule about spelling is satisfied by respelling.
+        #
+        # ⚠️ WHY REFUSING A *CREATE* HERE DOES NOT BREAK LAYER 2 — the objection this branch's
+        #    original ALLOW existed to answer. Layer 2 rewrites the pointer on EVERY memento
+        #    write, so blocking pointer writes would be an outage. But a rewrite acts on a file
+        #    that EXISTS; this arm fires only when the target does NOT. And `memento_io.py`
+        #    writes with python's own `open()` via Bash, issuing no Write/Edit tool call, so the
+        #    sanctioned pointer write never reaches this hook at all (stated in this module's
+        #    docstring and verified there, not assumed). There is no legitimate raw-tool CREATE
+        #    of a canonical memento path — record or pointer.
+        if not os.path.exists( abs_path ) and content_is_a_record( tool_input ):
+            print( CREATE_DENIAL.format( tool=tool, path=abs_path ), file=sys.stderr )
             return 2
         return 0
 
