@@ -315,6 +315,30 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py migrate --rep
 
 Executed 2026-07-13: **lupin 209/209 · skills-distillation 18/18 · planning-is-prompting 5/5 mirrored; 0 files moved, 0 lost.**
 
+### §3.4b Reading the escapes — `waivers` (store row `2df66816`)
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py waivers --repo <path>
+```
+
+**Run this in the post-game.** The R-1 post-game gate has always had a reachable escape — `--no-post-game "<reason>"` — and the reason has always been *recorded*, in the record, the mirror and the pointer. Until 2026-07-26 **nothing read it**: the escape was auditable in principle and unaudited in fact, and both live waivers were taken by the gate's own authors, who were also the only people who knew where to look.
+
+An escape you can take silently is not a gate. **An escape nobody enumerates is silent in every way that matters.**
+
+What it prints:
+
+| signal | meaning |
+|---|---|
+| **POST-GAME WAIVERS** | every `--no-post-game` taken: who, when, and the reason in full |
+| **UNCORRELATED POST-GAMES** | retros that cleared the content floor while naming none of the seats that armed the gate (`547f6565` H3) |
+| **scanned N record(s)** | printed on *every* run, findings or not |
+
+- **READ-ONLY.** Writes nothing, moves nothing. Safe to run any time, twice.
+- **Not a gate, and has no opinion.** A waiver is a legitimate authorized act; finding one is not a failure and never changes the exit code. Judging them is a human's job — giving this command a red would turn a recorded decision into a standing accusation.
+- **Exit 4 means it scanned NOTHING** — not that it found nothing. `io/mementos/` is gitignored and does not survive a clone, so a wrong `--repo` or a fresh checkout would otherwise print the same reassuring zero. Likewise, *no correlation stamps* is reported as a **denominator of zero**, never as a clean bill.
+
+First real-corpus run (planning-is-prompting, 54 records) surfaced **two waivers sitting unread for 8 days** — one recording that *"a post-game for the 2026-07-16 night run remains genuinely OWED and unwritten,"* the other addressed to *"Successor Steward: write it from those deposits."* Both were instructions to a future reader that had no reader.
+
 ### §3.5 Composition order at spawn time — APPEND (Rick directive 2026-05-29)
 
 When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the memento content as a separate "Prior context" section AFTER the rendered task, NOT before it.

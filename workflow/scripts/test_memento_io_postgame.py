@@ -55,6 +55,25 @@ def repo( tmp_path, monkeypatch ):
     return root
 
 
+def home_for( repo ):
+    """
+    The ISOLATED mirror home for `repo`'s fixture — `tmp_path/home`, the directory the
+    `repo` fixture actually creates and monkeypatches HOME to.
+
+    ⚠️ THIS EXISTED AS `home_for( repo )`, INLINE, IN 13 PLACES, AND IT WAS
+    OFF BY ONE DIRECTORY. `repo` is `tmp_path/repo`, so `.parent.parent` is pytest's BASETEMP —
+    shared by every test in the run. Every subprocess therefore mirrored into ONE home, and the
+    mirror was never isolated: measured 21 mirror-only records leaking into a fresh fixture.
+
+    Nothing went red for it, because no test in this file had ever READ the mirror set — the
+    mirror assertions all name a single expected path and pass regardless of what else is in
+    the directory. The first test to COUNT the mirror (the `waivers` reader) failed instantly.
+    ⇒ A shared-state defect is invisible until something asks for a total, and this file spent
+    its whole life asking only about individual paths.
+    """
+    return Path( repo ).parent / "home"
+
+
 def write_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=None ):
     """
     Ensures: runs the real CLI end-to-end (not an imported function) and returns the
@@ -64,7 +83,7 @@ def write_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=Non
     cmd = [ sys.executable, str( SCRIPT ), "write", "--repo", str( repo ),
             "--slot", slot, "--persona", persona, "--session-id", sid ]
     if extra: cmd += extra
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input="# Memento\n\nbody text\n", cwd=repo,
                            capture_output=True, text=True, env=env )
 
@@ -267,7 +286,7 @@ def amend_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=Non
     cmd = [ sys.executable, str( SCRIPT ), "amend", "--repo", str( repo ),
             "--slot", slot, "--persona", persona, "--session-id", sid ]
     if extra: cmd += extra
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input="an amendment\n", cwd=repo,
                            capture_output=True, text=True, env=env )
 
@@ -296,7 +315,7 @@ def test_amend_escape_is_recorded_in_the_record( repo ):
     assert r.returncode == 0, r.stderr
     for surface, p in ( ( "record",  repo / ".claude-memento-maria-45b897f6.md" ),
                         ( "pointer", repo / ".claude-memento.md" ),
-                        ( "mirror",  Path( repo ).parent.parent / "home" / ".claude" / "mementos"
+                        ( "mirror",  home_for( repo ) / ".claude" / "mementos"
                                      / repo.name / ".claude-memento-maria-45b897f6.md" ) ):
         text = p.read_text()
         assert reason in text,               f"{surface} lost the waiver reason"
@@ -389,7 +408,7 @@ def test_escape_reason_is_written_into_record_mirror_and_pointer( repo ):
 
     record  = ( repo / ".claude-memento-maria-45b897f6.md" ).read_text()
     pointer = ( repo / ".claude-memento.md" ).read_text()
-    mirror  = ( Path( repo ).parent.parent / "home" / ".claude" / "mementos"
+    mirror  = ( home_for( repo ) / ".claude" / "mementos"
                 / repo.name / ".claude-memento-maria-45b897f6.md" ).read_text()
 
     for surface, text in ( ( "record", record ), ( "pointer", pointer ), ( "mirror", mirror ) ):
@@ -435,7 +454,7 @@ def test_write_to_a_new_record_path_still_succeeds( repo ):
 
     record  = repo / "io" / "mementos" / "krishna-59e885aa.md"
     pointer = repo / "io" / "mementos" / "krishna.md"
-    mirror  = ( Path( repo ).parent.parent / "home" / ".claude" / "mementos"
+    mirror  = ( home_for( repo ) / ".claude" / "mementos"
                 / repo.name / "io" / "mementos" / "krishna-59e885aa.md" )
 
     # ALL THREE SURFACES, asserted by existence AND by bytes. The whole reason a raw Write is
@@ -516,7 +535,7 @@ def adopt_memento( repo, persona="krishna", sid="59e885aa", slot="io", extra=Non
     cmd = [ sys.executable, str( SCRIPT ), "adopt", "--repo", str( repo ),
             "--slot", slot, "--persona", persona, "--session-id", sid ]
     if extra: cmd += extra
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, cwd=repo, capture_output=True, text=True, env=env )
 
 
@@ -525,7 +544,7 @@ def test_adopt_gives_an_orphan_its_mirror_and_pointer( repo ):
     r   = adopt_memento( repo )
     assert r.returncode == 0, r.stderr
 
-    mirror  = ( Path( repo ).parent.parent / "home" / ".claude" / "mementos"
+    mirror  = ( home_for( repo ) / ".claude" / "mementos"
                 / repo.name / "io" / "mementos" / "krishna-59e885aa.md" )
     pointer = repo / "io" / "mementos" / "krishna.md"
 
@@ -936,7 +955,7 @@ def test_every_pointer_rel_path_caller_survives_the_raise( repo ):
     """
     assert write_memento( repo, persona="krishna", sid="59e885aa", slot="io" ).returncode == 0
 
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
 
     def run( *argv ):
         return subprocess.run( [ sys.executable, str( SCRIPT ), *argv, "--repo", str( repo ) ],
@@ -1059,7 +1078,7 @@ def test_the_invariants_named_repair_actually_repairs( repo ):
     newer.write_text( "# orphan, and newer\n" )
     os.utime( newer, ( time.time() + 3600, time.time() + 3600 ) )
 
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     fix = subprocess.run( [ sys.executable, str( SCRIPT ), "regenerate-pointer", "--repo", str( repo ),
                             "--slot", "io", "--persona", "rachel" ],
                           cwd=repo, capture_output=True, text=True, env=env )
@@ -1401,7 +1420,7 @@ def _run( repo, verb, body, persona="maria", sid="45b897f6", slot="root", extra=
     """Ensures: runs any verb through the real CLI with an arbitrary body on stdin."""
     cmd = [ sys.executable, str( SCRIPT ), verb, "--repo", str( repo ),
             "--slot", slot, "--persona", persona, "--session-id", sid ] + ( extra or [] )
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input=body, cwd=repo, capture_output=True, text=True, env=env )
 
 
@@ -1576,7 +1595,7 @@ def test_a_typed_slot_still_works_in_both_directions( repo ):
     This is the control on the FIX, not on the defect: a change that made `--slot`
     mandatory by breaking its parsing would pass every assertion above.
     """
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     for slot in ( "io", "root" ):
         r = subprocess.run( [ sys.executable, str( SCRIPT ), "write", "--repo", str( repo ),
                               "--slot", slot, "--persona", "maria", "--session-id", "d3254802",
@@ -1706,7 +1725,7 @@ def test_amend_stamps_correlation_too( repo ):
     walks through, which is the exact defect the R-1 gate itself was built with.
     """
     _crewed( repo )
-    env = dict( os.environ, HOME=str( Path( repo ).parent.parent / "home" ) )
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
     base = [ sys.executable, str( SCRIPT ), "--repo", str( repo ) ]
     first = subprocess.run( base[ :2 ] + [ "write" ] + base[ 2: ] +
                             [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ],
@@ -1717,3 +1736,163 @@ def test_amend_stamps_correlation_too( repo ):
                         input="more state\n", cwd=repo, capture_output=True, text=True, env=env )
     assert r.returncode == 0, r.stderr
     assert _record_text( repo ).count( "post-game-correlation" ) == 2   # write's, then amend's
+
+
+# ---------------------------------------------------------------- `waivers`: the READER
+#
+# 2df66816, consolidated into 547f6565: a WAIVER is written and never READ. The escape was
+# recorded in the record, the mirror and the pointer — and nothing enumerated it, so it was
+# auditable in principle and unaudited in fact.
+#
+# These tests are aimed at the two ways a reader can be useless rather than wrong:
+#   1. it finds nothing because there was nothing        -> must be distinguishable from
+#   2. it finds nothing because it read nothing          -> exit 4, its own message
+# A reader that conflates those two is the guard-certifying-itself shape, and it is the
+# shape `cmd_verify` already had to grow out of (its gap 3).
+
+
+def _waivers( repo ):
+    """Ensures: runs the real `waivers` verb end-to-end and returns the CompletedProcess."""
+    env = dict( os.environ, HOME=str( home_for( repo ) ) )
+    return subprocess.run( [ sys.executable, str( SCRIPT ), "waivers", "--repo", str( repo ) ],
+                           cwd=repo, capture_output=True, text=True, env=env )
+
+
+def test_a_recorded_waiver_IS_READ_BACK( repo ):
+    """
+    The whole point of the row. A crew ran, no retro exists, the seat took the escape with a
+    reason — and the reason comes back out, attributed, with its timestamp.
+    """
+    plant( repo / "io" / "mementos" / CREW_RECORD )                 # crew ran
+    r = write_memento( repo, extra=[ "--no-post-game", "the reason I waived it" ] )
+    assert r.returncode == 0, r.stderr
+
+    out = _waivers( repo )
+    assert out.returncode == 0, out.stderr
+    assert "POST-GAME WAIVERS — 1 recorded" in out.stdout
+    assert "the reason I waived it"         in out.stdout           # the REASON, not just a count
+    assert "maria"                          in out.stdout
+    assert "45b897f6"                       in out.stdout
+
+
+def test_the_reader_finds_no_waiver_WHEN_NONE_WAS_TAKEN( repo ):
+    """
+    The negative control that makes a hit mean something. Same crew, same gate, but a real
+    retro exists so no escape was taken — the reader must come back empty AND say how many
+    records it read, so empty is legible.
+    """
+    _crewed( repo )
+    assert write_memento( repo ).returncode == 0
+
+    out = _waivers( repo )
+    assert out.returncode == 0
+    assert "POST-GAME WAIVERS — none" in out.stdout
+    assert "record(s) read"           in out.stdout                 # the denominator is present
+
+
+def test_EVERY_waiver_is_read_not_just_the_first( repo ):
+    """
+    `amend` appends its waiver into each amendment block, so a record that waived twice holds
+    two stamps. A reader that stopped at the first match would under-report by construction —
+    and would do it silently, which is the defect this verb exists to close.
+    """
+    _crewed( repo )                                                 # write can pass cleanly
+    assert write_memento( repo ).returncode == 0
+    ( repo / "io" / "post-games" ).rename( repo / "io" / "post-games-gone" )   # now the gate bites
+
+    env  = dict( os.environ, HOME=str( home_for( repo ) ) )
+    base = [ sys.executable, str( SCRIPT ), "amend", "--repo", str( repo ),
+             "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ]
+    for reason in ( "first waiver reason", "second waiver reason" ):
+        a = subprocess.run( base + [ "--no-post-game", reason ], input="more\n",
+                            cwd=repo, capture_output=True, text=True, env=env )
+        assert a.returncode == 0, a.stderr
+
+    out = _waivers( repo )
+    assert out.returncode == 0
+    assert "POST-GAME WAIVERS — 2 recorded" in out.stdout
+    assert "first waiver reason"  in out.stdout
+    assert "second waiver reason" in out.stdout
+
+
+def test_a_SCAN_OF_NOTHING_IS_NOT_A_CLEAN_AUDIT( repo ):
+    """
+    `cmd_verify`'s gap 3, applied here before it could be re-earned: `0 waivers` from an EMPTY
+    scan set is not a result. io/mementos/ is GITIGNORED, so a fresh clone has none — a wrong
+    --repo and a genuinely clean repo would otherwise print the same reassuring line.
+
+    Exit 4, and the message must name the cause rather than leaving the reader to infer it.
+    """
+    out = _waivers( repo )                                          # nothing written at all
+    assert out.returncode == 4, f"an empty scan must not exit 0: {out.stdout}"
+    assert "SCANNED NOTHING" in out.stderr
+    assert "gitignored"      in out.stderr                          # names WHY it can be empty
+
+
+def test_zero_correlation_stamps_reports_its_DENOMINATOR_not_a_clean_bill( repo ):
+    """
+    The same conflation, one signal over — and I wrote it before catching it. A corpus written
+    before the correlation stamp shipped carries none, so "no uncorrelated post-games" would be
+    a statement about the corpus's AGE dressed as a statement about correlation.
+
+    A solo write takes no gate and is deliberately left unstamped, so this fixture has a
+    genuine denominator of zero.
+    """
+    plant( repo / "io" / "post-games" / "2026.07.26-run.md" )
+    assert write_memento( repo ).returncode == 0                    # solo: no crew, no stamp
+
+    out = _waivers( repo )
+    assert out.returncode == 0
+    assert "NO CORRELATION STAMPS EXIST YET" in out.stdout
+    assert "DENOMINATOR OF ZERO"             in out.stdout
+
+
+def test_an_uncorrelated_stamp_is_surfaced_with_its_count( repo ):
+    """
+    The positive case for the second escape: a retro that cleared the content floor while
+    naming none of the arming seats. H3's hole, now countable.
+    """
+    _crewed( repo, retro_body=DESIGN_DOC )
+    assert write_memento( repo ).returncode == 0
+
+    out = _waivers( repo )
+    assert out.returncode == 0
+    assert "UNCORRELATED POST-GAMES — 1 accepted" in out.stdout
+    assert "seats_named=none"                     in out.stdout
+
+
+def test_a_CORRELATED_stamp_is_NOT_reported_as_a_finding( repo ):
+    """
+    The control that stops the uncorrelated list from being an unconditional decoration. Same
+    crew, same floor, one word different — the retro names the seat, so there is no finding,
+    and the count of stamps READ must still be printed.
+    """
+    body = ( "# Post-Game\n\n## What happened\n"
+             f"{CREW_SLUG} ran the lane and hit the guard. " * 12 + "\n\n"
+             "## Lessons\n" + ( "A durable lesson. " * 12 ) + "\n" )
+    _crewed( repo, retro_body=body )
+    assert write_memento( repo ).returncode == 0
+
+    out = _waivers( repo )
+    assert out.returncode == 0
+    assert "UNCORRELATED POST-GAMES — none, across 1 correlation stamp(s) read" in out.stdout
+
+
+def test_the_reader_is_READ_ONLY( repo ):
+    """
+    An auditor that mutates what it audits cannot be run twice for the same answer. Digest the
+    whole memento surface before and after — nothing may move.
+    """
+    plant( repo / "io" / "mementos" / CREW_RECORD )
+    assert write_memento( repo, extra=[ "--no-post-game", "a reason" ] ).returncode == 0
+
+    def digest():
+        h = hashlib.sha256()
+        for p in sorted( repo.rglob( "*.md" ) ):
+            h.update( p.relative_to( repo ).as_posix().encode() )
+            h.update( p.read_bytes() )
+        return h.hexdigest()
+
+    before = digest()
+    assert _waivers( repo ).returncode == 0
+    assert digest() == before, "the waivers verb wrote something"

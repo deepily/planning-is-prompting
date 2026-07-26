@@ -64,6 +64,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 2. Report: when written, by whom (persona + session_id), for what role, age — all four are on **line 1** of the record, so this needs no guessing.
 3. Report whether it satisfies the 9-element contract.
 4. `memento_io.py verify` — audit whether every memento in the repo is mirrored out-of-repo, byte-for-byte. **An unmirrored memento is one `git clean -xdf` from gone.**
+5. `memento_io.py waivers` — READ the post-game escapes: every `--no-post-game` taken (who, when, the reason in full) and every retro accepted on the content floor alone. **An escape nobody enumerates is silent in every way that matters** (`2df66816`). Exit 4 means it scanned *nothing*, not that it found nothing.
 
 ---
 

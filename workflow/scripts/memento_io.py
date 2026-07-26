@@ -2025,6 +2025,194 @@ def iter_mirror_mementos( repo_root ):
         yield p.relative_to( mir_root )
 
 
+WAIVER_RE = re.compile(
+    r"<!--\s*post-game-waived:\s*by=(?P<by>.*?)\s+session_id=(?P<sid>\S+)\s+"
+    r"at=(?P<at>\S+)\s+reason=(?P<reason>.*?)\s*-->" )
+
+CORRELATION_RE = re.compile(
+    r"<!--\s*post-game-correlation:\s*correlated=(?P<correlated>true|false)\s+"
+    r"retros=(?P<retros>\d+)\s+seats_named=(?P<seats>\S+)\s*-->" )
+
+
+def unrepr( raw ):
+    """
+    Ensures:
+        - returns the string a `reason=` field's `repr()` encoded, when it decodes
+        - returns the RAW text unchanged when it does not — a reason that cannot be
+          decoded is still reported, because dropping it would make the escape silent
+          again in exactly the case where the record is malformed
+    """
+    try:
+        import ast
+        value = ast.literal_eval( raw )
+        return value if isinstance( value, str ) else raw
+    except ( ValueError, SyntaxError ):
+        return raw
+
+
+def escapes_in( text ):
+    """
+    Every recorded ESCAPE in one memento's text.
+
+    Requires:
+        - text is a memento record's full contents
+    Ensures:
+        - returns ( waivers, correlations ) where waivers is a list of
+          { by, session_id, at, reason } and correlations a list of
+          { correlated: bool, retros: int, seats: str }
+        - finds EVERY occurrence, not the first: `amend` appends its waiver into each
+          amendment block, so a record that waived four times holds four stamps and a
+          reader that stopped at one would under-report by design
+        - a malformed stamp contributes nothing and raises nothing
+    """
+    waivers = [ { "by"         : m.group( "by" ),
+                  "session_id" : m.group( "sid" ),
+                  "at"         : m.group( "at" ),
+                  "reason"     : unrepr( m.group( "reason" ) ) }
+                for m in WAIVER_RE.finditer( text ) ]
+    correlations = [ { "correlated" : m.group( "correlated" ) == "true",
+                       "retros"     : int( m.group( "retros" ) ),
+                       "seats"      : m.group( "seats" ) }
+                     for m in CORRELATION_RE.finditer( text ) ]
+    return waivers, correlations
+
+
+def cmd_waivers( args ):
+    """
+    READ the escapes. This verb exists because nothing did.
+
+    WHY THIS EXISTS (store row `2df66816`, consolidated into `547f6565`). The R-1 post-game
+    gate has always had an escape — `--no-post-game "<reason>"` — and the escape has always
+    been RECORDED: a machine comment plus a visible `**POST-GAME WAIVED**` paragraph, in the
+    record, the mirror and the pointer. That was the design's answer to "an escape you can
+    take silently is not a gate."
+
+    It was half an answer. **A WAIVER WAS WRITTEN AND NEVER READ.** Nothing enumerated waiver
+    reasons, so the escape was auditable in principle and unaudited in fact — and both live
+    instances were taken by the gate's own authors, who were also the only people who would
+    have known where to look. A record nobody queries is a record in the same epistemic
+    position as a warning printed to stderr: it exists, and it informs no one.
+
+    ⇒ Written into the SAME module as the gate, deliberately. An audit verb in a separate
+    script is one more thing to remember, and this file's stated premise is that a rule adds
+    a step while a mechanism removes a decision.
+
+    IT READS BOTH ESCAPES, NOT JUST THE WAIVER. The H3 correlation stamp
+    (`POST_GAME_CORRELATION_STAMP`) was justified on the grounds that it "has a reader by
+    construction" — that after N engagements, promoting correlation to a refusal becomes a
+    query instead of a guess. **That claim was owed a query and did not have one.** This is
+    it. An `correlated=false` stamp is the second escape: the retro cleared the content floor
+    while naming none of the seats that armed the gate.
+
+    IT SCANS THE MIRROR TOO, and that is not thoroughness for its own sake. `io/mementos/` is
+    gitignored, so it does not survive a clone, and a clobbered in-repo record leaves its only
+    surviving copy in `~/.claude/mementos/`. An auditor that read only the repo would report
+    zero waivers for exactly the records whose loss made the audit matter.
+
+    ⚠️ A SCAN OF NOTHING MUST NOT LOOK LIKE A CLEAN SCAN — `cmd_verify`'s third gap, and the
+    reason this reports SCANNED COUNTS on every run and exits 4 on an empty scan set. "No
+    waivers among 41 records" and "no waivers because I read no records" are opposite facts,
+    and a lone `0 waivers` cannot tell them apart. A wrong `--repo`, a fresh clone, or a
+    renamed directory all produce the second one wearing the first one's face.
+
+    IT IS NOT A GATE AND HAS NO OPINION. A waiver is a legitimate, authorized act; finding one
+    is not a failure and does not change the exit code. This verb makes the escapes COUNTABLE.
+    Judging them is a human's job, and giving this command a red would convert a recorded
+    decision into a standing accusation.
+
+    Requires:
+        - --repo (or cwd) is inside a git working tree
+    Ensures:
+        - prints every WAIVER (by / session / at / reason) and every UNCORRELATED post-game,
+          grouped per record, in-repo first then mirror-only records
+        - prints the scanned counts on EVERY run, findings or not
+        - writes nothing, moves nothing, deletes nothing: this verb is READ-ONLY
+        - exit 0 whenever at least one memento file was scanned — including with findings
+        - exit 4 when the scan set was EMPTY (nothing to be clean about)
+    """
+    repo_root = find_repo_root( args.repo or Path.cwd() )
+    mir_root  = MIRROR_HOME / repo_root.name
+
+    # POINTERS ARE EXCLUDED, and this was a MEASURED defect in the first version of this verb,
+    # not a precaution. A pointer is a DERIVED COPY of a record — same bytes, same waiver stamp —
+    # so counting both reported "2 recorded" for ONE waiver taken once. The first test to assert
+    # an exact count caught it; every earlier eyeball of the real corpus had read the inflated
+    # number as correct because two live waivers happened to be in two unpointed records.
+    # `cmd_verify` excludes pointers from its mirror requirement for the same reason: a derived
+    # copy is not an independent fact about the repo.
+    sources = [ ( rel, repo_root / rel, "repo" ) for rel in iter_repo_mementos( repo_root )
+                if not is_pointer_file( repo_root / rel ) ]
+    in_repo = { rel for rel, _, _ in sources }
+    # Mirror-only records ONLY. A mirrored record whose in-repo copy exists is the same
+    # record; listing it twice would inflate every count this command reports.
+    sources += [ ( rel, mir_root / rel, "mirror-only" )
+                 for rel in iter_mirror_mementos( repo_root )
+                 if rel not in in_repo and not is_pointer_file( mir_root / rel ) ]
+
+    scanned, waived, uncorrelated, unreadable = 0, [], [], []
+    stamped = 0                                  # correlation stamps SEEN — the denominator
+    for rel, abs_path, origin in sources:
+        try:
+            text = abs_path.read_text( errors="replace" )
+        except OSError as e:
+            unreadable.append( ( rel, origin, str( e ) ) )
+            continue
+        scanned += 1
+        waivers, correlations = escapes_in( text )
+        stamped += len( correlations )
+        for w in waivers:
+            waived.append( ( rel, origin, w ) )
+        for c in correlations:
+            if not c[ "correlated" ]:
+                uncorrelated.append( ( rel, origin, c ) )
+
+    if scanned == 0:
+        print( f"SCANNED NOTHING — no memento files found.", file=sys.stderr )
+        print( f"  repo   {repo_root}", file=sys.stderr )
+        print( f"  mirror {mir_root}", file=sys.stderr )
+        print(  "  This is NOT a clean audit. io/mementos/ is gitignored and does not survive",
+                file=sys.stderr )
+        print(  "  a clone; check --repo, or that the directory has not been renamed.",
+                file=sys.stderr )
+        return 4
+
+    if waived:
+        print( f"POST-GAME WAIVERS — {len( waived )} recorded:" )
+        for rel, origin, w in sorted( waived, key=lambda t: t[ 2 ][ "at" ] ):
+            print( f"  {w[ 'at' ]}  {w[ 'by' ]} ({w[ 'session_id' ]})  [{origin}] {rel}" )
+            print( f"      reason: {w[ 'reason' ]}" )
+    else:
+        print( f"POST-GAME WAIVERS — none, across {scanned} record(s) read." )
+
+    if uncorrelated:
+        print( f"\nUNCORRELATED POST-GAMES — {len( uncorrelated )} accepted on the content floor alone:" )
+        for rel, origin, c in uncorrelated:
+            print( f"  retros={c[ 'retros' ]} seats_named={c[ 'seats' ]}  [{origin}] {rel}" )
+        print(  "  These cleared the length/substance floor while naming none of the seats that" )
+        print(  "  armed the gate (547f6565 H3). Recorded, never refused — see the module header." )
+    elif stamped:
+        print( f"\nUNCORRELATED POST-GAMES — none, across {stamped} correlation stamp(s) read." )
+    else:
+        # THE DENOMINATOR IS THE FINDING. "No uncorrelated post-games" and "no correlation
+        # stamps exist yet" are opposite facts, and this command was written to close exactly
+        # that gap for the waiver — printing a bare zero here would reopen it one signal over,
+        # in the same run, on the same page. The stamp shipped 2026-07-26; a corpus written
+        # before it carries none, and that is not evidence about correlation.
+        print(  "\nUNCORRELATED POST-GAMES — NO CORRELATION STAMPS EXIST YET (0 read)." )
+        print(  "  This is a DENOMINATOR OF ZERO, not a clean result: no gated write in this" )
+        print(  "  corpus was made since the stamp shipped. It says nothing about correlation." )
+
+    if unreadable:
+        print( f"\nUNREADABLE — {len( unreadable )}, reported rather than skipped:" )
+        for rel, origin, err in unreadable:
+            print( f"  [{origin}] {rel}: {err}" )
+
+    print( f"\nscanned {scanned} record(s)"
+           f"  ({len( in_repo )} in-repo, {len( sources ) - len( in_repo )} mirror-only)"
+           f"  repo={repo_root.name}" )
+    return 0
+
+
 def cmd_verify( args ):
     """
     Audit a repo's memento surface and make every divergence LOUD.
@@ -2302,6 +2490,14 @@ def build_parser():
                          "scanned set visible so a clean bill of health cannot be confused "
                          "with a checker that skipped it" )
     v.set_defaults( func=cmd_verify )
+
+    # `waivers` is the READER the escape never had (2df66816). Registered next to `verify`
+    # because it is the same kind of verb — READ-ONLY, exit 4 on an empty scan set — and a
+    # seat looking for "how do I audit this" finds both in one --help.
+    wv = sub.add_parser( "waivers",
+                         help="audit: recorded post-game WAIVERS + uncorrelated post-games (READ-ONLY)" )
+    wv.add_argument( "--repo", type=Path, default=None )
+    wv.set_defaults( func=cmd_waivers )
 
     return p
 
