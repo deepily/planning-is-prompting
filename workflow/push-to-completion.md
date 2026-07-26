@@ -54,7 +54,8 @@ On receipt, the manager executes — no acknowledgment theater, no "standing by"
 4. **MANAGE, don't build** — assign or spawn for each item; the instant you catch yourself implementing, **stop and delegate** (`spin-up-swe-team` / `spawn_sessions`). Building it yourself is the redline.
 5. **STAFF PROACTIVELY** — unassigned or idle-worker work owes a spawn *this tick*. Waiting to be tapped is the exact laziness this command punishes.
 6. **BLOCKED ≠ SILENT** — an item you genuinely can't move gets a typed `blocked_by` + `next_chase_ts` + a named owner, and — if it's a **user-decision** gate — a **dedicated `ask_*`** to the user this tick. Never bury a blocker in a status notify.
-7. **REPORT** — close with the board reduced to zero (with receipts) **or** an honest survivor list where each entry names its blocker + owner. Receipts, not claims.
+7. **RE-MEASURE BEFORE YOU KEEP** — a survivor verdict (*"KEEP — still open, not overtaken"*) is **an assertion about an artifact**, and it must cite one: the commit you read, the file you opened, the command you ran. **Quoting the row is not evidence** — a sweep whose method is quoting the row cannot detect that the row is wrong. Gated mechanically by `workflow/scripts/sweep_verdict_guard.py`; a KEEP with no resolvable citation is REFUSED.
+8. **REPORT** — close with the board reduced to zero (with receipts) **or** an honest survivor list where each entry names its blocker + owner. Receipts, not claims.
 
 ---
 
@@ -69,8 +70,13 @@ On receipt, the manager executes — no acknowledgment theater, no "standing by"
 | Downscoping so the reduced thing "passes" | Moves the goalposts to fake a win | Deliver the agreed scope or escalate the scope change |
 | Rubber-stamping a worker's claim | Liveness ≠ progress; a claim ≠ a receipt | Verify an **artifact-delta**, not a "yes I did it" |
 | Absorbing a dark worker's lane to "finish faster" | Manager building = the redline | Reap + replace the worker; never take their lane |
+| **Ruling KEEP by quoting the row** | The row is the thing under audit; quoting it certifies staleness as freshness | Open the artifact, cite what you read — `sweep_verdict_guard.py` refuses a KEEP with no resolvable citation |
 
 **Receipts-of-progress rule**: chasing an in-progress item verifies an **artifact-delta** (a new commit, a passing test, a moved file), not a worker's word. Liveness is not progress.
+
+**Re-measure rule** (Rick's ruling on `3984b196`, 2026-07-26): the store fires `blocker_terminal` when a blocking **row** closes and fires **nothing** when a blocking **fact** stops being true. A fix landing under row A has no mechanism that re-tests row B's claim. Five instances landed in one session; one of them **spent a user ruling on a nine-day-stale measurement**, and another certified an eleven-day-stale row as fresh by quoting its last word. So the survivor verdict carries a citation, and the citation must **resolve** — a commit that exists, a file that exists.
+
+⚠️ **What the gate cannot do, stated so nobody over-trusts it**: it proves the cited artifact is *real*, not that anyone *looked*. A sha copied out of the row body still passes — the result flags that case (`citations_all_lifted_from_row`) rather than refusing it, because refusing it would punish an honest re-measure that **confirms** the row and cites the same commit. The flag is a reader's signal; the refusal is reserved for a verdict citing nothing at all.
 
 ---
 
@@ -93,4 +99,5 @@ On receipt, the manager executes — no acknowledgment theater, no "standing by"
 
 ## Version History
 
+- **1.1** (2026-07-26, María 🌸 — Rick ruling on row `3984b196`) — **The sweep's survivor verdict gets a mechanical gate.** New Operational Contract item 7 (RE-MEASURE BEFORE YOU KEEP) + a new anti-gaming row + the Re-measure rule. Enforced by `workflow/scripts/sweep_verdict_guard.py` (14 tests, **5 mutations 5 correct reds**): a KEEP-class verdict with no resolvable citation is REFUSED; `->done` / `->dropped` are out of scope (already receipt- and reason-enforced server-side). Empirical anchor: five stale-claim instances in one session, two of which cost real decisions — `11461241` precondition 3 spent a user ruling on a 9-day-stale measurement, and `ab721143` was certified fresh 11 days after its fix by a verdict that quoted the row and never opened the document. ⚠️ The gate under-fires by design: ambiguity → PASS-with-a-note, because a gate that refuses what it cannot check gets disabled within a day (`54924128`). The refuted alternative — requiring the citation to be *novel* vs the row body — is pinned out by a dedicated regression test; novelty would refuse an honest re-measure that confirms the row.
 - **1.0** (2026-07-01) — Initial version. Riot Act directive authored with Rick; utterance triggers + operational contract + anti-gaming guard.
