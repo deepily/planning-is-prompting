@@ -38,7 +38,10 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
     --persona "<persona>" --session-id "<session_id>" --slot io   < <content-file>
 ```
 
-   `--slot io` = spawned worker (default) · `--slot root` = self-`/clear`.
+   `--slot io` = spawned worker · `--slot root` = self-`/clear`. **`--slot` is REQUIRED —
+   there is no default.** D4a shipped `required=True` at `memento_io.py:2077`; this line
+   said "(default)" until 2026-07-25 and told a reader the flag was optional in the one
+   document a seat reads at the moment it writes a memento (row `28ce4fe6`).
 
    That one call writes the **record** (immutable), the **out-of-repo mirror** (survives `git clean -xdf`), and the **pointer** (safe to overwrite; it is not the record) — **or it fails loud and non-zero.** It refuses an existing record path (exit 3), repairs `.gitignore` itself, and stamps element-1 provenance as line 1.
 
