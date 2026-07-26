@@ -765,6 +765,15 @@ This makes the Manager-mode discipline above and the Observer-mode Probe Protoco
 
 ## §Observer-mode Probe Protocol [SHARED]
 
+> ✅ **STATUS: LIVE** (as of 2026-07-25). Stated here deliberately, and the reason generalises —
+> row `8f64b2cb`. A `[SHARED]` section inherits its live/retired status from the documents that
+> REFERENCE it (`plan-review-cascaded-personas.md:551` cross-references this as *the* probe action),
+> not from its own text. So a fencing pass reading this file top-to-bottom sees a `[SHARED]` block
+> with no banner of its own and cannot tell whether it is current. That is how one live
+> prescription of a deprecated verb survived a retirement sweep that fenced 19 of 20 mentions
+> correctly. **Every `[SHARED]` section should carry its own status marker**, precisely because it
+> is the kind that gets read out of its home document.
+
 **Added 2026-05-20 post-Run-4** based on the Run-4 Stage-2 minute-13 phantom-lag mitigation event — María's parallel probe surfaced an unread peer-DM that Manager attention had buried, clearing a 13-min Manager phantom-lag (the empirical anchor for new failure mode #6: `signal-density-obscures-needle`). This section codifies the Observer's role into the formal playbook + designs the dual-channel safety property as an explicit architectural goal.
 
 **The role**: An Observer (the Workflow Steward variant of the cascade cast) runs as a separate CC session alongside the Manager throughout the cascade. The Observer does NOT participate in reviews — does not produce findings, does not arbitrate, does not take Manager decisions. The Observer's value is two-fold:
@@ -792,7 +801,7 @@ On each scheduled probe tick (M-th heartbeat tick), the Observer performs:
 
 1. **`commons_who()`** — verify all expected personas are still active (no phantom sessions). This is a cheap presence check; phantom detection complements §Manager System Prompt self-audit item 2.
 2. **`commons_read('coordination')`** — read the coordination topic (or equivalent cross-stage signal topic for the consuming project) and check for posts the Manager hasn't yet acknowledged.
-3. **For each unacknowledged peer-DM signal that's older than `stall_threshold_minutes`**: DM the Manager directly (`commons_send_to`) with a short pointer — *"DM from [persona] on [topic] at [timestamp] still unread; you may want to disk-read."* This is information-only — Manager keeps decision authority.
+3. **For each unacknowledged peer-DM signal that's older than `stall_threshold_minutes`**: DM the Manager directly (**`dm_send`** — `commons_send_to` is DEPRECATED and was prescribed here until 2026-07-25, row `8f64b2cb`) with a short pointer — *"DM from [persona] on [topic] at [timestamp] still unread; you may want to disk-read."* This is information-only — Manager keeps decision authority.
 4. **Post `kind: observer_probe_unblocked` to cascade's parent topic** if the probe surfaced a real mitigation event (vs. routine probes that find nothing — those don't need posts; Observer keeps a quiet log).
 
 **Cost per probe**: ~30 seconds Observer-time. Cumulative cost over a 90-min cascade with M=4 default: ~22 probe events × ~30 sec = ~11 min Observer-time. This is materially cheaper than recovering from a phantom-lag mid-cascade (Run 4's 13-min Stage-2 lag = ~3× the entire probe budget for that cascade in a single failure event).
