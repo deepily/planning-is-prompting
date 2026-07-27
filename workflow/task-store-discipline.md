@@ -110,6 +110,31 @@ Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
 - **`→dropped` REQUIRES a reason — ENFORCED** (C12 pulled forward, Tiberius-ruled 2026-06-12 after Tiffany's wire-gap flag): `task_events` carries a nullable `reason` column; the server rejects a reasonless drop. The escape hatch around the receipts rule is closed.
 - **`authority` rides every write** (`standing` | `user_direct` | `manager_relay`) — the blast-radius model joins the audit trail.
 
+### 4.1 A DEPENDENCY WORTH BLOCKING ON GETS A ROW (binding on every seat)
+
+**If you would not file it, you may not block on it.** A precondition named only in prose — *"until the demos ship"*, *"blocked on Cheech's Phase-1 probe"*, *"pending Rick's ruling"* — cannot be scheduled, chased, transitioned, or resolved by anything. It is a wait with no counterparty.
+
+⇒ **Mint the precondition as an item and point `blocked_by` at it.** That is the whole rule.
+
+**Why it is a rule and not a check.** Lupin row `00a6bde2` split the problem in two, and only one half is machine-detectable:
+
+| arm | shape | detectable? |
+|---|---|---|
+| **(A)** body cites an **id** — *"waiting on `86ce4c43`"* | resolvable | ✅ scanner shipped (`scan-prose-task-refs.py`) |
+| **(B)** body cites a **premise** — *"until the demos ship"* | no token to resolve | ❌ **nothing can find it, ever** |
+
+**(B) is not a detection problem. It is an authoring one.** No oracle can be built for it, because the dependency was never written as anything a machine can follow. The only instrument is this rule, applied when the row is written.
+
+⚠️ **AND A CLEAN (A) SCAN IS NOT A CLEAN BOARD.** The scanner reports what it examined precisely because a green result over the id-citing arm reads as *"no dangling preconditions"* while the entire unscannable (B) half sits underneath it. Measured on one live board: **5 canonical citations against 531 abbreviated 8-hex tokens** the tier deliberately refuses to resolve. The examined surface was two orders of magnitude smaller than the unexamined one.
+
+**The worked instance.** `31f6d447` was blocked on a precondition that existed only as a sentence in its own body. The remedy was to mint it as `e919d895` and re-point the edge — and **that mint is the fix for the class, not merely for that row.**
+
+**Corollaries, each earned by a live failure:**
+
+- **A premise-scoped instruction has an expiry nothing reads.** *"Do not chase Rick on it"* was true when written and false eight minutes later — the order had been scoped (*"until we get our demos ready for Monday"*) and the clause that bounded it was dropped in the retelling. **Carry the bound with the instruction or the instruction outlives its reason.**
+- **A `{kind:persona}` edge should carry `session_id`** (lupin `70b354a0`, 2026-07-27). Overflow persona names are re-granted after a reap, so a bare-name edge can silently re-point at a different session and be "satisfied" by someone who never had the context — a false GREEN, not a false wait.
+- **Prefer `dropped`-with-a-reason over hard deletion.** A dropped row reads as DEAD; a deleted one reads as UNRESOLVED, which is indistinguishable from a typo. **Only one of those is a finding.**
+
 ## 5. The truth boundary (F3 — what stays markdown)
 
 | Surface | Role under the store |
