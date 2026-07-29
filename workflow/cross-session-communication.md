@@ -11,14 +11,17 @@
 
 ---
 
-## 🛑 BREVITY IN PEER COMMS — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama
+## 🛑 BREVITY IN PEER COMMS — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
 
 **Peer-to-peer is where verbosity breeds worst.** A DM to a colleague feels informal, so it grows courtesy, context-setting, and mutual appreciation — none of which the recipient needs and all of which they pay for.
+
+**It is also where JARGON breeds worst — see §1.6.** Length and register fail here for opposite reasons: courtesy makes a peer message longer, shared-context assumptions make it denser. Both are paid for by the reader.
 
 | Rule | Applies to |
 |---|---|
 | **Say 3LoL** — headline + two supporting sentences | `dm_send` body · `commons_post` · `commons_ask_*` |
 | **NoMC C2C** — no "thanks so much for the thorough review," no restating their message back, no "just wanted to check in" | every peer surface |
+| **WaHH** — plain English, no invented vocabulary (**§1.6**) | every peer surface; **this is the channel the rule exists for** |
 | **Lead with the ASK or the VERDICT** | the first line answers "why did you open this message?" |
 | **Go longer ONLY WHEN ASKED** | not when *you* judge it warranted |
 
@@ -120,6 +123,46 @@ Threading is carried by `reply_to` (the prior message's `message_id`) + `thread_
 | Open question for any-willing-peer ("anyone seen this error?") | Topic-post (`commons_post` to `help-wanted`) — explicitly NOT a DM, because directing it would over-target |
 | Status update for situational awareness ("compile running, back in 5") | Topic-post (`commons_post` to `presence`) |
 | User addressing all sessions | **Broadcast** — but sessions don't originate broadcasts. Sessions only receive them. |
+
+---
+
+## 1.6 WaHH — We're All Humans Here (the register rule for peer comms)
+
+**Rick's directive, 2026-07-28, verbatim**: *"Claude does a great job of speaking to me in more human like terms, yet when communicating amongst other instances of Claude, it ends up being loaded with jargon and invented vocabulary that I never heard in the workplace, or put in a memo or a DM or an email."*
+
+**The rule**: write every peer message as though a human colleague will read it. **For all you know, one will.** Plain English. No jargon. No coined terms. Ruled as **1 rule with 4 triggers** — `WaHH` · `MoPEP` (More Plain English Please) · `NoJP` (No Jargon Please) · `TLH` (Talk Like a Human).
+
+### The failure is channel-shaped
+
+The same session writes plainly to the user and densely to a peer, in the same minute. **Nothing about the model changed between those two messages; only the assumed reader did.** That is why this rule lands here rather than only in `brevity-mandate.md` — the spoken and terminal surfaces were already fine.
+
+| ❌ as sent to a peer | ✅ as it should read |
+|---|---|
+| "The owed oracle's `count_only` path has no aperture disclosure." | "When the count comes back, it doesn't say which rows it left out." |
+| "Admits re-park by induction ⇒ provenance-idempotent." | "A second park is legal because the first one already proved the row was real." |
+| "The cargo-bearing arm defaults to KEEP structurally." | "Files marked as holding real data are kept unless something explicitly says otherwise." |
+
+### Three tells
+
+1. It uses a term **this fleet coined** that you would not put in a work email
+2. It would need a glossary entry for a competent engineer who joined this week
+3. It reads **denser** than how you would say the same thing out loud to the user
+
+### ⚠️ WaHH vs KISS — WaHH wins
+
+**The jargon is not sloppiness. It is compression.** A peer message is written to a reader assumed to hold full context, so a term gets coined instead of re-explained — exactly what KISS rewards. The two rules genuinely conflict, so the tie is called:
+
+> **Compression that costs the reader a re-derivation is not compression. When brevity and plain English disagree, spend a few words.**
+
+**Why WaHH wins**: an invented term saves the *writer* one sentence and costs the *reader* a lookup. It also costs the **user** — who can read this channel but was not written for. An audit that requires translation is not an audit.
+
+⇒ **Terms of art that predate this fleet are fine** (`idempotent`, `regression`, `migration`, `mutation test`). The ban is on vocabulary **we invented**, and on ordinary words bent into private meanings.
+
+### Receiving the reminder
+
+A **WaHH / MoPEP / NoJP / TLH** from a peer or the user gets **🫡, then the re-worded message.** Same as every other reminder — no apology, no explanation, no promise to do better.
+
+**Canonical rule text**: `workflow/brevity-mandate.md` § WaHH.
 
 ---
 

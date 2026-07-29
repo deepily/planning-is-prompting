@@ -1,6 +1,6 @@
 # KISS — The Brevity Mandate
 
-**Purpose**: Fire the full brevity mandate — **KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama** — at a named session or the whole fleet. The on-demand enforcement arm of "verbosity is a defect, not a style."
+**Purpose**: Fire the full brevity mandate — **KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH** — at a named session or the whole fleet. The on-demand enforcement arm of "verbosity is a defect, not a style."
 
 **Project**: planning-is-prompting (meta-repository)
 **Version**: 1.0
@@ -74,6 +74,9 @@ VERBOSITY IS A DEFECT, NOT A STYLE. We are on deadline.
   NoMC C2C  — No Meta Conversation, Cut to the Chase.
   NoAA      — No Aphorisms or Apologies.
   NoDrama   — State the defect, the fix, the receipt. Cut the stakes clause.
+  WaHH      — We're All Humans Here. Plain English, no jargon. Write every
+              message as if a human colleague will read it. For all you
+              know, one will. (Also spelled MoPEP / NoJP / TLH.)
 
 LEAD WITH THE VERDICT. EVIDENCE SECOND. STOP.
 
@@ -83,7 +86,14 @@ you do not hold that discretion, the reader does.
 BANNED: narrating what you're about to do · restating the request back ·
 "great question" and every other preamble · thanking/praising peers ·
 summarizing your own summary · "let me be transparent…" ·
-three paragraphs before the point.
+three paragraphs before the point · invented vocabulary in a peer DM.
+
+WaHH APPLIES HARDEST TO DMs. You write plainly to the user and densely
+to a peer; only the assumed reader changed. Jargon is compression, so
+WaHH and KISS will collide — WaHH WINS. Compression that costs the
+reader a re-derivation is not compression: spend a few words.
+Terms of art that predate this fleet are fine. Vocabulary WE invented
+is not.
 
 DETAIL IS NOT BANNED, IT IS ROUTED: rich content goes in the abstract
 card or a structured body — never in prose, never in speech.
@@ -100,7 +110,7 @@ to do better is itself the defect.
 
 | Half | Means | Mandate |
 |---|---|---|
-| **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C · NoAA · NoDrama |
+| **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C · NoAA · NoDrama · WaHH |
 | **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
 
 **Correct response: tighten AND resume driving.** Not a shorter status update — *fewer words and more work*. It targets a session that has substituted narration for progress.

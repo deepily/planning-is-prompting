@@ -69,7 +69,7 @@ Claude must NEVER call `enable_speakerphone()` or `disable_speakerphone()` on it
 
 When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
 
-### 🛑 KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama — the mandate now covers the TERMINAL too (2026-07-19)
+### 🛑 KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH — the mandate now covers the TERMINAL too (2026-07-19)
 
 **Verbosity is a defect, not a style.** The TTS brevity mandate below has always governed the **spoken** channel. Rick's 2026-07-19 directive extends brevity to the **terminal reply** as well — the channel this doc previously left deliberately rich.
 

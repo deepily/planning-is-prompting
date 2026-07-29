@@ -6,7 +6,7 @@
 
 **Authoring**: María 🌸 (Workflow Steward), 2026-06-06, with the Manager's gate/cadence specifics folded in (Tiberius 👑). Standing mandates referenced from global `~/.claude/CLAUDE.md` (Test Ownership · no-confabulation · cross-session communication).
 
-> ## 🛑 BREVITY BINDS EVERY CHARTER — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama
+> ## 🛑 BREVITY BINDS EVERY CHARTER — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
 > **Verbosity is a defect, not a style.** Every charter below inherits this: report in **three lines or less** (headline + two supporting sentences), **verdict first**, no meta-conversation, no peer-politeness bloat. **Go longer ONLY WHEN ASKED** — the reader holds that discretion, not you. Detail → the `abstract` card.
 > **Reviewers**: a finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
 > **😘 = the whole mandate, in one character. 🫡 = your whole reply.** 😘 alone needs no explanation; never ask what it refers to.

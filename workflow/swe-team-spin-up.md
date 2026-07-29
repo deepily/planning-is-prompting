@@ -9,7 +9,7 @@
 > ## 🛑 EVERY SPAWN BRIEF CARRIES THE BREVITY RIDER — non-negotiable
 > Workers inherit habits at birth; a worker that never grew the verbose habit is cheaper than one that must unlearn it. **Paste this into every member's brief, verbatim:**
 > ```
-> BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama.
+> BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH.
 > Verdict first, evidence second, stop. Three lines or less
 > (headline + two supporting sentences). Go longer ONLY WHEN ASKED.
 > Detail goes in the abstract card, never in prose or speech.

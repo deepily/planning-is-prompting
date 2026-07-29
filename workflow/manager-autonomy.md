@@ -10,7 +10,7 @@
 
 ## 🛑 0. Brevity — a manager's output multiplies
 
-**KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama. Verbosity is a defect, not a style.**
+**KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH. Verbosity is a defect, not a style.**
 
 A manager's verbosity is worse than a worker's: it propagates. Every wordy brief becomes N wordy workers; every rambling status becomes the house style.
 
