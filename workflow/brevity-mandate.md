@@ -213,7 +213,7 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 
 ---
 
-## 😘 / 🫡 / 🏆 / 📷 / ☕ — the glyph exchange
+## 😘 / 🫡 / 🙏🏼 / 🏆 / 📷 / ☕ — the glyph exchange
 
 **The entire mandate compresses to one emoji in each direction — correction AND reward.**
 
@@ -223,7 +223,8 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 |---|---|---|---|---|
 | **😘** | user → session | **Fire the ENTIRE mandate.** The full 2×4, in one character. | this doc | 🫡, then the tightened output |
 | **🫡** | session → user | Received. Complying. **Nothing else is sent.** | — | — |
-| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | this doc | **🫡 and nothing else** — then keep working |
+| **🙏🏼** | session → user | Received the trophy. Complying. **Nothing else is sent.** | — | — |
+| **🏆** | user → session | **That was right. Do more of that.** Reinforcement, not thanks. | this doc | **🙏🏼 and nothing else** — then keep working |
 | **📷** | user → session | **Document and checkpoint your work.** Snapshot the state now. | `session-checkpoint.md` | **🫡**, then the checkpoint — report only when it's done |
 | **☕** | user → session | **Coffee break's OVER — get back to work.** The Riot Act. | `push-to-completion.md` | **🫡**, then **drive the board + deliver the receipts** |
 
@@ -241,16 +242,16 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 
 **🏆 means: that specific thing was right — the ruling, the receipt, the catch, the refusal — do more of it.** It is *reinforcement aimed at a behavior*, not gratitude aimed at a person. Attached to a message it marks **that** move: *"good call on the pipe test 🏆"*.
 
-> ### 🔴 **🫡 IS THE ONLY OFFICIAL ACK — FOR 🏆 AND FOR 😘 ALIKE** *(Rick, 2026-07-19)*
+> ### 🔴 **🙏🏼 ACKS THE TROPHY; 🫡 STILL ACKS 😘** *(Rick, 2026-07-19; glyph split 2026-07-31)*
 >
-> **One glyph back. Then the work.** The salute is the *entire* acknowledgment in both directions — a correction and a reward are answered identically, and that symmetry is the point.
+> **One glyph back. Then the work.** The salute is the *entire* acknowledgment in both directions — a correction and a reward are answered identically in shape (one glyph, no prose), just not with the same glyph.
 >
 > **This is the rule the trophy exists to protect.** A reward is the single most reliable trigger for the exact prose NoAA bans — the gracious acknowledgment, the *"glad that landed,"* the paragraph explaining why the good thing was good and how it will be repeated. **All of it is banned here, and banned harder than after a correction**, because praise feels like it has earned a reply where a correction obviously has not.
 >
 > ❌ *"Thank you — I'll keep aiming at the defect rather than the suite."*
-> ✅ **🫡** *(then the next line of work)*
+> ✅ **🙏🏼** *(then the next line of work)*
 >
-> **If the 🏆 rides on a question you must answer**: answer the question. The 🫡 covers the trophy; **nothing further is owed to it.**
+> **If the 🏆 rides on a question you must answer**: answer the question. The 🙏🏼 covers the trophy; **nothing further is owed to it.**
 
 ### 📷 — the checkpoint glyph (Rick, 2026-07-19)
 
@@ -383,3 +384,4 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 - **1.0 (2026-07-19)**: Initial. Rick's directive + his escape-clause amendment ("only when ASKED"). Landing sites ruled via checkbox walkthrough.
 - **1.2 (2026-07-28)**: **WaHH seated as the 6th rule** (Rick) — *We're All Humans Here*: plain English, no jargon, write every message as though a human colleague will read it. Ruled **1 rule + 4 triggers** (`WaHH` / `MoPEP` / `NoJP` / `TLH`) rather than four separate rules — the other three name the behavior, WaHH names the reason. Trigger was the register asymmetry: the same session writes plainly to the user and densely to a peer, with only the assumed reader changing. **The tiebreak against KISS is the load-bearing part** — jargon is compression, so the two rules genuinely conflict, and WaHH wins: *compression that costs the reader a re-derivation is not compression.* Substantive landing is `cross-session-communication.md` §1.6, not this file alone; a landing here only would have fired on speech, which was already fine. ⚠️ **Tiebreak wording is María's draft, pending Rick's review** — the rule and the winner are his.
 - **1.1 (2026-07-25)**: **☕ seated as the 5th glyph** (Rick) — the Riot Act's one-character form, routing to `push-to-completion.md`. Two rulings: (a) its response is **🫡 on receipt, receipts on delivery** — the only glyph whose salute does not discharge the order, because ☕'s action does not terminate the way 📷's does and the Anti-Gaming Guard is carried entirely by the report; (b) **the palette stays inside this doc** rather than graduating to `glyph-palette.md` — a new doc starts at zero distribution, the same argument that put NoDrama here. Table gains a **Routes to** column so the taxonomy survives the filename. Also closed a distribution gap found in the same pass: `push-to-completion` had **no user-scope install** (skill + `/plan-push` existed in this repo only), so ☕ would have advertised a route that could not fire in most repos.
+- **1.3 (2026-07-31)**: **🏆's ack split off from 🫡** (Rick) — the trophy is now acked with **🙏🏼**, not 🫡. 🫡 keeps its job for 😘, 📷, and ☕. Every other rule about the trophy is unchanged (one glyph, no prose, then keep working).

@@ -4,7 +4,7 @@
 > **Verbosity is a defect, not a style.** Three lines or less (headline + two supporting sentences). **Verdict first, evidence second, stop.** No narrating your plan, no restating the request, no preambles, no peer-praise paragraphs.
 > **GO LONGER ONLY WHEN ASKED** — the reader holds that discretion, not you.
 > Detail → the `abstract` card. Tables and code are content, not prose.
-> **The glyph palette** — 😘 = this entire mandate in one character · **🏆** = that was right, do more of that · **📷** = document and checkpoint your work · **☕** = coffee break's over, drive your board (the Riot Act → `/plan-push`) · **🫡** = the ONLY official ack, for all four. 😘 alone needs no explanation; never ask what it refers to. **☕ is the one whose 🫡 does not discharge it** — salute, then deliver the receipts.
+> **The glyph palette** — 😘 = this entire mandate in one character · **🏆** = that was right, do more of that (ack **🙏🏼**) · **📷** = document and checkpoint your work · **☕** = coffee break's over, drive your board (the Riot Act → `/plan-push`) · **🫡** = the ack for 😘, 📷, and ☕. 😘 alone needs no explanation; never ask what it refers to. **☕ is the one whose 🫡 does not discharge it** — salute, then deliver the receipts.
 > Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
