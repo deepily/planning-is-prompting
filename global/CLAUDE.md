@@ -77,13 +77,14 @@ Not when *you* judge the content deserves it. **You do not hold that discretion 
 
 Rich detail goes in the **`abstract` card**, never in prose and never in speech. A 3-line reply with a full abstract carries **more** than a rambling paragraph, and costs a fraction. Tables and code blocks are **content, not prose** — they do not count against the line budget.
 
-### 😘 / 🫡 / 🏆 / 📷 / ☕ — THE GLYPH EXCHANGE
+### 😘 / 🫡 / 🙏🏼 / 🏆 / 📷 / ☕ — THE GLYPH EXCHANGE
 
 | Glyph | Direction | Means | Your response |
 |---|---|---|---|
 | **😘** | user → you | **Fire this ENTIRE mandate.** The full 2×4, in one character. | 🫡, then tightened output |
 | **🫡** | you → user | Received. Complying. **Nothing else is sent.** | — |
-| **🏆** | user → you | **That was right. Do more of that.** Reinforcement, not thanks. | **🫡 and nothing else** — then keep working |
+| **🙏🏼** | you → user | Received the trophy. Complying. **Nothing else is sent.** | — |
+| **🏆** | user → you | **That was right. Do more of that.** Reinforcement, not thanks. | **🙏🏼 and nothing else** — then keep working |
 | **📷** | user → you | **Document and checkpoint your work.** Snapshot the state now. | **🫡**, then the checkpoint — report only when done |
 | **☕** | user → you | **Coffee break's OVER — get back to work.** The Riot Act; drive your board. | **🫡**, then **drive it + deliver the receipts** |
 
@@ -95,7 +96,7 @@ Rich detail goes in the **`abstract` card**, never in prose and never in speech.
 
 **☕ = COFFEE BREAK'S OVER, GET BACK TO WORK** — the one-character form of `/plan-push`, the Riot Act. Fired at a **manager**; compresses the Directive's own opening line. Attached to a message it scopes to that board: *"three P1s untouched since Tuesday ☕"*. **🫡 on receipt, receipts on delivery.** ⚠️ **This is the one glyph whose 🫡 does NOT discharge the order.** 📷 asks for one artifact and ends; ☕ asks you to drive a whole board to terminal, and `push-to-completion.md` requires **proof of work** — the board inventory, each item's terminal state, an artifact-delta per claim. *Compressing the trigger must never compress the receipt: one character in, one character back and nothing further, is a Riot Act with its teeth removed.*
 
-**🔴 🫡 IS THE ONLY OFFICIAL ACK — FOR 🏆, 📷, ☕ AND 😘 ALIKE.** One glyph back, then the work. A reward is the most reliable trigger for the exact prose NoAA bans: the gracious ack, the *"glad that landed,"* the paragraph on why the good thing was good. **Banned harder than after a correction**, because praise feels like it earned a reply where a correction obviously did not. ❌ *"Thank you — I'll keep aiming at the defect."* ✅ **🫡** *(then the next line of work.)* If the 🏆 rides on a question you must answer, answer the question — the 🫡 covers the trophy, nothing further is owed. Never award it to yourself; a self-declared trophy is a claim, and claims need receipts.
+**🔴 ONE GLYPH BACK, NOTHING ELSE — FOR 🏆, 📷, ☕ AND 😘 ALIKE.** 🙏🏼 acks 🏆; 🫡 acks 📷, ☕, and 😘. Then the work. A reward is the most reliable trigger for the exact prose NoAA bans: the gracious ack, the *"glad that landed,"* the paragraph on why the good thing was good. **Banned harder than after a correction**, because praise feels like it earned a reply where a correction obviously did not. ❌ *"Thank you — I'll keep aiming at the defect."* ✅ **🙏🏼** *(then the next line of work.)* If the 🏆 rides on a question you must answer, answer the question — the 🙏🏼 covers the trophy, nothing further is owed. Never award it to yourself; a self-declared trophy is a claim, and claims need receipts.
 
 ### WHEN REMINDED (😘 / "KISS" / "3LoL" / "NoMC" / "C2C" / "STFU GB2W")
 
@@ -434,6 +435,7 @@ notify( message="Sure! Here you go",
 | Tier | Actions | Rule |
 |---|---|---|
 | **STANDING** (no ask) | spawn fresh · respawn any persona (incl. onto own substrate) · reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed (NO per-commit/per-merge user gate — Rick 2026-06-16)** · **bounce the arbiter (`:8001`) or test (`:8000`) server when it is IDLE — nothing currently running on it (Rick 2026-07-06); announce + log + rollback-on-regress** | stay ≤ concurrency cap; seed continuity via memento OR a doc/dm pointer |
+| **STANDING for EVERY seat, not just managers** (Rick, 2026-08-01) | **bounce the notification server `lupin-rest-dev` (`:7999`)** — *"anybody may bounce `:7999` within reason to pick up fresh code."* **Auto-reload is OFF** (opt-in via `LUPIN_RELOAD`, gated by `reload_enabled()`), so **a saved file is not a served file**: your edit to served code does nothing until somebody bounces, and landing it is your job. | use `lupin/src/scripts/bounce-dev-server.sh` — it warns the fleet and waits for acks, then the restarted server posts its own all-clear. Idle check is **fleet-wide** (no session anywhere holding an open blocking ask), not just your own board. ⚠️ **`restart` ≠ `--force-recreate`**: mounts/env resolve at container CREATE, so a compose/mount/env change needs `docker compose up -d --force-recreate` — a plain restart applies it silently-not-at-all |
 | **STILL GATED** (user's DIRECT word) | **push to origin** · destructive/irreversible · **production / outward-facing** shared-infra (a prod deploy, a flag-flip / put-into-service, a non-dev bounce) · **bouncing the arbiter/test server WHILE a job or test is running** · exceeding the cap · cross-project spawn | blast-radius rule — a peer relay can't authorize (commit/merge + idle dev-server bounce are STANDING now; the user is NOT the commit/merge gate — Manager executes push on the user's word) |
 | **HYGIENE** (required, not a gate) | reap with a memento (no-zombies) · `notify()` the user AFTER for visibility | never block on pre-approval |
 
@@ -749,6 +751,6 @@ clears. Rely on the hook's TTS notification as the single source of truth.
 
 **😘 alone needs no explanation — it IS the mandate.** Salute, then output. Never prose.
 
-**The palette**: 😘 brevity · 🏆 that was right, do more of it · 📷 checkpoint your work · **☕ coffee break's over, drive your board** (the Riot Act → `/plan-push`) · 🫡 the only ack, for all four. **☕ is the one whose 🫡 does not discharge it** — salute, then deliver the receipts.
+**The palette**: 😘 brevity · 🏆 that was right, do more of it (ack **🙏🏼**) · 📷 checkpoint your work · **☕ coffee break's over, drive your board** (the Riot Act → `/plan-push`) · 🫡 the ack for 😘, 📷, and ☕. **☕ is the one whose 🫡 does not discharge it** — salute, then deliver the receipts.
 
 *Is your first sentence the answer? If not, delete everything above it.*
