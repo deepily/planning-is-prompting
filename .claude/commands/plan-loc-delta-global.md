@@ -47,7 +47,7 @@
    - **⚠️ `--prefer-branch-csv` was REMOVED (2026-07-13). Never pass it — argparse hard-errors.** Likewise `--plot-output` / `--no-baseline` were never real: **verify a flag against `--help` before passing it.** *(A wrong flag in prose is indistinguishable from a right one until something runs it — which is the exact defect this whole rewrite came from.)*
 
 5. **MUST surface the rollup via `notify()`** with:
-   - **Spoken `message`**: TTS-Brevity-Mandate-compliant one-line LoC verdict (≈8-15 words, e.g. *"Cross-repo wrap: 7 days, 3 repos, net plus 47k lines"*)
+   - **Spoken `message`**: TTS-Brevity-Mandate-compliant one-line LoC verdict (≈8-20 words) **MUST state added AND deleted, not net alone** (Rick, 2026-07-31) — e.g. *"Cross-repo wrap: 7 days, 3 repos, 51k added, 4k deleted, net plus 47k lines"*
    - **Rich `abstract`**: full markdown table per canonical workflow Step 3, with doc-viewer links to consolidated CSV + plot PNG using canonical path-only URL form (`/app/docs?path=lupin/io/loc-delta-global/...`) per `workflow/doc-viewer-links.md`
    - **`priority="medium"`** + `suppress_ding=True` (informational, not alerting)
 

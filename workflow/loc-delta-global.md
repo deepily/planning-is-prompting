@@ -289,7 +289,7 @@ Plot: lupin/io/loc-delta-global/global-2026-05-15_to_2026-05-21-plot.png
 
 ```python
 notify(
-    message           = "Cross-repo wrap: 7 days, 3 repos, net plus 47k lines.",
+    message           = "Cross-repo wrap: 7 days, 3 repos, 51k added, 4k deleted, net plus 47k lines.",
     abstract          = "<full markdown above, with doc-links to CSV + plot>",
     notification_type = "task",
     priority          = "medium",
@@ -306,14 +306,17 @@ notify(
 
 The `lupin` scope is used because the aggregator's output convention writes to `<lupin>/io/loc-delta-global/` (Rachel's choice; matches where the cosa CLI lives).
 
-**Spoken-verdict mandate** (≈8-15 words, conversational):
+**Spoken-verdict mandate** (≈8-20 words, conversational):
+
+**MUST state added AND deleted, not net alone** (Rick, 2026-07-31 — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only compresses away the churn: a net of +200 reads identically whether it was 210 added / 10 deleted or 40,210 added / 40,010 deleted, and those are very different days. State all three — added, deleted, net — every time, spoken and written alike.
 
 Examples of compliant verdicts:
-- *"Cross-repo wrap: 7 days, 3 repos, net plus 47 thousand lines."*
-- *"Today's global roll-up: light day, net plus 280 across 2 repos."*
-- *"Sprint summary: 14 days, 5 repos, net plus 12k lines."*
+- *"Cross-repo wrap: 7 days, 3 repos, 51 thousand added, 4 thousand deleted, net plus 47 thousand."*
+- *"Today's global roll-up: light day, 310 added, 30 deleted, net plus 280, across 2 repos."*
+- *"Sprint summary: 14 days, 5 repos, 60 thousand added, 3 thousand deleted, net plus 12k."*
 
 Anti-patterns:
+- Net-only spoken line (*"net plus 47k lines"* alone) — **now non-compliant**; added/deleted must both be present
 - Recital of per-repo numbers in spoken line (belongs in abstract)
 - File paths in spoken line (TTS-hostile)
 - "No active repos" worded as if it were an error rather than informational
@@ -380,6 +383,7 @@ Both files are included in the closing `notify()` abstract as doc-viewer links.
 
 ## Version History
 
+- **2026-07-31**: **Spoken-verdict mandate now REQUIRES added/deleted alongside net, always** (Rick — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only was already banned from the terminal/abstract render (Step 3 has always shown Added/Deleted/Net columns); this closes the one place net-only had survived — the **spoken** line. Updated the compliant-verdict examples and the `notify()` code sample in Step 3, plus the slash wrapper's Step 5 instruction, to always state all three numbers. Net-only spoken line is now an explicit anti-pattern.
 - **2026-07-13**: **THE ROLL-UP NOW COMPUTES FROM GIT.** Three defects, one rewrite (lupin `1ccc05b5`, Mr Radio 🦉; PIP-side doc + slash wrapper by María 🌸; found while investigating Rick's *"the global roll-up discrepancy from yesterday"*).
   **(A) `bbff93a3` — main-side churn was structurally invisible.** The per-repo analyzer measured rev-range `main..<branch>`, so **any commit reachable from `main` sat on the baseline side and could never be counted, no matter how often the roll-up re-ran.** `google/skills-distillation` — a fresh repo whose Phase-1 work went straight to main as one commit — was under-reported by **exactly 1,607 added lines** (reported +2,826 net; actual +4,433). Reconciled to the line: `git log main --numstat` = added 1,607 = the gap. Generalizes to any fresh repo, main-only repo, or repo whose WIP branch was cut *after* work landed.
   **(B) `37a8beeb` — commit counts double-counted.** The CSV's `commits` column was a per-`(date, file_type)` unique-SHA count that the aggregator then **summed across file-type rows**; with no SHA column in the CSV this was **un-dedupable post-hoc**. Fixed structurally by holding SHA-level rows in memory.
