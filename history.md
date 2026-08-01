@@ -11,8 +11,8 @@
 Also: **two pattern candidates held at CANDIDATE, deliberately not graduated** (one run is not three) — *an artifact belonging to no section gets its contents reviewed and its own state never updated* (4 instances, one run) and *a close check scoped to the manager's own conditions cannot see a defect the manager did not anticipate*. Detail: `TODO.md` § Pending Decisions.
 
 #### Checkpoint | 2026.08.01 | S155 — `:7999` seated in the standing bounce rule + "a saved file is not a served file" · late-answer handback held in 4 lupin commits (`0b89a489` `c3d5c4a3` `836cae41` `93a97136`) · 2 pattern candidates held, not graduated · crew harvested with mementos · NOTHING PUSHED
-**Files**: workflow/manager-autonomy.md · TODO.md · history.md · .claude-session.md — **lupin**: src/rnd/v0.1.9/2026.08.01-late-answer-handback.md · src/tests/integration/test_answers_owed_authlane_dv1.py · src/tests/unit/test_cc_notification_listener_coverage.py
-**Commits**: `20b0564` (PIP) — lupin held, see § S155 above
+**Files**: workflow/manager-autonomy.md · TODO.md · history.md · .claude-session.md — **lupin**: src/rnd/v0.1.9/2026.08.01-late-answer-handback.md · src/tests/integration/test_answers_owed_authlane_dv1.py
+**Commits**: `20b0564` `75c06ac` (PIP) · `d818d6cc` (lupin) — all HELD, nothing pushed
 
 **Previously**: **Session 153 (2026-07-28) — WaHH seated as the 6th brevity rule, and the register failure it names could not have been caught by the first five** (María 🌸 `2593d668`, chorus).
 
