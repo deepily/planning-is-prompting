@@ -1,6 +1,20 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 155 (2026-08-01) — the late-answer handback built and held, `:7999` seated in the standing bounce rule, and three of my own errors that were all the same one** (María 🌸 `2b9feb77`, chorus; SWE crew Clayton 😎 / Rio ⚡ / Rachel 🕊️).
+**RESUME HERE**: **Session 157 (2026-08-02) — Krishna re-spun, three rows closed on gates I ran myself, and a guard that shipped a hole its own green suite could not see** (María 🌸 `3e328792`, chorus; Krishna 🦚 `4049f5fd`).
+
+1. **`00600a75` CLOSED — Rick's correction of me proven live: thresholds hot-reload through `/api/init`, no bounce.** Both arms run from **my own caller-side payload**, not Krishna's return value: 119 words → one 👎 with directness/tone withheld naming *"119 > 100"*, and 314 words → 😞😞😞 where the old cap renders two.
+2. **`08919110` — Rick ruled the bounce guard into the SCRIPT, not into an "ask first" rule.** New unauthenticated `/api/busy`, refuse on a live job, `--force` override, **fail OPEN when the probe is unreachable**; code approved at `c8e4d7ec`, row open only on a deferred live reading after the next natural bounce.
+3. **⚠️ That guard FAILED my first gate on a defect its own green suite could not see.** Mutating `EXIT_UNREACHABLE` 20→10 reddened **nothing** — the probe tests asserted against the symbol and the script test stubbed the literal, so the wire between the two layers was unguarded and the guard would have failed **CLOSED**, blocking recovery of a wedged server.
+4. **`5ca41c22` closed with a revert-proof he had not run; Krishna re-spun with his rows intact.** `respin_personas=["krishna"]` is the load-bearing arg — without it a reap moves the worker's rows onto the manager, and the lane reads as unworked while the manager's board merely looks fuller.
+5. **🔴 I relayed a peer's word as the user's.** Rick told me directly not to bounce; a peer said he had cleared it, and **I passed that to Krishna as a GO**. Harmless in the end (the peer had in fact re-asked), but on 08-01 I did the opposite with the identical shape — took the relay to Rick rather than acting on it.
+
+Also: **corpus purged 101 → 97 rows, the four synthetic gate probes ARCHIVED not deleted**, survivors' md5 identical before and after — **81 `origin: live` rows at mean 102.8 words** against the 60 target, which is Thursday's number.
+
+#### Checkpoint | 2026.08.02 | S157 — Krishna re-spun (rows retained); `00600a75` P1 + `5ca41c22` P2 + `dfc10c09` closed, every gate run by me; `08919110` approved `c8e4d7ec`, blocked on one deferred reading; bounce-guard hole found by mutation; corpus purged and archived; Rick ruled server topology + `/api/busy`
+**Files**: TODO.md · docs/explainer/2026.07.25-the-kiss-protocol-how-a-brevity-mandate-got-built.md · history.md · .claude-session.md — **lupin (Krishna's, held)**: src/cosa/agents/dm_quality_judge/judge.py · src/cosa/rest/routers/system.py · src/scripts/bounce-dev-server.sh · src/scripts/bounce_busy_probe.py · src/conf/lupin-app-splainer.ini · src/tests/unit/ (5 files)
+**Commits**: **lupin, all HELD** — `8b274bdd` `7ef88895` `c8e4d7ec` (this session) + `bef365dd` `e9996d63` `34898a0c` `7c049943` `e7c78415` `93596229` (earlier today)
+
+**Previously**: **Session 155 (2026-08-01) — the late-answer handback built and held, `:7999` seated in the standing bounce rule, and three of my own errors that were all the same one** (María 🌸 `2b9feb77`, chorus; SWE crew Clayton 😎 / Rio ⚡ / Rachel 🕊️).
 
 1. **Late-answer handback SHIPPED and HELD — four lupin commits, row `7bb0a7df`, all green and adversarially reviewed.** `0b89a489` (owed column + migration `3da5c0d1eee6`) · `c3d5c4a3` (owed query + tz fix) · `836cae41` (the handback route + pull endpoint — the actual fix) · `93a97136` (MCP re-attach). **Not pushed — Rick's call.**
 2. **`:7999` seated in the standing idle-bounce prerogative, with two rules the other servers don't need** (`workflow/manager-autonomy.md`). Its idle check is **fleet-wide** (no session anywhere holding an open blocking ask), and a **warn-then-all-clear broadcast is mandatory** — a bounce nobody was warned about is indistinguishable from a crash.
