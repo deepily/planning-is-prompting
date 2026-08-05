@@ -31,14 +31,14 @@
    > **🔄 REWRITTEN 2026-07-13 — discovery enumerates GIT ROOTS, not CSVs.** The aggregator now **computes from git** and no longer reads per-repo CSVs at all (those are artifacts, not inputs). Keying discovery on CSV freshness is what made `google/skills-distillation` invisible — a repo had to have already run session-end §6 to be *seen*.
    - Glob THREE depth patterns for **`.git`** (repos are NOT all one level under `$PROJECTS_ROOT`) and union+dedup: `$PROJECTS_ROOT/*/.git` (flat), `$PROJECTS_ROOT/*/*/.git` (grouping dirs like `google/lookml`, `google/skills-distillation`, `google/harvey-labs`), `$PROJECTS_ROOT/*/src/*/.git` (nested sub-repos like `lupin/src/lupin-mobile`)
    - **🛑 GUARD 1 — `.git` MUST be a DIRECTORY.** A `.git` **file** means a **worktree or submodule**, which **shares its parent's object database and branch refs** — analyzing one returns the parent's commits *again*. There are **9 lupin worktrees** (`lupin-wt-*`, `lupin-worktrees/*`) sitting directly under `$PROJECTS_ROOT`; counting them would **multiply lupin's LoC by ~10**. Keep a candidate only if `Path(dotgit).is_dir()`
-   - **🛑 GUARD 2 — the repo MUST have commits in the window.** `git -C <repo> log --branches --no-merges --since=<since> --until=<until> --oneline` must be non-empty. This is what drops the ~39 vendored/dormant clones (`transformers`, `peft`, `vllm`, `lancedb`, …). On a typical week discovery goes **43 roots → 4 active**. `--branches` walks LOCAL refs only, so a `git fetch` on a vendored clone does NOT make it look active
+   - **🛑 GUARD 2 — the repo MUST have commits in the window.** `git -C <repo> log --branches --no-merges --since=<since> --until=<until> --oneline` must be non-empty. **⚠️ `<since>`/`<until>` MUST already be time-normalized (see flag semantics below) — a bare date here makes this probe return empty for every repo, and discovery reports zero active repos on a busy day** This is what drops the ~39 vendored/dormant clones (`transformers`, `peft`, `vllm`, `lancedb`, …). On a typical week discovery goes **43 roots → 4 active**. `--branches` walks LOCAL refs only, so a `git fetch` on a vendored clone does NOT make it look active
    - Carry each repo's ABSOLUTE path `str(Path(dotgit).parent)`; repo name for display is `Path(p).name`
    - **NO mtime filter — the activity filter IS git.** The old CSV-mtime heuristic asked *"has this repo run session-end §6 recently?"* — a proxy for activity a repo had to **earn by running our tooling**, which is exactly what made `google/skills-distillation` invisible. Asking git directly also surfaced `google/harvey-labs`, which the CSV glob had **never once seen**
    - Pass the resolved absolute paths explicitly via `--repos <abs-path-list>` — DO NOT reconstruct from name + `PROJECTS_ROOT` (breaks for non-flat repos), and DO NOT rely on the CLI to auto-discover (`--repos` is required by design; discovery policy lives PIP-side)
    - **Bypass discovery only if user passed `--repos REPO1 REPO2 ...` explicitly** — explicit override always wins
 
 4. **MUST honor flag semantics**:
-   - `--since YYYY-MM-DD` / `--until YYYY-MM-DD` — inclusive commit-window bounds; pass through
+   - **🛑 `--since` / `--until` — NORMALIZE TO EXPLICIT TIMES BEFORE PASSING TO GIT.** Accept a bare `YYYY-MM-DD` from the user, but **never hand one to git**: append `00:00:00` to `--since` and `23:59:59` to `--until` if the value carries no time. **Git's approxidate resolves a bare date to that date at the CURRENT WALL-CLOCK TIME, not midnight** — so `--since=D` silently drops that morning's commits (a different set every hour you run it), and `--since=D --until=D` is an **empty interval by construction** and returns **zero**. Reproduced 2026-08-05 on lupin: bare single-day window → **0 commits**, same window with explicit times → **92**. Apply the normalization in **both** places — the GUARD 2 discovery probe *and* the aggregator call; normalizing one gives you a repo set and a total that disagree. Canonical: `workflow/loc-delta-global.md` §0.1
    - `--repos REPO1 REPO2 ...` — overrides discovery; explicit list passes through directly
    - `--head-only` — pass through. **Default is ALL LOCAL BRANCHES**: the roll-up asks *"what work happened in window W"*, and work on a sibling branch is still work. Only pass this to deliberately narrow scope
    - `--include-merges` — pass through; merges are excluded by default (they'd double-count)
@@ -55,6 +55,8 @@
    - **⚠️ COVERAGE-RECONCILIATION MISMATCH → WARN LOUDLY.** The aggregator asserts counted-commits == `git rev-list --count` for the same window/branch-scope/date-basis, per repo. On mismatch the roll-up still ships but the summary is **prominently flagged as unreliable** — surface it in the spoken line, not just the abstract. **Never render a suspect number as if it were fine.** *(This guard is the replacement for the retired Step 1.7. The original bug produced figures that were internally consistent, confidently rendered, and wrong by 1,607 lines — and nothing complained, because nothing ever asked "is this everything?")*
    - `LUPIN_ROOT` unset → hard error with hint
    - No git roots found under `PROJECTS_ROOT` → **configuration error**, not "nothing to roll up"
+   - **⚠️ ZERO ACTIVE REPOS across 40+ discovered git roots → SUSPECT, not "a quiet week"** (workflow §4.2). Say so in the spoken line and put the exact `--since`/`--until` strings **as passed to git** in the abstract, so a bare date is visible at a glance. A quiet week and a broken window produce byte-identical output, and on this fleet the broken window is far likelier. *(2026-08-01: the documented bare-date form reported 0 active repos on a day with 70 commits.)*
+   - **📊 ALWAYS report the largest single commit** — SHA, subject, files touched, and its share of the window total (workflow §4.3). Unconditional, no threshold. A squash-merge has one parent, so `--no-merges` leaves it in: on 2026-08-04 one squashed PR carried **93% of a two-day total across 1,277 files**, and the coverage guard passed cleanly because the commit genuinely was in the window
    - Aggregator CLI fails → surface stderr in abstract; suggest a cosa-side status check
    - A repo has no commits in the window → **informational**; list it explicitly so an expected-but-absent repo is conspicuous
    - `--plot` fails but data succeeded → render summary without plot link; non-fatal
@@ -76,8 +78,10 @@
 ```bash
 /plan-loc-delta-global                                        # discover all git roots + Step 1.5 confirmation gate
 /plan-loc-delta-global --no-confirm                           # discover all, skip the gate (fast path)
-/plan-loc-delta-global --since 2026-07-13                     # today only (still gated unless --no-confirm)
+/plan-loc-delta-global --since 2026-07-13                     # single day — the wrapper normalizes to 00:00:00–23:59:59
 /plan-loc-delta-global --since 2026-07-08 --until 2026-07-14  # explicit window (still gated)
+# ⚠️ Bare dates above are what the USER types. The wrapper MUST time-normalize before
+#    calling git — passing these through verbatim returns 0 commits for a single day.
 /plan-loc-delta-global --repos lupin planning-is-prompting    # explicit subset; bypasses discovery + gate
 /plan-loc-delta-global --plot                                 # + plot PNG (still gated)
 /plan-loc-delta-global --no-confirm --plot --verbose          # fast path + plot + verbose stderr

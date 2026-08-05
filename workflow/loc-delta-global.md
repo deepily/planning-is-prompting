@@ -16,8 +16,13 @@
 | Situation | Invocation |
 |---|---|
 | Ad-hoc curiosity mid-day ("what have I done across repos today?") | `/plan-loc-delta-global` (bare; uses defaults) |
-| End-of-day cross-repo snapshot | `/plan-loc-delta-global --since YYYY-MM-DD` |
-| Sprint retrospective spanning multiple days | `/plan-loc-delta-global --since 2026-05-01 --until 2026-05-15` |
+| End-of-day cross-repo snapshot | `/plan-loc-delta-global --since "YYYY-MM-DD 00:00:00"` |
+| Sprint retrospective spanning multiple days | `/plan-loc-delta-global --since "2026-05-01 00:00:00" --until "2026-05-15 23:59:59"` |
+
+> **⚠️ ALWAYS pass explicit times. A bare `YYYY-MM-DD` does not mean midnight** — see
+> [§0.1 Date windows](#01-date-windows--a-bare-date-is-not-midnight). The bare form silently
+> under-counts by a different amount every time you run it, and a single-day bare window returns a
+> confident **zero**.
 | Specific subset of repos (override discovery) | `/plan-loc-delta-global --repos lupin cosa planning-is-prompting` |
 | With visual plot artifact | `/plan-loc-delta-global --plot` |
 
@@ -35,6 +40,65 @@
 - **Default (no explicit hold)**: standing — just run it.
 
 **Why the gate bit us before** (the empirical anchor): on 2026-06-09 and again 2026-06-10 the user set an explicit session hold (*"hold globals until Tiberius's go"*); when the manager handed off, the agent could not run on the manager's relay (a peer relay never lifts a user-authored gate — classifier-confirmed). Correct for a *user-set* hold, but it made the *routine* roll-up feel gated. This section fixes the routine case: absent an explicit user hold, the roll-up is standing.
+
+---
+
+## §0.1) Date windows — a bare date is NOT midnight
+
+> **🔴 FOUND 2026-08-05, reproduced on the live tree.** Every `--since` / `--until` in this document
+> must carry an explicit time. The bare-date form this doc used to prescribe under-counts silently,
+> and in the single-day case returns **zero**.
+
+**The mechanism.** Git parses `--since` / `--until` with *approxidate*, which resolves a bare
+`YYYY-MM-DD` to **that date at the current wall-clock time**, not to midnight. One mechanism, two
+symptoms:
+
+| Symptom | Why |
+|---|---|
+| `--since=D` silently drops that day's earlier commits | The cutoff lands at *now-o'clock on D*. Run the same command at 09:00 and at 17:00 and you get **different answers from the same repo** |
+| `--since=D --until=D` returns **0** | The interval is *D@now → D@now* — **empty by construction** |
+
+**The receipt** (lupin, run at `2026-08-05 11:50:42 -0400`):
+
+```
+git log --branches --no-merges --since=2026-08-03 --until=2026-08-03          →   0 commits
+git log --branches --no-merges --since="2026-08-03 00:00:00" \
+                               --until="2026-08-03 23:59:59"                  →  92 commits
+
+# and the cutoff tracks the clock, not the date:
+oldest commit INCLUDED by bare --since=2026-08-01   →  2026-08-01 11:56:56 -0400
+newest commit EXCLUDED by it                        →  2026-08-01 11:44:19 -0400
+                                                        ↑ the boundary sits at ~11:50 — "now"
+```
+
+**The rule**: normalize both bounds before anything else runs.
+
+```bash
+# Accept a bare date from the caller, but never pass one to git.
+SINCE_TS="${SINCE:+${SINCE} 00:00:00}"   # if SINCE already has a time, use it verbatim
+UNTIL_TS="${UNTIL:+${UNTIL} 23:59:59}"
+```
+
+Applies in **both** places a window is used — the Step 1 discovery probe (`has_commits_in_window`)
+and the Step 2 aggregator call. Normalizing one and not the other gives you a repo set and a total
+that disagree.
+
+> **Why the existing coverage guard cannot catch this.** §4.1 reconciles counted commits against
+> `git rev-list --count` **for the same window** — so both sides use the same broken bounds and both
+> agree on zero. The guard is working exactly as designed; it reconciles *counting*, and this is a
+> defect in *selection*. **A reconciliation guard can only ever prove two things agree, never that
+> either is right.**
+>
+> **What the guard should also assert** — a `0 active repos` result across 40+ git roots is suspect,
+> not a quiet week. See §4.2.
+
+**Correction to the original filing.** The bug row for this defect (`d5bfe470`'s sibling in TODO)
+stated two separate causes — a bare-date/timestamp discrepancy *and* `--until=D` meaning "before
+midnight of D". **Both mechanisms as written were wrong**, though the symptom was real. There is one
+cause — approxidate resolving to the current time of day — and it produces both symptoms. The
+`0 vs 61` figure in that filing did not reproduce; the true single-`--since` discrepancy on the same
+repo is 1 commit (222 vs 223) and varies with the hour you run it. **The single-day zero is the
+severe half, and it reproduces every time.**
 
 ---
 
@@ -67,7 +131,16 @@ true_roots = [ g.parent for g in candidates if g.is_dir() ]
 
 # GUARD 2 — the repo must have ACTUAL COMMITS in the window (same branch scope the
 #           aggregator will use). This is what makes dormant + vendored clones drop out.
+# GUARD 2b — the window bounds MUST carry explicit times. A bare YYYY-MM-DD resolves to
+#            that date at the CURRENT WALL-CLOCK TIME (approxidate), not midnight — so a
+#            single-day bare window is empty by construction. See §0.1.
+def normalize_window( since, until ):
+    if since and " " not in since: since = f"{since} 00:00:00"
+    if until and " " not in until: until = f"{until} 23:59:59"
+    return since, until
+
 def has_commits_in_window( repo, since, until ):
+    since, until = normalize_window( since, until )
     out = subprocess.run(
         [ "git", "-C", str( repo ), "log", "--branches", "--no-merges",
           f"--since={since}", f"--until={until}", "--oneline" ],
@@ -108,7 +181,14 @@ repo_paths = sorted( str( r ) for r in true_roots if has_commits_in_window( r, s
 - Spoken: *"Roll-up failed — no git repos found under the projects root."*
 - Abstract: the `PROJECTS_ROOT` that was tried + the `export PROJECTS_ROOT=…` hint.
 
-**Failure mode — roots exist but none are active in the window**: genuinely informational (*"no commits anywhere in the window"*) — a quiet week is a real answer, and distinct from a broken config.
+**Failure mode — roots exist but none are active in the window**: a quiet week is a real answer, and
+distinct from a broken config — **but do not render it as one without checking §0.1 first.**
+
+> **🔴 This sentence used to read as an unqualified all-clear, and that is how a broken window ships
+> as a finding.** On 2026-08-01 the documented bare-date form returned *"0 active repos"* on a day
+> with **70 commits**, and the roll-up was one render away from reporting a quiet week. Before
+> reporting zero, confirm both bounds carry explicit times (§0.1) and apply the §4.2 suspicion
+> check. **Zero across 40+ git roots is a claim that has to earn itself.**
 
 ---
 
@@ -217,7 +297,7 @@ cd "$LUPIN_ROOT/src" && \
 | Flag | Meaning |
 |---|---|
 | `--repos` (**required**) | Absolute repo dirs from Step 1. Do NOT reconstruct from name + `PROJECTS_ROOT` — that breaks for non-flat repos (`google/lookml`, `google/skills-distillation`) |
-| `--since` / `--until` | Inclusive commit-window bounds |
+| `--since` / `--until` | Inclusive commit-window bounds. **Pass explicit times** (`"YYYY-MM-DD 00:00:00"` / `"YYYY-MM-DD 23:59:59"`) — a bare date resolves to *now-o'clock on that date*, not midnight (§0.1) |
 | `--head-only` | Walk only each repo's current HEAD. **Default is ALL LOCAL BRANCHES** — the roll-up asks *"what work happened in window W"*, and **work on a sibling branch is still work.** Use only to deliberately narrow scope |
 | `--include-merges` | Merges are excluded by default (they would double-count the commits they merge) |
 | `--plot` | Writes `<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png` |
@@ -319,7 +399,9 @@ Anti-patterns:
 - Net-only spoken line (*"net plus 47k lines"* alone) — **now non-compliant**; added/deleted must both be present
 - Recital of per-repo numbers in spoken line (belongs in abstract)
 - File paths in spoken line (TTS-hostile)
-- "No active repos" worded as if it were an error rather than informational
+- "No active repos" worded as if it were an error rather than informational — **but see §4.2**: a
+  zero across 40+ git roots is *suspect*, and rendering it as a calm informational result is its own
+  anti-pattern. Informational ≠ unexamined
 
 ---
 
@@ -350,6 +432,52 @@ In every skip/fallback path: surface the cause + a remediation hint. **Never sil
 > A pipeline that cannot error is not the same as a pipeline that is correct. An under-count is the failure mode that *looks exactly like success*, which is precisely why it needs a mechanism rather than a resolution to be careful.
 
 **This is the replacement for the retired Step 1.7** — and note the difference in kind. Step 1.7 was a guard whose failure path was *"proceed as if it had passed"*; this guard's failure path is *"say so, loudly, in the output the human reads."* **A guard that degrades into its own failure mode is a comment. A guard that shouts is a guard.**
+
+**⚠️ And note what it structurally cannot catch.** §4.1 reconciles *counting* — it proves the
+aggregator counted what git says is in the window. It cannot notice that the **window itself** was
+wrong (§0.1) or that a counted commit's content was **already counted last week** (§4.3). Both sides
+of a reconciliation can be right about each other and wrong about the world.
+
+### 4.2) Zero is a claim, not a default (added 2026-08-05)
+
+**The rule**: if the roll-up finds **0 active repos** while Step 1 discovered a substantial number of
+git roots (the live tree has **43**), do **not** render *"no commits anywhere in the window."* Treat
+it as suspect and say so:
+
+- Spoken: *"Roll-up found no activity across 43 repositories — that's unusual, checking the window."*
+- Abstract: the exact `--since` / `--until` strings **as passed to git**, so a bare date is visible
+  at a glance.
+
+**Why it needs to be a rule.** A quiet week and a broken window produce **byte-identical output**,
+and the broken one is far more likely on a fleet this active. The doc's own §4.1 epitaph is about an
+under-count that looked exactly like success — this is that same shape, one level up: **a zero that
+looks exactly like a quiet week.** The cheapest way to tell them apart is to make the pipeline say
+which one it thinks it saw.
+
+### 4.3) Report the largest single commit, always (added 2026-08-05)
+
+**The rule**: alongside every total, report the **largest single commit in the window** — SHA,
+subject, files touched, and its share of the window's total. Unconditionally, not on a threshold.
+
+**Why.** On 2026-08-04 a two-day window read **+257,216 / −13,611** against actual work of
+**+33,498 / −2,725**. One commit — lupin `1fa05b16`, the squash-merge of PR #20 — carried **93% of
+the total across 1,277 files**. A squash-merge has **one parent**, so it is not a merge commit and
+`--no-merges` leaves it in. Squashing is precisely the operation that collapses weeks of
+already-counted work into a single dated commit.
+
+**§4.1 passes cleanly on this**, because the commit genuinely is in the window. The count is right;
+the *interpretation* is not.
+
+> **Why this is reported rather than filtered.** The property that matters is *"this commit's content
+> was already counted in an earlier window"* — and every test we considered for it keys on commit
+> **shape** instead: one parent, a PR-merge subject line, lands on main. Mr Radio's ruling, and it
+> generalizes: *"`--no-merges` names a category ('merge') and a squash-merge is not in it, so the
+> filter is correct and the intent is not. Make the fix key on what you actually mean rather than on
+> the commit's parent count."* Any shape test will have its own siblings that walk straight through.
+>
+> Reporting concentration needs **no threshold to guess and no category to get wrong**, and it
+> surfaces the anomaly whatever caused it — squash, vendored import, generated file, or a genuinely
+> enormous day. It hands the judgment to the reader instead of pretending a rule can make it.
 
 ---
 
