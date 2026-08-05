@@ -1,6 +1,19 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 157 (2026-08-02) — Krishna re-spun, three rows closed on gates I ran myself, and a guard that shipped a hole its own green suite could not see** (María 🌸 `3e328792`, chorus; Krishna 🦚 `4049f5fd`).
+**RESUME HERE**: **Session 159 (2026-08-04) — Quarter 3 answered end to end, and the outline stopped assuming the generator can tell a stage direction from a slide** (María 🌸 `2ef37e61`, chorus).
+
+1. **All four of Q3's likely questions are answered and written into the outline.** Rick's own ruling carries the first: the span-of-control ceiling is **economic, not cognitive** — *"three managers by four workers already costs more per hour than I can afford to spend finding out."*
+2. **Speaker-note routing is now declared, not inferred — outline routing legend + contract **Section 7** (v1.5).** Rick's call: flag delivery instructions explicitly rather than trust the generator to recognize them by phrasing.
+3. **The preservation check is a COUNT, not a reading.** Author-only leakage must be 0, unrouted blocks must be 0, notes-out ≥ notes-in — because *a deck missing half its speaker notes looks exactly like a deck that never had them.*
+4. **The span claim was recut to one spoken sentence, and the git-record gap moved to Q&A.** The archive only begins around v0.0.7, so the repo starts after the work does; explaining that unprompted is what turned a plain span into a numbers argument.
+5. **The demo directory went one → two KISS documents ON PURPOSE, hours after going two → one.** First the recut plan moved out to `src/rnd/`; then v1 was copied back in beside v2 so the disambiguation path has two near-identical files to choose between on stage.
+
+Also: **Rick's wager seated as a one-line Q3 beat** — *"a hundred dollars that inside five years, structuring a virtual organization of agents is a routine business-school research topic"* — framed as a stake-and-date claim, the same move as Q2's falsifier. ⚠️ **Q4 has still never been reviewed**, and its recap paragraph still lists two affordances Q3 dropped tonight (solo/chorus modes, the multiplexer UI).
+
+#### Checkpoint | 2026.08.04 | S159 — Q3's four likely questions answered + written in · contract → **v1.5** (Section 7, speaker-note preservation + count check) · routing legend added to the outline · span line recut, archive gap moved to Q&A · wager beat added · KISS pair restored in the demo dir for the disambiguation demo
+**Files**: docs/explainer/…-got-built-v1.md · docs/explainer/2026.08.04-…-got-built-v2.md · src/rnd/2026.08.04-kiss-explainer-v2-recut-plan.md · history.md · TODO.md · .claude-session.md — **lupin `io/deep-research/` (gitignored, never in `git status`)**: 2026.08.03-presentation-outline… · 2026.08.04-presentation-generation-contract.md
+
+**Previously**: **Session 157 (2026-08-02) — Krishna re-spun, three rows closed on gates I ran myself, and a guard that shipped a hole its own green suite could not see** (María 🌸 `3e328792`, chorus; Krishna 🦚 `4049f5fd`).
 
 1. **`00600a75` CLOSED — Rick's correction of me proven live: thresholds hot-reload through `/api/init`, no bounce.** Both arms run from **my own caller-side payload**, not Krishna's return value: 119 words → one 👎 with directness/tone withheld naming *"119 > 100"*, and 314 words → 😞😞😞 where the old cap renders two.
 2. **`08919110` — Rick ruled the bounce guard into the SCRIPT, not into an "ask first" rule.** New unauthenticated `/api/busy`, refuse on a live job, `--force` override, **fail OPEN when the probe is unreachable**; code approved at `c8e4d7ec`, row open only on a deferred live reading after the next natural bounce.
