@@ -1,6 +1,19 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 159 (2026-08-04) — Quarter 3 answered end to end, and the outline stopped assuming the generator can tell a stage direction from a slide** (María 🌸 `2ef37e61`, chorus).
+**RESUME HERE**: **Session 160 (2026-08-05) — the explainer split in two, the 80% got its real denominator back, and the outline I was editing turned out to be the older copy** (María 🌸 `6f52fd68`, chorus).
+
+1. **KISS explainer cut into v3 part 1 / part 2 at the Act 10 → Act 11 seam** — part 1 is the verbosity problem, part 2 is the peer channel. Reconciled byte-for-byte against v2: every carried slice identical, zero body lines lost, and **v2 + v1 kept whole in both directories**.
+2. **"80% of token burn" was being read as 80% chatter, and Rick has corrected it more than once.** It is now a two-row table — **~40% agent-to-agent chatter, ~40% voice UX fan-out** — with the second half named as *duplication of an answer the model already finished printing*, not conversation.
+3. **🔴 I nearly overwrote the newer presentation outline with the older one, on my own wrong premise.** I called the deep-research copy "older" and got a go-ahead built on that; the pre-copy divergence check found it was **1,368 lines against 922**, holding the entire 2026-08-04 answered-questions pass. **The stop came from checking the target before writing to it, not from knowing better.**
+4. **The two outlines had diverged in BOTH directions, so neither was a superset.** Merged on the deep-research base and dated today; the older copy's commit stats were also **internally inconsistent** (2,946 in the table, 2,606 in the answers) where the newer one's reconcile (3,013 = 1,874 + 1,139).
+5. **11 slide placeholders seated + the two-arm study's first findings written in.** Hero, 4 demos, 4 Q&As, emulator screenshot, KISS video — all shaped to the outline's own routing legend. Q2's placeholder had claimed "not yet chosen" **against a demo chosen on 08-04**, which is what putting them in the stale copy bought.
+
+Also: **speaker-note audit — 49 blockquote blocks, all tagged by the legend's `>` convention**, and **four spoken lines appear twice** (L524/740, L538/754, L543/766, L1189/1211) which the preservation count-check would emit as duplicates. ⚠️ **Four stale `2026.08.03-…` outline files still on disk**, and the workflow-doc count disagrees between copies (53 vs 57) — a recount is owed before Thursday.
+
+#### Checkpoint | 2026.08.05 | S160 — KISS explainer split v3 part 1/2 (reconciled, v1+v2 kept) · 80% recut to 40/40 chatter-vs-voice in both parts · presentation outline merged onto the newer deep-research base and re-dated · 11 slide placeholders + two-arm findings slide · near-miss: older copy almost clobbered the newer one · earlier today `5af94c7` (bare-date roll-up fix)
+**Files**: docs/explainer/2026.08.05-…-v3-part-1.md · docs/explainer/2026.08.05-…-v3-part-2.md · history.md — **lupin**: src/rnd/v0.2.0/2026.08.05-presentation-outline-lupin-and-planning-is-prompting.md — **lupin `io/deep-research/` (gitignored)**: v3 part 1 · v3 part 2 · 2026.08.05-presentation-outline…
+
+**Previously**: **Session 159 (2026-08-04) — Quarter 3 answered end to end, and the outline stopped assuming the generator can tell a stage direction from a slide** (María 🌸 `2ef37e61`, chorus).
 
 1. **All four of Q3's likely questions are answered and written into the outline.** Rick's own ruling carries the first: the span-of-control ceiling is **economic, not cognitive** — *"three managers by four workers already costs more per hour than I can afford to spend finding out."*
 2. **Speaker-note routing is now declared, not inferred — outline routing legend + contract **Section 7** (v1.5).** Rick's call: flag delivery instructions explicitly rather than trust the generator to recognize them by phrasing.
