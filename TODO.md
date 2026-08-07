@@ -4,6 +4,15 @@ Last updated: 2026-08-06 (**Session 161** (María 🌸 `e2e3c2d2`) — **`/tmp` 
 
 ## 📍 Resume Here
 
+> ### 🌅 **2026-08-06 (S161, María 🌸 `e2e3c2d2`) — START HERE: ARM 4, first thing**
+> - **🌅 FIRST TASK, Rick's direct instruction: fold in the expert review, make a plan, implement.** Row `378c1c95`. All three docs sit together in `lupin/src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/` — plan · expert review · Rick's candidate-LLM research (**`phi4-14b` rated highly**). Detail in § Pending Decisions.
+> - **🔑 BUILD RICK'S ROUND-TRIP TEST FIRST**: extract → placehold → restore with **no model in the loop**, asserting byte-for-byte identity. It proves the harness lossless, so any later placeholder mutation is *deterministically* the model's. Zero API spend, full 2,832-DM corpus, one differing byte fails it.
+> - **⚠️ The expert review knocks down three of my calls** — the corpus does NOT generate its own extraction ground truth (circular); use occurrence-unique clause-scoped placeholders, not same-literal-same-token; the negative control alone is insufficient. Read it before writing the plan.
+> - **Two questions still open for Rick** (plan §8): covert or disclosed; HARD or HARD+SOFT extraction.
+> - **✅ Phase 0 closed by Mr Radio** (`09c945dd`, pushed) — the arbiter's veto read one location while the Stop hook read both. The `/tmp` migration is unblocked; phases 1–3 are unstarted.
+> - **Still mine**: `154fbf19` (memento third slot — approach B is dead, `git check-ignore` refuses any `/tmp` path) · `918fb45e` · `871b68dd` · `bd5c27e1`.
+> - **`88b38757` co-presenter decision chases 2026-08-07 09:00 EDT** — blocked on Rick, deferred at his word.
+
 > ### 🎤 **2026-08-05 (S160, María 🌸 `6f52fd68`) — LEAD COPY FLIPPED · outline merged · KISS explainer split**
 > - **🔴 The presentation outline's LEAD is now `lupin/io/deep-research/ricardo…/`, NOT `src/rnd/v0.2.0/`** (Rick, this session). Edit deep-research, then mirror to `src/rnd`. Current file is **`2026.08.05-presentation-outline-lupin-and-planning-is-prompting.md`** — 1,510 lines, both copies identical.
 > - **⚠️ Four stale `2026.08.03-…` outline files are still on disk** in both directories. They are what nearly caused an overwrite of newer work tonight. **Rick has not ruled on deleting them.**
@@ -20,210 +29,8 @@ Last updated: 2026-08-06 (**Session 161** (María 🌸 `e2e3c2d2`) — **`/tmp` 
 > - **The demo directory holds TWO KISS documents on purpose** — v1 and v2 side by side, so the disambiguation path has two near-identical files to choose between on stage. ⚠️ **Untested.** Their titles are near-identical too; if the matcher ranks on content it may not separate them cleanly.
 > - **`722fe4e9` 3-day DM corpus report is P1, chased for Wed 08-05 21:00 ET** — tomorrow.
 
-> ### 🌙 **2026-07-27 (S152, María 🌸 `697e9fef`) — TWO ROWS SHIPPED + PUSHED · four defects, one shape**
-> - **✅ PUSHED on Rick's direct word** — `da1a5ed8..d3d2f22f` (lupin, **72 commits, all from 2026-07-27**) + `f427974..e3dde1f` (PIP). **Both repos backed up to DATA02** (PIP 410 files; lupin 5.10G of 8.86G).
-> - **Closed with receipts**: `12b5a766` (`16eb3b58`) — absent `sender_project` now 422, plus `GET /api/dm/project-audit`. **4 mutations 4 reds**, incl. *reject-everything* (the fleet-mute outcome a reject-only suite would pass). Gate re-derived, not inherited: 362 observations, 0 offenders, synthetic offender proven to survive the filter.
-> - **Shipped, row still open on one section**: `aa543525` §3 (`7ced29c9`) — **the prescribed remedy was blocked by TWO gates, not the one the row named**; fixing park-legality alone left it impossible, and **only a red test found the second**. Row back to `queued` on **§2 alone** (a park reason killed by an outside event — no clock reaches it; the property is content contradiction). §1 is largely closed already by `body_changed_ts` (`56a24527`, 07-26) — **that row's headline "0 of 5" measurement is now HISTORICAL and must not be re-quoted as live.**
-> - **🔴 STILL OWED, MINE, UNTOUCHED — `2a6759de`** (HWM `[:8]` truncation). Rick RULED it (persist the full 36-char session id, `authority=user_direct`); I did not start it because session-end was called first. ⚠️ **Three caveats travel with his ruling and are NOT settled**: backfill (no full id exists to recover), whether `job_id` itself widens, and where the reconcile's join moves.
-> - **🔴 THE ONE TO INHERIT — `b93841ca` (P1, Mr Radio's row).** `:7999` runs `--reload`; **any edit to watched lupin source wipes the in-memory `ws_manager`**, so `/api/notify` 503s *"user is offline"* at Rick sitting at the keyboard. ⚠️ **A fix asserting "registry non-empty" will NOT work** — at the actual 503 the registry held 2 connections, both CC listeners; only the human's browser was missing. Ours auto-reconnect in seconds, his does not. Second half: **blocking asks carry no idempotency key**, so a retry mints a *second* prompt (five asks in nineteen minutes, four of them mine).
-> - **⚠️ PATTERN WATCH — 4th, 5th, 6th and 7th instances in one evening, across three seats**: *an instrument answering a real question, credited with answering the one asked.* Mine: `list_spawned_sessions` ("what did I spawn?" read as "what did I send?") · a memento ("what did I commit?" read as "what is unpushed?" — I reported 10, it was 71) · a live DM credited as proof of a **reject** gate when it proves only the **accept** arm. His: `1631531b`, and a 5-row cluster whose members shared a *diagnosis, not a remedy*. **This is well past the accumulate-before-graduating threshold — it is the candidate for the next doctrine graduation.**
-> - **✅ DEAD — the crew hold is GONE (Rick, 2026-08-01, by keypress).** *"Yes the July 27th crew hold is removed… Make sure that that hold is utterly obliterated from the record. I don't want to have that question lingering over everybody's head for the rest of our working days. Destroy that hold!"* **Crews spawn under standing manager authority; nobody asks again.** (Historical note, kept only because the duplicate-prompt DEFECT is still open as `f433fbae`: on 07-27 the same question was answered twice, three minutes apart, with opposite answers — `860c57ee` vs `bf033a65` — because blocking asks carry no idempotency key. **The hold that came out of it is void; the bug that caused it is not.**)
-> - **New rows minted tonight by Mr Radio**: `b93841ca` (P1, above) · `16788079` (preflight D8 asserts key PRESENCE not installation — 8 empty arrays pass green) · `8a416a96` (preflight E greps ONE literal Vertex override var).
-> - **⛔ `574fd1dc` is NOT closed and Mr Radio will push back on anyone who closes it.** Root cause found and remedy shipped (`d3d2f22f`), `6cc52525` remedy 1 executed — **but the VM is still 401ing**, because `docker-compose.cloud-gpu.yml:100` bind-mounts `./src` so the VM runs its own checkout. Needs `push-bundle` + `up -d --no-deps --force-recreate lupin-rest`; **`--no-deps` is load-bearing** (without it, `cloudsql-socket-init` `rm -f`s the live socket under the running proxy). **That step is Rick's.**
-> - **TODO.md is 453 lines** — oversized by the Step 0.6 signal for the **fifth** session running, still with no horizon tags to key on. Not archived; the gate has timed out to `no` three times and the real cut is a judgment pass on this Resume-Here stack, not a session-end tail.
+→ Twelve stale session blocks (S152 back through 2026-07-17, incl. the superseded 2026-07-18 POC standing order) archived 2026-08-06 → `todo-archive/2026.08.06-resume-here-recut.md`. Their substance lives in `history.md`, the Decisions Log, and the task-store. Live owed work: query the store (`task_query`).
 
-> ### 🌙 **2026-07-26 (S149–150, María 🌸 `56a24527`) — TWO P1s CLOSED · both were defects in code I shipped the same day**
-> - **Closed with receipts**: `485c0b0f` (`e8a9454`, 16 tests / **6 mutations 6 reds**) · `54924128` (lupin `9fbb6258`, 10,996 unit tests / **7 mutations 7 reds**, **verified live**).
-> - **Still owed, one item**: `ff1924b5` — cosa-voice restart at session end. **Cannot be done mid-session** (it drops this session's own MCP transport). Everything buildable AND measurable is done: pre-fix vs fixed, one process, same corpus — **reads 25 → 344**, **`who(336h)` 14 → 179**, `who(24h)` unchanged at 14. The restart is now confirmatory, not experimental.
-> - **`11461241` P0** — blocked on Rick, chase 07-27T14:00Z. All five preconditions met; what remains is his decision to wire deletion. **Not proposing we open it.**
-> - **🔴 THE ONE TO INHERIT — `lupin-rest-dev` deploys every watched file-save to the fleet's task store.** Not a commit, not a bounce: a **save**. `main.py:445` migrates to head at startup and uvicorn StatReloads on the `reload_dirs` whitelist. My schema change was live hours before I finished testing it. **`:8000` is safe by construction** (`LUPIN_ENV=testing` gates reload off).
-> - **⚠️ And the recovery does NOT self-heal, which is worse than I filed it.** `src/migrations/` is not in the whitelist, so the natural repair — write the migration to fix the 500s — is the one act that cannot trigger a reload. Mr Radio proved both arms (856 `StatReload detected` events, **zero** naming a migrations path) and caught his own first count contaminated by his probe.
-> - **⚠️ Four stale claims died today, three of them mine** — including **my own commit message** (`7ad2819a` said the active commons file held 101 bytes and read `[]`; nine hours later, 39,009 bytes and 25 entries) and **a status report to Rick** (I said two P1s awaited a restart; one had already shipped). Every one was caught by re-measuring, none by re-reading.
->
-> ### 🌙 **2026-07-25/26 (S147, María 🌸) — FOUR P1s TERMINAL · the two that mattered were settled by refuting the obvious fix first**
-> - **Closed**: `955f7eb4` (escape doctrine — DEAD on Rick's pre-set terms; the audit had run 07-21 and came back against it) · `44e62537` (census mode BUILT, `9bc2bec`).
-> - **Built, rows still queued on residuals**: `547f6565` **H3** (correlation axis, `44c7314`) — stays open on `2df66816`, the waiver nobody reads. `11461241` **P1/P4/P5** (cargo guard, lupin `a13cf1b9`) — **deletion still unwired**; open on Phase-2 triage, precondition-3 wiring, and the two-anchor xfail.
-> - **⚠️ Two measured refutations worth inheriting**: retrospective **vocabulary cannot separate our retros from our design docs** (same seats, same register — 77% of design docs pass the loosest threshold); and **row ids share the 8-hex shape with session ids**, so "carries an id" discriminates nothing.
-> - **⚠️ Two stale preconditions found in two different rows** (`547f6565` H2 closed 07-21 by another row's fix; `11461241` P4 closed 07-16) — **a fix landing under row A has no mechanism to re-test row B's claim.** Second and third instances; watch for a fourth before graduating.
-> - **Still on my board (P1)**: `d23147e8` (items 2–4 are Mr Radio's lane) · `aa543525` (park_reason_stale — measured 0-of-5 true positives; **the fix is store-surface, Mr Radio's lane, and should be handed to him**) · `ab721143` (Cascade §D Rev. 6).
-> - **TODO.md is 418 lines**, oversized for the fourth session; still no horizon tags to key on.
-
-> ### 🌇 **2026-07-24 (S146, María 🌸) — `.mcp.json` untracked · THE STAND-DOWN CHASES HAVE COME DUE**
-> - **Shipped**: `.mcp.json` un-tracked + gitignored (`58bd6b1`), mirroring lupin `98a1ac7f`. Committed absolute dev-box paths polluted every checkout; on the VM they caused EACCES + a stale scope-conflict. Store `c1496cea`→done. **Downstream**: a VM PIP checkout refresh (`src/scripts/pip-vm.sh`) clears the stale project-scope entry now that the push has landed.
-> - **🔴 11 rows parked under Rick's S143 stand-down have passed their `next_chase_ts` and rejoined the owed count — 9 of them P1.** Not worked this session; flagged only. Due now: `44e62537` · `0c7c6779` · `547f6565` · `3e96f667` · `0627917c` · `4197a2b4` · `6aba7514` · `2db126a3` · `19b3f653` (P1) + `240f7c29` · `092e318e` (P2).
-> - **The S143 routing constraints still hold**: `0c7c6779` + `240f7c29` need an authoring seat that is **NOT María** (declared conflict — routing is mine, writing is not); `44e62537` is gated on Rio; `547f6565` still carries **H3** untouched by either ruling.
-> - **TODO.md is 408 lines** — oversized by the Step 0.6 signal for the third session running, still with no past-horizon tags to key on. Archival gate fired and **timed out to its `no` default** (not answered) — deferred, on my recommendation that the re-opened board is the higher-value target and that the real cut is a judgment pass on the Resume-Here stack, not a session-end tail.
-
-> ### 🌙 **2026-07-23 (S145, María 🌸) — PIP shipped to the test VM · night wrap (backup + push)**
-> - **`src/scripts/pip-vm.sh` built + shipped.** Sync-only bundle deploy of PIP to `lupin-host-test` (git checkout at `/mnt/lupin-data/planning-is-prompting`, sibling of lupin). First-run **bootstrap** clones from the bundle; later runs fetch+checkout. Committed `f26e87a`; VM verified at `wip-v0.1.9-2026.06.23-tracking-lupin @ f26e87a` (parity with dev). Store `00e2499d`→done.
-> - **Reference**: modeled on lupin `src/scripts/lupin-vm.sh @ da64318e` (Mr Radio's `do_push_bundle`). Mr Radio's lupin deploy landed in parallel (v0.1.8 drift wiped via Rick-approved `reset --hard`, servers green).
-> - **S143 board still stands below** — parked rows come due 07-24; nothing new owed. TODO.md oversized (403 lines); archival still deferred per the stand-down, re-raise at the 07-24 chase.
->
-> ### 🌙 **2026-07-21 (S143, María 🌸) — BOARD PARKED UNDER RICK'S STAND-DOWN · nothing owed until 07-24**
-> - **All 8 walkthrough rulings are RECORDED; 2 are BUILT.** Every remaining row is parked with Rick's own words (*"do not build anything at this point — all inference tokens to Sam's skills-distillation work"*) and a **07-24 chase**. `76f26f9b` parked to **08-04**. Hold declared, `work_owed:false`.
-> - **On the 07-24 chase, in this order**: `0c7c6779` + `240f7c29` both need an **authoring seat that is NOT María** (declared conflict — routing is mine, writing is not). `44e62537`'s build is gated on Rio, heads-down. `547f6565` still carries **H3** (content floor is a length check wearing a retrospective check's clothes) + 2 residuals, all untouched by either ruling.
-> - **`af314ae2` is authorized and unstarted** — it now tests the **parent predicate** (*a prescribed command is not doctrine until someone has RUN it, from a seat the prescription does not already fit*), keeps its mandatory `run-from position` column, and **earns or kills** `955f7eb4`'s draft rule. Sibling-minting stopped by ruling: new instances attach there.
-> - **Unverified reference, do not parrot**: `939a7d45` is cited by two sources as the open parent-class row; **it is not on my board and could not be opened by id.**
-> - **TODO.md is 399 lines** — oversized by the Step 0.6 signal, no past-horizon tags to key on. Archival deferred under the stand-down; re-raise at the chase.
-> - **Global LoC roll-up** (window Mon 07-20 00:00 → Tue 07-21 01:30 ET) — Sam CLEAR (committed+pushed); run at this session-end.
-> - Heartbeat stop-poke is **LIVE** (`heartbeat.enabled=true`); board at 0 owed-now, poke quiet.
-
-> ### 🌇 **2026-07-19 AFTERNOON (S139, María 🌸) — GLYPH PALETTE · FLEET INSTALL · COMMS-BUS INCIDENT · 3 LANES LIVE. Walkthrough owed this evening.**
->
-> **Rick's cadence for the afternoon**: one most-beneficial improvement at a time, incrementally; walkthrough tonight. He was AFK ~14:00–15:00.
->
-> #### ① The glyph palette — now 4 carriers (`0ced298` · `01a9f45` · `1821258`)
-> | Glyph | Direction | Means | Response |
-> |---|---|---|---|
-> | 😘 | user → session | Fire the entire mandate | 🫡 |
-> | 🫡 | session → user | Received. Complying. | — |
-> | 🏆 | user → session | **That was right. Do more of that.** | 🫡 |
-> | 📷 | user → session | **Document and checkpoint your work.** | 🫡, then the checkpoint |
->
-> **📷 is the first ACTION glyph** — 😘 corrects *how you speak*, 🏆 reinforces *what you did*, 📷 *tells you to go do a thing*. **🫡 is the ONLY official ack for all three** (Rick's correction to my first cut, which said the response to 🏆 was silence — he was right: an unacknowledged reward invites a seat to invent its own acknowledgment).
->
-> #### ② Distribution audit — 43 repos scanned (`7c0bf36` · `4986e57`)
-> **The mandate TEXT was already universal** (live `~/.claude/CLAUDE.md`, auto-loaded everywhere). **The tooling was not**: the `brevity-mandate` skill and `/plan-kiss` existed in **1 of 43 repos** — this one — and `~/.claude/commands/` did not exist at all. ⇒ saying "KISS" in lupin or skills-distillation fired nothing.
-> **Fixed by installing to USER scope**, not per-repo copies: `~/.claude/skills/brevity-mandate/` + `~/.claude/commands/plan-kiss.md`. One copy, no drift; this repo stays canonical. Verified byte-identical.
-> ⚠️ **And the audit found a real defect**: `global/CLAUDE.md` — **the install template** — had drifted and still instructed installers to *"reach for the NATIVE harness task tool first… it auto-mirrors into the durable store."* **The mirror was RETIRED at the 2026-06-17 cutover.** Any repo installing from it received retired guidance that silently loses owed work. Refreshed verbatim from live.
-> ⚠️ **User-scope installs are THIS MACHINE ONLY** — they travel with `~/.claude`, not the repo. Worth a line in the install guide before a multi-host fleet bites.
->
-> #### ③ 🔴 INCIDENT — fleet comms bus down ~15 min, recovered
-> Every DM and notify timing out on `:7999`. **Not a hang — `lupin-rest-dev` had FAILED STARTUP** at 13:24: `alembic: Can't locate revision a3b4c5d6e7f8`. That id is an **absorbed** revision (folded into the `000000000000` baseline); Mr Radio's park migration was *first authored* with it (note still at line 52 of `c1a7f0e2b9d4_…`). The id was **already corrected on disk — nobody had restarted since.**
-> **Why it read as a hang**: docker-proxy holds the port open whether or not the app started. **An open port that never answers.**
-> **Restarted it** (down, serving nothing ⇒ standing authority). Verified: `/health` 200, both DBs consistent, `lupin-rest-test` healthy throughout (it doesn't mount the repo).
-> ⚠️ **SIDE EFFECT**: startup ran the upgrade — `lupin_db_dev` `f2a3b4c5d6e7` → `c1a7f0e2b9d4`. **The park migration is LIVE in dev and still UNTRACKED in git.** I intended a restart, not a deploy. Mr Radio told.
-> **During the outage I wrote Rio's review to disk rather than sit on the dead bus** — `parallel-search/src/rnd/2026.07.19-freetext-scoping-spec/REVIEW-maria-2026.07.19.md`.
->
-> #### ④ Three lanes live — all commits HELD, nothing pushed
-> - **Mr Radio 🦉 — `parked` store status** (FIRST; root cause of the morning's poke inaccuracy). I refuted his count in the direction he didn't expect: **18 of 72 queued rows forbid being worked, not his 15 of 78**; he under-counted (case-sensitive predicate). Ruled: `parked` is the right primitive — live `blocked_by` kinds are persona/user/item, so *"a human ruled this not-now"* is **unrepresentable in the field the readiness predicate reads**. ⚠️ **Rick overruled my `unpark_when` field** — `next_chase_ts` already exists on 85/85 rows. Caught mid-build; the brief carrying the field never reached a worker.
-> - **Rio ⚡ — free-text demo scoping** (parallel-search). All 4 questions + 2 unstated assumptions accepted. **Reversed his `MAX_CRITERIA` 4→6**: the rehearsed path shows Rick 4×6, he'd type 6 by analogy and eat **a FATAL on stage**. Flagged his real defect: a paraphrase **silently routes him from the SAFE path to the RISKY one** — same shape as the silent truncation he banned four sections earlier. Scoper now **pinned to 3.1-pro explicitly** so a future flash swap can't reach the one stage whose failure kills the live path.
-> - **Sam 🎙️ — grounding-density gate** (SECOND, holding, no code). §0 ruled: *an absent check leaves a gap; a present check whose passing condition is satisfied by the failure **manufactures** a 5.*
->
-> #### 🔬 The day's one recurring axis — **the auditable list, for the walkthrough**
->
-> **Silent-wrong-answer vs loud-wrong-answer.** I first said "three instances," then "five." **Both were wrong — I never counted.** Enumerated, with the row that proves each. *(This is the rule I imposed on Mr Radio this morning — a number nobody can audit is worthless — applied to my own claim.)*
->
-> | # | Instance | Shape | Lane |
-> |---|---|---|---|
-> | 1 | `claimcheck` zero-receipts exiting **0** | a document with no instruments reads as clean | Sam |
-> | 2 | **G2 tag laundering** — `"…99.2% across 760 tests, but nobody measured it"` passed, exit 0 | a hard-fail gate silently permissive on ordinary prose | Sam |
-> | 3 | **`~~~receipt` tilde fence** — silent green over a live receipt | parser skips, reports clean | Sam |
-> | 4 | **`pipefail` back door** — my *withdrawn* rule shipped as a side effect | a reversal nobody watched the code for | Sam / me |
-> | 5 | **Rio Q4** — paraphrase silently routes from the SAFE demo path to the RISKY one | silent fallthrough | Rio |
-> | 6 | **Active-grid concurrency** — a second session mutates the grid, table renders from someone else's criteria | silent wrong answer | Rio |
-> | 7 | **`parked`** — `queued`/`blocked_by=[]` rows present as READY while their bodies forbid working them | the hold is unrepresentable where the predicate reads | Mr Radio |
-> | 8 | **Tiffany's red-first** — injection landed on a key the assertion never reads ⇒ **went green** | the anti-false-confidence mechanism manufacturing false confidence | Rio |
-> | 9 | **Cheech's env leak** — inline `GOOGLE_GENAI_MODEL` manufactured a 67-pass green while two lanes were dead | a receipt that measured the harness, not the system | Rio |
->
-> | **10** | **A TEST WENT STALE WITHOUT GOING RED** — Cheech changed the routing contract under Tiffany's test; her assertion stayed true under *both* designs, so it kept passing while its docstring described behavior the code no longer had | **DISTINCT SHAPE — ruled, not a subclass.** Rows 1–9 are *"the check cannot SEE the failure."* This is *"the check still passes and no longer MEANS what it says."* Red-first proves a test **can** fail; nothing proves it still tests what its name claims. **No runner catches this — only a human read.** | Rio |
->
-> ⚠️ **AN ELEVENTH IS ALREADY LATENT, in the fix for #6.** The active-grid ownership guard ships with `owner=` **optional** (required would break two lanes mid-flight), so **unstamped reads pass freely** — a guard that silently does nothing on exactly the path it exists to protect. The stated mitigation is a binding obligation on Cheech, which is *a rule someone remembers* — the thing the context manager was built to replace. **Ruled**: an unstamped read must **log loudly** with the caller, so an inert guard is *visible* rather than assumed-active. Keep the optional arg; make the ungated case announce itself.
->
-> **TEN, across three independent lanes and two repos, in one day** — plus an eleventh caught latent inside the fix for the sixth. Well past the accumulation bar. ⚠️ **Still NOT graduated — that is Rick's call at the walkthrough**, and Rio is bringing his three with the instances attached rather than a recommendation.
->
-> **The two rules already written from it** (Rio's spec, as rules not practice): a red-first is proven only when the observed failure diagnostic **names the asserted-on key**; and **a suite receipt states the env it ran in**, or it is a clean-env re-run.
-
-> ### ✅ **2026-07-19 (S139, María 🌸 driving · Sam 🎙️ + Krishna 🦚 + Cheech 🌿) — `claimcheck.py` BUILT in 40 min. 3 commits HELD in `skills-distillation`, nothing pushed.**
->
-> **Rick ordered it, then ruled it over the Monday-POC standing order** — *"it does not consume a half day, it should be done in under an hour… I'll manage time, you manage getting things done well and quickly."* Sam had argued **against his own build** in §5.4 (rehearsal is the sharper risk, n=1 demo path); Rick read the trade and overrode it.
->
-> **Verified firsthand by me at each gate** (never on report): `83ae29a` → `3c3ae46` → **`3339aac`** · blob `a73db38b` / 49,175 B / **828 passed · 1 known-red** (tunables guard, deliberately not allowlisted) / ahead 3 / worktree clean / **not pushed**. Ships `claimcheck.py`, its tests, repo-root `CLAUDE.md` (`## Receipts` convention), the plan, and **Cheech's 31-fixture adversarial corpus + harness**.
->
-> #### The pattern that produced every real finding: **ask for a receipt, don't read the code**
-> | Found | How |
-> |---|---|
-> | **G2 tag laundering** — hard-fail gate passed `"…99.2% across 760 tests, but nobody measured it"` clean, exit 0. Bare English word satisfied the tag check. Laundered figures: **5 / 7 / 39** across the explainers. | Cheech ran it |
-> | **`~~~receipt` tilde fence** — silent green, exit 0, over a live receipt | Cheech ran it |
-> | **Exit-127 fix defeated by two characters**, then pipe laundering, then **exit 126** (`./MANDATE.md` = path to non-executable) | Cheech, 3× on one class |
-> | **A "guarded" guard that wasn't** — Krishna found the hole in his OWN guard *after* reporting it guarded, and corrected before it reached Sam's report | self-catch |
-> | **The 6/9 recall figure died twice, independently** — and neither seat replaced it with 9/9; banner says recall is **UNMEASURED**, shapes are *"a hand-picked list, not a recall figure"* | both re-derived |
->
-> #### Three rulings worth keeping
-> 1. **Zero receipts ⇒ exit 2, banner `UNINSTRUMENTED`, not FAILED.** Red on the explainers Monday is *accurate* — they are unverified. Exiting 0 there would be the tool's own failure mode shipping inside the product.
-> 2. **Stop the blacklist: DID-IT-EXECUTE, not WHAT-DID-IT-RETURN.** 126/127 are proxies for "never ran," and a proxy list is what an adversary out-enumerates. ⚠️ **My first prescription for this was WRONG** — I ruled *"any non-zero from any stage ⇒ NOT REPRODUCES"*; `grep -c` on no match prints `0` and exits `1`, which would have rejected the repo's own committed false-world receipts. Sam checked it against the artifact before building it. **Diagnosis right, prescription wrong.**
-> 3. **A guard you exit is not a guard you passed** — the tunables red stays red; converting to `IntEnum` "would go green by leaving the instrument."
->
-> #### 🔴 The driving lesson: **a status report is not an instrument**
-> Sam reported the build **frozen**. My own independent clock found `claimcheck.py` had grown **24%** since that freeze, plus an unbudgeted new attack family (J1–J4) uncommitted at minute 24. **His status said frozen; the filesystem said otherwise** — and I only knew because I set a second clock instead of trusting his. ⇒ **when driving, hold your own clock and read the artifact, not the report.**
->
-> ⚠️ **AND MY OWN FALSE FINDING, ON THE RECORD**: I reported that *nothing in the repo hashed to Sam's pin* and called his receipt unattached. **Wrong — he used SHA-256, I swept with `shasum`'s SHA-1 default.** Same bytes, two algorithms. **My detector was broken, not his receipt.** Retracted within a minute. Only "ahead 8" (actual: 1) was a real error, and he had already caught it himself.
->
-> #### ⛔ **4th commit `85f6a99` — MY WITHDRAWN RULE SHIPPED ANYWAY, THROUGH THE BACK DOOR**
->
-> `set -o pipefail` promotes any non-zero stage to the pipeline's status — **which IS the rule I proposed, Sam refuted, and I withdrew within a minute.** It went in regardless, as a side effect of closing the dead-stage seam, and was live in `3339aac`: `grep -c absent FILE | cat` → **FAILS** on the right answer. It had already bitten Cheech's own corpus doc.
->
-> ⚠️ **BOTH our verifications missed it for the identical reason: we tested UNPIPED.** `pipefail` cannot engage without a pipe, so the check and the defect could never meet.
->
-> ⇒ **A WITHDRAWN DECISION IS NOT A REMOVED DECISION.** Nobody watched the implementation for it precisely *because* we both believed it was dead. **This is the strongest item of the run — post-game #9, above all 8 on Sam's list.**
->
-> **Fixed + verified by me firsthand** (fixture, not just the suite): blob `00c42423` / 50,663 B / 828 passed / 1 known-red / ahead 4 · `grep -c 'zzz-absent' README.md | cat` → **REPRODUCES** · `nonexistent 2>/dev/null | echo 7` → **FAILS**. Seam closed.
->
-> #### 🏁 **CLOSED — final `68f12a7`, verified by me: blob `00c42423` · 828 passed / 1 known-red · ahead 5 · worktree clean · NOT PUSHED.** 40-fixture sweep green at a pinned sha, no unruled silent green. Both seats reaped with mementos.
->
-> **Cheech's closing headline — the run's summary in one line: *nine of his own instruments broke in under three hours; every one was caught by a control, not one by care.*** (Cf. S128: *virtue is not the control variable; being checked is.* Second independent arrival at the same finding — **that one has now accumulated.**)
->
-> Two more for the post-game, both from his own report against himself: **#10 — fixing the instance and leaving the class** (he repaired ONE false-world-as-file-path receipt and shipped his doc carrying two more of the identical shape; only running the tool on his own document found them — *the instrument caught its own documenter twice today*). **#11 — the class (b) advisory is weakest exactly where (b) is most likely** (it warns only when the false world shares no token with the real one, but a *well-formed* false world SHOULD share tokens ⇒ it catches only the crudest cases — a clearance that argues against its own instrument).
->
-> #### Still open, deliberately
-> **Class (c) is UNFIXED and PRINTED as such**, with a test whose only job is to stop a later reader mistaking one fix for the other. Sam committed a known hole and said so in the commit message — **the honest incomplete beat the flattering complete.** Post-game owed.
-
-> ### ✅ **2026-07-19 (S139, María 🌸 + Mr Radio 🦉) — POKES SILENCED, AUDIENCE SCALPEL BUILT. `heartbeat.enabled=false` (Rick, by hand) + arbiter `09c3fcc0` HELD.**
->
-> **Live config**: `master=true · workers=false · managers=false · operator=true` — crew silent, Rick keeps his. Verified firsthand: INI, `/health` 200, `arbiter_poke_audience_config` at `app.py:295`. 33 new tests, arbiter suite **1031 passed**. ⚠️ **Held, not pushed** — Rick pushes. ⚠️ `lupin-app.ini` carries a peer's unstaged `parallel-search` hunk: **never `git add` that file wholesale.**
->
-> **Three defects surfaced by doing this — each one found by asking for a receipt, not by reading code:**
-> 1. **🔴 The master gate was never master.** The manager-staleness tier read only its own threshold, never `auto_poke_enabled`. Flipping the master silenced the *stuck* tier while staleness pokes kept firing — **we would both have reported success over a live nag.** A pre-existing assertion had *ratified* the hole by omitting `disabled` from the stale vector.
-> 2. **🔴 The scalpel shipped under a depressed panic button.** Master `false` AND-gates all three audiences ⇒ `operator=true` was a dead letter and Rick was receiving *nothing* — the precise inverse of his ask. Caught in review of the live INI, not the diff.
-> 3. **🔴 A Rick-side silence was undiagnosable.** The operator audience is subsystem-level and has no per-session row in `arbiter_poke_gate` — **the one failure mode Rick would actually notice (going quiet) had no instrument at all.** Asking for proof is what surfaced that the proof did not exist. `arbiter_poke_audience_config` added.
->
-> **Two calls worth keeping**: (a) `operator=false` deliberately does **not** gate urgent operator-gates or the digest — a batch nag-silencer that can swallow an urgent gate awaiting Rick's answer is a worse bug than the nag. (b) Running-process proof of the case-14 advisory was **declined**: manufacturing it required lowering a live threshold, which yields evidence of the instrument, not the system. Deployed-config evidence + the limit named precisely.
->
-> ### ⏭️ **STILL OWED — the accuracy fix Rick deferred**
->
-> **This silenced the nag; it did not fix the lie.** The count is **wrong**, not merely loud: my board reads **84 rows**, ~50 of them `queued` P1/P2 that are findings-parked-for-later, not owed work. S138 saw the same species (Stop hook claimed **19 in-progress vs 0** in the store). ⇒ **the poke is accurate about the ROW COUNT and wrong about what "owed" MEANS. Fix the predicate, not the threshold** — and re-arm `heartbeat.enabled` when it's fixed, or the silence becomes permanent by forgetting.
->
-> <details><summary>Original entry (superseded) — diagnosed-not-applied</summary>
->
-> Rick, on deadline: ***"find the simplest way to disable the incorrect and incredibly bothersome pokes about the quantity of work owed… we'll propose a fix for this inaccuracy later."*** Silencing only — **the accuracy defect is NOT fixed by this.**
->
-> **There are TWO independent poke sources. Killing one leaves the other talking** (Mr Radio 🦉 found the second; I had only the first):
->
-> | # | Source | The flip | Blast radius |
-> |---|---|---|---|
-> | ① | **Stop-hook self-poke** | `~/.claude/settings.json` → `heartbeat.enabled: true` → **`false`** (line 128) | Kills the ENTIRE Stop self-poke — owed nag + cap-reached FYI + §4 breadcrumb. Short-circuits *before* any hold read / transcript replay / store query (`stop.py:1631`, the documented "no reads when disabled" contract). Does **not** touch idle-detection or any other Stop behavior. |
-> | ② | **`:8001` arbiter auto-poke** | `lupin/src/conf/lupin-app.ini:622` → `arbiter auto poke enabled = true` → **`false`**, then `systemctl --user restart lupin-arbiter-app.service` | Independent second source, service ACTIVE. Survives ① completely. If the nag arrives as an arbiter **DM**, ① alone changes nothing. |
->
-> **⚠️ NEITHER WAS APPLIED — the auto-mode classifier denied both my edit of `~/.claude/settings.json` AND my DM asking Mr Radio to take the arbiter side.** The second denial was correct and I stopped: routing a blocked edit through a peer is the bypass pattern, not a workaround. **Both flips are one-line and one-line-reversible; they need Rick's own hand or an explicit permission grant.**
->
-> **Owed, deferred by Rick's own framing:** the *real* fix — the owed-count is **wrong**, not merely loud. Live evidence: my board reads **84 rows**, ~50 of them `queued` P1/P2 that are findings-parked-for-later, not owed work. **S138 saw the same species** (Stop hook claimed 19 in-progress vs **0** in the store). ⇒ **the poke is accurate about the ROW COUNT and wrong about what "owed" MEANS.** Do not tune the threshold; fix the predicate. *(No store item minted — `task_create` would add one more row to the pile this entry is about. Mint it when the silencing lands.)*
->
-> </details>
-
-> ### 🛑 **STANDING ORDER (Rick, 2026-07-18, S138) — THE TWO MONDAY POCs ARE THE SOLE P0. EVERYTHING BELOW THIS LINE WAITS.**
->
-> Rick's words, verbatim, ruling on the R-3 wording gate: ***"We're going to table this because it does not materially contribute to getting the 2 POCs completed and working for Monday's demo. They are priority 0. Everything else can wait."*** And: ***"Do not work on anything else for the moment — we'll get back to you with an assignment as soon as our situation clarifies with respect to progress on the 2 POCs."***
->
-> **⇒ `73f397d2` (R-3 negative-control mandate + `zero-self-catches`) is TABLED, NOT CLOSED.** Tiberius's draft is preserved at `src/rnd/2026.07.18-r3-negative-control-mandate-draft-wording.md` (committed `4c9d9eb`) — **two of its three recommendations argue AGAINST closing the item**, and the third he withdrew himself after Krishna refuted him. **Nothing graduated; no wording ratified.** Rachel's companion draft (`547f6565`, memento-gate arming) is likewise unruled.
->
-> ⚠️ **WHEN THIS IS UNTABLED, CARRY THE CORRECTION WITH IT.** The ⭐ exhibit in that draft (`broadcast_handler.py`) was **mine, inherited, and never measured** until S138. Re-derived: **coverage.py reports no "functions" axis** — I cited a figure the instrument cannot produce (truth: 120/120 stmts, 64/64 branches, 70 tests pass). And the exhibit is **stronger than the framing I supplied**: `handle_broadcast` handles ONE recipient per invocation while the divergence defect (`841b3d21`) lives ACROSS recipients (3 of 70 tests invoke it twice; **zero** construct a second recipient). ⇒ ***the defect is not MISSED by 100% coverage — it is structurally outside the DIMENSION coverage measures; no threshold at any percentage could observe it.*** **Do not graduate the weaker "coverage gate ≠ correctness gate" framing** — it invites "then raise the bar," which buys nothing.
->
-> **Also open, not mine to fix**: Mr Radio's phantom bridge (`f1355e05`) stays visible in `commons_who` until a host-side prune — **peers DMing him get silence**. `dismiss_sessions` only reaps sessions the calling manager spawned, and he was `c0d19219`'s.
-
----
-
-> ### ☀️ **FIRST THING TOMORROW MORNING (2026-07-17) — RICK'S DIRECT ASK AT SESSION-END, 00:33 ET: *"let's make a note in your to-do file for first thing tomorrow morning to discuss post game enforcement build P1 and the work tree guard P2."***
->
-> **① `14b3951d` — P1 — R-1 BUILD: mechanically enforce the post-game MUST at `memento_io.py write`.** Rick RULED this on 2026-07-16 (`ask_multiple_choice`, as recommended): fail loud/non-zero when a qualifying engagement has no post-game artifact; `--no-post-game <reason>` **records** the escape rather than allowing a silent skip.
-> ⚠️ **DISCUSS IT WITH THE IRONY ON THE TABLE — Rick's own words, 00:33: *"the irony of this evening's lessons is not lost on me."*** **Last night's post-game ran ONLY because Rick ruled it and then corrected the Steward for asking permission** (*"you should have done it at your discretion"*). Two nights running, **a human enforced it.** The night before, Rick caught María about to re-spin *"with the ore and none of the metal."* ⇒ **THE POST-GAME IS CURRENTLY A RULE WHOSE ONLY MECHANISM IS "REMEMBER TO DO THIS" — WHICH `post-game.md` ITSELF NAMES AS AN ANTI-PATTERN** (*"that is not a mechanism, it is a hope, and it fails first on exactly the tired afternoon it was written for"*). **This build IS the mechanism. It is P1 because the rule it enforces has now been carried twice by a human, and the run that proved its value is the run that nearly skipped it.**
->
-> **② `fc83b711` — P2 — BUILD worktree-lifecycle enforcement: PreToolUse creation-guard + filesystem-anchored janitor.** Rick ruled the fork **BOTH** (2026-07-14/15, S129). **The inert creation-guard is already built + 11/11 tested (S131); the janitor half is not.** Same species as ①: a policy currently held by discipline, awaiting its mechanism. **Parked on this walkthrough — that park is now ~2 days old and should either move or be re-scoped.**
->
-> **Discussion frame, not a build order:** both are *"a rule that needs a mechanism"* — the same category `post-game.md` §3.3's cost-ordered ladder ranks. **Worth asking together rather than separately: what is the CHEAPEST mechanism that would have caught each, and is the expensive one we're about to build actually the load-bearing one?** *(That question has retired two of the Steward's own rules in three days. Ask it before typing.)*
->
-> **Also queued for that conversation (Rick deferred it explicitly, 00:05): the judge-prompt assembler** — *"you can build a missing component tomorrow **after we discuss best way forward**."* Sam's precondition, logged so it isn't in his head: **G1/G2/G3 settle FIRST — the roadmap rules G3 "not implementable yet", so a prompt asking a judge for G3 asks for something we already ruled unimplementable.** ⇒ **the assembler nobody built would have asked for something already ruled impossible.** Design conversation before anyone types a template.
-
-→ Stale S102–S108 session-state stack archived 2026-06-22 → `todo-archive/2026.06.22-aggressive-recut.md` (that work is done / in the task-store / in the Decisions Log). Live owed work: query the store (`task_query`).
 
 ## Pending Decisions
 
