@@ -4,7 +4,17 @@ Last updated: 2026-08-07 (**Session 162** (María 🌸 `706316a0`) — **Arm 4 b
 
 ## 📍 Resume Here
 
-> ### 🌅 **2026-08-07 (S162, María 🌸 `706316a0`) — START HERE: two decisions blocked on Rick; arm 4 is DONE**
+> ### 🌅 **2026-08-11 (S163, María 🌸 `350ac4c2`) — START HERE: two plans written, both unruled**
+> - **🔴 `7c23e9cf` — the `dm_tutor` agent build sits with Mr Radio 🦉, gated on Rick.** He sniffs the plan and runs HIS understanding by Rick BEFORE implementing. He has already built the agent and rewired `dm_txt_run.py`; whether that gate was cleared first is between him and Rick, not mine to police.
+> - **🔴 UNRULED — the two-phase plan** (`src/rnd/2026.08.11-three-sentences-and-a-path.md`). Phase 1 = six workflow surfaces so a DM is *three sentences and a path*, with the path explicitly NOT a fourth sentence. Phase 2 = the next experiment; four open questions at the end.
+> - **⚠️ Phase 2 cannot start before Sat 2026-08-15 14:00** — the week-2 block (`blind` vs `rejecting`, 56 slots) runs until then and a DM cannot be in two treatments. A new treatment needs a NEW block id, never a relabelling.
+> - **Sharpest open question**: does a 413 refusal **offer** the rewrite or **send** it? Offer is slower but the sender always knows what went out in their name. Recommendation: offer, for block one at least.
+> - **🔴 Correction carried forward**: "4 of 4 clean, envelope plus sentinel" was wrong on the sentinel half — that run had none and used a forgiving regex. Do not re-quote it as evidence the envelope survives strict parsing.
+> - **⚠️ `sentences.py` counts a bare path as a 4th claim** (`_ATTACHMENT` matches only `/tmp/*.md`). Real, measured, and **explicitly out of scope** — Rick's call. Park it; do not re-raise it as a blocker.
+> - **⚠️ My lupin edits are uncommitted and entangled** with Mr Radio's live work in the same files. Left for his commit, not grabbed mid-flight.
+> - **⚠️ TODO.md horizon archive still owed** — 284+ lines, past the ~200 signal, gate not run again this session.
+>
+> ### 🌅 **2026-08-07 (S162, María 🌸 `706316a0`) — two decisions blocked on Rick; arm 4 is DONE** *(still open)*
 > - **🔴 `4ae0c152` — ship the compression rewriter or not.** Blocked on Rick, asked with full evidence and four options, timed out twice. **Recommendation: don't ship, keep Phase 1.** Rick has already broadcast "failed experiment", so this may only need formal closure — verify before re-asking.
 > - **🔴 `c4af906e` — covert vs disclosed.** Re-pointed to block on `4ae0c152` rather than on Rick; it dies if the rewriter doesn't ship, but three of the four options revive it. Do not ask it standalone.
 > - **✅ Arm 4 closed on measurement.** 2,537 tokens/day vs 32,028 projected (7.9%), reproduced twice. Phase 1 (freeze protocol) explicitly NOT reverted — 600 live compressions, zero corrupted deliveries, 544 tests. Everything is in `lupin/src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/`.
@@ -42,6 +52,20 @@ Last updated: 2026-08-07 (**Session 162** (María 🌸 `706316a0`) — **Arm 4 b
 
 
 ## Pending Decisions
+
+- [ ] **🆕 "THREE SENTENCES AND A PATH" — two phases, written 2026-08-11, awaiting Rick's ruling.** Doc: `src/rnd/2026.08.11-three-sentences-and-a-path.md`.
+
+  **Phase 1 (this repo, mine)**: six surfaces carry the DM brevity rule and all six change together, or the rule is half-installed — `workflow/brevity-mandate.md` (:16 definition, :153-178 budget tables) · `workflow/cross-session-communication.md` (:14-16, the DM-specific one) · `~/.claude/CLAUDE.md` · `global/CLAUDE.md` (the verbatim snapshot — **the one that rots quietly, because nothing fails when it disagrees**) · the `brevity-mandate` skill + `/plan-kiss`.
+
+  **The wording that carries the weight**: *the path is not a fourth sentence.* It replaces prose — send the pointer instead of pasting the stack trace. Without that said out loud, every agent that follows the new rule scores itself over the limit. Rick's why, verbatim: *"direct agents to include a path to stack traces or other resources so as to cut down on the amount of tokens burned passing DMs back and forth."*
+
+  **Phase 2 (lupin — hand to a lupin session)**: the next experimental run. Currently live: `dm-verbosity-two-arm-v1-week2`, arms `blind` vs `rejecting` (`dm_experiment.py:38`), 56 slots / 28 per arm, ending **Sat 2026-08-15 14:00 EDT**. Two constraints come from the existing code, not from me: a new treatment needs a **NEW block id, never a relabelling** (*"a slot's arm is what its rows were collected under"*, `generate_schedule.py:99`), and it **cannot start before that block ends** because a DM cannot be in two treatments at once.
+
+  **The fork — three treatments do not fit in two arms without a choice**: (A) `blind` vs `tutor` — answers "does rewriting beat measuring?" but drops the gate we already run; (B) ⭐ `rejecting` vs `rejecting + tutor` — **recommended**, answers "does the tutor earn its place on top of what's live?", and the arms differ in **one field of one response** (whether the 413 refusal carries the rewrite), so anything that moves is attributable; (C) 2×2 factorial — answers everything at four cells, and is not a two-arm test.
+
+  **Inherited caveat that must be printed, not carried quietly**: the stopping rule has already been extended **twice, both times by someone who had seen the interim numbers** (`generate_schedule.py:88-96`). Fix the end date before the first slot opens; report blocks separately as well as pooled.
+
+  **Hard gate**: Rick approves rewrite quality from the ~200-sample document **before** the tutor touches live traffic. **Four open questions** at the doc's end — the fork · offer-vs-send · block length · whether phase 1 ships first (recommend yes; the workflow text is what the control arm's senders follow). | raised: 2026-08-11 | owner: María (phase 1) / a lupin session (phase 2) / Rick (rule the fork)
 
 - [ ] **🌅 FIRST THING 2026-08-07 (Rick's direct instruction, 2026-08-06 ~22:45): ARM 4 — fold in the expert review, make a plan, implement it.** Store row `378c1c95`. Three documents now sit together in `lupin/src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/` — Rick moved my plan there from v0.1.9 (my filing error: v0.1.9 holds the *judge* work; the *arm rotation* lives in v0.2.0 beside arms A–C) and renamed the set so it sorts as one:
   - `2026.08.06-arm-4-silent-compression-plan.md` — mine
