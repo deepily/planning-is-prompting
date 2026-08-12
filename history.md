@@ -2,7 +2,7 @@
 
 **RESUME HERE**: **Session 163 (2026-08-11) — a stop list that never instructed, a required path with nowhere to put it, and three corrections from Rick on work I had over-designed** (María 🌸 `350ac4c2`, chorus). Two-person crew with Mr Radio 🦉. Plans: `lupin/src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/2026.08.11-dm-tutor-agent-plan.md` · `src/rnd/2026.08.11-three-sentences-and-a-path.md`.
 
-1. **🔴 I sold the missing `</stop>` as the fix off ONE message, and Mr Radio's n=200 says it bought nothing** — 195 delivered against 192, on a noise floor of 4. My single 250+ word case (3,004 words/56.2s → 114/3.2s) was real, but his run also carried the **CDATA fix mine lacked**, so the sentinel was confounded with what probably did the work.
+1. **🔴 I sold the missing `</stop>` as the fix off ONE message; at n=200 it bought nothing** — 195 delivered against 192, noise floor 4. **The probe was clean** (sentinel varied alone, no CDATA in either arm) and its 3,004/56.2s → 114/3.2s result holds for that prompt; **what n=200 shows is an interaction** — sentinel and CDATA guard the same failure, so with CDATA in place the sentinel has nothing left to catch. The defect was over-generalizing from one message, not measuring the wrong thing.
 2. **The prompt always REQUIRED a path be returned and gave it nowhere to go.** Added `<file-path-or-url-if-present>`; across four bands both injected paths came back byte-exact, and an un-staged message carried its own path which the model pulled unprompted.
 3. **🔴 My path checker scored 3 of 4 as failures and all three were the checker's fault** — it compared against the labelled line rather than the bare URL, and assumed an un-injected message must return nothing. Rewrote it to a mechanical test: a returned pointer must appear verbatim in the body.
 4. **🔴 I reported "4 of 4 clean, envelope plus sentinel" and the sentinel half was false.** That run had none and parsed with a forgiving regex; under the agent's strict parse Mr Radio's first live call failed on `git show HEAD:<file>`, fixed with CDATA per the sibling arm.
@@ -10,7 +10,7 @@
 
 Also: the two-phase *three sentences and a path* plan is written and unruled — six workflow surfaces for phase 1, and a phase-2 fork recommending `rejecting` vs `rejecting + tutor`, which cannot start before Sat 08-15 14:00 because a DM cannot be in two treatments at once.
 
-#### Checkpoint | 2026.08.11 | S163 — stop-sentinel claim DIED at n=200 (195 vs 192, noise floor 4; confounded with CDATA) · path slot added + verified byte-exact across 4 bands · checker defect self-caught (3 of 4 flags were mine) · "envelope plus sentinel" claim corrected · plan re-cut on Rick's 3 corrections + handed to Mr Radio · two-phase workflow plan written, unruled
+#### Checkpoint | 2026.08.11 | S163 — stop-sentinel claim died at n=200 (195 vs 192, noise floor 4 — an INTERACTION with CDATA, the probe itself was clean) · path slot added + verified byte-exact across 4 bands · checker defect self-caught (3 of 4 flags were mine) · "envelope plus sentinel" claim corrected · plan re-cut on Rick's 3 corrections + handed to Mr Radio · two-phase workflow plan written, unruled
 **Files**: src/rnd/2026.08.11-three-sentences-and-a-path.md · history.md · TODO.md — **lupin (uncommitted, entangled with Mr Radio's live work)**: `src/conf/prompts/agents/dm.txt` · `src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/` (agent plan · `dm_txt_run.py` · `stop_probe.py`)
 **Rows**: `7c23e9cf` → Mr Radio (gated on Rick)
 
