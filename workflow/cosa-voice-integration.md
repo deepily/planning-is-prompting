@@ -79,7 +79,7 @@ When the user toggles back to notification mode, Claude is explicitly informed v
 |---|---|---|
 | Spoken `message` | 3 sentences, stripped | **unchanged** — 3 sentences, stripped |
 | `abstract` card | richly formatted, uncapped | **unchanged** — still the detail valve |
-| **Terminal reply** | "stays markdown-rich" | **Say 3LoL: 3 lines of PROSE** — headline + two supporting sentences |
+| **Terminal reply** | "stays markdown-rich" | **Say 3LoL: 3 sentences of PROSE** — headline + two supporting. A line is one sentence that makes a claim; tables, code and **file paths are free** |
 
 **The asymmetry survives.** `abstract` is still where detail belongs. What is now capped is **terminal prose** — the paragraphs of narration, hedging, and recap that surround the useful content.
 

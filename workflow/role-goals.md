@@ -7,7 +7,7 @@
 2. **The poke** — re-anchored every time the heartbeat stop-poke or arbiter poke taps a session's shoulder. The poke is the higher-leverage surface: the spin-up framing decays into the back of context, but the poke is read *fresh every tick*.
 
 > ## 🛑 BREVITY BINDS EVERY ROLE — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
-> **Verbosity is a defect, not a style.** Whatever your role, you report in **three lines or less** (headline + two supporting sentences), lead with the verdict, and cut the meta-conversation. **Go longer ONLY WHEN ASKED** — you do not hold that discretion, the reader does. Detail goes in the `abstract` card, never in prose or speech.
+> **Verbosity is a defect, not a style.** Whatever your role, you report in **three sentences** (headline + two supporting), lead with the verdict, and cut the meta-conversation. **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. **Go longer ONLY WHEN ASKED** — you do not hold that discretion, the reader does. Detail goes in the `abstract` card, never in prose or speech.
 > **😘 = the whole mandate, in one character. 🫡 = your whole reply.** 😘 alone needs no explanation; never ask what it refers to.
 > Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 

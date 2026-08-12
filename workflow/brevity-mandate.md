@@ -13,7 +13,7 @@
 > **Verbosity is a defect, not a style.**
 >
 > **KISS** — Keep It Short/Sweet.
-> **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences.
+> **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences. **File paths are free.**
 > **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 > **NoAA** — No Aphorisms or Apologies.
 > **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause.
@@ -22,6 +22,32 @@
 > **Lead with the verdict. Evidence second. Stop.**
 >
 > **Go longer ONLY WHEN ASKED.**
+
+---
+
+## What counts as a line — the rule you can apply the same way twice
+
+**Ruled by Rick, 2026-08-12.** We used to count words. We count **sentences** now, for a reason measured on our own traffic: **models count sentences reliably and words badly** (established for the spoken channel 2026-06-13, extended to every surface today).
+
+> ### A line is one sentence that makes a claim.
+> **Anything that asserts nothing is structure — it is not counted.**
+> ### **File paths are free.** *(Rick's words.)*
+
+That single rule settles the cases a list would have to enumerate one at a time, and the ones nobody has thought of yet:
+
+| | | |
+|---|---|---|
+| a table row | asserts nothing on its own | **structure — free** |
+| a heading | labels, does not assert | **structure — free** |
+| a fenced code block | quoted material, not a claim | **structure — free** |
+| **a file path or URL** | a pointer to detail, not a claim about it | **free — Rick's clause** |
+| a bullet **with prose in it** | *does* assert | **counts as one** |
+
+**Why the path is free, and why that is not a loophole**: the point of sending a path is to *replace* prose — the pointer instead of the pasted stack trace, table or log. Charging for it would price the cheap option like the expensive one.
+
+**Why reformatting buys nothing**: under a word count, moving prose into a table saved words. Under a naive sentence count, moving prose into a bulleted list would hide claims. Under the claim rule, **a bullet that says something still costs one** — so the dodge closes by construction.
+
+⇒ **The same rule is implemented in code** (`lupin/src/cosa/agents/dm_tutor/sentences.py`), so a person and the machine count the same way. **`3LoL` keeps its name** — the acronym is installed in 19 files and its trigger vocabulary was ratified in July; renaming it would spend a fleet-wide reinstall for a cosmetic gain.
 
 ---
 
@@ -145,17 +171,17 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 
 ## Defaults by surface
 
-Everything defaults to **3 lines**. These are targets, not ceilings-with-headroom.
+Everything defaults to **3 sentences** — counted by the claim rule above. **This applies to every surface, not to DMs alone** (Rick, 2026-08-12): a "DM rule" reading would quietly exempt status updates, commons posts and review findings. These are targets, not ceilings-with-headroom.
 
 | Surface | Default | Note |
 |---|---|---|
-| Terminal reply | 3 lines (headline + 2) | Tables and code are content, not prose — they don't count against the line budget. |
-| Spoken `notify()` / `ask_*` | 3 sentences, ≤500 chars | The 500-char cap is a HARD server reject. 3LoL keeps you far from it. |
+| Terminal reply | 3 sentences (headline + 2) | Tables and code are structure, not claims — they cost nothing. |
+| Spoken `notify()` / `ask_*` | 3 sentences, ≤500 chars | The 500-char cap is a HARD server reject. 3LoL keeps you far from it. **Paths are free everywhere else and BANNED here** — a URL read aloud is gibberish. |
 | `abstract` card | As long as the content needs | The overflow valve. Detail belongs HERE, not in prose or speech. |
-| DM (`dm_send`) | 3 lines | The single worst offender — for **length** (courtesy bloat) and for **register** (jargon). **WaHH applies hardest here.** |
-| `commons_post` | 3 lines + structured body | Same rule as DM, WaHH included. |
+| DM (`dm_send`) | 3 sentences **+ the path** | The single worst offender — for **length** (courtesy bloat) and for **register** (jargon). **WaHH applies hardest here.** When the detail lives somewhere, send the pointer instead of the detail. |
+| `commons_post` | 3 sentences + structured body | Same rule as DM, WaHH included. |
 | Review finding | Headline + failure scenario + fix | Three parts. Not three paragraphs. |
-| Status / progress | 1 line | "Done: X. Next: Y." |
+| Status / progress | 1 sentence | "Done: X. Next: Y." |
 | **`history.md` entry** | **headline + ≤5 findings, ≤2 sentences each** | **HARD CAP. See below.** |
 | **Decisions Log entry** | **one ruling per bullet, ≤3 sentences** | Multiple rulings = multiple bullets, not one mega-bullet. |
 | Retro / post-game doc | Content-shaped | The one genuinely uncapped prose surface — it is the archive. Still NoMC. |
@@ -206,10 +232,16 @@ Minimum brief rider:
 
 ```
 BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH.
+Three sentences: headline + at most two supporting. A line is one sentence that
+makes a claim — tables, headings, code blocks and file paths are structure and
+cost nothing. When the detail lives somewhere, send the path instead of the
+detail. File paths are free.
 Verdict first, evidence second, stop. Go longer ONLY WHEN ASKED.
 Detail goes in the abstract card, never in prose or speech.
 WaHH: plain English in every DM — write as if a human colleague will read it.
 ```
+
+⚠️ **The rider states three and says nothing about what happens above it.** A brief that told a worker where the enforcement line sits would teach that number on day one — and a worker's first impression is the whole habit. Same reason the number is held everywhere else (Rick, 2026-08-12).
 
 ---
 
@@ -298,7 +330,7 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 | **😘** | **Carrier glyph — the full mandate, no text required** |
 | "KISS" | Reminder — the receiving session tightens immediately |
 | "KISS it" / "KISS that" | Verb form, usable mid-sentence — *"KISS that summary and re-send"* |
-| "Say 3LoL" / "3LoL" / "three lines or less" | Reminder, length-specific |
+| "Say 3LoL" / "3LoL" / "three lines or less" / "three sentences" | Reminder, length-specific |
 | "NoMC" / "C2C" / "cut to the chase" / "no meta conversation" | Reminder, meta-conversation-specific |
 | "too verbose" / "too wordy" / "stop rambling" | Plain-language complaint form |
 | **"WaHH"** / **"MoPEP"** / **"NoJP"** / **"TLH"** | **Reminder, register-specific — all four fire WaHH.** Expansions below. |
@@ -380,6 +412,8 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 ---
 
 ## Version History
+
+- **1.4 (2026-08-12)**: **Words → sentences, ruled by Rick across seven decisions in one walkthrough.** The unit of the rule is now a **claim-carrying sentence**, not a word and not a display line — extending to every surface a call already made for the spoken channel on 2026-06-13, on the measured finding that *models count sentences reliably and words badly*. **Rick's clause, his words: "File paths are free."** New § *What counts as a line* carries the rule and its table; the per-surface defaults, the spawn-brief rider and the trigger vocabulary follow it. **`3LoL` keeps its name** — the acronym sits in 19 files with a July-ratified trigger vocabulary, so a rename would spend a fleet-wide reinstall for a cosmetic gain. **Scope ruled explicitly as every surface, not DMs alone**, because a "DM rule" reading would exempt status updates, commons posts and review findings. ⚠️ **The rider deliberately states three and names no enforcement number** — publishing where the line sits teaches that number instead of the bar. Companion analysis and the full reasoning per ruling: `src/rnd/2026.08.12-words-to-sentences.md` + `TODO.md` § Decisions Log.
 
 - **1.0 (2026-07-19)**: Initial. Rick's directive + his escape-clause amendment ("only when ASKED"). Landing sites ruled via checkbox walkthrough.
 - **1.2 (2026-07-28)**: **WaHH seated as the 6th rule** (Rick) — *We're All Humans Here*: plain English, no jargon, write every message as though a human colleague will read it. Ruled **1 rule + 4 triggers** (`WaHH` / `MoPEP` / `NoJP` / `TLH`) rather than four separate rules — the other three name the behavior, WaHH names the reason. Trigger was the register asymmetry: the same session writes plainly to the user and densely to a peer, with only the assumed reader changing. **The tiebreak against KISS is the load-bearing part** — jargon is compression, so the two rules genuinely conflict, and WaHH wins: *compression that costs the reader a re-derivation is not compression.* Substantive landing is `cross-session-communication.md` §1.6, not this file alone; a landing here only would have fired on speech, which was already fine. ⚠️ **Tiebreak wording is María's draft, pending Rick's review** — the rule and the winner are his.

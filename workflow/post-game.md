@@ -10,7 +10,7 @@
 
 > ## 🛑 THE POST-GAME IS THE MOST VERBOSE RITUAL WE RUN — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
 > Retros breed monologues: the form invites reflection, and reflection invites meta-conversation. **The findings are exempt from 3LoL; the FRAMING is not.**
-> - **Every deposit, every roundtable contribution: three lines or less** — headline + two supporting sentences. Not three paragraphs.
+> - **Every deposit, every roundtable contribution: three sentences** — headline + two supporting. Not three paragraphs. A line is one sentence that makes a claim; tables, headings, code blocks and **file paths are free**.
 > - **A lesson is a claim + its receipt.** Cut "I've been thinking about…", "it strikes me that…", "I want to be careful to acknowledge…".
 > - **No mutual appreciation.** Crediting a seat is one clause, not a paragraph. (See also: the 2026-07-17 finding that post-games *systematically flatter the seat being harvested* — brevity is a partial control on that too.)
 > - **The synthesis doc in `io/post-games/` is the ONE genuinely uncapped prose surface** — it is the archive, and detail belongs here rather than leaking into `history.md`. **NoMC still applies.**

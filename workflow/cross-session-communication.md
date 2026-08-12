@@ -19,13 +19,23 @@
 
 | Rule | Applies to |
 |---|---|
-| **Say 3LoL** — headline + two supporting sentences | `dm_send` body · `commons_post` · `commons_ask_*` |
+| **Three sentences** — the headline, then at most two that support it. **When the detail lives somewhere, send the path instead of the detail — a path is not a sentence.** | `dm_send` body · `commons_post` · `commons_ask_*` |
 | **NoMC C2C** — no "thanks so much for the thorough review," no restating their message back, no "just wanted to check in" | every peer surface |
 | **WaHH** — plain English, no invented vocabulary (**§1.6**) | every peer surface; **this is the channel the rule exists for** |
 | **Lead with the ASK or the VERDICT** | the first line answers "why did you open this message?" |
 | **Go longer ONLY WHEN ASKED** | not when *you* judge it warranted |
 
 **Structured detail belongs in the body's fields, not in prose.** A finding is `headline / failure scenario / fix` — three parts, not three paragraphs.
+
+### What counts, and why the path is free (Rick, 2026-08-12)
+
+> **A line is one sentence that makes a claim. Anything that asserts nothing is structure — it is not counted. File paths are free.**
+
+Table rows, headings, code blocks and **file paths or URLs** cost nothing; **a bullet with prose in it costs one**, because it asserts something. Canonical statement + the full table: `workflow/brevity-mandate.md` § *What counts as a line*.
+
+**This is the peer channel's rule more than anywhere else.** The point of sending a path is to *replace* prose — the pointer instead of the pasted stack trace, table or log — which is the cheapest thing you can do to a DM. Charging for it would price the cheap option like the expensive one.
+
+⚠️ **The spoken channel is the one exception, and it runs the other way**: a path read aloud is gibberish, so paths stay OUT of any spoken `notify()` / `ask_*` payload and go in the `abstract` instead.
 
 **😘 / 🫡 work in peer comms too.** A **😘** in a DM or commons post fires the full mandate at the recipient; **🫡** is the complete reply. 😘 alone needs no explanation — never ask what it refers to.
 

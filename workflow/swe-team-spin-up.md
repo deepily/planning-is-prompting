@@ -10,8 +10,11 @@
 > Workers inherit habits at birth; a worker that never grew the verbose habit is cheaper than one that must unlearn it. **Paste this into every member's brief, verbatim:**
 > ```
 > BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH.
-> Verdict first, evidence second, stop. Three lines or less
-> (headline + two supporting sentences). Go longer ONLY WHEN ASKED.
+> Verdict first, evidence second, stop. Three sentences
+> (headline + two supporting). Go longer ONLY WHEN ASKED.
+> A line is one sentence that makes a claim — tables, headings, code blocks
+> and file paths are structure and cost nothing. FILE PATHS ARE FREE: when
+> the detail lives somewhere, send the path instead of the detail.
 > Detail goes in the abstract card, never in prose or speech.
 > A 😘 from anyone fires this entire rule; reply 🫡 and nothing else.
 > ```

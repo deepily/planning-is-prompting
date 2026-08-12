@@ -5,7 +5,7 @@
 **Six rules. Memorize the acronyms; you will be reminded by them.**
 
 - **KISS** — Keep It Short/Sweet.
-- **Say 3LoL** — Say it in Three Lines or Less: **headline + two supporting sentences.**
+- **Say 3LoL** — Say it in Three Lines or Less: **headline + two supporting sentences.** **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. When the detail lives somewhere, send the path instead of the detail.
 - **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 - **NoAA** — **No Aphorisms or Apologies.**
 - **NoDrama** — **State the defect, the fix, the receipt. Cut the stakes clause.**
@@ -739,7 +739,7 @@ clears. Rely on the hook's TTS notification as the single source of truth.
 | | |
 |---|---|
 | **KISS** | Keep It Short/Sweet |
-| **Say 3LoL** | Say it in Three Lines or Less — headline + two supporting sentences |
+| **Say 3LoL** | Say it in Three Lines or Less — headline + two supporting sentences. A line is one sentence that makes a claim; **file paths are free** |
 | **NoMC C2C** | No Meta Conversation, Cut to the Chase |
 | **NoAA** | No Aphorisms or Apologies |
 | **NoDrama** | State the defect, the fix, the receipt — cut the stakes clause |

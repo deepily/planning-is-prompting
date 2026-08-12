@@ -22,7 +22,7 @@
 
 > **Activation**: this is the explicit fallback. The mandate also fires by utterance via the Agent Skill `.claude/skills/brevity-mandate/SKILL.md` — vocabulary ratified by Rick 2026-07-19:
 > - **Carrier glyph**: **😘** — alone = the full mandate; attached to a message = scoped to that message (*"here's the summary 😘"*)
-> - **Acronyms**: "**KISS**", "**Say 3LoL**", "**3LoL**", "**three lines or less**", "**NoMC**", "**C2C**"
+> - **Acronyms**: "**KISS**", "**Say 3LoL**", "**3LoL**", "**three lines or less**", "**three sentences**", "**NoMC**", "**C2C**"
 > - **Verb forms**: "**KISS it**", "**KISS that**" (mid-sentence — *"KISS that summary"*)
 > - **Expansions**: "**cut to the chase**", "**no meta conversation**"
 > - **Complaints**: "**too verbose**", "**too wordy**", "**stop rambling**"
@@ -71,6 +71,9 @@ VERBOSITY IS A DEFECT, NOT A STYLE. We are on deadline.
 
   KISS      — Keep It Short/Sweet.
   Say 3LoL  — Say it in Three Lines or Less: headline + two supporting sentences.
+              A line is one sentence that makes a claim — tables, headings, code
+              blocks and file paths are structure and cost nothing. FILE PATHS ARE
+              FREE: when the detail lives somewhere, send the path, not the detail.
   NoMC C2C  — No Meta Conversation, Cut to the Chase.
   NoAA      — No Aphorisms or Apologies.
   NoDrama   — State the defect, the fix, the receipt. Cut the stakes clause.

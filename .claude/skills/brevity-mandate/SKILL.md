@@ -39,7 +39,7 @@ description: Fire the fleet brevity mandate — KISS (Keep It Short/Sweet), Say 
 |---|---|
 | **Carrier glyph** | 😘 — alone = the full mandate; attached = scoped to that message |
 | **Sibling glyphs** (not this mandate) | 🏆 reward · 📷 checkpoint · ☕ Riot Act → `/plan-push`. Listed so a session reading this table recognizes them; ☕ routes to `push-to-completion.md`, not here |
-| **Acronyms** | `KISS` · `Say 3LoL` · `3LoL` · `three lines or less` · `NoMC` · `C2C` |
+| **Acronyms** | `KISS` · `Say 3LoL` · `3LoL` · `three lines or less` · `three sentences` · `NoMC` · `C2C` |
 | **Verb forms** (mid-sentence) | `KISS it` · `KISS that` — e.g. *"KISS that summary and re-send it"* |
 | **Expansions** | `cut to the chase` · `no meta conversation` |
 | **Complaints** | `too verbose` · `too wordy` · `stop rambling` |
@@ -82,7 +82,7 @@ If it is aimed at a **manager**, GB2W carries the full anti-gaming guard from `p
 ## The rules
 
 - **KISS** — Keep It Short/Sweet.
-- **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences.
+- **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences. **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**.
 - **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 - **NoAA** — No Aphorisms or Apologies.
 - **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause. Covers code, documentation AND interpersonal comms (Rick, 2026-07-19).
