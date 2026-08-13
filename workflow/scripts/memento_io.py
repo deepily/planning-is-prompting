@@ -1144,7 +1144,22 @@ def cmd_write( args ):
     mir_abs.parent.mkdir( parents=True, exist_ok=True )
     shutil.copy2( rec_abs, mir_abs )
 
-    # 5. POINTER — safe to clobber; it is not the record.
+    # 5. POINTER — safe to clobber ONLY once we have checked that what is sitting there is
+    #    actually a pointer.
+    #
+    #    WHAT THIS USED TO ASSUME, and what it cost (María 2026-08-13, recovered from the
+    #    DATA02 mirror): the old comment read "safe to clobber; it is not the record" — an
+    #    assumption about the path, not a check of the file. When the slot holds LEGACY RECORD
+    #    content written straight to the bare path, this line is the last thing that ever
+    #    happens to it.
+    #
+    #    The sharper half is that `memento_record_guard.py` ALREADY detects this and refuses
+    #    the raw-`Write` route — and its refusal text names THIS command as the safe way
+    #    through, promising it "cannot overwrite anything". Two guards, one belief, and the
+    #    one that sounded safe was the destructive one. A guard that redirects to an unguarded
+    #    path is worse than no guard: it moves the operator from a route they distrust onto one
+    #    they don't.
+    preserve_bare_slot( repo_root, ptr_rel )
     ptr_abs.write_text( pointer_text( rec_rel, mir_abs, text ) )
 
     # 6. VERIFY BY EXECUTION, not by assertion.
@@ -1678,6 +1693,50 @@ def is_bare_slot( repo_root, rel_path ):
     if HEX8_SUFFIX_RE.search( stem ): return False
     if DATEISH_RE.search( stem ):     return False
     return True
+
+
+def preserve_bare_slot( repo_root, ptr_rel ):
+    """
+    Twin a bare-slot LEGACY RECORD sitting at a pointer path, before anything clobbers it.
+
+    Requires:
+        - repo_root is a git working tree root
+        - ptr_rel is the repo-relative pointer path about to be written
+
+    Ensures:
+        - no-op (returns None) when the path is empty, or already holds a real pointer
+        - otherwise COPIES the content to an immutable record name and mirrors it, then
+          returns that record's repo-relative path — nothing is moved and nothing is deleted
+        - the twin name is derived, never invented: <stem>-legacy-<YYYYMMDD-HHMMSS><suffix>,
+          which cannot collide with a session-id record name
+        - idempotent in effect: a second call finds a pointer, not a bare slot, and no-ops
+
+    Raises:
+        - SystemExit when the twin lands but its mirror does not — a record must NEVER be
+          left unmirrored, which is the whole failure this function exists to end
+    """
+    ptr_abs = repo_root / ptr_rel
+    if not ptr_abs.exists():                       return None
+    if not is_bare_slot( repo_root, ptr_rel ):     return None
+
+    stamp    = datetime.datetime.now().astimezone().strftime( "%Y%m%d-%H%M%S" )
+    twin_rel = ptr_rel.with_name( f"{ptr_rel.stem}-legacy-{stamp}{ptr_rel.suffix}" )
+    twin_abs = repo_root / twin_rel
+    if twin_abs.exists(): return twin_rel          # already twinned this second; nothing owed
+
+    shutil.copy2( ptr_abs, twin_abs )
+    mir_abs = mirror_path_for( repo_root, twin_rel )
+    mir_abs.parent.mkdir( parents=True, exist_ok=True )
+    shutil.copy2( twin_abs, mir_abs )
+
+    if not mir_abs.exists() or sha256_of( twin_abs ) != sha256_of( mir_abs ):
+        sys.exit( f"REFUSED: preserved {twin_rel} but could not mirror it to {mir_abs}. "
+                  f"Nothing was overwritten; re-run once the mirror root is writable." )
+
+    print( f"PRESERVED {twin_abs}", file=sys.stderr )
+    print( f"          (the slot held legacy record content, not a pointer — twinned and "
+           f"mirrored before the pointer write)", file=sys.stderr )
+    return twin_rel
 
 
 def cmd_migrate( args ):
