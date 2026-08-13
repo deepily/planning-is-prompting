@@ -52,10 +52,36 @@ included, sat idle for roughly 35 minutes while over or near the line.** Complia
 three people separately remembering to look, which is precisely the rule-versus-detector failure
 §5's anti-patterns warn about, committed by the person writing the warning.
 
-**So installation is part of adoption, not a follow-up.** Whichever mechanism a seat uses — a system
-cron, the harness's scheduler, `/loop`, `ScheduleWakeup` — **it is set up in the same sitting that
-the policy is adopted**, on that manager's slot in the stagger. A manager who has read this document
-and not started a timer has not adopted it.
+**So installation is part of adoption, not a follow-up.** It is set up in the same sitting that the
+policy is adopted, on that manager's slot in the stagger. A manager who has read this document and
+not started a timer has not adopted it.
+
+🔴 **THE TIMER MUST OUTLIVE THE SESSION** (Mr Radio 🦉, catching this within minutes of my own
+install). An in-session scheduler — the harness's `CronCreate`, `/loop`, `ScheduleWakeup` — **dies
+with the session that created it**, which means the timer disappears at exactly the moment it was
+supposed to matter: when a manager's context runs out. A session-scoped watchdog on a
+session-scoped failure is not a watchdog.
+
+**Use a real host-side scheduler**: a crontab entry, a systemd timer, anything that survives the
+session ending. An in-session timer is a useful *supplement* (it can act, where cron cannot) but
+never the installation.
+
+**What each half can actually do, because they are not interchangeable:**
+
+| | can detect | can act |
+|---|---|---|
+| host cron / systemd timer | ✅ survives everything | ❌ cannot drive a re-spin — it has no session |
+| in-session tick | ✅ | ✅ DM, reap, respawn, hand off |
+
+⇒ **The durable half raises the alarm; a live session does the work.** Install both.
+
+**Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo prints the roster,
+handles the null, and exits non-zero only when it could not read the sensor at all. One line per
+manager, on your own slot:
+
+```cron
+10,25,40,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
+```
 
 ### The tick script must survive a null
 
@@ -160,6 +186,18 @@ is still somebody else's two seconds — but the *work* no longer waits for it.
 **Receiving is not optional and not a favour.** A peer manager with headroom takes the board. If
 every manager is over the line at once, say so to the user plainly — that is a fleet-level condition
 and not something three sessions can self-discipline their way out of.
+
+**But hand over what is actually at risk, and nothing else** (Cheech 🌿, 2026-08-13, declining a
+handoff on exactly this ground). **A handoff is worth doing only for work that is BOTH transferable
+AND at risk.** His two open rows were blocked on the user with chases set and the asks pre-drafted
+in the row bodies — those need nobody, and moving them buys a churn of reassignment events and a
+receiving manager who now appears to owe something they cannot advance. Everything genuinely at risk
+if he stopped was the two live seats, and §4c says those cannot move.
+
+⇒ **Before reassigning a row, ask what breaks if nobody touches it today.** If the answer is
+"nothing, it is waiting on a person," leave it where it is and say so in the announcement. **A
+transfer that moves only the safe things is ceremony**, and worse than ceremony — it reads on the
+receiving board as coverage.
 
 ---
 
