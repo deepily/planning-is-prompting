@@ -210,6 +210,20 @@ documents on disk rather than inlining them — a brief is a pointer, and it has
 ⚠️ **It is a manager, not a rescue.** Give it a real lane, a tick slot and a trigger number; a seat
 spawned only to catch a falling board is one more session nobody is watching.
 
+🔴 **A PERSONA-LESS SESSION IS INVISIBLE TO THIS ENTIRE POLICY.** The sensor is keyed by persona, so
+a session whose allocation failed **does not appear in the roster at all** — not as unknown, not as
+null, simply absent. The tick cannot see it, the 50% line cannot fire for it, and nobody learns it
+is in trouble until it stops answering.
+
+*Live, on the fresh manager spawned 2026-08-13*: its `voice_persona` came up null on two reads and
+it was missing from the pressure roster entirely — **the one seat in the fleet nobody could
+monitor, and it was the seat spawned to do the monitoring.**
+
+**So a spawned manager's first act is to confirm it has a name**, and if allocation failed, to
+self-allocate from the free pool (`request_persona`) and report what it landed on. **Absence from
+the roster is not evidence of health; it is absence of evidence**, and this policy reads the roster
+as if it were the fleet.
+
 **But hand over what is actually at risk, and nothing else** (Cheech 🌿, 2026-08-13, declining a
 handoff on exactly this ground). **A handoff is worth doing only for work that is BOTH transferable
 AND at risk.** His two open rows were blocked on the user with chases set and the asks pre-drafted
