@@ -286,6 +286,18 @@ only if the receiver is standing by with briefs already written rather than comp
 the word arrives.** A receiving manager who accepts a standing handoff and has not pre-drafted has
 accepted in name only.
 
+🔴 **But a staged brief must carry a PLACEHOLDER for the seed, never a baked-in path.** A memento
+path contains a session id, and that id changes on every re-spin — so a path written into a brief
+in advance **goes stale the next time that worker is re-spun, which is exactly the event the brief
+exists for.** The dying manager supplies the seed path **at handoff time**, from a read it has just
+verified; the receiver drops it into the placeholder.
+
+*Live near-miss, 2026-08-13*: my staged brief named `sam-00aa8745.md`; sam had been re-spun since I
+wrote it and his verified path was `sam-5252b3a0.md`. It was caught by preferring the path the
+dying manager had just checked over the one I had written earlier — **trust the thing you just
+verified over the thing you wrote before**, which is the same discipline that carried every other
+correction this day.
+
 **Still worth building** — a reap/respawn path authorised by something other than spawn lineage, or
 the `/clear`-into-a-named-pane helper — because both would remove the deadline rather than ask a
 tiring session to judge it correctly. **But the fleet is no longer one dark manager away from
