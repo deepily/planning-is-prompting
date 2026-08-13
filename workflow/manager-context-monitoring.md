@@ -268,9 +268,23 @@ well). A trigger estimated at 90% under pressure is estimated by the version of 
 estimate. **Name your number early, say it out loud to your peer manager, and let the tick enforce
 it.**
 
-**Leave room for the handoff itself, not just for the decision.** The reap, the seed list, and the
-confirmation are all work, and they consume the very budget you are running out of. A trigger that
-covers only the choice is still late.
+**Leave room for the handoff itself, not just for the decision** — but that room is smaller than it
+looks, because **the two sides do not cost the same** (Cheech 🌿, pricing his own):
+
+| side | work | cost |
+|---|---|---|
+| **dying manager** | one reap per seat + one message naming the seeds | ~3 calls |
+| **receiving manager** | drafting a spawn brief per seat, then spawning and verifying | the expensive half |
+
+🔴 **A dying manager must NEVER draft the spawn briefs.** That is how a session runs out
+mid-handoff and leaves seats **reaped with no replacement — strictly worse than never starting.**
+Composing is the receiver's job precisely because the receiver has the budget for it.
+
+**The ordering is forced, so the receiver pre-drafts.** A persona cannot be allocated twice, so the
+reap must land *before* the spawn; that gap is unavoidable. **It should be seconds, and it will be
+only if the receiver is standing by with briefs already written rather than composing them after
+the word arrives.** A receiving manager who accepts a standing handoff and has not pre-drafted has
+accepted in name only.
 
 **Still worth building** — a reap/respawn path authorised by something other than spawn lineage, or
 the `/clear`-into-a-named-pane helper — because both would remove the deadline rather than ask a
