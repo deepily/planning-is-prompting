@@ -110,9 +110,46 @@ monitor. But **a manager cannot re-spin itself**, and that is a mechanical limit
 | Spawn a successor first, then die | The persona chain cannot grant your name while you still hold it — the successor boots as somebody else, breaking persona continuity. |
 | `/clear` in place | This is the one that would work — same seat, same persona, context to zero, rehydrate from the repo-root memento. There is no way for a session to type `/clear` into its own pane. |
 
-**So at 50%, a manager does the half it can**: write the memento, then announce out loud that it is
-at the ceiling — `notify()` to the user, and a DM to a peer manager. The clear itself is somebody
-else's two seconds.
+**So at the ceiling, a manager does three things, in this order:**
+
+1. **Write the memento.** Same content a worker's would carry: what you own, what state it is in,
+   and any judgment call a successor would otherwise re-derive.
+2. **Hand your board to a peer manager** — `task_reassign` your non-terminal rows, or name the
+   subset they should pick up, with a one-line reason each. **Prefer the peer with the most
+   headroom**; the sensor tells you who that is.
+3. **Then announce** — `notify()` to the user and a DM to the peer you handed to.
+
+🔴 **Step 2 is the one that makes this a control. Announcing is not a control** (Cheech 🌿,
+2026-08-13, on the day two of three managers went over the line within an hour of adopting this
+rule). A manager who announces and keeps working has changed nothing except who feels informed; a
+manager who hands the board over has moved the work somewhere it can still be done. The clear itself
+is still somebody else's two seconds — but the *work* no longer waits for it.
+
+**Receiving is not optional and not a favour.** A peer manager with headroom takes the board. If
+every manager is over the line at once, say so to the user plainly — that is a fleet-level condition
+and not something three sessions can self-discipline their way out of.
+
+---
+
+## 4b. Two ownerships, and a reader who checks one will believe the other is covered
+
+**Owning a SEAT and being accountable for a ROW are different relationships, and they can point at
+different managers** (Mr Radio 🦉, 2026-08-13, found the same morning). The manager who spawned a
+worker is the one who can re-spin it. The `accountable_manager` on a store row is whoever is chasing
+that work — and may have no ability to act on the seat at all.
+
+| | who it is | what they can do |
+|---|---|---|
+| **Seat owner** | the manager whose session spawned it — `list_spawned_sessions()` | re-spin it, reap it, brief it |
+| **Row's accountable manager** | `accountable_manager` on the store row | chase it, reassign it, close it |
+
+**The failure this creates**: a manager reads `task_query( accountable_manager=me )`, sees a
+worker's rows, and concludes that worker is covered. It is not — they cannot re-spin a seat they
+did not spawn. Meanwhile the seat owner may be watching liveness and not the board.
+
+**So the tick reads the ROSTER, never the row list.** `list_spawned_sessions()` answers "whose seat
+is this"; the store answers "whose work is this." Live receipt: on 2026-08-13 Krishna sat at 52.1%
+with Cheech owning the seat and Mr Radio accountable on two of its rows — and only Cheech could act.
 
 **Open**: a small host-side helper that sends `/clear` into a named pane would make this
 self-service. That is lupin's surface, not this workflow's.

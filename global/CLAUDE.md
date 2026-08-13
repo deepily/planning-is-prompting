@@ -459,7 +459,9 @@ notify( message="Sure! Here you go",
 
 🔴 **Omit `respin_personas` and the reap silently moves that worker's open rows onto YOUR board** — the lane then reads as unworked while your board looks fuller. It keys on the persona NAME, not the seat, so check `retained_unmatched` in the result.
 
-**Managers are subject to the same line but CANNOT re-spin themselves** — `dismiss_sessions` reaches only sessions you spawned, a successor cannot take your persona while you hold it, and no session can type `/clear` into its own pane. At the ceiling a manager does the half it can: write the memento, then say out loud it is there (`notify()` + a DM to a peer manager).
+**Managers are subject to the same line but CANNOT re-spin themselves** — `dismiss_sessions` reaches only sessions you spawned, a successor cannot take your persona while you hold it, and no session can type `/clear` into its own pane. **At the ceiling: write the memento → HAND YOUR BOARD to the peer manager with the most headroom (`task_reassign`) → then announce.** 🔴 The handoff is the control; **announcing is not a control** — a manager who announces and keeps working has changed nothing but who feels informed. Receiving is not a favour: a peer with headroom takes the board.
+
+⚠️ **Seat ownership ≠ row ownership.** The manager who SPAWNED a worker is the only one who can re-spin it; the row's `accountable_manager` can only chase and reassign. A manager reading `task_query( accountable_manager=me )` and concluding a worker is covered is wrong — **the tick reads `list_spawned_sessions()`, never the row list**.
 
 **Every re-spin brief carries**: the memento path · `set_session_topic()` at boot · the rows the worker still owns · the DM rule (three sentences and a path) · notice that it will be monitored and re-spun again.
 
