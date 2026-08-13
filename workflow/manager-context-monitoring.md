@@ -259,9 +259,18 @@ not** (Cheech 🌿, 2026-08-13, correcting me an hour later):
    own lineage, and verifies `persona_state: "allocated"` before addressing anyone by name.
 
 🔴 **It has a DEADLINE, and that is the part that needs a rule.** The move only works while the
-dying manager can still act. Fire it when you judge you have **one tick left, not none** — a
-recovery that requires you to be alive cannot be triggered at the wall. **Trigger well before the
-ceiling; late is identical to never.**
+dying manager can still act. Fire it when you have **one tick left, not none** — a recovery that
+requires you to be alive cannot be triggered at the wall. **Late is identical to never.**
+
+**PRECOMMIT THE NUMBER. Do not judge it in the moment** (Cheech 🌿, who precommitted at 88% while
+sitting at 77.5% and gaining ~5 a tick — two ticks of margin, decided while he had room to decide
+well). A trigger estimated at 90% under pressure is estimated by the version of you least able to
+estimate. **Name your number early, say it out loud to your peer manager, and let the tick enforce
+it.**
+
+**Leave room for the handoff itself, not just for the decision.** The reap, the seed list, and the
+confirmation are all work, and they consume the very budget you are running out of. A trigger that
+covers only the choice is still late.
 
 **Still worth building** — a reap/respawn path authorised by something other than spawn lineage, or
 the `/clear`-into-a-named-pane helper — because both would remove the deadline rather than ask a
