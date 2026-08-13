@@ -65,6 +65,15 @@ Last updated: 2026-08-12 (**Session 164** (María 🌸 `227f9b1d`) — **words�
 → Twelve stale session blocks (S152 back through 2026-07-17, incl. the superseded 2026-07-18 POC standing order) archived 2026-08-06 → `todo-archive/2026.08.06-resume-here-recut.md`. Their substance lives in `history.md`, the Decisions Log, and the task-store. Live owed work: query the store (`task_query`).
 
 
+## ⚠️ Standing note for any successor of María's seat (2026-08-13)
+
+**DO NOT REAP TIFFANY 💍** (`02f6e553`). She is a **working manager with her own lineage and a crew
+of two** (sam 🎙️, Krishna 🦚), spawned mid-day because every incumbent manager was over the context
+line at once. She appears on María's spawn roster, so a literal reading of `manager-context-monitoring.md`
+§4c at María's trigger points at her — **that reading is wrong**: the section governs seats that need
+re-spinning, not seats that are working. Her own timer is durable; María's is not. Receipt: DM thread
+`e4c75a4b`, and the rule is now written into §4c itself.
+
 ## Pending Decisions
 
 - [ ] **🆕 Should a gate PROCEED when its own question could not be delivered? (Rick's call, raised 2026-08-13; not filed as a row because new items are barred today).** Measured, not suspected — sam's audit under store row `1b32c486`: **35 declared-default events** in the retained window (08-04, 08-05, and today), **every single one `source=dispatch_failed`** — the ask could not be delivered, so the gate defaulted through — and **zero timeouts**. It spans both sides of the wiring fix `4ab64c8f` untouched, which is what proves it is a **policy choice rather than a defect**: nobody decided what an unavailable notification service should mean, so it silently means *proceed*. **It is still firing** — the most recent is today at 16:32. **The options**: (a) fail CLOSED — an undeliverable gate blocks, which is honest but stops unattended suites the moment `:7999` bounces, and it bounced six times today; (b) ⭐ fail open but **mark the run** — proceed, and stamp the run's verdict as *reached without its gate*, so a green carries its own asterisk; (c) keep today's behaviour and accept that some greens were never gated. **My recommendation is (b)**: it keeps unattended runs working, and it is the only option under which the *next* audit of this question is answerable. **And it is cheap, with one condition that is the whole point** (sam): the signal already exists — `default_used=True` plus `default_source` in the answer data — so the work is **persisting it onto the run's report record**, not inventing it. It must land in the durable report and **not only in container logs**, because container logs are exactly what a recreate wipes: that is what erased class (a) this morning, and a mark in the durable report would have made even the gone window answerable. | priority: P2 | raised: 2026-08-13 | owner: Rick (policy) → whoever holds the gate code

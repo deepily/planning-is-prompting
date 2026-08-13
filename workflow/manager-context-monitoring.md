@@ -210,6 +210,16 @@ documents on disk rather than inlining them — a brief is a pointer, and it has
 ⚠️ **It is a manager, not a rescue.** Give it a real lane, a tick slot and a trigger number; a seat
 spawned only to catch a falling board is one more session nobody is watching.
 
+⚠️ **A WORKING SEAT IS NOT A SEAT THAT NEEDS RE-SPINNING — and that includes a manager you spawned.**
+If you spawned the receiver, the receiver is on *your* roster, so a literal reading of this section
+at your own trigger says to reap the manager now holding the crew. **Don't.** This section is about
+seats that need re-spinning, not seats that are working: an orphaned-but-healthy manager keeps
+running, because nobody needs to reap it — it needs to keep managing.
+
+*Live, 2026-08-13*: at my trigger, Tiffany 💍 was the only seat left on my roster, and reaping her
+would have taken down the manager holding two workers I had just handed her. **Record this where a
+successor will look — the memento and TODO.md — not only in the DM thread where it was noticed.**
+
 🔴 **A PERSONA-LESS SESSION IS INVISIBLE TO THIS ENTIRE POLICY.** The sensor is keyed by persona, so
 a session whose allocation failed **does not appear in the roster at all** — not as unknown, not as
 null, simply absent. The tick cannot see it, the 50% line cannot fire for it, and nobody learns it
