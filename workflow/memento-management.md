@@ -325,6 +325,8 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py waivers --rep
 
 An escape you can take silently is not a gate. **An escape nobody enumerates is silent in every way that matters.**
 
+> **Why this gate hangs off the memento write, and must stay there even when the memento becomes a throwaway file** (Rick's ruling, 2026-08-06; recorded here 2026-08-13 so nobody later deletes it as obvious dead weight). The gate never protected the *file*. It uses that write as a tripwire at a **moment** — the last instant before a session loses its context — and making the file ephemeral does not move the moment. The tempting "improvement" is to re-hang it on the `history.md` write, which lands too late: sessions are re-spun all day, and the end-of-day write is long past the point where the context was still there to capture. **A control guarding a disposable artifact looks like waste right up until you ask what it is timed to.**
+
 What it prints:
 
 | signal | meaning |

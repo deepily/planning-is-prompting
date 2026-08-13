@@ -74,6 +74,7 @@ VERBOSITY IS A DEFECT, NOT A STYLE. We are on deadline.
               A line is one sentence that makes a claim — tables, headings, code
               blocks and file paths are structure and cost nothing. FILE PATHS ARE
               FREE: when the detail lives somewhere, send the path, not the detail.
+              The path is a pointer, not a fourth sentence.
   NoMC C2C  — No Meta Conversation, Cut to the Chase.
   NoAA      — No Aphorisms or Apologies.
   NoDrama   — State the defect, the fix, the receipt. Cut the stakes clause.

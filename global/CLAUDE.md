@@ -5,7 +5,7 @@
 **Six rules. Memorize the acronyms; you will be reminded by them.**
 
 - **KISS** — Keep It Short/Sweet.
-- **Say 3LoL** — Say it in Three Lines or Less: **headline + two supporting sentences.** **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. When the detail lives somewhere, send the path instead of the detail.
+- **Say 3LoL** — Say it in Three Lines or Less: **headline + two supporting sentences.** **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. When the detail lives somewhere, send the path instead of the detail — **a pointer, not a fourth sentence.**
 - **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 - **NoAA** — **No Aphorisms or Apologies.**
 - **NoDrama** — **State the defect, the fix, the receipt. Cut the stakes clause.**
@@ -443,6 +443,28 @@ notify( message="Sure! Here you go",
 
 **Detailed Reference**: See `planning-is-prompting → workflow/manager-autonomy.md` for the full envelope, the memento precondition, the announcement contract, and the harvest-discipline cross-link.
 
+## MANAGER CONTEXT MONITORING — THE 15-MINUTE TICK
+
+**Every manager watches their own workers' context and re-spins any worker past 50%.** Rick, 2026-08-13 (broadcast `69e577a7`): the point is token economy at both ends — shorter DMs going in, and nobody carrying a bloated context past halfway. Inside the existing spawn/harvest envelope, so it needs nobody's permission.
+
+| | |
+|---|---|
+| **Tick** | every **15 minutes** (`/loop` or `ScheduleWakeup(900)`), staggered — Cheech on the quarter, Mr Radio +5, María +10 |
+| **Sensor** | `GET /api/arbiter/context-pressure` on `:7999` — per-persona headroom. Send an **`X-API-Key`** header (key via `read_api_key()` in `lupin/src/lupin_cli/claude_code/hooks/lib/task_store_client.py`) or it answers **401** |
+| **Roster** | `list_spawned_sessions()` — your workers only, never another manager's crew |
+| **Threshold** | the payload's own **`status: over_budget`** — not a percentage you compute. The service already carries the policy (1M window budgets at 0.5, so its 500k ceiling *is* the 50% line; a 200k window budgets at 0.75) |
+| **Quiet tick** | ends silently. No user notify, and never DM a worker to ask how full it is |
+
+**The five steps**: DM *"prepare for re-spin"* → wait for *"ready for re-spin"* → `dismiss_sessions( write_memento=True, respin_personas=["<name>"] )` → `spawn_sessions( persona_preference=["<name>"], seed_memento=<path> )` → verify `persona_state: "allocated"` before addressing it by name.
+
+🔴 **Omit `respin_personas` and the reap silently moves that worker's open rows onto YOUR board** — the lane then reads as unworked while your board looks fuller. It keys on the persona NAME, not the seat, so check `retained_unmatched` in the result.
+
+**Managers are subject to the same line but CANNOT re-spin themselves** — `dismiss_sessions` reaches only sessions you spawned, a successor cannot take your persona while you hold it, and no session can type `/clear` into its own pane. At the ceiling a manager does the half it can: write the memento, then say out loud it is there (`notify()` + a DM to a peer manager).
+
+**Every re-spin brief carries**: the memento path · `set_session_topic()` at boot · the rows the worker still owns · the DM rule (three sentences and a path) · notice that it will be monitored and re-spun again.
+
+**Detailed Reference**: See `planning-is-prompting → workflow/manager-context-monitoring.md`.
+
 ## Code Style
 - **Imports**: Group by stdlib, third-party, local packages
 - **Indentation**: 4 spaces (not tabs)
@@ -739,7 +761,7 @@ clears. Rely on the hook's TTS notification as the single source of truth.
 | | |
 |---|---|
 | **KISS** | Keep It Short/Sweet |
-| **Say 3LoL** | Say it in Three Lines or Less — headline + two supporting sentences. A line is one sentence that makes a claim; **file paths are free** |
+| **Say 3LoL** | Say it in Three Lines or Less — headline + two supporting sentences. A line is one sentence that makes a claim; **file paths are free**, and a path is a pointer, not a fourth sentence |
 | **NoMC C2C** | No Meta Conversation, Cut to the Chase |
 | **NoAA** | No Aphorisms or Apologies |
 | **NoDrama** | State the defect, the fix, the receipt — cut the stakes clause |

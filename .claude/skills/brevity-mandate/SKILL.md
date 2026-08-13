@@ -82,7 +82,7 @@ If it is aimed at a **manager**, GB2W carries the full anti-gaming guard from `p
 ## The rules
 
 - **KISS** — Keep It Short/Sweet.
-- **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences. **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**.
+- **Say 3LoL** — Say it in Three Lines or Less: headline + two supporting sentences. **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. When the detail lives somewhere, send the path instead of the detail — a pointer, not a fourth sentence.
 - **NoMC C2C** — No Meta Conversation, Cut to the Chase.
 - **NoAA** — No Aphorisms or Apologies.
 - **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause. Covers code, documentation AND interpersonal comms (Rick, 2026-07-19).
