@@ -237,17 +237,36 @@ reap, or replace a single one of the sessions working them.
 prepare-for-re-spin **completes those re-spins first** and hands over afterwards. Handing over
 early buys nothing and costs clarity.
 
-🔴 **The orphan case, named on day one and NOT solved by this workflow.** If a spawning manager goes
-dark — context exhaustion, a crash, a `/clear` — while its workers are live, **those seats are
-orphaned**: no peer manager can reap them, respawn them, or re-spin them, because `dismiss_sessions`
-reaches only sessions the caller spawned. The rows can be reassigned; the sessions cannot be
-touched. The only remaining actor is a human at a terminal.
+**The orphan case — and it HAS a recovery move.** If a spawning manager goes dark while its workers
+are live, those seats are stranded: no peer can reap or re-spin them, because `dismiss_sessions`
+reaches only sessions the caller spawned. I first wrote that as unsolvable-without-a-human. **It is
+not** (Cheech 🌿, 2026-08-13, correcting me an hour later):
 
-**This is a stronger failure than the one §4 was written to fix**, and it has no mechanism today.
-What would close it is one of: a reap/respawn path authorised by something other than spawn lineage,
-or the same `/clear`-into-a-named-pane helper that would let a manager re-spin itself. **Until one
-exists, a manager approaching the ceiling with live workers should re-spin them down to zero before
-it thins itself** — that is the only sequence with no orphan state in it.
+> **Seats cannot transfer, but they can be RECREATED.** The dying manager **reaps** its workers
+> before going dark; the receiving manager **respawns** them from their mementos **under its own
+> lineage**. An unrecoverable orphan becomes an ordinary re-spin, and the whole cost is the work
+> pausing for the minute in between.
+
+**The move, in order:**
+
+1. **Dying manager reaps** — `dismiss_sessions( write_memento=True, respin_personas=[…] )`, naming
+   every seat, so the workers' rows stay on their own personas rather than landing on the reaper.
+2. **Dying manager hands over the seed list** — per seat, the memento path *or*, when there is no
+   memento, the store row that carries its continuity. **Name the seed explicitly; do not assume a
+   memento exists.** (Live case the day this was written: Krishna had none — his reap produced no
+   memento, defect `5b93be2a` — and his continuity lived entirely in row `e0bb5a94`, deliberately.)
+3. **Receiving manager respawns** each seat with `seed_memento` (or the row's content), under its
+   own lineage, and verifies `persona_state: "allocated"` before addressing anyone by name.
+
+🔴 **It has a DEADLINE, and that is the part that needs a rule.** The move only works while the
+dying manager can still act. Fire it when you judge you have **one tick left, not none** — a
+recovery that requires you to be alive cannot be triggered at the wall. **Trigger well before the
+ceiling; late is identical to never.**
+
+**Still worth building** — a reap/respawn path authorised by something other than spawn lineage, or
+the `/clear`-into-a-named-pane helper — because both would remove the deadline rather than ask a
+tiring session to judge it correctly. **But the fleet is no longer one dark manager away from
+unrecoverable seats.**
 
 **Open**: a small host-side helper that sends `/clear` into a named pane would make this
 self-service. That is lupin's surface, not this workflow's.
