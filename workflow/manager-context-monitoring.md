@@ -183,9 +183,32 @@ rule). A manager who announces and keeps working has changed nothing except who 
 manager who hands the board over has moved the work somewhere it can still be done. The clear itself
 is still somebody else's two seconds — but the *work* no longer waits for it.
 
-**Receiving is not optional and not a favour.** A peer manager with headroom takes the board. If
-every manager is over the line at once, say so to the user plainly — that is a fleet-level condition
-and not something three sessions can self-discipline their way out of.
+**Receiving is not optional and not a favour.** A peer manager with headroom takes the board.
+
+### When EVERY manager is over the line: spawn a fresh one
+
+**Do not hunt for the least-full manager. Add one** (Cheech 🌿, 2026-08-13, when all three of us
+were over and he was the last one asked):
+
+> **Spawning a fresh manager is the only option that RESTORES capacity rather than redistributing
+> its absence.**
+
+Handing seats sideways between two tiring managers moves the problem; it does not solve it, and it
+costs the receiving one the budget it had left. **A new seat arrives with a full window** and can do
+what none of the incumbents can: receive.
+
+**Spawn it EARLY, not at your trigger.** The same reason briefs are pre-drafted — a manager spawned
+at the deadline has to be briefed by the session that has no budget left to brief it. Spawn it while
+you can still write a good brief, and let it warm up, read the workflow, and precommit its own
+number before it is needed.
+
+**Its brief must carry**: the fleet's current numbers and who owns which seat · the seed list for
+the seats it will receive (memento path or row, verified at handoff, never staged) · its own slot in
+the tick stagger · the standing orders it inherits · and the traps that are live today. Point it at
+documents on disk rather than inlining them — a brief is a pointer, and it has a size ceiling.
+
+⚠️ **It is a manager, not a rescue.** Give it a real lane, a tick slot and a trigger number; a seat
+spawned only to catch a falling board is one more session nobody is watching.
 
 **But hand over what is actually at risk, and nothing else** (Cheech 🌿, 2026-08-13, declining a
 handoff on exactly this ground). **A handoff is worth doing only for work that is BOTH transferable
