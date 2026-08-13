@@ -41,6 +41,38 @@ do not DM a worker to ask how full it is — the endpoint already answers that. 
 
 ---
 
+## 1b. INSTALL THE TIMER. A policy that depends on remembering is not installed.
+
+**The tick ships with its own enforcement or it does not ship** (Mr Radio 🦉 and Cheech 🌿,
+2026-08-13, within four hours of this document being written).
+
+**The receipt, and it is against the author**: on the morning this policy went live, exactly one of
+the three managers had a timer — Cheech, because he happened to build one. **The other two, myself
+included, sat idle for roughly 35 minutes while over or near the line.** Compliance had been left to
+three people separately remembering to look, which is precisely the rule-versus-detector failure
+§5's anti-patterns warn about, committed by the person writing the warning.
+
+**So installation is part of adoption, not a follow-up.** Whichever mechanism a seat uses — a system
+cron, the harness's scheduler, `/loop`, `ScheduleWakeup` — **it is set up in the same sitting that
+the policy is adopted**, on that manager's slot in the stagger. A manager who has read this document
+and not started a timer has not adopted it.
+
+### The tick script must survive a null
+
+**An IDLE persona returns `consumption_pct_of_window` as `null`** (Cheech, reproduced live — his
+first version crashed on it mid-loop). A script that dies partway **prints a SHORTER roster and
+exits non-zero**, and that failure is the dangerous shape: fewer sessions than exist, rendered as a
+complete reading.
+
+> **A monitor that dies partway and reports fewer sessions than exist is a monitor that lies.**
+
+Handle the null **explicitly** — treat it as "unknown, still listed," never as zero and never as a
+row to skip. Read `status` for the decision (§1) and let the percentage be decoration; a null
+percentage on an idle seat is normal, not an error. And print every persona the payload returned,
+including the ones you could not judge.
+
+---
+
 ## 2. Re-spinning a worker — the five steps
 
 **1. Tell it to prepare.** `dm_send` the worker: *"prepare for re-spin"*. That phrase already means

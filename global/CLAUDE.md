@@ -449,7 +449,8 @@ notify( message="Sure! Here you go",
 
 | | |
 |---|---|
-| **Tick** | every **15 minutes** (`/loop` or `ScheduleWakeup(900)`), staggered — Cheech on the quarter, Mr Radio +5, María +10 |
+| **Tick** | every **15 minutes** (cron, the harness scheduler, `/loop`, or `ScheduleWakeup(900)`), staggered — Cheech on the quarter, Mr Radio +5, María +10. 🔴 **INSTALL THE TIMER IN THE SAME SITTING YOU ADOPT THIS** — a policy that depends on remembering is not installed. Receipt: on day one, two of three managers sat idle ~35 min while over or near the line, and the one who complied was the one who had built a cron |
+| **Null-safe** | an IDLE persona returns `consumption_pct_of_window` as `null`; handle it explicitly. **A monitor that dies partway and reports fewer sessions than exist is a monitor that lies** |
 | **Sensor** | `GET /api/arbiter/context-pressure` on `:7999` — per-persona headroom. Send an **`X-API-Key`** header (key via `read_api_key()` in `lupin/src/lupin_cli/claude_code/hooks/lib/task_store_client.py`) or it answers **401** |
 | **Roster** | `list_spawned_sessions()` — your workers only, never another manager's crew |
 | **Threshold** | the payload's own **`status: over_budget`** — not a percentage you compute. The service already carries the policy (1M window budgets at 0.5, so its 500k ceiling *is* the 50% line; a 200k window budgets at 0.75) |
