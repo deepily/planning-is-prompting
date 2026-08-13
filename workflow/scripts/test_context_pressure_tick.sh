@@ -69,5 +69,18 @@ else
     printf '  FAIL  %-46s\n' "null seat is still listed"; (( fail++ ))
 fi
 
+# A bounce must NOT alarm, but a dead sensor must — so the retry has to be real, and it has to be
+# bounded. Assert both: the unreadable case still exits 1, and it takes longer than one attempt
+# would (proving the retry ran) while staying under a tick interval (proving it is bounded).
+start=$( date +%s )
+CONTEXT_PRESSURE_URL="file://$TMP/still-missing.json" bash "$TICK" >/dev/null 2>&1
+rc=$?
+elapsed=$(( $( date +%s ) - start ))
+if [[ "$rc" == 1 && "$elapsed" -ge 15 && "$elapsed" -lt 120 ]]; then
+    printf '  PASS  %-46s exit %s after %ss\n' "retry runs, stays bounded" "$rc" "$elapsed"; (( pass++ ))
+else
+    printf '  FAIL  %-46s exit %s after %ss (want exit 1 in 15-120s)\n' "retry runs, stays bounded" "$rc" "$elapsed"; (( fail++ ))
+fi
+
 echo "--- $pass passed, $fail failed"
 [[ "$fail" == 0 ]]

@@ -30,18 +30,35 @@ SENSOR_URL="${CONTEXT_PRESSURE_URL:-http://localhost:7999/api/arbiter/context-pr
 cd "$LUPIN_ROOT" || { echo "TICK ERROR: cannot cd to LUPIN_ROOT=$LUPIN_ROOT" >&2; exit 1; }
 
 python3 - "$SENSOR_URL" <<'PY'
-import sys, json, urllib.request, datetime
+import sys, json, time, urllib.request, datetime
 
 sys.path.insert( 0, "src" )
 url = sys.argv[ 1 ]
 
-try:
+def read_sensor():
     from lupin_cli.claude_code.hooks.lib.task_store_client import read_api_key
     req = urllib.request.Request( url, headers={ "X-API-Key": read_api_key() } )
-    data = json.load( urllib.request.urlopen( req, timeout=15 ) )
-except Exception as e:
-    # The sensor being unreadable is a DIFFERENT fact from nobody being over budget.
-    print( f"TICK ERROR: could not read the context-pressure sensor: {e}", file=sys.stderr )
+    return json.load( urllib.request.urlopen( req, timeout=15 ) )
+
+# RETRY ONCE BEFORE CRYING WOLF. :7999 is bounced routinely — six times on the day this tick was
+# written — and each bounce is a ~10 second window where the sensor is genuinely unreadable. A
+# durable cron that alarms on every routine restart trains its reader to ignore it, which is the
+# false-positive failure this fleet already has a standing watch on. One short retry spans a
+# bounce; a sensor still dead after it is a real fault.
+data = None
+for attempt in ( 1, 2 ):
+    try:
+        data = read_sensor()
+        break
+    except Exception as e:
+        last = e
+        if attempt == 1:
+            time.sleep( 20 )
+
+if data is None:
+    # Unreadable-after-a-retry is a DIFFERENT fact from nobody being over budget.
+    print( f"TICK ERROR: could not read the context-pressure sensor after a retry: {last}",
+           file=sys.stderr )
     sys.exit( 1 )
 
 personas = data.get( "personas" ) or {}
