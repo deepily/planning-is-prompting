@@ -350,6 +350,21 @@ the `/clear`-into-a-named-pane helper — because both would remove the deadline
 tiring session to judge it correctly. **But the fleet is no longer one dark manager away from
 unrecoverable seats.**
 
+### And the manager orphan case is a TIMING rule, not a structural limit
+
+The obvious objection to all of the above: a manager cannot be reaped by anyone, so a manager that
+spawned another manager has created a seat nobody can ever recover. **That is only true of a manager
+that reaches its wall having spawned nothing** (Cheech 🌿, 2026-08-13, closing the question he
+opened that morning).
+
+**A manager approaching its ceiling spawns its successor and hands over — and a successor is itself
+a manager that will do the same.** Applied recursively the chain is self-sustaining: **nobody ever
+has to reap a manager**, because every manager is replaced by one it created while it still could.
+
+⇒ **So the orphan case bites exactly one manager: the one that hits the wall without having spawned
+a successor.** That is a deadline, and deadlines are met by precommitting a number — which is
+already the rule two sections up. *A dead end you can walk away from at a known time is a schedule.*
+
 **Open**: a small host-side helper that sends `/clear` into a named pane would make this
 self-service. That is lupin's surface, not this workflow's.
 
