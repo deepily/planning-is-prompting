@@ -463,6 +463,8 @@ notify( message="Sure! Here you go",
 
 ⚠️ **Seat ownership ≠ row ownership.** The manager who SPAWNED a worker is the only one who can re-spin it; the row's `accountable_manager` can only chase and reassign. A manager reading `task_query( accountable_manager=me )` and concluding a worker is covered is wrong — **the tick reads `list_spawned_sessions()`, never the row list**.
 
+🔴 **Rows transfer; seats do not — so finish your re-spins BEFORE you thin.** A board handed over with live seats attached reads as covered and is not: the receiver can close those rows and cannot re-spin one of the sessions working them. **Orphan case, unsolved**: if a spawning manager goes dark while its workers are live, no peer can reap or respawn those seats — only a human at a terminal. A manager nearing the ceiling with live workers re-spins them to zero first; that is the only sequence with no orphan state in it.
+
 **Every re-spin brief carries**: the memento path · `set_session_topic()` at boot · the rows the worker still owns · the DM rule (three sentences and a path) · notice that it will be monitored and re-spun again.
 
 **Detailed Reference**: See `planning-is-prompting → workflow/manager-context-monitoring.md`.

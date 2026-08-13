@@ -151,6 +151,34 @@ did not spawn. Meanwhile the seat owner may be watching liveness and not the boa
 is this"; the store answers "whose work is this." Live receipt: on 2026-08-13 Krishna sat at 52.1%
 with Cheech owning the seat and Mr Radio accountable on two of its rows — and only Cheech could act.
 
+---
+
+## 4c. Handing a board does NOT hand the seats — and the orphan case nobody has solved
+
+**§4's handoff rule has a hole, and it was found the hour the rule was written** (Cheech 🌿,
+2026-08-13, who was mid-handoff when he hit it).
+
+**Rows transfer. Seats do not.** `task_reassign` moves ownership of the work; it cannot move the
+ability to re-spin the worker doing it. A board handed over with live seats attached **reads as
+covered and is not** — the receiving manager can chase and close those rows, and cannot re-spin,
+reap, or replace a single one of the sessions working them.
+
+**So the order is: finish your re-spins, then thin.** A manager at the ceiling with workers mid
+prepare-for-re-spin **completes those re-spins first** and hands over afterwards. Handing over
+early buys nothing and costs clarity.
+
+🔴 **The orphan case, named on day one and NOT solved by this workflow.** If a spawning manager goes
+dark — context exhaustion, a crash, a `/clear` — while its workers are live, **those seats are
+orphaned**: no peer manager can reap them, respawn them, or re-spin them, because `dismiss_sessions`
+reaches only sessions the caller spawned. The rows can be reassigned; the sessions cannot be
+touched. The only remaining actor is a human at a terminal.
+
+**This is a stronger failure than the one §4 was written to fix**, and it has no mechanism today.
+What would close it is one of: a reap/respawn path authorised by something other than spawn lineage,
+or the same `/clear`-into-a-named-pane helper that would let a manager re-spin itself. **Until one
+exists, a manager approaching the ceiling with live workers should re-spin them down to zero before
+it thins itself** — that is the only sequence with no orphan state in it.
+
 **Open**: a small host-side helper that sends `/clear` into a named pane would make this
 self-service. That is lupin's surface, not this workflow's.
 
