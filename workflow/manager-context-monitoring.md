@@ -121,6 +121,32 @@ row to skip. Read `status` for the decision (§1) and let the percentage be deco
 percentage on an idle seat is normal, not an error. And print every persona the payload returned,
 including the ones you could not judge.
 
+### The number lags a `/clear` by a TURN, not a clock
+
+**A just-respun session keeps reporting its pre-clear number until it takes its next assistant
+turn.** Re-reading the sensor does not help — a re-read one second later returns the identical
+figure. Only a new turn moves it.
+
+The mechanism, traced in lupin source (2026-08-14): `context_pressure_writer.py` sets
+`occupancy = pressure.last_prompt_size`, and `context_pressure.py` fills that from
+`read_last_usage( transcript_path )` — **the last assistant turn in the transcript**. After a
+`/clear` that turn is still the pre-clear one, so occupancy and `status` stay frozen until a new
+turn is written.
+
+*Measured the same afternoon*: Mr Radio self-respun at 14:48; the 14:53:18 tick — reading the
+sensor live, not quoting an older figure — still printed `over_budget 55.5%`. By 14:57 it read
+11.6%. Two managers made mirror-image errors within twenty minutes: one quoted a 22-minute-old
+reading, the other read live and was shown a stale number anyway. **Only the second is a property
+of the instrument, and conflating them yields a remedy — "re-read fresher" — that cannot work.**
+
+The generalisation is broader than re-spins (Cheech): **a quiet session's number is as old as its
+last turn, however long ago that was.** `last_turn_age_s` is how you tell.
+
+**The tell that a row is post-clear-but-pre-turn**: `pressure_state: UNKNOWN`, or
+`occupancy_tokens: null` while `liveness` is `ACTIVE`, or a `last_turn_age_s` older than a re-spin
+you know happened. **Believe the session over the sensor** when it says it just re-spun, and
+re-check after it has taken a turn.
+
 ---
 
 ## 2. Re-spinning a worker — the five steps
