@@ -600,8 +600,57 @@ def ensure_gitignored( repo_root, rel_path, apply_fix=True, verbose=True ):
 
 # ---------------------------------------------------------------- header stamping
 
+SELF_RESPIN_NONCE_PREFIX = "SELF-RESPIN-NONCE:"
+
+
+def atomic_write_text( path, text ):
+    """
+    Write `text` to `path` so no reader can ever observe a partial file.
+
+    Requires:
+        - path's parent directory exists
+
+    Ensures:
+        - a reader sees either the previous contents or the complete new contents
+        - the temp file lives in the SAME directory as the target, so the rename is
+          within one filesystem and therefore atomic
+        - the temp file is removed if anything fails before the rename
+    """
+    tmp = path.with_name( path.name + f".tmp.{os.getpid()}" )
+    try:
+        with open( tmp, "w" ) as fh:
+            fh.write( text )
+            fh.flush()
+            os.fsync( fh.fileno() )      # durability before the rename, not after
+        os.replace( tmp, path )
+    finally:
+        if tmp.exists():
+            try:    tmp.unlink()
+            except OSError: pass
+
+
+def build_self_respin_nonce_line( nonce_uuid, written_at ):
+    """
+    Produce the freshness stamp `self_respin` reads back before it clears a seat.
+
+    The format is NOT ours to choose — it mirrors `build_nonce_line()` in
+    `lupin/src/lupin_mcp/self_respin_core.py:111`, and the verb's reader
+    (`verify_memento_content`) matches on the literal prefix, the exact uuid, and a
+    parseable AWARE timestamp within its cycle window (300s by default).
+
+    Requires:
+        - nonce_uuid is the uuid the caller generated THIS cycle
+        - written_at is an aware ISO-8601 string — a naive stamp is rejected by the
+          verb as unparseable, which reads as "stale write" rather than "bad format"
+
+    Ensures:
+        - returns exactly one line: "SELF-RESPIN-NONCE: <uuid> @ <iso_ts>"
+    """
+    return f"{SELF_RESPIN_NONCE_PREFIX} {nonce_uuid} @ {written_at}"
+
+
 def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None,
-                  correlation=None ):
+                  correlation=None, self_respin_nonce=None ):
     """
     Guarantee the record carries its own provenance (element-1: session_id + written_at).
 
@@ -618,6 +667,12 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
         - when `correlation` is given, the returned text carries it as its own machine line
           (547f6565 H3 — see POST_GAME_CORRELATION_STAMP: the stamp is the reader the
           waiver never had)
+        - when `self_respin_nonce` is given, the returned text carries the freshness
+          stamp `self_respin` verifies before clearing a seat. It goes LAST, after the
+          body, deliberately: the verb treats a missing nonce as "partial write" and
+          refuses, so a stamp written at the end proves the whole record landed. A
+          nonce at the top would survive a truncated write and green-light a clear
+          into half a memento.
     """
     machine = ( f"<!-- memento-record: persona={persona} session_id={sid} "
                 f"written_at={written_at} slot={slot} -->" )
@@ -632,6 +687,10 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
     lines = [ l for l in lines if not l.startswith( "<!-- memento-record:" ) ]
     lines = [ l for l in lines if not l.startswith( "<!-- post-game-waived:" ) ]
     lines = [ l for l in lines if not l.startswith( POST_GAME_CORRELATION_STAMP ) ]
+    # A nonce from a PREVIOUS cycle must never survive into this write — the verb
+    # would find a stale uuid, and a re-stamped record carrying two nonce lines is
+    # ambiguous about which cycle it proves.
+    lines = [ l for l in lines if not l.strip().startswith( SELF_RESPIN_NONCE_PREFIX ) ]
 
     if no_post_game_reason is not None:
         lines.append( "" )
@@ -650,7 +709,12 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
         insert_at = 1 if lines and lines[ 0 ].startswith( "# " ) else 0
         lines     = lines[ :insert_at ] + injected + lines[ insert_at: ]
 
-    return machine + "\n" + "\n".join( lines ).rstrip() + "\n"
+    text = machine + "\n" + "\n".join( lines ).rstrip() + "\n"
+
+    if self_respin_nonce:
+        text += ( "\n" + build_self_respin_nonce_line( self_respin_nonce, written_at ) + "\n" )
+
+    return text
 
 
 def authored_at( repo_root, path, now ):
@@ -1135,14 +1199,20 @@ def cmd_write( args ):
 
     text = stamp_header( body, persona, sid, args.slot, written,
                          no_post_game_reason=args.no_post_game if owed else None,
-                         correlation=correlation_stamp( correlated, corr_detail ) )
+                         correlation=correlation_stamp( correlated, corr_detail ),
+                         self_respin_nonce=args.self_respin_nonce )
 
-    # 3. RECORD
-    rec_abs.write_text( text )
+    # 3. RECORD — written ATOMICALLY (temp in the same directory, then rename).
+    #    A plain write_text can leave a truncated file visible under the final name if
+    #    the writer dies mid-write, and `self_respin` clears a seat on the strength of
+    #    what it reads here. Rename is atomic on the same filesystem, so a reader sees
+    #    either the previous record or the complete new one — never half of either.
+    atomic_write_text( rec_abs, text )
 
-    # 4. MIRROR — same call, not a second step. Fails loud.
+    # 4. MIRROR — same call, not a second step. Fails loud. Atomic for the same reason.
     mir_abs.parent.mkdir( parents=True, exist_ok=True )
-    shutil.copy2( rec_abs, mir_abs )
+    atomic_write_text( mir_abs, text )
+    shutil.copystat( rec_abs, mir_abs )
 
     # 5. POINTER — safe to clobber ONLY once we have checked that what is sitting there is
     #    actually a pointer.
@@ -2502,6 +2572,9 @@ def build_parser():
     w.add_argument( "--persona",      required=True )
     w.add_argument( "--session-id",   required=True, help="from get_session_info()" )
     w.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
+    w.add_argument( "--self-respin-nonce", metavar="UUID", default=None,
+                    help="stamp SELF-RESPIN-NONCE: <uuid> @ <ts> as the record's last line; "
+                         "self_respin refuses to clear a seat without a matching fresh nonce" )
     w.add_argument( "--no-post-game", metavar="REASON", default=None,
                     help="waive the post-game gate; REASON is RECORDED in the memento, never silent" )
     w.set_defaults( func=cmd_write )

@@ -35,6 +35,18 @@ also gives `consumption_pct_of_window`, `headroom_tokens_forward`, `liveness` an
 — useful for the log line, not for the trigger. (Verified live 2026-08-13: HTTP 200 with the key,
 `policy: {"1000000": 0.5, "200000": 0.75, "default": 0.5}`. Found by Cheech 🌿.)
 
+**The 50% line belongs to the service, and that is where it should be tunable.** When the threshold
+needs to move — per window size, per fleet, per experiment — the change belongs in the sensor's own
+config (an INI key behind that `policy` map), **not in a constant in the tick script**. Every reader
+keeps reading `status`, and there is one number to change rather than one per manager. A second
+threshold living in `workflow/scripts/context-pressure-tick.sh` would drift from the server's within
+a week, and the two would disagree silently.
+
+**Read your OWN row while you are in the payload.** The endpoint returns the whole roster, so the
+tick that tells you a worker is over the line is already holding the number for you — §4 is what you
+do with it. A tick that filters to `list_spawned_sessions()` before looking never sees its own
+manager.
+
 A tick where nobody is `over_budget` ends silently. Do not notify the user for a quiet tick, and
 do not DM a worker to ask how full it is — the endpoint already answers that. Design background:
 `lupin/src/rnd/v0.1.8/2026.06.07-managing-context-memory/2026.06.09-context-pressure-published-headroom-service-design.md`.
@@ -160,15 +172,74 @@ second old is legitimately nameless. Do not DM it by name until identity resolve
 ## 4. Managers monitoring themselves
 
 A manager is subject to the same 50% line — a monitor that outlives its own budget stops being a
-monitor. But **a manager cannot re-spin itself**, and that is a mechanical limit, not a preference:
+monitor. The first version of this document said flatly that **a manager cannot re-spin itself**.
+Two of those three paths do fail. The third does not, and I wrote that it did:
 
-| Path | Why it fails |
+| Path | Status |
 |---|---|
-| `dismiss_sessions` on your own seat | It reaps only sessions **you spawned**; your own seat is not in your lineage. Nothing of yours executes after the kill, so you could never launch the replacement. |
-| Spawn a successor first, then die | The persona chain cannot grant your name while you still hold it — the successor boots as somebody else, breaking persona continuity. |
-| `/clear` in place | This is the one that would work — same seat, same persona, context to zero, rehydrate from the repo-root memento. There is no way for a session to type `/clear` into its own pane. |
+| `dismiss_sessions` on your own seat | **Fails, permanently.** It reaps only sessions **you spawned**; your own seat is not in your lineage. Nothing of yours executes after the kill, so you could never launch the replacement. |
+| Spawn a successor first, then die | **Works, at a cost.** The persona chain cannot grant your name while you still hold it, so the successor boots as somebody else and persona continuity breaks. This is *succession* — the fallback, below. |
+| `/clear` in place | **Works.** Same seat, same persona, context to zero, rehydrate from the repo-root memento. I wrote *"there is no way for a session to type `/clear` into its own pane"* — and there is. It ships in lupin and runs in production daily. See §4a. |
 
-**So at the ceiling, a manager does three things, in this order:**
+### The ladder — take the first rung available to you
+
+| # | Condition | Action |
+|---|---|---|
+| 1 | Over the line · memento **verified on disk** · self-clear verb available | **Self-clear** (§4a). Keeps the seat, the persona, the tmux session, the board and the lineage. Costs one memento write. |
+| 2 | Verb unavailable, or a fired clear did not come back | **Succession** — memento, hand the board, announce (immediately below). |
+| 3 | Every manager over the line | **Spawn a fresh one** — adding capacity rather than redistributing its absence. |
+
+**Rung 1 is not a nicer version of rung 2 — it is a different trade.** Succession spends a whole
+manager's remaining budget to save a manager's budget: the successor boots empty, re-derives what
+it can, and whatever the outgoing seat had left is discarded. Self-clear discards nothing but the
+context it was trying to discard anyway.
+
+### 4a. Self-clear — the seat re-spins itself
+
+**The mechanism already exists and was not built for this.** `inject_qualifier_via_tmux()`
+(`lupin/src/lupin_cli/claude_code/hooks/lib/hook_common.py:992`) resolves a session id to a tmux
+session through the session bridge and types text into that session's input as first-class user
+input. The load-bearing property is `start_new_session=True` plus a leading `sleep`: **the injecting
+process is detached and outlives its caller.** So a session can schedule an injection into its own
+pane, stop existing in its current form, and the typing still happens.
+
+**And the lineage objection dissolves.** `dismiss_sessions` is scoped to sessions you spawned;
+**typing into a pane is scoped to nothing but a session id and a bridge entry**, both of which a
+session holds for itself. The arbiter has been typing into panes of sessions it never spawned since
+2026-06-16, runtime-selected by the INI key `arbiter poke wake mechanism`, with branch coverage.
+
+**Five steps, and only step 3 is new:**
+
+1. **Reach a safe checkpoint.** No half-written files. Same precondition as any re-spin.
+2. **Write the memento** to the repo root, and **verify it on disk before scheduling anything.**
+3. **Schedule the injection at yourself** — `/clear`, into your own tmux session, after a delay long
+   enough that the memento write has certainly landed. `wrap=False`: the speakerphone voice rider
+   must never be wrapped around a slash command.
+4. **The detached process fires.** `/clear` is typed and submitted. Context → zero.
+5. **SessionStart rehydrates** from the repo-root memento. Same seat, same persona, empty context.
+
+🔴 **Never schedule the clear and then write the memento.** Verify first, schedule second. The
+reverse order clears into nothing and loses the session's state — the single worst outcome available
+here, and there is no undo on a `/clear`.
+
+🔴 **The seat that fires it cannot report whether it worked.** A manager that self-clears and does
+not come back is a **silently dead seat**, and the entire point of this policy is that seats do not
+die silently. So the observer is not an enhancement to build later — **an external check that the
+seat returned at low context (arbiter-side or peer-manager-side) is the first thing built**, ahead of
+the verb it watches.
+
+**Other guards the verb owes**: fire only from a turn boundary (`send-keys` into a busy input may be
+swallowed or land in the wrong place); a **one-shot marker** cleared at SessionStart, so two queued
+injections cannot clear twice — the second would destroy the freshly rehydrated context; and treat a
+failed clear as a **no-op you retry**, never as done.
+
+**Status**: the mechanism is proven; the agent-callable verb is filed with lupin's MCP surface (Mr
+Radio, row `9e0678f6`) — that is his plumbing, not this repo's. Reasoning, risk table and the
+existing-code citations: `src/rnd/2026.08.13-manager-self-respin-mechanism.md`.
+
+### The fallback: succession
+
+**When rung 1 is not available, a manager at the ceiling does three things, in this order:**
 
 1. **Write the memento.** Same content a worker's would carry: what you own, what state it is in,
    and any judgment call a successor would otherwise re-derive.
@@ -270,6 +341,44 @@ with Cheech owning the seat and Mr Radio accountable on two of its rows — and 
 
 ---
 
+### A persona name is not a seat, and the pool hands freed names straight back
+
+**Reap a worker and its persona name returns to the pool, where it can be granted to somebody else
+within minutes.** `dismiss_sessions` warns about this for retention (`respin_personas` is keyed on the
+name, so a re-granted name can retain the wrong seat) — but it bites the *written record* just as
+hard, and that part is easy to miss because nothing errors.
+
+*Live, 2026-08-13, twice in one evening*: Tiffany 💍 was reaped at 22:10, and a different seat held
+the name inside Cheech's crew shortly after. Same night, two different Krishnas — `3322b5ed` under
+Cheech, and the one on row `e0bb5a94` under mine. Both collisions were caught by a person noticing,
+not by a tool.
+
+⇒ **Write the session id beside the name any time the record has to outlive the seat** — DMs that
+will be read later, task rows, mementos, history entries, post-game notes. A name alone reads as one
+continuous seat to anybody arriving afterwards, and the reconstruction they build from it will be
+wrong in a way that looks perfectly coherent.
+
+**The shape that works, and it costs one amendment** (Cheech 🌿, who built it the same evening): put
+a **seat roster at the top of the row** — every name pinned to its session id, where a future reader
+hits it before the narrative. It survives the seats it describes, which is the whole point.
+
+🔴 **And a name you did not verify is worse than a name you left out — it makes a worker WAIT.**
+An unverified name reads as a live colleague, so the person receiving it does the polite thing and
+coordinates with someone who cannot answer.
+
+*Live the same evening, and the relay was mine*: I passed "Mr Radio had Marcus on this for ten
+minutes — confirm with him before you assume the lane is empty" to Cheech, having taken the name from
+a DM rather than from a roster. Marcus never named a seat. It cost time **twice** — once for Cheech,
+and again when a worker stopped before writing code to ask whether she should be coordinating with
+him.
+
+⇒ **Before putting a name in front of somebody, verify the seat** — `list_spawned_sessions()` from
+whoever owns the lineage, or the roster. **And record the seats that never existed**, too: Cheech
+wrote down that Marcus named nobody, so no later reader reconstructs him as a colleague who worked
+the lane.
+
+---
+
 ## 4c. Handing a board does NOT hand the seats — and the orphan case nobody has solved
 
 **§4's handoff rule has a hole, and it was found the hour the rule was written** (Cheech 🌿,
@@ -345,10 +454,12 @@ dying manager had just checked over the one I had written earlier — **trust th
 verified over the thing you wrote before**, which is the same discipline that carried every other
 correction this day.
 
-**Still worth building** — a reap/respawn path authorised by something other than spawn lineage, or
-the `/clear`-into-a-named-pane helper — because both would remove the deadline rather than ask a
-tiring session to judge it correctly. **But the fleet is no longer one dark manager away from
-unrecoverable seats.**
+**One of the two things worth building now exists.** The `/clear`-into-a-named-pane helper is §4a —
+proven mechanism, verb pending — and it removes the deadline for the *manager's own* seat rather than
+asking a tiring session to judge the moment correctly. The other, a reap/respawn path authorised by
+something other than spawn lineage, is still open and still worth building: **self-clear saves the
+manager, not the orphans it leaves.** Until that exists, this recovery move stands. **But the fleet
+is no longer one dark manager away from unrecoverable seats.**
 
 ### And the manager orphan case is a TIMING rule, not a structural limit
 
@@ -365,8 +476,11 @@ has to reap a manager**, because every manager is replaced by one it created whi
 a successor.** That is a deadline, and deadlines are met by precommitting a number — which is
 already the rule two sections up. *A dead end you can walk away from at a known time is a schedule.*
 
-**Open**: a small host-side helper that sends `/clear` into a named pane would make this
-self-service. That is lupin's surface, not this workflow's.
+**And §4a shortens the chain rather than replacing it.** A manager that can self-clear does not need
+a successor to survive its own ceiling, so the recursion above becomes a fallback for the case where
+the verb is unavailable — not the only way a manager gets past 50%. Precommitting a number still
+applies: **self-clear needs a safe checkpoint and a written memento, and both take the budget you
+have left.**
 
 ---
 
@@ -390,8 +504,28 @@ managers, zero lost work, zero escalations to the user (`src/rnd/2026.08.13-mana
 | 2 | **Act on the sensor's verdict, not your own arithmetic.** | The payload's `status: over_budget` (§1). |
 | 3 | **Re-spin before the wall, with the state carried across.** | The five steps (§2) — memento, `respin_personas`, verify `allocated`. |
 | 4 | **Never let a seat die holding work nobody else can reach.** | Mementos + seed lists (§4c). |
-| 5 | **Precommit your own trigger while you can still set it well.** | §4a/§4c — a number, decided early. |
+| 5 | **Precommit your own trigger while you can still set it well.** | §4c — a number, decided early. |
 | 6 | **Spawn your successor before your own wall.** | §4c closing — the chain, not the reap. |
+| 7 | **Re-spin YOURSELF rather than riding your own ceiling.** | The §4 ladder — self-clear (§4a) where the verb exists, succession where it does not. |
+
+### The one gate on a self-clear: ask, and default to yes
+
+**Rick, 2026-08-13, on the night the mechanism was proven**: *"If this works I would suggest that all
+managers ask a yes-no question that defaults to yes."*
+
+⇒ **Before firing a self-clear, ask — `ask_yes_no`, `default="yes"`.** It is the only step in this
+whole document that touches the user, and it earns its place for one reason: **`/clear` is
+irreversible and there is no observer inside the seat that fires it.** A confirmation costs one
+keypress the user usually will not need to make.
+
+**The default is `yes` and that is the load-bearing half.** An absent user must never strand a
+manager at its ceiling — a gate that defaults to `no` converts "the user is away" into "the fleet
+loses a manager," which is precisely the failure this policy exists to prevent. The timeout answering
+for an AFK user is a *feature* here, not a degraded path.
+
+⚠️ **This is not a licence to ask about anything else.** Re-spinning a worker, reaping, spawning a
+successor, handing a board — all still standing, all still silent. **One gate, on the one action that
+cannot be undone and cannot be self-verified.**
 
 ### What the user is NEVER asked to do
 
@@ -429,6 +563,10 @@ predictable event can have.
 - ❌ Polling a worker by DM to ask its context level — that spends the very thing you are protecting.
 - ❌ Notifying the user on every quiet tick. Silence is the correct output when nobody is over.
 - ❌ Monitoring workers you did not spawn. Another manager's crew is that manager's job.
+- ❌ Scheduling a self-clear and then writing the memento. Verify it on disk **first** (§4a).
+- ❌ Firing a self-clear with no external observer watching for the seat to come back — that is how a
+  seat dies silently, which is the one outcome this whole policy exists to prevent.
+- ❌ Putting the 50% threshold in the tick script. It is the sensor's number (§1).
 
 ---
 
@@ -443,3 +581,14 @@ predictable event can have.
   worker re-spin is tractable without him: *"that's one less thing on my plate, because I intensely
   dislike managing workers' memories."* Anti-patterns renumbered §5 → §6. Day-one evidence:
   `src/rnd/2026.08.13-manager-context-monitoring-day-one-report.md`.
+- **2026.08.13 (María 🌸), same day, §4 rewritten around self-clear**: the sentence *"there is no way
+  for a session to type `/clear` into its own pane"* was mine and was **false** — `inject_qualifier_via_tmux()`
+  ships in lupin and the arbiter has used it on panes it never spawned since 2026-06-16. §4 now opens
+  with a **ladder** (self-clear → succession → spawn a fresh manager) and a new **§4a** stating the
+  mechanism, the five steps, and the four guards the verb owes: verified memento before scheduling,
+  turn-boundary only, a one-shot marker against double-clear, and an **external observer** built
+  before the verb it watches. Succession is demoted from the only answer to rung 2. Added obligation
+  7 to §5 and Rick's confirmation gate — `ask_yes_no`, `default="yes"`, so an absent user never
+  strands a manager at its ceiling. §1 gains the rule that the 50% line is tunable in the **sensor's**
+  config, never in the tick script, and that the tick must read its own row. Mechanism note:
+  `src/rnd/2026.08.13-manager-self-respin-mechanism.md`; verb filed to Mr Radio as `9e0678f6`.

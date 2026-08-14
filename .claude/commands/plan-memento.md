@@ -43,7 +43,27 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
    said "(default)" until 2026-07-25 and told a reader the flag was optional in the one
    document a seat reads at the moment it writes a memento (row `28ce4fe6`).
 
-   That one call writes the **record** (immutable), the **out-of-repo mirror** (survives `git clean -xdf`), and the **pointer** (safe to overwrite; it is not the record) — **or it fails loud and non-zero.** It refuses an existing record path (exit 3), repairs `.gitignore` itself, and stamps element-1 provenance as line 1.
+   That one call writes the **record** (immutable), the **out-of-repo mirror** (survives `git clean -xdf`), and the **pointer** (safe to overwrite; it is not the record) — **or it fails loud and non-zero.** It refuses an existing record path (exit 3), repairs `.gitignore` itself, and stamps element-1 provenance as line 1. The record is written **atomically** (temp file, then rename), so no reader can ever observe a half-written memento.
+
+   **Writing this memento in order to self-`/clear`? Add `--self-respin-nonce <uuid>`:**
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
+    --persona "<persona>" --session-id "<session_id>" --slot root \
+    --self-respin-nonce "<uuid the self_respin call gave you>"   < <content-file>
+```
+
+   It appends `SELF-RESPIN-NONCE: <uuid> @ <iso_ts>` as the record's **last line**, which is
+   what `self_respin` reads back before it clears your seat. **Without it the verb refuses
+   and the clear never fires** — correctly: a memento that cannot prove it was written this
+   cycle is indistinguishable from a stale one, and clearing into a stale memento destroys
+   the session's state. The stamp is last on purpose — a partial write can never carry a
+   valid nonce, so "the nonce is there" also means "the whole record landed."
+
+   The verb checks the uuid matches, the timestamp is timezone-aware and parseable, is not
+   future-dated, and is under 300 seconds old. Contract lives at
+   `lupin/src/lupin_mcp/self_respin_core.py` → `build_nonce_line()` / `verify_memento_content()`;
+   round-trip verified against it 2026-08-13, including the truncated-write case.
 
 4. **Do not "verify the file was written"** by re-reading it, and do not touch `.gitignore` — the script already did both, by execution, and would have exited non-zero if either failed.
 5. `notify()` the user that the memento is ready. **Do not report the path** — it is derivable (§3 governing principle), and nobody should ever be handed one.
