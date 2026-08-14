@@ -24,7 +24,15 @@
 #     Zero personas on a fleet that certainly has sessions is a broken sensor, not a quiet day.
 set -uo pipefail
 
-LUPIN_ROOT="${LUPIN_ROOT:-/mnt/DATA01/include/www.deepily.ai/projects/lupin}"
+# EXPORT, not just assign (Mr Radio, 2026-08-13). read_api_key() resolves the key file from
+# os.environ["LUPIN_ROOT"] and returns "" when it is unset — degrade-safe by design, so an
+# unexported value produces an EMPTY X-API-Key header and the sensor answers 401. A plain
+# assignment is visible to this shell and INVISIBLE to the python heredoc below, which is a
+# different process. Under an interactive shell LUPIN_ROOT is usually already exported from the
+# profile, so this bug is invisible everywhere EXCEPT the one place the script is meant to run:
+# cron, whose environment is bare. Measured: every fire since install logged
+# "TICK ERROR: could not read the context-pressure sensor after a retry: HTTP Error 401".
+export LUPIN_ROOT="${LUPIN_ROOT:-/mnt/DATA01/include/www.deepily.ai/projects/lupin}"
 SENSOR_URL="${CONTEXT_PRESSURE_URL:-http://localhost:7999/api/arbiter/context-pressure}"
 
 cd "$LUPIN_ROOT" || { echo "TICK ERROR: cannot cd to LUPIN_ROOT=$LUPIN_ROOT" >&2; exit 1; }
