@@ -344,6 +344,24 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Pending
 
+- [ ] **🔴 [PLAN] QUANTIFY THE TOKEN-BURN DROP — Rick's observation 2026-08-13, explicitly anecdotal, to be measured after a couple of full hard-burn days** (his words: *"I want to revisit and quantify"*). **Do this AFTER the ~250k-row I/O-table embeddings update**, which is the next morning's job.
+
+  **What he observed, recorded as stated and not as fact**:
+
+  | period | MCP share of all tokens burned | fleet rate |
+  |---|---|---|
+  | before the KISS protocol | **80%+** through the cosa-voice MCP server | — |
+  | after KISS | **50%+** | 14,000–22,000 tokens/min |
+  | today, first **partial** day with the DM tutor | **~30-something %** | **~7,000 tokens/min with 11 agents live** |
+
+  Source for the rate is a third-party aggregator over all Claude Code calls on the network. ⚠️ **He called it anecdotal himself — record it that way.** A number this good is exactly the kind that gets quoted later without its caveat, which is how the 80% figure needed recutting three times.
+
+  **The confounds a real measurement has to separate**, because today changed several things at once: (a) the DM tutor went live at 10:12 — **partial day**, so today's average mixes treated and untreated hours; (b) tonight ran a **five-worker crew doing code work**, a different traffic mix from an all-manager day; (c) `:7999` was bounced four times, and each restart drops connections and suppresses traffic; (d) the tutor itself **costs** inference on every DM — an MCP-share drop is not a total-cost drop, and the two must not be conflated.
+
+  **One measurement already exists and points the same way** (this session, `src/rnd/2026.08.13-dm-corpus-report.md` lineage): DMs from the three managers went **210.5 → 93.8 mean words, −55%**, with the 200+ word bucket going from **32% of traffic to zero**. And the split that matters — **submitted** text alone fell 143.4 → 104.5 words, so **~74% of the shrinkage happens before the tutor edits anything.** That is behaviour, not scissors. **The same split should be run on the burn-rate data**: how much is the tool, how much is the fleet writing differently because it knows it is read.
+
+  ⚠️ **And measure the notification channel separately** — I checked tonight and user-facing `notify()` lengths did **not** follow the DMs down; if anything they rose. The clean test he is owed is pointing the same grader at `notify()` for half the fleet for a week. | priority: P1 | raised: 2026-08-13 | owner: Rick (calls the measurement) → María + Mr Radio (run it)
+
 - [ ] **🆕 [PLAN] A gate on MERGING does not bind a DEPLOY that reads the working tree — write it into the policy** (mine, raised 2026-08-13 evening). I ruled that sam's shared-pool change could not land without an independent review. **It entered service three times without ever being merged**, because a `:7999` bounce deploys the **uncommitted working tree**. sam objected inside the ack window **twice** and both objections arrived after the bounce had finished — with the tutor adding ~30s to every DM, a considered objection cannot beat that window. **Two things to write down**: (1) a review gate must name the *deploy* path, not only the merge path, or it does not bind the thing that puts code in front of users; (2) the ack window is too short for a human-speed objection, so either it lengthens or the deploy lists owners and waits for them. ⚠️ **Do not file this as "bad luck"** — it recurred three times in one evening under three different people. | priority: P2 | raised: 2026-08-13 | owner: María
 
 - [ ] **🆕 [LUPIN] `write_memento=True` wrote NOTHING, 3 for 3 tonight — P1 `0a36d83d`** (raised 2026-08-13 evening). Tiffany's reap, Krishna's reap, and Mr Radio's six-seat reap all returned **fully successful result dicts** and produced no file on disk. **The policy leans on this**: §5 says a worker's memory is its manager's job, and the mechanism that discharges that duty is currently unbacked. Tonight it cost nothing only because a DM carried four live lanes by hand. **Every worker of mine was told to write their own by hand and verify it on disk**, which is a workaround, not a fix. | priority: P1 | raised: 2026-08-13 | owner: Mr Radio (row) — watch, not mine
