@@ -80,6 +80,27 @@ DM is the third surface. Topic-broadcast (§1 row 2) reaches anyone polling; DM 
 dm_send(recipient="rachel", body="have you touched src/auth.py today?")
 ```
 
+> 🔴 **ONE ASK OR ONE DECLARATION PER MESSAGE. A second ask is a second message.**
+>
+> Every other DM rule caps **how long** a message is — three lines, verdict first, decisions and
+> evidence only. **None of them caps how many things it asks for**, and that is a different failure:
+> a DM can be three sentences, plain-spoken and verdict-first, and still carry four separate asks. It
+> passes every check we have, and the reply has to fan out to answer it.
+>
+> **The cost lands on the reader, which is why the sender never feels it.** One message with four
+> asks is not one turn of work — it is four, and the replier either does all four badly or answers
+> the first and drops three. A dropped ask inside a message that got a reply is invisible: the sender
+> saw an answer and assumes they were heard.
+>
+> *Rick, 2026-08-13, on finding no such rule anywhere in this document*: senders "should only be
+> making one declaration or asking one question, not 17, as has occasionally been the case." The
+> recipient-facing notice on a shortened DM now models it — *"Need more detail? Ask the sender 1
+> question"* — and a rule the product demonstrates is worth more than one only the docs state.
+>
+> **Splitting is cheap and threading is free.** Two DMs on the same thread cost the sender one extra
+> call and save the reader a fan-out. When you catch yourself writing "and separately", "also", or
+> "one more thing" — that is the second message announcing itself.
+
 `recipient` resolves server-side by persona name (case- and punctuation-tolerant — see the accent caveat below). For precise addressing, pass `recipient_session_id="<id>"` — it takes precedence over `recipient`.
 
 Success returns `status: "sent"` plus:
