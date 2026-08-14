@@ -370,7 +370,57 @@ self-service. That is lupin's surface, not this workflow's.
 
 ---
 
-## 5. Anti-patterns
+## 5. The obligation: a worker's memory is its MANAGER's job, never the user's
+
+Everything above is mechanism. This section is the duty the mechanism exists to discharge, stated
+plainly because a procedure nobody reads as an obligation gets treated as optional tooling.
+
+**Rick, 2026-08-13**: *"If a manager's ability to re-spin workers is tractable then that's one less
+thing on my plate, because I intensely dislike managing workers' memories — if the managers can take
+care of that."*
+
+⇒ **They can, and it is now theirs.** Day one demonstrated it: five worker re-spins across three
+managers, zero lost work, zero escalations to the user (`src/rnd/2026.08.13-manager-context-monitoring-day-one-report.md`).
+
+### What a manager OWES, for every seat it spawns
+
+| # | Obligation | Discharged by |
+|---|---|---|
+| 1 | **Know how full each of your workers is.** | The tick (§1), on a **durable** timer (§1b). |
+| 2 | **Act on the sensor's verdict, not your own arithmetic.** | The payload's `status: over_budget` (§1). |
+| 3 | **Re-spin before the wall, with the state carried across.** | The five steps (§2) — memento, `respin_personas`, verify `allocated`. |
+| 4 | **Never let a seat die holding work nobody else can reach.** | Mementos + seed lists (§4c). |
+| 5 | **Precommit your own trigger while you can still set it well.** | §4a/§4c — a number, decided early. |
+| 6 | **Spawn your successor before your own wall.** | §4c closing — the chain, not the reap. |
+
+### What the user is NEVER asked to do
+
+- ❌ Track any session's context level.
+- ❌ Decide whether a worker needs re-spinning.
+- ❌ Remember what a re-spun worker was doing.
+- ❌ Re-brief a fresh seat on work its predecessor owned.
+
+**A manager that surfaces any of these to the user has failed this section**, even if every mechanical
+step in §2 was executed correctly. Escalate the *exception* — a seat you cannot reach, a memento that
+will not write — never the routine.
+
+### The one thing that IS still the user's
+
+**The push.** Nothing else about worker lifecycle is. A manager does not ask permission to re-spin,
+to reap, to spawn a successor, or to hand a board to a peer with headroom — those are standing, and
+`workflow/manager-autonomy.md` already says so.
+
+### Why this is an obligation and not a nicety
+
+A worker's context filling up is **certain**, not probable — every seat reaches the line if it works
+long enough. So the only question is whether the re-spin is scheduled by a manager or discovered by
+the user when a worker starts behaving oddly. **The second one costs the user exactly the attention
+this fleet exists to protect**, and it arrives without warning, which is the worst property a
+predictable event can have.
+
+---
+
+## 6. Anti-patterns
 
 - ❌ Reaping without `respin_personas` when you intend to bring the seat back (§2 step 3).
 - ❌ Killing a worker that has not checkpointed, because the tick said 50%. The tick is a trigger,
@@ -387,3 +437,9 @@ self-service. That is lupin's surface, not this workflow's.
 - **2026.08.13 (María 🌸)**: Initial version. Written on Rick's AFK-day broadcast `69e577a7` — 15-minute
   tick, 50% threshold, memento → reap → re-spin, and the manager self-re-spin limit stated as a
   verified mechanical fact rather than a preference.
+- **2026.08.13 (María 🌸), same day, §5 added**: the **obligation** stated plainly — a worker's memory
+  is its manager's job and never the user's, with the six duties a manager owes every seat it spawns
+  and the four things the user is never asked to do. Added on Rick's word after day one demonstrated
+  worker re-spin is tractable without him: *"that's one less thing on my plate, because I intensely
+  dislike managing workers' memories."* Anti-patterns renumbered §5 → §6. Day-one evidence:
+  `src/rnd/2026.08.13-manager-context-monitoring-day-one-report.md`.
