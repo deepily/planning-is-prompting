@@ -42,6 +42,18 @@ keeps reading `status`, and there is one number to change rather than one per ma
 threshold living in `workflow/scripts/context-pressure-tick.sh` would drift from the server's within
 a week, and the two would disagree silently.
 
+🔴 **THE ROSTER IS UNDER `personas`, AND READING THE WRONG KEY RETURNS AN EMPTY FLEET WITH HTTP 200.**
+A reader that looks for a `sessions` list gets a **200 and zero rows** — no error, no warning, just a
+fleet that appears to have nobody in it. That is the lying monitor §1b exists to prevent, arriving
+through the front door: the tick runs, the request succeeds, and the answer is *everyone is fine*.
+
+*Live, 2026-08-13, Cheech 🌿 hit it twice* before dumping the raw payload shape to find it.
+
+⇒ **Assert the shape, not just the status code.** A tick that reads zero personas must exit non-zero
+and say so — `workflow/scripts/context-pressure-tick.sh` already does exactly this, on the rule that
+**zero personas is a broken sensor, not a quiet fleet**. Any *new* reader of this endpoint owes the
+same check, because a 200 proves the server answered, never that it answered what you asked.
+
 **Read your OWN row while you are in the payload.** The endpoint returns the whole roster, so the
 tick that tells you a worker is over the line is already holding the number for you — §4 is what you
 do with it. A tick that filters to `list_spawned_sessions()` before looking never sees its own
