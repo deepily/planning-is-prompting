@@ -908,7 +908,36 @@ Per the 2026-06-16 D1 ruling, an autonomous commit **announces itself** with a b
    ```
 
    - **If this is the ONLY section** (no other active sessions): delete `.claude-session.md` entirely (clean slate).
-   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it).
+   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it) — **then run the reclaim pass below.**
+
+4. **Reclaim terminal sections (v2.1, 2026-08-15)** — the manifest is read at every session start, so it must not grow without bound.
+
+   **Why this step exists — receipt.** In this repo the manifest reached **193KB / 2,325 lines / 79 sections**. Measured: **47 sections were `committed` and accounted for 65% of the bytes**; touched-file lines were 68% of the file. Nothing in v2.0 ever removed a section — a `committed` section was kept forever whenever any other session was live, which with overlapping sessions is always. The file grew monotonically and every boot paid for it.
+
+   **Use the script** — it implements the rule below and dry-runs by default:
+   ```bash
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/reclaim-session-manifest.py --keep <your-session-id>
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/reclaim-session-manifest.py --keep <your-session-id> --apply
+   ```
+
+   **A section is RECLAIMABLE when any of these holds:**
+   | # | condition | why it is safe |
+   |---|---|---|
+   | 1 | terminal status **and** its `**Commit**` hash **resolves** (`git cat-file -e <sha>^{commit}`) | the work is provably in git; nothing is lost by forgetting who typed it |
+   | 2 | terminal status, no commit recorded, **and** none of its touched files is dirty | nothing outstanding to attribute |
+   | 3 | non-terminal but idle past 24h **and** none of its touched files is dirty | an abandoned session that left no trace |
+
+   🔴 **Verify the commit; do not trust the status.** `**Status**: committed` is a *claim* a session wrote about itself. A resolvable commit hash is *evidence*. A section claiming `committed` with **no verifiable hash and dirty files** is kept and flagged — dropping it would erase the only record of who touched those files, and the next session's conflict detection would then stage them as unattributed.
+
+   ⚠️ **Do NOT reclaim on dirtiness alone** — that was the first cut of this rule and it was wrong. Every historical section that ever touched a file *anyone* is editing right now looks dirty, so the pass kept 7 sections when 4 was correct. **The dirty check only matters when there is no commit to verify.**
+
+   **Then**: the script rewrites `.claude-session.md` with survivors only and bumps `**Last Updated**`. Report it:
+   ```python
+   notify( "Session manifest reclaimed: 79 → 4 sections, 193KB → 4KB",
+           notification_type="task", priority="low" )
+   ```
+
+   **Never** reclaim a section that is `active` with recent activity — that is a live parallel session, and its file list is what protects it from you.
 
 ### 4.5) PUSH Decision (the one retained user gate)
 
