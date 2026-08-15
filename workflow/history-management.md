@@ -65,7 +65,23 @@
 
 ## Token Thresholds & Alerts
 
+### 🔴 Threshold the PROJECTED total, not the file on disk
+
+**The number compared against 17k/19k is `projected_tokens` — the file as it stands PLUS the session entry about to be appended.** Never the bare file measurement.
+
+```
+current_tokens       = wc -c history.md          ÷ 4
+pending_entry_tokens = wc -c <drafted entry>     ÷ 4    # 0 when no entry is pending
+projected_tokens     = current_tokens + pending_entry_tokens   # ← threshold THIS
+```
+
+When `pending_entry_tokens` is 0 — a standalone `mode=check`, not a session-end run — the projection collapses to the file measurement and nothing changes.
+
+> **Receipt, 2026-08-14 → 08-15.** A session-end check reported history.md at **18.1k** and offered deferral; the same file measured **24.1k** at the next session's boot. Nothing wrote to it overnight — the whole 6k gap was that session's own entry, appended *after* the check ran. 18.1k lands in WARNING, whose menu offers "Next session" as an ordinary option; the true 24.1k was CRITICAL, where deferral is not on the menu. **The check did not merely under-report — it routed the decision to a gentler branch.** Reporting the projection *alongside* the file number would not have fixed that; only thresholding **on** it does.
+
 ### Severity Levels
+
+*(Each level is evaluated against `projected_tokens`, per the rule above.)*
 
 **🚨 CRITICAL** (≥19k tokens OR breach <3 days)
 - Immediate action required
@@ -102,10 +118,10 @@ velocity_7d = (current_tokens - tokens_7_days_ago) / 7
 velocity_30d = (current_tokens - tokens_30_days_ago) / 30
 ```
 
-**Forecast**:
+**Forecast** (from the projected total, per the rule above):
 ```
-days_until_17k = (17000 - current_tokens) / velocity_7d
-days_until_25k = (25000 - current_tokens) / velocity_7d
+days_until_17k = (17000 - projected_tokens) / velocity_7d
+days_until_25k = (25000 - projected_tokens) / velocity_7d
 ```
 
 ---
@@ -116,26 +132,34 @@ days_until_25k = (25000 - current_tokens) / velocity_7d
 
 **Purpose**: Health check with dual notification
 
+**Input**: optional `pending_entry=<path>` — a file holding the session entry **drafted but not yet appended**. Session-end (Step 0.5) always passes it; a standalone check omits it and `pending_entry_tokens` is 0.
+
 **Process**:
-1. Count tokens (character count ÷ 4 approximation)
-2. Calculate 7-day and 30-day velocity
-3. Forecast breach dates
-4. Determine severity level
-5. Display report in CLI
-6. Send `notify()` if severity ≥ MONITOR
+1. Count tokens (character count ÷ 4 approximation): `current_tokens`
+2. Count the pending entry the same way: `pending_entry_tokens` (0 if none)
+3. `projected_tokens = current_tokens + pending_entry_tokens`
+4. Calculate 7-day and 30-day velocity
+5. Forecast breach dates **from `projected_tokens`**
+6. **Determine severity from `projected_tokens`** — never from `current_tokens`
+7. Display report in CLI (show all three numbers, so the projection is auditable)
+8. Send `notify()` if severity ≥ MONITOR
 
 **Output Format**:
 ```
 📊 History Health Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Current Size: X,XXX tokens
+On Disk:      X,XXX tokens
+Pending Entry: +X,XXX tokens          (0 if none)
+Projected:    X,XXX tokens  ← thresholded
 Velocity: XXX tok/day (7d) | XXX tok/day (30d)
-Forecast: Will reach 20k in XX days
-Status: [ICON] [SEVERITY]
+Forecast: Will reach 25k in XX days
+Status: [ICON] [SEVERITY]  (from Projected)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 [If WARNING/CRITICAL: Recommended action]
 ```
+
+⚠️ **A report that prints only "Current Size" is the pre-2026-08-15 shape and is the defect** — the projected line is what the severity was read from, so it has to be on screen next to the status.
 
 **Notification Example** (if WARNING):
 ```python

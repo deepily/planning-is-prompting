@@ -182,18 +182,38 @@ Health: ✅ HEALTHY
 
 **When**: After creating TODO list (Step 0), before updating history (Step 1)
 
+> ### 🔴 Draft the entry FIRST, then threshold `on-disk + drafted`
+>
+> The severity ladder below must read the **projected** total — the file **plus this session's entry**, which is not on disk yet. So the entry is **drafted to a scratch file before the check runs**, and its size is handed to the check. Full rule: workflow/history-management.md → *Threshold the PROJECTED total*.
+>
+> **Receipt, 2026-08-14 → 08-15.** This step reported 18.1k and offered deferral; the same file measured **24.1k** the next morning with nothing having written to it overnight — the 6k gap was that session's own entry, appended after the check ran. 18.1k is WARNING, where *"Next session"* is on the menu; 24.1k is CRITICAL, where it is not. **The stale number was the smaller half of the defect — it routed the decision to a gentler branch.**
+>
+> ⚠️ Reporting the projection *beside* the file size does not fix this. The comparison itself has to use it.
+
 **Process**:
 
-1. **Invoke Health Check**:
+0. **Draft this session's history entry to a scratch file** (do not append it yet):
    ```bash
-   /history-management mode=check
+   DRAFT="${SCRATCH:-/tmp}/history-entry-draft.md"
+   # ... write the entry you intend to add to history.md into $DRAFT ...
+   wc -c "$DRAFT" | awk '{ print "pending entry ~", int( $1 / 4 ), "tokens" }'
+   ```
+   The draft is reused verbatim in Step 1 — this is reordered work, not duplicated work.
+
+1. **Invoke Health Check, passing the draft**:
+   ```bash
+   /history-management mode=check pending_entry="$DRAFT"
    ```
 
 2. **Review Health Report**:
-   - Current token count
+   - On-disk token count
+   - **Pending-entry token count**
+   - **Projected total (on-disk + pending) — the number the severity is read from**
    - 7-day velocity trend
    - Forecast to breach (days until 17k/25k limit)
    - Severity status (HEALTHY, MONITOR, WARNING, CRITICAL)
+
+   ✅ **Before acting on the severity, check what produced it**: if the report shows a single "Current Size" line and no projected total, it is the pre-2026-08-15 shape — re-run with `pending_entry=`.
 
 3. **Take Action Based on Severity**:
 
@@ -206,7 +226,7 @@ Health: ✅ HEALTHY
    - Continue to Step 1
    - Consider archiving within next few sessions
 
-   **If ⚠️ WARNING** (≥17k tokens OR breach <7 days):
+   **If ⚠️ WARNING** (projected ≥17k tokens OR breach <7 days):
    - **PAUSE session-end workflow**
    - **Send blocking notification**:
      ```python
@@ -254,7 +274,7 @@ Health: ✅ HEALTHY
      * Send notification: `notify( "Archive deferred - added to TODO for next session", notification_type="progress", priority="low" )`
      * Resume session-end workflow (continue to Step 1)
 
-   **If 🚨 CRITICAL** (≥19k tokens OR breach <3 days):
+   **If 🚨 CRITICAL** (projected ≥19k tokens OR breach <3 days):
    - **BLOCK session-end workflow**
    - **Require immediate archival**:
      ```
@@ -269,7 +289,7 @@ Health: ✅ HEALTHY
    - Send urgent notification: `notify( "Critical: History archived to prevent limit breach", notification_type="alert", priority="urgent" )`
    - After completion, resume session-end workflow (continue to Step 1)
 
-**Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit.
+**Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit — **which only works if the check counts the content it is checking against.** A pre-write check that measures only the file is blind to the one thing that makes it necessary.
 
 **Notification**: Health check results are automatically sent via `notify()` if severity >= MONITOR.
 
