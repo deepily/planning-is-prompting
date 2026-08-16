@@ -356,6 +356,22 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Pending
 
+- [ ] **[PLAN] The roll-up's own §0.1 fix breaks its artifact path and filename — found running tonight's roll-up (S168, 2026-08-15)**. Not filed as a store row (Rick's no-new-tasks order stood at the time); parked here so it survives the night.
+
+  **Measured, not inferred** — tonight's consolidated CSV landed at:
+
+  `$LUPIN_ROOT/src/io/loc-delta-global/global-2026-08-15 00:00:00_to_2026-08-15 23:59:59-loc-delta.csv`
+
+  | | |
+  |---|---|
+  | documented location (`loc-delta-global.md` §5) | `$LUPIN_ROOT/io/loc-delta-global/` |
+  | actual location tonight | `$LUPIN_ROOT/src/io/loc-delta-global/` — and `src/io/` is **gitignored** (`.gitignore:115`) |
+  | filename | contains **spaces and colons**, straight from the explicit `--since`/`--until` times |
+
+  **The interaction is the point**: §0.1 *requires* explicit times (a bare date returns a confident zero), and passing them is what produces a filename no doc-viewer URL can carry. The clean-named artifacts in the documented directory (`global-2026-08-05-loc-delta.csv`, `-08-11`) are from **bare-date** runs — i.e. every well-named artifact we have was produced by the invocation form the workflow now bans. **The fix for the date bug and the artifact convention have never been used together successfully.**
+
+  **What to do**: slugify the window into the filename (`global-2026-08-15-loc-delta.csv` regardless of the times passed), and resolve the output directory from `LUPIN_ROOT` rather than from the caller's cwd. Then re-check `workflow/loc-delta-global.md` §5 and the doc-viewer link examples against what the CLI actually writes.
+
 - [ ] **🔴 [PLAN] QUANTIFY THE TOKEN-BURN DROP — Rick's observation 2026-08-13, explicitly anecdotal, to be measured after a couple of full hard-burn days** (his words: *"I want to revisit and quantify"*). **Do this AFTER the ~250k-row I/O-table embeddings update**, which is the next morning's job.
 
   **What he observed, recorded as stated and not as fact**:
