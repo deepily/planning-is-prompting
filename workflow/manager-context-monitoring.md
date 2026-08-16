@@ -158,14 +158,38 @@ reason anyone noticed was that a *different* manager's tick happened to print th
 the timer everywhere fixes the first half. The second half needs the spawn lineage to be recorded
 and reachable — see § *Seat ownership ≠ row ownership*.
 
-### The stronger fix, when someone builds it
+### ✅ BUILT 2026-08-16 — the reflex above is now a backstop, not the control
 
-The reflex above is still a rule, and rules decay. **The durable version is a SessionStart hook that
-lays down the manager's crontab line idempotently** — check, add if missing, never duplicate — so a
-manager cannot be running without a tick regardless of what anyone remembered.
+**`workflow/scripts/install_context_pressure_tick.py`**, wired as a second `SessionStart` hook
+command in `~/.claude/settings.json`. It checks the crontab and adds what is missing, every boot,
+including after `/clear`. Nobody has to remember anything.
 
-Until that exists, the reflex is the control, and **§ANTI-PATTERN applies to it too: a manager who
-notices the entry is missing and does not add it has left the fleet unwatched.**
+**It is driven by the ROSTER, not by whoever booted** — `~/.claude/fleet-roster.env`, the same
+user-level file the launcher and the arbiter's systemd drop-in already read. Two reasons, and the
+first one is the whole point:
+
+| | |
+|---|---|
+| **coverage does not depend on who starts up** | that is precisely the Rio gap — his seat went unwatched because no session of his had ever run the install |
+| **it does not race persona allocation** | at `SessionStart` this session's own persona may not be assigned yet; a hook reading a half-written bridge would install the wrong seat's line |
+
+**What it will not do**: edit, reorder, or remove a line it did not add. A manager already carrying
+a tick keeps their exact line, suffix and all — it only ever appends. **Removing a manager from the
+roster does NOT remove their crontab line**; pulling a monitor is a decision a person makes, not a
+side effect of editing a config file.
+
+**Receipt, first live run**: three seats had no tick — **Tiberius, Sam, Tiffany** — on a day the
+gap was already known and had already been discussed. Four→seven lines, no duplicates, and a second
+run changed nothing. Two of those three were declared managers of other repos that nobody had
+thought to check.
+
+⚠️ **Hashing alone does not stagger.** The first dry-run put Sam and Tiffany on the same minute
+because their names happened to hash to the same offset. The installer now reads the offsets already
+in use — from the crontab *and* from the batch it is writing — and steps to the next free minute.
+
+**The reflex above still applies** as a backstop for a box where the hook has not been wired, and
+**§ANTI-PATTERN applies to it too: a manager who notices the entry is missing and does not add it
+has left the fleet unwatched.**
 
 ### The tick script must survive a null
 
