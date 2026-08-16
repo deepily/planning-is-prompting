@@ -107,6 +107,66 @@ manager, on your own slot:
 10,25,40,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
 ```
 
+---
+
+## 🔴 INSTALL IT AT SESSION-START, WITHOUT BEING ASKED
+
+**Rick, 2026-08-16**: *"Is this whole notion of the cron job for managing self and workers context
+memory built into everybody's workflows? I don't want to have to remind everybody manually on a
+daily basis."*
+
+**Today it is NOT, and that is the defect this section closes.** The policy and the script both
+exist; **installing them is a thing a manager has to remember.** Session-start never mentions it, no
+hook lays it down, and nothing checks. So the crontab is populated by whichever managers happened to
+run the install by hand on some previous day — which is a rule, and rules get forgotten.
+
+> **A policy whose installation depends on remembering is not installed.**
+
+**THE OBLIGATION — every manager-role session, at session-start, as a reflex:**
+
+1. **Check for your own entry**: `crontab -l | grep context-pressure-tick`.
+2. **If yours is absent, add it** — one line, your own stagger slot, tagged with a comment naming
+   your persona so the entries stay attributable:
+   ```cron
+   3,13,23,33,43,53 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh >> /tmp/context-pressure-tick-<persona>.log 2>&1 # slot-<persona>-<session8>
+   ```
+3. **Verify it fires** — read the log after the next slot time. An entry that exists and never runs
+   is worse than none, because it reads as covered.
+4. **Stagger by persona** so ticks do not collide. A minute apart is enough.
+
+**This is not a gate and needs nobody's permission** — it sits inside the standing spawn/harvest
+envelope. It is a *reflex*, like pushing a provisional session topic at boot.
+
+### Why the manual version fails in a specific, observable way
+
+**Receipt, 2026-08-16.** Four crontab entries existed — María, Mr Radio, Cheech, Rachel — all laid
+down by *earlier* sessions of those personas. **Rio had none, and Rio was the one seat over the
+line** at 50.1%. Cheech spotted it, asked María whether she owned Rio, and she did not:
+`list_spawned_sessions()` returned **zero** for her.
+
+⇒ **Rio was orphaned.** No manager could re-spin him, he could not re-spin himself, and the only
+reason anyone noticed was that a *different* manager's tick happened to print the whole roster.
+
+**The two failure modes this exposes, and they compound:**
+
+| failure | why the manual install produces it |
+|---|---|
+| **a seat with no tick** | nobody's timer is *responsible* for it, so it is watched only by luck |
+| **a seat with no owner** | the tick that finds it cannot act on it — seat ownership does not transfer |
+
+⇒ **A roster-wide tick can DETECT any seat; only the spawning manager can ACT on one.** Installing
+the timer everywhere fixes the first half. The second half needs the spawn lineage to be recorded
+and reachable — see § *Seat ownership ≠ row ownership*.
+
+### The stronger fix, when someone builds it
+
+The reflex above is still a rule, and rules decay. **The durable version is a SessionStart hook that
+lays down the manager's crontab line idempotently** — check, add if missing, never duplicate — so a
+manager cannot be running without a tick regardless of what anyone remembered.
+
+Until that exists, the reflex is the control, and **§ANTI-PATTERN applies to it too: a manager who
+notices the entry is missing and does not add it has left the fleet unwatched.**
+
 ### The tick script must survive a null
 
 **An IDLE persona returns `consumption_pct_of_window` as `null`** (Cheech, reproduced live — his

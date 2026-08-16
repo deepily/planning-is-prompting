@@ -1021,6 +1021,34 @@ This prevents accidentally committing the session manifest.
 
 ---
 
+## Step 4.6: Install Your Context-Pressure Tick (MANAGER-ROLE SESSIONS — no permission needed)
+
+**Purpose**: guarantee that every manager-role session is watched by a timer that **outlives the
+session**. An in-session scheduler dies at exactly the moment it was meant to matter.
+
+**Rick, 2026-08-16**: *"I don't want to have to remind everybody manually on a daily basis."*
+
+**Do this without being asked**, as a reflex — it sits inside the standing spawn/harvest envelope
+and is not a gate:
+
+1. `crontab -l | grep context-pressure-tick` — is **your persona's** line there?
+2. If not, add one on your own stagger slot, tagged so entries stay attributable:
+   ```cron
+   3,13,23,33,43,53 * * * * $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/context-pressure-tick.sh >> /tmp/context-pressure-tick-<persona>.log 2>&1 # slot-<persona>-<session8>
+   ```
+3. Read the log after the next slot time. **An entry that exists and never fires reads as covered
+   and is not.**
+
+**Why this is a session-start step and not a note in a policy doc**: on 2026-08-16 four managers had
+entries — all laid down by *earlier* sessions of those personas — and **Rio, the one seat over the
+line, had none and no owner**. He was found only because a different manager's tick printed the
+whole roster. A rule that depends on remembering had already been forgotten.
+
+**Full rationale, the null-handling requirement, and the ownership trap**:
+`workflow/manager-context-monitoring.md`.
+
+---
+
 ## Step 4.7: Reconcile Owed Work on Rehydrate (store-only)
 
 > **✅ STORE-ONLY IS LIVE (cutover 2026-06-17).** The native harness list is no longer the liveness source (flag `heartbeat.owed_source_from_store=True` set + confirmed; the Stop-hook oracle reads the store). On rehydrate you do **not** rebuild a native list — you **query the store** (`task_query(owner_persona=self, status=open)`, terse/projection) and reconcile it against your memento. The human-visible list is the fleet-status-style **UI card** rendered from the store. Cutover record: `workflow/task-store-discipline.md` §0.
