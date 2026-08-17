@@ -135,6 +135,73 @@ POINTER_MARK    = "<!-- MEMENTO POINTER"
 
 REQUIRED_IGNORES = [ "io/mementos/", ".claude-memento.md", ".claude-memento-*.md" ]
 
+# ---- the EPHEMERAL slot (approach A, plan 2026-08-06 §4.3; Rick GO 2026-08-17) --------
+#
+# `slot=tmp` writes the memento OUTSIDE the repo, under a boot-wiped temp directory, so the
+# nightly reboot collects it and nobody has to. It is the ONE case that is not repo-relative,
+# and it deliberately breaks two of this design's invariants — because both invariants exist
+# to buy DURABILITY, and durability is exactly what this slot is built to NOT have:
+#
+#   * NO MIRROR. The out-of-repo mirror exists to survive `git clean` — i.e. to make a memento
+#     durable. Mirroring an ephemeral memento would rebuild the very clutter this slot deletes.
+#   * NO GITIGNORE / candor guard. That guard keeps a repo-relative record out of `git status`.
+#     A path under /tmp is outside the repo; `git check-ignore` has nothing to say about it.
+#
+# io and root are UNTOUCHED — they stay durable for anything that still wants a lasting record.
+# The base is env-driven with a /tmp fallback (mirrors LUPIN_HOLD_DIR).
+TMP_MEMENTO_FALLBACK = "/tmp/mementos"
+
+
+def tmp_memento_base():
+    """
+    Ensures: the ephemeral memento base — $LUPIN_MEMENTO_DIR when set, else /tmp/mementos.
+
+    Read PER CALL, not once at import: a module-level constant would freeze whatever the
+    environment was at import time, so it could not be redirected in-process (tests) nor pick
+    up an env change, and its value would depend on import order. This is the one honest place
+    the env is consulted.
+    """
+    return Path( os.environ.get( "LUPIN_MEMENTO_DIR", TMP_MEMENTO_FALLBACK ) )
+
+
+def is_ephemeral_slot( slot ):
+    """
+    Ensures: True iff `slot` writes outside the repo to the boot-wiped temp base (no mirror,
+             no gitignore guard). Currently only "tmp".
+    """
+    return slot == "tmp"
+
+
+def slot_base_dir( repo_root, slot ):
+    """
+    The directory a slot's RECORD and POINTER paths are relative to.
+
+    Ensures:
+        - io / root  -> repo_root itself (repo-relative, byte-identical to the old behaviour)
+        - tmp        -> tmp_memento_base() / <repo-basename> (absolute, outside the repo)
+    Raises:
+        - ValueError on an unknown slot
+
+    This is the single seam that keeps the ephemeral slot from leaking absolute paths into the
+    repo-relative helpers. Every `base / rel_path` join goes through here; for io/root the base
+    IS repo_root, so those two slots see no change at all.
+    """
+    if slot in ( "io", "root" ): return repo_root
+    if slot == "tmp":            return tmp_memento_base() / repo_root.name
+    raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
+
+
+def _path_is_under( path, ancestor ):
+    """
+    Ensures: True iff `path` is `ancestor` or lives beneath it (resolved), without raising —
+             the version-portable form of Path.is_relative_to.
+    """
+    try:
+        Path( path ).resolve().relative_to( Path( ancestor ).resolve() )
+        return True
+    except ValueError:
+        return False
+
 # ---- the post-game gate (ruling R-1, Rick 2026-07-16) --------------------------------
 #
 # Doctrine ALREADY said to run /plan-post-game after a significant engagement. On
@@ -467,7 +534,8 @@ def record_rel_path( slot, persona_slug, sid ):
     """
     if slot == "io":   return Path( "io/mementos" ) / f"{persona_slug}-{sid}.md"
     if slot == "root": return Path( f".claude-memento-{persona_slug}-{sid}.md" )
-    raise ValueError( f"unknown slot {slot!r} (expected 'io' or 'root')" )
+    if slot == "tmp":  return Path( f"{persona_slug}-{sid}.md" )   # relative to slot_base_dir(tmp)
+    raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
 
 
 class PointerCollision( Exception ):
@@ -520,37 +588,60 @@ def pointer_rel_path( slot, persona_slug ):
         - PointerCollision if the io-slot pointer path would BE a record path
         - ValueError on an unknown slot
     """
+    # io and tmp share a pointer SHAPE — a flat `<slug>.md` beside `<slug>-<sid8>.md` records —
+    # so they share the F-1 collision guard: a persona slug ending in 8 hex would give the
+    # pointer a record's exact path, and the pointer is rewritten unconditionally on every write.
     if slot == "io":
-        if HEX8_SUFFIX_RE.search( persona_slug ):
-            raise PointerCollision(
-                f"REFUSED: persona {persona_slug!r} would give this pointer a RECORD's path.\n"
-                f"         pointer would be : io/mementos/{persona_slug}.md\n"
-                f"         which IS the record path of persona "
-                f"{HEX8_SUFFIX_RE.sub( '', persona_slug )!r}, session "
-                f"{persona_slug[ -8: ]}.\n"
-                 "\n"
-                 "  The pointer is rewritten on EVERY write, and it is written UNCONDITIONALLY.\n"
-                 "  Proceeding would overwrite that record with pointer boilerplate — silently,\n"
-                 "  at exit 0, with a success banner. Measured 2026-07-21: 238 bytes of a dead\n"
-                 "  session's testimony replaced by 702 bytes of header.\n"
-                 "\n"
-                 "  YOU ALMOST CERTAINLY PUT THE SESSION ID IN THE PERSONA. It belongs in its\n"
-                 "  own flag, and then no collision exists:\n"
-                f"      --persona \"{HEX8_SUFFIX_RE.sub( '', persona_slug ).replace( '-', ' ' )}\" "
-                f"--session-id {persona_slug[ -8: ]}\n"
-                 "\n"
-                 "  Rescuing another seat's fragment? Same shape — the ORIGINAL persona name in\n"
-                 "  --persona, the record's OWN 8-hex id in --session-id:\n"
-                 "      --persona \"rescued maria\" --session-id 35446389\n"
-                 "\n"
-                 "  If this persona name is genuinely yours and genuinely ends in 8 hex\n"
-                 "  characters, rename it. There is no flag for this and that is deliberate:\n"
-                 "  every escape would be a way to spell the overwrite."
-            )
+        _refuse_if_record_shaped_pointer( persona_slug, f"io/mementos/{persona_slug}.md" )
         return Path( "io/mementos" ) / f"{persona_slug}.md"
 
+    if slot == "tmp":
+        _refuse_if_record_shaped_pointer( persona_slug, f"{persona_slug}.md" )
+        return Path( f"{persona_slug}.md" )   # relative to slot_base_dir(tmp)
+
     if slot == "root": return Path( ".claude-memento.md" )
-    raise ValueError( f"unknown slot {slot!r} (expected 'io' or 'root')" )
+    raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
+
+
+def _refuse_if_record_shaped_pointer( persona_slug, pointer_display ):
+    """
+    Raise PointerCollision when a flat-pointer slot's persona slug ends in 8 hex — i.e. when the
+    pointer path this persona produces IS some other persona's RECORD path. Shared by the io and
+    tmp branches of `pointer_rel_path`; root is collision-proof by construction and does not call it.
+
+    Requires:
+        - persona_slug is a slugified persona; pointer_display is the pointer path to name in the error
+    Ensures:
+        - returns None when persona_slug does not end in a record's 8-hex suffix
+    Raises:
+        - PointerCollision, verbatim guidance, when it does
+    """
+    if not HEX8_SUFFIX_RE.search( persona_slug ): return
+    raise PointerCollision(
+        f"REFUSED: persona {persona_slug!r} would give this pointer a RECORD's path.\n"
+        f"         pointer would be : {pointer_display}\n"
+        f"         which IS the record path of persona "
+        f"{HEX8_SUFFIX_RE.sub( '', persona_slug )!r}, session "
+        f"{persona_slug[ -8: ]}.\n"
+         "\n"
+         "  The pointer is rewritten on EVERY write, and it is written UNCONDITIONALLY.\n"
+         "  Proceeding would overwrite that record with pointer boilerplate — silently,\n"
+         "  at exit 0, with a success banner. Measured 2026-07-21: 238 bytes of a dead\n"
+         "  session's testimony replaced by 702 bytes of header.\n"
+         "\n"
+         "  YOU ALMOST CERTAINLY PUT THE SESSION ID IN THE PERSONA. It belongs in its\n"
+         "  own flag, and then no collision exists:\n"
+        f"      --persona \"{HEX8_SUFFIX_RE.sub( '', persona_slug ).replace( '-', ' ' )}\" "
+        f"--session-id {persona_slug[ -8: ]}\n"
+         "\n"
+         "  Rescuing another seat's fragment? Same shape — the ORIGINAL persona name in\n"
+         "  --persona, the record's OWN 8-hex id in --session-id:\n"
+         "      --persona \"rescued maria\" --session-id 35446389\n"
+         "\n"
+         "  If this persona name is genuinely yours and genuinely ends in 8 hex\n"
+         "  characters, rename it. There is no flag for this and that is deliberate:\n"
+         "  every escape would be a way to spell the overwrite."
+    )
 
 
 def mirror_path_for( repo_root, rel_path ):
@@ -1120,11 +1211,15 @@ def pointer_text( record_rel, mirror_abs, record_body ):
              a naive reader gets the right content with ZERO extra action and a
              following reader gets the record's real path.
     """
+    # mirror_abs is None for the ephemeral tmp slot — it writes no mirror by design (see
+    # is_ephemeral_slot). Say "none (ephemeral slot)" rather than the literal "None".
+    mirror_line = f"<!-- mirror:  {mirror_abs} -->" if mirror_abs is not None \
+                  else "<!-- mirror:  none (ephemeral slot — no mirror by design) -->"
     header = [
         f"{POINTER_MARK} — NOT THE RECORD. Safe to overwrite; it destroys nothing. -->",
         f"<!-- current: {record_rel} -->",
-        f"<!-- mirror:  {mirror_abs} -->",
-        "<!-- regenerate: python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py regenerate-pointer --persona <p> --slot <io|root> -->",
+        mirror_line,
+        "<!-- regenerate: python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py regenerate-pointer --persona <p> --slot <io|root|tmp> -->",
         "",
     ]
     return "\n".join( header ) + record_body
@@ -1167,11 +1262,13 @@ def cmd_write( args ):
     if not body.strip():
         sys.exit( "REFUSED: memento body is empty — nothing to record." )
 
+    ephemeral = is_ephemeral_slot( args.slot )       # tmp: outside the repo, no mirror, no gitignore
+    base      = slot_base_dir( repo_root, args.slot ) # repo_root for io/root; TMP base for tmp
     rec_rel = record_rel_path( args.slot, persona, sid )
     ptr_rel = pointer_rel_path( args.slot, persona )
-    rec_abs = repo_root / rec_rel
-    ptr_abs = repo_root / ptr_rel
-    mir_abs = mirror_path_for( repo_root, rec_rel )
+    rec_abs = base / rec_rel
+    ptr_abs = base / ptr_rel
+    mir_abs = None if ephemeral else mirror_path_for( repo_root, rec_rel )
 
     # 1. IMMUTABILITY — the overwrite is not spellable, and not a thing to remember.
     if rec_abs.exists():
@@ -1203,6 +1300,16 @@ def cmd_write( args ):
     # 1b. POST-GAME GATE (R-1) — refuse to end a crewed engagement with no retro.
     #     Checked BEFORE anything lands: a refusal must cost the caller nothing but a
     #     re-run, and must never leave a half-written record behind.
+    #
+    #     WHY THIS GATE STAYS ON THE MEMENTO WRITE EVEN THOUGH A MEMENTO IS NOW A THROWAWAY FILE
+    #     (Rick's ruling 2026-08-06; kept here so nobody deletes it as dead weight). The gate
+    #     never protected the memento FILE. It uses the write as a TRIPWIRE AT A MOMENT — the last
+    #     instant before a session loses its context — and making the file ephemeral (the tmp
+    #     slot) does not move the moment. The tempting "improvement" is to re-hang it on the
+    #     history.md write; that lands too late, because sessions are re-spun all day and by the
+    #     end-of-day write the run that needed harvesting is hours gone. A control guarding a
+    #     disposable artifact looks like waste right up until you ask what it is timed to.
+    #     (It arms only on `--slot root`; `tmp` never arms it, so the ephemeral slot is unaffected.)
     now              = datetime.datetime.now().astimezone()
     owed, evidence     = qualifies_for_post_game( repo_root, persona, args.slot, now )
     retros, near_misses = post_game_artifacts( repo_root, now ) if owed else ( [], [] )
@@ -1218,10 +1325,13 @@ def cmd_write( args ):
     rec_abs.parent.mkdir( parents=True, exist_ok=True )
 
     # 2. CANDOR GUARD — a record that git can see is a record someone commits.
-    if not ensure_gitignored( repo_root, rec_rel ):
-        print( f"REFUSED: {rec_rel} is NOT gitignored and .gitignore could not be repaired.", file=sys.stderr )
-        sys.exit( 4 )
-    ensure_gitignored( repo_root, ptr_rel )
+    #    SKIPPED for the ephemeral slot: its record lives OUTSIDE the repo, so there is nothing
+    #    for git to see and nothing for check-ignore to say (is_ephemeral_slot).
+    if not ephemeral:
+        if not ensure_gitignored( repo_root, rec_rel ):
+            print( f"REFUSED: {rec_rel} is NOT gitignored and .gitignore could not be repaired.", file=sys.stderr )
+            sys.exit( 4 )
+        ensure_gitignored( repo_root, ptr_rel )
 
     text = stamp_header( body, persona, sid, args.slot, written,
                          no_post_game_reason=args.no_post_game if owed else None,
@@ -1236,9 +1346,13 @@ def cmd_write( args ):
     atomic_write_text( rec_abs, text )
 
     # 4. MIRROR — same call, not a second step. Fails loud. Atomic for the same reason.
-    mir_abs.parent.mkdir( parents=True, exist_ok=True )
-    atomic_write_text( mir_abs, text )
-    shutil.copystat( rec_abs, mir_abs )
+    #    SKIPPED for the ephemeral slot (mir_abs is None): the mirror exists to survive
+    #    `git clean` — i.e. to make a memento durable — and durability is exactly what this
+    #    slot is built to NOT have. Mirroring it would rebuild the clutter it deletes.
+    if not ephemeral:
+        mir_abs.parent.mkdir( parents=True, exist_ok=True )
+        atomic_write_text( mir_abs, text )
+        shutil.copystat( rec_abs, mir_abs )
 
     # 5. POINTER — safe to clobber ONLY once we have checked that what is sitting there is
     #    actually a pointer.
@@ -1255,18 +1369,23 @@ def cmd_write( args ):
     #    one that sounded safe was the destructive one. A guard that redirects to an unguarded
     #    path is worse than no guard: it moves the operator from a route they distrust onto one
     #    they don't.
-    preserve_bare_slot( repo_root, ptr_rel )
+    #    preserve_bare_slot twins legacy bare-slot content and MIRRORS it — both repo-relative
+    #    concepts. The ephemeral base is brand-new each boot and has no mirror, so it is skipped.
+    if not ephemeral:
+        preserve_bare_slot( repo_root, ptr_rel )
     ptr_abs.write_text( pointer_text( rec_rel, mir_abs, text ) )
 
-    # 6. VERIFY BY EXECUTION, not by assertion.
+    # 6. VERIFY BY EXECUTION, not by assertion. The mirror + gitignore checks are skipped for
+    #    the ephemeral slot, which has neither by design (see is_ephemeral_slot).
     problems = []
     if not rec_abs.exists():                   problems.append( f"record missing: {rec_abs}" )
-    if not mir_abs.exists():                   problems.append( f"mirror missing: {mir_abs}" )
     if not ptr_abs.exists():                   problems.append( f"pointer missing: {ptr_abs}" )
-    if not problems and sha256_of( rec_abs ) != sha256_of( mir_abs ):
-        problems.append( "mirror bytes != record bytes" )
-    if run_git( repo_root, "check-ignore", "-q", str( rec_rel ) ).returncode != 0:
-        problems.append( f"record is NOT gitignored: {rec_rel}" )
+    if not ephemeral:
+        if not mir_abs.exists():               problems.append( f"mirror missing: {mir_abs}" )
+        if not problems and sha256_of( rec_abs ) != sha256_of( mir_abs ):
+            problems.append( "mirror bytes != record bytes" )
+        if run_git( repo_root, "check-ignore", "-q", str( rec_rel ) ).returncode != 0:
+            problems.append( f"record is NOT gitignored: {rec_rel}" )
     if problems:
         for p in problems: print( f"FAILED: {p}", file=sys.stderr )
         sys.exit( 5 )
@@ -1277,9 +1396,11 @@ def cmd_write( args ):
 
     print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}" )
-    print( f"MIRROR   {mir_abs}" )
+    print(  "MIRROR   none (ephemeral slot — no mirror by design)" if ephemeral
+            else f"MIRROR   {mir_abs}" )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
-    print( f"sha256   {sha256_of( rec_abs )}  (record == mirror)" )
+    print( f"sha256   {sha256_of( rec_abs )}"
+           + ( "" if ephemeral else "  (record == mirror)" ) )
     return 0
 
 
@@ -1291,6 +1412,8 @@ def newest_record( repo_root, slot, persona_slug ):
     """
     if slot == "io":
         cands = sorted( ( repo_root / "io/mementos" ).glob( f"{persona_slug}-*.md" ) )
+    elif slot == "tmp":
+        cands = sorted( slot_base_dir( repo_root, slot ).glob( f"{persona_slug}-*.md" ) )
     else:
         cands = sorted( repo_root.glob( f".claude-memento-{persona_slug}-*.md" ) )
     cands = [ c for c in cands if HEX8_SUFFIX_RE.search( c.stem ) ]
@@ -1309,13 +1432,14 @@ def resolve_record( repo_root, slot, persona_slug, quiet=False ):
           removed — it must never run silently)
         - returns None when there is no record at all
     """
-    ptr_abs = repo_root / pointer_rel_path( slot, persona_slug )
+    base    = slot_base_dir( repo_root, slot )
+    ptr_abs = base / pointer_rel_path( slot, persona_slug )
 
     if ptr_abs.exists():
         for line in ptr_abs.read_text().splitlines()[ :5 ]:
             m = re.match( r"<!--\s*current:\s*(.+?)\s*-->", line )
             if m:
-                target = repo_root / m.group( 1 )
+                target = base / m.group( 1 )
                 if target.exists(): return target
                 if not quiet:
                     print( f"WARNING: pointer names a missing record: {target}", file=sys.stderr )
@@ -1340,21 +1464,30 @@ def sync_record( repo_root, rec_abs ):
     Raises:
         - SystemExit(5) if the mirror does not match the record afterwards
     """
-    rec_rel = rec_abs.relative_to( repo_root )
-    mir_abs = mirror_path_for( repo_root, rec_rel )
-    mir_abs.parent.mkdir( parents=True, exist_ok=True )
-    shutil.copy2( rec_abs, mir_abs )
-
-    text  = rec_abs.read_text()
-    stem  = rec_rel.stem
-    if rec_rel.parts[ 0 ] == "io":
-        slot, persona = "io", HEX8_SUFFIX_RE.sub( "", stem )
+    # Which slot's base does this record live under? An ephemeral (tmp) record lives OUTSIDE
+    # the repo, so relative_to(repo_root) would raise; detect it first and skip the mirror.
+    tmp_base = slot_base_dir( repo_root, "tmp" )
+    if _path_is_under( rec_abs, tmp_base ):
+        base, mir_abs = tmp_base, None
+        rec_rel       = rec_abs.relative_to( tmp_base )
+        slot, persona = "tmp", HEX8_SUFFIX_RE.sub( "", rec_rel.stem )
     else:
-        slot, persona = "root", HEX8_SUFFIX_RE.sub( "", stem ).replace( ".claude-memento-", "" )
-    ptr_abs = repo_root / pointer_rel_path( slot, persona )
+        base    = repo_root
+        rec_rel = rec_abs.relative_to( repo_root )
+        mir_abs = mirror_path_for( repo_root, rec_rel )
+        mir_abs.parent.mkdir( parents=True, exist_ok=True )
+        shutil.copy2( rec_abs, mir_abs )
+        stem = rec_rel.stem
+        if rec_rel.parts[ 0 ] == "io":
+            slot, persona = "io", HEX8_SUFFIX_RE.sub( "", stem )
+        else:
+            slot, persona = "root", HEX8_SUFFIX_RE.sub( "", stem ).replace( ".claude-memento-", "" )
+
+    text    = rec_abs.read_text()
+    ptr_abs = base / pointer_rel_path( slot, persona )
     ptr_abs.write_text( pointer_text( rec_rel, mir_abs, text ) )
 
-    if sha256_of( rec_abs ) != sha256_of( mir_abs ):
+    if mir_abs is not None and sha256_of( rec_abs ) != sha256_of( mir_abs ):
         print( f"FAILED: mirror bytes != record bytes after sync: {mir_abs}", file=sys.stderr )
         sys.exit( 5 )
     return rec_rel, mir_abs, ptr_abs
@@ -1484,9 +1617,11 @@ def cmd_amend( args ):
 
     print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}  (appended; nothing overwritten)" )
-    print( f"MIRROR   {mir_abs}  (re-synced in the same call)" )
+    print(  "MIRROR   none (ephemeral slot — no mirror by design)" if mir_abs is None
+            else f"MIRROR   {mir_abs}  (re-synced in the same call)" )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
-    print( f"sha256   {sha256_of( rec_abs )}  (record == mirror)" )
+    print( f"sha256   {sha256_of( rec_abs )}"
+           + ( "" if mir_abs is None else "  (record == mirror)" ) )
     return 0
 
 
@@ -1507,12 +1642,13 @@ def current_pointer_record( repo_root, slot, persona_slug ):
         - the returned path MAY NOT EXIST — a dangling pointer is a real state, and callers
           check for themselves rather than being handed a silent substitution
     """
-    ptr_abs = repo_root / pointer_rel_path( slot, persona_slug )
+    base    = slot_base_dir( repo_root, slot )
+    ptr_abs = base / pointer_rel_path( slot, persona_slug )
     if not ptr_abs.exists(): return None
 
     for line in ptr_abs.read_text().splitlines()[ :5 ]:
         m = re.match( r"<!--\s*current:\s*(.+?)\s*-->", line )
-        if m: return repo_root / m.group( 1 )
+        if m: return base / m.group( 1 )
     return None
 
 
@@ -1754,9 +1890,10 @@ def cmd_regenerate_pointer( args ):
     if rec_abs is None:
         sys.exit( f"no record found for persona={persona} slot={args.slot} in {repo_root}" )
 
-    rec_rel = rec_abs.relative_to( repo_root )
-    ptr_abs = repo_root / pointer_rel_path( args.slot, persona )
-    mir_abs = mirror_path_for( repo_root, rec_rel )
+    base    = slot_base_dir( repo_root, args.slot )
+    rec_rel = rec_abs.relative_to( base )
+    ptr_abs = base / pointer_rel_path( args.slot, persona )
+    mir_abs = None if is_ephemeral_slot( args.slot ) else mirror_path_for( repo_root, rec_rel )
     ptr_abs.write_text( pointer_text( rec_rel, mir_abs, rec_abs.read_text() ) )
     print( f"POINTER  {ptr_abs}  -> current: {rec_rel}" )
     return 0
@@ -2597,8 +2734,9 @@ def build_parser():
         # types the slot (memento-management.md:173/189/247/307/308, plan-memento.md:37/56/60),
         # so requiring it breaks no prescribed workflow — it only stops a bare call from
         # landing ungated without anyone noticing. Making it REQUIRED is the whole fix.
-        sp.add_argument( "--slot", choices=[ "io", "root" ], required=True,
-                         help="REQUIRED (no default): io = spawned-worker slot; root = self-/clear slot" )
+        sp.add_argument( "--slot", choices=[ "io", "root", "tmp" ], required=True,
+                         help="REQUIRED (no default): io = spawned-worker slot; root = self-/clear slot; "
+                              "tmp = EPHEMERAL slot (outside repo, boot-wiped, no mirror/gitignore)" )
 
     w = sub.add_parser( "write", help="write RECORD + MIRROR + POINTER in one call" )
     common( w )
