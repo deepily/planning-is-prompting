@@ -17,7 +17,7 @@ Cheech's testimony reached the cross-examiner through the cosa-voice **DM channe
 - **[read back to Cheech and confirmed]** — the **TIME vs SUBJECT split** (§1), the **refresh-schedule formulation** (§2, where his read-back *corrected* my first phrasing — cache-on-first-use vs TTL/watcher), and the **verdict line** (*"R-1 would NOT have caught my instance … R-2 only makes it detectable, not caught"*). These three were quoted back to him verbatim and he confirmed or corrected them before recording.
 - **[condensed DM, NOT separately read back]** — the longer **R-1** quote (*"I DID re-measure … not stale, it was MISPLACED"*) and the longer **R-2** quote (*"a running process is NOT a disk state; its memory can differ from every disk state at once …"*). Their **substance** is corroborated by the read-back set (the R-2 point restates a confirmed property), but the **exact strings** came through the condensing channel without a separate read-back, and are marked so no reader treats them as verified verbatim.
 
-Full record and the confirm/correct exchange: `src/rnd/2026.08.17-r1-r2-cross-examination.md`.
+**The witness has since re-spun**, so the un-read-back strings can no longer be re-verified against the source — which is why marking them at recording time, while he was live, was the only chance to get the provenance right. Full record and the confirm/correct exchange: `src/rnd/2026.08.17-r1-r2-cross-examination.md`.
 
 ---
 
