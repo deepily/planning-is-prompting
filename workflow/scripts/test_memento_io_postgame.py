@@ -746,6 +746,8 @@ def test_adopt_hard_fails_if_the_record_bytes_move_underneath_it( repo, monkeypa
     class Args: pass
     a = Args()
     a.repo, a.slot, a.persona, a.session_id = str( repo ), "io", "krishna", "59e885aa"
+    a.allow_older = False          # argparse supplies this (default False); cmd_adopt reads it —
+                                   # harmless here (the exit-5 path is upstream), set for completeness
 
     with pytest.raises( SystemExit ) as exc:
         m.cmd_adopt( a )
