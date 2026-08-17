@@ -1979,6 +1979,35 @@ def preserve_bare_slot( repo_root, ptr_rel ):
     return twin_rel
 
 
+def bare_slot_twin_for( repo_root, rel_path ):
+    """
+    Find the surviving twin of a bare slot's CONTENT, if one exists.
+
+    Ensures:
+        - returns the repo-relative path of a `-legacy-<stamp>` sibling whose bytes are
+          IDENTICAL to rel_path's AND which is itself mirrored, else None
+        - compares CONTENT, never names: a twin whose stem matches but whose bytes have since
+          diverged is not this slot's twin, and saying otherwise would retire a live risk
+        - never raises
+
+    WHY CONTENT AND THE MIRROR, BOTH. The claim this function licenses is "clobbering this slot
+    loses nothing", and that claim needs the copy to survive two different accidents: the
+    pointer write (answered by the in-repo twin) and `git clean -xdf` (answered by the mirror).
+    A name match alone answers neither.
+    """
+    try:
+        src_sha = sha256_of( repo_root / rel_path )
+        for cand in sorted( ( repo_root / rel_path ).parent.glob( f"{rel_path.stem}-legacy-*{rel_path.suffix}" ) ):
+            cand_rel = cand.relative_to( repo_root )
+            if sha256_of( cand ) != src_sha:                      continue
+            mir = mirror_path_for( repo_root, cand_rel )
+            if not mir.exists() or sha256_of( mir ) != src_sha:    continue
+            return cand_rel
+    except Exception:
+        return None
+    return None
+
+
 def cmd_migrate( args ):
     """
     Migrate a repo's existing mementos. NON-DESTRUCTIVE, IDEMPOTENT — it only ever COPIES.
@@ -2575,7 +2604,8 @@ def cmd_verify( args ):
 
     findings = []                                        # (class, rel, [detail lines])
     ok_recs  = []
-    exempted = []                                        # bare slots ruled exempt, still printed
+    exempted  = []                                       # bare slots ruled exempt, still printed
+    preserved = []                                       # bare slots whose content has a verified in-repo twin
     for rel in records:
         src     = repo_root / rel
         mir_abs = mirror_path_for( repo_root, rel )
@@ -2584,10 +2614,26 @@ def cmd_verify( args ):
         # hazard: the record sits at a path the pointer writer overwrites UNCONDITIONALLY on
         # every memento write. A mirrored bare slot is still one write away from being gone
         # in-repo, so a clean mirror does not retire the finding.
+        #
+        # AN IN-REPO TWIN IS A DIFFERENT FACT, AND IT DOES RETIRE THE RISK (row 9317f07a). The
+        # paragraph above is right and stays: a MIRROR does not answer the in-repo hazard. A
+        # `-legacy-<stamp>` twin does — it sits in the repo, at a name the pointer writer cannot
+        # target, so the clobber costs nothing. Two different states were printing as one alarm:
+        # "this record is one write from gone" and "this slot is untidy; the content is safe at
+        # two other paths". Reported identically, the second teaches the reader to discount the
+        # first — and the first is the one that means data loss. So a TWINNED bare slot is now a
+        # notice, an UNTWINNED one is still a finding, and the split is measured per slot rather
+        # than assumed from whether a migrate was run.
+        twin = bare_slot_twin_for( repo_root, rel ) if is_bare_slot( repo_root, rel ) else None
         if is_bare_slot( repo_root, rel ) and rel.as_posix() in BARE_SLOT_EXEMPTIONS:
             # RULED EXEMPT, AND STILL PRINTED. See BARE_SLOT_EXEMPTIONS for why these four
             # cannot be cleared and why a permanent unclearable finding was the worse option.
             exempted.append( rel )
+        elif twin is not None:
+            # PRESERVED — the content survives the next pointer write. Still printed, with the
+            # clear step, because the slot IS untidy and somebody should eventually land a real
+            # record here; it just is not a data-loss finding any more.
+            preserved.append( ( rel, twin ) )
         elif is_bare_slot( repo_root, rel ):
             # THE REMEDY IS TWO STEPS AND THE FIRST ONE DOES NOT CLEAR THIS FINDING. Written
             # here as one line pointing at `migrate --apply`, then corrected after running it on
@@ -2695,6 +2741,19 @@ def cmd_verify( args ):
         print( f"  MISDIRECTED   {p}" )
         print( f"                not at the canonical slot {repo_root / 'io' / 'mementos'} — nobody reads this path" )
         findings.append( ( "MISDIRECTED", p, [] ) )
+
+    # PRESERVED — A NOTICE, AND THE DEMOTION IS EARNED PER SLOT, NOT PER MIGRATION. Each of
+    # these was checked individually: an in-repo `-legacy-<stamp>` twin with IDENTICAL bytes,
+    # itself mirrored. That is what makes the clobber free — not the fact that somebody ran a
+    # migrate, which is a claim about an action rather than about this slot. If the twin is ever
+    # edited, deleted, or loses its mirror, the slot silently returns to the FINDINGS list above,
+    # because the test is re-run from the bytes on every pass.
+    print( f"--- PRESERVED   (notice, not a finding — content twinned in-repo AND mirrored): {len( preserved )}" )
+    for rel, twin in preserved:
+        print( f"  PRESERVED     {rel}" )
+        print( f"                bare slot, but the content survives at {twin} (byte-identical, mirrored)" )
+        print(  "                the next pointer write costs nothing. To tidy the slot, land a real record:" )
+        print(  "                memento_io.py write --slot io --persona <p> --session-id <sid>" )
 
     print( f"--- EXEMPT      : {len( exempted )} bare slot(s) ruled not-clearable" )
     for rel in exempted:
