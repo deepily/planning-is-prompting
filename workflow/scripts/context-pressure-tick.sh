@@ -406,12 +406,35 @@ else:
             continue
         print( f"  {name}: delivering ({why})" )
 
+        # THE REMEDY MUST BE ONE THIS SEAT CAN PERFORM (row 306f3a7d). Two defects lived in the
+        # single body this used to send. (1) It said a seat cannot re-spin itself — false since
+        # `self_respin` landed: the verb confirms the memento's nonce is fresh on disk, then
+        # schedules a `/clear` into the caller's OWN pane, so the seat keeps its session id,
+        # persona, board and lineage. (2) It prescribed `task_reassign` — a manager's move — to
+        # every seat including workers who cannot perform it, and a remedy a seat cannot perform
+        # trains that seat to discount the next poke (the failure documented on e5b4cad0).
+        #
+        # We branch on LIVE LINEAGE, not on a name list: `resolve_manager` already answered
+        # whether somebody spawned this seat. That is the arbiter's bug avoided rather than
+        # copied — `fleet_render.py:443` calls a seat a manager because its PERSONA NAME is on a
+        # declared list, which stops being true the moment that persona is re-spun into someone
+        # else's crew. Who spawned you is a fact about the seat; who you have been is not.
+        has_manager = bool( manager ) and manager.strip().lower() != name.strip().lower()
+        respin_move = (
+            "You CAN re-spin yourself: write your memento, then call self_respin with its path "
+            "and nonce — it verifies the memento is fresh before scheduling a /clear into your "
+            "own pane, so you keep this seat, its board and its lineage. "
+        )
         body_worker = (
             f"{BANNER}"
             f"You are over your context budget — {shown} of your window, and the ceiling is 50%. "
-            f"You cannot re-spin yourself. The move is: write your memento, hand your board to a "
-            f"peer manager with headroom (task_reassign), then announce it. Do the handoff while "
-            f"you still have room to act — late is identical to never."
+            + respin_move
+            + ( f"If you would rather hand off than re-spin, tell {manager} you are at the ceiling — "
+                f"they spawned this seat and can re-spin it for you. "
+                if has_manager else
+                "If you genuinely cannot re-spin, hand your board to a peer manager with headroom "
+                "(task_reassign) and announce it. " )
+            + "Act while you still have room — late is identical to never."
         )
         # A NAMELESS SEAT IS STILL REACHABLE — BY ID. Skipping it would leave the one seat with no
         # watcher as the one seat with no warning either.
@@ -423,11 +446,12 @@ else:
             failures += 1
             print( f"    DELIVERY FAILED — DM to {name}: HTTP {status} {detail}", file=sys.stderr )
 
-        if manager and manager.strip().lower() != name.strip().lower():
+        if has_manager:
             body_mgr = (
                 f"{BANNER}"
-                f"{name} is over context budget at {shown}. Only the manager that spawned the seat "
-                f"can re-spin it: DM them 'prepare for re-spin', wait for the ack, then "
+                f"{name} is over context budget at {shown}. They can re-spin themselves (self_respin, "
+                f"same seat), and you can re-spin them — but you are the only one who CAN re-spin them, "
+                f"so if they do not act it falls to you: DM them 'prepare for re-spin', wait for the ack, then "
                 + ( f"dismiss_sessions( write_memento=True, respin_personas=['{name}'] ) and spawn from "
                     f"the memento. Omit respin_personas and their open rows land silently on your board. "
                     if seat[ "to_persona" ] else
