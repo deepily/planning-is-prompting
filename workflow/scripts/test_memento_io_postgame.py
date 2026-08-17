@@ -1474,7 +1474,8 @@ def test_write_hard_fails_when_its_own_post_write_verification_finds_a_divergent
     a = Args()
     a.repo, a.slot, a.persona, a.session_id = str( repo ), "root", "maria", "45b897f6"
     a.no_post_game = None
-    a.content_file = None          # argparse supplies this; a hand-built namespace must too
+    a.content_file = None
+    a.self_respin_nonce = None     # argparse supplies this (default None); a hand-built namespace must too          # argparse supplies this; a hand-built namespace must too
     monkeypatch.setattr( sys, "stdin", __import__( "io" ).StringIO( "# Memento\n\nbody\n" ) )
     monkeypatch.setattr( m, "sha256_of", lying_sha )
 
@@ -1515,6 +1516,7 @@ def test_write_hard_fails_when_the_landed_record_is_not_gitignored( repo, monkey
     a.repo, a.slot, a.persona, a.session_id = str( repo ), "root", "maria", "45b897f6"
     a.no_post_game = None
     a.content_file = None
+    a.self_respin_nonce = None     # argparse supplies this (default None); a hand-built namespace must too
     monkeypatch.setattr( sys, "stdin", __import__( "io" ).StringIO( "# Memento\n\nbody\n" ) )
 
     with pytest.raises( SystemExit ) as exc:
