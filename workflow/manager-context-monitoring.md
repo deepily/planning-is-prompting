@@ -92,15 +92,17 @@ never the installation.
 
 **What each half can actually do, because they are not interchangeable:**
 
-| | can detect | can act |
-|---|---|---|
-| host cron / systemd timer | ✅ survives everything | ❌ cannot drive a re-spin — it has no session |
-| in-session tick | ✅ | ✅ DM, reap, respawn, hand off |
+| | can detect | can deliver | can act |
+|---|---|---|---|
+| host cron / systemd timer | ✅ survives everything | ✅ DMs + one notify (§1.5) | ❌ cannot drive a re-spin — it has no session |
+| in-session tick | ✅ | ✅ | ✅ DM, reap, respawn, hand off |
 
-⇒ **The durable half raises the alarm; a live session does the work.** Install both.
+⇒ **The durable half raises the alarm AND puts it in front of somebody; a live session does the
+work.** Install both.
 
 **Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo prints the roster,
-handles the null, and exits non-zero only when it could not read the sensor at all. One line per
+handles the null, **DMs anyone over budget and their manager and fires one notify to the operator**
+(§1.5), and exits non-zero when it could not read the sensor or could not deliver. One line per
 manager, on your own slot:
 
 ```cron
@@ -204,6 +206,85 @@ Handle the null **explicitly** — treat it as "unknown, still listed," never as
 row to skip. Read `status` for the decision (§1) and let the percentage be decoration; a null
 percentage on an idle seat is normal, not an error. And print every persona the payload returned,
 including the ones you could not judge.
+
+---
+
+## 1.5 The tick DELIVERS — a printed alarm is an alarm nobody hears
+
+**Built 2026-08-17, after Rick found the failure by hand.** For its first day the tick's entire
+output path was `print`. Every ten minutes it correctly printed
+
+```
+OVER BUDGET: Mr Radio — a live session must drive the re-spin; cron cannot.
+```
+
+into a log file nobody tails. **Measured**: Mr Radio at 54.0 → 57.0 → 57.3 percent across three
+consecutive ticks, each one printing that line, and nothing moved until Rick noticed and broadcast
+about it. Our own `workflow/post-game.md` §3.5.2 already says it — *a blocking gate must not resolve
+on a surface with no push* — and we built a monitor that violated it.
+
+> **A monitor that only prints is addressed to a reader who does not exist.**
+
+**What the tick now sends, on the same `:7999` host and API key it already uses to READ the sensor:**
+
+| # | recipient | why them |
+|---|---|---|
+| 1 | the over-budget persona (`POST /api/dm/send`) | they can write a memento and hand off their board — the two things that must happen before the seat is reaped |
+| 2 | that persona's manager (same endpoint) | **only the spawning manager can re-spin a seat**; the worker cannot do it for themselves |
+| 3 | the operator, ONE `notify` at `high` (`POST /api/notify`) | Rick asked to see this, and the day it shipped he found it by hand |
+
+### Do not spam — "material change" is defined, not implied
+
+The tick fires every ten minutes and a session can sit over budget for an hour. Re-sending every
+fire trains its readers to ignore it inside two hours, which lands back at the printing defect by
+another route. So the script keeps a small send ledger
+(`~/.claude/context-pressure-tick-state.json`) and sends **once per over-budget episode**, re-sending
+only on one of exactly three material changes:
+
+| trigger | rule |
+|---|---|
+| **new episode** | no ledger row — the previous tick did not see them over budget. The first crossing always sends |
+| **new band** | the percentage climbed into a higher 5-point band since the last send (`CONTEXT_TICK_BAND_POINTS`). 54 → 57 is not news; 57 → 61 is |
+| **quiet interval** | 60 minutes since the last send (`CONTEXT_TICK_RESEND_MINUTES`). Sitting over budget for an hour with nobody acting is itself the news |
+
+An episode **ends** when the persona drops off the over-budget list; the row is pruned, so the next
+crossing sends fresh.
+
+### Fail loud, never silent
+
+Every POST prints its HTTP status, and a tick that detected somebody and failed to deliver **exits
+3** — distinct from 0 (read fine), 1 (sensor unreadable) and 2 (sensor returned an empty roster).
+
+🔴 **A failed send is not a send.** The ledger row advances only on a *delivered* persona DM, and an
+episode with no successful delivery leaves **no row at all**, so the next tick retries instead of
+counting down a suppression window on a message nobody received. This was a real bug in the first
+version of the delivery code, caught by pointing the delivery POSTs at a dead port — not by a unit
+test.
+
+### Test fires must be unmistakable, and the label must ride in metadata
+
+Point `CONTEXT_PRESSURE_URL` at anything other than the production sensor and the tick marks itself
+a **DRILL** automatically — no flag to remember. Drill deliveries arrive from sender
+**`context tick DRILL 🧪`**, and the notify says DRILL in its message and abstract.
+
+⚠️ **The label goes in the SENDER IDENTITY, not the body.** The first drill wrote
+`[DRILL — not a real reading]` as the first words of the DM body; **the DM path condensed it away**
+and María received what read as a live alarm about a peer. Body text is rewritten in transit; sender
+metadata is not. *Anything a message must not lose in transit belongs in metadata, not in prose.*
+
+### Two limits, stated rather than papered over
+
+**The manager is INFERRED from the tmux session name** (`cc-<role>-<manager-slug>-<n>` →
+`cc-author-maria-2` reads as manager "maria"). A name is a claim about lineage, not a record of one:
+nothing enforces it after the spawn, and a hand-started seat (`cc-tmux-session-<hash>`) carries no
+lineage at all. Those resolve to **"unresolved"** and print that way rather than inventing a
+manager. Every tick prints its inference for every persona in a `mgr:` column, so the heuristic is
+auditable on a quiet day instead of first exercised on a bad one.
+
+**Some live sessions are invisible to this monitor.** A persona the sensor reports as idle — `status:
+unknown`, null percentage — cannot be judged over budget, so nothing is delivered for it. The tick
+prints those names on their own line (*"not judgeable this tick, null reading"*). This is a real
+blind spot, not a solved one; it overlaps the *lags-a-`/clear`-by-a-turn* effect below.
 
 ### The number lags a `/clear` by a TURN, not a clock
 
