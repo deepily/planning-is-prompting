@@ -717,6 +717,32 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
     return text
 
 
+def restamp_header_written_at( text, new_written_at ):
+    """
+    Move the machine header's `written_at` claim forward to `new_written_at`.
+
+    The `<!-- memento-record: ... written_at=<iso> ... -->` header is the field the reap
+    verb parses to prove a memento is fresh (lupin/src/lupin_mcp/reap_memento.py:250).
+    written_at is a claim about the record's CONTENT, not the file's birthday — so any
+    operation that rewrites the body (amend) must move it, or a memento that IS current
+    reads as stale and the reap declares a good record missing (bug 69c3829d). The more
+    dangerous direction that row names — a header NEWER than its content — cannot arise
+    here: amend only ADDS content, so re-stamping to now never over-states freshness.
+
+    Requires:
+        - new_written_at is an aware ISO-8601 string (the reap verb rejects a naive stamp)
+    Ensures:
+        - returns text with the FIRST memento-record header's written_at token set to
+          new_written_at; only that token changes
+        - returns text UNCHANGED when it carries no memento-record header, or when that
+          header carries no written_at token (an orphan / hand-made record is adopt's
+          concern, not amend's — there is nothing to re-stamp)
+    """
+    def _sub( m ):
+        return re.sub( r"(written_at=)\S+", r"\g<1>" + new_written_at, m.group( 0 ), count=1 )
+    return re.sub( r"<!--\s*memento-record:.*?-->", _sub, text, count=1 )
+
+
 def authored_at( repo_root, path, now ):
     """
     Best available answer to "when was this file last actually WRITTEN?"
@@ -1442,8 +1468,15 @@ def cmd_amend( args ):
               f"{corr_stamp + chr( 10 ) if corr_stamp else ''}"
               f"{body.strip()}\n" )
 
-    with rec_abs.open( "a" ) as fh:
-        fh.write( block )
+    # FRESHNESS RE-STAMP (bug 69c3829d): this append CHANGES the record's content, so the
+    # machine header's written_at — a claim about the CONTENT, which the reap verb parses to
+    # prove freshness — must move to now. Left unchanged, an amended-current memento read as
+    # nearly two hours stale and the reap declared a good record missing. Re-stamp the whole
+    # text in memory and write it ONCE, atomically, so the record can never be seen as
+    # header-restamped-but-not-yet-appended (or the reverse), and sync_record mirrors a
+    # byte-identical file.
+    updated = restamp_header_written_at( rec_abs.read_text(), stamped ) + block
+    atomic_write_text( rec_abs, updated )
 
     rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
 

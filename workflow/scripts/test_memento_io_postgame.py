@@ -23,6 +23,7 @@ tested harder than the refusal itself.
 
 import hashlib
 import os
+import re
 import subprocess
 import sys
 import time
@@ -30,6 +31,8 @@ import time
 from pathlib import Path
 
 import pytest
+
+import memento_io as mio
 
 SCRIPT = Path( __file__ ).parent / "memento_io.py"
 
@@ -1896,3 +1899,55 @@ def test_the_reader_is_READ_ONLY( repo ):
     before = digest()
     assert _waivers( repo ).returncode == 0
     assert digest() == before, "the waivers verb wrote something"
+
+
+# ---------------------------------------------------------------- freshness re-stamp (bug 69c3829d)
+#
+# A rewritten memento kept its ORIGINAL header written_at, so the reap verb — which parses that
+# exact field to prove freshness (lupin/src/lupin_mcp/reap_memento.py:250) — read an amended,
+# current memento as stale and declared a good record missing. written_at is a claim about the
+# record's CONTENT, so any body-rewriting verb (amend) must move it to now.
+
+def _header_written_at( repo ):
+    """The written_at token the reap verb parses out of the record's machine header."""
+    for p in repo.rglob( "*.md" ):
+        m = re.search( r"<!--\s*memento-record:.*?written_at=(\S+).*?-->", p.read_text() )
+        if m: return m.group( 1 )
+    return None
+
+
+def test_amend_restamps_header_written_at( repo ):
+    """
+    The end-to-end proof: write, then amend, and the machine header's written_at ADVANCES. Before
+    the fix it stayed frozen at first-write time and a fresh memento reaped as missing.
+    """
+    assert write_memento( repo ).returncode == 0
+    first = _header_written_at( repo )
+    assert first is not None
+    time.sleep( 1.1 )   # written_at is second-resolution — guarantee a distinct stamp
+    assert amend_memento( repo ).returncode == 0
+    after = _header_written_at( repo )
+    assert after is not None
+    assert after > first, f"header written_at must advance on amend: {first} -> {after}"
+
+
+def test_restamp_header_written_at_only_touches_the_header_token():
+    """Only the header's written_at moves; the surrounding tokens and the human line stay put."""
+    hdr = ( "<!-- memento-record: persona=x session_id=abc "
+            "written_at=2026-01-01T00:00:00-05:00 slot=io -->\n"
+            "**Written**: 2026-01-01T00:00:00-05:00\nbody\n" )
+    out = mio.restamp_header_written_at( hdr, "2026-08-16T16:05:48-04:00" )
+    assert "written_at=2026-08-16T16:05:48-04:00" in out
+    assert "slot=io -->" in out
+    assert "**Written**: 2026-01-01T00:00:00-05:00" in out   # human line is not the reap's field
+
+
+def test_restamp_header_written_at_noops_without_a_header():
+    """No memento-record header -> nothing to re-stamp; text is returned verbatim."""
+    assert mio.restamp_header_written_at( "no header\n", "X" ) == "no header\n"
+
+
+def test_restamp_header_written_at_noops_when_header_lacks_the_token():
+    """A header with no written_at token (an orphan / hand-made record) is left unchanged."""
+    orphan = "<!-- memento-record: persona=x slot=io -->\n"
+    assert mio.restamp_header_written_at( orphan, "X" ) == orphan
