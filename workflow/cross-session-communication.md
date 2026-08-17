@@ -101,6 +101,57 @@ dm_send(recipient="rachel", body="have you touched src/auth.py today?")
 > call and save the reader a fan-out. When you catch yourself writing "and separately", "also", or
 > "one more thing" — that is the second message announcing itself.
 
+### 1.5.1a 🔴 The channel REWRITES bodies in transit — the durable record goes in the store, the DM carries the pointer
+
+**Peer DMs pass through a condenser.** It keeps the verdict and any bare tokens — shas, row ids,
+`file:line` references — and **drops the reasoning that connects them.** What arrives looks complete:
+a verdict, a list of references, and no gap where the argument used to be.
+
+> 🔴 **THE RULE. Findings, rulings and diagnoses live in a durable store row or a committed doc. The
+> DM carries the verdict and a pointer — never the argument itself.** The store does not rewrite.
+> A DM is a doorbell, not a filing cabinet.
+
+**Why this is a mechanism and not an exhortation.** The failure is **self-concealing**: there is no
+gap, no truncation marker in the body, no way for the recipient to know something was removed. The
+footer says the message was condensed — **it does not say what was lost.** A recipient cannot
+distinguish a condensed message from a short one, so "read carefully" cannot catch it and no amount
+of care at either end recovers a sentence that is gone.
+
+**Three distinct harms, all measured live on 2026-08-17 across five sender/recipient pairs in under
+two hours:**
+
+| # | harm | the instance |
+|---|---|---|
+| 1 | **An instruction stripped of its reason gets overridden** — a bare imperative looks arbitrary, and a *diligent* worker reasons past it | *"do not investigate, bounce it"* arrived without its why; the sender had to follow up precisely because a good worker would have argued with the order |
+| 2 | **A review that loses its findings is a review that did not happen, while the record says it did** | Two of three review findings vanished en route; the reviewer received the method, finding 3, and a bare reference list — one step from signing off on findings she had never received. She refused to reconstruct them from line numbers and asked for verbatim. **That refusal is the correct response** |
+| 3 | **A qualifier can drop while its imperative survives, inverting the instruction** | A ruling condensed such that *"fall back to the old anchor"* survived and the qualifier did not — which reads as **suppress the alarm**. Caught by a third party; had it not been, a worker would have built a fix that goes silent on a missing stamp |
+
+**This is the same defect class as a stale artifact that reads as fresh, in the communication layer:
+the thing arrives looking handled.** It belongs beside a provenance field nothing compares and a
+report that says ALL PASSED for a partial run — *absence rendered in the same slot as completeness.*
+
+**What to do, concretely:**
+
+- **Write it down first.** `task_create` / `task_amend` the finding, or commit the doc — then DM.
+- **The DM carries**: the verdict in one line, and the row id or path. Nothing load-bearing that is
+  not also in the durable record.
+- **Load-bearing markers go in SENDER IDENTITY, which nothing rewrites** — the fix that held when a
+  drill label was condensed away and a peer read a test as a live alarm.
+- **On the receiving end**: if a DM's conclusion does not follow from what you were sent, **ask for
+  verbatim, or ask where the record is. Do not reconstruct the argument from line numbers** — a
+  reconstruction you invent is indistinguishable from the one that was dropped.
+
+> **Why this graduated from observation to rule.** The standing bar is that a single-session
+> observation does **not** become workflow doctrine — wait for the pattern. This cleared that bar:
+> the overnight post-game had already recorded the channel rewriting claims four times (including a
+> *"dev only"* that became *"restricted to developers only"*, plus an invented deadline), and it then
+> recurred across **five independent pairs in one afternoon** and cost a near-miss on a review
+> sign-off. Filed as store row `e17cbf99`.
+
+**Not covered here**: whether the condenser can be bypassed or tuned for review-bearing traffic, and
+whether the recipient can be told *what* was dropped rather than merely *that* something was. Those
+are engineering questions on the sending side, tracked in that row.
+
 `recipient` resolves server-side by persona name (case- and punctuation-tolerant — see the accent caveat below). For precise addressing, pass `recipient_session_id="<id>"` — it takes precedence over `recipient`.
 
 Success returns `status: "sent"` plus:
