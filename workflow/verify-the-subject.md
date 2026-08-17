@@ -88,6 +88,8 @@ All six share the signature **THE ARTIFACT SAYS HANDLED**: a present, well-forme
 
 ⇒ A rule that would not have caught its own founding instance is not ready. **This one catches it, and the prior draft did not.**
 
+**Where the two figures come from** (so no reader takes them as re-measured here): `claude-opus-5` from the fresh resolve and `claude-opus-4-8` from the live dry-run are **Cheech's own measurements**, recorded as instance #13 in `io/post-games/2026.08.17-overnight-run-post-game.md` §3.1 and carried into the tracked `src/rnd/2026.08.17-r1-r2-cross-examination.md` §1 with his diagnosis (one `cosa_voice_mcp.py` per Claude Code process; `ConfigurationManager` a singleton with no mtime check). The **logic** of this section stands on its own — a claim about already-running processes is not tested by spawning a new one — but the **numbers** rest on his record, not on a measurement taken while writing this rule.
+
 ## 6. What this supersedes
 
 - **R-1** (*re-measure at send-time, stamp the window*) is **not deleted** — it is the correct fix for the **TIME** axis, and it is retained as §1's TIME row. It was never the whole rule; it was mis-generalized to cover SUBJECT errors it cannot catch.
@@ -105,4 +107,5 @@ All six share the signature **THE ARTIFACT SAYS HANDLED**: a present, well-forme
 
 **Version history**
 
+- **v1.1** (2026-08-17, Krishna 🦚) — §5: cite where the two figures come from. The `opus-5` / `opus-4-8` pair is **Cheech's measurement** (post-game §3.1, tracked at `src/rnd/2026.08.17-r1-r2-cross-examination.md` §1), not a measurement taken while writing this rule — flagged on a fresh-eyes re-read so no reader mistakes a carried number for a re-verified one. Section's logic unchanged.
 - **v1.0** (2026-08-17, Krishna 🦚 — graduated per Rick's ruling) — Rewrites the drafted R-1/R-2 (post-game §4) on the **SUBJECT** axis after the §5.3 cross-examination of Cheech undercut the staleness framing: his read was fresh and correct and failed on subject, not time. Splits the class TIME vs SUBJECT (label by dependency); makes in-memory/running-process its own subject (fixing R-2's category error); carries Cheech's refresh-schedule correction; and states the mechanism — **ask the subject your claim depends on**. Evidence: six same-day instances, honestly flagged as one day, graduated on that basis by Rick's explicit decision. Tested against the founding instance in §5. Seed: `io/post-games/2026.08.17-overnight-run-post-game.md` + `src/rnd/2026.08.17-r1-r2-cross-examination.md`. **Held for commit.**
