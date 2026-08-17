@@ -272,6 +272,48 @@ a **DRILL** automatically — no flag to remember. Drill deliveries arrive from 
 and María received what read as a live alarm about a peer. Body text is rewritten in transit; sender
 metadata is not. *Anything a message must not lose in transit belongs in metadata, not in prose.*
 
+### Nameless seats — the seat nobody watches must still be counted, named, and warned
+
+**A live session whose persona allocation is null cannot appear in `personas`** — the payload is
+keyed by persona name, so there is no key to put it under. The server side was fixed 2026-08-16
+(lupin `2c35dfe7`, row `9c720767`): nameless seats now arrive in a separate **`unnamed_seats`** list,
+each a full record carrying `persona: null`, with **`summary.unnamed_live_seats`** counting them.
+
+**The tick read neither field until 2026-08-17**, so that fix stopped one step short of a human. It
+now:
+
+| | |
+|---|---|
+| **prints them** | as `(unnamed) <session8>` rows in the roster, with the same status / percentage / manager columns |
+| **judges them** | a nameless seat can be over budget like any other, and is delivered on like any other |
+| **DMs them BY SESSION ID** | `dm_send` resolves `recipient_session_id` when there is no persona to name. Unnameable is not unreachable — and this is exactly the seat nobody can chase by name |
+| **counts the gap** | a line stating how many reported seats could not be judged, so **"all within budget" now prints as "all within budget (of the N seat(s) this tick could judge)"** |
+
+The manager DM for a nameless seat states plainly that **`respin_personas` cannot name it** — so the
+manager must check by hand that its open rows do not land silently on their board — and carries the
+**full session id** for the reap.
+
+### 🔴 A live seat can still be invisible — and no client-side count can fix it
+
+**Measured 2026-08-17** (lupin row `6afc8b3e`, filed to the arbiter owner): `find_active_sessions`
+applies a **12-hour mtime TTL** (`session_bridge.py:1988-1989`; the threshold is a default argument
+at `:1908`, not a named constant — which is why grepping for one finds nothing) and skips any bridge
+older than that **before** the persona branch, regardless of whether the process is alive.
+
+Two seats on the box proved it, liveness held constant and only the threshold changed:
+
+```
+ids(43200)  — the shipped 12h : c6b34684, b24cab16 ABSENT   (8 seats returned)
+ids(86400)  — 24h, else same  : both PRESENT                (10 seats returned)
+ps          — in BOTH arms    : claude PIDs up 15h, live MCP children, live tmux panes
+```
+
+⇒ A running session that has not rewritten its bridge in 12h is **absent from the payload
+entirely** — not in `personas`, not in `unnamed_seats`, not in any summary count. **A client cannot
+count what the server never sent**, so the "could not be judged" line reports *the gap it can see*,
+not *the gap*. Widening the threshold only moves the cliff; the fix is to trust PID liveness and to
+emit aged-out bridges as a visible bucket rather than as silence.
+
 ### Two limits, stated rather than papered over
 
 **The manager is INFERRED from the tmux session name** (`cc-<role>-<manager-slug>-<n>` →

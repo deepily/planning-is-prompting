@@ -164,29 +164,79 @@ def resolve_manager( tmux_session, roster ):
             return candidate
     return None
 
-print( f"=== context pressure @ {stamp}  ({len(personas)} persona(s) reported)"
+# NAMELESS SEATS ARE SEATS. The payload is keyed BY PERSONA, so a live session whose persona
+# allocation is null cannot appear in `personas` at all — not as a null row, absent. The server side
+# was fixed 2026-08-16 (lupin 2c35dfe7, row 9c720767): nameless seats now arrive in a separate
+# `unnamed_seats` LIST, each entry a full record carrying `persona: null`, and `summary.
+# unnamed_live_seats` counts them. THIS CLIENT NEVER READ EITHER FIELD, so the fix stopped one step
+# short of a human — the seat nobody watches was still the seat this tick did not mention.
+#
+# A nameless seat can be over budget like any other, and it is the WORST one to miss: nobody can DM
+# it by name to tell it to re-spin. The DM API takes `recipient_session_id`, so it is still
+# reachable — by id, not by name. That is what the delivery path below uses for these seats.
+unnamed = data.get( "unnamed_seats" ) or []
+summary = data.get( "summary" ) or {}
+
+print( f"=== context pressure @ {stamp}  ({len(personas)} persona(s), {len(unnamed)} unnamed seat(s) reported)"
        + ( f"  [DRILL — non-production sensor {url}]" if DRILL else "" ) )
 
-# WHO THIS MONITOR CANNOT SEE, stated out loud rather than quietly. A persona the sensor reports
-# with status "unknown" and a null percentage — an idle seat, or a live one that has not taken an
+# ONE LIST OF SEATS, NAMED OR NOT. Everything below iterates seats rather than persona names, so a
+# nameless seat cannot fall out of the roster print, the over-budget test, or the delivery path by
+# being absent from a dict.
+#
+# `key`   — how the send ledger remembers this seat across ticks (name, or session:<id8>)
+# `label` — what a human reads in the log
+# `to`    — how the DM is addressed: a persona name, or an explicit session id
+seats = []
+for name, row in personas.items():
+    seats.append( { "key": name, "label": name, "row": row,
+                    "to_persona": name, "to_session": None } )
+for row in unnamed:
+    sid   = str( row.get( "session_id" ) or "" )
+    short = sid[ :8 ] or "????????"
+    seats.append( { "key"        : f"session:{short}",
+                    "label"      : f"(unnamed) {short}",
+                    "row"        : row,
+                    "to_persona" : None,
+                    "to_session" : sid or None } )
+
+# WHO THIS MONITOR CANNOT SEE, stated out loud rather than quietly. A seat the sensor reports with
+# status "unknown" and a null percentage — an idle seat, or a live one that has not taken an
 # assistant turn since the sensor last sampled it — is INVISIBLE to the over-budget test. It is
 # printed (never dropped), and it is never delivered on, because there is nothing to deliver. A
 # live session can sit in this state: this is a real blind spot, not a solved one.
 blind = []
 
-for name, row in personas.items():
-    pct    = row.get( "consumption_pct_of_window" )      # null on an IDLE persona
+for seat in seats:
+    row    = seat[ "row" ]
+    pct    = row.get( "consumption_pct_of_window" )      # null on an IDLE seat
     shown  = "  n/a" if pct is None else f"{pct:5.1f}"
     status = str( row.get( "status" ) or "unknown" )
     live   = str( row.get( "liveness" ) or "?" )
     flag   = "  <-- OVER" if status == "over_budget" else ""
     mgr    = resolve_manager( row.get( "tmux_session" ), personas ) or "unresolved"
-    print( f"  {name:<14} {status:<14} {shown}%  {live:<8} mgr:{mgr:<10}{flag}" )
-    if status == "over_budget":       over.append( name )
-    elif pct is None:                 blind.append( name )
+    print( f"  {seat['label']:<20} {status:<14} {shown}%  {live:<8} mgr:{mgr:<10}{flag}" )
+    if status == "over_budget":       over.append( seat )
+    elif pct is None:                 blind.append( seat[ "label" ] )
 
 if blind:
     print( f"  (not judgeable this tick, null reading: {', '.join( blind )} — printed, not delivered on)" )
+
+# SAY OUT LOUD HOW MANY SEATS THIS READING DOES NOT COVER, so "all within budget" can never quietly
+# mean "all the ones I could see" (María, 2026-08-17).
+#
+# ⚠️ AND THE GAP IS BIGGER THAN THIS LINE CAN KNOW. This counts what the SENSOR REPORTED. A live
+# session whose bridge file has not been rewritten in 12h is dropped by the scanner BEFORE the
+# payload is built — session_bridge.py:1988-1989 filters on mtime, ahead of the persona branch, with
+# the 12h threshold sitting as a default argument at line 1908 rather than a named constant. Row
+# 6afc8b3e, measured 2026-08-17: two seats with claude PIDs up 15 hours appear in `personas`, in
+# `unnamed_seats`, and in every summary count as NOTHING. No client-side count can restore a seat
+# the server never mentioned. Until that row lands, read this as "the gap I can see", not "the gap".
+unjudgeable = len( blind ) + len( unnamed )
+if unjudgeable:
+    print( f"  ⚠️  {unjudgeable} of {len(seats)} reported seat(s) could NOT be judged this tick "
+           f"({len(blind)} null reading, {len(unnamed)} with no persona). "
+           f"Any 'all within budget' below covers the other {len(seats) - unjudgeable}." )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # DELIVERY
@@ -243,9 +293,14 @@ def post_query( path, params ):
     except Exception as e:
         return 0, str( e )
 
-def dm( recipient, body ):
+def dm( recipient, body, session_id=None ):
     """
-    Send one peer DM as the tick.
+    Send one peer DM as the tick, addressed by persona name OR by explicit session id.
+
+    `session_id` is what makes a NAMELESS seat reachable: the server resolves `recipient_session_id`
+    when it is present and falls back to `recipient_persona` otherwise. A seat with no persona is
+    unnameable, not unreachable — and it is precisely the seat that most needs the warning, since
+    nobody can chase it by name either.
 
     `sender_project` is REQUIRED by the server (row 12b5a766) — it will not guess the caller's
     project, and an omission is a 422, not a fallback. `sender_session_id` is synthetic: the tick
@@ -256,14 +311,18 @@ def dm( recipient, body ):
     # of the body can be, and was, condensed away before the recipient read it. `sender_persona`
     # is metadata: it is stamped into the recipient's "[DM from <persona>]" framing and never
     # rewritten. A test that can lose its own test label is a false alarm generator.
-    return post_json( "/api/dm/send", {
+    payload = {
         "sender_session_id" : "context-pressure-tick",
         "sender_persona"    : "context tick DRILL" if DRILL else "context tick",
         "sender_icon"       : "🧪" if DRILL else "⏱",
         "sender_project"    : PROJECT,
-        "recipient_persona" : recipient,
         "body"              : body,
-    } )
+    }
+    if session_id:
+        payload[ "recipient_session_id" ] = session_id
+    else:
+        payload[ "recipient_persona" ] = recipient
+    return post_json( "/api/dm/send", payload )
 
 def band_of( pct ):
     """Which BAND-point band a percentage sits in; None stays None (a null reading has no band)."""
@@ -315,27 +374,33 @@ def notify_target():
 
 failures = 0
 
+over_labels = [ s[ "label" ] for s in over ]
+
 if not over:
-    print( "all within budget" )
+    print( "all within budget" + ( f" (of the {len(seats) - unjudgeable} seat(s) this tick could judge)" if unjudgeable else "" ) )
 elif not DELIVER:
-    print( f"OVER BUDGET: {', '.join( over )} — delivery disabled (CONTEXT_TICK_DELIVER=0), printed only." )
+    print( f"OVER BUDGET: {', '.join( over_labels )} — delivery disabled (CONTEXT_TICK_DELIVER=0), printed only." )
 else:
-    print( f"OVER BUDGET: {', '.join( over )}" )
+    print( f"OVER BUDGET: {', '.join( over_labels )}" )
     state  = load_state()
     ledger = state.setdefault( "personas", {} )
     now    = datetime.datetime.now().astimezone()
 
-    # Prune personas who are no longer over budget: their episode is over, and the next crossing
-    # must send fresh rather than being suppressed by a stale row.
-    for gone in [ p for p in ledger if p not in over ]:
+    # Prune seats no longer over budget: their episode is over, and the next crossing must send
+    # fresh rather than being suppressed by a stale row. Keyed by the seat key (a persona name, or
+    # session:<id8> for a nameless seat), so the two kinds cannot collide in the ledger.
+    live_keys = { s[ "key" ] for s in over }
+    for gone in [ k for k in ledger if k not in live_keys ]:
         ledger.pop( gone )
 
-    for name in over:
-        row       = personas[ name ]
+    for seat in over:
+        name      = seat[ "label" ]
+        key       = seat[ "key" ]
+        row       = seat[ "row" ]
         pct       = row.get( "consumption_pct_of_window" )
         shown     = "n/a" if pct is None else f"{pct:.1f}%"
         manager   = resolve_manager( row.get( "tmux_session" ), personas )
-        send, why = should_send( ledger.get( name ), pct, now )
+        send, why = should_send( ledger.get( key ), pct, now )
         if not send:
             print( f"  {name}: {why}" )
             continue
@@ -348,7 +413,9 @@ else:
             f"peer manager with headroom (task_reassign), then announce it. Do the handoff while "
             f"you still have room to act — late is identical to never."
         )
-        status, detail   = dm( name, body_worker )
+        # A NAMELESS SEAT IS STILL REACHABLE — BY ID. Skipping it would leave the one seat with no
+        # watcher as the one seat with no warning either.
+        status, detail   = dm( seat[ "to_persona" ], body_worker, session_id=seat[ "to_session" ] )
         worker_delivered = status == 201
         if worker_delivered:
             print( f"    DM to {name}: delivered (HTTP 201) {detail[ :160 ]}" )
@@ -361,8 +428,13 @@ else:
                 f"{BANNER}"
                 f"{name} is over context budget at {shown}. Only the manager that spawned the seat "
                 f"can re-spin it: DM them 'prepare for re-spin', wait for the ack, then "
-                f"dismiss_sessions( write_memento=True, respin_personas=['{name}'] ) and spawn from "
-                f"the memento. Omit respin_personas and their open rows land silently on your board. "
+                + ( f"dismiss_sessions( write_memento=True, respin_personas=['{name}'] ) and spawn from "
+                    f"the memento. Omit respin_personas and their open rows land silently on your board. "
+                    if seat[ "to_persona" ] else
+                    f"reap the seat by session id ({seat[ 'to_session' ]}) with write_memento=True and "
+                    f"spawn a replacement. ⚠️ This seat has NO PERSONA, so respin_personas cannot name it "
+                    f"— check by hand that its open rows do not land silently on your board. " )
+                +
                 f"(You were inferred as their manager from the tmux name {row.get( 'tmux_session' )} "
                 f"— if that seat is not yours, say so and ignore this.)"
             )
@@ -415,7 +487,7 @@ else:
         # hour of ticks on the strength of a message nobody received, which is the exact defect
         # this whole change exists to kill. Measured on the fail-loud drill (2026-08-17): with the
         # attempt recorded, three refused POSTs still wrote last_sent_ts and the alarm went quiet.
-        prior = ledger.get( name ) or {}
+        prior = ledger.get( key ) or {}
         entry = {
             "episode_started"   : prior.get( "episode_started" ) or now.isoformat(),
             "last_sent_ts"      : now.isoformat() if worker_delivered else prior.get( "last_sent_ts" ),
@@ -427,9 +499,10 @@ else:
         # No successful send yet in this episode → no ledger row at all, so the next tick treats it
         # as a new episode and tries again rather than counting down a suppression window.
         if entry[ "last_sent_ts" ] is None:
-            ledger.pop( name, None )
+            ledger.pop( key, None )
         else:
-            ledger[ name ] = entry
+            entry[ "label" ] = name          # a session:<id8> key is unreadable on its own
+            ledger[ key ]    = entry
 
     save_state( state )
 
