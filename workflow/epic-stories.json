@@ -1,0 +1,55 @@
+{
+  "_README": "Epic key -> display title + one-line story. Hand-maintained; the ONLY hand-maintained input to docs/epic-board.md. A manager minting a new epic adds its line here in the same turn. An epic with no entry still renders — it just shows a de-slugged key and no story, which is the visible nudge to write one.",
+  "epic:cj-flow-v2-ship": {
+    "title": "Ship CJ Flow v2",
+    "story": "Build v2, measure it honestly against v1 on a server we can trust, and let a go/no-go gate decide whether it ships."
+  },
+  "epic:secrets-on-public-tip": {
+    "title": "Secrets on the public tip",
+    "story": "Credentials are sitting in a public repo. Find what leaked, rotate it, then make a repeat impossible."
+  },
+  "epic:router-single-source": {
+    "title": "One registry decides what commands exist",
+    "story": "Generate the router prompt and the training corpus from the registry, then retrain — so the lists agree by construction instead of by care."
+  },
+  "epic:seal-the-test-tier": {
+    "title": "Seal the test tier",
+    "story": "\"Unit\" tests reach the network and spend real inference, and the coverage frame cannot see 40k lines — so a green run does not mean what it says."
+  },
+  "epic:seat-and-repo-resolution": {
+    "title": "Seat and repo resolution",
+    "story": "Something scoped to a seat or a repo keeps getting resolved from a global default instead. One design mistake, filed three times by three people."
+  },
+  "epic:answers-without-their-basis": {
+    "title": "Answers without their basis",
+    "story": "A tool answers and does not say what it filtered out or what it objected to, so the reader cannot tell a real result from a narrow one."
+  },
+  "epic:authz-and-sandboxing": {
+    "title": "Authz and sandboxing",
+    "story": "Any authenticated account can cause arbitrary execution on the box — an endpoint with no role check, and generated code that runs unsandboxed."
+  },
+  "epic:image-gen-on-proper-auth": {
+    "title": "Image generation on proper auth",
+    "story": "The ruling is project-id plus ADC, never an API key — and it cannot be honoured for images until Imagen is enabled on the project."
+  },
+  "epic:expeditor-arg-extraction": {
+    "title": "Expeditor argument extraction",
+    "story": "Podcast-generator was conceived as \"make a podcast from a topic\" and implemented as a file reader; the training half and the fencing half both follow from that."
+  },
+  "epic:weil-deep-research": {
+    "title": "Weil parallel research engine",
+    "story": "The 9-stage parallel deep-research engine in weil-parallel-search. Plan approved, waiting on the word to start."
+  },
+  "epic:skills-distillation": {
+    "title": "Skills distillation",
+    "story": "Grading the distilled agent — including a dimension that has never actually been judged on either surface."
+  },
+  "epic:unassigned": {
+    "title": "Unassigned",
+    "story": "Deliberately belongs to no epic. A fake story is worse than a labelled gap, so these stay honest rather than tidy."
+  },
+  "epic:manager-roster-single-source": {
+    "title": "One source for who is a manager",
+    "story": "Two environment-variable families both answer \"who is a manager\", they feed different consumers, and nothing compared them — so they drifted silently until Rick read a retired name off a status card."
+  }
+}

@@ -231,6 +231,25 @@ Anything in `drift` either was minted without an epic or had its epic key overwr
 
 🔴 **`include_parked=True` IS MANDATORY ON BOTH SIDES.** Park-active rows are hidden by default, and a parked row **rejoins the owed count automatically** when its chase passes — arriving epic-less if the audit never saw it. Measured 2026-08-18: the default-scoped read returned **28** rows and the parked-inclusive read returned **37**. Nine rows, including a P1, were invisible to an audit that would otherwise have certified the board clean.
 
+#### It is automated — you do not run this by hand
+
+`workflow/scripts/generate_epic_board.py` does the whole thing and writes **`docs/epic-board.md`** — a fixed path, so the doc-viewer URL is stable and a browser tab can stay open on it:
+
+```
+/app/docs?path=planning-is-prompting/docs/epic-board.md
+```
+
+A crontab entry (`# epic-board`) regenerates it every 10 minutes, so an open tab is stale by at most that; the page carries its own **generated-at stamp and row count on the first line** so staleness is visible rather than assumed. `/plan-board` regenerates on demand. Cron was chosen over a SessionStart hook deliberately: it keeps the board fresh when *nobody* is live, which is exactly when a person sits down and opens the tab.
+
+**The script does NOT use the set difference above.** It reads every row non-terse and groups on the real field, because a script can afford the full bodies and an agent's context cannot. The set difference exists for the in-context check; the script is the better instrument and should be preferred whenever you can shell out.
+
+⚠️ **Three query traps, all measured, all of which yield a confident wrong board** — they are documented at length in the script's own docstring, and each has a test that goes red when the trap returns:
+1. The REST parameter is **`hide_parked=false`**, not `include_parked=true` — that is the *MCP argument name*, and FastAPI **silently drops** it. Without it, 9 park-active rows vanish, including a P1. (I hit this myself while building the tool meant to catch it; a deliberately bogus parameter returned the identical count, which is how it surfaced.)
+2. A non-terse read **truncates at a 100,000-char budget** — `limit=500` returned 13 of 31. The script paginates and reports if it could not drain.
+3. A terse read **does not carry `correlation_key`** at all, so terse cannot build this board.
+
+The only hand-maintained input is `workflow/epic-stories.json` — epic key → title + one-line story. A manager minting an epic adds its line in the same turn.
+
 #### Falsify it before trusting it — ✅ BOTH CONTROLS RUN, 2026-08-18
 
 **An audit nobody has watched fire is a comment with a green tick.** So it was watched, both ways, on the live store:
