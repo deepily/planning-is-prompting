@@ -175,10 +175,36 @@ first one is the whole point:
 | **coverage does not depend on who starts up** | that is precisely the Rio gap — his seat went unwatched because no session of his had ever run the install |
 | **it does not race persona allocation** | at `SessionStart` this session's own persona may not be assigned yet; a hook reading a half-written bridge would install the wrong seat's line |
 
-**What it will not do**: edit, reorder, or remove a line it did not add. A manager already carrying
-a tick keeps their exact line, suffix and all — it only ever appends. **Removing a manager from the
-roster does NOT remove their crontab line**; pulling a monitor is a decision a person makes, not a
-side effect of editing a config file.
+**What it will not do**: edit or reorder a line. A manager already carrying a tick keeps their exact
+line, suffix and all, and a line the script does not recognize as its own is never touched.
+
+### 🔁 THE ROSTER IS AUTHORITATIVE — reversal ruled by Rick, 2026-08-18
+
+This section used to read: *"Removing a manager from the roster does NOT remove their crontab line;
+pulling a monitor is a decision a person makes, not a side effect of editing a config file."* That
+reasoning was sound and is now **satisfied differently**. Rick is the person, editing the roster IS
+his decision, and he ruled that he never wants to hand-edit a crontab again: **he edits
+`~/.claude/fleet-roster.env` and everything follows.**
+
+So the script **reconciles**. After it runs, the tagged tick lines match the roster exactly — added
+for anyone new, **removed for anyone no longer rostered**. What the old rule protected against — a
+config edit quietly pulling a monitor — is carried by four guards instead:
+
+| Guard | What it buys |
+|---|---|
+| removes only a line ending in the exact `# slot-<persona>-<8 hex>` tag it issues | Rick's password-rotation and LoRA-review jobs carry no such tag, so they are structurally unmatched, not "carefully avoided" |
+| **at most one line per run** | a typo in the roster ("Cheeh") costs one monitor; fixing the spelling puts it back at the next session start. It can never cost the fleet |
+| every removal is announced | a `notify()` naming the persona, plus a stderr line that stands even when the notification server is down |
+| timestamped backup before any write, **and no backup means no write** | the previous crontab is always one `cp` away |
+
+An **empty or unreadable roster removes nothing** — "I could not read who is rostered" must never be
+spelled the same way as "nobody is rostered", or a permissions hiccup would sweep the fleet one seat
+per boot.
+
+**Receipt, 2026-08-18**: driven against a copy of the live crontab with the two known orphans
+(`slot-tiberius-99e4ce19`, `slot-rachel-9eb9253c`) planted back in, it took them out one per run —
+two runs, two announcements — while both of Rick's real reminder jobs and three lines that merely
+*look* like a tick survived untouched. Suite: `pytest workflow/scripts/test_install_context_pressure_tick.py`, at 100% lines and branches.
 
 **Receipt, first live run**: three seats had no tick — **Tiberius, Sam, Tiffany** — on a day the
 gap was already known and had already been discussed. Four→seven lines, no duplicates, and a second
