@@ -51,5 +51,9 @@
   "epic:manager-roster-single-source": {
     "title": "One source for who is a manager",
     "story": "Two environment-variable families both answer \"who is a manager\", they feed different consumers, and nothing compared them — so they drifted silently until Rick read a retired name off a status card."
+  },
+  "epic:board-visibility": {
+    "title": "Rick can see his own board",
+    "story": "The task store held every fact Rick needed and surfaced none of them where he actually looks — so the board gets a fixed URL, a link from the Lupin Dev Tools page, and a generated-at stamp in his own timezone rather than UTC."
   }
 }
