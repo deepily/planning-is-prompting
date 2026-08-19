@@ -862,12 +862,20 @@ Session initialization routine:
 
 The cosa-voice MCP server's SessionStart hook honors a per-project preferred-persona environment variable, so each repo lands on its canonical persona automatically (no `/plan-session-start <name>` arg needed every session). Add to `~/.bashrc` / `~/.zshrc`:
 
+⚠️ **Declare the roster; do NOT hand-export the chain (changed 2026-08-18).**
+`start-cc-with-tmux.sh` derives every `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>`
+chain from the roster line as `<roster>,*`, so a shell export creates a SECOND
+answer to "who is a manager here" — and the two answers feed different consumers
+(roster → fleet status, escalation, reserve-from-random; chain → the task-store
+write gate). Edit one file instead:
+
 ```bash
-# cosa-voice per-repo default personas (read by SessionStart hook)
-export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
-export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
-# Pattern: COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER> (hyphens → underscores)
-# Conflict (held by another session, invalid name): falls back to random + notify
+# ~/.claude/fleet-roster.env  (also read by the arbiter's systemd EnvironmentFile)
+COSA_VOICE_MANAGERS__PLAN="María"
+COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
+# Pattern: COSA_VOICE_MANAGERS__<PROJECT_UPPER> (hyphens → underscores)
+# Order matters: the roster HEAD is the declared fallback manager.
+# Conflict (name held by another session, invalid name): falls back to random + notify
 ```
 
 Details: planning-is-prompting → workflow/session-start.md § Preliminary -1, plan doc `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`.

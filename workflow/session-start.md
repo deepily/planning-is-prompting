@@ -50,12 +50,23 @@ COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>
 
 ### Example shell-rc setup
 
+⚠️ **Do not hand-export these — as of 2026-08-18 they are DERIVED.** The one
+place a repo's manager is named is `~/.claude/fleet-roster.env`
+(`COSA_VOICE_MANAGERS__<PROJECT>="<names>"`); `start-cc-with-tmux.sh` builds
+each `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` chain from it as `<roster>,*`.
+A hand-export in your shell OVERRIDES that derivation and re-creates the split
+this consolidated: the roster decides who APPEARS to be a manager, the chain
+decides who may WRITE to the task store, and a stale copy-paste puts a retired
+name back on one side only. Lupin's SessionStart hook now compares the two and
+prints a drift block into the session's boot context when they disagree.
+
 ```bash
-# cosa-voice per-repo default personas — add to ~/.bashrc or ~/.zshrc
-export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
-export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
-export COSA_VOICE_PREFERRED_PERSONA__COSA_VOICE=Rio
-# Add more as new repos are added to the workflow
+# ~/.claude/fleet-roster.env — the ONE place a repo's manager is named.
+# Plain KEY="value" (the bash-source ∩ systemd EnvironmentFile intersection).
+COSA_VOICE_MANAGERS__PLAN="María"
+COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
+# Order matters: the roster HEAD is the declared fallback manager.
+# Add a line per repo; the persona chain follows automatically.
 ```
 
 ### Conflict behavior
