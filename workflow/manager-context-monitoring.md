@@ -196,6 +196,7 @@ config edit quietly pulling a monitor — is carried by four guards instead:
 | **at most one line per run** | a typo in the roster ("Cheeh") costs one monitor; fixing the spelling puts it back at the next session start. It can never cost the fleet |
 | every removal is announced | a `notify()` naming the persona, plus a stderr line that stands even when the notification server is down |
 | timestamped backup before any write, **and no backup means no write** | the previous crontab is always one `cp` away |
+| `--no-announce` | a rehearsal against a **copy** of the crontab cannot page the operator about a removal that did not happen to his real one |
 
 An **empty or unreadable roster removes nothing** — "I could not read who is rostered" must never be
 spelled the same way as "nobody is rostered", or a permissions hiccup would sweep the fleet one seat

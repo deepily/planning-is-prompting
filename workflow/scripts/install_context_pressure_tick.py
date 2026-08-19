@@ -444,7 +444,7 @@ def announce_removal( key, notifier=None ):
 
 
 def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None, dry_run=False,
-               notifier=None, now=None ):
+               notifier=None, now=None, announce=True ):
     """
     Make the crontab's tick lines match the roster: add for anyone new, remove for anyone gone.
 
@@ -454,6 +454,7 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
         - project is an uppercase project key or None for every project
         - notifier is the removal-announcement seam, or None for the real one
         - now is a datetime for the backup stamp, or None
+        - announce is False to suppress the outbound notification entirely (--no-announce)
 
     Ensures:
         - returns ( exit_code, report_lines )
@@ -461,7 +462,9 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
           byte-identical — no churn, no reordering
         - lines that are not this script's tagged tick lines are never touched
         - at most MAX_REMOVALS_PER_RUN lines are removed; the rest are named and wait for next run
-        - every removal is announced and appears in the report
+        - every removal appears in the report, and is announced unless announce is False. An
+          acceptance run drives this script against a COPY of the crontab, and a copy must not be
+          able to page the operator about a removal that did not happen to his real one
         - an empty or unreadable roster removes nothing
         - dry_run reports what it would add and remove, and writes nothing
     """
@@ -554,12 +557,14 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
             return 2, report
         # Announced only AFTER the removal is confirmed gone, and said out loud here whether or not
         # the notification server took it — this line is the record that survives a dead server.
-        delivered = announce_removal( key, notifier=notifier )
+        if not announce:
+            outcome = "The announcement was suppressed by --no-announce."
+        elif announce_removal( key, notifier=notifier ):
+            outcome = "The operator was notified."
+        else:
+            outcome = "THE NOTIFICATION DID NOT GO OUT — this line is the only record."
         report.append( f"TICK INSTALL REMOVED: {key} is no longer on the roster, so their tick line "
-                       f"was deleted. Backup: {backup}. "
-                       + ( "The operator was notified."
-                           if delivered else
-                           "THE NOTIFICATION DID NOT GO OUT — this line is the only record." ) )
+                       f"was deleted. Backup: {backup}. " + outcome )
 
     return 0, report
 
@@ -583,6 +588,9 @@ def main( argv=None ):
                          help="read/write this file instead of the real crontab (tests)" )
     parser.add_argument( "--project",      default=None, help="only this project's managers (e.g. LUPIN)" )
     parser.add_argument( "--dry-run",      action="store_true" )
+    parser.add_argument( "--no-announce",  action="store_true",
+                         help="remove without paging the operator. For driving this script against a "
+                              "COPY of the crontab: a rehearsal must not be able to send a real alarm" )
     parser.add_argument( "--strict",       action="store_true", help="exit with the real code instead of 0" )
     args = parser.parse_args( argv )
 
@@ -594,6 +602,7 @@ def main( argv=None ):
             crontab_file = Path( args.crontab_file ).expanduser() if args.crontab_file else None,
             project      = args.project,
             dry_run      = args.dry_run,
+            announce     = not args.no_announce,
         )
     except Exception as e:
         print( f"TICK INSTALL ERROR: the reconcile raised and was contained here: {e}", file=sys.stderr )

@@ -441,6 +441,41 @@ def test_a_removal_whose_announcement_failed_still_says_so_out_loud( bed ):
     assert any( "THE NOTIFICATION DID NOT GO OUT" in l for l in report )
 
 
+def test_no_announce_removes_without_paging_anyone( bed ):
+    """
+    A rehearsal must not be able to reach Rick (Mr Radio, 2026-08-18).
+
+    Proving the sweep means running it against a COPY of the crontab — and the first time that was
+    done, two real "monitor removed" alerts landed on the operator for removals that had not
+    happened to his crontab. --no-announce is the flag that makes that unreachable.
+    """
+    bed[ "crontab" ].write_text( ORPHAN_RACHEL + "\n", encoding="utf-8" )
+
+    def must_not_be_called( key ):
+        raise AssertionError( "a rehearsal reached the operator" )
+
+    code, report = run( bed, announce=False, notifier=must_not_be_called )
+
+    assert code == 0
+    assert "slot-rachel-" not in crontab_text( bed ), "--no-announce also stopped the removal"
+    assert any( "suppressed by --no-announce" in l for l in report )
+
+
+def test_the_no_announce_flag_reaches_the_reconcile( bed, monkeypatch, capsys ):
+    """The flag is only worth having if the CLI actually wires it through."""
+    bed[ "crontab" ].write_text( ORPHAN_RACHEL + "\n", encoding="utf-8" )
+
+    def must_not_be_called( key ):
+        raise AssertionError( "a rehearsal reached the operator" )
+
+    monkeypatch.setattr( inst, "http_notify", must_not_be_called )
+    inst.main( [ "--roster", str( bed[ "roster" ] ), "--crontab-file", str( bed[ "crontab" ] ),
+                 "--log-dir", str( bed[ "log_dir" ] ), "--tick", str( bed[ "tick" ] ),
+                 "--no-announce" ] )
+
+    assert "suppressed by --no-announce" in capsys.readouterr().err
+
+
 def test_announce_removal_never_raises( capsys ):
     def explode( key ):
         raise RuntimeError( "the notify server fell over" )
