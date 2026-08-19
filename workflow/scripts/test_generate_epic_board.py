@@ -20,6 +20,7 @@ import sys
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 sys.path.insert( 0, os.path.dirname( os.path.abspath( __file__ ) ) )
 
@@ -151,8 +152,38 @@ class TestRender( unittest.TestCase ):
         page  = board.render( {}, [], {}, self.STAMP, [], 0 )
         lines = [ line for line in page.splitlines() if line.strip() ]
         self.assertTrue( lines[ 1 ].startswith( "**Generated**" ), lines[ :3 ] )
-        self.assertIn( "2026-08-18 21:30", lines[ 1 ] )
+        self.assertIn( "2026-08-18 17:30", lines[ 1 ] )
         self.assertIn( "Open rows**: 0", lines[ 1 ] )
+
+    def _stamp_line( self, moment ):
+        page = board.render( {}, [], {}, moment, [], 0 )
+        return [ line for line in page.splitlines() if line.strip() ][ 1 ]
+
+    def test_summer_instant_stamps_edt_not_utc( self ):
+        """
+        21:30 UTC on 2026-08-18 is 17:30 EDT — the hour AND the label both
+        differ from the UTC rendering, so this cannot pass by accident.
+        """
+        line = self._stamp_line( self.STAMP )
+        self.assertIn( "2026-08-18 17:30 EDT", line )
+        self.assertNotIn( "UTC", line )
+        self.assertNotIn( "21:30", line )
+
+    def test_winter_instant_stamps_est_and_crosses_the_date( self ):
+        """
+        The one a hardcoded "EDT" gets wrong: 02:30 UTC on 2026-11-15 is
+        21:30 EST on 2026-11-14 — different label, different hour, and a
+        different CALENDAR DAY than the UTC rendering.
+        """
+        line = self._stamp_line( datetime( 2026, 11, 15, 2, 30, tzinfo=timezone.utc ) )
+        self.assertIn( "2026-11-14 21:30 EST", line )
+        self.assertNotIn( "UTC", line )
+        self.assertNotIn( "2026-11-15", line )
+
+    def test_stamp_is_eastern_even_when_a_non_utc_instant_is_injected( self ):
+        """The conversion belongs to render(), not to whatever main() passes."""
+        tokyo = datetime( 2026, 8, 19, 6, 30, tzinfo=ZoneInfo( "Asia/Tokyo" ) )
+        self.assertIn( "2026-08-18 17:30 EDT", self._stamp_line( tokyo ) )
 
     def test_drift_renders_above_the_epics( self ):
         epics, drift = board.group_rows( [ row( "a", "epic:x" ), row( "b", None ) ] )

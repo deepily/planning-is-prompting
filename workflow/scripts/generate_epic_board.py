@@ -48,7 +48,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections import OrderedDict
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+# Rick reads this page from the East Coast, so the stamp is rendered in his
+# wall-clock time. Named zone, NOT a hardcoded "EDT" — the same constant has
+# to print EST once November arrives, without anybody remembering to edit it.
+EASTERN = ZoneInfo( "America/New_York" )
 
 DEFAULT_BASE_URL   = "http://localhost:7999"
 KEY_FILE_RELATIVE  = "src/conf/keys/notification-api-claude-code-dev"
@@ -239,12 +245,15 @@ def render( epics, drift, stories, generated_at, warnings, row_count ):
     Ensures:
         - the FIRST thing on the page after the title is the generated-at
           stamp and the row count, so a stale browser tab is visibly stale
+        - the stamp is converted to US Eastern regardless of the injected
+          instant's own zone, and names the zone it is actually in (EDT in
+          summer, EST in winter) rather than a fixed label
         - drift and fetch warnings render ABOVE the epics when non-empty —
           a board that hides its own incompleteness is the defect this whole
           exercise exists to remove
         - returns a Markdown string
     """
-    stamp = generated_at.strftime( "%Y-%m-%d %H:%M %Z" )
+    stamp = generated_at.astimezone( EASTERN ).strftime( "%Y-%m-%d %H:%M %Z" )
     out   = []
 
     out.append( "# Epic Board" )
@@ -340,7 +349,7 @@ def main( argv=None ):
 
     epics, drift = group_rows( rows )
     stories      = load_stories( args.stories )
-    page         = render( epics, drift, stories, datetime.now( timezone.utc ), warnings, len( rows ) )
+    page         = render( epics, drift, stories, datetime.now( EASTERN ), warnings, len( rows ) )
 
     os.makedirs( os.path.dirname( args.out ) or ".", exist_ok=True )
     with open( args.out, "w" ) as handle:
