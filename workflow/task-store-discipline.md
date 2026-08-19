@@ -191,6 +191,61 @@ task_query( project="<domain>", status="queued", terse=False )
 - `/clear` re-correlates via the STABLE session id — your list survives rehydration.
 - **Cross-SESSION respawn does NOT auto-correlate** (successor hashes to its own sid): at session-start seed, ADOPT inherited items via the audited `POST /api/tasks/{id}/correlate` endpoint (ruled 2026-06-12 — re-registers your harness task id onto the item's `correlation_key`, with the adoption on the event trail). A respawned session that skips adoption forks items — fail-visible by design.
 
+### 7.1 The epic layer — `correlation_key` also groups rows into stories (2026-08-18)
+
+**Why it exists.** Rick, 2026-08-18: *"Because the task list is largely opaque to me… I can't keep track of our larger high level endeavors… I think I'm missing something like the epic that described a higher level use case while the bug reports tied in to it."* A flat list of 37 rows hides which ones are one story. Grouping them puts the answer in a field, so a roll-up is a **render** instead of an act of memory.
+
+**The rules, five of them:**
+
+| # | Rule | Why |
+|---|---|---|
+| 1 | Every row names its epic at `task_create` — the verb already takes `correlation_key` | Costs one argument; retrofitting costs an evening |
+| 2 | Format is `epic:<short-kebab-slug>` | **The prefix is load-bearing** — it is the only thing that distinguishes an epic key from an adoption key |
+| 3 | No blanks. Work belonging to no epic gets `epic:unassigned` | **A blank is indistinguishable from forgetting**, and a rule you cannot audit is a preference |
+| 4 | Only a **manager** mints a new epic; workers pick an existing one or use `epic:unassigned` and say so | An epic layer with forty epics is the flat list again |
+| 5 | The page is regenerated from the field, never hand-edited | Two answers is worse than none |
+
+⚠️ **THIS FIELD NOW HAS TWO WRITERS, AND §7 ABOVE IS THE OTHER ONE.** Cross-session respawn adoption stamps `cc-task:<sid>:<harness-id>` into the same `correlation_key`. **A successor that adopts an inherited row destroys that row's epic key.** Adoption is existing, correct practice — this is a genuine collision, not a hypothetical. The `epic:` prefix is what turns it from silent data loss into something the audit below names.
+
+⇒ **The real fix is a dedicated `epic` column plus `epic` in `VALID_ITEM_CLASSES`**, so an epic can be a row carrying its own story and adoption cannot clobber it. Until then the audit is the control.
+
+#### The audit — a SET DIFFERENCE, not a filter
+
+**The obvious query does not work, and knowing why saves the next reader an hour:**
+- `terse=True` does **not** return `correlation_key` (the projection is id / title / status / blocked_by / next_chase_ts / priority / park_reason_stale), so a terse read cannot see the field at all.
+- `task_query(correlation_key=…)` is **exact-match only**. There is no `NOT LIKE 'epic:%'`, so drift cannot be queried for directly.
+- Reading non-terse to see the field returns every row's full body — tens of thousands of tokens. Impractical as a routine check.
+
+**So invert it.** Take the full non-terminal list terse (cheap), take each known epic terse (cheap), and difference the id sets:
+
+```python
+all_rows = task_query( unscoped_audit=True, terse=True, include_parked=True, limit=300 )
+grouped  = set()
+for key in KNOWN_EPIC_KEYS:                      # keep this list in the roll-up doc
+    grouped |= { t["id"] for t in task_query( correlation_key=key, terse=True,
+                                              include_parked=True )["tasks"] }
+drift = { t["id"] for t in all_rows["tasks"] } - grouped
+```
+
+Anything in `drift` either was minted without an epic or had its epic key overwritten by an adoption. Both are the failure this catches.
+
+🔴 **`include_parked=True` IS MANDATORY ON BOTH SIDES.** Park-active rows are hidden by default, and a parked row **rejoins the owed count automatically** when its chase passes — arriving epic-less if the audit never saw it. Measured 2026-08-18: the default-scoped read returned **28** rows and the parked-inclusive read returned **37**. Nine rows, including a P1, were invisible to an audit that would otherwise have certified the board clean.
+
+#### Falsify it before trusting it — ✅ BOTH CONTROLS RUN, 2026-08-18
+
+**An audit nobody has watched fire is a comment with a green tick.** So it was watched, both ways, on the live store:
+
+| # | Control | Result |
+|---|---|---|
+| 1 | Mint a row with **no** `correlation_key` (`8b6b05be`) | ✅ named in `drift` |
+| 2 | `task_correlate` a `cc-task:…` key over a live epic key (`697a85fe`) — a **simulated §7 adoption** | ✅ named in `drift`; its epic went 3 rows → 2 |
+
+**The arithmetic**: full non-terminal list = **38**, the twelve epic queries summed to **36**, `drift` = exactly those two ids and nothing else. No false positives.
+
+Both restored in the same turn — `697a85fe` re-stamped (event 7940), the probe row `→dropped` with its reason (event 7941). Control-2 is the important one: it is the **only** proof that an adoption silently eating an epic key is detectable rather than invisible.
+
+⇒ **Re-run both after any change to the audit.** A set difference that stops naming a planted row has stopped working, and it will fail silently — the same shape as the block-mode guard that recorded 88 outbound connections and passed everything.
+
 ## 8. Failure modes
 
 - Store down → READ paths fall back to files (I1), WRITE paths must not silently drop (hook timeout + spool + replay — Phase-2 C8); a session that can't write FLAGS ONCE, never fakes.
