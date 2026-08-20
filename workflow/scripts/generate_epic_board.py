@@ -65,6 +65,13 @@ UNASSIGNED_KEY     = "epic:unassigned"
 PAGE_LIMIT         = 25
 MAX_PAGES          = 100
 
+# Viewer self-refresh cadence, in minutes. PERIOD must match the cron interval
+# that regenerates this board (*/10); OFFSET pushes the reload past the
+# generation boundary so the page never reloads onto the run that is still
+# writing it. Reloads land at :01, :11, :21, ...
+AUTOREFRESH_PERIOD_MIN = 10
+AUTOREFRESH_OFFSET_MIN = 1
+
 
 def read_api_key( lupin_root=None, environ=None ):
     """
@@ -256,6 +263,13 @@ def render( epics, drift, stories, generated_at, warnings, row_count ):
     stamp = generated_at.astimezone( EASTERN ).strftime( "%Y-%m-%d %H:%M %Z" )
     out   = []
 
+    # Self-refresh directive, read by the document viewer (Lupin
+    # src/lupin_app/static/html/document-viewer.html). The board is regenerated
+    # by cron every 10 minutes on the :00 boundary, so the viewer reloads on the
+    # :01 boundary — one minute AFTER generation, never racing it. An HTML
+    # comment is invisible in the rendered page and inert anywhere that does not
+    # look for it, so a document carrying this is still just a document.
+    out.append( f"<!-- doc-viewer:autorefresh period={AUTOREFRESH_PERIOD_MIN} offset={AUTOREFRESH_OFFSET_MIN} -->" )
     out.append( "# Epic Board" )
     out.append( "" )
     out.append( f"**Generated**: {stamp} · **Open rows**: {row_count} · **Epics**: {len( epics )}" )
