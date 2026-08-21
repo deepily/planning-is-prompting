@@ -225,6 +225,44 @@ def load_stories( path ):
         return {}
 
 
+# The one person whose answer nobody else can give. Rick asked for these called
+# out at the TOP of the page, above the epics: they are not an epic, they are a
+# queue with exactly one server, and a row that waits on him is invisible to him
+# if it only ever appears buried in whichever epic happens to own it.
+BLOCKER_OF_INTEREST = "rick"
+
+
+def _ref_names_user( ref, name ):
+    """Whether one blocked_by ref points at a named human.
+
+    Matched on the ID with kind ignored ON PURPOSE. The same human appears as
+    {kind: "user"} when a gate was raised on him and {kind: "persona"} when a row
+    was simply assigned his name, and a selector keyed to one kind silently drops
+    half the queue — the exact shape of miss this board exists to stop.
+    """
+    ident = str( ref.get( "id", "" ) ).strip().lower()
+    return ident == name and ref.get( "kind" ) in ( "user", "persona" )
+
+
+def rows_waiting_on( rows, name=BLOCKER_OF_INTEREST ):
+    """
+    Every open row blocked on one named human, hardest first.
+
+    Requires:
+        - rows is a list of dicts each carrying blocked_by / priority / id
+
+    Ensures:
+        - returns rows whose blocked_by names `name`, kind user OR persona
+        - a row blocked on several things is included when ANY ref names him
+        - sorted by priority then id, so P0 leads and the order is stable
+        - returns a list, never None; no row is REMOVED from its epic section —
+          this is a highlight, not a move, and the page says so
+    """
+    hits = [ r for r in rows
+             if any( _ref_names_user( ref, name ) for ref in ( r.get( "blocked_by" ) or [] ) ) ]
+    return sorted( hits, key=lambda r: ( str( r.get( "priority", "P9" ) ), str( r.get( "id", "" ) ) ) )
+
+
 def _blocker_label( row ):
     """One short human phrase naming what a row waits on."""
     status = row.get( "status" )
@@ -241,7 +279,7 @@ def _blocker_label( row ):
     return ", ".join( parts )
 
 
-def render( epics, drift, stories, generated_at, warnings, row_count ):
+def render( epics, drift, stories, generated_at, warnings, row_count, on_rick=() ):
     """
     Render the board as Markdown.
 
@@ -258,6 +296,9 @@ def render( epics, drift, stories, generated_at, warnings, row_count ):
         - drift and fetch warnings render ABOVE the epics when non-empty —
           a board that hides its own incompleteness is the defect this whole
           exercise exists to remove
+        - the rows waiting on Rick render FIRST, above even those: they are the
+          only bucket he alone can clear, and burying them under a warnings
+          section defeats the reason he asked for them
         - returns a Markdown string
     """
     stamp = generated_at.astimezone( EASTERN ).strftime( "%Y-%m-%d %H:%M %Z" )
@@ -280,6 +321,33 @@ def render( epics, drift, stories, generated_at, warnings, row_count ):
         "Epic one-liners live in `workflow/epic-stories.json`."
     )
     out.append( "" )
+
+    # FIRST on the page, deliberately — above warnings and drift. Rick's ask,
+    # 2026-08-21: the rows he is the blocker on are not an epic, but they are the
+    # set only he can move, and he was reading them one epic table at a time.
+    if on_rick:
+        out.append( f"## ⏳ Waiting on Rick — {len( on_rick )} row(s)" )
+        out.append( "" )
+        out.append(
+            "Nobody else can clear these. Each also appears under its own epic below — "
+            "this is a highlight, not a move, so a row is not missing from where you expect it."
+        )
+        out.append( "" )
+        out.append( "| Row | P | Status | Epic | Title |" )
+        out.append( "|---|---|---|---|---|" )
+        for r in on_rick:
+            epic = ( r.get( "correlation_key" ) or "" )
+            epic = epic[ len( EPIC_PREFIX ): ] if epic.startswith( EPIC_PREFIX ) else "—"
+            out.append(
+                f"| `{str( r.get( 'id', '' ) )[ :8 ]}` | {r.get( 'priority', '' )} | "
+                f"{r.get( 'status', '' )} | {epic} | {r.get( 'title', '' )} |"
+            )
+        out.append( "" )
+    else:
+        out.append( "## ⏳ Waiting on Rick — nothing" )
+        out.append( "" )
+        out.append( "No open row is blocked on Rick. Stated rather than omitted: an absent section reads as a section that failed to render." )
+        out.append( "" )
 
     if warnings:
         out.append( "## ⚠️ Fetch warnings" )
@@ -363,13 +431,14 @@ def main( argv=None ):
 
     epics, drift = group_rows( rows )
     stories      = load_stories( args.stories )
-    page         = render( epics, drift, stories, datetime.now( EASTERN ), warnings, len( rows ) )
+    on_rick      = rows_waiting_on( rows )
+    page         = render( epics, drift, stories, datetime.now( EASTERN ), warnings, len( rows ), on_rick )
 
     os.makedirs( os.path.dirname( args.out ) or ".", exist_ok=True )
     with open( args.out, "w" ) as handle:
         handle.write( page )
 
-    print( f"epic-board: {len( rows )} rows, {len( epics )} epics, {len( drift )} drifted -> {args.out}" )
+    print( f"epic-board: {len( rows )} rows, {len( epics )} epics, {len( drift )} drifted, {len( on_rick )} on rick -> {args.out}" )
     return 1 if ( args.strict and drift ) else 0
 
 

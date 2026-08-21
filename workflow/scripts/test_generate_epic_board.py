@@ -148,16 +148,27 @@ class TestRender( unittest.TestCase ):
     STAMP = datetime( 2026, 8, 18, 21, 30, tzinfo=timezone.utc )
 
     def test_timestamp_and_count_are_above_everything( self ):
-        """Rick's ask: an always-open tab must show its own freshness."""
-        page  = board.render( {}, [], {}, self.STAMP, [], 0 )
-        lines = [ line for line in page.splitlines() if line.strip() ]
-        self.assertTrue( lines[ 1 ].startswith( "**Generated**" ), lines[ :3 ] )
-        self.assertIn( "2026-08-18 17:30", lines[ 1 ] )
-        self.assertIn( "Open rows**: 0", lines[ 1 ] )
+        """Rick's ask: an always-open tab must show its own freshness.
+
+        LOCATED BY CONTENT, NOT BY INDEX. These four tests read `lines[1]` until
+        2026-08-21 and had been RED since the doc-viewer autorefresh comment was
+        prepended to the page — one extra line at the top, every positional
+        assertion off by one, and the guard on the freshness stamp silently
+        stopped guarding. A test that knows WHICH line it wants survives the next
+        header change; one that counts lines does not.
+        """
+        stamp = self._stamp_line( self.STAMP )
+        self.assertIn( "2026-08-18 17:30", stamp )
+        self.assertIn( "Open rows**: 0", stamp )
+        # still ABOVE everything: nothing but the autorefresh comment and the H1
+        lines = [ line for line in board.render( {}, [], {}, self.STAMP, [], 0 ).splitlines()
+                  if line.strip() ]
+        self.assertLessEqual( lines.index( stamp ), 2, lines[ :4 ] )
 
     def _stamp_line( self, moment ):
-        page = board.render( {}, [], {}, moment, [], 0 )
-        return [ line for line in page.splitlines() if line.strip() ][ 1 ]
+        page  = board.render( {}, [], {}, moment, [], 0 )
+        lines = [ line for line in page.splitlines() if line.strip() ]
+        return next( line for line in lines if line.startswith( "**Generated**" ) )
 
     def test_summer_instant_stamps_edt_not_utc( self ):
         """
@@ -240,6 +251,77 @@ class TestKey( unittest.TestCase ):
 
     def test_unreadable_key_file_degrades_rather_than_raising( self ):
         self.assertEqual( board.read_api_key( environ={ "LUPIN_ROOT": "/nonexistent" } ), "" )
+
+
+
+class WaitingOnRickTests( unittest.TestCase ):
+    """Rick's ask, 2026-08-21: the rows HE is the blocker on, called out at the top."""
+
+    def _render( self, rows ):
+        epics, drift = board.group_rows( rows )
+        return board.render( epics, drift, {}, datetime( 2026, 8, 21, 16, 0, tzinfo=timezone.utc ),
+                             [], len( rows ), board.rows_waiting_on( rows ) )
+
+    def test_both_ref_kinds_are_caught( self ):
+        """kind is IGNORED on purpose — a gate raised on him is 'user', an assignment is 'persona'.
+
+        Keyed to one kind, this selector silently drops half the queue, which is the
+        exact shape of miss the board exists to stop.
+        """
+        rows = [
+            row( "aaa", key="epic:x", blocked_by=[ { "kind": "user",    "id": "rick" } ] ),
+            row( "bbb", key="epic:x", blocked_by=[ { "kind": "persona", "id": "rick" } ] ),
+        ]
+        self.assertEqual( [ r[ "id" ] for r in board.rows_waiting_on( rows ) ], [ "aaa", "bbb" ] )
+
+    def test_an_item_blocker_named_rick_is_not_a_person( self ):
+        """A row waiting on an ITEM whose id happens to be 'rick' is not waiting on Rick."""
+        rows = [ row( "ccc", key="epic:x", blocked_by=[ { "kind": "item", "id": "rick" } ] ) ]
+        self.assertEqual( board.rows_waiting_on( rows ), [] )
+
+    def test_a_row_blocked_on_several_things_still_counts( self ):
+        """ANY ref naming him is enough — he is still the one who has to answer."""
+        rows = [ row( "ddd", key="epic:x", blocked_by=[
+            { "kind": "item", "id": "99999999" }, { "kind": "user", "id": "rick" } ] ) ]
+        self.assertEqual( [ r[ "id" ] for r in board.rows_waiting_on( rows ) ], [ "ddd" ] )
+
+    def test_name_is_matched_case_and_space_insensitively( self ):
+        rows = [ row( "eee", key="epic:x", blocked_by=[ { "kind": "user", "id": "  Rick " } ] ) ]
+        self.assertEqual( [ r[ "id" ] for r in board.rows_waiting_on( rows ) ], [ "eee" ] )
+
+    def test_someone_else_is_not_rick( self ):
+        rows = [ row( "fff", key="epic:x", blocked_by=[ { "kind": "user", "id": "cheech" } ] ) ]
+        self.assertEqual( board.rows_waiting_on( rows ), [] )
+
+    def test_hardest_first( self ):
+        rows = [
+            row( "b2", key="epic:x", priority="P2", blocked_by=[ { "kind": "user", "id": "rick" } ] ),
+            row( "a0", key="epic:x", priority="P0", blocked_by=[ { "kind": "user", "id": "rick" } ] ),
+            row( "c1", key="epic:x", priority="P1", blocked_by=[ { "kind": "user", "id": "rick" } ] ),
+        ]
+        self.assertEqual( [ r[ "id" ] for r in board.rows_waiting_on( rows ) ], [ "a0", "c1", "b2" ] )
+
+    def test_the_section_renders_ABOVE_drift_and_warnings( self ):
+        """The whole point of the ask. Below the drift table it is just another section."""
+        rows = [
+            row( "aaaaaaaa", key="epic:x", blocked_by=[ { "kind": "user", "id": "rick" } ] ),
+            row( "drifter1", key=None ),
+        ]
+        page = self._render( rows )
+        self.assertLess( page.index( "Waiting on Rick" ), page.index( "Drift" ) )
+
+    def test_the_row_still_appears_under_its_epic( self ):
+        """A highlight, not a move — a row vanishing from its epic would be a worse board."""
+        rows = [ row( "aaaaaaaa", key="epic:x", title="the one",
+                      blocked_by=[ { "kind": "user", "id": "rick" } ] ) ]
+        page = self._render( rows )
+        self.assertEqual( page.count( "`aaaaaaa" ), 2 )
+
+    def test_empty_says_so_rather_than_vanishing( self ):
+        """An absent section reads as a section that failed to render."""
+        page = self._render( [ row( "aaaaaaaa", key="epic:x" ) ] )
+        self.assertIn( "Waiting on Rick — nothing", page )
+
 
 
 if __name__ == "__main__":
