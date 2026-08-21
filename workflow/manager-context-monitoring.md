@@ -799,6 +799,28 @@ for an AFK user is a *feature* here, not a degraded path.
 successor, handing a board — all still standing, all still silent. **One gate, on the one action that
 cannot be undone and cannot be self-verified.**
 
+#### Ask it in the FIRST PERSON, in your own voice
+
+**Rick, 2026-08-21**, after hearing the ask arrive as *"María is over context, permission to
+re-spin?"*: *"that should be using your own persona voice — I'm at capacity, can I re-spin?"* And on
+where the rule belongs: *"it shouldn't be a memory ad hoc rule, it should be a part of the re-spin
+process… that way every persona gets the same first-person treatment."*
+
+| ❌ Third person | ✅ First person |
+|---|---|
+| "María is over context, permission to re-spin?" | "I'm at capacity — can I re-spin?" |
+| "This session has reached its budget ceiling." | "I've hit my ceiling." |
+| "Mr Radio requests approval to clear." | "I'd like to clear — okay?" |
+
+**Why it is a rule and not a style note**: a seat that narrates itself in the third person reads as a
+bot reporting on a session, not a colleague asking a question — and on a shared speaker, where
+several personas talk into the same room, "I" is what tells the user *who* is asking. **The persona
+voice already carries the identity; the words must not fight it.**
+
+**Scope: every ask surface, not just this one.** `ask_yes_no` / `ask_multiple_choice` / `converse`,
+`notify`, DMs, terminal text. Read the spoken line back before firing it — if it names your own
+persona where it could say "I", rewrite it.
+
 ### What the user is NEVER asked to do
 
 - ❌ Track any session's context level.

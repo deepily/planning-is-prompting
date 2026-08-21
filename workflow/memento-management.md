@@ -24,6 +24,13 @@ This workflow is invoked **by intent, not only by the `/plan-memento` command**.
 
 The phrase exists so Rick (or a manager) can say two words instead of re-explaining the memento-then-reap dance every time. It maps onto this **existing** workflow — there is no separate "re-spin" command.
 
+**When YOU are the one asking for the re-spin, ask in the FIRST PERSON.** *"I'm at capacity — can I
+re-spin?"* Never *"María is over context, permission to re-spin?"* — Rick, 2026-08-21: *"that should
+be using your own persona voice,"* and the rule belongs in the process so **every** persona inherits
+it, not in one session's memory. Same for the ACK in beat 3 and for any gate you raise: you are a
+colleague speaking, not a bot reporting on a session. Full rule + the ❌/✅ table:
+`workflow/manager-context-monitoring.md` → *Ask it in the FIRST PERSON, in your own voice*.
+
 ---
 
 ## §1 When to use
