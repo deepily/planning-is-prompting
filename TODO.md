@@ -4,6 +4,24 @@ Last updated: 2026-08-13 (**Session 164** (María 🌸 `227f9b1d`) — **words�
 
 ## 📍 Resume Here
 
+> ### 🌅 **2026-08-22, FIRST THING — ONE DECISION GATES THE WHOLE MORNING** (María 🌸 S174 `e5933e98`)
+>
+> **`83fe98aa`** — P0, blocked on **Rick**, chase **10:00 EDT**: *merge integration → wip?* It is the **only** operator gate on the board. Cheech's 10:00 sequence (wip-merge → gate → step 13) runs on the answer, and three of my rows unblock behind it. **At least seven asks timed out on the default last night** — nobody is stuck on a live question, they all deferred to morning chases.
+> ⚠️ The row names integration at `850d2272`; the head has moved to **`8657cfa9`** (branch tip `7c00c787`, a doc-only plan fold). Same decision, staler sha.
+>
+> **The night's build is complete and independently verified.** Three tiers green at `8657cfa9` — I ran unit and cosa myself rather than relay: **cosa 8,622 P / 26 S exit 0 · unit 16,858 P**. 9a `92ed2565` and 9b `9cd144a1` are merged into integration (checked with `merge-base`), **neither is in wip**.
+>
+> **Tiffany's lupin-mobile work is CLOSED OUT — 13 rows done, 1 dropped**, and it is why the epic board's drift section went 7 → 0. v2 cutover wave 1 `1265204e` (wave-1 row `94ae726e` dropped) + wave 2 `a938907a` (eleven submit doors → `/api/v2`); focus/notification surface `341b1c9f` `0193089c` `530849ba` `d0c9d8f4` `bae1ecd4` `f1bdd6e8`; TTS/input `2e997558` `89e8e2a1` `b1480d02` `2d1727d6` `9a66e530`. Nothing of hers is left open.
+>
+> **Two defects to file as rows tomorrow** — deliberately unfiled per Rick's *no new bug rows tonight*:
+> 1. **`self_respin` can land its `/clear` and lose its wake.** Pocholo sat at an empty prompt ~20 min at 21:26; Cheech read the pane and typed the wake by hand. Every seat crossing 50% uses that verb. Symptom: `unknown` status + null consumption that does not settle within a second or two.
+> 2. **A fresh worktree without its gitignored state produces reds that look like code defects.** Cost me 11 (all green once `src/conf/keys`, the terraform cache and `cloud-run.env` were copied in); cost Mr Radio 2 hours earlier. Cheech is folding *"copy the gitignored state in"* into the gate-rig procedure.
+>
+> **One number left open on purpose**: cosa **collected 8,647 but ran 8,648**. Off by one, unchased, recorded as unchased. The larger 119-case drop from `1c319db0` reconciles against 112 test functions deleted with row `7a20a09d`.
+>
+> **My board**: `d212f54b` ← `1e597a65` (step 13, Cheech's GO) · `2ebe4ccb` + `647f3733` ← `d212f54b` · `89b27996` ← epic `f7b57d88` · `b02b2daa` parked 08-28 on Rick enabling Imagen. Every block measured last night, none stale.
+
+
 > ### 🌅 **2026-08-21, FIRST THING — RESUME THE BRAIN INTEGRATION / CJ FLOW REVIEW. Rick's direct instruction, 2026-08-20 23:10.**
 > > *"Make sure that you flag this work we are in mid-stride on as resumable first thing in the morning. We will finish your review of the brain integration and CJ flow, cleanup, and refactoring first thing!"*
 >
