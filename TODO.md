@@ -4,6 +4,34 @@ Last updated: 2026-08-22 (**Session 175** (María 🌸 `0b7675fc`) — **the ker
 
 ## 📍 Resume Here
 
+> ### 🔴 **2026-08-23 — ORDER OF OPERATIONS, RICK-RULED. Do these in order; do not reorder.** (María 🌸 S176 `324e2698`)
+>
+> **Context**: the 2026-08-22 double OOM took the whole fleet down twice. Containment is committed
+> (`a52d160c`) and three plans are written (`6b9a6fde`). This is the sequence Rick set for landing them.
+>
+> | # | Step | Owner | Gate |
+> |---|---|---|---|
+> | **1a** | **Phase 1 tooling — ✅ DONE, committed `37f7cca7`.** `sweep-hook-logs.sh` (dry-run clean, **615,618 files eligible**) + `disk-hygiene-report.sh` (running, reports numbers) | María ✅ | — |
+> | **1b** | ⏸ **`cleanupPeriodDays`** — it is **3650** (ten years), NOT unset as Plan 3 assumed. Needs Rick's number. **Recommend 90 days**: transcripts are the resurrection path — all 12 crashed sessions were reconstructed from crash-day `.jsonl` files this morning | **Rick** | his personal global config; auto-mode has blocked edits here before |
+> | **2** | **Rick manually restarts María's session** so it launches under the new per-session slice | **Rick** | ⚠️ `/clear` does NOT do this — the ceiling applies at process launch. Needs a real relaunch via `cctmx` |
+> | **2b** | **Run the sweep with `--apply`** — 615,618 files. Deliberately deferred to a session under the ceiling: it is the largest inode operation on the box | María, after restart | step 2 |
+> | **3** | **Hand off Plan 1** (crash-lane recovery) to Cheech and Mr. Radio — per-lane briefs, Phase 0 evidence freeze first | María, after restart | step 2 complete |
+> | **4** | **Rick spins up Cheech and Mr. Radio** | **Rick** | step 3 complete |
+> | **5** | Plan 2 (worktree reclamation) — 49 worktrees / 8.1 GB | Cheech + Mr. Radio | ⛔ blocked until Plan 1 exit criteria met; no worktree dies holding unlanded work |
+>
+> **Why Plan 3 Phase 1 goes first**: it reclaims more disk than the entire worktree cleanup, needs no
+> design, and does not wait on the recovery lanes.
+>
+> **Why the restart matters**: this session is running in `tmux-server.service` with `memory.max` = `max`
+> — measured, not assumed. It has no ceiling. The next `cctmx` launch lands in its own `ccworker-*.slice`.
+>
+> **The finding that governs Plan 1**: the second OOM arrived **~60 seconds after the restore**
+> (12:23:50, then 12:38:01, both `Failed with result 'oom-kill'` on the whole unit). Resurrect one lane
+> at a time; do not `--resume` any crash-day transcript.
+>
+> **Plans**: `lupin/src/rnd/v0.2.0/2026.08.23-plan-{1,2,3}-*.md`
+
+
 > ### 🌅 **2026-08-22, FIRST THING — ONE DECISION GATES THE WHOLE MORNING** (María 🌸 S174 `e5933e98`)
 >
 > **`83fe98aa`** — P0, blocked on **Rick**, chase **10:00 EDT**: *merge integration → wip?* It is the **only** operator gate on the board. Cheech's 10:00 sequence (wip-merge → gate → step 13) runs on the answer, and three of my rows unblock behind it. **At least seven asks timed out on the default last night** — nobody is stuck on a live question, they all deferred to morning chases.
