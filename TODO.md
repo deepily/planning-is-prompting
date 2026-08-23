@@ -11,19 +11,27 @@ Last updated: 2026-08-22 (**Session 175** (María 🌸 `0b7675fc`) — **the ker
 >
 > | # | Step | Owner | Gate |
 > |---|---|---|---|
-> | **1a** | **Phase 1 tooling — ✅ DONE, committed `37f7cca7`.** `sweep-hook-logs.sh` (dry-run clean, **615,618 files eligible**) + `disk-hygiene-report.sh` (running, reports numbers) | María ✅ | — |
-> | **1b** | ⏸ **`cleanupPeriodDays`** — it is **3650** (ten years), NOT unset as Plan 3 assumed. Needs Rick's number. **Recommend 90 days**: transcripts are the resurrection path — all 12 crashed sessions were reconstructed from crash-day `.jsonl` files this morning | **Rick** | his personal global config; auto-mode has blocked edits here before |
-> | **2** | **Rick manually restarts María's session** so it launches under the new per-session slice | **Rick** | ⚠️ `/clear` does NOT do this — the ceiling applies at process launch. Needs a real relaunch via `cctmx` |
-> | **2b** | **Run the sweep with `--apply`** — 615,618 files. Deliberately deferred to a session under the ceiling: it is the largest inode operation on the box | María, after restart | step 2 |
-> | **3** | **Hand off Plan 1** (crash-lane recovery) to Cheech and Mr. Radio — per-lane briefs, Phase 0 evidence freeze first | María, after restart | step 2 complete |
-> | **4** | **Rick spins up Cheech and Mr. Radio** | **Rick** | step 3 complete |
+> | **1a** | **Phase 1 tooling — ✅ DONE, committed `37f7cca7`.** `sweep-hook-logs.sh` + `disk-hygiene-report.sh` | María ✅ | — |
+> | **1b** | **✅ DONE 2026-08-23 12:46** — `cleanupPeriodDays` 3650 → **90** on Rick's word. Backup `~/.claude/settings.json.bak-2026-08-23`; JSON validates | María ✅ | — |
+> | **2** | **✅ DONE** — session relaunched under the ceiling. Verified live: `ccworker-cc_tmux_session_71f6b6d8.slice`, `memory.max` = 24 GiB, `memory.swap.max` = 0 (pre-restart measured `max`, i.e. no ceiling) | Rick ✅ | — |
+> | **2b** | **✅ DONE 2026-08-23 12:45, exit 0** — sweep reclaimed **615,614 files / 3.65 GB** (748,116 → 132,502 files; 4.29 → 0.64 GB). Eligible measured 615,618 at start; the 4-file gap is hook files written *during* the run | María ✅ | — |
+> | **3** | **✅ DONE 2026-08-23 12:49** — two per-lane briefs, each opening with paste-ready SPAWN TEXT: `lupin/src/rnd/v0.2.0/2026.08.23-plan-1-brief-{mr-radio,cheech}.md`. All 8 worktrees **re-measured live**, every number matched the plan's morning table | María ✅ | — |
+> | **4** | ⏳ **Rick spins up Cheech and Mr. Radio** — the only open step | **Rick** | ✅ unblocked (step 3 complete) |
 > | **5** | Plan 2 (worktree reclamation) — 49 worktrees / 8.1 GB | Cheech + Mr. Radio | ⛔ blocked until Plan 1 exit criteria met; no worktree dies holding unlanded work |
+> | **+** | **✅ Weekly disk-hygiene cron installed** by Rick — report Sun 03:00, sweep Sun 03:30, 14-day retention (`lupin/src/scripts/disk-hygiene.crontab`) | Rick ✅ | — |
+> | **+** | **✅ Heartbeat pokes MUTED** on Rick's ruling while the crews rebuild — `heartbeat.poke_output_enabled = false`, reason carried in `poke_disabled_message`. Heartbeat still runs and still tracks owed work. **Re-enable when Plan 1 exits** | Rick ✅ | — |
 >
 > **Why Plan 3 Phase 1 goes first**: it reclaims more disk than the entire worktree cleanup, needs no
 > design, and does not wait on the recovery lanes.
 >
-> **Why the restart matters**: this session is running in `tmux-server.service` with `memory.max` = `max`
-> — measured, not assumed. It has no ceiling. The next `cctmx` launch lands in its own `ccworker-*.slice`.
+> **The restart landed** (was: "this session runs in `tmux-server.service` with `memory.max` = `max`").
+> Re-measured after relaunch: `ccworker-cc_tmux_session_71f6b6d8.slice`, `memory.max` 24 GiB, swap 0.
+>
+> **✅ Plan 1's stated open question is SETTLED — do not re-investigate.** The two tester worktrees are
+> **two genuinely different seats**, not one lane duplicated: neither HEAD is an ancestor of the other,
+> merge-base `9b49f04d`. `lupin-wt-qa-card-tester` (`ec595058`, 13 commits) is the **reviewer** lane —
+> all review verdicts, no product code. `.claude/worktrees/qa-card-tester` (`39e0dc52`, 12 commits) is the
+> **tester/implementer** lane — the real gates and code. **Both must land; neither supersedes the other.**
 >
 > **The finding that governs Plan 1**: the second OOM arrived **~60 seconds after the restore**
 > (12:23:50, then 12:38:01, both `Failed with result 'oom-kill'` on the whole unit). Resurrect one lane
