@@ -4,6 +4,39 @@ Last updated: 2026-08-22 (**Session 175** (María 🌸 `0b7675fc`) — **the ker
 
 ## 📍 Resume Here
 
+> ### 🔴🔴 **STANDING DANGER — DO NOT RUN `npm test` IN LUPIN** (María 🌸 S176, 2026-08-23)
+>
+> **Three sessions were OOM-killed on 2026-08-23.** Two of them — both Mr. Radio's — died running
+> **one 218-line TypeScript test**, `src/tests/unit/shared/arg_interview.test.ts`. The second ran it
+> with `--test-concurrency=1` under a `timeout 300`: the most cautious shape available. **It died
+> anyway.**
+>
+> ⇒ **Concurrency caps and timeouts DO NOT mitigate this.** Both were tried. Any earlier note of mine
+> saying the cap was the fix is superseded.
+>
+> **77 of the repo's 119 `*.test.ts` files import `@happy-dom/global-registrator`**, and all 119 sit
+> inside the `npm test` glob — measured, not estimated. **This is not one rogue file, and quarantining
+> the killer does not make the suite safe.**
+>
+> **The allocator is UNIDENTIFIED.** Ruled out with measurements: the test's own code (218 lines read
+> — no timers, listeners, loops, accumulators) · the module under test (140 lines, grep clean) ·
+> runner fan-out · unbounded run time · dependency size (`node_modules` is a symlink, `@happy-dom` is
+> 76 KB) · worktree corruption. **happy-dom is the leading suspect, NOT a proven cause** — do not let
+> that harden into fact.
+>
+> **The Python tiers are NOT implicated**: `pytest-xdist` is not installed, `pytest.ini` has no `-n`,
+> the unit tier runs single-process. There the shape to police is a **missing `timeout`**, not fan-out.
+>
+> **`lupin-wt-qa-card-8407333d` is CONDEMNED** by Rick's ruling — never entered again. Its last four
+> files land by inspection from `io/recovery-2026.08.23/loose/` (byte-identical, `cmp`-verified).
+>
+> **Full survey + six ruled-out hypotheses + handoff brief**: `lupin/src/rnd/v0.2.0/2026.08.23-typescript-test-runner-oom-hazard.md` (commit `5b20554f`)
+>
+> ⏰ **DEBT — re-enable the heartbeat when Plan 1 exits**: `heartbeat.poke_output_enabled = true` in
+> `~/.claude/settings.json`. Muted 2026-08-23 on Rick's ruling; the reason is carried in
+> `poke_disabled_message` so a future reader finds the why with the switch.
+
+
 > ### 🔴 **2026-08-23 — ORDER OF OPERATIONS, RICK-RULED. Do these in order; do not reorder.** (María 🌸 S176 `324e2698`)
 >
 > **Context**: the 2026-08-22 double OOM took the whole fleet down twice. Containment is committed
