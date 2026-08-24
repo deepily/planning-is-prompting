@@ -1,5 +1,24 @@
 # Planning is Prompting - Session History
 
+**RESUME HERE**: **Session 176 (2026-08-23, María 🌸 `16d8e856`)** — the OOM recovery closed, and the thing that closed it also killed two seats.
+
+1. **All 8 crashed worktrees are landed** (ahead=0 against integration). Cheech took four, Mr. Radio four across two seats. Detail: `lupin/src/rnd/v0.2.0/2026.08.23-plan-1-crash-lane-recovery.md`.
+2. **🔴 DO NOT RUN THE JS SUITE.** Two seats died on one 218-line test; the second ran it at `--test-concurrency=1` under `timeout 300` and died anyway. **Caps and timeouts do not mitigate this.** Full survey: `lupin/src/rnd/v0.2.0/2026.08.23-typescript-test-runner-oom-hazard.md`.
+3. **One gap still open**: `src/tests/run-typescript-tests.sh:147` runs bare. My first sweep searched `src/scripts/` and missed it — most runners live in `src/tests/`. Unassigned; it sits inside a `c8` wrapper and cannot be verified without running the banned suite.
+4. **A freeze proves provenance, never correctness.** The banked `arg-interview.js` was a red-pass mutant left on disk by a SIGKILLed mutation script; `cmp` said it matched the worktree and that was true and irrelevant. Radio recovered the original from his transcript.
+5. **Plan 3 Phase 1 done**: sweep reclaimed 615,614 files / 3.65 GB; `cleanupPeriodDays` 3650→90; weekly cron installed; per-session memory ceiling verified live.
+
+**Checkpoint**: lupin `ca32ca19` `5b20554f` `2b02e4cd` `720b7018` `e7ea14f0` `e1ffa089`; plan `5f2d2e0` `34db627`.
+
+**Files**: `TODO.md` · `lupin/src/rnd/v0.2.0/2026.08.23-plan-1-{crash-lane-recovery,brief-cheech,brief-mr-radio,respin-brief-mr-radio}.md` · `lupin/src/rnd/v0.2.0/2026.08.23-typescript-test-runner-oom-hazard.md` · `lupin/src/scripts/disk-hygiene.crontab`
+
+**DEBT**: heartbeat pokes still muted (`heartbeat.poke_output_enabled=false`) — re-enable now that Plan 1 has exited.
+
+
+---
+
+## Session 175 and earlier
+
 **RESUME HERE**: **Session 175 (2026-08-22, midday) — the kernel was killing Claude Code, and both fixes I proposed for it were wrong** (María 🌸 `0b7675fc`, chorus). Two workers spawned, driven and reaped; Rick's PEFT retrain unblocked and its data proven.
 
 1. **Rick's crashes were the kernel OOM killer, not Claude Code.** `journalctl -k`: `12:23:50` pid 674727 at **229 GB** anon-rss and `12:38:01` pid 746520 at **124 GB**, both `node`, both `constraint=CONSTRAINT_NONE, global_oom` on a 251 GiB box — no cgroup limit was hit, the machine ran out. **Zero such kills in the previous 14 days.** The diagnostic key is `inactive_anon:217364960kB` — **217 GB allocated and never touched again**, which is one or a few abandoned allocations, not a working set. So it cannot be a V8 heap leak (old space aborts near 4 GB with its own error) and **`--max-old-space-size` is the wrong lead** — the growth is external `Buffer`/`ArrayBuffer` memory that flag does not bound. Written up at `lupin/src/rnd/v0.2.0/2026.08.22-oom-incident-what-we-know.md`.

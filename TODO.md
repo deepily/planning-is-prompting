@@ -314,6 +314,15 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Decisions Log
 
+### S176 — 2026-08-23 (María 🌸 `16d8e856`)
+
+- **Transcript retention set to 90 days** — Rick approved my recommendation over the standing 3650 (ten years). Transcripts are the resurrection path: all 12 sessions crashed on 08-22 were rebuilt from crash-day `.jsonl` files. Backup at `~/.claude/settings.json.bak-2026-08-23`.
+- **Heartbeat pokes muted, targeted rather than disabled** — Rick chose `poke_output_enabled=false` over `enabled=false` so the heartbeat kept tracking owed work while the crews rebuilt. Reason carried in `poke_disabled_message` so the switch is self-documenting. **Still muted — re-enable now that Plan 1 has exited.**
+- **`lupin-wt-qa-card-8407333d` CONDEMNED** — Rick: *"This one goes down in flames. We are not touching it ever again."* Set with the walk-away condition stated in advance: *"if it dies one more time, we will simply leave and never look back."* Its last four files landed by inspection from banked copies; the killer test landed renamed out of the `*.test.ts` glob.
+- **Clayton's isolation experiment REFUSED** — copying the fatal test somewhere clean to separate "the file" from "that worktree" is methodologically right and is exactly the banned act. Recorded as an open confound rather than resolved; it goes to Rick as an explicit ask if anyone wants it.
+- **Lane split reversed within four minutes** — I gave Cheech two of Radio's lanes on Rick's *"pick up some of Mr Radio's work"*; Radio had already landed one and was inside the other. Stood Cheech down. A handoff races the work it describes.
+
+
 ### S175 — 2026-08-22 (María 🌸 `0b7675fc`)
 
 - **v2 eval run shape** — Rick: *"Let's fire a smaller run tomorrow at 20 per command."* Given all three options with the cold-cache expiry stated first; chose smaller AND tomorrow knowing the cache likely will not still be cold. Row `d212f54b` parked to 08-23 10:00. **n=20 propagated to the v1 arm `647f3733`** so the arms stay comparable, and flagged that §2b's "v2 ≥ v1" is a knife-edge at n=60 and materially thinner at n=20.
