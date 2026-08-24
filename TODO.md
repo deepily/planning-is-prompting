@@ -21,6 +21,11 @@ Last updated: 2026-08-22 (**Session 175** (María 🌸 `0b7675fc`) — **the ker
 > for commands misses it — and it monopolizes the test box, so it can take the fleet down from a
 > machine nobody is watching.
 >
+> 🔴 **NEVER PASS `"all"`** — it expands to `ALL_SUITE_COMPONENTS`, which contains `"typescript"`, so
+> an E2E or integration job submitted the convenient way silently runs the banned tier. **Name the
+> components you want**: `["e2e"]`, `["integration"]`, `["unit","cosa"]`. Nobody submitting an E2E job
+> thinks of themselves as running TypeScript, which is why this half of the rule is the one that bites.
+>
 > **77 of the repo's 119 `*.test.ts` files import `@happy-dom/global-registrator`**, and all 119 sit
 > inside the `npm test` glob — measured, not estimated. **This is not one rogue file, and quarantining
 > the killer does not make the suite safe.**
