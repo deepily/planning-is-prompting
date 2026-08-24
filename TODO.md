@@ -14,6 +14,13 @@ Last updated: 2026-08-22 (**Session 175** (María 🌸 `0b7675fc`) — **the ker
 > ⇒ **Concurrency caps and timeouts DO NOT mitigate this.** Both were tried. Any earlier note of mine
 > saying the cap was the fix is superseded.
 >
+> 🔴 **THE BAN IS ON THE TIER, NOT ON A COMMAND — there are THREE doors**: `npm test` · the shell
+> runners (`run-all-tests.sh` → the `typescript` slot) · **`POST /api/test-suite/submit` with
+> `test_types: ["all"]` or `["typescript"]`** (reaches it via `ALL_SUITE_COMPONENTS`,
+> `src/cosa/agents/test_suite/job.py:128`). The third is an API call, not a command line, so a sweep
+> for commands misses it — and it monopolizes the test box, so it can take the fleet down from a
+> machine nobody is watching.
+>
 > **77 of the repo's 119 `*.test.ts` files import `@happy-dom/global-registrator`**, and all 119 sit
 > inside the `npm test` glob — measured, not estimated. **This is not one rogue file, and quarantining
 > the killer does not make the suite safe.**
