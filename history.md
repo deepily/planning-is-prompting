@@ -1,5 +1,28 @@
 # Planning is Prompting - Session History
 
+**RESUME HERE**: **Session 177 (2026-08-24 evening, María 🌸 `b79dcfa8`)** — the KISS explainer had no ending, because the thing that ends it shipped after the doc was written.
+
+1. **Four KISS explainers, two locations each — three pairs identical, part 2 had drifted.** Canonical `docs/explainer/`, copy `lupin/io/deep-research/ricardo.felipe.ruiz@gmail.com/`. The lupin part-2 was one revision behind (missing the 2026-08-13 corpus read-out). Synced; all four pairs now byte-identical.
+2. **Part 2 ended with the rewriter listed "researched, unbuilt" — false since 2026-08-13.** The DM tutor shipped fleet-wide at 14:14 EDT, sha `b8d10bd3`, running local Phi-4 at temperature 0.0 (`lupin-app.ini:214`, `:294`) — **zero marginal cost, the model is not rented.**
+3. **The effect landed in a channel the tutor never touches.** Mr. Radio's 08-18 measurement: notification p90 **1009 → 738 chars (−27%)** across equal 8-day windows either side of the cutover, median flat-to-up, replicated per project. Doc: `lupin/src/rnd/v0.2.0/2026.08.18-notification-length-before-after-dm-tutor.md`.
+4. **🔴 My framing of that was wrong and Rick corrected it.** I wrote "the result showed up in the wrong channel." It is not a wrong channel — **the TTS brevity ask had been live since part 1 and was not landing.** The tutor showed the model its own sentence rewritten and the lesson carried. *The instruction existed; compliance did not.* One correction, two channels.
+5. **Act 15 + coda + conjecture + Appendix A landed** (`f009d36`, 705 → 1068 lines). The coda re-verbs the ladder — **prescribe (11) · measure (12) · proscribe (14) · model (15)** — on the point that a rule is a boundary and stays where you drew it, while an example travels wherever the behavior applies.
+6. **Rick's conjecture, written down with a falsifier**: mirroring is a trained-in competence aimed at a human who pushes back; remove the human and the calibration loop is gone while the matching loop is not. **The falsifier needs `hours_since_human` stamped per message and no row in any repo carries it** — same field Act 13 named and nobody has added.
+7. **Appendix A, the adjacency Rick asked for**: the peer channel opened **2026-05-11** (`7046f9e9`, commons MVP); the first TTS length control landed **2026-05-13** (`1a788629`, preview-and-pause) — **two days later.** Recorded as adjacency, not cause. Model rows are adoption dates, not releases; the vendor column is left for Rick.
+8. **Board discipline**: both P2s were mis-statused as workable and were in fact blocked on Rick. Parked with his words quoted — `d212f54b` (eval run) to 08-25 09:00, `29c57df1` (worktree sweep) to 08-25 10:00. Verified before parking: `lupin_db_test` **0/0**, genuinely cold at 21:11 EDT.
+9. **Mr. Radio's correction, worth keeping**: `/health` 200 is a **liveness** reading, not an idle one — the todo queue is the idle check. I had reported a health probe in a context where it would have read as "pool is free."
+
+**Checkpoint**: plan `f009d36`.
+
+**Files**: `docs/explainer/2026.08.05-…-v3-part-2.md` (+ the synced lupin copy, `471261cc`)
+
+**OPEN**: the tier-4 land-or-drop ruling (`cheech-focus-bar-fix`, `cheech-orphan-bridge`, `rio-replica-state`) is still owed by Rick. The 80%→30% overhead figures in the doc are **Rick's reading, labelled as his** — not sourced to a query, by his choice.
+
+
+---
+
+## Session 176 and earlier
+
 **RESUME HERE**: **Session 176 (2026-08-23, María 🌸 `16d8e856`)** — the OOM recovery closed, and the thing that closed it also killed two seats.
 
 1. **All 8 crashed worktrees are landed** (ahead=0 against integration). Cheech took four, Mr. Radio four across two seats. Detail: `lupin/src/rnd/v0.2.0/2026.08.23-plan-1-crash-lane-recovery.md`.
