@@ -206,6 +206,60 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Pending Decisions
 
+### 🔴 The live global config still says a manager CANNOT re-spin itself. It can — and it caught three of us tonight (María 🌸, 2026-08-24)
+
+**Needs Rick's word — it is his file, and he was offline when this was found. NOT edited.**
+
+**The defect is propagation, not authorship.** `workflow/manager-context-monitoring.md` §4 was corrected
+on **2026-08-21** (`7dbdee9`) and is right: it lays out a three-rung ladder with **self-clear at rung 1**,
+and it names the exact error — *"I wrote 'there is no way for a session to type `/clear` into its own
+pane' — and there is. It ships in lupin and runs in production daily."*
+
+**The correction never reached the file every session actually boots with.** `~/.claude/CLAUDE.md` still
+carries, in bold:
+
+> **Managers are subject to the same line but CANNOT re-spin themselves** … **At the ceiling: write the
+> memento → HAND YOUR BOARD to the peer manager with the most headroom (`task_reassign`) → then announce.**
+
+Our snapshot at `global/CLAUDE.md` is from **2026-08-13** (`6a4771b`) — eight days older than the fix, so
+it repeats it too. Meanwhile `mcp__cosa-voice__self_respin` is a live verb sitting on the MCP surface.
+
+**THREE RECEIPTS, ONE EVENING.**
+
+1. **María** — Mr Radio went over budget at 22:33. Reading the stale rule, I offered a full board handoff:
+   reassign his rows to me, hand me a seed list, respawn his three seats under my lineage. **He had already
+   self-respun**, keeping seat, persona, board, lineage and crew. My offer would have spent his whole
+   remaining budget to save his budget and broken his crew's lineage for nothing.
+2. **Mr Radio** — *"I told Cheech twice tonight that it didn't [exist] and I was wrong both times."* Two
+   more, to a second manager, from the same stale sentence.
+3. **The doc itself** — its §4 exists only because the first version of it made this exact claim.
+
+**Why it matters more than one bad offer**: the ladder's own argument is that rung 1 and rung 2 are
+*different trades*, not better and worse versions of one — succession discards whatever the outgoing seat
+had left; self-clear discards only the context it meant to discard. A manager who reads the stale rule at
+the ceiling reaches for the expensive rung believing it is the only one.
+
+**THE FIX, ready to apply on one word** — replace the bolded sentence in `~/.claude/CLAUDE.md`
+§ MANAGER CONTEXT MONITORING with the ladder from `workflow/manager-context-monitoring.md` §4:
+
+| # | Condition | Action |
+|---|---|---|
+| 1 | Over the line · memento verified on disk · self-clear verb available | **Self-clear.** Keeps seat, persona, tmux session, board, lineage. Costs one memento write |
+| 2 | Verb unavailable, or a fired clear did not come back | **Succession** — memento, hand the board, announce |
+| 3 | Every manager over the line | **Spawn a fresh one** — add capacity rather than redistribute its absence |
+
+…and re-snapshot `global/CLAUDE.md` from the live file in the same change, so the two stop disagreeing.
+
+**Not applied unilaterally**: a live `~/.claude/CLAUDE.md` edit is a doctrine change on Rick's own file,
+and the standing rule is to send it and hold rather than run with it.
+
+**The general shape, worth more than this instance**: correcting a canonical document does not correct
+behaviour. Behaviour follows the file that is *loaded at boot*. **A doctrine fix is not shipped until the
+deployed copy carries it** — and nothing in this repo currently checks that the two agree.
+
+---
+
+
 ### 🔴 Does the TypeScript tier ban narrow now that the allocator is named? — ASKED TWICE, UNANSWERED (María 🌸, 2026-08-24)
 
 **Status: OPEN. Not ruled.** Asked at 22:10 (timed out) and again at 22:25 (returned `[default used] no` —
