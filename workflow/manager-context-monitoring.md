@@ -234,6 +234,33 @@ row to skip. Read `status` for the decision (§1) and let the percentage be deco
 percentage on an idle seat is normal, not an error. And print every persona the payload returned,
 including the ones you could not judge.
 
+> ### 🔴 AND TEST `status` BY NAME — `over_budget` IS A VALUE, NOT THE COMPLEMENT OF `within_budget`
+>
+> Reading `status` for the decision is not enough on its own, because there is an obvious wrong way
+> to read it:
+>
+> ```python
+> over = [ k for k, v in personas.items() if v.get( "status" ) != "within_budget" ]   # ❌ WRONG
+> over = [ k for k, v in personas.items() if v.get( "status" ) == "over_budget" ]     # ✅ RIGHT
+> ```
+>
+> **`status` has at least three values, not two.** A seat mid-turn returns
+> `status: "unknown"` with `consumption_pct_of_window: null` and
+> `recommendation: "unknown — no assistant turn yet"` — perfectly healthy, one second old. The
+> negated form sweeps it into the alarm bucket, and the alarm it produces looks exactly like a real
+> one.
+>
+> **Measured, 2026-08-24 (María 🌸)**: my tick reported a reviewer `over budget` eleven seconds after
+> I spawned it. Its row said `pct: null`, `status: "unknown"`, `last_turn_age_s: 1.1`. **The filter
+> was over budget, not the worker.** I had been running that negation all evening and had already
+> flagged two seats on it — both of those happened to be genuinely over, which is precisely why the
+> defect survived: *a wrong predicate that keeps agreeing with the right one is invisible until the
+> first case where they differ.*
+>
+> ⇒ The cost of the negated form is **reaping a healthy worker on a null**, which is unrecoverable
+> and looks like a routine re-spin in the log. The section above tells you to handle the null; this
+> one tells you the shape that swallows it anyway.
+
 ---
 
 ## 1.5 The tick DELIVERS — a printed alarm is an alarm nobody hears
