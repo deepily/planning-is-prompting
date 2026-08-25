@@ -206,6 +206,41 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Pending Decisions
 
+### 🔴 Does the TypeScript tier ban narrow now that the allocator is named? — ASKED TWICE, UNANSWERED (María 🌸, 2026-08-24)
+
+**Status: OPEN. Not ruled.** Asked at 22:10 (timed out) and again at 22:25 (returned `[default used] no` —
+the offline default, *not* Rick's word). **Operating under the ban unchanged until he answers.** Recording it
+here rather than as a store row because a fleet-wide moratorium on new rows was in force that evening.
+
+**What changed**: the allocator was unidentified when the ban was written — its own survey said *"do not let
+the next reader infer that happy-dom is the cause; it has not been established."* Two seats identified it
+independently on 2026-08-24 (pocholo 📣 found it, maya 🌻 hit it separately): **a failing equality assertion
+holding a DOM node walks the whole `Window` graph off-heap at ~2.5 GB/s.** A passing one is harmless;
+`assert.ok( node )` is harmless; **a custom message does not help.**
+
+**The positive rule is already written and does not depend on this decision** — `workflow/testing-baseline.md`
+§ the second ⛔ MANDATE, committed `1eaebf7`, pointed at from `history.md:29`. That was Cheech's handoff and
+it is delivered.
+
+**The question is only whether *running* the tier reopens.**
+
+| For narrowing | For holding |
+|---|---|
+| The tier has been dark since 08-23; it is the only check on 119 test files | The rule relies on memory, and the seats that died were already running under caps and timeouts |
+| A door list was incomplete within a day — `run-typescript-tests.sh:147` was missed | A lint rule or pretest scan would make it unforgettable rather than merely memorable |
+| It is being obeyed unevenly: maya ran it 4× on 08-24 (63/63, 134/134, zero crashes) on a principled test-ownership argument | **Her four runs were all green, and the hazard only fires on a red** — she avoided the hazard, she did not test it |
+
+**María's lean**: narrow it, with the caveat that *"safe while green"* is a real weakness and a lint rule
+closes it properly. **A third option nobody has costed**: ship the guard first, then reopen — which makes the
+decision moot rather than answered.
+
+**⚠️ Do not read the `[default used] no` as a ruling.** It is the timeout default. The distinction is the
+whole reason that prefix exists.
+
+---
+
+
+
 - [ ] **🌅 FIRST THING 2026-08-17 (Rick's direct instruction, 2026-08-16 ~20:00): REVIEW AND IMPLEMENT the file-collision warning.** Doc: `src/rnd/2026.08.16-file-collision-warning-from-session-manifest.md`. His words: *"once you write up a design document and make a note of it in your to-do document for tomorrow, we'll get it reviewed and implemented tomorrow."* Co-authored with Mr Radio 🦉 after he and Rick both asked why the manifest is not preventing collisions. **The answer to Rick's question — we have the data shape but not the control**: `.claude-session.md` is a *staging ledger, not a lock table*; it records what you touched **after** the edit, keyed by **session**, read at commit time **by its author**. **Measured on lupin's manifest, not asserted**: 25 sessions, 126 files, **19 files claimed by 2+ sessions** with nobody noticing; 10 sections say `active` including ones idle since **Aug 4**; and `registry.py` — the file two crews nearly collided in today — is **recorded by nobody**, while my own session is absent entirely after 37 edits in that repo. Joined against the observed live roster, those 19 contested files collapse to **0**, and only **4 of 25** sections belong to a session that is actually alive — **self-reported liveness is ~84% noise**. **The design**: a `PreToolUse` warning on Edit/Write built from three signals, none sufficient alone — a `PostToolUse` recording hook (entries exist without anyone remembering), a **liveness join** against the arbiter roster (Mr Radio's; only live sessions warn), and **git dirty-state** (catches the file nobody recorded). **Three states, not two**: live-claimant · unclaimed-and-clean · **unclaimed-but-DIRTY**, the last of which must never render as an all-clear — *a join-only design is worse than the status quo, because "nobody is here" on an unrecorded file looks authoritative*. **Warn, never block**: a blocking check gets disabled the first Friday it is wrong. **Phase 1 is the dirty-state check alone** — it needs no adoption, no recording and no roster, and would have fired correctly on `registry.py` tonight before any hook ships. ~1 day for all three phases. | priority: P1 | raised: 2026-08-16 | owner: Rick (review) → crew (implement); authors María 🌸 + Mr Radio 🦉
 
 - [ ] **🆕 Should a gate PROCEED when its own question could not be delivered? (Rick's call, raised 2026-08-13; not filed as a row because new items are barred today).** Measured, not suspected — sam's audit under store row `1b32c486`: **35 declared-default events** in the retained window (08-04, 08-05, and today), **every single one `source=dispatch_failed`** — the ask could not be delivered, so the gate defaulted through — and **zero timeouts**. It spans both sides of the wiring fix `4ab64c8f` untouched, which is what proves it is a **policy choice rather than a defect**: nobody decided what an unavailable notification service should mean, so it silently means *proceed*. **It is still firing** — the most recent is today at 16:32. **The options**: (a) fail CLOSED — an undeliverable gate blocks, which is honest but stops unattended suites the moment `:7999` bounces, and it bounced six times today; (b) ⭐ fail open but **mark the run** — proceed, and stamp the run's verdict as *reached without its gate*, so a green carries its own asterisk; (c) keep today's behaviour and accept that some greens were never gated. **My recommendation is (b)**: it keeps unattended runs working, and it is the only option under which the *next* audit of this question is answerable. **And it is cheap, with one condition that is the whole point** (sam): the signal already exists — `default_used=True` plus `default_source` in the answer data — so the work is **persisting it onto the run's report record**, not inventing it. It must land in the durable report and **not only in container logs**, because container logs are exactly what a recreate wipes: that is what erased class (a) this morning, and a mark in the durable report would have made even the gone window answerable. | priority: P2 | raised: 2026-08-13 | owner: Rick (policy) → whoever holds the gate code
