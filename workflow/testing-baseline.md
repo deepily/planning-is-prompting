@@ -47,6 +47,96 @@
 
 ---
 
+## ⛔ MANDATE — never let a DOM node be the ACTUAL value of an assertion that can fail
+
+**THE RULE**: in any JavaScript or TypeScript test that registers a DOM into the global scope
+(`@happy-dom/global-registrator`, jsdom, or equivalent), **never put a DOM node on EITHER side of an
+equality assertion.** Assert a primitive projection instead — `.textContent`, `.id`,
+`.children.length`, `Boolean( el )`, `el !== null`. Never `el` itself.
+
+> **Why "either side" and not "the actual value".** The mechanism fires on the value the
+> `AssertionError` captures, which is the *actual* argument — so the narrow rule would be
+> *"never on the left"*. **It is stated as EITHER SIDE deliberately.** A rule with a flippable
+> hole is worse than a slightly over-broad one, and confirming that `assert.equal( null, el )` is
+> genuinely safe would cost a machine to find out. **When the experiment that would narrow a rule
+> costs a seat, do not run it — widen the rule.** (Independently reproduced by two seats,
+> 2026-08-24: pocholo 📣 found the mechanism, maya 🌻 hit it separately and proposed this wording.)
+
+**WHY — this is not style. It is an out-of-memory kill that takes the whole machine's session fleet
+with it, and it has a body count.**
+
+```js
+import assert from "node:assert/strict";
+import { GlobalRegistrator } from "@happy-dom/global-registrator";
+GlobalRegistrator.register();
+const el = document.createElement( "div" );
+document.body.appendChild( el );
+assert.equal( el, null );   // dies here, ~2.5 GB/s, until the kernel intervenes
+```
+
+Six lines. When the assertion **fails**, `AssertionError` captures and processes the actual value; a
+DOM node attached to a registered document reaches the whole `Window` graph, and the walk allocates
+**off-heap** — so V8's own limits never fire and `--max-old-space-size` does not bound it. Measured
+2026-08-24 (pocholo); full survey in lupin `src/rnd/v0.2.0/2026.08.23-typescript-test-runner-oom-hazard.md`.
+
+**THE TRIGGER IS THE FAILURE, NOT THE PRINTING.** The same node in a *passing* assertion is
+harmless. That is what makes this hazard so bad: **a suite is safe exactly as long as it is green,
+and the first red is the one that kills the box.** A test whose safety depends on passing is not
+a test.
+
+> ### THE OBVIOUS ESCAPE HATCH DOES NOT WORK — A CUSTOM MESSAGE DOES NOT SAVE YOU
+>
+> The natural assumption — *"pass an explicit message and Node will skip building the diff"* — is
+> **wrong, and it was tested rather than assumed.** The `AssertionError` still captures and processes
+> the actual value whether or not a diff is ever rendered. The person who found the mechanism
+> expected the opposite and said so.
+>
+> The dangerous thing is the node **being** the actual value, not the diff you can see. Any rule
+> written against "suppress the output" protects nothing.
+
+**SAFE vs LETHAL — the distinction is which side the node is on:**
+
+| Shape | Verdict | Why |
+|---|---|---|
+| `assert.ok( el )` | safe | fails only when `el` is falsy, so the actual value is `null` |
+| `assert.equal( el.id, "x" )` | safe | actual is a string |
+| `assert.equal( container.querySelectorAll( "li" ).length, 3 )` | safe | actual is a number |
+| `assert.equal( el, null )` | **LETHAL** | a live node is the actual value of a failing assertion |
+| `assert.equal( null, el )` | **treat as lethal** | not separately confirmed — and the confirming experiment costs a seat |
+| `assert.strictEqual( el, other )` / `assert.deepEqual( el, ... )` | **LETHAL** | same shape |
+
+**THE BODY COUNT** (one box, three days): ~two dozen sessions killed 2026-08-22 when the kernel OOM
+killer took `tmux-server.service` whole; two further seats killed 2026-08-23, at 74.67% and 74.81%
+memory pressure, each after ~6m30s of CPU. **The second seat ran with `--test-concurrency=1` under
+`timeout 300` and died anyway — caps and timeouts do not mitigate this**, because `systemd-oomd`
+fires on pressure against the *whole user slice* and kills the worst cgroup at that moment, **which
+need not be the one that caused the pressure.** An innocent seat can be the one that goes.
+
+### Why this rule names a MECHANISM and not a list of commands
+
+The predecessor to this mandate banned *doors*: `npm test`, the shell runners, and the test-suite API
+endpoint. **A door list is a rule you can only obey by memorising it, and this one was incomplete
+within a day of being written** — a runner at `src/tests/run-typescript-tests.sh:147` was missed
+because the sweep searched `src/scripts/` while most runners lived in `src/tests/`.
+
+**A rule stated as a mechanism closes doors nobody has enumerated yet.** It also survives the thing a
+door list cannot: someone inventing a fifth door tomorrow.
+
+> **OPEN, and not this document's to settle**: whether *running* the affected test tier is still
+> forbidden now that the mechanism is known. That ban was written while the allocator was
+> unidentified and its own survey said so in terms — *"do not let the next reader infer that
+> happy-dom is the cause; it has not been established."* It has now. Narrowing a fleet-wide ban is
+> the fleet owner's call, not a workflow document's. **The rule above holds either way** — it is the
+> positive obligation, and it is correct whether or not the tier reopens.
+
+**IF YOU ARE PORTING THIS**: the hazard is not specific to happy-dom or to `node:assert`. It is
+general to *any* assertion library that captures an actual value, holding *any* object whose
+reference graph is large enough that walking it exhausts memory. A registered DOM is simply the
+most common such object in a test suite. **The general form: never put an object with an unbounded
+reference graph in an assertion's actual position.**
+
+---
+
 ## When to Use This Workflow
 
 **Use this workflow before**:
