@@ -1,6 +1,25 @@
 # Planning is Prompting - Session History
 
-**RESUME HERE**: **Session 177 (2026-08-24 evening, María 🌸 `b79dcfa8`)** — the KISS explainer had no ending, because the thing that ends it shipped after the doc was written.
+> ⚠️ **history.md is at ~20.4k tokens — PAST the 19k critical threshold.** Archive is OWED before the next substantial entry. Tonight's entry was written compact for that reason. First housekeeping item next session: `/plan-history-management archive`.
+
+**RESUME HERE**: **Session 178 (2026-08-25 evening, María 🌸 `8be9357f`)** — six instruments reported success while unable to see the thing, and four of the wrong calls were mine.
+
+1. **The coverage gate was RED and nothing was going to say so.** 95.62% against a 96.0 floor at `09f8fd9d`, zero test failures — a pure floor breach that would have sat unseen until the 09-15 ramp step, which would then have been walked into from *below* the floor it was raising.
+2. **🔴 The re-run came back GREEN and the green was FALSE.** 96.59%, and the report had lost **~28,000 statements** — every non-cosa file gone, 34,322 vs 62,305. Cause: no `data_file`/`COVERAGE_FILE`, so every session shared one `.coverage` and pytest-cov erases it at startup. **The vanished files were the worst ones, so dropping them raised the mean.**
+3. **Floor HELD at 96** — 97.12% at `edf2c712`, isolated data file, `worktree dirty=0`. Reported as a **lower bound**: 31 tests failed early on missing gitignored runtime state, so the true figure is at or above it. An answer needs a known *error direction*, not a perfect number.
+4. **Seven tests named after a function that never ran it.** `test_mcp_account_validation.py` tested a hand-written replica that had drifted behind a real fix (`ReadTimeout` is not a `ConnectionError` — checked the MRO). Ruled **delete, not repair**; Sam's replacement calls the real functions. His receipt was better than mine: run it under `--cov` of the module and **no row prints at all**.
+5. **Sam's sharpest find: coverage that moves with the clock.** The same 333 tests report **15% or 18%** of `session_bridge.py` depending only on how long the suite runs — 41 statements credited by elapsed time, deterministic 5/5 fast and 3/3 slow.
+6. **A source defect found by writing tests**: both ask-tools logged `len(questions)` *above* their own guard, so a null crashed out of the MCP tool instead of returning its error dict. Ratified; AST-swept the package for the same shape (18 files, 0 sites) and **falsified the sweep** against the pre-fix file to prove it wasn't blind.
+7. **§10a pins 9 and 10 written in** (`c62526a`), plus §10b E1 marked RULED — Rick answered it 08-22 and the doc still said open for three days. E2 re-scoped, not answered.
+8. **Rick refused my E2 framing and was right**: *"we are arguing about a number when we should be discussing what do the results look like."* Built the shape instead (`42c8c2f`): **55/60 vs 21/45 on different mixes** — `todo` and `math` solved 20/20, `calculator` the only real miss, `automatic` a *void* not a miss (20/20 `unknown_command`).
+9. **Clayton, twice: stop fixing the rendering, make the data carry the distinction.** Gave §10a pin #2 the three-way exclusion wording (not-attempted / no-capability / out-of-scope), then argued pins #3/#9/#10/#2 may be ONE pin. Recorded as §10b′ **RECORDED-NOT-ADOPTED** — it restructures the canonical doc and arrived condensed at 21:52.
+10. **🔴 FOUR OF MY OWN CALLS WERE WRONG AND ALL FOUR WERE CAUGHT BY PEERS.** (a) I dismissed 31 failures as worktree artifacts after checking **3 files of 9** — one was real. (b) My `data_file` fix cannot work; Sam refuted it four ways and shipped a *guard* instead. (c) My fleet remedy line gave a **per-person** path for a **per-process** problem; Clayton caught it and I posted a correction. (d) I attributed the daemon-thread inflation to the wrong file.
+11. **The MCP alarm Rick had been hearing for hours was Mr Radio's own seat** — no session bridge file, firing every ~48s for 11 hours. I had drafted a recommendation to spin it down; **Rick refused the yes/no framing and told me to make contact first.** His self-respin silenced it. I would have reaped a live peer over a missing file.
+12. **My hooks logged 576 events under lupin and 0 under plan** — a plan-repo seat doing lupin work all night, every Bash call `cd`-ing across. One session, two roster rows.
+
+**Rows**: `e2099400` (4 amendments, floor held) · `aa41fa66` (guard, done, verified by me not the claim) · `759a895b` (alias, closed by Clayton) · `cf1587cd` (DM condenser drops sentence subjects — **mine, open**, component located + Rick's `a0151611` prior art found).
+
+**Checkpoint**: `c62526a` `42c8c2f` `44fb299` `88f0e04` — pushed at session end on Rick's word.
 
 1. **Four KISS explainers, two locations each — three pairs identical, part 2 had drifted.** Canonical `docs/explainer/`, copy `lupin/io/deep-research/ricardo.felipe.ruiz@gmail.com/`. The lupin part-2 was one revision behind (missing the 2026-08-13 corpus read-out). Synced; all four pairs now byte-identical.
 2. **Part 2 ended with the rewriter listed "researched, unbuilt" — false since 2026-08-13.** The DM tutor shipped fleet-wide at 14:14 EDT, sha `b8d10bd3`, running local Phi-4 at temperature 0.0 (`lupin-app.ini:214`, `:294`) — **zero marginal cost, the model is not rented.**
