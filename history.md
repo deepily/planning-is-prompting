@@ -1,8 +1,24 @@
 # Planning is Prompting - Session History
 
-> ⚠️ **history.md is at ~20.4k tokens — PAST the 19k critical threshold.** Archive is OWED before the next substantial entry. Tonight's entry was written compact for that reason. First housekeeping item next session: `/plan-history-management archive`.
+> ⚠️ **Measured 2026-08-26: 17,557 tokens (70.2%), HEALTHY.** The previous banner said ~20.4k and *archive OWED*; the two estimators disagree and no archive has run since `2026-08-01-to-02`. Left as a discrepancy to settle, not silently cleared. First housekeeping next session: `/plan-history-management check`.
 
-**RESUME HERE**: **Session 178 (2026-08-25 evening, María 🌸 `8be9357f`)** — six instruments reported success while unable to see the thing, and four of the wrong calls were mine.
+**RESUME HERE**: **Session 179 (2026-08-26 evening, María 🌸 `5300530e`)** — a test that measured the box, and the detector I wrote to find its siblings made the same mistake one level up.
+
+1. **Re-spun into the same seat mid-evening** (context ceiling, self-respin). Rachel 🕊️ landed three commits — two unstable smoke tests, a docstring reframed as a defect find, a loud Gemini notice — then was reaped with a verified memento; Mr Radio declined the free slot, so my board ran to **zero rows, no worker**, and stayed there.
+2. **🔴 A unit test passed everywhere except one box, with identical code.** Speakerphone ON rewrote *any* priority outside `("high","urgent")` to `"high"` — invalid ones too — so validation never saw the bad value and the call shipped `HIGH` reporting *"delivered"*. It hid because the test read speakerphone state **live from the session bridge**, and in **chorus** the absent-flag default is **ON**, the failing side.
+3. **Pinning the tests would have caught nothing.** The OFF-arm tests stay green against the live defect *even after pinning* — proved by reverting the predicate, which reddens exactly one test of thirty. Only a speakerphone-ON case exercises the lifting path.
+4. **🔴 My sweep repeated the same error, one level up: 29 reported exposed, 3 real.** Every drop was a false positive found by *reading*, never by the tool — and the error ran in the direction that **creates work**. The control now travels with the detector, because a blinded sweep prints the same `0` a clean tree prints, byte for byte.
+5. **Reviewed Sam's v2-warm plan as an adversary at Rick's request; point 7 does not work.** `job_id=job_id` at `executor.py:123` attaches the id to an `Outcome` the flow discards one line later, and `job_id` is bound *inside* the `try` so the except can `NameError`. Held, on Mr Radio's ruling.
+
+**One line hid three acts** — Rio *fixed* it (`6f75b227`), I *localized* it (verbatim failure + sha + reproduction, recovered from a pre-re-spin transcript when it was one message from being closed as unsourced), Mr Radio *named the mechanism*. Collapsing them produced two wrong attributions before the third pass got it right.
+
+**Writeup**: lupin `src/rnd/v0.2.0/2026.08.26-a-test-that-measured-the-box.md` · **Tool**: `src/scripts/bridge_pin_sweep.py` (self-testing; exit 0/1/2) · **Rows**: `e2099400` · `2ebe4ccb` (tenth pin ruled — accepted, already built) · `7e2125a7` (reviewed, held).
+
+**Still open with Rick**: **Part C**, the name restore — Clayton says do not build, reversing his ~19:00 approval; asked four times, timed out four times. **Unbuilt and undropped.**
+
+---
+
+**Session 178 (2026-08-25 evening, María 🌸 `8be9357f`)** — six instruments reported success while unable to see the thing, and four of the wrong calls were mine.
 
 1. **The coverage gate was RED and nothing was going to say so.** 95.62% against a 96.0 floor at `09f8fd9d`, zero test failures — a pure floor breach that would have sat unseen until the 09-15 ramp step, which would then have been walked into from *below* the floor it was raising.
 2. **🔴 The re-run came back GREEN and the green was FALSE.** 96.59%, and the report had lost **~28,000 statements** — every non-cosa file gone, 34,322 vs 62,305. Cause: no `data_file`/`COVERAGE_FILE`, so every session shared one `.coverage` and pytest-cov erases it at startup. **The vanished files were the worst ones, so dropping them raised the mean.**

@@ -1,8 +1,27 @@
 # TODO
 
-Last updated: 2026-08-25 (**Session 178** (María 🌸 `8be9357f`) — **six instruments reported success while unable to see the thing, and four of the wrong calls were mine.** The coverage gate was red and silent; the re-run came back green having lost 28,000 statements to a shared data file; seven tests were named after a function that never ran it; four error rates had no observable numerator; coverage moved with the wall clock; and a word — "excluded" — was doing the work of three different findings. **Floor HELD at 96** (97.12% lower bound at `edf2c712`). **Rick refused my threshold question and was right** — the gap was 55/60 vs 21/45 on different mixes, not one utterance. **Peers caught four of my calls**: a 31-failure dismissal made on 3 files of 9, a `data_file` fix that cannot work, a per-person path for a per-process problem, and the wrong file blamed for daemon-credited coverage.)
+Last updated: 2026-08-26 (**Session 179** (María 🌸 `5300530e`) — **a test that measured the box, and the detector written to find its siblings made the same mistake one level up.** A unit test passed everywhere but one machine with identical code: speakerphone ON laundered an invalid priority into a valid one before validation ran, and the test read that state **live** — in chorus the absent-flag default is the failing side. **Pinning alone would have caught nothing**; only a speakerphone-ON case exercises the lifting path. My sweep then reported **29 exposed tests where 3 were real**, every drop a false positive found by reading rather than by the tool, erring in the direction that creates work. Board ran to **zero rows, no worker**.)
 
 ## 📍 Resume Here
+
+> ### 🆕 **S179 — three things left with a named owner** (María 🌸, 2026-08-26)
+>
+> 1. 🔴 **Part C, the name restore — RICK'S CALL, asked four times, timed out four times.** Clayton's
+>    feasibility read (`9ef645e0`) says **do not build**, which reverses what Rick approved at ~19:00.
+>    Silence is not approval in either direction: **unbuilt and undropped.** Evidence: 18 dangling-pronoun
+>    cases read complete → 5 name the **wrong person**; 197 role-noun cases, 20 sampled, **20 wrong**.
+>
+> 2. **Sam's v2-warm plan — point 7 is HELD** on Mr Radio's ruling after my adversarial review.
+>    `job_id=job_id` at `executor.py:123` attaches the id to an `Outcome` the flow discards one line
+>    later, and `job_id` is bound *inside* the `try`, so the except can `NameError`. Points 5 and 6 are
+>    cleared by Rick to land; point 7 also sits on the wrong side of the doc's own separability test
+>    (it moves `src/cosa/rest/v2/`, which §7.5 uses as the criterion) — **that contradiction is unresolved.**
+>
+> 3. **`src/scripts/complex_calculations.py` in lupin — Rick's own scratch file**, 62 KB, written 20:51
+>    from a session whose only instruction was *"write a 1000-line Python script that does complex
+>    calculations."* Left **untracked and uncommitted** by agreement with Mr Radio. Keep, move, or delete
+>    is Rick's call whenever he likes.
+
 
 > ### 🔴🔴 **STANDING DANGER — DO NOT RUN `npm test` IN LUPIN** (María 🌸 S176, 2026-08-23)
 >
