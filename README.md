@@ -13,11 +13,10 @@ Two months and 281 commits since v0.1.3. The through-line: the workflows stopped
 
 ### 🔴 This repository now ships executable code
 
-It used to be documentation only. **`workflow/scripts/` now holds 27 files — 25 Python plus shell — of which 14 are tests.** They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+It used to be documentation only. **`workflow/scripts/` holds 25 files — Python plus shell — of which 13 are tests.** They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
 
 | Script | What it does |
 |---|---|
-| `generate_epic_board.py` | Renders the epic board — a stable, always-open roll-up of the task store |
 | `context-pressure-tick.sh` · `install_context_pressure_tick.py` | The durable half of manager context monitoring: a real crontab entry, because an in-session timer dies at exactly the moment it was meant to matter |
 | `memento_io.py` · `memento_record_guard.py` | Memento slot resolution and a write guard — *a convention carried by a command is a rule the moment someone doesn't run the command* |
 | `worktree_creation_guard.py` · `worktree_orphan_scan.py` | Worktree lifecycle: register on creation, scan for orphans — *an invisible directory is an orphan nobody can see* |
@@ -45,7 +44,7 @@ Run them from `workflow/scripts/`; each carries its own tests alongside.
 
 ### New commands
 
-`/plan-board` · `/plan-kiss` · `/plan-push` · `/plan-post-game` · `/plan-mandate` · `/plan-workflow-audit` · `/plan-authoring-cascaded`
+`/plan-kiss` · `/plan-push` · `/plan-post-game` · `/plan-mandate` · `/plan-workflow-audit` · `/plan-authoring-cascaded`
 
 ---
 
@@ -322,11 +321,10 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Executable Tooling (`workflow/scripts/`)
 
-⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 27 files — 25 Python plus shell — of which **14 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 25 files — Python plus shell — of which **13 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
 
 | Script | Purpose |
 |---|---|
-| `generate_epic_board.py` | Renders `docs/epic-board.md`, the always-open roll-up of the task store. `/plan-board` |
 | `context-pressure-tick.sh` · `install_context_pressure_tick.py` | The durable half of manager context monitoring — a real crontab entry, because an in-session timer dies at exactly the moment it was meant to matter |
 | `memento_io.py` · `memento_record_guard.py` | Memento slot resolution and a write guard |
 | `worktree_creation_guard.py` · `worktree_orphan_scan.py` | Worktree lifecycle: register on creation, scan for orphans |

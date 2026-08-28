@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a meta-repository for Claude Code workflow templates and configuration strategies — documentation, workflow templates, and prompts designed to be referenced by or copied into other projects.
 
-⚠️ **CORRECTED 2026-08-28.** This paragraph used to end *"It contains no executable code."* That has not been true for some time: **`workflow/scripts/` holds 27 files — 25 Python plus shell — of which 14 are tests.** They are not incidental; they exist because a rule that depends on remembering is not installed, so several workflows now ship the mechanism that enforces them (the context-pressure crontab, the memento write guard, the worktree orphan scan, the command-drift check). Treat `workflow/scripts/` as real code: it has tests, run them.
+⚠️ **CORRECTED 2026-08-28.** This paragraph used to end *"It contains no executable code."* That has not been true for some time: **`workflow/scripts/` holds 25 files — Python plus shell — of which 13 are tests.** They are not incidental; they exist because a rule that depends on remembering is not installed, so several workflows now ship the mechanism that enforces them (the context-pressure crontab, the memento write guard, the worktree orphan scan, the command-drift check). Treat `workflow/scripts/` as real code: it has tests, run them.
 
 ## Repository Structure
 
