@@ -7,6 +7,75 @@ Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation 
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
 </p>
 
+## What's New in v0.1.9 (in progress)
+
+Two months and 281 commits since v0.1.3. The through-line: the workflows stopped being only *prose to follow* and grew **mechanisms that enforce themselves**.
+
+### 🔴 This repository now ships executable code
+
+It used to be documentation only. **`workflow/scripts/` now holds 27 files — 25 Python plus shell — of which 14 are tests.** They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+
+| Script | What it does |
+|---|---|
+| `generate_epic_board.py` | Renders the epic board — a stable, always-open roll-up of the task store |
+| `context-pressure-tick.sh` · `install_context_pressure_tick.py` | The durable half of manager context monitoring: a real crontab entry, because an in-session timer dies at exactly the moment it was meant to matter |
+| `memento_io.py` · `memento_record_guard.py` | Memento slot resolution and a write guard — *a convention carried by a command is a rule the moment someone doesn't run the command* |
+| `worktree_creation_guard.py` · `worktree_orphan_scan.py` | Worktree lifecycle: register on creation, scan for orphans — *an invisible directory is an orphan nobody can see* |
+| `pip_manifest.py` · `pip_drift_check.py` | Generate the canonical command manifest and report drift between installed and canonical |
+| `mandate_census.py` | Fleet-wide dispatch and census of a mandate |
+| `sweep_verdict_guard.py` | *A sweep whose method is quoting the row cannot detect that the row is wrong* |
+| `reclaim-session-manifest.py` | Reclaims terminal sections from a v2.0 parallel-session manifest |
+
+Run them from `workflow/scripts/`; each carries its own tests alongside.
+
+### New workflows
+
+- **[brevity-mandate.md](workflow/brevity-mandate.md)** — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH, and the glyph palette (😘 🏆 📷 ☕ 🫡) that fires them in one character. Command: `/plan-kiss`
+- **[push-to-completion.md](workflow/push-to-completion.md)** — the Riot Act: drive every open board item to a terminal state **with proof of work**. Command: `/plan-push`
+- **[post-game.md](workflow/post-game.md)** — the scaled retrospective that turns a finished engagement into receipt-backed learning, and produces *movement* rather than notes. Command: `/plan-post-game`
+- **[manager-context-monitoring.md](workflow/manager-context-monitoring.md)** — the 15-minute tick: every manager watches their workers' context and re-spins anyone past 50%
+- **[provisional-mandates.md](workflow/provisional-mandates.md)** — how a directive becomes binding, and how it stops being provisional. Command: `/plan-mandate`
+- **[role-goals.md](workflow/role-goals.md)** — what each seat is *for*, separate from what it is doing
+- **[fleet-pause-resume.md](workflow/fleet-pause-resume.md)** · **[fleet-recovery.md](workflow/fleet-recovery.md)** — pausing a live fleet, and getting it back after a wipe
+- **[neutral-execution.md](workflow/neutral-execution.md)** — why a green suite can be green because the harness helped, and where to run it instead
+- **[verify-the-subject.md](workflow/verify-the-subject.md)** — check *what* you are looking at before reporting what it says
+- **[plan-authoring-cascaded.md](workflow/plan-authoring-cascaded.md)** — the authoring counterpart to cascaded review
+- **[workflow-execution-audit.md](workflow/workflow-execution-audit.md)** — audit whether a workflow was actually followed. Command: `/plan-workflow-audit`
+- **[deterministic-wrapper-pattern.md](workflow/deterministic-wrapper-pattern.md)** — wrapping a non-deterministic step so its result can be checked
+
+### New commands
+
+`/plan-board` · `/plan-kiss` · `/plan-push` · `/plan-post-game` · `/plan-mandate` · `/plan-workflow-audit` · `/plan-authoring-cascaded`
+
+---
+
+## What's New in v0.1.3
+
+*Released 2026-06-22 — this entry was written retroactively on 2026-08-28; the release shipped without one.*
+
+### Cascaded plan review
+
+A multi-persona review pipeline wrapping `/plan-review`, split across focused specs so each stage can be read on its own.
+
+- **[plan-review.md](workflow/plan-review.md)** — the single-reviewer gate. Command: `/plan-review`
+- **[plan-review-cascaded.md](workflow/plan-review-cascaded.md)** — the pipeline, plus its [personas](workflow/plan-review-cascaded-personas.md), [stage specs](workflow/plan-review-cascaded-stage-specs.md), [input spec](workflow/plan-review-cascaded-input-spec.md), [parallelism](workflow/plan-review-cascaded-parallelism.md), [on-demand spawn](workflow/plan-review-cascaded-on-demand-spawn.md), [defaults](workflow/plan-review-cascaded-defaults.md) and [common material](workflow/plan-review-cascaded-common.md). Command: `/plan-review-cascaded`
+
+### Fleet coordination
+
+- **[swe-team-roles.md](workflow/swe-team-roles.md)** · **[swe-team-spin-up.md](workflow/swe-team-spin-up.md)** — the standing build crew: Implementer / Reviewer / Tester, brought online from one directive. Command: `/spin-up-swe-team`
+- **[manager-autonomy.md](workflow/manager-autonomy.md)** — the standing spawn/harvest envelope, and where it is gated
+- **[memento-management.md](workflow/memento-management.md)** — the pre-`/clear` state snapshot that lets a re-spun seat inherit continuity. Command: `/plan-memento`
+- **[cross-session-communication.md](workflow/cross-session-communication.md)** — the three-tier autonomy model, reserved topics, DM mechanics
+- **[task-store-discipline.md](workflow/task-store-discipline.md)** — the unified task store: always-create-a-task-item, query hygiene, receipts on transition
+
+### Other
+
+- **[decision-walkthrough.md](workflow/decision-walkthrough.md)** — walk pending decisions one at a time, each with pros, cons and a recommendation. Command: `/plan-decide`
+- **[doc-viewer-links.md](workflow/doc-viewer-links.md)** — sending a viewable link instead of dumping a file into chat
+- **[loc-delta-global.md](workflow/loc-delta-global.md)** — cross-repo lines-of-code delta roll-up. Command: `/plan-loc-delta-global`
+
+---
+
 ## What's New in v0.1.2
 
 ### New Directives
@@ -133,6 +202,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### 📚 Documentation
 
 - **[INSTALLATION-GUIDE.md](workflow/INSTALLATION-GUIDE.md)** - Interactive wizard + manual installation instructions
+- **[installation-about.md](workflow/installation-about.md)** - Report which planning-is-prompting workflows are installed here and at what version. `/plan-about`
 - **[installation-wizard.md](workflow/installation-wizard.md)** - Canonical workflow for installation process
 - **[uninstall-wizard.md](workflow/uninstall-wizard.md)** - Canonical workflow for uninstallation process
 - **[CLAUDE.md](CLAUDE.md)** - Project-specific configuration for this repository (example for other projects)
@@ -174,6 +244,9 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### Session Management
 - [**session-start.md**](workflow/session-start.md) - Prompts for initializing sessions and loading context
 - [**session-end.md**](workflow/session-end.md) - Prompts for session wrap-up, documentation, and commits
+- [**session-checkpoint.md**](workflow/session-checkpoint.md) - Mid-session commit that preserves continuity without ending the session. Fired by the **📷** glyph or `/plan-session-checkpoint`
+- [**memento-management.md**](workflow/memento-management.md) - The pre-`/clear` snapshot a re-spun seat inherits. `/plan-memento`
+- [**fleet-pause-resume.md**](workflow/fleet-pause-resume.md) - Halting a live fleet and bringing it back
 - [**fleet-recovery.md**](workflow/fleet-recovery.md) - **Resume, don't re-trace**: recovering sessions killed by tmux/process death. A dead session is *resumable, not lost* — Claude Code streams every session to `~/.claude/projects/<slug>/<uuid>.jsonl`, so `claude --resume <uuid>` (via `start-cc-with-tmux.sh`, no modification needed) restores it verbatim. Covers identifying the dead sessions, the resurrect-the-managers-and-let-them-resurrect-their-crews delegation shape, and the two gotchas (persona re-allocation on resume; `/clear` starting a new transcript file). Written after the 2026-07-13 whole-fleet wipe took 7 sessions with **zero work lost**.
 
 ### Team Orchestration
@@ -185,6 +258,11 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Resource Management
 - [**history-management.md**](workflow/history-management.md) - Prompts for maintaining session history and documentation
+- [**todo-management.md**](workflow/todo-management.md) - `TODO.md` as the durable narrative companion to the task store: the Decisions Log, the pending-decisions queue, and backlog not yet owed. `/plan-todo`
+- [**task-store-discipline.md**](workflow/task-store-discipline.md) - The unified task store: open an item for every unit of owed work, keep its status current, and never pull the unfiltered board
+- [**manager-context-monitoring.md**](workflow/manager-context-monitoring.md) - The 15-minute tick: every manager watches their workers' context and re-spins anyone past 50%. The timer must outlive the session, so it is a real crontab entry
+- [**loc-delta-global.md**](workflow/loc-delta-global.md) - Cross-repo lines-of-code delta roll-up. `/plan-loc-delta-global`
+- [**backup-version-check.md**](workflow/backup-version-check.md) - Backup script version checking. `/plan-backup-check`
 
 ### Testing Workflows
 - [**neutral-execution.md**](workflow/neutral-execution.md) - **A green that could have been red**: how to run a suite so a pass MEANS something, without breaking the platform. Core rule: **the conftest/`sys.path` hijack follows the TEST FILE, not the shell** — a test *living* in the target tree loads that tree's conftest wherever you stand (so `PYTHONPATH` selects the code), while a test **copied out** of a worktree needs a destination with **no conftest on the collection path** (that is what buys the honest RED) **and** registered with the platform (that is what keeps MCP alive) — `projects/scratchpad/<session_id_8>/` is the only place that is both. Establishes that **neutrality (import context) and registration (platform context) are orthogonal**, the three-clause rule, the **`git init` is not sufficient** trap, and the laws: *a finding is evidence only about the case it actually measured* · *an observation is evidence only if it could have come out otherwise* · *when the instrument contradicts the narrative, the narrative loses* · *rigor fails where relief lives* · *virtue is not the control variable — being checked is*. **v1.1 retracts v1.0's central claim** (that the neutral directory was a mere "ritual" — a false generalization from a single measured scenario, graduated within the hour and retracted the same night; §8 records what that cost). Drafted by Rio ⚡, who then refuted his own headline; graduated + retracted by María 🌸, 2026-07-13.
@@ -205,6 +283,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### Skills Management
 - [**skills-management.md**](workflow/skills-management.md) - Agent Skills lifecycle management (discover, create, edit, audit, delete)
 - [**skill-templates/**](workflow/skill-templates/) - Reference templates for creating skills (testing, API, generic)
+- **Mode commands**: `/plan-skills-management-discover` · `/plan-skills-management-create` · `/plan-skills-management-edit` · `/plan-skills-management-audit` · `/plan-skills-management-delete`
 
 **Quick Usage**:
 ```bash
@@ -216,7 +295,8 @@ The easiest way to install workflows is with the **interactive installation wiza
 **Learn more**: See [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide
 
 ### Git & Notifications
-- [**commit-management.md**](workflow/commit-management.md) - Prompts for git operations and commit workflows
+- [**bug-fix-mode.md**](workflow/bug-fix-mode.md) - Iterative bug fixing with atomic per-bug commits and a `bug-fix-queue.md` that survives context clears; v2.0 queue format supports parallel sessions claiming bugs. Commands: `/plan-bug-fix-mode-start` · `/plan-bug-fix-mode-continue` · `/plan-bug-fix-mode-wrap` · `/plan-bug-fix-mode-close`
+- [**doc-viewer-links.md**](workflow/doc-viewer-links.md) - Send a viewable link instead of dumping a file into chat; links belong in the `abstract` card, never in spoken text
 - [**branch-pr-and-merge.md**](workflow/branch-pr-and-merge.md) - Branch completion, PR creation, and merge workflow
 - [**cosa-voice-integration.md**](workflow/cosa-voice-integration.md) - cosa-voice MCP server integration (v0.3.0), voice I/O tools, AskUserQuestion-compatible format
 - [**decision-walkthrough.md**](workflow/decision-walkthrough.md) - Guided Decision Walkthrough: walk the user through pending decisions one at a time with pros/cons + recommendation via `ask_multiple_choice`. Auto-triggers on "walk me through the pending decisions" (Agent Skill) + `/plan-decide` fallback; TODO.md `## Pending Decisions` queue + ADR-lite `## Decisions Log`
@@ -227,6 +307,35 @@ The easiest way to install workflows is with the **interactive installation wiza
 - `converse()` - Open-ended questions
 
 **Prerequisites**: cosa-voice MCP server installed and configured. See [cosa-voice-integration.md](workflow/cosa-voice-integration.md).
+
+### Review & Audit
+- [**plan-review.md**](workflow/plan-review.md) - The single-reviewer plan gate. `/plan-review`
+- [**plan-review-cascaded.md**](workflow/plan-review-cascaded.md) - The multi-persona review pipeline, split into focused specs: [personas](workflow/plan-review-cascaded-personas.md) · [stage specs](workflow/plan-review-cascaded-stage-specs.md) · [input spec](workflow/plan-review-cascaded-input-spec.md) · [parallelism](workflow/plan-review-cascaded-parallelism.md) · [on-demand spawn](workflow/plan-review-cascaded-on-demand-spawn.md) · [defaults](workflow/plan-review-cascaded-defaults.md) · [common material](workflow/plan-review-cascaded-common.md). `/plan-review-cascaded`
+- [**plan-authoring-cascaded.md**](workflow/plan-authoring-cascaded.md) - The authoring counterpart: draft a plan through the same multi-persona shape. `/plan-authoring-cascaded`
+- [**post-game.md**](workflow/post-game.md) - The scaled retrospective that turns a finished run into receipt-backed learning and produces *movement* — rulings into the Decisions Log, lessons graduated into `workflow/`, open threads minted as store items. Distinct from `/plan-review` (that reviews the artifact; this reviews the run). `/plan-post-game`
+- [**workflow-execution-audit.md**](workflow/workflow-execution-audit.md) - Audit whether a workflow was actually followed, rather than assumed. `/plan-workflow-audit`
+- [**provisional-mandates.md**](workflow/provisional-mandates.md) - How a directive becomes binding and how it stops being provisional. `/plan-mandate`
+- [**verify-the-subject.md**](workflow/verify-the-subject.md) - Check *what* you are looking at before reporting what it says. A fresh, correct read of the wrong thing is not a stale read — it is a misplaced one
+- [**neutral-execution.md**](workflow/neutral-execution.md) - Why a green suite can be green because the harness helped, and where to run it so it isn't
+- [**deterministic-wrapper-pattern.md**](workflow/deterministic-wrapper-pattern.md) - Wrapping a non-deterministic step so its result can be checked
+- [**role-goals.md**](workflow/role-goals.md) - What each seat is *for*, kept separate from what it is currently doing
+
+### Executable Tooling (`workflow/scripts/`)
+
+⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 27 files — 25 Python plus shell — of which **14 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+
+| Script | Purpose |
+|---|---|
+| `generate_epic_board.py` | Renders `docs/epic-board.md`, the always-open roll-up of the task store. `/plan-board` |
+| `context-pressure-tick.sh` · `install_context_pressure_tick.py` | The durable half of manager context monitoring — a real crontab entry, because an in-session timer dies at exactly the moment it was meant to matter |
+| `memento_io.py` · `memento_record_guard.py` | Memento slot resolution and a write guard |
+| `worktree_creation_guard.py` · `worktree_orphan_scan.py` | Worktree lifecycle: register on creation, scan for orphans |
+| `pip_manifest.py` · `pip_drift_check.py` | Generate the canonical command manifest; report drift between installed and canonical |
+| `mandate_census.py` | Fleet-wide dispatch and census of a mandate |
+| `sweep_verdict_guard.py` | Guards a sweep whose method is quoting the row it is checking |
+| `reclaim-session-manifest.py` | Reclaims terminal sections from a v2.0 `.claude-session.md` |
+
+Each carries its tests alongside it; run them from `workflow/scripts/`.
 
 ### Cross-Session Communication
 - [**fleet-pause-resume.md**](workflow/fleet-pause-resume.md) - **Full-fleet pause/resume on the user's order** (canonized from the first live run, 2026-07-02): the proven pause-order broadcast template (7 rules — safe-checkpoint stop, `awaiting: "user:<name>"` hold as the compliance receipt, self-sealing TTL so expiry re-asserts instead of resuming, memento-first-line re-spin rule, manager chase-suspension, resume only on the user's direct word), the resume-broadcast template, arbiter stop/start syntax (`systemctl --user stop/start lupin-arbiter-app.service`), the 3 leak paths a bare broadcast doesn't close, and session-side compliance steps. Use when tokens/quota are about to run out or shared infra needs a stop-the-world freeze.
