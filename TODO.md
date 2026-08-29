@@ -223,7 +223,7 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
 
 ## Pending
 
-- [ ] **Re-frame the TODO.md archive question** (María, S181, 2026-08-28). Asked "archive the old part now?"; Rick answered **neither** — the question was wrong, not declined. The file is **718 lines with zero `horizon:` tags**, so the tag rule has no evidence to work from and an archive pass would be judgment-by-eye. Likely better next question: *tag the horizons first*, or *archive only the Decisions Log older than the window*, or *split by branch version*. Do not archive on a guess. Decisions
+- [ ] **Re-frame the TODO.md archive question** — 🔴 **NOT BEFORE the merge to main and the v0.2.1 branch cut.** (María, S181, 2026-08-28). Asked "archive the old part now?"; Rick answered **neither** — the question was wrong, not declined. The file is **718 lines with zero `horizon:` tags**, so the tag rule has no evidence to work from and an archive pass would be judgment-by-eye. Likely better next question: *tag the horizons first*, or *archive only the Decisions Log older than the window*, or *split by branch version*. Do not archive on a guess. Decisions
 
 ### 🔴 The live global config still says a manager CANNOT re-spin itself. It can — and it caught three of us tonight (María 🌸, 2026-08-24)
 
