@@ -221,7 +221,9 @@ line at once. She appears on María's spawn roster, so a literal reading of `man
 re-spinning, not seats that are working. Her own timer is durable; María's is not. Receipt: DM thread
 `e4c75a4b`, and the rule is now written into §4c itself.
 
-## Pending Decisions
+## Pending
+
+- [ ] **Re-frame the TODO.md archive question** (María, S181, 2026-08-28). Asked "archive the old part now?"; Rick answered **neither** — the question was wrong, not declined. The file is **718 lines with zero `horizon:` tags**, so the tag rule has no evidence to work from and an archive pass would be judgment-by-eye. Likely better next question: *tag the horizons first*, or *archive only the Decisions Log older than the window*, or *split by branch version*. Do not archive on a guess. Decisions
 
 ### 🔴 The live global config still says a manager CANNOT re-spin itself. It can — and it caught three of us tonight (María 🌸, 2026-08-24)
 
