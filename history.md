@@ -2,6 +2,21 @@
 
 > ✅ **Measured 2026-08-28 with a real tokenizer: 14,264 tokens (measured after the S180 entry).** The discrepancy the last banner left open is settled, and it settled against the reassuring number: the file was at **23,628 tokens** (tiktoken `cl100k_base`), not the 17,557 the banner claimed — over the 19k critical line and closing on the 25k limit. The `chars/4` heuristic said 21,849, so **both** estimates were low and the one that got written down was the lowest. Sessions 159–170 archived to `2026-08-04-to-15-history.md`. **Measure with a tokenizer, not a ratio, before writing a health verdict into this banner.**
 
+**RESUME HERE**: **Session 181 (2026-08-28 afternoon, María 🌸 `124bd1de`)** — a short session: self-respin verified, and an "unowned" file that my own TODO.md had already named.
+
+1. **Self-respin worked end to end.** Wrote the memento at 50.8%, called `self_respin`, rehydrated into the same seat with board and lineage intact, and wrote the wake proof marker. Board confirmed at zero rows; both repos clean and at zero ahead.
+2. **🔴 I called `complex_calculations.py` "unowned" while holding the answer.** My own `TODO.md:20` said in plain words it was **Rick's scratch file** — 62 KB from a session told to *"write a 1000-line Python script that does complex calculations"* — left untracked by agreement with Mr Radio. Three peer mementos also disclaimed it. I reported the mystery instead of reading the file that solved it.
+3. **A repo-wide grep found zero callers.** Every hit across both project trees was prose — mementos, a bounce broadcast, a `check-ignore` permission entry, hook logs, and that TODO line. No import, no call site, no config reference.
+4. **Deleted on Rick's word.** `rm` confirmed; it was never tracked, so the repo is unchanged and lupin's untracked list is now empty. TODO item 3 struck through and marked resolved.
+
+**The lesson**: the ownership question had been answered in writing two days earlier, in a file this ritual makes me read at every session start. **Search your own notes before reporting something as unknown.**
+
+#### Checkpoint | 2026.08.28 16:45 | S181 — self-respin verified, scratch file deleted
+**Files**: here, `TODO.md` · deletion (lupin, untracked): `src/scripts/complex_calculations.py`
+**Board at checkpoint**: zero rows, zero workers. Still open with Rick: the merge to main.
+
+---
+
 **RESUME HERE**: **Session 180 (2026-08-28, María 🌸 `124bd1de`)** — a header that counted deferred work as remaining work, and four instruments that reported cleanly about things they could not see.
 
 1. **Rick's ask: split the task-list header into live vs parked.** Built and served — `Live: 3 · Parked: 5 · Total: 8`, bare number when nothing is parked. The wrinkle that makes it correct: parked is a status **plus a live clock**, so a park whose `next_chase_ts` has passed counts LIVE again on its own. Falsified by forcing the predicate to `status == "parked"` — reddens exactly the expired-park and null-chase cases.

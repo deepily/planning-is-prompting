@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-08-26 (**Session 179** (María 🌸 `5300530e`) — **a test that measured the box, and the detector written to find its siblings made the same mistake one level up.** A unit test passed everywhere but one machine with identical code: speakerphone ON laundered an invalid priority into a valid one before validation ran, and the test read that state **live** — in chorus the absent-flag default is the failing side. **Pinning alone would have caught nothing**; only a speakerphone-ON case exercises the lifting path. My sweep then reported **29 exposed tests where 3 were real**, every drop a false positive found by reading rather than by the tool, erring in the direction that creates work. Board ran to **zero rows, no worker**.)
+Last updated: 2026-08-28 (**Session 181** (María 🌸 `124bd1de`) — short session. Self-respin verified end to end: memento written at 50.8%, rehydrated into the same seat, wake proof filed, board confirmed at zero. **`complex_calculations.py` resolved and deleted on Rick's word** — it was his own scratch file, which this very file had said in plain words two days earlier while I was calling it unowned. A repo-wide grep found **zero callers**; it was never tracked, so nothing to commit.)
 
 ## 📍 Resume Here
 
@@ -17,10 +17,8 @@ Last updated: 2026-08-26 (**Session 179** (María 🌸 `5300530e`) — **a test 
 >    cleared by Rick to land; point 7 also sits on the wrong side of the doc's own separability test
 >    (it moves `src/cosa/rest/v2/`, which §7.5 uses as the criterion) — **that contradiction is unresolved.**
 >
-> 3. **`src/scripts/complex_calculations.py` in lupin — Rick's own scratch file**, 62 KB, written 20:51
->    from a session whose only instruction was *"write a 1000-line Python script that does complex
->    calculations."* Left **untracked and uncommitted** by agreement with Mr Radio. Keep, move, or delete
->    is Rick's call whenever he likes.
+> 3. ~~**`src/scripts/complex_calculations.py` in lupin**~~ — **RESOLVED 2026-08-28**: Rick ruled delete.
+>    Removed with `rm`; it was never tracked, so nothing to commit. Zero callers existed (repo-wide grep).
 
 
 > ### 🔴🔴 **STANDING DANGER — DO NOT RUN `npm test` IN LUPIN** (María 🌸 S176, 2026-08-23)
