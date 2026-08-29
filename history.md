@@ -1,6 +1,26 @@
 # Planning is Prompting - Session History
 
-> ✅ **Measured 2026-08-28 with a real tokenizer: 14,264 tokens (measured after the S180 entry).** The discrepancy the last banner left open is settled, and it settled against the reassuring number: the file was at **23,628 tokens** (tiktoken `cl100k_base`), not the 17,557 the banner claimed — over the 19k critical line and closing on the 25k limit. The `chars/4` heuristic said 21,849, so **both** estimates were low and the one that got written down was the lowest. Sessions 159–170 archived to `2026-08-04-to-15-history.md`. **Measure with a tokenizer, not a ratio, before writing a health verdict into this banner.**
+> ✅ **Measured 2026-08-29 with a real tokenizer: 14,710 tokens (measured before the S182 entry).** Healthy — under the 17k warning line.
+>
+> 🗄️ *Previous banner (2026-08-28):* **14,264 tokens after the S180 entry.** The discrepancy the last banner left open is settled, and it settled against the reassuring number: the file was at **23,628 tokens** (tiktoken `cl100k_base`), not the 17,557 the banner claimed — over the 19k critical line and closing on the 25k limit. The `chars/4` heuristic said 21,849, so **both** estimates were low and the one that got written down was the lowest. Sessions 159–170 archived to `2026-08-04-to-15-history.md`. **Measure with a tokenizer, not a ratio, before writing a health verdict into this banner.**
+
+**RESUME HERE**: **Session 182 (2026-08-29, María 🌸 `2b207ef5`)** — PR preparation: swept the stragglers, fixed three red tests, and repaired an entry page that had been citing a file deleted ten months earlier.
+
+1. **Three failing tests, three different causes — none of them "the code is broken."**
+   - `test_mandate_census.py` had **rotted on the calendar**: its LIVE fixture expires 2026-08-20, so the positive control was true only until that date arrived. Every *library* test froze the clock with `today=TODAY`; the CLI test could not, because `main()` **dropped the `today=` seam the library already exposed**. Added `--today` and pinned the test. Proven red by removing the seam.
+   - `test_memento_verify_divergence.py` asserted **superseded behaviour**: `cff04f5` deliberately demoted a twinned-and-mirrored bare slot from FINDING to PRESERVED notice, and this older test was never updated. Rewrote it to the new contract, keeping the point it was built to pin (migrate never *removes* a bare slot, so the slot must still be reported by name), and added the two arms that make the demotion mean something.
+   - `test_workflow_doc_coverage_claims.py` caught a **real violation of this repo's own rule** — `memento-management.md:455` asserted "(8 tests)" in prose. Number deleted, suite name kept.
+2. **🔴 My first version of one new arm was unfalsifiable, and only the revert check found it.** Writing the divergent bytes to both the twin *and* its mirror does not exercise the content check — the mirror leg compares the mirror against the *slot's* sha and rejects that fixture on its own, so the test stayed green with the content check deleted. The fixture now gives the twin's mirror the slot's bytes while the twin holds different ones: the one arrangement where the two legs disagree. **Both arms now redden only their own leg**, verified by breaking each in turn.
+3. **`commit-management.md` has not existed since Session 42 (`5aaae5d`) and four live docs still pointed at it** — including `p-is-p-00-start-here.md` (the entry point) and `INSTALLATION-GUIDE.md`, which was telling installers to reference a file that was deleted as a stub. Redirected to `session-end.md` §3–§4 and `branch-pr-and-merge.md`; `session-start.md` had two example menus offering to *populate* it.
+4. **CLAUDE.md's repository tree was rewritten to name directories, not files.** It listed ~19 of 55 workflow docs and omitted `workflow/scripts/`, `docs/`, `history/`, `src/`, `todo-archive/`, and `io/` entirely. A hand-maintained file list on an entry page rots silently — the same defect the coverage guard catches in prose.
+5. **README: 36 R&D docs added by this branch, plus all four explainers, were absent.** `docs/explainer/` had **no README presence at all**. Added, grouped by theme. Zero dead links repo-wide; the remaining dangling references are all self-labelled "forthcoming" / "placeholder" or live in history archives, which is correct.
+6. **Housekeeping**: regenerated `workflow/MANIFEST.json` (34 days stale, 3 version-lies + 1 drift → **40/40 current**), and gitignored `snapshot_failures/` — a stray pytest-plugin dir that is invisible to `git status` while empty and would land as an untracked straggler the moment anything wrote into it.
+
+**Tests**: 370 passed, 0 failed. **Drift**: 40/40 current. **Working tree**: no untracked files.
+
+**The lesson**: two of the three red tests were reporting a **calendar** and a **superseded decision**, not a defect. A test that fails for a reason other than the one it names still costs a full investigation — and the census one was only unpinnable because the entry point had quietly dropped a seam its own library provided.
+
+---
 
 **RESUME HERE**: **Session 181 (2026-08-28 afternoon, María 🌸 `124bd1de`)** — a short session: self-respin verified, and an "unowned" file that my own TODO.md had already named.
 

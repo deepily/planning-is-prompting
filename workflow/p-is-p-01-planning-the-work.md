@@ -1614,7 +1614,7 @@ This work planning workflow integrates with other planning-is-prompting workflow
 - **Session Start** (planning-is-prompting → workflow/session-start.md): Read history.md to understand previous work and TODO lists
 - **Session End** (planning-is-prompting → workflow/session-end.md): Update history.md with completed work, learnings, and next steps
 - **History Management** (planning-is-prompting → workflow/history-management.md): Archive completed phases to maintain token budgets
-- **Commit Management** (planning-is-prompting → workflow/commit-management.md): Commit completed phases with descriptive messages
+- **Commit Management** (planning-is-prompting → workflow/session-end.md §3–§4): Commit completed phases with descriptive messages
 - **Cascaded Plan Review** (planning-is-prompting → workflow/plan-review-cascaded.md): For ≥ 2-section plans reviewed under a reviewer-attention constraint — structure the Phase 3 work breakdown per the *Cascade-Readiness* subsection so the plan is born cascade-shaped
 
 ---

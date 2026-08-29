@@ -827,7 +827,13 @@ Git operation workflows including:
 - Handling pre-commit hooks
 - Creating pull requests
 
-**Canonical Workflow**: planning-is-prompting → workflow/commit-management.md
+**Canonical Workflows**: planning-is-prompting → workflow/session-end.md (§3–§4: selective
+staging, message drafting, the autonomous commit, the retained push gate) and
+planning-is-prompting → workflow/branch-pr-and-merge.md (pull requests, merge, release tagging).
+
+> ⚠️ **There is no `commit-management.md`.** It was a stub, deleted in Session 42 (`5aaae5d`), and
+> this guide went on citing it — telling installers to reference a file that has not existed since.
+> The content above lives in the two workflows named here.
 
 ### Install as Direct Reference
 
@@ -836,7 +842,8 @@ Add to your project's `.claude/CLAUDE.md`:
 ```markdown
 ## Git Workflow
 
-See planning-is-prompting → workflow/commit-management.md for commit protocols.
+See planning-is-prompting → workflow/session-end.md for commit protocols, and
+planning-is-prompting → workflow/branch-pr-and-merge.md for pull requests and merges.
 
 **Project specifics:**
 - Main branch: main (or master)

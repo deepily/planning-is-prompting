@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-26T15:20:29-04:00",
+  "generated_at": "2026-08-29T16:05:49-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -64,19 +64,19 @@
       "version": "1.0"
     },
     "plan-history-management.md": {
-      "sha256": "d289720031142dbf298af6e34c93c56fd5f6f5b62ae168a4f938d14d92bb0b42",
-      "version": "1.0"
+      "sha256": "a034c979a2da372d55ef342497ec035008cb9a49f394b871e644f1424cd6359d",
+      "version": "1.1"
     },
     "plan-install-wizard.md": {
       "sha256": "46ca285356d67d53643c84ef653e43b353ea77dfdfa959f318e170a5eba44da0",
       "version": "1.0"
     },
     "plan-kiss.md": {
-      "sha256": "6d7b89e48849336b080fdab09cd98ce845efbcd6206a9dd1d0393705bb166f24",
+      "sha256": "35ae06e1888c72ecaef7626daf2b029c8d32e983b48b2751f21445104a3f7f6b",
       "version": "1.0"
     },
     "plan-loc-delta-global.md": {
-      "sha256": "2d7e47fc52b36a11b39b225ebb1f003f69e089ed3e29e9e4a128fc7f135e41dd",
+      "sha256": "7c5c2cbb4a525625cbed8d33922dd791f1a4e781d4b84c4a281caf2ca51e886f",
       "version": "1.1"
     },
     "plan-mandate.md": {
@@ -84,7 +84,7 @@
       "version": "1.2"
     },
     "plan-memento.md": {
-      "sha256": "bc56934f306ce6408e0560c62cac94a9c6ef4b0097cc775030a16442edf78adf",
+      "sha256": "a491ba1f942fda73521d61d4891989a6c36e6fccedaebabc755cef34fe321414",
       "version": "2.0"
     },
     "plan-post-game.md": {

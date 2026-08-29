@@ -331,10 +331,15 @@ def test_the_bare_slot_remedy_does_not_promise_what_step_one_cannot_deliver( rep
     migrate TWINS a bare slot and never removes it. A remedy that does not clear the finding it
     is printed under teaches its reader to disbelieve the finding.
 
-    So the text now names two steps and says out loud that step 1 leaves the finding in place.
-    This test plants exactly the post-migrate state — bare slot, mirrored, with its immutable
-    twin already beside it — and asserts the finding SURVIVES, which is the behaviour the
-    corrected wording describes.
+    So the text now names two steps and says out loud that step 1 leaves the slot in place.
+
+    UPDATED for `cff04f5` (row 9317f07a), which split the one red count into the two different
+    facts it had been conflating: "a record here is one write from gone" stays a FINDING, while
+    "this slot is untidy; the content is safe at two other paths" demotes to a PRESERVED notice.
+    The point this test was written to pin is UNCHANGED and is what it still asserts — migrate
+    never REMOVES a bare slot, so the slot must still be REPORTED by name with its clearing step.
+    What moved is only the severity, and only when the twin is earned: identical bytes AND
+    mirrored. The two sibling tests below hold the arms where it is not earned.
     """
     rel = repo.bare_slot( "arnold.md", mirrored=True )
     twin = "arnold-legacy-2026.07.20-010202.md"       # what migrate --apply produces
@@ -342,11 +347,50 @@ def test_the_bare_slot_remedy_does_not_promise_what_step_one_cannot_deliver( rep
     ( repo.mir / twin ).write_text( ( repo.mem / "arnold.md" ).read_text() )
 
     code, out = run_inproc( repo, monkeypatch, capsys )
-    assert code == EXIT_FINDINGS, "a migrated bare slot is still a bare slot"
-    assert "BARE-SLOT" in out and rel in out
-    assert "THIS FINDING REMAINS" in out
+    assert code == EXIT_CLEAN, "an earned twin demotes the slot to a notice (cff04f5)"
+    assert rel in out, "migrate never removes a bare slot — it must still be reported by name"
+    assert "PRESERVED" in out
     assert "UNMIRRORED" not in out                    # migrate did its half; that half is done
-    assert "OK          : 2/2" in out                 # both files mirror-clean, and still a finding
+
+
+def test_a_twin_with_different_bytes_does_not_demote_the_slot( repo, monkeypatch, capsys ):
+    """
+    THE ARM THAT MAKES THE DEMOTION MEAN SOMETHING. `cff04f5` demotes on CONTENT, never on a
+    matching name — a twin whose bytes have since diverged does not answer the clobber hazard.
+
+    THE FIXTURE IS DELIBERATE AND IT IS NOT THE OBVIOUS ONE. Writing the divergent bytes to the
+    twin AND its mirror does NOT exercise the content check: the mirror leg compares the mirror
+    against the SLOT's sha, so it rejects that fixture on its own and the test stays green even
+    with the content check deleted. Unfalsifiable, which is worse than absent — measured here.
+
+    So the twin's mirror is made to hold the SLOT's bytes while the in-repo twin holds different
+    ones — the one arrangement where the two legs disagree. The mirror leg is satisfied; only the
+    content leg can refuse. Deleting `sha256_of( cand ) != src_sha` reddens exactly this test.
+    """
+    rel  = repo.bare_slot( "arnold.md", mirrored=True )
+    slot = ( repo.mem / "arnold.md" ).read_text()
+    twin = "arnold-legacy-2026.07.20-010202.md"
+    ( repo.mem / twin ).write_text( "DIFFERENT BYTES - not this slot record\n" )   # the twin diverged
+    ( repo.mir / twin ).write_text( slot )                                         # its mirror did not
+
+    code, out = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_FINDINGS, "a name match alone never retires a live risk"
+    assert "BARE-SLOT" in out and rel in out
+
+
+def test_an_unmirrored_twin_does_not_demote_the_slot( repo, monkeypatch, capsys ):
+    """
+    THE SECOND ARM. The demotion licenses "clobbering this slot loses nothing", which has to
+    survive two different accidents — the pointer write (answered by the twin) and `git clean
+    -xdf` (answered by the mirror). An in-repo twin with no mirror answers only the first.
+    """
+    rel = repo.bare_slot( "arnold.md", mirrored=True )
+    twin = "arnold-legacy-2026.07.20-010202.md"
+    ( repo.mem / twin ).write_text( ( repo.mem / "arnold.md" ).read_text() )   # twinned, NOT mirrored
+
+    code, out = run_inproc( repo, monkeypatch, capsys )
+    assert code == EXIT_FINDINGS, "a twin that git clean would take is not a preserved twin"
+    assert "BARE-SLOT" in out and rel in out
 
 
 def test_bare_slot_finding_disappears_once_the_name_is_qualified( repo, monkeypatch, capsys ):

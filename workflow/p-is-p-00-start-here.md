@@ -819,8 +819,9 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 **Integration**: Archive old history.md content when approaching token limits (similar to archival in p-is-p-02)
 
 ### Commit Management
-**File**: `commit-management.md`
-**Integration**: Commit completed phases with descriptive messages based on work from p-is-p-01 and p-is-p-02
+**Files**: `session-end.md` (§3–§4) and `branch-pr-and-merge.md`
+**Integration**: Commit completed phases with descriptive messages based on work from p-is-p-01 and p-is-p-02, then take the branch through PR and merge
+**Note**: there is no `commit-management.md` — it was a stub, deleted in Session 42 (`5aaae5d`); its content lives in the two files above
 
 ### Notification System
 **File**: `cosa-voice-integration.md` (formerly `notification-system.md`, renamed 2026-01-06)

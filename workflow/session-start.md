@@ -1205,7 +1205,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    **Example with real TODO**:
    ```python
    options = [
-       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Finish the drift check", "description": "Regenerate workflow/MANIFEST.json and clear reported drift"},
        {"label": "Start fresh", "description": "Work on something else"},
        {"label": "Modify list", "description": "Add/remove items before starting"}
    ]
@@ -1237,7 +1237,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    ```python
    options = [
        {"label": "Migrate genie-in-t...", "description": "Consider migrating genie-in-the-box to cosa-voice MCP tools"},
-       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Finish the drift check", "description": "Regenerate workflow/MANIFEST.json and clear reported drift"},
        {"label": "Start fresh", "description": "Work on something else"},
        {"label": "Modify list", "description": "Add/remove items before starting"}
    ]

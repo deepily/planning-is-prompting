@@ -179,11 +179,25 @@ def test_an_unreadable_mandate_is_a_row_not_an_exception( tmp_path ):
 # ── the CLI gate ─────────────────────────────────────────────────────────────
 
 def test_strict_exits_3_on_an_expired_mandate_and_0_otherwise( tmp_path, capsys ):
-    """Both directions in one test — a gate that only ever returns 3 is not a gate."""
+    """Both directions in one test — a gate that only ever returns 3 is not a gate.
+
+    Pinned to `--today` for the same reason every library test above passes `today=TODAY`:
+    LIVE's expiry is a fixed 2026-08-20, so against the system clock the positive control
+    was true only until that date arrived, and then reported a code defect that was really
+    a calendar. The CLI now takes the clock seam the library always had.
+    """
+    frozen = [ "--today", TODAY.isoformat() ]
     _plant( tmp_path, DEAD, name="dead-repo" )
-    assert mc.main( [ "--root", str( tmp_path ), "--strict" ] ) == 3
-    assert mc.main( [ "--root", str( tmp_path ) ] ) == 0                # not strict → reports, does not gate
+    assert mc.main( [ "--root", str( tmp_path ), "--strict", *frozen ] ) == 3
+    assert mc.main( [ "--root", str( tmp_path ), *frozen ] ) == 0       # not strict → reports, does not gate
 
     ( tmp_path / "dead-repo" / "MANDATE.md" ).write_text( LIVE )
-    assert mc.main( [ "--root", str( tmp_path ), "--strict" ] ) == 0    # POSITIVE CONTROL
+    assert mc.main( [ "--root", str( tmp_path ), "--strict", *frozen ] ) == 0    # POSITIVE CONTROL
+    capsys.readouterr()
+
+
+def test_cli_defaults_to_the_system_clock_when_today_is_omitted( tmp_path, capsys ):
+    """The seam is an override, not a requirement — omitting it must still evaluate."""
+    _plant( tmp_path, DEAD, name="dead-repo" )                          # died 2026-07-23, past under any real clock
+    assert mc.main( [ "--root", str( tmp_path ), "--strict" ] ) == 3
     capsys.readouterr()

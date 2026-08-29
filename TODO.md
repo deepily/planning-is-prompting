@@ -1,8 +1,18 @@
 # TODO
 
-Last updated: 2026-08-28 (**Session 181** (María 🌸 `124bd1de`) — short session. Self-respin verified end to end: memento written at 50.8%, rehydrated into the same seat, wake proof filed, board confirmed at zero. **`complex_calculations.py` resolved and deleted on Rick's word** — it was his own scratch file, which this very file had said in plain words two days earlier while I was calling it unowned. A repo-wide grep found **zero callers**; it was never tracked, so nothing to commit.)
+Last updated: 2026-08-29 (**Session 182** (María 🌸 `2b207ef5`) — PR prep. Swept stragglers, fixed three red tests (a rotted calendar fixture, a test asserting behaviour `cff04f5` deliberately superseded, and a real in-prose test-count violation), redirected four live docs away from `commit-management.md` — deleted in Session 42 — rewrote CLAUDE.md's stale repo tree, and closed the README gap for 36 branch-added R&D docs plus all four explainers. 370 tests pass; drift 40/40.)
 
 ## 📍 Resume Here
+
+> ### 🆕 **S182 — one item left open, deliberately** (María 🌸, 2026-08-29)
+>
+> **61 pre-existing `src/rnd/` docs are absent from README.** These predate this branch — the 36 that
+> this branch added are now catalogued, which was the PR-scoped half. The global rule (*"anytime you add
+> a new research document you should add a link to it in the readme"*) has been slipping since roughly
+> 2025-10, so the backlog is real but it is **not** this PR's to clear. Several are also transient by
+> nature (session mementos, a PR body, board recuts) and arguably should never have gone in `src/rnd/`
+> at all — **that classification question should be settled before bulk-adding 61 entries**, or the
+> entry page grows by a third with links nobody wants.
 
 > ### 🆕 **S179 — three things left with a named owner** (María 🌸, 2026-08-26)
 >

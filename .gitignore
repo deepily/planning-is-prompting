@@ -85,3 +85,9 @@ io/post-games/
 # Claude mementos (records + pointers) — NEVER commit: a memento that
 # will be committed is written more carefully, and therefore less honestly.
 .claude-memento-*.md
+
+# Stray pytest-plugin output dir. Nothing in THIS repo creates it — the shared
+# structlog capture plugin drops it in whatever cwd pytest ran from, so it appears
+# under workflow/scripts/ after a suite run. Empty it is invisible to git status;
+# the first file written into it would land as an untracked straggler at commit time.
+snapshot_failures/

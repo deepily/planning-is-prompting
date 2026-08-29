@@ -267,10 +267,16 @@ def main( argv=None ):
     ap.add_argument( "--json", action="store_true" )
     ap.add_argument( "--strict", action="store_true",
                      help="exit 3 if any mandate is expired-but-present" )
+    ap.add_argument( "--today", default=None, metavar="YYYY-MM-DD",
+                     help="evaluate expiry against this date instead of the system clock. "
+                          "The library has always taken a `today=`; without this flag the CLI "
+                          "dropped it, so the CLI's own positive control could only be written "
+                          "against a hardcoded future date — and rotted the day it arrived." )
     args = ap.parse_args( argv )
 
-    roots = args.roots or [ Path( __file__ ).resolve().parents[ 2 ].parent ]
-    result = census( roots, max_depth=args.max_depth )
+    today  = datetime.date.fromisoformat( args.today ) if args.today else None
+    roots  = args.roots or [ Path( __file__ ).resolve().parents[ 2 ].parent ]
+    result = census( roots, max_depth=args.max_depth, today=today )
 
     if args.json: print( json.dumps( result, indent=2 ) )
     else:         print_census( result )
