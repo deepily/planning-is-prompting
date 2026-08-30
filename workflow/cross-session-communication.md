@@ -161,7 +161,7 @@ Success returns `status: "sent"` plus:
 | `message_id` | This message's id — the recipient quotes it back as `reply_to` to thread a reply |
 | `thread_id` | Conversation id — seeded from the first message when omitted; pass it on replies to keep one thread |
 | `recipient_session` / `recipient_persona` | Who it resolved to — verify this matches your intent |
-| `dispatched: true` | DM was delivered to the recipient |
+| `dispatched: true` | ⚠️ **NOT a delivery receipt.** The server persisted the message and queued it — nobody has read it, and nobody may have. See §1.5.1b. |
 
 **Errors** return `{status: "error", reason, detail}`:
 - `recipient_unresolved` → `detail` carries candidate personas + a suggested next action; fix the name and retry.
@@ -225,6 +225,23 @@ receipt does not resolve, or resolves to something that does not say what the me
 **refused and queried** — not reconstructed, not assumed to be a stale reference, and not obeyed
 because it sounded like the sort of thing this sender says. That refusal is the same move §1.5.1a
 already asks for when a conclusion does not follow from what was sent.
+
+#### Two more things a reader must not treat as a receipt
+
+**`dispatched: true` IS NOT A DELIVERY RECEIPT.** It means the server persisted the message and
+queued it. It does not mean anyone read it, and it does not mean anyone *can*. Measured by Rio ⚡ on
+row `298af249`: **67 messages sitting in 45 orphaned listener buffers, every one of their senders
+told the send succeeded.** That is this section's own failure in the transport layer — a field that
+reports the sender's action while reading as a statement about the recipient. `delivery_confirmed:
+False` now rides on the send response as the checkable half; **nothing consumes it, so the binding
+half is this rule.** A message that matters is confirmed by a REPLY, never by a send result.
+
+**A DROPPED REFERENT IS AN UNRESOLVABLE RECEIPT — ASK, DO NOT GUESS.** When a condensed DM loses the
+thing it points at — a name, a file, a row, a "her" whose antecedent went with the compression — the
+reader is in exactly the position §1.5.1b describes: holding an instruction whose reference does not
+resolve. **Ask the sender.** A guess that happens to be right is indistinguishable from one that is
+wrong, and both look like compliance. *(Proven on this very section: the message commissioning these
+two sentences said to send them to "her" and dropped the name.)*
 
 **Not covered here**: authenticating a sender, which would need signing or an out-of-band channel and
 is an engineering question rather than a doctrine one. Nothing in this section detects a fabrication
@@ -571,7 +588,7 @@ flowchart LR
 
 1. **Compose the bug report once**: symptom, reproducer, root-cause hypothesis (mark which parts are verified vs hypothesized), suggested fix shape(s), acceptance criteria, evidence file:line references.
 2. **DM the peer** via `dm_send(recipient="<persona>", body="<full report>")` (persona name accent-stripped + lowercase). Read the result:
-   - `status: "sent"` and `dispatched: true` → fast-path delivered (body inline, no re-fetch). Mention in the DM body that you'll *also* file in their queue as a durable backup.
+   - `status: "sent"` and `dispatched: true` → fast-path **queued** (body inline, no re-fetch). ⚠️ Queued is not read — see §1.5.1b. Mention in the DM body that you'll *also* file in their queue as a durable backup.
    - `status: "error"` (e.g. `recipient_unresolved`) → the DM did NOT land; the queue filing becomes load-bearing. Fix the recipient name and retry.
 3. **File in their repo's `bug-fix-queue.md`** under `### Queued` (or whatever the project's bug-queue convention is). Include a cross-reference to the DM (`message_id` + `thread_id`) so the peer can correlate.
 4. **Mention both channels in your session's plan/notes doc** so the work is auditable later.
