@@ -64,20 +64,19 @@ KEY_CHARS = 60
 # Drift a human has already seen and has not yet ruled on. Key: ( pair label, first KEY_CHARS
 # of the normalized CANONICAL paragraph ). Value: why it is here, and what clears it. An entry
 # without a real justification is just a mute button.
-KNOWN_DRIFT = {
-    # RESOLVED 2026-08-30 — the self-respin paragraph entry lived here and is deleted, not
-    # commented out, because this test reddened the moment Rick synced his live config and told
-    # us to remove it. That red is the mechanism working: an allow-list nobody is forced to
-    # prune becomes a list of things that used to be true. Row 3a6d9505.
-
-    ( "skill: brevity-mandate",
-      "- **KISS** — Keep It Short/Sweet. - **Say 3LoL** — Say it in" ):
-        "The 3LoL definition. The canonical SKILL.md gained the 'send the path instead of the "
-        "detail — a pointer, not a fourth sentence' clause; the deployed copy at "
-        "~/.claude/skills/brevity-mandate/SKILL.md has not. Deploying under ~/.claude/ is "
-        "gated on Rick (row dacac717). CLEARS WHEN: the deployed skill is refreshed; then "
-        "delete this entry.",
-}
+#
+# EMPTY IS THE CORRECT STATE, and it is worth saying so. Two entries lived here on
+# 2026-08-30 — the self-respin paragraph and the brevity-mandate 3LoL clause. Both were
+# deleted the same afternoon, each within a minute of Rick syncing the deployed copy,
+# because `test_known_drift_entries_are_still_real` went red and named the entry to remove.
+# Neither deletion needed anyone to remember to check.
+#
+# That is the whole design: an allow-list nobody is forced to prune becomes a list of things
+# that used to be true, which is the same rot as the stale paragraph this tool exists to
+# catch. Entries are DELETED rather than commented out — a commented entry is the same rot
+# with a lower profile.
+#
+KNOWN_DRIFT = {}
 
 
 def drift_key( label, hit ):
