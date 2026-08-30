@@ -373,18 +373,32 @@ claims is exactly what §1.5.1b says must be refused and queried** — and this 
 of sections that define that rule, until Rachel 🕊️ opened the row and checked. **Cite rows you have
 read.**
 
-**The speech-act guard is real and now has its own row: `b0507d0d`** (`item_class: task`,
-`status: queued`, owner clayton), minted after the catch precisely so the build has a row that says
-what it is. It guards the thing this section cannot: *a message carrying a verdict, an approval, a
+**The speech-act guard is real work, and the CONTENT of the ruling is what to cite — not a row
+number and never a row's status.** It guards the thing this section cannot: *a message carrying a verdict, an approval, a
 refusal, a sha or a branch name must arrive as that act, not as a summary of one* — measured the
 same day at **33 approvals, of which 12 delivered no approval at all and 10 named no branch or
 sha**. It is a **second** guard alongside the landed retraction-marker guard, not a replacement: a
 name-for-name **swap** passes the marker guard clean and unflagged, because that guard structurally
 cannot see a substitution.
 
-⇒ **Note what the mistake and its fix have in common.** The wrong citation pointed at a closed bug;
-the right one points at a queued build. **Both were one `task_get` away**, which is the entire cost
-of the rule this paragraph is arguing for.
+🔴 **AND THE SAME CITATION FAILED A SECOND TIME, WHICH TEACHES SOMETHING THE FIRST ONE DID NOT.**
+The replacement row was read directly, found `queued`, and written into this file as `queued` — and
+it was **`dropped` two minutes later**, before the ink was dry, because minting it broke a
+no-new-tickets moratorium that was still in force. So the corrected citation was **also** wrong, by
+the same standard, and nobody had been careless: the row was read, not recalled.
+
+⇒ **A ROW'S STATUS IS MUTABLE STATE; A DOCUMENT THAT CITES IT IS STALE THE MOMENT SOMEONE
+TRANSITIONS THE ROW, AND NOTHING IN THE DOCUMENT SAYS SO.** That is the §1.5.1b failure — a receipt
+resolving to something other than what the text claims — arriving with no channel involved at all
+and no mistake by anyone. **Verifying harder does not fix it, because the verification was correct
+when it was performed.**
+
+⇒ **So cite the thing that cannot change under you.** A commit **sha** is immutable and a
+**quotation** of a row's reasoning stays true whatever happens to the row; a row **id** is a
+reasonable pointer for a reader who wants the current state, and a row's **status** belongs in a DM
+where it will be re-read within the hour, never in a doc that outlives it. **Three citations of one
+fact went wrong in ninety minutes** — first the wrong row, then the right row's transient state —
+and only the second failure was unavoidable by care alone.
 
 ### 1.5.2 Receiving a DM and replying
 
