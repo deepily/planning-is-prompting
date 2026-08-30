@@ -271,7 +271,7 @@ All `/plan-review-cascaded` Step 8 fields apply (telemetry, finding count, escal
 
 **Trigger**: fires AFTER Step 8 cascade-complete signal, BEFORE any implementer is dispatched.
 
-**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (5-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap on Manager response).
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (6-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap on Manager response).
 
 **Full requirements anchor**: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.
 

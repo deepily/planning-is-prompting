@@ -927,7 +927,7 @@ The Manager-as-synthesizer has a blind spot: after a long cascade, their cogniti
 - **Alternative**: the Workflow Steward if a 6th cascade participant ran in that role; workflow-aware-fresh-eyes is a useful synthesis check even though the persona isn't section-anchored
 - **Escape hatch**: if no cascade participant has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit; quality risk is real but bounded
 
-**Light-review rubric** (NOT a full Persona-3/4/5 review — 5-criterion focused pass):
+**Light-review rubric** (NOT a full Persona-3/4/5 review — 6-criterion focused pass):
 
 1. **External-system assumptions check**: any Recon item still unresolved that touches an external system (server wire, infra, third-party API) is either (a) resolved before Step 9 closes, (b) explicitly escalation-worthy AT Step 9 (synthesizer surfaces as "this needs user ratification before implementer pre-flight"), or (c) explicitly tagged as conditional-executability with documented branches
 2. **AC conditionality check**: any AC that's conditionally-executable on something the synthesis didn't pin down — synthesis explicitly lists the condition + the resolution path (per Persona 2 point 9 + Persona 5 §Convention 6 rule)
