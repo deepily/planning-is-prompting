@@ -186,6 +186,28 @@ is indistinguishable from a real order**, and this fleet issues real orders thro
 channel. There is no gap to notice and nothing to contradict — a recipient has no way to doubt an
 instruction that reads as ordinary.
 
+🔴 **QUALIFIED 2026-08-30 — ONE CLASS OF DISTORTION HAS ADDITION'S UNDETECTABILITY, so "distorted
+text usually contradicts something the reader already holds" is true in general and FALSE for the
+case this fleet produces most.** Row `29a986df` is the measured counterexample: the condenser
+**stripped a retraction marker**, turning *"this USED TO say X, and X was wrong"* into *"this says
+X"*, and re-attributed the retracted value to the very commit that removed it. The row's own words —
+*"not vague or lossy; confidently wrong, in a shape indistinguishable from a correct summary."*
+**Nothing to contradict and no gap to notice**, which is precisely the property this passage reserves
+for fabrication.
+
+⇒ **MARKER-STRIPPING IS THE SECOND MEMBER OF THE UNDETECTABLE CLASS, and correction-heavy writing is
+what feeds it.** A correction is *"this used to say X, and X was wrong"*; delete four characters of
+tense and it asserts exactly the thing the document exists to deny. **Every `CORRECTED YYYY-MM-DD`
+banner in this fleet's docs is a candidate**, and the measured instance delivered an instruction to
+schedule batch work into hours the host is powered off — the defect three separate corrections had
+just removed from the tree. **The transport regenerated it after the text was fixed.**
+
+⇒ The reader's remedy is unchanged and is the same one this section already gives: **a claim
+attributing a fact to a commit or a row is checked against that artifact, not accepted because it
+reads fluently.** Detection in the measured case cost one `grep` — and only because the claim named a
+commit. The row's closing line is the warning worth carrying: *"an inverted claim naming no artifact
+would have been undetectable."*
+
 > 🔴 **THE RULE. Any DM that ASKS FOR AN ACTION or ASSERTS A STATE carries a receipt the reader can
 > check independently: a sha, a store row id, or a path plus a sha.** A bare imperative with nothing
 > checkable behind it is not actionable — reply asking where the record is.
@@ -278,6 +300,19 @@ once:
   their own lines. **The filenames survived; which tree and which sha he had measured in did not** —
   that was in prose, and I had to ask for it in a second round-trip.
 
+**Independently replicated the same evening, different seats, deliberately rather than by accident
+(Rachel 🕊️).** She hand-delivered one CLAUDE.md insert to Tiberius 👑 **twice**:
+
+| how it was sent | what happened |
+|---|---|
+| wrapped in explanatory prose | arrived **condensed**; he reconstructed it from three summary points and asked her to resend |
+| **bare, one artifact per message, nothing around it** | applied **verbatim** — commit `0caf1823` carries it, and her code comment, intact |
+
+**Same message, two shapes, opposite outcomes**, across a different sender/recipient pair than the
+observations above. That takes this from one session's pattern to **two sessions and four seats**,
+and it is the stronger form of the evidence because she varied the shape ON PURPOSE and held the
+content fixed.
+
 ⚠️ **A round-trip is the CHEAP failure. The expensive one is a receipt that quietly does not arrive**,
 because §1.5.1b then obliges the reader to refuse an instruction that was genuine.
 
@@ -310,13 +345,9 @@ condensation MAY happen on any hop, so shape every message as though it will** �
 senders are exempt. Anyone who can read the implementation should replace this paragraph with what it
 actually does.
 
-🔴 **AND THE PRECISION IS ITSELF THE POINT, not pedantry about wording.** The first version of this
-finding, in a DM, said *"every inbound DM today carried the marker"*. That is **false** — the manager
-seat's did not — and it was caught only because the author re-checked before it was quoted into this
-file. **"Every" collapses the moment one counterexample appears, and a rule resting on a collapsed
-measurement is discounted along with it.** Worse, "every DM is condensed" invites the reader to
-conclude an **unmarked** DM is therefore safe, which is the same false-green shape this fleet spent
-2026-08-30 removing from three test suites. State the narrower claim; it is the one that holds.
+🔴 **State the narrower claim.** *"Every DM is condensed"* is **false** — one seat's carried no
+marker — and it invites the reader to treat an **unmarked** DM as safe, which is the false-green
+shape. A rule resting on a measurement that collapses is discounted along with it.
 
 ⇒ **And the honest framing, mirroring §1.5.1b's own limit: this is a mitigation, not a fix.** It
 raises the odds that the load-bearing bytes survive. It does not make the channel lossless, and it
@@ -325,13 +356,23 @@ actual fix remains the one §1.5.1b already names: **bypass the condenser for re
 traffic.** Until that ships, bare lines are what a sender can do today, unilaterally, at the cost of
 a newline.
 
-**Being built, not duplicated here: Clayton's speech-act guard, row `29a986df`.** It addresses this
-same failure mechanically — classifying a message by what it is DOING (instruction, ruling,
-approval, retraction) rather than leaving each sender to judge. **This section is the doctrine half
-and deliberately stops where his engineering starts**; read his row for the analysis rather than
-looking for it here. If the guard ships and can tell an action-asking DM from an ack, the rule above
-becomes something the channel enforces instead of something a sender has to remember — and this
-fleet's own standing position is that **a rule which depends on remembering is not a control.**
+**The measured filing on this channel is row `29a986df`** — *"DM condenser inverts 'used to say X'
+into 'says X'"*, a **bug report**, status **done**, raised by Mr. Radio 🦉. Read it for the
+measurement; it is the best single instance of the channel corrupting a message in a shape that
+reads as correct. Its own two suggested directions are *preserve negation and tense markers as
+non-droppable when condensing* and *attach the source commit's subject line so a reader can
+cross-check an attributed claim*. **The second is this section's rule arriving from the other
+side** — the row's closing line is that detection cost one grep only *because the claim named a
+commit*, and that *"an inverted claim naming no artifact would have been undetectable."*
+
+⚠️ **THIS CITATION WAS WRONG IN THE FIRST VERSION, AND THE WAY IT WAS WRONG IS THE POINT.** It
+described `29a986df` as a *speech-act guard being built*, classifying messages by what they are
+doing. It is none of those things: a bug report, not a design; `done`, not in progress; and speech
+acts appear nowhere in it. **A receipt that resolves to something other than what the citing text
+claims is exactly what §1.5.1b says must be refused and queried** — and this one sat inside the pair
+of sections that define that rule, until Rachel 🕊️ opened the row and checked. **Cite rows you have
+read.** If a speech-act guard is genuinely being built it has a different row, and that is the one to
+name.
 
 ### 1.5.2 Receiving a DM and replying
 
