@@ -183,6 +183,22 @@ Rich detail goes in the **`abstract` card**, never in prose and never in speech.
 
 **Key principle**: selective staging is strictly better than bulk staging — even solo, it prevents committing temp files, IDE artifacts, or unintended changes. Add `.claude-session.md` to `.gitignore`.
 
+### 🔴 `git stash` IS REPO-GLOBAL, NOT PER-WORKTREE — DO NOT USE IT WHILE PEERS ARE LIVE
+
+The manifest discipline above exists to stop cross-session theft, and it says nothing about the stash stack. **`git stash` writes to a SINGLE repo-global stack** shared by every worktree and every session, so every push races every other push and every pop races every other pop.
+
+**Measured, 2026-08-23** (bug `1ebc9be3`): john pushed in his worktree; Tiffany pushed hers from a different worktree in between; **john's pop applied Tiffany's held postgres conversion into HIS tree.** The two changesets happened to overlap, so it conflicted and he caught it. Had they not overlapped the pop would have **succeeded silently** and twelve of her files would have been committed under his name, on his row, with nothing in the git output naming the owner.
+
+| Instead of | Use |
+|---|---|
+| stash to **HOLD** work | a **WIP commit on your own branch** — a stash is a shared mutable stack pretending to be a private one |
+| stash to **INSPECT** an old version | `git checkout <sha> -- <path>`, restore with `git checkout HEAD -- <path>` |
+| a scratch copy of an old tree | a throwaway detached worktree at that sha |
+
+⚠️ **Second hazard, one level down: `stash@{N}` is a POSITION, not a name.** Dropping an entry renumbers the whole stack, so an index written into an instruction moves under it between the writing and the running. **Name the commit sha and verify with `git rev-parse` before acting** — an index is a slot in a mutable list; a sha is the thing itself.
+
+⇒ **The control is mechanical, not this paragraph**: `stash_guard.py` denies the mutating verbs from the PreToolUse hook (read-only `list`/`show` still work; fail-open; escape hatch `LUPIN_ALLOW_GIT_STASH=1` for an owner clearing their OWN entry). A rule that depends on remembering is not installed — this section is the explanation, the hook is the enforcement.
+
 ## TODO.md MANAGEMENT
 
 **Purpose**: The durable, human-readable **narrative companion** to the unified task-store — the Decisions Log, the Pending-Decisions queue, and the not-yet-owed backlog. The **store** is the single source of truth for *owed work*; TODO.md holds the durable "why" and the human-strategic layer the operational store deliberately isn't.

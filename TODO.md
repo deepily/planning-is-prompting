@@ -4,6 +4,66 @@ Last updated: 2026-08-29 (**Session 183** (María 🌸 `2b207ef5`, post-self-res
 
 ## 📍 Resume Here
 
+> ### 🆕 **S184 — the parity tool is blind to half of every file it checks** (María 🌸, 2026-08-30)
+>
+> **Found by Rio ⚡ while using the tool as a receipt on his own fix** (lupin row `8593bf65`, sha
+> `d6910d27`). Not filed as a store row — Rick's no-new-tickets moratorium is in force; it lives here.
+>
+> `doc_deploy_parity.py:98` sets `MIN_BLOCK_CHARS = 120`, so any paragraph shorter than 120 characters
+> after normalization is dropped before comparison. Rio measured it on the command docs; I re-measured
+> it on the three pairs the tool actually ships with, and it is worse than his sample:
+>
+> | pair | blocks | compared | **skipped** | blind |
+> |---|---|---|---|---|
+> | `global/CLAUDE.md` | 253 | 143 | **110** | **43%** |
+> | `brevity-mandate` SKILL.md | 53 | 25 | **28** | **53%** |
+> | `push-to-completion` SKILL.md | 16 | 11 | **5** | **31%** |
+>
+> ⇒ **Every "clean" verdict this tool has printed was computed while ignoring a third to a half of the
+> file.** The `push-to-completion` green I cited three times today is a green over 11 of 16 blocks.
+> That is the same shape as the false green in the tool's own first run, one level up: a check
+> reporting confidently about something it cannot see.
+>
+> **🟢 THE EXPOSURE TODAY IS ZERO, MEASURED NOT ASSUMED.** Re-ran all three pairs with the threshold
+> lowered to 0: **the same two drifts, no more** — and `only_canonical` / `only_deployed` stay at 0,
+> so every short block matches exactly. Nothing is hiding down there right now. **The hole is real;
+> the miss is not.** Worth stating plainly so nobody reads this as a live defect.
+>
+> **Why it still needs fixing**: short blocks are exactly where one-line rules live — a table row, a
+> single-sentence mandate, a `⚠️` warning. Those are the highest-value things to keep in sync and the
+> ones the tool currently cannot see. The threshold exists for a real reason (short blocks collide on
+> similarity — two `---` rules or two one-word headings look identical), so the fix is not "set it to
+> 0"; it needs an identity rule that works for short text, probably exact-match-or-nothing below the
+> threshold rather than similarity matching. **Measure the false-positive rate before changing it.**
+>
+> **🎯 THE DESIGN IS ALREADY PROVEN, and Rio supplied the pair that proves it.** Re-measuring at floor
+> 0 on `plan-push.md`, the two substantive sub-threshold blocks land on **opposite sides** of exactly
+> the line the fix has to draw:
+>
+> | block | size | verdict |
+> |---|---|---|
+> | the Usage code fence | 112 chars | **byte-identical** across repos → exact-match below the threshold catches a real drift here cleanly |
+> | the Project/Version header | 69 / 70 chars | **legitimately differs per repo** — the `Project` line is precisely the substitution class already masked |
+>
+> ⇒ That is a **must-catch and a must-not-cry-wolf in one file**, which is the only kind of evidence
+> that settles a threshold question. Exact-match-below-the-floor passes both.
+>
+> **How to use it — real file for the measurement, synthetic for the regression** (Rio's resolution of
+> the scope problem below, and it dissolves it cleanly). Do **not** pull the real file into the pair
+> set. Copy the two *shapes* into a synthetic fixture in the test module:
+>
+> - a fenced block of ~112 chars, **byte-identical on both sides** → must be caught if it drifts
+> - a two-line header block of ~69 chars whose first line carries a **per-repo substitution** → must
+>   stay quiet
+>
+> That gives the exact threshold cases as a permanent regression without the excluded surface ever
+> entering the checked pairs.
+>
+> ⚠️ **Why the caveat existed**: Rio's real-file pair comes from `.claude/commands/*.md`, which is
+> **deliberately excluded** from the tool's pair set (S183 measured 61 raw → 29 masked → 2 real, and a
+> detector reporting 29 to surface 2 gets ignored by the second week). The synthetic-fixture route
+> means his evidence settles the *design* without re-opening that exclusion at all.
+
 > ### 🆕 **S182 — one item left open, deliberately** (María 🌸, 2026-08-29)
 >
 > **61 pre-existing `src/rnd/` docs are absent from README.** These predate this branch — the 36 that
