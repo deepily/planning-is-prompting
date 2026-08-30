@@ -316,6 +316,14 @@ actual fix remains the one §1.5.1b already names: **bypass the condenser for re
 traffic.** Until that ships, bare lines are what a sender can do today, unilaterally, at the cost of
 a newline.
 
+**Being built, not duplicated here: Clayton's speech-act guard, row `29a986df`.** It addresses this
+same failure mechanically — classifying a message by what it is DOING (instruction, ruling,
+approval, retraction) rather than leaving each sender to judge. **This section is the doctrine half
+and deliberately stops where his engineering starts**; read his row for the analysis rather than
+looking for it here. If the guard ships and can tell an action-asking DM from an ack, the rule above
+becomes something the channel enforces instead of something a sender has to remember — and this
+fleet's own standing position is that **a rule which depends on remembering is not a control.**
+
 ### 1.5.2 Receiving a DM and replying
 
 > ⚠️ **Receive-side framing is Phase 3 WIP (as of 2026-06-15).** The inbound `<system-reminder>` envelope — surfacing `message_id` / `thread_id`, the `[DM from <persona>]` framing, and idle-aware delivery — is **not built yet**. For now an inbound DM arrives as the **raw body** via the existing delivery path, without the threading ids.
