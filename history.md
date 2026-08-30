@@ -1,8 +1,28 @@
 # Planning is Prompting - Session History
 
-> ✅ **Measured 2026-08-29 with a real tokenizer: 14,710 tokens (measured before the S182 entry).** Healthy — under the 17k warning line.
+> ✅ **Measured 2026-08-29 with a real tokenizer: 16,517 tokens (projected, including the S183 entry below).** Healthy — under the 17k warning line. The check now thresholds the PROJECTED total, file plus the drafted entry, per `history-management.md`; the previous banner measured only what was already on disk.
 >
 > 🗄️ *Previous banner (2026-08-28):* **14,264 tokens after the S180 entry.** The discrepancy the last banner left open is settled, and it settled against the reassuring number: the file was at **23,628 tokens** (tiktoken `cl100k_base`), not the 17,557 the banner claimed — over the 19k critical line and closing on the 25k limit. The `chars/4` heuristic said 21,849, so **both** estimates were low and the one that got written down was the lowest. Sessions 159–170 archived to `2026-08-04-to-15-history.md`. **Measure with a tokenizer, not a ratio, before writing a health verdict into this banner.**
+
+**RESUME HERE**: **Session 183 (2026-08-29 evening, María 🌸 `2b207ef5`, post-self-respin)** — Rick's epic pass, and four instruments that answered narrower questions than the ones I asked them.
+
+1. **The epic board: 16 of 18 live rows carried no epic, not "a dozen."** Stamped into six epics, drift 0 — then it **re-drifted five times in three hours** as peers minted rows without the field. Each was re-stamped; the enforcement question is now Rick's, as row `5246bb67`. Snapshot: `src/rnd/2026.08.29-epic-board-regroup-eighteen-rows-six-epics.md`.
+2. **🔴 Asked whether he could see he was a blocker, I answered "no" from the data model — and a UI had been built on it weeks ago.** `notifications.js` renders **⏳ Waiting on Rick** as its first section. The real gap is that it is guarded by `if (onRick.length > 0)`, so at zero it vanishes — indistinguishable from a failed render, which the Drift group two lines below deliberately avoids.
+3. **Built `workflow/scripts/doc_deploy_parity.py` (+11 tests) — and its own first run was a false green.** Against the live divergence it was written for it printed PARITY OK: the correction nearly doubled the paragraph, dropping similarity to **0.4957** against a 0.75 threshold. **A substantive correction is the least similar kind of edit there is**, so identity is now anchored on a shared opening; deleting that rule turns 3 tests red.
+4. **Four doc/deploy divergences, three found by the tool rather than by anyone noticing.** The one that matters: the **deployed** `brevity-mandate` skill has been missing *"send the path instead of the detail — a pointer, not a fourth sentence"* for two weeks, while README:360 records that change as shipped across six surfaces including this skill.
+5. **🔴 I read seat liveness off persona names and saw phantoms.** Three seats had been re-spun; the proof was in the event stream I was already reading (`chloe e35800c8` at 00:37, `chloe 61c032cd` at 01:50). I had *"a persona name is an address, not a claim of continuity"* written down from an August audit — having it written down did not stop me using the name.
+
+**Measured and deliberately NOT built**: the 40 overlapping `.claude/commands/*.md` pairs stay out of the parity tool — 61 raw hits → 29 after masking prefix/repo substitutions → **2 real**. A detector reporting 29 to surface 2 is ignored by the second week.
+
+**Tests**: 381 passed (was 370). **Board**: 22 non-terminal, 7 parked, 5 blocked on Rick — his own count, confirmed.
+
+**The lesson**: five times tonight an instrument answered a narrower question than the one it appeared to — a grep window, a threshold, a data model standing in for a rendered page, a persona name standing in for a session, and my own detector. **Four of the five had the right answer inside the output I was already looking at.**
+
+#### Checkpoint | 2026.08.29 23:10 | S183 — epic pass, parity detector, five drift re-stamps
+**Files**: `README.md`, `TODO.md`, `global/CLAUDE.md`, `src/rnd/2026.08.29-epic-board-regroup-eighteen-rows-six-epics.md`, `workflow/scripts/doc_deploy_parity.py`, `workflow/scripts/test_doc_deploy_parity.py` · lupin: `src/conf/epic-stories.json`
+**Board at checkpoint**: 2 rows owned, both blocked on Rick with 09:00 chases. No crew.
+
+---
 
 **RESUME HERE**: **Session 182 (2026-08-29, María 🌸 `2b207ef5`)** — PR preparation: swept the stragglers, fixed three red tests, and repaired an entry page that had been citing a file deleted ten months earlier.
 

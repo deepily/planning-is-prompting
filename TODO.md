@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-08-29 (**Session 182** (María 🌸 `2b207ef5`) — PR prep. Swept stragglers, fixed three red tests (a rotted calendar fixture, a test asserting behaviour `cff04f5` deliberately superseded, and a real in-prose test-count violation), redirected four live docs away from `commit-management.md` — deleted in Session 42 — rewrote CLAUDE.md's stale repo tree, and closed the README gap for 36 branch-added R&D docs plus all four explainers. 370 tests pass; drift 40/40.)
+Last updated: 2026-08-29 (**Session 183** (María 🌸 `2b207ef5`, post-self-respin) — Rick's epic pass: 16 of 18 live rows carried no epic, stamped into six, and the board re-drifted five times in three hours. Built `workflow/scripts/doc_deploy_parity.py` + 11 tests (381 green, was 370) after one stale sentence survived five sightings; it found four divergences, including the **deployed** `brevity-mandate` skill missing the Phase-1 path clause for two weeks. Two new pending decisions below, both blocked on Rick with 09:00 chases. — *Previous:* **Session 182** — PR prep. Swept stragglers, fixed three red tests (a rotted calendar fixture, a test asserting behaviour `cff04f5` deliberately superseded, and a real in-prose test-count violation), redirected four live docs away from `commit-management.md` — deleted in Session 42 — rewrote CLAUDE.md's stale repo tree, and closed the README gap for 36 branch-added R&D docs plus all four explainers. 370 tests pass; drift 40/40.)
 
 ## 📍 Resume Here
 
@@ -281,6 +281,91 @@ the ceiling reaches for the expensive rung believing it is the only one.
 
 **Not applied unilaterally**: a live `~/.claude/CLAUDE.md` edit is a doctrine change on Rick's own file,
 and the standing rule is to send it and hold rather than run with it.
+
+> **UPDATE 2026-08-29 (María 🌸, `2b207ef5`) — HALF LANDED. The snapshot is fixed; the live file is not.**
+>
+> Mr Radio re-raised this tonight on Rick's instruction and filed it as store row **`3a6d9505`** — so the
+> item is now owed work, not just a note here. **Fifth sighting**, and the count is the finding: Rio
+> documented it on 2026-08-17 against `context-pressure-tick.sh:412`, this entry recorded three more on
+> 2026-08-24, and it caught another manager tonight. **It has been open in this file for five days.**
+>
+> - ✅ `global/CLAUDE.md:465` — rewritten as the three-rung ladder, peer handoff kept as rung 2, the
+>   "handoff is the control, announcing is not" teeth kept verbatim. The false clause was *"no session
+>   can type `/clear` into its own pane"*; the other two clauses were true.
+> - ⏸️ `~/.claude/CLAUDE.md:481` — **untouched**, byte-identical text. `ask_yes_no` fired 01:24Z and
+>   **timed out unanswered** (`[default used] no` — a timeout is not a ruling, and it was not re-fired at
+>   an absent user). Row `3a6d9505` is `blocked` on **user:rick**, chase **2026-08-30 09:00 EDT**.
+> - ⚠️ **The two files now disagree by my own hand** — the opposite of the drift this entry was written
+>   about, and it is deliberate rather than an oversight. It resolves the moment Rick answers.
+>
+> The 2026-08-24 closing line above — *"nothing in this repo currently checks that the two agree"* —
+> still stands, and is now the sharper half of the item: had a check existed, none of the five sightings
+> would have needed a human to notice.
+
+---
+
+### 🔴 Four doc/deploy divergences found tonight — two still need Rick's word (María 🌸, 2026-08-29)
+
+Store row **`dacac717`**, blocked on **user:rick**, chase **2026-08-30 09:00 EDT**. Two direct asks
+fired (01:24Z, 01:47Z) and **both timed out unanswered** — recorded as timeouts, not rulings, and
+deliberately not re-fired at an absent user.
+
+Built and run: `workflow/scripts/doc_deploy_parity.py` + 11 tests (repo suite **381 green**, was 370).
+
+| # | Divergence | Whose file | State |
+|---|---|---|---|
+| 1 | self-respin paragraph, `global/CLAUDE.md` ↔ `~/.claude/CLAUDE.md` | Rick's | row `3a6d9505`, blocked on him |
+| 2 | `brevity-mandate` skill — deployed copy missing *"send the path instead of the detail — a pointer, not a fourth sentence"* | Rick's | **needs his word** |
+| 3 | lupin `.claude/commands/plan-push.md` — missing *"from the **☕ glyph** and"* | lupin's | reported to Mr Radio |
+| 4 | lupin `.claude/commands/plan-loc-delta-global.md` — missing the *"must already be time-normalized"* warning | lupin's | reported to Mr Radio |
+
+**#2 is the one that stings**: `README.md:360` records the Phase 1 *"three sentences AND a path"*
+change as shipped across six surfaces **including the brevity skill**. It landed in the repo copy and
+not the installed one, so every session — Mr Radio's included — has read the pre-Phase-1 rule for two
+weeks.
+
+**🔴 The tool's own first run was a false green**, and that is the finding worth keeping. Against the
+live divergence it was written for it printed **PARITY OK**: the correction nearly doubled the
+paragraph, dropping similarity to **0.4957** against a 0.75 threshold. **A substantive correction is
+the least similar kind of edit there is**, so a similarity-only detector is blindest exactly where it
+matters. Identity is now anchored on a shared *opening*; deleting that rule turns 3 tests red.
+
+**Measured and deliberately NOT built**: the 40 overlapping `.claude/commands/*.md` pairs stay out of
+the tool. Raw comparison → **61** hits; masking prefix/repo/path substitutions → **29**; genuinely
+real → **2**. A detector reporting 29 to surface 2 is ignored by the second week, which is the failure
+mode the tool exists to avoid. Making that surface usable needs a substitution-masking design.
+
+**Still owed (item 2 of the row)**: make it fire unattended — a crontab entry (Rick's) or the arbiter
+sweep (shared infra). Third option named honestly: leave it manual and accept it rots.
+
+---
+
+### 🔴 Epic keys rot because nothing enforces them at creation — rule, server default, or reject? (María 🌸, 2026-08-29)
+
+**Needs Rick's word.** Store row **`5246bb67`** (decision, `gate_class: operator`, owned by rick,
+`epic:board-visibility`). Seconded by Mr Radio 🦉, who owns the drift and named the fix.
+
+**Measured, not an impression.** 00:52Z: 18 live rows stamped, drift audit **0**. 01:25Z: three newly
+minted rows carried **no epic key** — two of Mr Radio's, one of Krishna's on his instruction. **Thirty-three
+minutes.** Nobody was careless; the rule simply does not fire at creation. He has since stamped the next row
+(`cfe0b15d`) at creation — verified by me rather than taken on his word — and the board is back to 0 drift.
+
+| # | Option | Trade |
+|---|---|---|
+| 1 | **Leave it a rule** | Zero build. Costs a manual re-stamp pass roughly weekly, and the board reads as authoritative while it is quietly wrong |
+| 2 | **Server-side default** → blank stamps `epic:unassigned` | Nothing is ever blank, so drift shows as a growing bucket rather than absence. But it silently accepts the lazy answer, and `epic:unassigned` stops meaning *deliberately no story* — the exact distinction the 2026-08-18 design paid for |
+| 3 | **Reject on creation** (recommended) | The only option that cannot rot, and the minter is the one person who knows the story. Breaks every caller not passing the field, and a hard reject on a write path is the kind of guard that gets disabled the first Friday it is wrong |
+
+**Recommendation: 3, with `epic:unassigned` named in the error as a legal explicit answer** — keeps the
+meaningful distinction while making blank impossible. Ship it warn-only for a week first so no caller
+breaks by surprise.
+
+**Deliberately not installed tonight** — a write-path change to shared infrastructure while three seats are
+mid-build against that same store. Mr Radio: *"that is a decision for Rick rather than something either of
+us should install tonight."*
+
+**Why it is worth a decision at all**: the epic layer has now been rebuilt by hand **twice in eleven days**
+(2026-08-18, 2026-08-29). A grouping that must be re-derived by hand every week is a report, not a field.
 
 **The general shape, worth more than this instance**: correcting a canonical document does not correct
 behaviour. Behaviour follows the file that is *loaded at boot*. **A doctrine fix is not shipped until the
