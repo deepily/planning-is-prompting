@@ -430,6 +430,29 @@ writer saw — while a row id is a *pointer*, verifying that the thing exists an
 be **at the moment of reading**, which is all the rule needs and less than it appears to promise.
 ⇒ **Both remain valid receipts. Only the sha is also a stable quotation.**
 
+**A THIRD INSTANCE, AND IT IS THE SHARPEST BECAUSE THE CITING ARTIFACT IS IMMUTABLE.** Commit
+`89fef945` carries row `b0507d0d` **in its subject line** — and that row is `dropped`. A commit
+message cannot be edited after the fact, so the reference is wrong permanently, in the one place
+git guarantees will outlive everything around it. **A mutable pointer baked into an immutable
+artifact is the worst pairing available**, and it is what a subject line of the form
+`<row-id>: <what I did>` produces by construction.
+
+⚠️ **This instance is NOT the unpreventable kind, and the difference is worth reading carefully
+because it was reported to me as the same.** Checked rather than accepted: the row moved to
+`dropped` at **19:33:34**, and the commit is timestamped **19:38:03** — the row was already dropped
+**four and a half minutes before the commit was written**. So a `task_get` at commit time would have
+caught it. That makes it the FIRST class (preventable by checking), not the second — unless the
+author read the row before 19:33, which is unknowable from here and is exactly why the wall-clock
+stamp in (b) above exists. *(The same report described the row as cited "four times including the
+subject"; it appears **once**. Counting `grep -c`, which counts matching LINES rather than
+occurrences, is the likely cause — a measurement worth re-deriving before it is quoted.)*
+
+⇒ **Three instances now, across three kinds of citing artifact — a doc, a filesystem census, and a
+commit message — and they do not all belong to the same class.** That is a better claim than three
+of a kind: **the hazard spans every artifact that names mutable state, while the remedy splits** —
+checking harder catches the preventable ones, and only citing a different KIND of thing catches the
+rest.
+
 **The same wall applies to any mutable store, not just this one.** Measured the same afternoon from
 the other direction: a memento census read at 15:36 reported two slots stale; both had in fact been
 repaired, at 15:13 and 15:40, and the published finding named two seats for a state neither was in.
