@@ -465,6 +465,17 @@ second old is legitimately nameless. Do not DM it by name until identity resolve
 - **The lane**: which store rows it still owns, by name and id.
 - **The DM rule**: three sentences and a path (`workflow/cross-session-communication.md`).
 - **This policy**: it will be monitored, and it should expect to be re-spun again at 50%.
+- **Why there are two slots**, not which one to type. A self-respin rehydrates from `root`
+  because the seat is clearing its OWN pane; a reap reads `io` because a manager reads the
+  seats it SPAWNED. The slot is the only location a READER can derive without asking the
+  writer — which is the whole reason it is a slot and not a path you choose.
+  (`~/.claude/mementos` is memento_io's out-of-repo MIRROR, not a third slot.)
+  🔴 **The command itself is deliberately NOT here** (Rachel's ruling, 2026-08-30): `self_respin`
+  now refuses a memento that is not at the slot and its abort names both acceptable paths and
+  the remedy, at the moment of the mistake. Repeating the instruction in a brief buys nothing —
+  measured 2026-08-30, `memento-management.md` already carried it and the seat that got it
+  wrong had not read it. **Docs carry the rationale, because only a reader changing the code
+  needs it. The abort carries the direction, because it reaches the seat that is already wrong.**
 
 ---
 
@@ -510,7 +521,13 @@ session holds for itself. The arbiter has been typing into panes of sessions it 
 **Five steps, and only step 3 is new:**
 
 1. **Reach a safe checkpoint.** No half-written files. Same precondition as any re-spin.
-2. **Write the memento** to the repo root, and **verify it on disk before scheduling anything.**
+2. **Write the memento**, then **verify it THROUGH THE READER — not by checking the file.**
+   Rachel's ruling, 2026-08-30, and it is this page's own lesson turned on itself: a file you
+   stat is a file you certified with the wrong instrument. `os.path.exists` answers "is something
+   there", which is true of a record written by hand — landing WITHOUT the mirror and WITHOUT the
+   pointer, at a path that then verifies fine because it is the path you named. Ask the reader
+   that will actually be used (`memento_io.py resolve`, or the reap's own slot reader) and the
+   half-written case fails where a stat passes. **Verify before scheduling anything.**
 3. **Schedule the injection at yourself** — `/clear`, into your own tmux session, after a delay long
    enough that the memento write has certainly landed. `wrap=False`: the speakerphone voice rider
    must never be wrapped around a slash command.
