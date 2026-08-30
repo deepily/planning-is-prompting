@@ -371,8 +371,20 @@ doing. It is none of those things: a bug report, not a design; `done`, not in pr
 acts appear nowhere in it. **A receipt that resolves to something other than what the citing text
 claims is exactly what §1.5.1b says must be refused and queried** — and this one sat inside the pair
 of sections that define that rule, until Rachel 🕊️ opened the row and checked. **Cite rows you have
-read.** If a speech-act guard is genuinely being built it has a different row, and that is the one to
-name.
+read.**
+
+**The speech-act guard is real and now has its own row: `b0507d0d`** (`item_class: task`,
+`status: queued`, owner clayton), minted after the catch precisely so the build has a row that says
+what it is. It guards the thing this section cannot: *a message carrying a verdict, an approval, a
+refusal, a sha or a branch name must arrive as that act, not as a summary of one* — measured the
+same day at **33 approvals, of which 12 delivered no approval at all and 10 named no branch or
+sha**. It is a **second** guard alongside the landed retraction-marker guard, not a replacement: a
+name-for-name **swap** passes the marker guard clean and unflagged, because that guard structurally
+cannot see a substitution.
+
+⇒ **Note what the mistake and its fix have in common.** The wrong citation pointed at a closed bug;
+the right one points at a queued build. **Both were one `task_get` away**, which is the entire cost
+of the rule this paragraph is arguing for.
 
 ### 1.5.2 Receiving a DM and replying
 
