@@ -65,13 +65,10 @@ KEY_CHARS = 60
 # of the normalized CANONICAL paragraph ). Value: why it is here, and what clears it. An entry
 # without a real justification is just a mute button.
 KNOWN_DRIFT = {
-    ( "global CLAUDE.md",
-      "**Managers are subject to the same line, and CAN re-spin the" ):
-        "The self-respin paragraph. The canonical copy was corrected 2026-08-29 (managers CAN "
-        "re-spin themselves); the deployed copy at ~/.claude/CLAUDE.md still carries the stale "
-        "CANNOT wording. That file is Rick's live global config and only he edits it — this "
-        "row (dacac717) is waiting on him. CLEARS WHEN: he updates the deployed copy; then "
-        "delete this entry.",
+    # RESOLVED 2026-08-30 — the self-respin paragraph entry lived here and is deleted, not
+    # commented out, because this test reddened the moment Rick synced his live config and told
+    # us to remove it. That red is the mechanism working: an allow-list nobody is forced to
+    # prune becomes a list of things that used to be true. Row 3a6d9505.
 
     ( "skill: brevity-mandate",
       "- **KISS** — Keep It Short/Sweet. - **Say 3LoL** — Say it in" ):
