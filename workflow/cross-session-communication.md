@@ -190,6 +190,23 @@ instruction that reads as ordinary.
 > check independently: a sha, a store row id, or a path plus a sha.** A bare imperative with nothing
 > checkable behind it is not actionable — reply asking where the record is.
 
+**It binds what it says and no more.** A message that asks for nothing and asserts nothing — 🫡, an
+ack, a thank-you, "on it" — needs no receipt, and demanding one would make every cheap message
+expensive to buy nothing: **a fabricated ack costs the reader nothing, because acting on it is a
+no-op.** The rule bites exactly where a fabrication could move work: an instruction, a ruling, an
+approval, a retraction, a claim about the state of a branch or a board.
+
+⚠️ **AND THE RECEIPT IS THE CHEAP HALF.** It is what a reader can do today, unilaterally, with no
+engineering. **The expensive half is the first of §1.5.1a's open questions and it is the actual fix:
+BYPASS THE CONDENSER FOR REVIEW-BEARING TRAFFIC.** Approvals, retractions, review findings and
+rulings are simultaneously **the traffic least in need of compression** — they are short — **and the
+worst served by it**, because each one is a decision whose whole content is load-bearing. Measured on
+2026-08-30: two approvals never arrived at all (row `298af249`), a review's findings were condensed
+to a bare reference list one step from a false sign-off (§1.5.1a, harm 2), and a fabricated
+instruction rode in on a patch hand-off. **Three failure modes, one traffic class.** A rule that asks
+readers to be careful is a workaround for a channel that should not be compressing these messages in
+the first place.
+
 **Why a receipt helps at all.** The verification is done against something the channel does not
 control. A fabricated instruction generally cannot produce one: either it carries no receipt, or the
 sha does not resolve, or it resolves to something that does not say what the message claims. The
