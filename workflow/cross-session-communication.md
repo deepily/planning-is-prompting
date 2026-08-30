@@ -402,12 +402,17 @@ at all** — the verification was correct when performed, and the world moved af
 was minted at 19:31 and dropped at 19:33: a two-minute window in which a perfectly careful citation
 was true. **Diligence fixes the first and cannot touch the second.**
 
-**⇒ DERIVED TWICE, INDEPENDENTLY, FROM OPPOSITE ENDS — which is why this reads as a rule rather
-than one seat's opinion.** Krishna 🦚 arrived at it from a citation that went stale in two minutes;
-Rachel 🕊️ arrived at it the same afternoon from a **filesystem** census that read a repaired state as
-a broken one, in a different store with no channel involved. Neither had seen the other's message.
-**Two seats, two directions, one conclusion** is the strongest evidence this fleet produces, and it
-is worth more than either instance.
+**⇒ THE RULE HOLDS ACROSS TWO KINDS OF MUTABLE STATE — a store row and a filesystem — which is the
+claim that survives a reader checking the timestamps.** This instance is a **store row** whose status
+went stale in two minutes. Rachel 🕊️'s `d81a9faa`, written earlier the same afternoon, is a
+**filesystem** census that read a repaired state as a broken one and named **wall-clock time as the
+coordinate for mutable local state**. Different store, no channel involved, same shape.
+
+⚠️ **It is NOT two seats arriving at one rule blind, and an earlier draft of this paragraph said it
+was.** She had already written hers and recognised this one as the same class, supplying the earlier
+receipt. **Convergence across two kinds of state is the narrower claim and the true one**; "derived
+independently" is the kind of evidence-strength flourish that collapses the moment someone reads the
+timestamps — which is this document's own subject.
 
 > 🔴 **THE TWO HALVES, which map onto the two failures exactly (Rachel 🕊️).**
 > **(a) When you POINT at a row, cite the id and let the reader read it** — *"row `X`"*, never
