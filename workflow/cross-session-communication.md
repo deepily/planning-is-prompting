@@ -387,18 +387,50 @@ it was **`dropped` two minutes later**, before the ink was dry, because minting 
 no-new-tickets moratorium that was still in force. So the corrected citation was **also** wrong, by
 the same standard, and nobody had been careless: the row was read, not recalled.
 
-⇒ **A ROW'S STATUS IS MUTABLE STATE; A DOCUMENT THAT CITES IT IS STALE THE MOMENT SOMEONE
-TRANSITIONS THE ROW, AND NOTHING IN THE DOCUMENT SAYS SO.** That is the §1.5.1b failure — a receipt
-resolving to something other than what the text claims — arriving with no channel involved at all
-and no mistake by anyone. **Verifying harder does not fix it, because the verification was correct
-when it was performed.**
+⇒ **THIS IS NOT A NEW RULE AND MUST NOT BE WRITTEN AS ONE — it is the existing coordinate rule in a
+notation nobody had listed.** Lupin's `CLAUDE.md` § *"🔴 A COORDINATE IS NOT A REFERENCE — NAME THE
+CONTENT"* already carries the table, already lists *"as of tonight" → "the sha, or the wall-clock
+time of the read"*, and already says the tell is **mutability, not format**. It even predicts this
+incident: *"the same defect wearing a different notation, which is exactly why it keeps being
+re-derived instead of recognised."* **I re-derived it.** Read that section rather than this
+paragraph; the only thing this instance adds to its table is one more notation — **a store row's
+`status`**, mutable exactly as a stash index is.
 
-⇒ **So cite the thing that cannot change under you.** A commit **sha** is immutable and a
-**quotation** of a row's reasoning stays true whatever happens to the row; a row **id** is a
-reasonable pointer for a reader who wants the current state, and a row's **status** belongs in a DM
-where it will be re-read within the hour, never in a doc that outlives it. **Three citations of one
-fact went wrong in ninety minutes** — first the wrong row, then the right row's transient state —
-and only the second failure was unavoidable by care alone.
+**What the instance does contribute is the SPLIT, because the two failures have different
+remedies.** The first was preventable by opening the row. **The second was not preventable by care
+at all** — the verification was correct when performed, and the world moved afterwards. `b0507d0d`
+was minted at 19:31 and dropped at 19:33: a two-minute window in which a perfectly careful citation
+was true. **Diligence fixes the first and cannot touch the second.**
+
+**⇒ DERIVED TWICE, INDEPENDENTLY, FROM OPPOSITE ENDS — which is why this reads as a rule rather
+than one seat's opinion.** Krishna 🦚 arrived at it from a citation that went stale in two minutes;
+Rachel 🕊️ arrived at it the same afternoon from a **filesystem** census that read a repaired state as
+a broken one, in a different store with no channel involved. Neither had seen the other's message.
+**Two seats, two directions, one conclusion** is the strongest evidence this fleet produces, and it
+is worth more than either instance.
+
+> 🔴 **THE TWO HALVES, which map onto the two failures exactly (Rachel 🕊️).**
+> **(a) When you POINT at a row, cite the id and let the reader read it** — *"row `X`"*, never
+> *"being built — row `X`"*. That removes the second failure entirely, because a bare id has no
+> expiry.
+> **(b) When you QUOTE a row's state, stamp the wall-clock time of the read.** That does not
+> prevent staleness; it makes it **visible instead of silent**.
+> Neither is more care. Both are choosing a different KIND of thing to cite.
+
+⚠️ **AND THIS EXPOSES A SEAM IN §1.5.1b'S OWN RECEIPT RULE, which is worth one clause.** That rule
+accepts *"a sha, a store row id, or a path plus a sha"* as interchangeable receipts. **They are not
+the same kind of object.** A sha resolves to the same bytes forever; **a row resolves to whatever it
+says now.** So a sha is a receipt in the strong sense — a reader checking it tomorrow sees what the
+writer saw — while a row id is a *pointer*, verifying that the thing exists and is what it claims to
+be **at the moment of reading**, which is all the rule needs and less than it appears to promise.
+⇒ **Both remain valid receipts. Only the sha is also a stable quotation.**
+
+**The same wall applies to any mutable store, not just this one.** Measured the same afternoon from
+the other direction: a memento census read at 15:36 reported two slots stale; both had in fact been
+repaired, at 15:13 and 15:40, and the published finding named two seats for a state neither was in.
+**A filesystem census with no clock reads a repaired state as a broken one.** Same defect, different
+store — which is why wall-clock time is the coordinate for mutable local state, as a sha is for a
+tree.
 
 ### 1.5.2 Receiving a DM and replying
 
