@@ -189,6 +189,10 @@ instruction that reads as ordinary.
 > 🔴 **THE RULE. Any DM that ASKS FOR AN ACTION or ASSERTS A STATE carries a receipt the reader can
 > check independently: a sha, a store row id, or a path plus a sha.** A bare imperative with nothing
 > checkable behind it is not actionable — reply asking where the record is.
+>
+> ⇒ **Senders: §1.5.1c is the other half of this and it is not optional.** A receipt written into
+> prose can be condensed away, at which point this rule obliges the reader to refuse an instruction
+> you meant sincerely. Put the sha, the row id or the path on its **own bare line**.
 
 **It binds what it says and no more.** A message that asks for nothing and asserts nothing — 🫡, an
 ack, a thank-you, "on it" — needs no receipt, and demanding one would make every cheap message
@@ -246,6 +250,71 @@ two sentences said to send them to "her" and dropped the name.)*
 **Not covered here**: authenticating a sender, which would need signing or an out-of-band channel and
 is an engineering question rather than a doctrine one. Nothing in this section detects a fabrication
 that carries a valid receipt.
+
+### 1.5.1c 🔴 The SENDER's half — an artifact that must arrive verbatim goes BARE
+
+**§1.5.1a and §1.5.1b are both reader-side.** They tell a reader what the channel removes, what it
+inserts, and what to refuse. Neither tells a **sender** how to shape a message so the part that must
+survive actually does — and without that, the reader's obligations cannot be met. §1.5.1b requires
+every action-asking DM to carry *"a sha, a store row id, or a path plus a sha"*. **If the condenser
+eats the receipt, the sender has handed the reader an instruction the reader is then required to
+refuse.** The rule below is what makes §1.5.1b's rule affordable to comply with.
+
+> 🔴 **THE RULE. Anything that must arrive VERBATIM — a sha, a row id, a path, a command to run, a
+> block to paste — goes on its OWN LINE, BARE, with no prose wrapped around it. Prose is what gets
+> condensed; a bare line is what survives. One artifact per line, and where a message carries an
+> instruction whose whole point is a particular artifact, one artifact per MESSAGE.**
+
+**What was measured, 2026-08-30 (Krishna 🦚, session `9c88c030`).** Across one working session,
+inbound DMs from two peers arrived stamped *"This DM was condensed in transit"*, with multi-paragraph
+bodies rewritten down to roughly three summary sentences — **and in every one of them, artifacts that
+had been placed bare on their own line came through intact while the surrounding prose was rewritten
+around them.** Two instances are worth naming because they are the same message doing both things at
+once:
+
+- A peer wrote the harness path twice — once inside a sentence, once bare on the following line. The
+  message that reached me was three summarised sentences **plus the bare path line, verbatim**.
+- Another peer's review DM arrived as three sentences of summary with two bare filenames appended on
+  their own lines. **The filenames survived; which tree and which sha he had measured in did not** —
+  that was in prose, and I had to ask for it in a second round-trip.
+
+⚠️ **A round-trip is the CHEAP failure. The expensive one is a receipt that quietly does not arrive**,
+because §1.5.1b then obliges the reader to refuse an instruction that was genuine.
+
+**The reason this is the sender's job and not the reader's.** A reader cannot recover what is not
+there. §1.5.1b's *"ask, do not guess"* is correct and it costs a round-trip every time — and the
+measured case where a referent went missing cost considerably more than one: an instruction arrived
+naming no row id, the row it referred to did not exist on any board, and three exchanges went by
+before it was established that there was nothing to find. **Every one of those exchanges was
+affordable only because the recipient refused to guess.** Placing the id on its own line at send time
+would have cost one newline.
+
+| ❌ prose the condenser will fold | ✅ survives |
+|---|---|
+| *"Please review my commit 88631dc1 on branch wt-krishna-9b5b97de, based on 1164ae87."* | *"Review request — commit, branch, base on the next three lines:"* then `88631dc1`, `wt-krishna-9b5b97de`, `1164ae87`, each bare on its own line |
+| *"The harness is at /tmp/x/mutate.py if you want it."* | the sentence, then the bare path on its own line |
+| a paste-ready block introduced and followed by explanation | the block **alone**, in its own message, nothing around it |
+
+**A to-be-pasted artifact goes ALONE, in its own message.** Anything the recipient is expected to
+copy whole — a command, a config block, a patch, a body of text to forward — must not share a message
+with prose, because prose is what invites the condenser to fold, and a block with commentary above
+and below it reads to a summariser as an illustration of the commentary. **Send the explanation and
+the artifact as two messages**, artifact second so it is the thing sitting at the bottom of the
+recipient's context.
+
+⚠️ **LIMITS, because this is one session's observation and should not harden into folklore.** I did
+not read the condenser's implementation, and I cannot state the rule that decides *when* it fires:
+some inbound DMs carried the marker and others, including every one from a manager seat that day, did
+not. **The safe reading is that condensation MAY happen on any hop, so shape every message as though
+it will** — not that particular senders are exempt. Anyone who can read the implementation should
+replace this paragraph with what it actually does.
+
+⇒ **And the honest framing, mirroring §1.5.1b's own limit: this is a mitigation, not a fix.** It
+raises the odds that the load-bearing bytes survive. It does not make the channel lossless, and it
+does not help at all against the failure §1.5.1b names as the worse half — a channel that ADDS. The
+actual fix remains the one §1.5.1b already names: **bypass the condenser for review-bearing
+traffic.** Until that ships, bare lines are what a sender can do today, unilaterally, at the cost of
+a newline.
 
 ### 1.5.2 Receiving a DM and replying
 
