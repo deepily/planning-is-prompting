@@ -272,7 +272,30 @@ A post-game **produces movement**, not just a document:
    > Cost: one message. This is the cheapest mechanism in the ladder and the only one that caught a false rule twice in a single afternoon. **Skipping it is not a shortcut — it is the whole failure.**
 4. **Open threads → a store item** (`task_create`) so they stay live and owed, not stranded in prose.
 5. **New failure modes → the failure-mode catalog** the Steward enforces against next time.
-6. **The corpus — `io/post-games/`.** Every full-retro post-game lives in this one directory, named `yyyy.mm.dd-<slug>-post-game.md`, and is **registered in `io/post-games/README.md`** — the tagged index (`date · engagement · type · key threads/tags · rulings · graduation-status`). **`io/post-games/` is a gitignored, local-only corpus** (Rick, 2026-06-30: *"that way it doesn't get tracked by the repo"*) — post-games are research artifacts, not committed doctrine (sibling to `io/mementos/`); they stay doc-viewable via the `io/post-games/` prefix in `.docview.yml`. The corpus is **researchable**: a tag recurring across N entries (e.g. `drive-vs-hold`, `confabulation`) is exactly the *"larger cross-session pattern"* the `accumulate-pattern-before-graduating-doctrine` rule waits for before a lesson graduates. The corpus + tag-index is how we draw on past conversations ad hoc when planning workflow updates.
+6. **The corpus — `io/post-games/`.** Every full-retro post-game lives in this one directory, named `yyyy.mm.dd-<slug>-post-game.md`, and is **registered in `io/post-games/README.md`** — the tagged index (`date · engagement · type · key threads/tags · rulings · graduation-status`). **`io/post-games/` is a gitignored, local-only corpus** (Rick, 2026-06-30: *"that way it doesn't get tracked by the repo"*) — post-games are research artifacts, not committed doctrine (sibling to `io/mementos/`); they stay doc-viewable **only in a repo whose OWN `.docview.yml` carries the `io/post-games/` prefix**
+
+   > 🔴 **THIS IS PER-REPO, AND THE SENTENCE USED TO ASSERT IT UNIVERSALLY.** Measured 2026-08-30:
+   > **planning-is-prompting HAS the prefix** (`.docview.yml`, with a comment pointing back at this
+   > section) — **Lupin does NOT**, and its manifest allows only `src/` plus a named root-file list.
+   > So a post-game filed in Lupin's corpus is gitignored *and* unreachable from the doc viewer:
+   > readable by nobody but the person standing on that machine. A whole afternoon's retro was
+   > invisible to a manager for exactly this reason, and the digest links sent to him were dead.
+   >
+   > ⚠️ **A doctrine doc asserting a capability nobody had tested is the failure this workflow
+   > exists to catch**, one layer out from the artifacts it reviews.
+   >
+   > **Before relying on it, check the repo you are in — do not read it off this page:**
+   > ```bash
+   > grep -n 'io/post-games/' "$REPO/.docview.yml"   # no hit ⇒ the corpus is terminal-read only
+   > ```
+   > **If the prefix is absent, the corpus is a local archive and nothing more.** Either add the
+   > prefix — but the running server will not see it until the cached scope registry is dropped
+   > (`_SCOPE_REGISTRY` in `src/cosa/rest/routers/docs_files.py` is built once per process; a
+   > `lupin-rest-dev` bounce is the sure way) — or put the retro somewhere the repo does serve and
+   > leave a pointer in the corpus. **Do not send a doc-viewer link to a path you have not
+   > confirmed is served** — a dead link reports success to the sender and nothing to the reader.
+
+   The corpus is **researchable**: a tag recurring across N entries (e.g. `drive-vs-hold`, `confabulation`) is exactly the *"larger cross-session pattern"* the `accumulate-pattern-before-graduating-doctrine` rule waits for before a lesson graduates. The corpus + tag-index is how we draw on past conversations ad hoc when planning workflow updates.
 
 ---
 
