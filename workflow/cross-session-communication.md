@@ -303,11 +303,20 @@ the artifact as two messages**, artifact second so it is the thing sitting at th
 recipient's context.
 
 ⚠️ **LIMITS, because this is one session's observation and should not harden into folklore.** I did
-not read the condenser's implementation, and I cannot state the rule that decides *when* it fires:
-some inbound DMs carried the marker and others, including every one from a manager seat that day, did
-not. **The safe reading is that condensation MAY happen on any hop, so shape every message as though
-it will** — not that particular senders are exempt. Anyone who can read the implementation should
-replace this paragraph with what it actually does.
+not read the condenser's implementation, and I cannot state the rule that decides *when* it fires.
+**What was actually observed, at the precision it will survive being checked at: several DMs from two
+worker seats carried the marker; none from the manager seat did.** **The safe reading is that
+condensation MAY happen on any hop, so shape every message as though it will** — not that particular
+senders are exempt. Anyone who can read the implementation should replace this paragraph with what it
+actually does.
+
+🔴 **AND THE PRECISION IS ITSELF THE POINT, not pedantry about wording.** The first version of this
+finding, in a DM, said *"every inbound DM today carried the marker"*. That is **false** — the manager
+seat's did not — and it was caught only because the author re-checked before it was quoted into this
+file. **"Every" collapses the moment one counterexample appears, and a rule resting on a collapsed
+measurement is discounted along with it.** Worse, "every DM is condensed" invites the reader to
+conclude an **unmarked** DM is therefore safe, which is the same false-green shape this fleet spent
+2026-08-30 removing from three test suites. State the narrower claim; it is the one that holds.
 
 ⇒ **And the honest framing, mirroring §1.5.1b's own limit: this is a mitigation, not a fix.** It
 raises the odds that the load-bearing bytes survive. It does not make the channel lossless, and it
