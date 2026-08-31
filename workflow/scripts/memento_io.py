@@ -132,9 +132,35 @@ codes, and until now nothing said what any of them meant.
     10  adopt: would move the pointer BACKWARD to an older record
     11  the pointer does not name the newest record for this persona
 
-⚠️ THREE CODES ARE SHARED ACROSS VERBS ON PURPOSE — 1, 5 and 6 — because they mean the
-same thing wherever they fire. A code is per-CONDITION, not per-verb. Do not renumber to
-make them unique: a caller keying on 5 wants "the sync failed", not "which verb called it".
+⚠️ SHARING A CODE IS FINE. COVERING TWO CONDITIONS WITH ONE CODE IS NOT — and my first cut
+of this table said all three shared codes were "the same thing wherever they fire" without
+checking. Clayton 😎 asked me to verify before writing a do-not-renumber directive. Reading
+all seven sites, that claim holds for ONE of the three:
+
+  exit 6  ✅ GENUINELY ONE CONDITION. `cmd_write` and `cmd_amend` both fire it from the same
+          post-game gate, via the same `print_post_game_refusal`. Sharing is correct here and
+          renumbering per-verb would be the mistake: a caller keying on 6 wants "post-game
+          owed", not "which verb asked".
+
+  exit 5  🔴 OVERLOADED — two different conditions, and one is far more serious.
+              write   : post-write verification found problems (missing pointer/mirror,
+                        mirror bytes != record, record not gitignored)
+              sync    : mirror bytes != record after sync
+              adopt   : ADOPT CHANGED THE RECORD'S BYTES
+          The first two are "the sync/verification failed". The third is a copy-only verb
+          having MUTATED an immutable record — a data-integrity violation, not a sync problem.
+          A caller cannot tell "re-run the sync" from "a record was just altered" and those
+          want opposite responses. This one deserves its own code.
+
+  exit 1  🔶 TWO MEANINGS, both mild.
+              adopt   : you passed a session-id with no record — a misuse refusal
+              resolve : no record found — a normal negative answer, like grep's 1, and
+                        `cmd_resolve`'s own docstring documents SystemExit(1) as its contract
+          Defensible as-is; resolve's is contractual and should not move.
+
+⇒ NOT CHANGED HERE. Renumbering is a caller-visible contract change and belongs in a
+deliberate commit, not a documentation pass. Recorded so the next person has the reading
+rather than my assertion.
 """
 
 import argparse
