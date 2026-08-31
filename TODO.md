@@ -431,8 +431,26 @@ the tool. Raw comparison → **61** hits; masking prefix/repo/path substitutions
 real → **2**. A detector reporting 29 to surface 2 is ignored by the second week, which is the failure
 mode the tool exists to avoid. Making that surface usable needs a substitution-masking design.
 
-**Still owed (item 2 of the row)**: make it fire unattended — a crontab entry (Rick's) or the arbiter
-sweep (shared infra). Third option named honestly: leave it manual and accept it rots.
+**Item 2 — BUILT, 2026-08-31 (Rachel 🕊️)**: `workflow/scripts/doc-parity-tick.sh` + 20 tests
+(`test_doc_parity_tick.py`; suite 391 → **411 green**). Crontab-installable, `--print-install` /
+`--install` / `--uninstall` / `--status`. **A clean run prints zero bytes** — the test asserts the byte
+count, because a daily tick that says *parity OK* trains its reader to skip the one that does not.
+Drift fires a cosa-voice notify with the drifted pairs in the abstract. Findings are fingerprinted, so
+divergence #2 sitting on Rick's word does **not** re-alarm every morning (exit 4 = findings stand,
+deliberately not re-sent); a *new* or *changed* finding delivers immediately regardless.
+
+**The alarm was proven to fire, not assumed to.** A substantive drift was planted in a scratch copy of
+`brevity-mandate/SKILL.md` — the real Phase-1 clause reverted, 211 chars → 99, clause similarity
+**0.4903** — the tick went **red (exit 2)** and POSTed the alarm to a live endpoint; the second run
+returned **exit 4** with no second POST; restoring the copy returned **exit 0, silent**. Three
+mutations were then run against the suite to prove the tests are guards: deleting the anchor rule
+turned **9 red** (the receipt test among them, alone-verified), making a clean run print *PARITY OK*
+turned the silence test red, and letting a failed delivery arm the quiet window turned that test red.
+All green on restore.
+
+🔴 **NOT installed — the crontab is Rick's.** The exact line is printed by
+`workflow/scripts/doc-parity-tick.sh --print-install` (daily 07:30). Until somebody runs it, this
+tool is still the thing it was written to catch.
 
 > **UPDATE 2026-08-31 (Krishna 🦚, `bae40467`) — ✅ CLOSED, all four divergences AND the "still owed" item.**
 >
@@ -514,8 +532,13 @@ deployed copy carries it** — and nothing in this repo currently checks that th
 > `cc-task:…` upsert key (52 rows), and a free-text `cascade-quick-ask` tag (289 rows). A reject that
 > tests *"is this field blank?"* is **silently inert on two of the three lanes** while making the field
 > read as covered. Her recommendation was a **detector over the rows** rather than a guard on the door,
-> because a detector's stated reach is its actual reach. **Worth putting in front of Rick before the
-> warn-only week starts** — it does not contradict his ruling, it changes what the ruling buys.
+> because a detector's stated reach is its actual reach.
+>
+> **This is NOT a reason to reopen the ruling — it is a constraint on the BUILD.** Rick ruled; the
+> ruling stands. What the measurement changes is what a blank-check can be trusted to cover, so it
+> belongs to whoever implements the warn-only week (Mr Radio 🦉) rather than back in Rick's queue.
+> María 🌸 found the same split independently and reported it to him as a **two-tenant** caveat; the
+> measured count is **three**, so the caveat as filed understates its own reach.
 ---
 
 
@@ -611,7 +634,7 @@ whole reason that prefix exists.
   **What the review changes** (all in its own §s — read it before writing the plan): the corpus does **not** generate its own extraction ground truth (my central claim, and it was circular — I was measuring recall with the instrument whose recall was in question); use **occurrence-unique, clause-scoped placeholders** (`⟦S02_PATH00⟧`) rather than my same-literal-same-token rule, which loses the provenance needed to catch relocation; the negative control is **insufficient alone** — add mutation tests that omit/duplicate/alter/join/invent placeholders, because models preserve many literals naturally so disabling the freeze may not go red; SOFT false positives are **not** nearly free (contradicts my §8 Q2 recommendation); and treat 99.9% as a **raw-yield objective, not a delivered-safety threshold**. Its headline: narrow the claim to *"exact preservation of selected byte spans through a lossy rewrite"* — a literal freeze is a safety kernel, not a message-integrity system. Economics need a full recompute against real tokenization. | raised: 2026-08-06 | owner: María
 
 
-- [ ] **🔴 DOES ANYTHING WE WRITE DOWN ACTUALLY GET USED? — the prior question to every graduation decision.** Raised by Mr Radio 🦉 2026-08-05 from a line in Clayton's memento: *"the `LUPIN_ROOT` false-red — a repeat of my own 2026-08-03 lesson — it bit again."* **A lesson he had already recorded two days earlier cost him time anyway.** Every other finding that day was about git or pytest; this one is about whether any of them survive to the next seat. | **`horizon: next`**
+- [ ] **🔴 DOES ANYTHING WE WRITE DOWN ACTUALLY GET USED? — the prior question to every graduation decision.** Raised by Mr Radio 🦉 2026-08-05 from a line in Clayton's memento: *"the `LUPIN_ROOT` false-red — a repeat of my own 2026-08-03 lesson — it bit again."* **A lesson he had already recorded two days earlier cost him time anyway.** Every other finding that day was about git or pytest; this one is about whether any of them survive to the next seat. | **`horizon: archived`**
 
   **Three gates, not two** — recorded → loaded → **fires at the moment it's needed**. Clayton is determining which failed (never made the 08-03 memento · made it but the re-spawn didn't seed from it · seeded and nothing connected it to the red in front of him). The third is the interesting one, and it is a finding about the *mechanism*, not about him: a document read at boot and a symptom hit mid-task are separated by everything in between.
 
@@ -681,7 +704,7 @@ whole reason that prefix exists.
 
 - [ ] **🔭 PATTERN-WATCH (do NOT graduate yet — needs a 2nd instance): "a plan that asserts a RULE must name its MECHANISM, or mark the rule explicitly unenforced."** Candidate authoring-side rule for `p-is-p-01-planning-the-work.md` / `plan-authoring-cascaded.md` §Author-side Discipline (grep-sweep checklist). Anchor: `cascade-eval-first` (2026-07-12) — the cascade found **six** places where the roadmap asserted a rule with **no code behind it** (panel-eligibility · local-judge phantom · truncation check · guarded-roots · aggregate weighting · fail-closed provenance). The doc's OWN central finding is that pathology ("the gate itself is not code"), and it committed the same error six times — an author cannot see it in their own prose, which is precisely why it wants a mechanical checklist item. **Held per `feedback_accumulate_pattern_before_graduating_doctrine`**: one run is an observation, not a pattern. Re-evaluate at the next authoring cascade; if it recurs, graduate. | raised: 2026-07-12 | owner: María (Steward) | **`horizon: someday`**
 
-- [ ] ~~**🆕 APPROVE: cascade Capability-claim receipt rule (R7)**~~ **✅ RULED 2026-07-13 — GRADUATED as drafted (escalation-scoped)** — an escalation abstract asserting a CAPABILITY must cite the receipt proving it **RUNS** (a port that answers, a process, a resolved env var — never a design doc's illustrative example). **DRAFTED into `plan-review-cascaded-common.md` §Escalation Taxonomy, uncommitted**; same proposal doc as the ledger (`src/rnd/2026.07.12-cascade-stepwise-task-ledger.md`) — approvable independently. Empirical anchor: `cascade-eval-first` — a reviewer's remediation ("add a local Qwen/DeepSeek judge, so N≥3 survives") was escalated to Rick citing the design doc's §9; the Steward checked the box and found **no local LLM at all** (ollama dead; the only local server runs embeddings + ASR). Rick was ~1 chase-cycle from ratifying a fix built on a phantom capability. Cost of the catch: one port check. Manager adopted it mid-run as run-rule R7. Escalation-surface instance of `feedback_no_confabulated_results`. | raised: 2026-07-12 | owner: Rick (approve) / María (drafted) | **`horizon: archived`**
+- [ ] ~~**🆕 APPROVE: cascade Capability-claim receipt rule (R7)**~~ **✅ RULED 2026-07-13 — GRADUATED as drafted (escalation-scoped)** — an escalation abstract asserting a CAPABILITY must cite the receipt proving it **RUNS** (a port that answers, a process, a resolved env var — never a design doc's illustrative example). **DRAFTED into `plan-review-cascaded-common.md` §Escalation Taxonomy, uncommitted**; same proposal doc as the ledger (`src/rnd/2026.07.12-cascade-stepwise-task-ledger.md`) — approvable independently. Empirical anchor: `cascade-eval-first` — a reviewer's remediation ("add a local Qwen/DeepSeek judge, so N≥3 survives") was escalated to Rick citing the design doc's §9; the Steward checked the box and found **no local LLM at all** (ollama dead; the only local server runs embeddings + ASR). Rick was ~1 chase-cycle from ratifying a fix built on a phantom capability. Cost of the catch: one port check. Manager adopted it mid-run as run-rule R7. Escalation-surface instance of `feedback_no_confabulated_results`. | raised: 2026-07-12 | owner: Rick (approve) / María (drafted) | **`horizon: next`**
   - ↳ *struck through and marked ✅ RULED / GRADUATED in its own text*
 
 - [ ] **🆕 DEFERRED (Rick said "no", 2026-07-12): bounce `lupin-rest-dev` (:7999) to activate the `skills-distillation` doc-viewer registration.** Config is applied + staged but **inert until the server re-reads it at startup**: `lupin/src/conf/lupin-app.ini` (`external repos += skills-distillation`, path `/var/external-projects/google/skills-distillation`, prefixes `src/, io/` — **uncommitted**) + `google/skills-distillation/.docview.yml` (committed, `6f4d676`). No compose change needed (projects tree already mounted read-only). Rick declined the immediate bounce (shared comms backbone, live cascade on it) → **schedule at a quiet seam between cascade stages**. Side-effect until then: the task store **422s `doc_path` and `log_line` receipts** for the unregistered `skills-distillation` scope, so that cascade is on `commit`-hash receipts. | raised: 2026-07-12 | owner: María (execute at seam) / Rick (word to bounce) | **`horizon: next`**
@@ -894,12 +917,12 @@ whole reason that prefix exists.
 
 ## Pending
 
-- [ ] **[PLAN] Archive history.md — it is PAST the 19k critical threshold (~20.4k).** Session 178's entry was written compact to avoid making it worse. Run `/plan-history-management archive` before the next substantial entry. | **`horizon: now`**
+- [ ] **[PLAN] Archive history.md — it is PAST the 19k critical threshold (~20.4k).** Session 178's entry was written compact to avoid making it worse. Run `/plan-history-management archive` before the next substantial entry. | **`horizon: archived`**
 - [ ] **[PLAN] §10b′ — decide whether pins #3/#9/#10/#2 collapse into ONE pin.** Clayton's argument: we have been treating a data-model defect as a writing problem, and the fix is a typed observation state on the record rather than four rendering rules. RECORDED-NOT-ADOPTED in `88f0e04` because it restructures the canonical checklist and arrived condensed at 21:52. **Ask Clayton for the full form before touching §10a** — specifically the field name, its values, whether it lives on the record or the metric, and which of the four pins does NOT collapse. | **`horizon: next`**
 - [ ] **[PLAN] E2 stays open and is re-scoped, not answered.** Do NOT re-ask the `v2 ≥ v1` margin question until a paired run exists whose arms measure the same set — asking it against the current numbers would fit a threshold to an artifact of v1's failures. | **`horizon: next`**
 
-- [ ] 🔴 **`history.md` is at ~17.65k tokens — over the 17k warning.** One more session of this size breaches the 19k critical line. Archive at the S174/S173 seam next session before adding an entry. | **`horizon: archived`**
-  - ↳ *SUPERSEDED by the `history.md` item above it, which measures the SAME file at ~20.4k — past the 19k line this one warns about approaching*
+- [ ] 🔴 **`history.md` is at ~17.65k tokens — over the 17k warning.** One more session of this size breaches the 19k critical line. Archive at the S174/S173 seam next session before adding an entry. | **`horizon: next`**
+  - ↳ *🔴 **CORRECTION 2026-08-31 (Krishna 🦚) — I tagged this backwards first, and the tokenizer says THIS is the accurate one.** Measured with `tiktoken` `cl100k_base`: `history.md` is **17,549 tokens** — over the 17k warning, comfortably UNDER the 19k critical. So the `~17.65k` this item states is right to within 100 tokens, and the `~20.4k / PAST 19k critical` in the item above is **overstated by ~2.9k**. Re-tagged `next`; the item above is now the superseded one. **`chars/4` reads 16,430 here — low by 1,119 tokens**, which is the same direction the banner in `history.md` already warns about.*
 - [ ] **Nobody knows what allocated 229 GB** (rows `df5c3696`). The two dead pids were never linked to sessions and the suspects — a Bash call with unbounded stdout, an oversized MCP response — have no evidence for or against them. The watcher makes the *next* one attributable; it explains nothing about the last one. Decide whether to chase it at all, and bound any investigation's own reads. | **`horizon: someday`**
 - [ ] **Measured ceiling to replace 24G** — Sam owes a day of `--report` data and a peak-RSS distribution, then a number for Rick. Do not let a successor defend 24G. | **`horizon: next`**
 - [ ] **`11390b57`** — durable freshness guard, unstarted. Corpus hash stamped at generation, refuse on mismatch, refusal names which side is stale. Prove it goes red. | **`horizon: next`**
