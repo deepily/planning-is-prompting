@@ -1167,9 +1167,16 @@ def test_amend_refuses_a_foreign_session_record( repo ):
     victim = repo / "io" / "mementos" / "cheech-1af4b598.md"
     sha    = hashlib.sha256( victim.read_bytes() ).hexdigest()
 
+    # ⚠️ THE MECHANISM CHANGED UNDER THIS TEST, THE GUARANTEE DID NOT (store dbca4ba8,
+    # option (a)). `amend` used to FOLLOW the pointer, reach cheech's other record, and
+    # REFUSE with exit 7. It now derives its path from identity, so it never reaches that
+    # record at all and refuses with exit 8 because the caller has none of its own. The
+    # protection is stronger — structural rather than a check that could be forgotten — and
+    # the two assertions that matter are unchanged: the victim is byte-identical, and both
+    # ids are still named so the seat can tell what it nearly hit.
     r = amend_memento( repo, persona="cheech", sid="2d205ee1", slot="io" )
-    assert r.returncode == 7, "an amend that would cross SESSIONS must refuse"
-    assert "does not own the record" in r.stderr
+    assert r.returncode == 8, "an amend that would cross SESSIONS must refuse"
+    assert "no record to amend" in r.stderr
     assert "1af4b598" in r.stderr and "2d205ee1" in r.stderr, "name BOTH ids or it is not diagnosable"
     assert "write" in r.stderr, "the refusal must route to the verb that cannot land foreign"
     assert hashlib.sha256( victim.read_bytes() ).hexdigest() == sha, "the foreign record was amended"

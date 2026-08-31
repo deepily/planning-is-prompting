@@ -512,29 +512,6 @@ def sid_of_record( rec_abs ):
     return m.group( 1 ) if m else None
 
 
-def persona_of_record( rec_abs ):
-    """
-    Extract the PERSONA SLUG a record's own filename declares.
-
-    The twin of `sid_of_record`, and it exists because the two questions have
-    DIFFERENT EXITS. A resolved record that is another SESSION of your own persona is
-    a re-spun seat, and the exit is `write`. A resolved record belonging to another
-    PERSONA means the pointer is held by somebody else, and the exit is
-    `regenerate-pointer` — `write` refuses there, because your record already exists.
-    Comparing only session ids cannot tell those apart (store dbca4ba8).
-
-    Requires:
-        - rec_abs is a Path to a record produced by record_rel_path()
-    Ensures:
-        - returns the persona slug encoded in the filename, for either slot
-        - returns None when the name carries no `-<sid8>` suffix to strip, which is
-          the same condition under which sid_of_record returns None
-    """
-    if sid_of_record( rec_abs ) is None: return None
-    stem = Path( rec_abs ).stem
-    return HEX8_SUFFIX_RE.sub( "", stem ).replace( ".claude-memento-", "" )
-
-
 def sha256_of( path ):
     """
     Ensures: returns the hex sha256 of the file at `path`.
@@ -1549,9 +1526,66 @@ def cmd_amend( args ):
     # resolve_record happens to call it first. See pointer_rel_path (F-1).
     pointer_rel_path( args.slot, persona )
 
-    rec_abs = resolve_record( repo_root, args.slot, persona )
-    if rec_abs is None:
-        sys.exit( f"no record to amend for persona={persona} slot={args.slot} in {repo_root}" )
+    # 🔴 RESOLVE BY IDENTITY, NOT BY FOLLOWING THE POINTER — store dbca4ba8, option (a),
+    # Mr Radio 🦉's call. `write` has always derived its path from (slot, persona, session);
+    # `amend` derived its from whatever the pointer happened to name. That asymmetry is the
+    # whole defect, and its own refusal text said so: "write derives its path from YOUR
+    # identity, so it cannot land on a foreign record."
+    #
+    # WHAT IT COST. The root pointer `.claude-memento.md` is persona-LESS — one file every
+    # persona in the repo shares (CLAUDE.md 816e9d8b) — so whoever wrote last owned it, and
+    # everyone else's `amend` resolved onto a stranger's record and was refused. Measured on
+    # Mr Radio at 56% context: write said "use amend", amend said "use write", adopt said
+    # "--allow-older". Three correct refusals forming a loop with no exit, at the moment a
+    # seat has least room to debug tooling.
+    #
+    # ⚠️ AND MY FIRST FIX (76ba960, option (b)) ONLY DOCUMENTED THE WAY OUT. It taught the
+    # refusal to name `regenerate-pointer`. That is a better error message attached to a
+    # deadlock that still forms — and it made the caller re-point a SHARED pointer, handing
+    # the same lockout to whoever came next. Deriving the path removes the deadlock instead.
+    #
+    # The escape hatch keeps its meaning and moves under the flag that names it: a DELIBERATE
+    # cross-seat annotation still follows the pointer, because that is the only case where
+    # "whatever the pointer names" is the record you actually mean.
+    if args.allow_foreign_record:
+        rec_abs = resolve_record( repo_root, args.slot, persona )
+        if rec_abs is None:
+            sys.exit( f"no record to amend for persona={persona} slot={args.slot} in {repo_root}" )
+    else:
+        rec_abs = slot_base_dir( repo_root, args.slot ) / record_rel_path( args.slot, persona, sid )
+        if not rec_abs.exists():
+            # "no record to amend" is load-bearing PHRASING, not prose — the postgame suite
+            # greps it as the contract for "amend is not a create path". Reworded here without
+            # it, that contract silently stops being checked.
+            print(  "REFUSED: no record to amend — none of YOUR OWN exists.", file=sys.stderr )
+            print( f"         looked for : {rec_abs}", file=sys.stderr )
+            print( f"         persona    : {persona}", file=sys.stderr )
+            print( f"         session id : {sid}", file=sys.stderr )
+
+            # DIAGNOSTIC ONLY — resolved, never amended. eda57c05 required a refusal to name
+            # BOTH ids so a seat could tell what it nearly hit. Resolving by identity removes
+            # the collision but would also remove that information, and "you have no record"
+            # is a thinner answer than "you have no record AND the pointer names someone
+            # else's". Reporting what the pointer says is not following it.
+            pointed = resolve_record( repo_root, args.slot, persona, quiet=True )
+            if pointed is not None and pointed != rec_abs:
+                other_sid = sid_of_record( pointed )
+                print( f"         the pointer names : {pointed.name}"
+                       + ( f"  (session {other_sid})" if other_sid else "" ), file=sys.stderr )
+                print(  "         `amend` no longer follows it — that is what stops an amendment", file=sys.stderr )
+                print(  "         landing in a record you did not write (store eda57c05).", file=sys.stderr )
+            print(  "", file=sys.stderr )
+            print(  "  `amend` derives this path from YOUR identity — it no longer follows the", file=sys.stderr )
+            print(  "  pointer, so it can neither land on another seat's record nor be blocked", file=sys.stderr )
+            print(  "  by one. If this path does not exist, you have not written yet.", file=sys.stderr )
+            print(  "", file=sys.stderr )
+            print(  "  WHAT TO DO — write first. This is the fresh-record path for a re-spun seat:", file=sys.stderr )
+            print( f"      memento_io.py write --slot {args.slot} --persona {persona!r} --session-id {sid}", file=sys.stderr )
+            print(  "", file=sys.stderr )
+            print(  "  Meaning to append to ANOTHER seat's record on purpose (a cross-seat", file=sys.stderr )
+            print(  "  annotation)? That is the one case that still follows the pointer:", file=sys.stderr )
+            print(  "      ... amend --allow-foreign-record", file=sys.stderr )
+            sys.exit( 8 )
 
     # TARGETING CHECK — `amend` accepted --session-id and NEVER CONSULTED IT (2026-07-18,
     # store eda57c05). It resolves by FOLLOWING THE POINTER, so it appended to whoever wrote
@@ -1578,37 +1612,6 @@ def cmd_amend( args ):
         print(  "  the wrong place. That SCATTERS your state: the record you wrote, the record", file=sys.stderr )
         print(  "  you amended, and whatever the pointer names can be three different files.", file=sys.stderr )
         print(  "", file=sys.stderr )
-        # 🔴 TWO CASES, TWO EXITS — and naming only the first one deadlocks the second.
-        # Store dbca4ba8, measured by Mr Radio 🦉 on himself at 56% context, then reproduced
-        # here: `write` says "use amend", `amend` said "use write", `adopt` says "--allow-older".
-        # Three correct refusals forming a loop with no exit a reader can find, at exactly the
-        # moment a seat has least room to debug tooling — and the documented fallback there is
-        # to hand-write the file, which CLAUDE.md warns lands a stale mirror and stale pointer
-        # and "looks like it worked".
-        #
-        # The advice below was written for a RE-SPUN SEAT — same persona, new session — where
-        # `write` is right because that seat has no record yet. It is wrong for the OTHER case,
-        # which this branch could not see because it compared only session ids: the pointer is
-        # held by ANOTHER PERSONA. The root pointer `.claude-memento.md` is persona-LESS and
-        # every persona in the repo shares it (CLAUDE.md 816e9d8b), so whoever wrote last owns
-        # it. There `write` refuses — your record already exists — and the exit is to re-point.
-        rec_persona = persona_of_record( rec_abs )
-        if rec_persona is not None and rec_persona != persona:
-            print( f"  The record it names belongs to ANOTHER PERSONA: {rec_persona!r}, not "
-                   f"{persona!r}.", file=sys.stderr )
-            print(  "  The root pointer is persona-LESS — one file every persona in the repo", file=sys.stderr )
-            print(  "  shares — so whoever wrote last holds it. Your own record is on disk and", file=sys.stderr )
-            print(  "  fine; only the pointer is pointing elsewhere.", file=sys.stderr )
-            print(  "", file=sys.stderr )
-            print(  "  WHAT TO DO — re-point, then amend. `write` will NOT help here: it", file=sys.stderr )
-            print(  "  refuses because your record already exists, which is the loop.", file=sys.stderr )
-            print( f"      memento_io.py regenerate-pointer --slot {args.slot} --persona {persona!r}", file=sys.stderr )
-            print( f"      memento_io.py amend --slot {args.slot} --persona {persona!r} --session-id {sid}", file=sys.stderr )
-            print(  "", file=sys.stderr )
-            print(  "  If you genuinely mean to append to another persona's record, pass", file=sys.stderr )
-            print(  "  --allow-foreign-record and it will proceed, stamped with your identity.", file=sys.stderr )
-            sys.exit( 7 )
-
         print(  "  WHAT TO DO — write, do not amend:", file=sys.stderr )
         print(  "      memento_io.py write --slot <slot> --persona <you> --session-id <yours>", file=sys.stderr )
         print(  "  `write` derives its path from YOUR identity, so it cannot land on a foreign", file=sys.stderr )

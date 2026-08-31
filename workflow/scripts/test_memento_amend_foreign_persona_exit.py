@@ -22,15 +22,22 @@ reassurance that nothing is destroyed.
 
 🔴 WHAT THIS FILE ASSERTS, AND WHY IT IS NOT "EACH VERB REFUSES". The three verbs already
 refuse correctly and a suite pinning that would have passed on the broken build. The defect
-was the ABSENCE OF A PATH, so the assertion has to be that a path EXISTS and WORKS:
-`test_the_named_exit_actually_works` runs the two commands the refusal prints, verbatim,
-and requires both to exit 0. A message naming a remedy that does not work is the same
-defect wearing a fix.
+was the ABSENCE OF A PATH, so the assertion is that the caller GETS THROUGH.
 
-THE SECOND TEST IS THE ONE THAT KEEPS THIS HONEST. `amend`'s old advice — "write, do not
-amend" — is RIGHT for a re-spun seat (same persona, new session, no record yet) and WRONG
-only when the resolved record belongs to another PERSONA. A fix that redirected both cases
-would trade one bad instruction for another, and the suite would look greener for it.
+⚠️ THE FIX CHANGED SHAPE AFTER THIS FILE WAS FIRST WRITTEN, and the tests changed with it.
+My first cut (76ba960, the row's option (b)) taught the refusal to name `regenerate-pointer`,
+and these tests asserted that the named exit worked. Mr Radio ruled for option (a) instead —
+`amend` derives its record path from IDENTITY, the way `write` always has — because (b) is a
+better error message attached to a deadlock that still forms, and its remedy made the caller
+re-point a SHARED pointer, handing the same lockout to the next seat.
+
+So the headline assertion is no longer "a reachable exit is named". It is stronger: in the
+contended scenario there is NOTHING TO ESCAPE. `amend` succeeds, and it lands in the caller's
+OWN record while another persona holds the pointer.
+
+THE THIRD TEST IS THE ONE THAT KEEPS THIS HONEST. Resolving by identity must not swallow the
+case where the caller genuinely has no record — a re-spun seat still has to be told to
+`write`, and told it by a refusal rather than by silently creating something.
 """
 
 import subprocess
@@ -88,55 +95,120 @@ def contended_root( tmp_path ):
     return repo, body
 
 
-def test_the_refusal_names_regenerate_pointer_and_says_write_will_not_help( contended_root ):
+def test_amend_lands_in_the_callers_own_record_while_another_persona_holds_the_pointer( contended_root ):
+    """
+    🔴 THE HEADLINE. Under option (a) the deadlock cannot form: `amend` never consults the
+    pointer, so a foreign persona holding it is simply irrelevant. This asserted a refusal
+    with a good message before; it now asserts there is nothing to refuse.
+    """
     repo, body = contended_root
+    before = ( repo / ".claude-memento-maya-aaaaaaaa.md" ).read_text()
+
     r = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", MAYA,
              "--content-file", str( body ), "--no-post-game", "probe" )
 
-    assert r.returncode == 7, r.stderr
-    assert "ANOTHER PERSONA" in r.stderr, "the refusal does not say the record is another persona's"
-    assert "regenerate-pointer" in r.stderr, (
-        "the refusal does not name the exit. Every verb in this loop refuses correctly; the "
-        "defect is that none of them told the caller how to get out" )
-    assert "will NOT help" in r.stderr, (
-        "the refusal still points at `write`, which is the loop: write refuses because the "
-        "caller's record already exists" )
+    assert r.returncode == 0, f"amend still blocked by a foreign-held pointer: {r.stderr}"
+    after = ( repo / ".claude-memento-maya-aaaaaaaa.md" ).read_text()
+    assert len( after ) > len( before ), "amend reported success without appending anything"
+    assert "mr-radio" not in after, "the amendment landed in the wrong persona's record"
 
 
-def test_the_named_exit_actually_works( contended_root ):
+def test_it_does_not_touch_the_other_personas_record( contended_root ):
     """
-    🔴 THE ASSERTION THE ROW ASKED FOR. Not "does it refuse" — the broken build refused too,
-    correctly, three times. Run the commands the refusal PRINTS and require them to work.
+    THE OTHER HALF, and asserting only the first is satisfied by a run that wrote to BOTH.
+    eda57c05 is the defect this guards: an amendment landing in a stranger's file, exit 0,
+    success banner naming her path.
     """
     repo, body = contended_root
+    foreign = repo / ".claude-memento-mr-radio-bbbbbbbb.md"
+    before  = foreign.read_text()
+
     r = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", MAYA,
              "--content-file", str( body ), "--no-post-game", "probe" )
-    assert "regenerate-pointer" in r.stderr
 
-    fix = _io( repo, "regenerate-pointer", "--slot", "root", "--persona", "maya" )
-    assert fix.returncode == 0, f"the exit the refusal names does not work: {fix.stderr}"
-
-    again = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", MAYA,
-                 "--content-file", str( body ), "--no-post-game", "probe" )
-    assert again.returncode == 0, f"amend still refused after the named exit: {again.stderr}"
-    assert "maya-aaaaaaaa" in ( repo / ".claude-memento.md" ).read_text()
+    assert r.returncode == 0, r.stderr
+    assert foreign.read_text() == before, "amend modified another persona's record"
 
 
-def test_a_respun_seat_is_still_told_to_write( contended_root ):
+def test_a_respun_seat_with_no_record_is_still_told_to_write( contended_root ):
     """
-    THE NEGATIVE CONTROL, and without it this fix is unfalsifiable. Same persona, NEW session
-    — a re-spun seat with no record of its own. `write` is the right answer there and must
-    stay the answer; redirecting this case to `regenerate-pointer` would be a new wrong
-    instruction that no assertion above would notice.
+    THE NEGATIVE CONTROL. Same persona, NEW session, no record of its own — resolving by
+    identity must REFUSE here, not quietly create a record. Without this, a fix that made
+    `amend` write-when-missing would pass every assertion above.
     """
     repo, body = contended_root
-    _io( repo, "regenerate-pointer", "--slot", "root", "--persona", "maya" )
-
     r = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", RESPUN,
              "--content-file", str( body ), "--no-post-game", "probe" )
 
-    assert r.returncode == 7, r.stderr
-    assert "write, do not amend" in r.stderr, "the re-spun-seat advice was lost"
-    assert "ANOTHER PERSONA" not in r.stderr, (
-        "a same-persona re-spin was told the record belongs to another persona — the fix "
-        "widened past the case it was for" )
+    assert r.returncode == 8, r.stderr
+    assert "no record to amend" in r.stderr, (
+        "the postgame suite greps this exact phrase as the `amend is not a create path` "
+        "contract — rewording it without it silently stops that being checked" )
+    assert "none of YOUR OWN exists" in r.stderr
+    assert "write --slot root" in r.stderr, "the re-spun seat is not told which verb to use"
+    assert not ( repo / ".claude-memento-maya-cccccccc.md" ).exists(), (
+        "amend created a record instead of refusing — it is no longer append-only" )
+
+
+def test_KNOWN_allow_foreign_record_is_unusable_on_the_root_slot( contended_root ):
+    """
+    🔶 KNOWN GAP, PRE-EXISTING — pinned here because this suite is what found it, and it is
+    NOT caused by the identity-resolution change above. Named so it cannot read as approval.
+
+    RECEIPT THAT IT PREDATES THIS WORK: the same scenario driven against the ORIGINAL script
+    (76ba960^, before any change on this row) exits 11 with the identical message. Measured
+    2026-08-31, both builds, same fixture.
+
+    THE MECHANISM, and it is the persona-less root pointer one more time. The post-amend
+    invariant check is persona-SCOPED — "does the pointer name the newest record FOR THIS
+    PERSONA?" — while `.claude-memento.md` is persona-LESS and shared. So for any persona who
+    does not currently hold the pointer, the invariant is violated BY CONSTRUCTION, and the
+    deliberate cross-seat annotation has no path on the root slot at all.
+
+    It is the same root cause as the deadlock this file exists for (store dbca4ba8 option (c)),
+    reached from a third direction. Identity resolution fixed the DEFAULT path; the escape
+    hatch still goes through `resolve_record` and still meets the shared pointer.
+
+    This test asserts the CURRENT behaviour. When the root pointer stops being persona-less,
+    or the invariant learns that root is not persona-scoped, this goes RED and whoever lands
+    it has to come here and say so.
+    """
+    repo, body = contended_root
+    r = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", MAYA,
+             "--content-file", str( body ), "--no-post-game", "probe", "--allow-foreign-record" )
+
+    assert r.returncode == 11, r.stderr
+    assert "INVARIANT VIOLATED" in r.stderr
+    assert "does not name the newest record" in r.stderr
+
+
+def test_the_deliberate_cross_seat_annotation_still_follows_the_pointer_on_the_io_slot( tmp_path ):
+    """
+    THE ESCAPE HATCH, PROVED ON THE SLOT WHERE IT WORKS. The io pointer is persona-SCOPED, so
+    the invariant above has no quarrel with it — which is also the cleanest evidence that the
+    root-slot failure is about the SHARED pointer and not about `--allow-foreign-record`.
+
+    Without this test the flag would be exercised only by a case that fails, and a change
+    silently removing the pointer path entirely would look the same.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run( [ "git", "init", "-q", "." ], cwd=repo, check=True )
+    body = tmp_path / "body.md"
+    body.write_text( "probe body\n" )
+
+    for sid in ( MAYA, RESPUN ):
+        r = _io( repo, "write", "--slot", "io", "--persona", "maya", "--session-id", sid,
+                 "--content-file", str( body ), "--no-post-game", "fixture" )
+        assert r.returncode == 0, r.stderr
+
+    foreign = repo / "io" / "mementos" / "maya-cccccccc.md"     # the pointer's target, not MAYA's
+    before  = foreign.read_text()
+
+    r = _io( repo, "amend", "--slot", "io", "--persona", "maya", "--session-id", MAYA,
+             "--content-file", str( body ), "--no-post-game", "probe", "--allow-foreign-record" )
+
+    assert r.returncode == 0, r.stderr
+    assert len( foreign.read_text() ) > len( before ), (
+        "--allow-foreign-record no longer reaches the pointer's record, so the deliberate "
+        "cross-seat annotation has no path at all" )
