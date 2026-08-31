@@ -150,36 +150,38 @@ def test_a_respun_seat_with_no_record_is_still_told_to_write( contended_root ):
         "amend created a record instead of refusing — it is no longer append-only" )
 
 
-def test_KNOWN_allow_foreign_record_is_unusable_on_the_root_slot( contended_root ):
+def test_allow_foreign_record_is_refused_at_the_door_on_the_root_slot( contended_root ):
     """
-    🔶 KNOWN GAP, PRE-EXISTING — pinned here because this suite is what found it, and it is
-    NOT caused by the identity-resolution change above. Named so it cannot read as approval.
+    🔴 THIS WAS A KNOWN GAP AND IS NOW A DECISION — Mr Radio's call, store dbca4ba8.
 
-    RECEIPT THAT IT PREDATES THIS WORK: the same scenario driven against the ORIGINAL script
-    (76ba960^, before any change on this row) exits 11 with the identical message. Measured
-    2026-08-31, both builds, same fixture.
+    The flag means "annotate the record the pointer names, deliberately". On `io` that is a
+    real target: the io pointer is persona-SCOPED. On `root` it names whoever wrote LAST,
+    because `.claude-memento.md` is persona-LESS, so the flag targets nobody in particular
+    and the target can change between two runs a minute apart.
 
-    THE MECHANISM, and it is the persona-less root pointer one more time. The post-amend
-    invariant check is persona-SCOPED — "does the pointer name the newest record FOR THIS
-    PERSONA?" — while `.claude-memento.md` is persona-LESS and shared. So for any persona who
-    does not currently hold the pointer, the invariant is violated BY CONSTRUCTION, and the
-    deliberate cross-seat annotation has no path on the root slot at all.
-
-    It is the same root cause as the deadlock this file exists for (store dbca4ba8 option (c)),
-    reached from a third direction. Identity resolution fixed the DEFAULT path; the escape
-    hatch still goes through `resolve_record` and still meets the shared pointer.
-
-    This test asserts the CURRENT behaviour. When the root pointer stops being persona-less,
-    or the invariant learns that root is not persona-scoped, this goes RED and whoever lands
-    it has to come here and say so.
+    ⚠️ WHY REFUSING EARLY IS THE POINT, and not merely tidier. It already failed here before
+    anyone touched it: measured on the ORIGINAL script, the same call reached the post-amend
+    invariant and died at exit 11 with "the pointer does not name the newest record" — a TRUE
+    sentence about the WRONG THING. It blames the pointer and recommends `regenerate-pointer`,
+    sending the caller to re-point a shared file when the real answer is that the flag does
+    not apply on this slot. A late failure that misdirects is worse than an early one that
+    explains, which is the whole lesson of the deadlock this file exists for.
     """
     repo, body = contended_root
+    foreign = repo / ".claude-memento-mr-radio-bbbbbbbb.md"
+    before  = foreign.read_text()
+
     r = _io( repo, "amend", "--slot", "root", "--persona", "maya", "--session-id", MAYA,
              "--content-file", str( body ), "--no-post-game", "probe", "--allow-foreign-record" )
 
-    assert r.returncode == 11, r.stderr
-    assert "INVARIANT VIOLATED" in r.stderr
-    assert "does not name the newest record" in r.stderr
+    assert r.returncode == 9, r.stderr
+    assert "does not apply on the 'root' slot" in r.stderr
+    assert "persona-LESS" in r.stderr, "the refusal does not say WHY, so it reads as arbitrary"
+    assert "--slot io" in r.stderr, "the refusal does not name where the flag does work"
+    assert "INVARIANT VIOLATED" not in r.stderr, (
+        "still failing late at the invariant, which blames the pointer and sends the caller "
+        "to re-point a shared file — the misdirection this refusal exists to replace" )
+    assert foreign.read_text() == before, "refused and still touched the record"
 
 
 def test_the_deliberate_cross_seat_annotation_still_follows_the_pointer_on_the_io_slot( tmp_path ):

@@ -1547,6 +1547,35 @@ def cmd_amend( args ):
     # The escape hatch keeps its meaning and moves under the flag that names it: a DELIBERATE
     # cross-seat annotation still follows the pointer, because that is the only case where
     # "whatever the pointer names" is the record you actually mean.
+    # 🔴 --allow-foreign-record HAS NO MEANING ON THE ROOT SLOT — refuse it AT THE DOOR.
+    # Mr Radio 🦉's call, store dbca4ba8. The flag means "annotate the record the pointer
+    # names, on purpose". On `io` that is a real target: the io pointer is persona-SCOPED, so
+    # it names a specific seat's record. On `root` it names whichever persona in the repo
+    # wrote last (`.claude-memento.md` is persona-LESS — CLAUDE.md 816e9d8b), so the flag
+    # targets nobody in particular and the target changes under you between two runs.
+    #
+    # It ALREADY failed here, and that is the reason to refuse early rather than leave it:
+    # measured on the ORIGINAL script, it got all the way to the post-amend invariant and
+    # died at exit 11 with "the pointer does not name the newest record", which blames the
+    # POINTER and recommends `regenerate-pointer`. That is a true sentence about the wrong
+    # thing — it sends a caller to re-point a shared file when the real answer is that this
+    # flag does not apply on this slot. A late failure that misdirects is worse than an early
+    # one that explains.
+    if args.allow_foreign_record and args.slot == "root":
+        print(  "REFUSED: --allow-foreign-record does not apply on the 'root' slot.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  The flag means 'annotate the record the pointer names, deliberately'. The root", file=sys.stderr )
+        print(  "  pointer .claude-memento.md is persona-LESS — one file every persona in this", file=sys.stderr )
+        print(  "  repo shares — so it names whoever wrote LAST, not a seat you chose. The target", file=sys.stderr )
+        print(  "  can differ between two runs a minute apart.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  WHAT TO DO:", file=sys.stderr )
+        print(  "    · annotating another SEAT on purpose? that is the 'io' slot, whose pointer IS", file=sys.stderr )
+        print( f"      persona-scoped:  memento_io.py amend --slot io --persona <them> ... --allow-foreign-record", file=sys.stderr )
+        print(  "    · meant your OWN root record? drop the flag — amend derives that path from", file=sys.stderr )
+        print(  "      your identity and no longer needs the pointer at all.", file=sys.stderr )
+        sys.exit( 9 )
+
     if args.allow_foreign_record:
         rec_abs = resolve_record( repo_root, args.slot, persona )
         if rec_abs is None:
