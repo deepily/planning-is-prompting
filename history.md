@@ -4,6 +4,24 @@
 >
 > 🗄️ *Previous banner (2026-08-28):* **14,264 tokens after the S180 entry.** The discrepancy the last banner left open is settled, and it settled against the reassuring number: the file was at **23,628 tokens** (tiktoken `cl100k_base`), not the 17,557 the banner claimed — over the 19k critical line and closing on the 25k limit. The `chars/4` heuristic said 21,849, so **both** estimates were low and the one that got written down was the lowest. Sessions 159–170 archived to `2026-08-04-to-15-history.md`. **Measure with a tokenizer, not a ratio, before writing a health verdict into this banner.**
 
+**RESUME HERE**: **Session 184 (2026-08-30, María 🌸 `788c3f05`)** — the day the board went to zero, and three instruments that were each right about a narrower thing than they appeared to be.
+
+1. **Both P2s closed with receipts.** `dacac717` — the doc/deploy parity check now runs **inside pytest**, so it no longer depends on anyone remembering (`4bf02d9`). `3a6d9505` — both config copies synced and byte-identical; `doc_deploy_parity.py` prints **PARITY OK** on all three pairs (`f52f00d`). Board verified at zero through the store's REST API, not asserted: in_progress 0, queued 0, blocked 0, parked 0.
+2. **🎯 The allow-list pruned itself twice, unprompted.** Both known-drift entries were deleted the same afternoon they were added, each within a minute of Rick syncing a deployed copy, because `test_known_drift_entries_are_still_real` reddened and **named the entry to remove**. Nobody had to remember to check. Re-falsified after emptying it — an empty dict is exactly the shape that makes a guard vacuous — by injecting drift at `global/CLAUDE.md:184`: 1 failed, restored, 5 passed.
+3. **🔴 Rio found my own tool blind to half of every file it reads.** `MIN_BLOCK_CHARS = 120` skips **110 of 253 blocks in `global/CLAUDE.md` (43%)**, 28 of 53 in the brevity skill (53%), 5 of 16 in push-to-completion (31%). Every "clean" verdict it ever printed was computed over a fraction of the file. **But the exposure measured zero**: re-run at floor 0, same two drifts, `only_canonical`/`only_deployed` still 0. The hole is real; the miss is not. He then supplied the pair that settles the fix — a 112-char fence that must be caught beside a 69-char header that must stay quiet — and the resolution that dissolved my scope objection: *real file for the measurement, synthetic for the regression.*
+4. **🔴 Three times I was told a thing was broken and it wasn't — each time the check was cheap and the claim was wrong.** cosa-voice dropped, so I nearly bounced `:7999` under standing authority; `/health` returned **200** — the *client* had dropped, not the server, and a bounce would have disturbed the fleet to fix nothing. Mr Radio reported my store writes 403-ing; they returned **200** — his diagnosis was right about the missing bridge stamp and wrong about the symptom, and the guard turns out to cover exactly one operation I am under moratorium not to perform. The MCP being down did not stop the work: the last row was closed through the **REST door** instead.
+5. **Epic drift, six rows, four stamped and two refused.** `cc335a42`/`f313fc2d` → `seal-the-test-tier`, `e9b78e51` → `manager-roster-single-source`, `2b2f426e` → `coverage-100-mandate`. **`10b1cbe5` and `e3dd1df2` have no honest home** — forcing them would make the board *look* tidy and file them where nobody would look. Left for Rick. And a third shape nobody had reported: one row carries `dm-nondelivery`, **no `epic:` prefix at all**, so it passes any has-a-key check while belonging to nothing.
+
+**Tests**: 386 passed (was 381). **Board**: 0. **Workers**: 0 — Sam reaped with a verified memento.
+
+**The lesson**: the guard that pruned itself is the only thing today that needed no human attention at all. Everything else — the false bounce, the false 403, the blind detector — was a claim that cost one cheap check to falsify, and the check was always available before the action.
+
+#### Checkpoint | 2026.08.30 | S184 — board to zero, parity OK, self-pruning allow-list
+**Files**: `workflow/scripts/test_doc_deploy_parity_live.py` (new), `global/CLAUDE.md`, `TODO.md`, here · deployed by Rick: `~/.claude/CLAUDE.md`, `~/.claude/skills/brevity-mandate/SKILL.md`
+**Board at checkpoint**: zero rows, zero workers, working tree clean.
+
+---
+
 **RESUME HERE**: **Session 183 (2026-08-29 evening, María 🌸 `2b207ef5`, post-self-respin)** — Rick's epic pass, and four instruments that answered narrower questions than the ones I asked them.
 
 1. **The epic board: 16 of 18 live rows carried no epic, not "a dozen."** Stamped into six epics, drift 0 — then it **re-drifted five times in three hours** as peers minted rows without the field. Each was re-stamped; the enforcement question is now Rick's, as row `5246bb67`. Snapshot: `src/rnd/2026.08.29-epic-board-regroup-eighteen-rows-six-epics.md`.
