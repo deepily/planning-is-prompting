@@ -512,6 +512,29 @@ def sid_of_record( rec_abs ):
     return m.group( 1 ) if m else None
 
 
+def persona_of_record( rec_abs ):
+    """
+    Extract the PERSONA SLUG a record's own filename declares.
+
+    The twin of `sid_of_record`, and it exists because the two questions have
+    DIFFERENT EXITS. A resolved record that is another SESSION of your own persona is
+    a re-spun seat, and the exit is `write`. A resolved record belonging to another
+    PERSONA means the pointer is held by somebody else, and the exit is
+    `regenerate-pointer` — `write` refuses there, because your record already exists.
+    Comparing only session ids cannot tell those apart (store dbca4ba8).
+
+    Requires:
+        - rec_abs is a Path to a record produced by record_rel_path()
+    Ensures:
+        - returns the persona slug encoded in the filename, for either slot
+        - returns None when the name carries no `-<sid8>` suffix to strip, which is
+          the same condition under which sid_of_record returns None
+    """
+    if sid_of_record( rec_abs ) is None: return None
+    stem = Path( rec_abs ).stem
+    return HEX8_SUFFIX_RE.sub( "", stem ).replace( ".claude-memento-", "" )
+
+
 def sha256_of( path ):
     """
     Ensures: returns the hex sha256 of the file at `path`.
@@ -1555,6 +1578,37 @@ def cmd_amend( args ):
         print(  "  the wrong place. That SCATTERS your state: the record you wrote, the record", file=sys.stderr )
         print(  "  you amended, and whatever the pointer names can be three different files.", file=sys.stderr )
         print(  "", file=sys.stderr )
+        # 🔴 TWO CASES, TWO EXITS — and naming only the first one deadlocks the second.
+        # Store dbca4ba8, measured by Mr Radio 🦉 on himself at 56% context, then reproduced
+        # here: `write` says "use amend", `amend` said "use write", `adopt` says "--allow-older".
+        # Three correct refusals forming a loop with no exit a reader can find, at exactly the
+        # moment a seat has least room to debug tooling — and the documented fallback there is
+        # to hand-write the file, which CLAUDE.md warns lands a stale mirror and stale pointer
+        # and "looks like it worked".
+        #
+        # The advice below was written for a RE-SPUN SEAT — same persona, new session — where
+        # `write` is right because that seat has no record yet. It is wrong for the OTHER case,
+        # which this branch could not see because it compared only session ids: the pointer is
+        # held by ANOTHER PERSONA. The root pointer `.claude-memento.md` is persona-LESS and
+        # every persona in the repo shares it (CLAUDE.md 816e9d8b), so whoever wrote last owns
+        # it. There `write` refuses — your record already exists — and the exit is to re-point.
+        rec_persona = persona_of_record( rec_abs )
+        if rec_persona is not None and rec_persona != persona:
+            print( f"  The record it names belongs to ANOTHER PERSONA: {rec_persona!r}, not "
+                   f"{persona!r}.", file=sys.stderr )
+            print(  "  The root pointer is persona-LESS — one file every persona in the repo", file=sys.stderr )
+            print(  "  shares — so whoever wrote last holds it. Your own record is on disk and", file=sys.stderr )
+            print(  "  fine; only the pointer is pointing elsewhere.", file=sys.stderr )
+            print(  "", file=sys.stderr )
+            print(  "  WHAT TO DO — re-point, then amend. `write` will NOT help here: it", file=sys.stderr )
+            print(  "  refuses because your record already exists, which is the loop.", file=sys.stderr )
+            print( f"      memento_io.py regenerate-pointer --slot {args.slot} --persona {persona!r}", file=sys.stderr )
+            print( f"      memento_io.py amend --slot {args.slot} --persona {persona!r} --session-id {sid}", file=sys.stderr )
+            print(  "", file=sys.stderr )
+            print(  "  If you genuinely mean to append to another persona's record, pass", file=sys.stderr )
+            print(  "  --allow-foreign-record and it will proceed, stamped with your identity.", file=sys.stderr )
+            sys.exit( 7 )
+
         print(  "  WHAT TO DO — write, do not amend:", file=sys.stderr )
         print(  "      memento_io.py write --slot <slot> --persona <you> --session-id <yours>", file=sys.stderr )
         print(  "  `write` derives its path from YOUR identity, so it cannot land on a foreign", file=sys.stderr )
