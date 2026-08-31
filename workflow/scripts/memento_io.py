@@ -114,6 +114,27 @@ reader (`seed_memento`, `cat`, an inherited "read .claude-memento.md" instructio
 a useless one-liner unless it REMEMBERED to follow the pointer — a rule at the read end.
 A content-copy pointer is correct for the naive reader AND carries the `current:` line
 for a reader that wants the record's real path. Overwriting it destroys nothing.
+
+EXIT CODES — the table exists because there are ten of them and callers script this.
+Raised by Clayton 😎 reviewing 0124b22f9391, and he was right that it had grown past the
+point where a reader could hold it in their head: 14 numeric `sys.exit` sites, 10 distinct
+codes, and until now nothing said what any of them meant.
+
+    0   success
+    1   generic refusal (adopt, resolve)
+    3   write: a record already exists — records are IMMUTABLE
+    4   write: post-write verification found a divergent mirror
+    5   sync failed (write, adopt, sync_record)
+    6   post-game gate owed (write, amend)
+    7   amend: --session-id does not own the resolved record
+    8   amend: no record of your own to amend — you have not written yet
+    9   amend: --allow-foreign-record does not apply on the `root` slot
+    10  adopt: would move the pointer BACKWARD to an older record
+    11  the pointer does not name the newest record for this persona
+
+⚠️ THREE CODES ARE SHARED ACROSS VERBS ON PURPOSE — 1, 5 and 6 — because they mean the
+same thing wherever they fire. A code is per-CONDITION, not per-verb. Do not renumber to
+make them unique: a caller keying on 5 wants "the sync failed", not "which verb called it".
 """
 
 import argparse

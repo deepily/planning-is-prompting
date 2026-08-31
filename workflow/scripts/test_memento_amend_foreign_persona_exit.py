@@ -35,6 +35,19 @@ So the headline assertion is no longer "a reachable exit is named". It is strong
 contended scenario there is NOTHING TO ESCAPE. `amend` succeeds, and it lands in the caller's
 OWN record while another persona holds the pointer.
 
+⚠️ THE STALE-PYC HAZARD CANNOT REACH THIS FILE, AND THE REASON IS WORTH KNOWING BEFORE
+SOMEBODY ADDS CEREMONY THAT LOOKS PRUDENT. Clayton 😎 raised it reviewing 0124b22f9391.
+Every case here drives the verb as a SUBPROCESS, so the script runs as `__main__` — and
+CPython writes no `.pyc` for `__main__` at all. Measured rather than recalled:
+
+    run as __main__   ->  __pycache__  NOT created
+    imported          ->  __pycache__  created
+
+So no purge, no `-B`, and no `pyc_freshness` helper is needed here — and none is present in
+any memento suite today. Adding one would be ceremony that reads as protection, which is the
+shape this whole epic is about. ⚠️ If a future test IMPORTS memento_io rather than
+subprocessing it, that test IS exposed and this paragraph stops covering it.
+
 THE THIRD TEST IS THE ONE THAT KEEPS THIS HONEST. Resolving by identity must not swallow the
 case where the caller genuinely has no record — a re-spun seat still has to be told to
 `write`, and told it by a refusal rather than by silently creating something.
