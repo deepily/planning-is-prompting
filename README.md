@@ -321,7 +321,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Executable Tooling (`workflow/scripts/`)
 
-⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 25 files — Python plus shell — of which **13 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 27 files — Python plus shell — of which **14 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
 
 | Script | Purpose |
 |---|---|
@@ -329,6 +329,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 | `memento_io.py` · `memento_record_guard.py` | Memento slot resolution and a write guard |
 | `worktree_creation_guard.py` · `worktree_orphan_scan.py` | Worktree lifecycle: register on creation, scan for orphans |
 | `doc_deploy_parity.py` | Does a canonical doc still agree with its **deployed** copy? Reports paragraphs that exist in both in *nearly* the same words — the signature of a fix that landed on one copy and not the other. Never edits either side; deployed copies are allowed to differ, so it reports for a human to rule on. Written after one stale sentence survived **five sightings** because each fix left a byte-identical copy elsewhere still reading as authoritative. 🔴 **Its own first run reported PARITY OK on the live divergence it was built for** — a substantive correction nearly doubled the paragraph and dropped character similarity to **0.50** against a 0.75 threshold, so identity is now anchored on a shared *opening* (39 chars here) rather than on overall similarity; `test_doc_deploy_parity.py` asserts both that the pair is caught **and** that similarity alone would miss it, so the anchor rule cannot be deleted without a red |
+| `doc-parity-tick.sh` | The **unattended** half of the check above — a crontab-installable runner, because `doc_deploy_parity.py` only ever ran when a human remembered to, which is the same failure mode as the rot it detects. **A clean run prints zero bytes and exits 0**; the test asserts the byte count, not "roughly quiet", because a daily tick that says *parity OK* trains its reader to skip the one that does not. Drift fires a cosa-voice `notify` with the drifted pairs in the abstract, and the finding set is fingerprinted so a standing finding awaiting a ruling stops re-alarming every morning (exit 4 = *findings stand, deliberately not re-sent*). Five exit codes, five different facts — "I could not look" (1) never shares a spelling with "nothing drifted" (0). Install line: `doc-parity-tick.sh --print-install`; it is **not** installed for you |
 | `pip_manifest.py` · `pip_drift_check.py` | Generate the canonical command manifest; report drift between installed and canonical |
 | `mandate_census.py` | Fleet-wide dispatch and census of a mandate |
 | `sweep_verdict_guard.py` | Guards a sweep whose method is quoting the row it is checking |

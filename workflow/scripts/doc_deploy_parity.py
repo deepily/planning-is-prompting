@@ -38,6 +38,13 @@ USAGE
     python3 workflow/scripts/doc_deploy_parity.py
     python3 workflow/scripts/doc_deploy_parity.py --verbose      # show only-in blocks too
     python3 workflow/scripts/doc_deploy_parity.py --threshold 0.80
+    python3 workflow/scripts/doc_deploy_parity.py --pair 'scratch::a.md::b.md'   # check a pair not in the set
+
+UNATTENDED
+    This script only ever ran when a human remembered to run it, which is the same failure mode as
+    the rot it detects. `workflow/scripts/doc-parity-tick.sh` is the crontab-installable runner:
+    silent on a clean pass, a cosa-voice notify on drift, and a fingerprint so a standing finding
+    stops re-alarming every morning. Install line: `doc-parity-tick.sh --print-install`.
 """
 
 import argparse
@@ -321,10 +328,25 @@ def main( argv=None ):
                          help="similarity at or above which two blocks are the SAME paragraph, edited (default %(default)s)" )
     parser.add_argument( "--verbose", action="store_true",
                          help="also list blocks present in only one copy (usually legitimate)" )
+    # A PAIR OVERRIDE, so a drill never has to point at Rick's live files. Proving the alarm fires
+    # means introducing real drift somewhere, and the only safe somewhere is a scratch copy — a
+    # detector you can only exercise against production is a detector nobody exercises.
+    parser.add_argument( "--pair", action="append", metavar="LABEL::CANONICAL::DEPLOYED",
+                         help="check this pair INSTEAD of the built-in set; repeatable" )
     args = parser.parse_args( argv )
 
+    if args.pair:
+        pairs = []
+        for chunk in args.pair:
+            parts = chunk.split( "::" )
+            if len( parts ) != 3:
+                parser.error( f"--pair must be LABEL::CANONICAL::DEPLOYED, got {chunk!r}" )
+            pairs.append( tuple( p.strip() for p in parts ) )
+    else:
+        pairs = list( DEFAULT_PAIRS )
+
     exit_code = 0
-    for label, canonical_path, deployed_path in DEFAULT_PAIRS:
+    for label, canonical_path, deployed_path in pairs:
         c_path, d_path = resolve( canonical_path ), resolve( deployed_path )
         print( "=" * 78 )
         print( f"PAIR: {label}" )
