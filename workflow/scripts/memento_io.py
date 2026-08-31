@@ -121,11 +121,11 @@ point where a reader could hold it in their head: 14 numeric `sys.exit` sites, 1
 codes, and until now nothing said what any of them meant.
 
     0   success
-    1   generic refusal (adopt, resolve)
+    1   TWO MEANINGS — see below (adopt: misuse refusal; resolve: no record found)
     3   write: a record already exists — records are IMMUTABLE
     4   write: post-write verification found a divergent mirror
-    5   sync failed (write, adopt, sync_record)
-    6   post-game gate owed (write, amend)
+    5   OVERLOADED — see below (sync failure, AND adopt mutating a record)
+    6   post-game gate owed (write, amend) — one condition, shared correctly
     7   amend: --session-id does not own the resolved record
     8   amend: no record of your own to amend — you have not written yet
     9   amend: --allow-foreign-record does not apply on the `root` slot
