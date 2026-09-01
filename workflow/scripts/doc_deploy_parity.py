@@ -130,6 +130,26 @@ MIN_ANCHOR_CHARS = 32
 # file.
 SIMILARITY_MIN_CHARS = 120
 
+# 🔴 THE PROJECT-CONFIGURATION BLOCK — the one paragraph an installed copy is SUPPOSED to differ on.
+#
+# On the `~/.claude` axis this never came up: a user-scope copy substitutes nothing. On a CROSS-REPO
+# axis it is the whole problem. A command installed into another project carries that project's
+# prefix — `[PLAN]` here, `[LUPIN]` there — so a CORRECTLY installed copy reports as drifted, and
+# adding cross-repo pairs buys one permanently red paragraph per pair, clearable only by an
+# allow-list entry that can never self-prune.
+#
+# MEASURED before choosing a rule (2026-09-01, all four shared pairs): exactly two pairs carry a
+# drifted paragraph and BOTH are this same block. The class has one member, so this is a convention
+# to recognise, not a templating problem to solve. The token below is already named by this repo's
+# own CLAUDE.md ("Local configs should define the [SHORT_PROJECT_PREFIX]") and already written by
+# the installer.
+SUBSTITUTION_MARKER = "[SHORT_PROJECT_PREFIX]"
+
+# Compared for SHAPE, never exempted. A blanket exemption would hide a deployed copy that lost a
+# key outright — and that is a real defect, not a customization. Same argument as the anchor rule:
+# anchor identity on what survives the legitimate edit. Here the legitimate edit is the VALUE.
+CONFIG_KEY_RE = re.compile( r"\*\*([^*]+)\*\*:" )
+
 
 def repo_root():
     """
@@ -208,6 +228,20 @@ def normalize( block ):
     return re.sub( r"\s+", " ", block ).strip()
 
 
+def config_block_keys( normalized ):
+    """
+    The bolded key names of a project-configuration paragraph, in order.
+
+    Requires:
+        - normalized is a normalized string
+
+    Ensures:
+        - returns the list of names matched by CONFIG_KEY_RE, order preserved
+        - the VALUES are deliberately not returned — they are what may legitimately differ
+    """
+    return CONFIG_KEY_RE.findall( normalized )
+
+
 def common_prefix_len( left, right ):
     """
     How many leading characters two normalized blocks share.
@@ -235,8 +269,11 @@ def same_paragraph( c_norm, d_norm, threshold=DEFAULT_THRESHOLD ):
         - 0 < threshold <= 1
 
     Ensures:
-        - returns ( is_same, reason, ratio, anchor ) where reason is "anchor", "similarity"
-          or ""
+        - returns ( is_same, reason, ratio, anchor ) where reason is "config-agree",
+          "config-keys", "anchor", "similarity" or ""
+        - "config-agree" means the same paragraph with the SAME keys and different values —
+          an installed copy doing exactly what it should. `compare` consumes it and reports
+          NO drift for it
         - the ANCHOR rule fires on a shared opening of MIN_ANCHOR_CHARS or more, which
           catches a paragraph whose body was rewritten (the founding case, ratio 0.50)
         - the SIMILARITY rule fires at or above `threshold`, which catches a paragraph whose
@@ -246,6 +283,16 @@ def same_paragraph( c_norm, d_norm, threshold=DEFAULT_THRESHOLD ):
     """
     anchor = common_prefix_len( c_norm, d_norm )
     ratio  = difflib.SequenceMatcher( None, c_norm, d_norm ).ratio()
+
+    # A config block is judged AS a config block, before the generic rules get a say — otherwise a
+    # prefix substitution reads as an ordinary edited paragraph and rings forever.
+    if SUBSTITUTION_MARKER in c_norm and SUBSTITUTION_MARKER in d_norm:
+        if config_block_keys( c_norm ) == config_block_keys( d_norm ):
+            # Same keys, different values: the installer did its job. Same paragraph, NOT drift.
+            return True, "config-agree", ratio, anchor
+        # A key added, removed or renamed is a real finding, and gets its own reason so the report
+        # says WHICH kind of disagreement it found instead of flattening it into "similarity".
+        return True, "config-keys", ratio, anchor
 
     if anchor >= MIN_ANCHOR_CHARS: return True, "anchor", ratio, anchor
 
@@ -272,6 +319,9 @@ def compare( canonical_text, deployed_text, threshold=DEFAULT_THRESHOLD ):
         - `drifted` is a list of dicts with keys: ratio, canonical_line, deployed_line,
           canonical, deployed — one per paragraph present in BOTH copies in nearly, but
           not exactly, the same words
+        - a PROJECT-CONFIGURATION block whose keys agree is consumed and reported in NO
+          list: its values are supposed to differ per install. One whose keys DISAGREE is
+          reported as drift with reason "config-keys"
         - a block matching exactly (after normalize) appears in NO list
         - each deployed block is consumed by at most one match, so one edited paragraph
           cannot be reported twice
@@ -315,6 +365,11 @@ def compare( canonical_text, deployed_text, threshold=DEFAULT_THRESHOLD ):
         if best is not None:
             _, d_index, reason, ratio, anchor = best
             consumed.add( d_index )
+
+            # A config block whose KEYS agree is an installed copy doing its job. Consume the
+            # deployed partner so nothing else can claim it, and report nothing.
+            if reason == "config-agree": continue
+
             d_line, d_block = deployed_blocks[ d_index ]
             drifted.append( {
                 "ratio"          : ratio,
