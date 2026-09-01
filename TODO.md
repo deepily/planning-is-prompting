@@ -725,6 +725,13 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### S187 — 2026-09-01 (María 🌸 `3396ba14`)
+
+- **Closed-vs-new ratio gate: SIX rulings in one sitting.** Rick's P0. Measure `created ÷ closed` over a rolling 24h **fleet-wide**; **allow below 1.0**, refuse at or above. Numerator is **`done` only — `dropped` excluded**, because counting drops lets you mint a ticket by deleting one, which is the asymmetry the gate exists against. Ships **warn-only for one week** first (his own epic-key ramp). **P0 exempt, every use logged.** The harness `cc-task:` lane is exempt — it writes with no human to answer a 422. Refusal names the real counts; success is silent. Header becomes `📋 Task List · Live: 25 · Closed vs New Ratio (24hrs): 0.91`, with **`Live:` now unconditional** — which overturns a committed design rationale (*"ZERO PARKED PRINTS THE BARE NUMBER"*) that must be rewritten in the same commit. Design: `src/rnd/2026.09.01-closed-vs-new-ratio-gate.md`; **lupin's build**, Mr Radio's crew. | horizon: next
+- **Measured, first numbers anyone has on this**: last 24h = **10 created / 11 closed / 1 dropped → ratio 0.91, gate ALLOWS**. Two design claims turned into measurements: creation stamps are **not** uniform (`->queued` ×8, `->blocked` ×2, so a hardcoded `->queued` filter silently undercounts by 20%), and closures already arrive as **three** distinct strings. ⇒ the counts need a **server-side SQL aggregate** with `LIKE` matching, never an enumerated status list and never a paged `count` (the events endpoint caps at 500 and returns page length as `count`). | horizon: next
+- **Stale block cleared without asking**: row `5246bb67` (epic-key enforcement) was still `blocked` on Rick although he ruled it twice on 2026-08-31. Returned to Mr Radio's queue; held only by the moratorium, not by a decision. | horizon: now
+
+
 ### S186 — 2026-08-31 (María 🌸 `dca46f4f`)
 
 - **Epic-key enforcement: keep reject-on-creation, FIX THE PREDICATE.** Test `correlation_key.startswith("epic:")`, not `key != ""`, with the harness mirror's `cc-task:` lane exempt; warn-only one week; `epic:unassigned` legal in the error. Rick re-ruled after Maya's 08-30 three-tenant measurement was finally put in front of him — my first ask carried the 08-29 framing and omitted it. Row `5246bb67`; lupin's build. | horizon: next
