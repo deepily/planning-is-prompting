@@ -4,6 +4,40 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### 🔊 **S188 — the recurring MCP error on Rick's speakers: mechanism found, process not yet** (María 🌸, 2026-09-01)
+>
+> **Rick's request**, and it had been running for days unattended. **lupin code ⇒ Mr Radio's 🦉 fix**; DM'd with
+> the measurements. **No row opened** — ticket moratorium still in force.
+>
+> **Source**: `lupin/src/lupin_mcp/cosa_voice_mcp.py:650`, `_die_no_session_id()`, reached from
+> `_wait_for_sender_id()` when session resolution fails.
+>
+> | | |
+> |---|---|
+> | sender | `claude.code@lupin.deepily.ai#mcp-error` |
+> | **count** | **513** |
+> | latest | **17:30:55 EDT** — matches the card Rick read |
+> | since | at least **2026-08-31 19:41** |
+> | cadence | **pairs ~2s apart**, pairs every **15–32 min** |
+>
+> **🔴 NOT either running MCP server.** `76932` and `227366` are children of live Claude sessions that both
+> have bridge files (`cc-76797.json`, `cc-178223.json`), up 7h and 6h. **A server reaching that function calls
+> `os._exit(1)` and dies**, so neither has ever fired it. ⇒ a short-lived **non-server** process.
+>
+> **THE DESIGN DEFECT, which stands whichever process it is.** Since the 2026-08-26 change (row `87ae7234`)
+> the off-server path **raises instead of exiting but still sends the alert**, deliberately — *"the alert is
+> not the server's privilege."* So a **script's** internal failure speaks to Rick at `priority=high`, carrying
+> advice — *"Restart Claude Code to fix"* — that is **wrong for a non-server process**. Restarting Claude Code
+> fixes nothing about a script that imported the module. Suggested to Mr Radio: off-server should raise
+> **without** alerting, or alert at low priority naming the actual process — only the server case is
+> something Rick can act on.
+>
+> **⚠️ NOT ESTABLISHED: which process.** Ruled out *by looking, not assuming*: all five context-pressure cron
+> entries (healthy, `all within budget`) · the user-scope hooks · `bridge_pin_sweep.py` and
+> `clock_hold_plugin.py` (static-analysis helpers, unschedulable) · the REST routers (their `cosa_voice_mcp`
+> mentions are **comments**, not imports) · and one false lead where hook logs matched **only because my own
+> grep had just written them** — caught before it was believed. Process watcher armed 17:37.
+
 > ### 🆕 **S188 — lupin's copies of two fleet skills are stale, on rules we actively use** (María 🌸, 2026-09-01)
 >
 > **Not filed as a store row** — Rick's no-new-tickets moratorium is in force; it lives here.
