@@ -4,6 +4,26 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### ⏰ **S188 — `parked` expires itself; `blocked` does not. That asymmetry is why Rick's three rows sat silent** (María 🌸, 2026-09-01)
+>
+> **Found by walking Rick through his blocked board at his request.** Store change is lupin's ⇒ Mr Radio's 🦉 call.
+> **No row opened** — ticket moratorium in force.
+>
+> **Two arms, both measured today, not argued:**
+>
+> | arm | row | chase | result |
+> |---|---|---|---|
+> | **`parked`** | `9d654899` | lapsed **2026-09-01 10:00 EDT** | ✅ **rejoined the owed count** — appears in a default query that *excludes* parked. Read-time expiry works exactly as `task_query`'s contract says |
+> | **`blocked`** | `21792c5d`, `2b2f426e`, `734bd1bf` | all lapsed **08-31** | 🔴 **stayed invisible** — still `blocked`, surfaced only by an explicit `status="blocked"` query, or by Rick looking at his own board |
+>
+> ⇒ **A parked row's `next_chase_ts` is enforced at read time. A blocked row's is a note nothing acts on.** Same field, same intent, one of them load-bearing and the other decorative — and nothing in the tool's description says which is which.
+>
+> **The consequence, measured rather than imagined**: two of Rick's three blocked rows were **stale — he owed nothing on either** (one he had already discharged at the mic on 08-30, the other stopped being his that afternoon). They sat two days past their chase and **surfaced only because he happened to look**. The rows were not the failure; their silence was.
+>
+> **Proposed to Mr Radio (cheap, and the machinery already exists)**: give `blocked` the same read-time treatment `parked` has — the store already computes `park_reason_stale` per row, so an equivalent `chase_overdue` flag is the same shape of work. A blocked row past its chase should announce itself, not wait to be stumbled over.
+>
+> ⚠️ **What this does NOT claim**: that lapsed chases go silent *generally*. I suspected that and the parked arm refuted it. The defect is specific to `blocked`.
+
 > ### 🔊 **S188 — the recurring MCP error on Rick's speakers: mechanism found, process not yet** (María 🌸, 2026-09-01)
 >
 > **Rick's request**, and it had been running for days unattended. **lupin code ⇒ Mr Radio's 🦉 fix**; DM'd with
