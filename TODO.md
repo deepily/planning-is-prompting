@@ -4,6 +4,43 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### 🔴 **S188 — lupin's `/plan-memento` still runs "the sentence the defect travelled on"** (María 🌸, 2026-09-01)
+>
+> **Correcting my own amendment from this afternoon.** I closed item 2 on row `8f5dc4df` with
+> *"lupin command checked — correct, no change needed."* True in a narrow sense, wrong in the sense
+> that matters. **Lupin's tree ⇒ Mr Radio's 🦉 fix**; DM'd, amended onto the row, not touched by me.
+>
+> **What I checked**: whether lupin's `/plan-memento` names the file the writer actually writes. It
+> does — `.claude-memento.md`, matching `memento_io.py:649`. On that question it is correct.
+>
+> **What I did not check**: whether it is *safe*. Measured — `grep -c` for the hazard across the whole
+> lupin file returns **0**. No *"shared by every persona"*, no *"check its header `session_id` is
+> yours"*, nothing. Its line 53 is the entire instruction:
+>
+> > *"Read the pointer — `io/mementos/<persona-slug>.md` (worker) or `.claude-memento.md`
+> > (self-`/clear`). The pointer carries the current record's full content, so a plain `Read` is
+> > already correct."*
+>
+> ⇒ **A lupin seat following its own command reads a repo-shared file as its own memento and is never
+> told to check whose it is.** Our copy carries the caveat (`plan-memento.md:74-75`, `11b0261`) and
+> says of the uncaveated wording, in its own words: *"that is the sentence the defect travelled on."*
+> **Lupin is still running that sentence.**
+>
+> **Live, not theoretical**: `8f5dc4df`'s own reproduction measured the pointer changing hands **four
+> times in 37 minutes**, and five sessions ran in lupin today.
+>
+> **Fix is one paragraph and does not wait on the Step 3 decision**: port our caveat — check the header
+> is yours; when it is not, read your per-persona RECORD directly. Correct against the current writer,
+> still correct if Step 3 re-lands.
+>
+> **⇒ NAMING THE RIGHT FILE IS NOT THE SAME AS GIVING A SAFE INSTRUCTION.** I conflated them, and it is
+> the third claim of my own I have had to correct today.
+>
+> **Scoping note for the Step 3 re-land** (what I was actually doing when I found this): at HEAD the
+> writer is already **split** — `:583` makes the RECORD per-persona, `:649` leaves the POINTER shared.
+> So re-landing is **not a simple revert-of-a-revert**: it moves the pointer, and both repos' commands
+> must move with it, in the order that row already states. Worth knowing before anyone prices it.
+
 > ### ⏰ **S188 — `parked` expires itself; `blocked` does not. That asymmetry is why Rick's three rows sat silent** (María 🌸, 2026-09-01)
 >
 > **Found by walking Rick through his blocked board at his request.** Store change is lupin's ⇒ Mr Radio's 🦉 call.
