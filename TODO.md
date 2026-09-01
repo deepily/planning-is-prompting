@@ -38,6 +38,29 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 > only. There is no cross-repo axis. **I deliberately did not add lupin's absolute paths** — this
 > repo's tooling must not hardcode a sibling checkout (portability rule, `CLAUDE.md` §Development
 > Guidelines). A configurable pair source is the real fix, and it needs a design decision.
+>
+> #### 🔴 And a cross-repo axis needs one more thing first — measured, 2026-09-01
+>
+> Re-ran the pair after Mr Radio 🦉 synced lupin's `plan-decide.md`. It still reports **1 DRIFTED
+> PARAGRAPH**, and the paragraph is *correct*:
+>
+> ```
+> canonical: **[SHORT_PROJECT_PREFIX]**: [PLAN]  - **Working directory**: …
+> deployed:  **[SHORT_PROJECT_PREFIX]**: [LUPIN] - **Working directory**: …
+> ```
+>
+> ⇒ **The substitution block is what an installed command is SUPPOSED to differ on**, and the tool
+> has no concept of it — it sees one paragraph that stopped being identical and rings. On the
+> `~/.claude` axis this never came up, because a user-scope copy substitutes nothing.
+>
+> ⇒ So adding cross-repo pairs today buys a **permanently red paragraph per pair**, cleared only by
+> a `KNOWN_DRIFT` entry that never self-prunes — which is precisely the "list of things nobody
+> decided" that allow-list was designed to prevent. **The axis needs per-pair substitution handling
+> (or a declared substitution block) BEFORE the pairs, not after.**
+>
+> ✅ **Also checked, and it is clean**: `spin-up-swe-team` still measures 7399 bytes in lupin with
+> its **4 lupin-only paragraphs intact** — he touched only the two drifted files, as he said. I
+> flagged the risk that a byte-identical sync would have destroyed them; it did not.
 
 > ### ✅ **S188 — the parity tool's blind third is closed** (María 🌸, 2026-09-01)
 >
