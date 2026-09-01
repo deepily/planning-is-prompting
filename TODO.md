@@ -725,6 +725,15 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### S186 — 2026-08-31 (María 🌸 `dca46f4f`)
+
+- **Epic-key enforcement: keep reject-on-creation, FIX THE PREDICATE.** Test `correlation_key.startswith("epic:")`, not `key != ""`, with the harness mirror's `cc-task:` lane exempt; warn-only one week; `epic:unassigned` legal in the error. Rick re-ruled after Maya's 08-30 three-tenant measurement was finally put in front of him — my first ask carried the 08-29 framing and omitted it. Row `5246bb67`; lupin's build. | horizon: next
+- **Title cap 60 → 120, fail-open on CREATE and fail-closed on EDIT.** An unattended seat minting a row is never blocked; a human editing one is told to shorten and picks which half to keep. Partially overturns `soft_guard_title`'s standing "an over-long title is NEVER a rejected write". Rows `cc6519a6` / `ca41e261`; lupin's build. | horizon: next
+- **Terminal-row titles may take a correction PREFIX only** (`SUPERSEDED` / `WITHDRAWN` / `CORRECTED`), original text preserved after the marker. Unblocked by discharging a caveat open twelve hours: closed-row titles are **not** used as an immutable key anywhere — no index, no unique constraint, nothing groups or hashes them. Row `ca41e261`. | horizon: next
+- **Mementos are NOT a historical record — delete them, do not archive them.** Rick, verbatim: *"The mementos are not a historical document… Do not save them. Delete them."* 41 stale root records + mirrors removed; only the live record and its pointer kept. Settles a question that had been asked at least twice before. | horizon: now
+- **Doc-parity check runs unattended** — installed to crontab, daily 07:30, silent on a clean run (zero bytes, exit 0, verified). `--uninstall` matches a tagged line so removal is safe by construction. | horizon: now
+
+
 ### S176 — 2026-08-23 (María 🌸 `16d8e856`)
 
 - **Transcript retention set to 90 days** — Rick approved my recommendation over the standing 3650 (ten years). Transcripts are the resurrection path: all 12 sessions crashed on 08-22 were rebuilt from crash-day `.jsonl` files. Backup at `~/.claude/settings.json.bak-2026-08-23`.
