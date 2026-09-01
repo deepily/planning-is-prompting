@@ -74,6 +74,16 @@ DEFAULT_PAIRS = [
     ( "skill: push-to-completion",
       ".claude/skills/push-to-completion/SKILL.md",
       "~/.claude/skills/push-to-completion/SKILL.md" ),
+    # The two commands this repo actually DEPLOYS to the user scope. Measured 2026-09-01: of 41
+    # canonical commands only these two exist in ~/.claude/commands/, and `plan-kiss` was already
+    # DRIFTED when this pair was added — the deployed copy of the fleet's own brevity reminder was
+    # missing a clause of the rule it exists to state. The tool had never looked at it.
+    ( "command: plan-kiss",
+      ".claude/commands/plan-kiss.md",
+      "~/.claude/commands/plan-kiss.md" ),
+    ( "command: plan-push",
+      ".claude/commands/plan-push.md",
+      "~/.claude/commands/plan-push.md" ),
 ]
 
 # Two paragraphs this similar are the SAME paragraph, edited.
