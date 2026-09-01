@@ -32,11 +32,28 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 > **without** alerting, or alert at low priority naming the actual process — only the server case is
 > something Rick can act on.
 >
-> **⚠️ NOT ESTABLISHED: which process.** Ruled out *by looking, not assuming*: all five context-pressure cron
+> **✅ VERIFIED BY READING, and Mr Radio 🦉 confirmed it independently — `_session_failed` IS STICKY.**
+> Set `True` at `cosa_voice_mcp.py:587` in phase 1 (runs **at import**, 10-second budget); grep gives
+> **one write (587), one read (742)**, nothing resets it. He reports **the same shape on a second surface** —
+> a browser session-id fallback cached in `localStorage`, turning a transient fault permanent. Tools whose
+> paths reach `_wait_for_sender_id`: `converse` · `_notify_send` · `ask_yes_no` · `ask_multiple_choice` ·
+> `ask_open_ended_batch` · **`get_session_info`** · `spawn_sessions` · `dismiss_sessions` ·
+> `list_spawned_sessions`.
+>
+> **🔴 AND THEN MY OWN PROBE REFUTED MY EXPLANATION OF THE TRIGGER.** I had told him it was a startup race.
+> Ran it: imported the module in a bare python process with `CLAUDE_SESSION_ID` and `CLAUDE_TRANSCRIPT_PATH`
+> unset (never calling `_wait_for_sender_id`, so nothing could be sent). **Resolution SUCCEEDED in 0.9s**,
+> `_session_failed=False`, `SENDER_ID` resolved to `…#0e61abe3` — *Mr Radio's* session. A process with no
+> session environment of its own resolves fine off any existing project bridge. ⇒ the race story needed
+> resolution to fail for a fresh process, and **it does not**. Sent him the refutation before he built on it.
+>
+> **⚠️ NOT ESTABLISHED: which process, or what makes resolution fail at all.** Ruled out *by looking, not assuming*: all five context-pressure cron
 > entries (healthy, `all within budget`) · the user-scope hooks · `bridge_pin_sweep.py` and
 > `clock_hold_plugin.py` (static-analysis helpers, unschedulable) · the REST routers (their `cosa_voice_mcp`
 > mentions are **comments**, not imports) · and one false lead where hook logs matched **only because my own
-> grep had just written them** — caught before it was believed. Process watcher armed 17:37.
+> grep had just written them** — caught before it was believed · the stale-bridge-sweep theory (nothing moved to `sessions/stale/` today; live bridges touched every minute).
+>
+> ⚠️ **Do not read my watchers' silence as quiet.** Neither the process watcher nor the correlator was ever shown able to catch a positive, so their zeroes are **unfalsified instruments, not evidence** — the same trap this session already logged a ruling about. **Four theories died today**: cron, hooks, the REST routers, and the startup race.
 
 > ### 🆕 **S188 — lupin's copies of two fleet skills are stale, on rules we actively use** (María 🌸, 2026-09-01)
 >
