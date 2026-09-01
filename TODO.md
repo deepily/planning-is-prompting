@@ -4,6 +4,41 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### 🆕 **S188 — lupin's copies of two fleet skills are stale, on rules we actively use** (María 🌸, 2026-09-01)
+>
+> **Not filed as a store row** — Rick's no-new-tickets moratorium is in force; it lives here.
+> **Not fixed** — lupin's tree is Mr Radio's lane. DM'd to him with the receipts.
+>
+> Found while extending the parity tool's coverage. File-equality says all four shared skills
+> differ, which is useless: an installed skill is *supposed* to carry per-repo customization.
+> The paragraph-level tool separates them, and that separation is the point:
+>
+> | pair (PIP canonical ↔ lupin) | verdict |
+> |---|---|
+> | `plan-post-game` | ✅ **not drift** — `[PLAN]` vs `[LUPIN]` prefix. Correct customization (and the whole 1-byte size difference). |
+> | `spin-up-swe-team` | ✅ **not drift** — 0 drifted paragraphs, 4 deployed-only. Lupin extended it locally. |
+> | `guided-decision-walkthrough` | 🔴 **2 stale paragraphs** |
+> | `push-to-completion` | 🔴 **1 stale paragraph** |
+>
+> **`push-to-completion` — lupin is missing the ☕ carrier glyph entirely.** Canonical opens with
+> *"Use whenever the user sends the ☕ emoji (the carrier glyph — ☕ ALONE, with no other text, fires
+> the ENTIRE directive; acknowledge with 🫡 and nothing else…)"*; lupin's reads *"Use whenever the
+> user says 'riot act'…"*. ⇒ **A lupin seat that gets a bare ☕ has nothing in its own skill telling
+> it what that means.** The glyph is fleet doctrine in the global CLAUDE.md, so this reads as
+> staleness rather than intent.
+>
+> **`guided-decision-walkthrough` — lupin still carries the wording a correction removed.** Lupin
+> says *"AFK-safe"* / *"AFK-safe defaults"* where canonical now says *"covers a **timeout** — ⚠️
+> **not** an absent user; see below"* and *"always pass a `default`; one-at-a-time, blocking"*.
+> ⇒ That correction is the timeout-vs-absent-user distinction — the same defect that left five
+> ratified decisions carrying a permanent provenance caveat. Lupin's copy still says the thing the
+> correction was written to stop saying.
+>
+> **Why the tool did not already catch this**: `DEFAULT_PAIRS` covers PIP-canonical ↔ `~/.claude`
+> only. There is no cross-repo axis. **I deliberately did not add lupin's absolute paths** — this
+> repo's tooling must not hardcode a sibling checkout (portability rule, `CLAUDE.md` §Development
+> Guidelines). A configurable pair source is the real fix, and it needs a design decision.
+
 > ### ✅ **S188 — the parity tool's blind third is closed** (María 🌸, 2026-09-01)
 >
 > Rio's finding below (S184) is **FIXED**. `MIN_BLOCK_CHARS = 120` deleted every block shorter than
