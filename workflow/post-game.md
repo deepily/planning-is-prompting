@@ -61,7 +61,7 @@ The post-game **always runs**, but its weight scales to the engagement. **The ob
 
 | Tier | When (D2 lesson-test) | Output |
 |---|---|---|
-| **Full retro** | SWE-crew run · cascade · multi-decision design session · non-trivial bug-fix — **OR** any run that produced a ruling / caught a drift-or-confabulation / surfaced a new failure mode | A dated doc `src/rnd/yyyy.mm.dd-<slug>-post-game.md` (§4 template) + rulings to Decisions Log |
+| **Full retro** | SWE-crew run · cascade · multi-decision design session · non-trivial bug-fix — **OR** any run that produced a ruling / caught a drift-or-confabulation / surfaced a new failure mode | A dated doc `io/post-games/yyyy.mm.dd-<slug>-post-game.md` (§4 template) + rulings to Decisions Log |
 | **Lightweight note** | Trivial change, genuinely no lesson (typo, one-line tweak) | One line in `history.md` — *"<what>; no lessons."* No doc. |
 
 **Trigger (D1):** the post-game **auto-fires** at the two heavy ritual points where it's already a defined step — **SWE-crew teardown** and **cascade Stage 9**. Solo / ad-hoc sessions invoke it **manually** (`/plan-post-game` or "let's debrief / post game"). "Always-on, scaled" — never "on-demand" for substantive work — because the standing post-game is how drift and confabulation get caught at all. Skipping it on a substantive run is a workflow bug.
