@@ -4,6 +4,26 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### ✅ **S188 — the parity tool's blind third is closed** (María 🌸, 2026-09-01)
+>
+> Rio's finding below (S184) is **FIXED**. `MIN_BLOCK_CHARS = 120` deleted every block shorter than
+> 120 characters before comparison; it is gone. Short blocks are now compared, under an
+> **exact-match-or-anchor** rule — similarity is withheld below `SIMILARITY_MIN_CHARS`, because two
+> `---` rules or two one-word headings score near 1.0 against each other and that collision is the
+> real reason the filter existed.
+>
+> **Measured before changing it**, as S184 asked: across the three built-in pairs, **126 short
+> canonical blocks matched 126 short deployed blocks exactly** and the anchor rule produced **zero**
+> new pairings. The false-positive cost of admitting them today is nil.
+>
+> **Falsified, not asserted.** A one-line rule with a changed tail (`cut the stakes clause` →
+> `cut the WHOLE STAKES CLAUSE`): the code at `11b0261` printed **PARITY OK**; the fixed code reports
+> it, matched on a 65-char shared opening. All three new tests go **red** against the old module and
+> green against the new one.
+>
+> Live pairs after the fix: **PARITY OK, 0 drifted, 0 only-in, on all three** — now over the whole
+> file instead of two thirds of it. Suite `workflow/scripts/`: **413 green**.
+
 > ### 🆕 **S184 — the parity tool is blind to half of every file it checks** (María 🌸, 2026-08-30)
 >
 > **Found by Rio ⚡ while using the tool as a receipt on his own fix** (lupin row `8593bf65`, sha

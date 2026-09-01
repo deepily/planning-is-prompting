@@ -100,9 +100,25 @@ DEFAULT_THRESHOLD = 0.75
 # copies of one document, is not coincidence.
 MIN_ANCHOR_CHARS = 32
 
-# A block shorter than this is a heading, a table row or a one-line marker — too small to
-# match reliably, and noisy when it does.
-MIN_BLOCK_CHARS = 120
+# 🔴 SHORT BLOCKS ARE COMPARED, NOT DROPPED — corrected 2026-09-01 (Rio ⚡ found it, María
+# measured it). This constant used to be `MIN_BLOCK_CHARS = 120`, a filter in `split_blocks`
+# that DELETED every block shorter than 120 characters before comparison. Measured on the three
+# built-in pairs, that discarded 38% / 52% / 31% of the blocks in each file — so every "PARITY
+# OK" this tool had ever printed was computed over roughly two thirds of the document. Short
+# blocks are exactly where one-line rules live: a table row, a single-sentence mandate, a `⚠️`
+# warning. Those are the highest-value lines to keep in sync and the only ones it could not see.
+#
+# The threshold existed for a real reason — short text collides under similarity, and two `---`
+# rules or two one-word headings look identical to `SequenceMatcher`. So the fix is not "compare
+# everything the same way": short blocks are admitted, but they are **exact-match-or-anchor**,
+# never similarity. A block below this length can only be called "the same paragraph, edited" by
+# sharing a MIN_ANCHOR_CHARS opening, which short colliding text cannot reach.
+#
+# MEASURED BEFORE CHANGING IT (the false-positive rate this rule risks): across the three pairs,
+# 126 short canonical blocks matched 126 short deployed blocks EXACTLY, and the anchor rule
+# produced ZERO new pairings. Admitting them today costs nothing and buys back a third of each
+# file.
+SIMILARITY_MIN_CHARS = 120
 
 
 def repo_root():
@@ -139,8 +155,9 @@ def split_blocks( text ):
         - text is a string
 
     Ensures:
-        - returns a list of ( line_number, raw_block ) for blocks of at least
-          MIN_BLOCK_CHARS after normalization
+        - returns a list of ( line_number, raw_block ) for EVERY non-blank block, short
+          ones included — a one-line rule is the most valuable thing to keep in sync,
+          and dropping it here is what made this tool blind to a third of each file
         - line_number is 1-indexed and points at the block's first line
         - blank-line separated; fenced code blocks are NOT split internally
     """
@@ -163,7 +180,7 @@ def split_blocks( text ):
 
     if current: blocks.append( ( start_ln, "\n".join( current ) ) )
 
-    return [ ( ln, b ) for ln, b in blocks if len( normalize( b ) ) >= MIN_BLOCK_CHARS ]
+    return [ ( ln, b ) for ln, b in blocks if normalize( b ) ]
 
 
 def normalize( block ):
@@ -213,14 +230,22 @@ def same_paragraph( c_norm, d_norm, threshold=DEFAULT_THRESHOLD ):
         - the ANCHOR rule fires on a shared opening of MIN_ANCHOR_CHARS or more, which
           catches a paragraph whose body was rewritten (the founding case, ratio 0.50)
         - the SIMILARITY rule fires at or above `threshold`, which catches a paragraph whose
-          opening was reworded but whose body was left alone
+          opening was reworded but whose body was left alone — but ONLY when both blocks are
+          at least SIMILARITY_MIN_CHARS long, because short text collides
         - the two rules are deliberately OR'd: each is blind to the case the other sees
     """
     anchor = common_prefix_len( c_norm, d_norm )
     ratio  = difflib.SequenceMatcher( None, c_norm, d_norm ).ratio()
 
-    if anchor >= MIN_ANCHOR_CHARS: return True, "anchor",     ratio, anchor
-    if ratio  >= threshold:        return True, "similarity", ratio, anchor
+    if anchor >= MIN_ANCHOR_CHARS: return True, "anchor", ratio, anchor
+
+    # Similarity is withheld from short text. Two `---` rules, two one-word headings or two
+    # table rows of the same shape score near 1.0 against each other while being different
+    # lines — so below this length identity must be earned by an exact match (handled in
+    # `compare`'s first pass) or by a shared opening long enough that collision is implausible.
+    if min( len( c_norm ), len( d_norm ) ) < SIMILARITY_MIN_CHARS: return False, "", ratio, anchor
+
+    if ratio >= threshold: return True, "similarity", ratio, anchor
     return False, "", ratio, anchor
 
 

@@ -122,9 +122,28 @@ def test_one_deployed_block_cannot_be_matched_twice():
     assert len( only_c )  == 1
 
 
-def test_short_blocks_are_ignored():
-    """Headings and table rows are too small to match reliably."""
-    assert parity.split_blocks( "# A heading\n\n| a | b |\n" ) == []
+def test_short_blocks_are_compared_not_dropped():
+    """A heading and a table row are kept — dropping them is what made this tool blind."""
+    blocks = parity.split_blocks( "# A heading\n\n| a | b |\n" )
+    assert [ b for _, b in blocks ] == [ "# A heading", "| a | b |" ]
+
+
+def test_a_changed_one_line_rule_is_reported():
+    """The capability the 120-char filter used to destroy. Delete the fix and this goes red."""
+    row       = "| **NoDrama** | State the defect, the fix, the receipt - cut the stakes clause |"
+    canonical = "# T\n\n" + row + "\n"
+    deployed  = "# T\n\n" + row.replace( "the stakes clause", "the WHOLE stakes clause" ) + "\n"
+    drifted, _, _ = parity.compare( canonical, deployed )
+    assert len( drifted ) == 1, "a one-line rule that changed must be reported as drift"
+    assert drifted[ 0 ][ "reason" ] == "anchor"
+
+
+def test_short_blocks_never_match_on_similarity():
+    """Two `---` rules score ~1.0 against each other; similarity must be withheld below the floor."""
+    is_same, reason, ratio, _ = parity.same_paragraph( "## Pending", "## Pendings" )
+    assert ratio > parity.DEFAULT_THRESHOLD, "the collision this rule exists to refuse"
+    assert not is_same, "short text must not be paired by similarity"
+    assert reason == ""
 
 
 def test_missing_file_exits_two( tmp_path, monkeypatch, capsys ):
