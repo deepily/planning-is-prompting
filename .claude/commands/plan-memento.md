@@ -70,7 +70,9 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 
 ### Mode 2: `load`
 
-1. **Read the pointer** — `io/mementos/<persona-slug>.md` (worker) or `.claude-memento.md` (self-`/clear`). The pointer **carries the current record's full content**, so a plain `Read` is already correct: **there is nothing to choose, no mtime tiebreak, no candidates to rank.**
+1. **Read the pointer** — `io/mementos/<persona-slug>.md` (worker) or **`.claude-memento-<persona-slug>.md`** (self-`/clear`). The pointer **carries the current record's full content**, so a plain `Read` is already correct: **there is nothing to choose, no mtime tiebreak, no candidates to rank.**
+   - 🔴 **THE SELF-`/clear` POINTER IS PER-PERSONA AS OF ROW `8f5dc4df`. IF `.claude-memento-<persona-slug>.md` IS ABSENT, FALL BACK TO THE OLD SHARED `.claude-memento.md` — AND THEN CHECK ITS HEADER `session_id` IS YOURS BEFORE YOU TRUST A WORD OF IT.** That file is one per repo, shared by every persona, so it may be **somebody else's memento**. Measured 2026-08-31: the pointer changed hands **four times in 37 minutes** and the author of the evidence document was locked out of `self_respin` while writing it.
+   - ⚠️ **This line used to say `.claude-memento.md` with no caveat, and that is the sentence the defect travelled on** — a standing instruction telling every seat to read a shared file as though it were its own. Follow the fallback only until your next write: `memento_io.py write --slot root` lands the new per-persona name, and after that this step has nothing to fall back to.
 2. Validate the 9-element contract is satisfied; flag any missing elements.
 3. Follow §7 rehydration instructions (re-warm reading list → first action → open loops). **First action MUST include reconciling owed work via `task_query` against element 8** (store-authoritative union — `session-start.md` Step 4.7).
 4. Confirm rehydration via `notify()`, naming the rehydrated role + first action.
