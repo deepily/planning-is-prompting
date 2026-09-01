@@ -317,7 +317,7 @@ def test_amend_escape_is_recorded_in_the_record( repo ):
     r = amend_memento( repo, extra=[ "--no-post-game", reason ] )
     assert r.returncode == 0, r.stderr
     for surface, p in ( ( "record",  repo / ".claude-memento-maria-45b897f6.md" ),
-                        ( "pointer", repo / ".claude-memento-maria.md" ),
+                        ( "pointer", repo / ".claude-memento.md" ),
                         ( "mirror",  home_for( repo ) / ".claude" / "mementos"
                                      / repo.name / ".claude-memento-maria-45b897f6.md" ) ):
         text = p.read_text()
@@ -410,7 +410,7 @@ def test_escape_reason_is_written_into_record_mirror_and_pointer( repo ):
     write_memento( repo, extra=[ "--no-post-game", reason ] )
 
     record  = ( repo / ".claude-memento-maria-45b897f6.md" ).read_text()
-    pointer = ( repo / ".claude-memento-maria.md" ).read_text()
+    pointer = ( repo / ".claude-memento.md" ).read_text()
     mirror  = ( home_for( repo ) / ".claude" / "mementos"
                 / repo.name / ".claude-memento-maria-45b897f6.md" ).read_text()
 
@@ -913,47 +913,16 @@ def test_an_ordinary_persona_is_not_blocked( repo ):
         assert r.returncode == 0, f"{persona!r} was refused: {r.stderr}"
 
 
-def test_the_root_slot_now_REFUSES_the_collision_it_once_could_not_have( repo ):
+def test_the_root_slot_cannot_collide_by_construction( repo ):
     """
-    🔴 THIS TEST IS INVERTED, AND ITS OWN OLD DOCSTRING PREDICTED WHY (row 8f5dc4df).
-
-    It used to assert that a persona named "arnold 20260721" writes SUCCESSFULLY at the root
-    slot, on the reasoning that "the root slot's pointer is the FIXED name `.claude-memento.md`
-    ... so no persona can make the two meet." That was true, and it stopped being true the moment
-    the pointer became per-persona: `.claude-memento-arnold-20260721.md` IS persona `arnold`,
-    session `20260721`'s record.
-
-    Its closing line was `"cannot happen by construction" is the claim class that has failed
-    twice today` — and this is the third time. The construction changed; the guarantee went with
-    it. That is exactly why the guard call was added to the root branch in the same edit.
-
-    So the assertion flips from "writes fine" to "is refused, and the victim survives" — the F-1
-    shape (Rio, 2026-07-21), which on the WRITE side overwrites a dead seat's testimony at exit 0
-    under a success banner.
+    The root slot's pointer is the FIXED name `.claude-memento.md` while its records are
+    `.claude-memento-<slug>-<sid8>.md`, so no persona can make the two meet. Asserted rather than
+    reasoned: "cannot happen by construction" is the claim class that has failed twice today.
     """
-    victim = repo / ".claude-memento-arnold-20260721.md"
-    victim.write_text( "x" * 512 )                     # stand in for arnold/20260721's record
-    before = victim.read_bytes()
-
     r = write_memento( repo, persona=COLLIDING_PERSONA, sid="aaaabbbb", slot="root" )
-
-    assert r.returncode != 0, "the collision was accepted — F-1 is reintroduced"
-    assert "would give this pointer a RECORD's path" in r.stderr
-    assert victim.read_bytes() == before, "the victim record was written through"
-
-
-def test_an_ordinary_root_persona_still_writes_and_takes_its_OWN_pointer( repo ):
-    """
-    The negative control for the test above, and it is what keeps the guard from being a blanket
-    refusal: an ordinary persona writes normally, and its pointer is now its OWN file rather than
-    the shared one every seat used to fight over.
-    """
-    r = write_memento( repo, persona="krishna", sid="aaaabbbb", slot="root" )
     assert r.returncode == 0, r.stderr
-    assert ( repo / ".claude-memento-krishna-aaaabbbb.md" ).exists()   # the record
-    assert ( repo / ".claude-memento-krishna.md" ).exists()            # its OWN pointer
-    assert not ( repo / ".claude-memento.md" ).exists(), \
-           "the shared persona-less pointer was written — the defect is back"
+    assert ( repo / ".claude-memento-arnold-20260721-aaaabbbb.md" ).exists()
+    assert ( repo / ".claude-memento.md" ).exists()
 
 
 def test_layer_2_still_repoints_to_the_newest_record( repo ):

@@ -16,8 +16,7 @@ cleanly. Three verbs refused in sequence, each naming another that also refused:
 
 Every refusal is individually correct. Together they are a loop, because none of them named
 the actual state: HIS record was on disk and fine — the persona-LESS root pointer
-(`.claude-memento.md`, one file every persona shares, CLAUDE.md 816e9d8b — made PER-PERSONA
-by row 8f5dc4df, which is why this file no longer manufactures that contention) was held by
+(`.claude-memento.md`, one file every persona shares, CLAUDE.md 816e9d8b) was held by
 somebody else. The exit was `regenerate-pointer`, mentioned by `adopt` only in passing as
 reassurance that nothing is destroyed.
 
@@ -34,12 +33,7 @@ re-point a SHARED pointer, handing the same lockout to the next seat.
 
 So the headline assertion is no longer "a reachable exit is named". It is stronger: in the
 contended scenario there is NOTHING TO ESCAPE. `amend` succeeds, and it lands in the caller's
-OWN record whatever any pointer says.
-
-⚠️ AND AS OF ROW 8f5dc4df THE CONTENTION ITSELF IS GONE FROM THE ROOT SLOT — the pointer is
-per-persona, so there is no shared object to lose. These tests are kept, not retired: they
-assert amend's IDENTITY resolution, which is what made the deadlock unformable and is not
-guarded anywhere else. A future change could re-couple amend to the pointer silently.
+OWN record while another persona holds the pointer.
 
 ⚠️ THE STALE-PYC HAZARD CANNOT REACH THIS FILE, AND THE REASON IS WORTH KNOWING BEFORE
 SOMEBODY ADDS CEREMONY THAT LOOKS PRUDENT. Clayton 😎 raised it reviewing 0124b22f9391.
@@ -91,31 +85,11 @@ def contended_root( tmp_path ):
     Requires:
         - tmp_path is an existing empty directory
 
-    🔴 THE CONTENTION THIS FIXTURE WAS BUILT TO MANUFACTURE NO LONGER EXISTS ON THE ROOT
-    SLOT (row 8f5dc4df). It used to have maya write first and mr radio second, then assert
-    the SHARED `.claude-memento.md` had come to name mr radio — "fixture did not reproduce
-    the contention it exists to create" was its failure message. The root pointer is now
-    per-persona, so the second write lands on `.claude-memento-mr-radio.md` and takes
-    nothing from anyone: there is no shared object left to contend for.
-
-    ⚠️ THAT IS THE FIX WORKING, NOT THE TEST ROTTING, AND THE DISTINCTION DECIDES WHAT TO DO
-    HERE. The property these tests actually assert is that `amend` derives its record path
-    from IDENTITY and never consults a pointer — Mr Radio's option (a). That property is
-    INDEPENDENT of whether any pointer is contended, so it survives verbatim and is still
-    worth asserting: it is what made the deadlock unformable in the first place, and a
-    future change could re-couple amend to the pointer without any other test noticing.
-
-    So the fixture keeps both writes — two personas, two records, in that order — and drops
-    only the claim that one of them stole a shared file. The scenario is now "another
-    persona has ALSO written the root slot", which is the strongest thing that can still be
-    true, and amend must still land in the caller's own record.
-
     Ensures:
-        - returns a repo where maya wrote a root record FIRST and mr radio wrote SECOND
-        - each persona's pointer names its OWN record — asserted, because a regression that
-          reinstated the shared pointer would otherwise be invisible from here
+        - returns a repo where maya wrote a root record FIRST and mr radio wrote SECOND,
+          so the shared persona-less pointer names mr radio's record and maya is locked out
         - maya's own record is present and intact — the whole point is that only the
-          POINTER was ever wrong, which is why "your record is missing" is never the answer
+          POINTER is wrong, which is why "your record is missing" is never the answer
     """
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -128,27 +102,17 @@ def contended_root( tmp_path ):
                  "--content-file", str( body ), "--no-post-game", "fixture" )
         assert r.returncode == 0, r.stderr
 
-    # Each seat holds its OWN pointer, and NOBODY holds a shared one. The third assertion is
-    # the load-bearing one: it is what would fail if the persona-less pointer ever came back.
-    assert "maya"     in ( repo / ".claude-memento-maya.md" ).read_text()
-    assert "mr-radio" in ( repo / ".claude-memento-mr-radio.md" ).read_text()
-    assert not ( repo / ".claude-memento.md" ).exists(), \
-           "the shared persona-less pointer is back — the contention this file documents can re-form"
+    pointer = ( repo / ".claude-memento.md" ).read_text()
+    assert "mr-radio" in pointer, "fixture did not reproduce the contention it exists to create"
     assert ( repo / ".claude-memento-maya-aaaaaaaa.md" ).exists(), "maya's own record is missing"
     return repo, body
 
 
-def test_amend_lands_in_the_callers_own_record_when_another_persona_also_wrote_root( contended_root ):
+def test_amend_lands_in_the_callers_own_record_while_another_persona_holds_the_pointer( contended_root ):
     """
     🔴 THE HEADLINE. Under option (a) the deadlock cannot form: `amend` never consults the
-    pointer, so what any pointer says is simply irrelevant. This asserted a refusal with a
-    good message before; it now asserts there is nothing to refuse.
-
-    ⚠️ RENAMED AT ROW 8f5dc4df — it said `..._while_another_persona_holds_the_pointer`, and
-    on the root slot no other persona CAN hold your pointer any more. The name would have
-    kept asserting a contention the code had removed, which is the exact defect this epic
-    keeps finding. The property under test is unchanged and is the one that matters: amend
-    resolves by IDENTITY, so it would still land correctly even if a pointer were wrong.
+    pointer, so a foreign persona holding it is simply irrelevant. This asserted a refusal
+    with a good message before; it now asserts there is nothing to refuse.
     """
     repo, body = contended_root
     before = ( repo / ".claude-memento-maya-aaaaaaaa.md" ).read_text()
@@ -204,17 +168,9 @@ def test_allow_foreign_record_is_refused_at_the_door_on_the_root_slot( contended
     🔴 THIS WAS A KNOWN GAP AND IS NOW A DECISION — Mr Radio's call, store dbca4ba8.
 
     The flag means "annotate the record the pointer names, deliberately". On `io` that is a
-    real target: the io pointer is persona-SCOPED.
-
-    ⚠️ THE REFUSAL SURVIVES ROW 8f5dc4df AND ITS REASON DOES NOT — which is why this test
-    now asserts the refusal EXPLAINS ITSELF rather than asserting one particular word. It
-    used to require the literal "persona-LESS" in the message, because on `root` the pointer
-    named whoever wrote LAST and the target could change between two runs a minute apart.
-    The root pointer is per-persona now, so that sentence is false and had to go.
-
-    The flag is still meaningless here, for the OPPOSITE reason: what it points at is your
-    OWN record, which is what `amend` writes anyway — a special case indistinguishable from
-    the default. Same exit, same refusal, inverted rationale.
+    real target: the io pointer is persona-SCOPED. On `root` it names whoever wrote LAST,
+    because `.claude-memento.md` is persona-LESS, so the flag targets nobody in particular
+    and the target can change between two runs a minute apart.
 
     ⚠️ WHY REFUSING EARLY IS THE POINT, and not merely tidier. It already failed here before
     anyone touched it: measured on the ORIGINAL script, the same call reached the post-amend
@@ -233,10 +189,7 @@ def test_allow_foreign_record_is_refused_at_the_door_on_the_root_slot( contended
 
     assert r.returncode == 9, r.stderr
     assert "does not apply on the 'root' slot" in r.stderr
-    assert "YOUR OWN" in r.stderr, "the refusal does not say WHY, so it reads as arbitrary"
-    assert "persona-LESS" not in r.stderr, (
-        "the refusal still explains itself with the pre-8f5dc4df reason — the root pointer is "
-        "per-persona now, so that sentence is a false explanation handed to a user at exit 9" )
+    assert "persona-LESS" in r.stderr, "the refusal does not say WHY, so it reads as arbitrary"
     assert "--slot io" in r.stderr, "the refusal does not name where the flag does work"
     assert "INVARIANT VIOLATED" not in r.stderr, (
         "still failing late at the invariant, which blames the pointer and sends the caller "

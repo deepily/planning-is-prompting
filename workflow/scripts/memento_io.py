@@ -99,8 +99,7 @@ Layout (per repo, `repo_root` = `git rev-parse --show-toplevel`):
     slot=io    RECORD   io/mementos/<persona>-<sid8>.md          IMMUTABLE
                POINTER  io/mementos/<persona>.md                 mutable, regenerable
     slot=root  RECORD   .claude-memento-<persona>-<sid8>.md      IMMUTABLE
-               POINTER  .claude-memento-<persona>.md             mutable, regenerable
-               LEGACY   .claude-memento.md                       read-only, transitional
+               POINTER  .claude-memento.md                       mutable, regenerable
 
     MIRROR     ~/.claude/mementos/<repo>/<record-path-relative-to-repo-root>
 
@@ -111,7 +110,7 @@ The POINTER holds a full COPY of the current record's bytes behind a pointer hea
 Deliberately NOT a symlink: a write through a symlink lands on the record and destroys
 it, which would turn the pointer back into the destruction path this design removes.
 Deliberately NOT a one-line "current: <file>" stub either: that would make every naive
-reader (`seed_memento`, `cat`, an inherited "read the root pointer" instruction) fetch
+reader (`seed_memento`, `cat`, an inherited "read .claude-memento.md" instruction) fetch
 a useless one-liner unless it REMEMBERED to follow the pointer — a rule at the read end.
 A content-copy pointer is correct for the naive reader AND carries the `current:` line
 for a reader that wants the record's real path. Overwriting it destroys nothing.
@@ -630,13 +629,10 @@ def pointer_rel_path( slot, persona_slug ):
     Ensures:
         - returns the repo-relative POINTER path for (slot, persona)
         - the returned path is NEVER a valid RECORD path
-        - slot="root" -> `.claude-memento-<slug>.md`, PER-PERSONA as of row 8f5dc4df.
-          This clause used to read "slot='root' cannot collide by construction: its
-          pointer is the fixed name" — true only while no persona appeared in that
-          name, and false the moment one does.
+        - slot="root" cannot collide by construction: its pointer is the fixed name
+          `.claude-memento.md` while its records are `.claude-memento-<slug>-<sid8>.md`
     Raises:
-        - PointerCollision if ANY slot's pointer path would BE a record path — root
-          included, as of row 8f5dc4df
+        - PointerCollision if the io-slot pointer path would BE a record path
         - ValueError on an unknown slot
     """
     # io and tmp share a pointer SHAPE — a flat `<slug>.md` beside `<slug>-<sid8>.md` records —
@@ -650,27 +646,15 @@ def pointer_rel_path( slot, persona_slug ):
         _refuse_if_record_shaped_pointer( persona_slug, f"{persona_slug}.md" )
         return Path( f"{persona_slug}.md" )   # relative to slot_base_dir(tmp)
 
-    # 🔴 ROOT JOINED THE GUARD AT ROW 8f5dc4df, AND THE PER-PERSONA NAME IS WHY IT HAD TO.
-    # This branch returned the fixed `.claude-memento.md` and skipped the guard for a reason
-    # that was true at the time: with no persona in the name, nothing could collide. That
-    # reason EXPIRES the moment the persona enters the name — so the guard call is the other
-    # half of this edit, not defensive tidying. Without it, a per-persona root pointer
-    # reintroduces F-1 exactly as the io slot once did, and on the WRITE side, where the
-    # pointer write is unconditional and overwrites the victim record at exit 0.
-    if slot == "root":
-        _refuse_if_record_shaped_pointer( persona_slug, f".claude-memento-{persona_slug}.md" )
-        return Path( f".claude-memento-{persona_slug}.md" )
-
+    if slot == "root": return Path( ".claude-memento.md" )
     raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
 
 
 def _refuse_if_record_shaped_pointer( persona_slug, pointer_display ):
     """
     Raise PointerCollision when a flat-pointer slot's persona slug ends in 8 hex — i.e. when the
-    pointer path this persona produces IS some other persona's RECORD path. Shared by ALL THREE
-    branches of `pointer_rel_path` as of row 8f5dc4df — root used to be exempt because its pointer
-    was a fixed persona-less name that could not collide with anything, and making that pointer
-    per-persona is what ended the exemption.
+    pointer path this persona produces IS some other persona's RECORD path. Shared by the io and
+    tmp branches of `pointer_rel_path`; root is collision-proof by construction and does not call it.
 
     Requires:
         - persona_slug is a slugified persona; pointer_display is the pointer path to name in the error
@@ -1595,8 +1579,7 @@ def cmd_amend( args ):
     # whole defect, and its own refusal text said so: "write derives its path from YOUR
     # identity, so it cannot land on a foreign record."
     #
-    # WHAT IT COST — and this describes the pointer AS IT WAS, before row 8f5dc4df made it
-    # per-persona. The root pointer `.claude-memento.md` WAS persona-LESS — one file every
+    # WHAT IT COST. The root pointer `.claude-memento.md` is persona-LESS — one file every
     # persona in the repo shares (CLAUDE.md 816e9d8b) — so whoever wrote last owned it, and
     # everyone else's `amend` resolved onto a stranger's record and was refused. Measured on
     # Mr Radio at 56% context: write said "use amend", amend said "use write", adopt said
@@ -1614,18 +1597,9 @@ def cmd_amend( args ):
     # 🔴 --allow-foreign-record HAS NO MEANING ON THE ROOT SLOT — refuse it AT THE DOOR.
     # Mr Radio 🦉's call, store dbca4ba8. The flag means "annotate the record the pointer
     # names, on purpose". On `io` that is a real target: the io pointer is persona-SCOPED, so
-    # it names a specific seat's record.
-    #
-    # ⚠️ THE REFUSAL SURVIVES ROW 8f5dc4df BUT ITS REASON DOES NOT, AND SHIPPING THE OLD
-    # REASON WOULD BE A FALSE EXPLANATION HANDED TO A USER AT EXIT 9. It used to read: on
-    # root the pointer "names whichever persona in the repo wrote last, so the flag targets
-    # nobody in particular and the target changes under you between two runs." That was
-    # exactly true of the persona-LESS `.claude-memento.md` and is exactly false now — the
-    # root pointer is `.claude-memento-<slug>.md` and names YOUR OWN newest record, stably.
-    #
-    # The flag is still meaningless here, for the opposite reason: what it points at is no
-    # longer a stranger's record, it is your own — which is what `amend` writes anyway. So it
-    # asks for a special case that is now indistinguishable from the default.
+    # it names a specific seat's record. On `root` it names whichever persona in the repo
+    # wrote last (`.claude-memento.md` is persona-LESS — CLAUDE.md 816e9d8b), so the flag
+    # targets nobody in particular and the target changes under you between two runs.
     #
     # It ALREADY failed here, and that is the reason to refuse early rather than leave it:
     # measured on the ORIGINAL script, it got all the way to the post-amend invariant and
@@ -1638,9 +1612,9 @@ def cmd_amend( args ):
         print(  "REFUSED: --allow-foreign-record does not apply on the 'root' slot.", file=sys.stderr )
         print(  "", file=sys.stderr )
         print(  "  The flag means 'annotate the record the pointer names, deliberately'. The root", file=sys.stderr )
-        print(  "  pointer .claude-memento-<persona>.md is YOUR OWN — so what it names is already", file=sys.stderr )
-        print(  "  the record `amend` would write without the flag. There is no other seat to", file=sys.stderr )
-        print(  "  reach here, so the flag asks for a special case identical to the default.", file=sys.stderr )
+        print(  "  pointer .claude-memento.md is persona-LESS — one file every persona in this", file=sys.stderr )
+        print(  "  repo shares — so it names whoever wrote LAST, not a seat you chose. The target", file=sys.stderr )
+        print(  "  can differ between two runs a minute apart.", file=sys.stderr )
         print(  "", file=sys.stderr )
         print(  "  WHAT TO DO:", file=sys.stderr )
         print(  "    · annotating another SEAT on purpose? that is the 'io' slot, whose pointer IS", file=sys.stderr )
