@@ -4,6 +4,30 @@ Last updated: 2026-08-30 (**Session 184** (María 🌸 `788c3f05`) — board dri
 
 ## 📍 Resume Here
 
+> ### 🔴 **S189 — Rick has not answered whether the holding area expires. Three asks, three timeouts.** (María 🌸, 2026-09-02)
+>
+> `horizon: next` — waiting on a NAMED event: Rick's keypress.
+>
+> **The question.** Should a `not_approved` row come back on a chase date, the way `parked` does?
+>
+> **Why it is not academic.** Rick added demotion unasked (*"I can go from approved to not approved,
+> which pushes it back into the holding area"*), so the holding area fills from BOTH ends — new rows
+> arrive unapproved, approved rows get pushed back in. Nothing removes them but his attention. Without
+> a chase it becomes the unbounded list the gate was built to prevent, moved one room over.
+>
+> **My recommendation: YES** — reuse `parked`'s mechanism (expiry computed at read time, no daemon,
+> no sweeper; the code exists and is debugged). A permanent kill already has a visible door in
+> `wont_fix`, which now requires a reason.
+>
+> 🔴 **ASKED THREE TIMES, ANSWERED ZERO TIMES.** All three returned `[default used] yes` — the
+> **timeout marker, not a keypress**. Nothing has been built on it, and nothing should be. A default
+> is indistinguishable from an answer only to a reader who does not check the prefix.
+>
+> ⇒ **Stopped asking rather than storming him a fourth time.** It is recorded here because a pending
+> decision belongs in the narrative document, not in a re-fired ask or in a worker's head. Everything
+> else on the P0 is done; this decides one column of the holding-area pane.
+
+
 > ### 🔴 **S188 — lupin's `/plan-memento` still runs "the sentence the defect travelled on"** (María 🌸, 2026-09-01)
 >
 > **Correcting my own amendment from this afternoon.** I closed item 2 on row `8f5dc4df` with
