@@ -321,7 +321,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Executable Tooling (`workflow/scripts/`)
 
-⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 27 files — Python plus shell — of which **14 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 28 files — Python plus shell — of which **15 are tests**. They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
 
 | Script | Purpose |
 |---|---|
@@ -334,6 +334,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 | `mandate_census.py` | Fleet-wide dispatch and census of a mandate |
 | `sweep_verdict_guard.py` | Guards a sweep whose method is quoting the row it is checking |
 | `reclaim-session-manifest.py` | Reclaims terminal sections from a v2.0 `.claude-session.md` |
+| `test_rsync_backup_source_guard.py` | Covers the source guard in `scripts/rsync-backup.sh` (the backup **template**, one level up). That template is copied to `<project>/src/scripts/backup.sh` and lines 15-16 must be edited afterwards — a rule, and it was missed twice. Measured 2026-09-01 across the 16 deployed copies on this machine: `par-pacific-financials-er-442109` still named `lookml` on both lines, `weil-nda-drafting-suite` still named `skills-distillation`. **Neither copy ever failed** — SOURCE and DEST agreed with each other, they just agreed about the wrong project, so par-pacific printed a green banner and *0 deleted, 0 created* while the project it lives in had no backup at all, and weil-nda would have created 1,046 files and **deleted 101** in a third project's mirror. 🔴 **A green backup run is not evidence the right thing was backed up.** The guard compares `SOURCE_DIR` against the script's own project root (`SCRIPT_DIR/../..`, already computed one line below the config block — the check was always available and simply not made), refuses non-zero naming both paths, and offers `ALLOW_FOREIGN_SOURCE=1` for a deliberate cross-project backup. Validated against all 16 deployed copies: fires on exactly the two known-bad, **zero false positives** on the other 14. The suite carries a falsifiability arm that re-runs the identical bad config with the escape hatch set and requires it to succeed, so a red can only be the guard and never the fixture |
 
 Each carries its tests alongside it; run them from `workflow/scripts/`.
 
