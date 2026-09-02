@@ -430,10 +430,27 @@ When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the mement
 
 **v3 (future)** — Memento-aware MCP tool:
 - A `memento_save()` / `memento_load()` cosa-voice MCP tool pair
-- Memento lives in the cosa-voice bridge (cross-session); not on disk
+- ⚠️ ~~Memento lives in the cosa-voice bridge (cross-session); **not on disk**~~ — **this clause is
+  now incompatible with shipped code.** `self_respin` verifies the memento by READING A FILE:
+  `self_respin_core.py` opens the path and `verify_memento_content()` checks the nonce in those
+  bytes, and `verify_memento_at_slot` LEG 2 resolves a slot PATH. A bridge-hosted memento with no
+  file would have nothing for either to verify. The durability story also moved on-disk after this
+  was written — an immutable record plus an out-of-repo mirror, because *"an unmirrored memento is
+  one `git clean -xdf` from gone."* ⇒ **A v3 worth building keeps the file and adds the tool over
+  it.** The cross-machine and concurrency goals stand; "not on disk" does not.
 - Cross-machine portability; better concurrency handling
 
-For v1, use the manual approach.
+⚠️ **AND THE LINE THAT USED TO CLOSE THIS SECTION — *"For v1, use the manual approach"* — WAS STALE
+AND IS DELETED.** Writing has not been manual since **v1.7 (2026-07-13)**, which replaced the
+overwrite RULE with a MECHANISM: writes go through `workflow/scripts/memento_io.py`, **never a
+hand-`Write`** (§2, §3, and the §4 lifecycle table all say so). A reader who reached §5 and followed
+its closing instruction would have hand-written a memento that the rest of this document forbids.
+
+🔴 **THE PATTERN, AND IT IS WHY THIS WHOLE SECTION EARNED AN AUDIT.** A **current** section that goes
+stale fails the moment somebody follows it and it does not work. A **proposed** section that gets
+overtaken produces no error at all — it just waits, looking like a plan. §5 held both failures at
+once: a v2 proposing what the code now refuses, and a v1 pointer to a method the tooling replaced.
+Neither would ever have reddened a test.
 
 ---
 
