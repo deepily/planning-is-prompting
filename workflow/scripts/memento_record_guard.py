@@ -136,7 +136,13 @@ RECORD paths (immutable — the thing being protected):
 
 POINTER paths (mutable, regenerable — MUST stay writable):
     <anything>/io/mementos/<persona>.md        (no 8-hex session-id suffix)
-    <anything>/.claude-memento.md
+    <anything>/.claude-memento-<persona>.md    (no 8-hex suffix — the LIVE root pointer)
+    <anything>/.claude-memento.md              (RETIRED legacy flat name; nothing writes it)
+
+    The root pointer went PER-PERSONA at 00fac2b (2026-09-02), so both live pointers are now
+    per-persona and the flat name is read-only legacy. VERIFIED BY EXECUTION, not assumed:
+    is_record_path returns False for `.claude-memento-maria.md` AND for the hyphenated
+    `.claude-memento-mr-radio.md` — both stay writable — while both RECORD forms still match.
 
 Protocol: a PreToolUse hook reads the tool call as JSON on stdin. Exit 2 BLOCKS the call and
 feeds stderr back to the agent. Exit 0 allows it. Any other exit is a non-blocking error.
