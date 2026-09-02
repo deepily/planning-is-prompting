@@ -111,15 +111,21 @@ def test_record_path_varies_with_persona_on_root():
     assert len( paths ) == len( PERSONAS )
 
 
-# ------------------------------------------------- the defect, as a self-retiring xfail
+# ------------------------------------------------- ✅ THE MARKERS RETIRED THEMSELVES, AS DESIGNED
+#
+# Both tests below carried `xfail(strict=True)` from 2026-09-02 (commit c42e462) because the root
+# pointer was persona-blind: Step 3 (072ef7e) had fixed it and was reverted at d4f6c29.
+#
+# Rick authorised re-landing Step 3 as a patch on 2026-09-02. The moment it applied, both xfails
+# flipped to strict XPASS FAILURES — the designed alarm — and that failure is what sent the fixer
+# to `/plan-memento` in BOTH repos in the same change, which is this row's ordering rule enforced
+# by the suite instead of by anyone's memory.
+#
+# ⇒ The markers are gone and these are now ordinary assertions of a property that HOLDS. That is
+#   the whole point of the design: a guard needing a human to remember to delete it would have been
+#   THIS ROW'S OWN DEFECT in test form — a fallback documented as self-retiring that never retired.
 
-@pytest.mark.xfail(
-    strict = True,
-    reason = "root pointer is persona-blind (memento_io.py:649 returns a fixed "
-             "'.claude-memento.md'). Step 3 (072ef7e) fixed this and was reverted at d4f6c29. "
-             "When it re-lands this XPASSes and strict=True fails the run ON PURPOSE — delete "
-             "this marker AND update /plan-memento in BOTH repos in the same change.",
-)
+
 def test_root_pointer_path_should_vary_with_persona():
     paths = { mio.pointer_rel_path( "root", p ) for p in PERSONAS }
     assert len( paths ) == len( PERSONAS ), (
@@ -127,10 +133,6 @@ def test_root_pointer_path_should_vary_with_persona():
     )
 
 
-@pytest.mark.xfail(
-    strict = True,
-    reason = "same defect at the resolve layer — see the pointer xfail above. Retire both together.",
-)
 def test_root_resolve_should_not_answer_for_a_persona_with_no_record( repo, tmp_path ):
     """
     THE OBSERVABLE HARM, end-to-end rather than at the path function. One real seat writes a root
@@ -152,8 +154,9 @@ def test_root_resolve_should_not_answer_for_a_persona_with_no_record( repo, tmp_
 
 def test_io_resolve_correctly_refuses_a_persona_with_no_record( repo, tmp_path ):
     """
-    THE OTHER HALF OF THE CONTROL, and the arm that must stay GREEN. If this ever goes red the
-    xfail above stops meaning "root is broken" and starts meaning "the fixture is broken."
+    THE OTHER HALF OF THE CONTROL, and the arm that must stay GREEN. While the tests above were
+    xfailed this arm was what isolated the difference to the SLOT rather than to the fixture; now
+    that root behaves correctly too, it is what proves both slots are being exercised at all.
     """
     home = tmp_path / "home"
     home.mkdir()
