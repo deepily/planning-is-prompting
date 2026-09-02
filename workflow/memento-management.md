@@ -411,7 +411,19 @@ When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the mement
 - Fresh session reads file, follows §7 rehydration instructions
 
 **v2 (proposed)** — SessionStart hook integration:
-- A SessionStart hook auto-detects `.claude-memento.md` in the project root
+
+> 🔴 **THIS PROPOSAL WAS SUBSEQUENTLY RULED AGAINST, AND IT IS KEPT ONLY SO NOBODY RE-PROPOSES IT.**
+> Auto-detecting `.claude-memento.md` is exactly what lupin's SessionStart hook **deliberately
+> refuses** to do. `register_session.py` → `_memento_candidates()` excludes that filename in so many
+> words: *"that file is a POINTER, not a record, and it is single-occupancy for the entire repo. It
+> currently names whichever seat wrote last, so resolving a seat's memento through it would hand one
+> persona another persona's state. Empty is a safe answer; another seat's held merge and crew is
+> not."* Measured 2026-09-02: `_resolve_memento_path` returns `None` for an unknown seat, so the
+> automated path is closed — the remaining exposure is **humans following inherited instructions**.
+> ⇒ A "proposed" section reads as a roadmap. Left in place, this one would have handed a future
+> author the defect as a feature request. **v3 below is the live direction.**
+
+- ~~A SessionStart hook auto-detects `.claude-memento.md` in the project root~~ — **rejected, see above**
 - Hook surfaces the memento to the session via `<system-reminder>` injection
 - Fresh session reads memento as part of Phase A startup
 - No manual user intervention required
