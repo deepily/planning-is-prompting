@@ -501,6 +501,54 @@ notify( "TODO.md updated", notification_type="progress", priority="low" )
 
 ---
 
+## 1.6) Harvest Gate-Refused Findings from Your Memento
+
+**Purpose**: Move findings the ticket gate REFUSED out of your memento and into TODO.md, so a
+refused finding stops being a private note and becomes visible backlog.
+
+**When this applies**: any session running while the flow-ratio gate is enforcing. Skip it when
+you recorded no refused findings — it is a no-op, not a ceremony.
+
+**Rick's ruling, 2026-09-02** (voice, on the holding-area design), verbatim:
+
+> "If the worker can't amend a current existing row that's related, the finding goes into a given
+> user's memento and at the end of the day goes into the to-do file."
+
+**The three-tier fallback**, in order — you only reach a tier when the one above it is unavailable:
+
+| Tier | Destination | When |
+|---|---|---|
+| 1 | `task_amend` onto a related row | a row already covers the subject |
+| 2 | your memento, **element 8** | no related row exists |
+| 3 | **TODO.md** — this step | end of session |
+
+**Process**:
+
+1. **Read element 8 of your own memento** (the Verbatim Pending TODO List). Element 8 is the
+   store-unavailable fallback and *the intent the store does not carry* — which is exactly what a
+   gate-refused finding is: pending work the store **refused to hold**.
+2. **For each refused finding, add a Pending item to TODO.md**, carrying the finding's own words
+   rather than a summary. A finding compressed into four words is a reminder that something
+   happened, not a record of what.
+3. **Note that it was gate-refused**, so the next reader knows it is unfiled by policy rather than
+   by oversight — and so it is a candidate for the holding area the moment the gate opens.
+4. **Leave element 8 intact.** The memento is an immutable record; TODO.md is the live list. A
+   finding correctly appears in both, and deleting it from the memento to avoid duplication
+   destroys the provenance that says where it came from.
+
+⚠️ **This step is the whole reason tier 2 is safe.** Without it a refused finding sits in a memento
+nobody re-reads, which is the invisible-backlog problem the task-store was built to end. **A rule
+that depends on remembering is not installed** — that is why this is a numbered step rather than a
+sentence in a design document.
+
+**Notification**:
+```python
+notify( "N gate-refused finding(s) harvested into TODO.md",
+        notification_type="progress", priority="low" )
+```
+
+---
+
 ## 2) Update Planning and Tracking Documents
 
 **Target**: Documents in the repo's `src/rnd` directory
