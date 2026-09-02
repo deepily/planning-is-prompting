@@ -43,6 +43,58 @@ The memento mechanism applies in these scenarios:
 - **End-of-day handoff** — at end of day, write a memento so tomorrow's session can rehydrate without re-reading history.md from scratch
 - **"Prepare for re-spin" (worker dismiss + re-spawn)** — a manager (or Rick) tells a spawned worker to ready itself for reaping + re-spawn; the worker writes its memento per the §0 3-beat sequence so the re-spawned session inherits continuity (via `seed_memento`)
 
+### §1.1 🔴 WHEN TO **REFRESH** ONE — THE TRIGGER IS BEING GIVEN SOMETHING, NOT ELAPSED TIME
+
+*(Sam 🎙️, 2026-09-02, from hitting it. Ratified by Mr. Radio 🦉 the same evening.)*
+
+Every trigger above says when to **write** a memento. None says when to **refresh** one that
+already exists, and the answer is not "periodically" — it is a specific event that nobody
+associates with mementos.
+
+🔴 **A MEMENTO GOES STALE IN ONE DIRECTION THAT MATTERS.**
+
+| what changed since you wrote it | what it does to the memento |
+|---|---|
+| you **FINISHED** work it lists | merely **verbose** — a successor does redundant checking and loses nothing |
+| you were **GIVEN** work it does not list | it **LIES ABOUT WHETHER WORK EXISTS** |
+
+⇒ **The asymmetry is the whole rule.** A memento is not a diary entry; it is the ONLY thing a
+successor gets. So a line that was true when written and is false now does not gently age —
+**`"nothing to resume, nothing owed"` is the single most dangerous sentence to leave stale,
+because a successor who reads it STOPS LOOKING.** Held work is then orphaned by a checkpoint
+asserting there was nothing to hold.
+
+⇒ **SO THE TRIGGER IS THE ASSIGNMENT, NOT THE CLOCK.** Refresh when you are handed a task,
+when you open a commit you are holding, when you accept a gate — not on a timer, and not
+"before the reap", because the reap is exactly what you do not schedule.
+
+⚠️ **AND IT IS THE MOMENT NOBODY THINKS ABOUT THEIR MEMENTO.** Measured: a worker wrote a
+clean memento ending *"nothing to resume, nothing owed"*, was assigned a second task four
+minutes later, and **neither the worker nor the manager thought about the memento for half an
+hour** — while a held commit sat in a worktree the checkpoint denied the existence of. Being
+given work is the moment your attention is furthest from the file that records what you owe.
+
+**How to refresh — do NOT retype the whole thing, and do NOT edit the record:**
+
+```bash
+# a record is IMMUTABLE; `write` REFUSES a second time and names this verb
+memento_io.py amend --slot <io|root> --persona '<Persona>' --session-id <sid8>
+```
+
+⚠️ **`amend` appends under its own stamp, then re-mirrors and re-points in ONE call or fails
+loud.** Editing the record with a raw tool lands your text with a **stale mirror and a stale
+pointer** — the two surfaces everything else reads — **and it looks like it worked.**
+
+⇒ **When you amend, say in the new entry that it SUPERSEDES the earlier closing line**, and
+point the reader at the current one. Both entries live in the same record, and a successor
+reading top-down hits the stale "nothing owed" first.
+
+⇒ **Then verify the POINTER carries it, not just the record.** A record sitting correctly at
+its own path while the pointer names something else is the exact failure that broke every
+seat's re-spin on 2026-09-02 — see §3.2.
+
+---
+
 **Distinct from**:
 - **Auto-memory** (`~/.claude/projects/.../memory/`) — durable cross-conversation facts about the user / project / preferences. Memento is single-clear-cycle transient.
 - **`.claude-session.md`** — tracks touched files for the parallel-session commit-safety mandate. Memento captures cognitive/role state. Complementary.
@@ -497,6 +549,7 @@ First instance of the memento doc was hand-authored 2026-05-21 (Rick's specifica
 
 ## Version History
 
+- **v1.8 (2026-09-02, Sam 🎙️ — ratified by Mr. Radio 🦉 the same evening)** — **NEW §1.1: when to REFRESH a memento, which every trigger in §1 was silent about.** §1 says when to WRITE one; nothing said when to refresh one that already exists, and the answer is not a timer. **A memento goes stale in ONE DIRECTION THAT MATTERS**: finishing work merely makes it VERBOSE, while **gaining work makes it LIE ABOUT WHETHER WORK EXISTS** — and `"nothing to resume, nothing owed"` is the most dangerous sentence to leave stale, because a successor who reads it STOPS LOOKING. ⇒ **So the trigger is BEING GIVEN SOMETHING, not elapsed time** — which is precisely the moment nobody thinks about their memento. Anchor, measured rather than reasoned: a worker wrote a clean memento closing *"nothing to resume, nothing owed"*, was assigned a second task four minutes later, and **neither the worker nor the manager thought about the memento for half an hour** — while a held commit sat in a worktree the checkpoint denied the existence of. §1.1 also records the mechanism that catches the naive repair: `write` **REFUSES** a second record (*"A record is IMMUTABLE. Nothing overwrites it, including you"*), names `amend` as the verb, and warns that a raw-tool edit lands text with a **stale mirror and stale pointer and LOOKS LIKE IT WORKED** — refuse-don't-half-finish plus an executable remedy in one message, on a caller who was deliberate and would otherwise have overwritten an immutable record. Adds the two obligations that follow: an amend must say it **SUPERSEDES** the earlier closing line (both entries live in one record and a top-down reader hits the stale one first), and the author must verify the **POINTER** carries the change rather than just the record — the exact failure that broke every seat's re-spin that afternoon.
 - **v1.9 (2026-09-01, María 🌸)** — **§3.2 states the `root` pointer is SHARED, and says what to do about it.** The document has 120 mentions of "memento" and, until now, **zero** for the one hazard a multi-persona repo actually hits: at HEAD the `root` slot is SPLIT — `record_rel_path` is per-persona (`.claude-memento-<persona>-<sid>.md`, `memento_io.py:581`) while `pointer_rel_path` returns one flat `.claude-memento.md` for everybody (`:649`). Measured in this repo: **six** personas' root records, **one** pointer — last writer owns it. Two instructions follow (visit a repo ⇒ `--slot io`; name the RECORD, not the pointer, in a rehydrate instruction), plus the **ordering rule** from store row `8f5dc4df`: Step 3 of the per-persona-pointer change (`072ef7e`) is reverted at `d4f6c29`, and re-landing it moves the pointer's name, so **the commands land WITH or AFTER the writer, never before** — between 2026-08-31 and 2026-09-01 `.claude/commands/plan-memento.md` named a per-persona pointer no code ever created. **The gap was found by Mr Radio 🦉 in lupin's copy of the command; his remedy — sync the copy FROM the canonical rather than hand-patch it — required the canonical to carry it first, which is this entry.** Suite green, 425 passed. **HELD for commit.**
 - **v1.8 (2026-08-17, Krishna 🦚 — implementing María's approved design, Rick GO)** — **THE EPHEMERAL `tmp` SLOT (approach A; new §3.0b, §3.1/§4 pointers).** A third slot writes the memento OUTSIDE the repo to `$LUPIN_MEMENTO_DIR || /tmp/mementos/<repo>/`, so the nightly boot wipe collects it and cleanup is nobody's chore — Rick's ask 2026-08-06, GO 2026-08-17 (row `154fbf19`). It deliberately drops the two durability invariants: **no mirror** (the mirror exists to survive `git clean`; mirroring an ephemeral file rebuilds the clutter the slot deletes) and **no gitignore** (a path outside the repo has nothing for `git check-ignore` to say). **`io`/`root` are untouched** — still durable, still mirrored, still gitignored, existing callers unchanged (Rick's ruling: add the slot, do not sweep io/root callers). **Approach B (repointing the `root` slot's base to `/tmp`) was rejected on measurement** — it refuses to write, because the repo-relative helpers (`ensure_gitignored`, `mirror_path_for`, `relative_to(repo_root)`) break on an absolute path; approach A keeps them honest via a `slot_base_dir()` seam. The R-1 post-game gate is **unaffected** — it arms only on `--slot root`. Verified by execution: `test_memento_io_tmp_slot.py`, with a **proven-red** falsifiable regression (reverting `slot_base_dir(tmp)`→`repo_root`, or restoring the mirror leg, reddens it), plus a **cross-session read-back** (memento written to `/tmp/mementos/planning-is-prompting/`, read + sha-confirmed by María from a second session). Design: `src/rnd/2026.08.06-ephemeral-runtime-state-to-tmp.md` §4.3. **HELD for commit.**
 - **v1.7 (2026-07-13, Clayton 😎 — implementing María's RULED design, Rick-approved)** — **THE OVERWRITE RULE IS DELETED AND REPLACED BY A MECHANISM (§3 rewritten end to end).** v1.4's *"a fresh memento **overwrites** that persona's slot… archive a load-bearing predecessor **before** overwriting"* was **a rule, and it failed exactly as a rule fails**: Sam had it written down and destroyed two irreplaceable records anyway — *"I ALREADY HAD THE ARCHIVE RULE WRITTEN DOWN AND I DESTROYED A RECORD ANYWAY. **A RULE DOES NOT ACT.**"* Three layers, covering **three different paths**, none decorative and none a net under another: **(1) OUT-OF-REPO MIRROR** → `~/.claude/mementos/<repo>/<record-relpath>` — the **load-bearing** layer, and the ONLY one that survives `git clean -xdf`, which takes *every* memento in a repo in one routine keystroke (Sam's `git clean -xdn` receipt: `Would remove io/mementos/` — 9 records). Rick **DECLINED** un-gitignoring on the candor argument (*a memento that will be committed is written more carefully and therefore less honestly*); the mirror gets **more** durability at **zero** candor cost. **(2) RECORD/POINTER SPLIT** — immutable `<persona>-<sid8>.md` record + mutable, regenerable `<persona>.md` pointer that is **safe to overwrite precisely because it is not the record**; kills the write-time hazard **and** the stale-read hazard, *no decision at either end*. **(3) PreToolUse bypass guard — DESIGNED, NOT INSTALLED** (holding on a user gate; §3.6 says so out loud). Mechanism: `workflow/scripts/memento_io.py` — ONE call writes record+mirror+pointer or fails loud; **refuses** an overwrite (exit 3); **repairs `.gitignore` itself** (both PIP and skills-distillation ignored only the bare `.claude-memento.md`, so records would have **leaked into git and taxed the candor Rick declined to tax**); **stamps element-1 provenance as line 1** so it does not depend on the author remembering. **Verified by execution, all of it** — `git clean -xdf` in a scratch repo destroyed the in-repo copy and the mirror survived + restored byte-identical; a **symlink** pointer was **rejected on a receipt** (a `Write` through the link truncated the record — it would have re-opened the destruction path); migration ran twice across all three repos, second run a genuine no-op: **lupin 209/209 · skills-distillation 18/18 · PIP 5/5 mirrored, 0 files moved, 0 lost.** Design: `src/rnd/2026.07.13-memento-overwrite-mechanism.md` (Revision 2, Rick-ruled). Anchor: *a rule adds a step; a mechanism removes a decision* — and the finding that outranks every mechanism here: **seven errors were caught that night across four sessions and NOT ONE was caught by the person who made it. Virtue is not the control variable.** **HELD for commit.**
