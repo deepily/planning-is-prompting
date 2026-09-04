@@ -1,8 +1,38 @@
 # TODO
 
-Last updated: 2026-09-02 (**Session 189** (María 🌸 `611e3c47`) — four workers on Rick's authorisation; the memento-pointer rename turned out to have FOUR classes of reader and each was caught by a different instrument — code by the outage, prose by review (5 sites, not the 4 filed), tests only by the full tier (12 red at HEAD), docstrings by a worker. Rio found the epic board's ellipsis and all nine row controls never receive a click, with ZERO of 253 tests watching that path. Pocholo found all nine versioned assets blind by construction plus a live six-week-stale import no guard could see, because every guard scanned HTML. I filed a defect that was my own fixture faking the harm and withdrew it in twenty minutes. — *Previous:* **Session 184** — board driven to ZERO, verified through the store's REST API.)
+Last updated: 2026-09-03 (**Session 191** (María 🌸 `4f98d12f`) — Rick's three-line row display shipped across all three panes; the line-3 detail cell turned out to be TWO defects, a drifted width rule aimed at a column that no longer exists and a click branch that was never wired. Seven instances of one shape in one night — a declaration present, correct, and never reaching the surface it was written for — recorded, not graduated. I manufactured two blockers Rick had already answered. Gated promotion merged green AND reviewed after Maya rejected it for an ask path that could not run. — *Previous:* **Session 189** — the memento-pointer rename with four classes of reader.)
 
 ## 📍 Resume Here
+
+> ### 🔴 **S191 — the ratio gate refused NINE legitimate rows in one night, across two managers.** (María 🌸, 2026-09-03)
+>
+> `horizon: current` — data about Rick's own control, not a complaint about it.
+>
+> Three of mine, six of Mr Radio's. **Nobody claimed the P0 exemption to slip past it**, including for finished
+> work. The gate is doing exactly what it was built to do; the cost is that real work lives in DMs until the
+> ratio opens — which is the same invisibility that nearly lost the gated-promotion feature tonight (it ran all
+> night with no store row and surfaced only because a re-spun worker checked a claim in a bridge document).
+>
+> **Not a proposal to weaken it.** Recorded so the trade-off is visible next time the gate is tuned.
+
+> ### **S191 — `context tick` is not an addressable session.** (María 🌸, 2026-09-03)
+>
+> `horizon: next`
+>
+> `dm_send` refuses it as `recipient_not_found` and offers the live personas instead. So the tick instructs a
+> worker to escalate and **names a correspondent that does not exist**. Pocholo reached me instead, which works
+> only because he knew to; a worker who does not would either obey blindly or drop it silently.
+>
+> Found by Pocholo, 2026-09-03 23:08. Gate-refused at filing time — unfiled by policy, not oversight.
+
+> ### **S191 — `self_respin` has THREE outcomes, not two.** (María 🌸, 2026-09-03)
+>
+> `horizon: next`
+>
+> Measured across three seats in one night: **scheduled** (Rachel), **declined at the human gate** (Tiberius —
+> the verb ran, verified the memento, passed the gate, reached Rick, and Rick said no), and a **stale-module
+> failure** (Mr Radio's seat alone). Collapsing the middle into *"the verb refused"* would put a wrong claim back
+> in circulation an hour after we removed one. Tiberius's correction, carried here so it survives the night.
 
 > ### 🔴 **S189 — Rick has not answered whether the holding area expires. Three asks, three timeouts.** (María 🌸, 2026-09-02)
 >
