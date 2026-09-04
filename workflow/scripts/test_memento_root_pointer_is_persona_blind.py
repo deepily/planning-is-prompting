@@ -146,7 +146,10 @@ def test_root_resolve_should_not_answer_for_a_persona_with_no_record( repo, tmp_
     home.mkdir()
     assert write_memento( repo, "maria", "root", home ).returncode == 0
 
-    resolved = mio.resolve_record( repo, "root", BOGUS, quiet=True )
+    # seat_root THREADED at cd1c67d. `root` now resolves against the SEAT'S OWN tree and REFUSES a
+    # caller who omits it — the old repo_root fallback is exactly row 6c64d2f5. Passing repo here
+    # keeps the scenario identical to what it was testing: one tree, one seat, one writer.
+    resolved = mio.resolve_record( repo, "root", BOGUS, quiet=True, seat_root=repo )
     assert resolved is None, (
         f"root resolved a persona that never wrote anything: {resolved}"
     )

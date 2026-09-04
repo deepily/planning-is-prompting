@@ -95,13 +95,23 @@ def record_path_from_stdout( stdout ):
 
 # ---------------------------------------------------------------- base resolution (unit)
 
-def test_slot_base_dir_maps_io_root_to_repo_and_tmp_to_the_ephemeral_base( repo, tmp_path, monkeypatch ):
+def test_slot_base_dir_maps_io_to_the_repo_root_to_the_seat_and_tmp_to_the_ephemeral_base( repo, tmp_path, monkeypatch ):
+    # RENAMED at cd1c67d. The old name — "maps io ROOT to repo" — encoded a contract that is now
+    # DEAD: `root` used to fall back to repo_root, and that silent fallback IS row 6c64d2f5, the
+    # defect where a worktree seat wrote its memento into the main checkout and then could not
+    # find it. `root` now takes the SEAT'S OWN tree and REFUSES a caller who omits it.
     monkeypatch.setenv( "LUPIN_MEMENTO_DIR", str( tmp_path / "ep" ) )
-    assert mio.slot_base_dir( repo, "io" )   == repo
-    assert mio.slot_base_dir( repo, "root" ) == repo
-    assert mio.slot_base_dir( repo, "tmp" )  == ( tmp_path / "ep" ) / repo.name
+    seat = tmp_path / "seat"
+    assert mio.slot_base_dir( repo, "io" )                    == repo
+    assert mio.slot_base_dir( repo, "root", seat_root=seat )  == seat
+    assert mio.slot_base_dir( repo, "tmp" )                   == ( tmp_path / "ep" ) / repo.name
     with pytest.raises( ValueError ):
         mio.slot_base_dir( repo, "bogus" )
+    # THE FAIL-CLOSED RAISE, watched here rather than assumed. Pocholo measured that deleting it
+    # and returning repo_root leaves every other case in this file GREEN — present, correct and
+    # unwatched is a third state, not a pass.
+    with pytest.raises( ValueError ):
+        mio.slot_base_dir( repo, "root" )
 
 
 def test_tmp_base_falls_back_to_slash_tmp_when_env_unset( monkeypatch ):
