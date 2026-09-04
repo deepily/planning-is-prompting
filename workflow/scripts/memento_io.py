@@ -1557,7 +1557,16 @@ def newest_record( repo_root, slot, persona_slug, seat_root=None ):
     elif slot == "tmp":
         cands = sorted( slot_base_dir( repo_root, slot, seat_root ).glob( f"{persona_slug}-*.md" ) )
     else:
-        cands = sorted( repo_root.glob( f".claude-memento-{persona_slug}-*.md" ) )
+        # 🔴 seat_root THREADED, 2026-09-04. This line used to hardcode `repo_root` while
+        # `current_pointer_record` derived the same value from `seat_root` — TWO DERIVATIONS OF ONE
+        # VALUE. They coincide in the main checkout and DIVERGE IN EVERY LINKED WORKTREE, so
+        # `assert_pointer_names_newest` compared the seat's correct record against the main
+        # checkout's older one and exited 11 on a write that was entirely correct.
+        # ⇒ AND THE REMEDY IT PRINTED WAS WORSE THAN THE ALARM: `regenerate-pointer` calls this
+        # same function, so it re-derived the wrong root and then raised an unhandled ValueError
+        # out of `relative_to`. A guard that fails a good write and then breaks its own repair.
+        # Krishna diagnosed it; reproduced here at exit 11 before the fix and green after.
+        cands = sorted( slot_base_dir( repo_root, slot, seat_root ).glob( f".claude-memento-{persona_slug}-*.md" ) )
     cands = [ c for c in cands if HEX8_SUFFIX_RE.search( c.stem ) ]
     if not cands: return None
     return max( cands, key=lambda p: p.stat().st_mtime )
