@@ -1602,7 +1602,7 @@ def resolve_record( repo_root, slot, persona_slug, quiet=False, seat_root=None )
     return fallback
 
 
-def sync_record( repo_root, rec_abs ):
+def sync_record( repo_root, rec_abs, seat_root=None ):
     """
     Re-mirror a record and refresh the pointer that names it. The two things that MUST
     happen after a record's bytes change, and that no human should have to remember.
@@ -1615,24 +1615,37 @@ def sync_record( repo_root, rec_abs ):
     Raises:
         - SystemExit(5) if the mirror does not match the record afterwards
     """
-    # Which slot's base does this record live under? An ephemeral (tmp) record lives OUTSIDE
-    # the repo, so relative_to(repo_root) would raise; detect it first and skip the mirror.
+    # WHICH SLOT IS THIS RECORD IN? Decide the SLOT first, then ASK `slot_base_dir` for its
+    # base — never assume one. This block hardcoded `base = repo_root` for everything that was
+    # not tmp, which is the SAME two-derivations defect b8b063c fixed one function away, and
+    # which that commit's own closing note asked someone to census: "the remaining exposure is
+    # any OTHER caller in this file that resolves a root without seat_root".
+    #
+    # It failed in the OPPOSITE DIRECTION to the newest_record one, which is why the single
+    # error string was seen with its two paths in both orders and read as one flaky site:
+    #   newest_record  selected a MAIN-CHECKOUT record and checked it against the SEAT's base
+    #   sync_record    took the SEAT's record (correctly followed from the pointer) and checked
+    #                  it against the MAIN CHECKOUT
     tmp_base = slot_base_dir( repo_root, "tmp" )
     if _path_is_under( rec_abs, tmp_base ):
-        base, mir_abs = tmp_base, None
-        rec_rel       = rec_abs.relative_to( tmp_base )
-        slot, persona = "tmp", HEX8_SUFFIX_RE.sub( "", rec_rel.stem )
+        slot = "tmp"
+    elif _path_is_under( rec_abs, repo_root / "io" / "mementos" ):
+        slot = "io"
     else:
-        base    = repo_root
-        rec_rel = rec_abs.relative_to( repo_root )
+        slot = "root"
+
+    base = slot_base_dir( repo_root, slot, seat_root )
+    if slot == "tmp":
+        mir_abs = None
+        rec_rel = rec_abs.relative_to( base )
+        persona = HEX8_SUFFIX_RE.sub( "", rec_rel.stem )
+    else:
+        rec_rel = rec_abs.relative_to( base )
         mir_abs = mirror_path_for( repo_root, rec_rel )
         mir_abs.parent.mkdir( parents=True, exist_ok=True )
         shutil.copy2( rec_abs, mir_abs )
-        stem = rec_rel.stem
-        if rec_rel.parts[ 0 ] == "io":
-            slot, persona = "io", HEX8_SUFFIX_RE.sub( "", stem )
-        else:
-            slot, persona = "root", HEX8_SUFFIX_RE.sub( "", stem ).replace( ".claude-memento-", "" )
+        stem    = HEX8_SUFFIX_RE.sub( "", rec_rel.stem )
+        persona = stem if slot == "io" else stem.replace( ".claude-memento-", "" )
 
     text    = rec_abs.read_text()
     ptr_abs = base / pointer_rel_path( slot, persona )
@@ -1859,7 +1872,7 @@ def cmd_amend( args ):
     updated = restamp_header_written_at( rec_abs.read_text(), stamped ) + block
     atomic_write_text( rec_abs, updated )
 
-    rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
+    rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs, seat_root=seat_root )
 
     assert_pointer_names_newest( repo_root, args.slot, persona, seat_root=seat_root )
 
@@ -2082,7 +2095,7 @@ def cmd_adopt( args ):
         sys.exit( 10 )
 
     before = sha256_of( rec_abs )
-    rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
+    rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs, seat_root=seat_root )
     after  = sha256_of( rec_abs )
 
     # BELT AND SUSPENDERS ON THE ONE PROPERTY THIS VERB PROMISES. `sync_record` verifies the

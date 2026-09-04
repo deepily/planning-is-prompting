@@ -737,8 +737,8 @@ def test_adopt_hard_fails_if_the_record_bytes_move_underneath_it( repo, monkeypa
     rec = orphan_record( repo )
 
     real_sync = m.sync_record
-    def sabotage( repo_root, rec_abs ):
-        result = real_sync( repo_root, rec_abs )
+    def sabotage( repo_root, rec_abs, seat_root=None ):
+        result = real_sync( repo_root, rec_abs, seat_root=seat_root )
         Path( rec_abs ).write_text( "# TAMPERED\n" )     # bytes move mid-call
         return result
     monkeypatch.setattr( m, "sync_record", sabotage )

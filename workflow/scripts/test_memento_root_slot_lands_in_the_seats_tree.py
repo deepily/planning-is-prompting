@@ -30,6 +30,7 @@ rule, and a fix that "corrected" io the same way would trade one outage for anot
 row af0c5700 measured what an io record in a worktree costs.
 """
 
+import importlib.util
 import subprocess
 
 from pathlib import Path
@@ -38,6 +39,30 @@ import pytest
 
 
 SCRIPT = Path( __file__ ).resolve().parent / "memento_io.py"
+
+
+def _load_memento_io():
+    """
+    Import `memento_io.py` BY PATH, for the one case that must reach a helper directly.
+
+    Every other case in this file drives the script as a SUBPROCESS, deliberately — the
+    incident entered at a worktree seat running the real verb, and a helper-level test
+    would pass against a writer that never reaches the helper. That reasoning is
+    unchanged and is why it is still the default here.
+
+    The last case is the exception and needs to be: it guards a contract of
+    `slot_base_dir` that NO caller in the codebase exercises, so no path-level test can
+    reach it by construction. Different question, different altitude, stated rather
+    than blurred.
+
+    Ensures:
+        - returns the module object; safe because the script guards its top level with
+          `if __name__ == "__main__"`, so importing it runs no verb
+    """
+    spec = importlib.util.spec_from_file_location( "memento_io_under_test", SCRIPT )
+    mod  = importlib.util.module_from_spec( spec )
+    spec.loader.exec_module( mod )
+    return mod
 SID    = "11111111-2222-3333-4444-555555555555"
 SID8   = "11111111"
 BODY   = "probe body, long enough to clear the content floor.\n" * 40
@@ -47,6 +72,25 @@ def _git( cwd, *args ):
     """Ensures: runs git in `cwd`, raising with captured output on a non-zero exit."""
     return subprocess.run( [ "git", "-C", str( cwd ) ] + list( args ),
                            capture_output=True, text=True, check=True )
+
+
+@pytest.fixture( autouse=True )
+def _mirror_home_stays_in_the_test_tree( tmp_path, monkeypatch ):
+    """
+    🔴 KEEP THE OUT-OF-REPO MIRROR INSIDE tmp_path.
+
+    `MIRROR_HOME` is `Path.home() / ".claude" / "mementos"`, a module constant resolved at
+    import, and `mirror_path_for` keys its subdirectory on `repo_root.name` ALONE. This
+    file's fixture repo is called `mainrepo`, so every write here landed in the operator's
+    REAL `~/.claude/mementos/mainrepo/` — measured 2026-09-04, holding this file's own SID
+    `11111111` beside genuine mementos. A real repo of that basename would have collided.
+
+    autouse, because a case that forgets writes outside its sandbox and still passes.
+    """
+    home = tmp_path / "fakehome"
+    home.mkdir( exist_ok=True )
+    monkeypatch.setenv( "HOME", str( home ) )
+    return home
 
 
 @pytest.fixture
@@ -195,3 +239,32 @@ def test_the_mirror_stays_keyed_on_the_repo_not_the_seat( trees ):
         f"the mirror followed the SEAT ({seat.name}) — that fragments it per worktree and "
         f"a pruned tree then takes the last durable copy with it: {mirrors[ 0 ]}"
     )
+
+
+# ---------------------------------------------------------------- the unwatched raise
+
+# AUTHOR: Pocholo 📣 (session 531e8f40), 2026-09-04 — found during his review of cd1c67d
+# and written by him. Landed here verbatim in substance by Rachel 🕊️; the only edits are
+# the import line and this attribution. He proved it discriminates in his OWN detached
+# worktree, both directions off a green baseline taken first: unmutated -> 1 passed;
+# `return repo_root` inserted ahead of the raise -> 1 failed; restore sha-verified.
+
+def test_the_root_slot_refuses_a_missing_seat_root():
+    """
+    The 'root' slot must REFUSE a caller that forgot seat_root, never quietly take
+    repo_root — that silent fallback IS row 6c64d2f5.
+
+    WHY THE FIVE WORKTREE CASES ABOVE DO NOT COVER THIS. They drive the real verbs, and
+    all five real verbs already pass seat_root, so the None path is never reached.
+    Measured: deleting the raise and returning repo_root leaves all five GREEN. The
+    guard was present, correct, and UNWATCHED — this is the case that watches it.
+
+    IT ASSERTS THE RAISE, NOT AN ABSENT WRITE, because slot_base_dir resolves a path and
+    writes nothing: the exception is the only observable difference between failing
+    closed and failing open. ⚠️ It does NOT pin the message text — a reworded message is
+    not a broken guard. Pocholo left `match=` out deliberately and stated the trade here
+    rather than leaving it to be inferred.
+    """
+    slot_base_dir = _load_memento_io().slot_base_dir
+    with pytest.raises( ValueError ):
+        slot_base_dir( Path( "/main/checkout" ), "root" )
