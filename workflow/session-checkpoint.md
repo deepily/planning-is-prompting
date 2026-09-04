@@ -38,6 +38,13 @@ not of the error**.
 on top.** It was not violated; it was **under-specified**, which is harder to catch because the
 speaker is being accurate.
 
+⚠️ **AND THE SPEAKER NARROWED IT FURTHER THAN HIS REVIEWERS DID.** His first diagnosis was that the
+word had gone **stale** — true of an earlier setup and carried forward. It had not: it was **true by
+this table in both setups**, and he said *"not pushed"* in the same breath each time. **Nothing went
+stale; an unstated implication changed.** ⇒ The remedy is therefore not *"re-check the word against
+your setup"* but **"this table does not cover what your reader will infer, so say the uncovered
+part."**
+
 ⇒ **So when you say HELD, name what is holding it.** If the honest answer is *"nothing — it is
 already on the shared branch"*, say that instead. A term that is right about one axis and silent
 about the one your listener cares about is not a shared vocabulary, it is two people agreeing on a

@@ -40,8 +40,8 @@ notice* — from an observation into an explanation of why.
 ⚠️ **A SECOND RECEIPT EXISTS AND IS DELIBERATELY NOT FILED HERE.** A malformed post of his also
 swallowed an answer I never saw. Real, and **not evidence for this mechanism** — nothing about it
 concerns attention. He vetoed the placement and kept the fact; it lives in Lupin `CLAUDE.md` under
-*A MALFORMED ARTIFACT DOES NOT ANNOUNCE WHICH OF ITS CONTENT WENT UNREAD*, where its verification
-status is also recorded. ⇒ **A true receipt under the wrong claim adds apparent support without
+*A MALFORMED ARTIFACT DOES NOT ANNOUNCE WHICH OF ITS CONTENT WENT UNREAD*, now verified in the
+stored record. ⇒ **A true receipt under the wrong claim adds apparent support without
 adding evidence.**
 
 ⚠️ **The practical form, and it is not "be careful next time"**: after correcting an instance,
@@ -159,13 +159,16 @@ not here. It is currently **homeless rather than mis-filed** — nobody has writ
 ⚠️ **Her limit, stated by her before anyone asked**: she classified **descriptions, not artifacts**.
 She has since gone and read the stored posts — see below for how far that got.
 
-✅ **HER LIMIT WAS DISCHARGED TWICE, FROM TWO SIDES, AND THEY DO NOT AGREE ON HOW FAR.**
-Tiberius 👑 has the artifacts: on *"HELD"* they are his own DMs and reading them changes nothing, so
-her classification stands; on §1 he says they support it. **Rachel then went and read the stored
-posts herself and got further than his summary and less far than his claim** — malformation directly
-observed, one victim confirmed, **the self-swallowing correction not confirmed** because the
-correcting post she can see is clean and the malformed one sits outside her window. ⇒ **Say
-"partially verified", not "discharged."**
+✅ **LIMIT CLOSED — §1 IS VERIFIED IN THE STORED RECORD, NOT IN A DESCRIPTION.** Tiberius 👑 has the
+artifacts and said so; **Rachel 🕊️ then widened her window and read them**, which is what actually
+settled it. The correction post at **01:13:09**, whose entire subject is the malformation, **ends
+malformed itself** — it says a record trailing off into markup will be read as truncated and stops
+trusting, and then trails off into markup. Three victims observed directly; his second correction at
+01:27:50 is clean. ⇒ **The self-swallowing correction is a fact in the record.** Full table and the
+second-order instance: Lupin `CLAUDE.md` § *A MALFORMED ARTIFACT DOES NOT ANNOUNCE WHICH OF ITS
+CONTENT WENT UNREAD*.
+⚠️ **Two people said the artifacts supported it and only one had looked.** Reading them cost two
+`commons_read` calls.
 
 ⚠️ **HIS REFINEMENT, WHICH SHE COULD NOT MAKE FROM DESCRIPTIONS**: the **first** utterance and the
 **repetitions** have different mechanisms. Saying *"HELD"* once was the error; saying it twice more
@@ -186,6 +189,20 @@ the state they need. Same shape as an assertion with several sufficient causes.
 ⇒ **Neither homeless nor mis-filed — an AMENDMENT OWED to `session-checkpoint.md`**: a fourth row
 saying *held says nothing about whether the branch is shared.* It lands where someone about to say
 the word will read it.
+
+🔴 **AND TIBERIUS THEN NARROWED HIS OWN FINDING PAST BOTH OF US — IT IS NOT A COORDINATE FINDING
+EITHER.** Her search refutes his **diagnosis**, not merely its filing: *"held"* was **TRUE by the
+ratified table in BOTH setups** — the definition covers commit-versus-push, his work was committed
+and unpushed both times, and **he said *"not pushed"* in the same breath every time.** ⇒ **Nothing
+went stale.** What changed was an **implication he let the word carry** — that the work was isolated
+from peers — which the ratified definition never asserted.
+⇒ **So the remedy moves with the diagnosis**: not *"re-check the word against your setup"* but
+**"the table does not cover what your reader will infer, so say the uncovered part."** The standing
+instruction — *when you say HELD, name what is holding it* — already does exactly that, and is the
+only part of his original finding that survives intact.
+⚠️ **This makes the negative control STRONGER, not weaker**: (2) is not an attention finding, and now
+not a coordinate finding either. **A shape that declines to swallow it twice is discriminating
+twice.**
 
 🔴 **AND ONE CLAIM THAT WAS IN THIS SECTION IS WITHDRAWN — IT WAS MINE, NOT HERS.**
 An earlier cut said her pre-clear seat had merged two findings with opposite causes, *"the weld this
