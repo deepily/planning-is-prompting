@@ -20,7 +20,7 @@ gitignored corpus). Crew: Tiberius 👑, Rachel 🕊️, Mr. Radio 🦉.
 
 ## 1. Correcting an instance spends your attention on the INSTANCE, not on the SHAPE
 
-**Tiberius 👑, and it is the sharpest thing produced in that run.**
+**Tiberius 👑.**
 
 Three of his posts to the commons topic ended in stray markup. **One of the three was the post
 correcting that exact malformation** — written minutes later, with the broken output still on
@@ -115,6 +115,50 @@ mean the thorough work is a correlate, not a cause.
 ⚠️ Until then: **three findings, each usable on its own.** §1, §2 and §3 each carry their own
 receipt and their own practical form, and none of them needs the others to be true.
 
+🔴 **AND THIS SECTION WAS CROSS-EXAMINED RATHER THAN ASSUMED SAFE.** I asked Tiberius whether §4 is
+the same weld wearing a hedge. **His test for telling them apart is the durable part, and it is
+his:**
+
+| | a **HEDGE** | a real **OPEN QUESTION** |
+|---|---|---|
+| offers | only *what would settle it* | *what would **kill** it* as well |
+| leaves the reader | treating the claim as provisionally true, awaiting confirmation | with **nothing to DO** that depends on the claim |
+
+⇒ **A hedge points at a future confirmation; an open question names its own falsifier.** §4 names
+one — someone who had done nothing thorough beforehand and skipped the cheap check anyway — and
+says plainly that each finding stands alone. **Ask this of any claim you file as "open".**
+
+### 4.1 The negative control was already in the same run — Rachel 🕊️, 2026-09-03
+
+§4 above asks for an instance where nothing thorough preceded the miss, and that needs a future run.
+**It does not need one to get stronger.** Rachel ran Tiberius's own three findings against this
+file's organizing claim — *attention was spent, and spending it is what caused the miss* — and only
+**one** of them fits:
+
+| finding | fits the shape? | why |
+|---|---|---|
+| §1 correcting an instance | ✅ **yes** — the purest case there can be | the correcting artifact IS the repeat |
+| §3.4 the better-formed fixture *(CLAUDE.md)* | ❌ **no** | no attention was spent and none diverted — the fixture was wrong from the moment it was written |
+| "HELD" meant nothing *(TODO.md D2)* | ❌ **no** | nobody's attention was crowded out; a word true of setup A was reused in setup B |
+
+⇒ **A shape that declines to swallow two of its four same-evening neighbours is doing real work.**
+That is a negative control available today, and it is worth more than the confirming fourth instance
+§4 asks for — a shape which explains everything in front of it explains nothing.
+
+⇒ **And it re-homes one of them**: *"HELD"* is a **coordinate carried past the setup it described**,
+which belongs with `verify-the-subject.md` and this repo's *a coordinate is not a reference* family,
+not here. It is currently **homeless rather than mis-filed** — nobody has written it down as that.
+
+⚠️ **Her limit, in her words and not softened**: she classified **descriptions, not artifacts** — she
+read this file and the CLAUDE.md section, not the three commons posts nor the "held" DMs. **§1's
+whole force rests on *the correcting post carried the defect*, and she has not checked that.** The
+classification is only as good as the write-ups it reads.
+
+⚠️ **This also corrects her own predecessor.** A pre-clear Rachel merged §1 and §3.4 as one defect;
+the fresh seat, reading the doc rather than a summary, found they **share a symptom — green either
+way — and have opposite causes.** That merge is the weld this run already refused twice.
+
+
 ---
 
 ## 5. Related workflows
@@ -130,6 +174,15 @@ receipt and their own practical form, and none of them needs the others to be tr
 ---
 
 **Version history**
+
+- **v0.2** (2026-09-03, Mr. Radio 🦉 `2424de1c`) — cross-examined by both crew members within the
+  hour and changed by both. **Tiberius 👑**: cut *"the sharpest thing produced in that run"* from his
+  own entry — a grade, and it does not survive our no-aphorisms rule; the receipt carries it. He also
+  supplied the hedge-vs-open-question test now in §4 and ruled §4 keeps. **Rachel 🕊️**: §4.1, the
+  negative control — only one of the run's findings fits this file's shape, which is stronger evidence
+  than the confirming fourth instance §4 was waiting for, and it re-homes *"HELD"* to the
+  coordinate-is-not-a-reference family. Her limit is stated in §4.1 rather than dropped. **Still v0.x
+  and still not doctrine** — Rick has not ruled.
 
 - **v0.1** (2026-09-03, Mr. Radio 🦉 `2424de1c`) — **CANDIDATE, NOT RATIFIED.** Three findings
   graduated out of the seat-and-repo-resolution post-game (§3.1 Tiberius, §3.3 Rachel, §4 the
