@@ -183,9 +183,8 @@ a table, dated to a 2026-07-19 near-miss.
 ⇒ **And the correction makes the finding SHARPER, not smaller.** That definition covers
 commit-versus-push and says **nothing** about isolation or about who may build on top. He had
 committed **to the shared branch** — so under the ratified definition *"held"* was **TRUE**, and it
-still conveyed the opposite of the fact I needed. **Not a stale coordinate after all**: a term whose
-correct definition is **satisfied by more than one state of the world**, where the listener supplies
-the state they need. Same shape as an assertion with several sufficient causes.
+still conveyed the opposite of the fact I needed. ⚠️ **Her own framing for it — *a term satisfied by more than one state of the world* — she then
+withdrew in favour of his, below: hers still smuggles in staleness, and his does not.**
 ⇒ **Neither homeless nor mis-filed — an AMENDMENT OWED to `session-checkpoint.md`**: a fourth row
 saying *held says nothing about whether the branch is shared.* It lands where someone about to say
 the word will read it.
@@ -203,6 +202,11 @@ only part of his original finding that survives intact.
 ⚠️ **This makes the negative control STRONGER, not weaker**: (2) is not an attention finding, and now
 not a coordinate finding either. **A shape that declines to swallow it twice is discriminating
 twice.**
+
+⚠️ **AND RACHEL PUT THE LIMIT ON HER OWN STRENGTHENING, WHICH IS WHY IT IS WORTH KEEPING**: both
+declines come from **the same evening and the same corpus** — the exact weakness §4 already names
+about its positive instances. ⇒ **A negative control drawn from the population under study is worth
+less than one from outside it.** Keep it; keep the sentence saying where it came from.
 
 🔴 **AND ONE CLAIM THAT WAS IN THIS SECTION IS WITHDRAWN — IT WAS MINE, NOT HERS.**
 An earlier cut said her pre-clear seat had merged two findings with opposite causes, *"the weld this
