@@ -223,3 +223,104 @@ def test_the_io_slot_read_path_still_answers_from_the_main_checkout( trees ):
     proc = _run( seat, "regenerate-pointer", "--slot", "io", "--persona", "Rachel" )
     assert proc.returncode == 0, proc.stderr
     assert SID8 in proc.stdout
+
+
+# ---------------------------------------------------------------- F1: sync_record's base line
+
+"""
+🔴 F1 — TIBERIUS 👑's FINDING, AND THE ARM THAT PROVED IT.
+
+`sync_record`'s base line — `base = slot_base_dir( repo_root, slot, seat_root )` — was
+PRESENT, CORRECT, and UNWATCHED. His M5 arm replaces it with `seat_root or repo_root`,
+the silent fallback that produced P0 6c64d2f5, and it SURVIVED: reproduced on the
+as-merged tree at 767807c, 0 new reds against a baseline of 1 pre-existing failure.
+
+That is the third state — the code is right and no test could tell you if it were wrong —
+and a green suite is known not to be evidence at this exact anchor.
+
+WHY EVERYTHING ELSE MISSES IT, which is the part worth keeping. `seat_root or repo_root`
+is INDISTINGUISHABLE from the correct answer everywhere the suite already looks:
+  · for the ROOT slot, slot_base_dir returns seat_root — so the mutant agrees, always.
+  · for the io slot, the two differ ONLY in a linked worktree, and no case drove `amend`
+    on the io slot from one.
+  · the fail-closed raise never fires, because every caller passes a seat_root.
+⇒ The two cases below are chosen to be exactly where the mutant and the truth diverge.
+"""
+
+
+def test_amend_on_the_io_slot_syncs_to_the_main_checkout_not_the_seat( trees ):
+    """
+    🔴 THE M5 KILLER. io is REPO-CANONICAL, and `seat_root or repo_root` hands sync_record
+    the SEAT's tree for every slot — so under the mutant this amend resolves the io record
+    against the worktree and raises, or writes the pointer into the wrong tree.
+
+    This is the one shape the suite never had: `amend`, io slot, from a linked worktree.
+    """
+    main, seat = trees
+    assert _run( seat, "write", "--slot", "io", "--persona", "Rachel",
+                 "--session-id", SID, "--no-post-game", "probe", stdin=BODY ).returncode == 0
+
+    extra = seat / "io-extra.md"
+    extra.write_text( "an appended block, from the F1 guard.\n" * 5 )
+    proc = _run( seat, "amend", "--slot", "io", "--persona", "Rachel",
+                 "--session-id", SID, "--content-file", str( extra ) )
+    assert proc.returncode == 0, (
+        "amend failed on the io slot from a worktree seat.\n"
+        f"stdout={proc.stdout}\nstderr={proc.stderr}"
+    )
+
+    record  = main / "io" / "mementos" / f"rachel-{SID8}.md"
+    pointer = main / "io" / "mementos" / "rachel.md"
+    assert "F1 guard" in record.read_text(), "the amendment never reached the io record"
+    assert pointer.exists(), (
+        f"the io POINTER is not in the main checkout. main={sorted( ( main / 'io' / 'mementos' ).glob( '*' ) )} "
+        f"seat={sorted( ( seat / 'io' / 'mementos' ).glob( '*' ) ) if ( seat / 'io' / 'mementos' ).is_dir() else 'absent'}"
+    )
+    assert not ( seat / "io" ).exists(), (
+        f"io state leaked into the SEAT's tree: {sorted( ( seat / 'io' ).rglob( '*' ) )}. "
+        "io is repo-canonical — a reap comes looking from the main checkout."
+    )
+
+
+def test_sync_record_refuses_a_root_record_when_no_seat_root_is_supplied( trees ):
+    """
+    🔴 THE SECOND M5 KILLER, and it guards the FAIL-CLOSED RAISE itself.
+
+    `slot_base_dir` RAISES for the root slot with no seat_root — deliberately, because
+    defaulting to repo_root is the exact line that took every worktree seat's self_respin
+    down. `seat_root or repo_root` silently restores that default and the raise never fires.
+
+    Every caller in the codebase passes a seat_root, so no path-level test can reach this
+    contract. That is why it is asserted directly against the helper — a different question
+    at a different altitude, stated rather than blurred.
+    """
+    import importlib.util
+
+    main, seat = trees
+    assert _write_root( seat ).returncode == 0
+
+    spec = importlib.util.spec_from_file_location( "memento_io_f1", SCRIPT )
+    mod  = importlib.util.module_from_spec( spec )
+    spec.loader.exec_module( mod )
+
+    rec = seat / f".claude-memento-rachel-{SID8}.md"
+    assert rec.exists(), "fixture did not produce a root record in the seat's tree"
+
+    with pytest.raises( ValueError ) as exc:
+        mod.sync_record( main, rec )          # seat_root omitted — must REFUSE, not guess
+    msg = str( exc.value )
+
+    # 🔴 ASSERT ON TEXT ONLY THE REFUSAL CAN PRODUCE. The first cut of this case asserted
+    # `"seat" in msg.lower()` and PASSED under M5 — not because the refusal fired, but because
+    # the mutant's relative_to() ValueError quotes the fixture path, and this fixture's worktree
+    # is named `seatwt`. The assertion was being satisfied by a DIRECTORY NAME.
+    #
+    # That is a blind assertion inside the guard written to close a blind spot, and it is why
+    # the row id is the anchor: `6c64d2f5` cannot appear in a path, a filename, or any other
+    # ValueError this function can raise. Caught by asking why this case did NOT redden when
+    # its sibling did — a kill count that is lower than expected is worth as much scrutiny as
+    # one that is higher.
+    assert "6c64d2f5" in msg, (
+        "it raised, but not the fail-closed refusal — the refusal cites row 6c64d2f5. "
+        f"Got: {msg!r}"
+    )
