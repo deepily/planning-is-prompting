@@ -24,6 +24,29 @@
 | **HELD** | **Committed** to the local branch, **not pushed** to origin | *"not pushed"* alone · *"finished but sitting in the worktree"* |
 | **Pushed** | On origin. **The user's call, always** | — |
 | **Dirty / untracked** | Not committed. **Not held. Not safe.** | anything durable |
+| **On a SHARED branch** | Committed where **peers can already build on top** | ⚠️ **"held" says NOTHING about this** — see below |
+
+🔴 **THE FOURTH ROW, ADDED 2026-09-03 — THE DEFINITION IS SATISFIED BY MORE THAN ONE STATE OF THE
+WORLD, AND THE LISTENER SUPPLIES THE ONE THEY NEED.** Measured: a worker reported a piece of work as
+*"held for the reviewer"* three times. It was **committed and not pushed**, so under the table above
+the word was **TRUE** — and it was on the **shared branch** with peers already building on top, so it
+conveyed the exact opposite of what the manager took from it. The manager made merge and review
+decisions believing the work was withheld. No harm resulted, **and that is a property of the luck,
+not of the error**.
+
+⇒ **The definition covers commit-versus-push and says nothing about ISOLATION or about who may build
+on top.** It was not violated; it was **under-specified**, which is harder to catch because the
+speaker is being accurate.
+
+⇒ **So when you say HELD, name what is holding it.** If the honest answer is *"nothing — it is
+already on the shared branch"*, say that instead. A term that is right about one axis and silent
+about the one your listener cares about is not a shared vocabulary, it is two people agreeing on a
+word.
+
+⚠️ **Found by retracting an absence claim rather than by hitting the bug again** — Rachel 🕊️ had
+called this vocabulary *unwritten*, then searched (56 workflow docs plus Lupin `CLAUDE.md`, positive
+control first), found **this section**, and reported that her own correction made the finding
+**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md`.
 
 **Why the distinction is load-bearing — an uncommitted green is a rumor:**
 

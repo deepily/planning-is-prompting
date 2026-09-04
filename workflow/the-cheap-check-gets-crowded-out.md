@@ -37,11 +37,12 @@ what the correcting artifact is.
 This refines his earlier line — *a shape you have just corrected is not thereby a shape you will
 notice* — from an observation into an explanation of why.
 
-⚠️ **AND IT CHARGED HIM A SECOND TIME, WHICH IS WHY THIS IS NOT A FORMATTING NOTE.** He answered
-a question I had put to him **on the topic, in one of the three malformed posts** — so it read as
-truncated and **I never saw the answer.** I chased him for it hours later and he had to reconstruct
-it. ⇒ The first instance cost a tidy post. **The second cost an answer, and neither of us knew it
-was missing** — a malformed artifact does not announce which of its content went unread.
+⚠️ **A SECOND RECEIPT EXISTS AND IS DELIBERATELY NOT FILED HERE.** A malformed post of his also
+swallowed an answer I never saw. Real, and **not evidence for this mechanism** — nothing about it
+concerns attention. He vetoed the placement and kept the fact; it lives in Lupin `CLAUDE.md` under
+*A MALFORMED ARTIFACT DOES NOT ANNOUNCE WHICH OF ITS CONTENT WENT UNREAD*, where its verification
+status is also recorded. ⇒ **A true receipt under the wrong claim adds apparent support without
+adding evidence.**
 
 ⚠️ **The practical form, and it is not "be careful next time"**: after correcting an instance,
 **the next thing to check is the artifact you are correcting it in.** If that check depends on
@@ -155,14 +156,56 @@ That is a negative control available today, and it is worth more than the confir
 which belongs with `verify-the-subject.md` and this repo's *a coordinate is not a reference* family,
 not here. It is currently **homeless rather than mis-filed** — nobody has written it down as that.
 
-⚠️ **Her limit, in her words and not softened**: she classified **descriptions, not artifacts** — she
-read this file and the CLAUDE.md section, not the three commons posts nor the "held" DMs. **§1's
-whole force rests on *the correcting post carried the defect*, and she has not checked that.** The
-classification is only as good as the write-ups it reads.
+⚠️ **Her limit, stated by her before anyone asked**: she classified **descriptions, not artifacts**.
+She has since gone and read the stored posts — see below for how far that got.
 
-⚠️ **This also corrects her own predecessor.** A pre-clear Rachel merged §1 and §3.4 as one defect;
-the fresh seat, reading the doc rather than a summary, found they **share a symptom — green either
-way — and have opposite causes.** That merge is the weld this run already refused twice.
+✅ **HER LIMIT WAS DISCHARGED TWICE, FROM TWO SIDES, AND THEY DO NOT AGREE ON HOW FAR.**
+Tiberius 👑 has the artifacts: on *"HELD"* they are his own DMs and reading them changes nothing, so
+her classification stands; on §1 he says they support it. **Rachel then went and read the stored
+posts herself and got further than his summary and less far than his claim** — malformation directly
+observed, one victim confirmed, **the self-swallowing correction not confirmed** because the
+correcting post she can see is clean and the malformed one sits outside her window. ⇒ **Say
+"partially verified", not "discharged."**
+
+⚠️ **HIS REFINEMENT, WHICH SHE COULD NOT MAKE FROM DESCRIPTIONS**: the **first** utterance and the
+**repetitions** have different mechanisms. Saying *"HELD"* once was the error; saying it twice more
+**required no re-derivation precisely because it had already been true** — nearer §1 in flavour.
+**It still is not §1**: that explains why it recurred, not why it was wrong the first time.
+
+🔴 **THE SHARPEST VERSION IS RACHEL'S RETRACTION OF HER OWN HALF.** She had called *"HELD"*
+**homeless** — an absence claim — then searched instead of leaving it: 56 workflow docs plus Lupin
+`CLAUDE.md`, **positive control first**. It is written down, at
+`workflow/session-checkpoint.md` § *VOCABULARY — "HELD" MEANS COMMITTED, NOT PUSHED*, ratified, with
+a table, dated to a 2026-07-19 near-miss.
+⇒ **And the correction makes the finding SHARPER, not smaller.** That definition covers
+commit-versus-push and says **nothing** about isolation or about who may build on top. He had
+committed **to the shared branch** — so under the ratified definition *"held"* was **TRUE**, and it
+still conveyed the opposite of the fact I needed. **Not a stale coordinate after all**: a term whose
+correct definition is **satisfied by more than one state of the world**, where the listener supplies
+the state they need. Same shape as an assertion with several sufficient causes.
+⇒ **Neither homeless nor mis-filed — an AMENDMENT OWED to `session-checkpoint.md`**: a fourth row
+saying *held says nothing about whether the branch is shared.* It lands where someone about to say
+the word will read it.
+
+🔴 **AND ONE CLAIM THAT WAS IN THIS SECTION IS WITHDRAWN — IT WAS MINE, NOT HERS.**
+An earlier cut said her pre-clear seat had merged two findings with opposite causes, *"the weld this
+run refused twice."* **False, and I caused it.** Her predecessor answered about a **different three**
+— a `line[3:]` fixture slice, a git call budget of 9 lifted from another file's fixture, and coverage
+reporting 100% branch on an unexercised ternary — and it never discussed freshness or *"held"* at
+all. **My re-send handed her freshness / held / fixture and described the predecessor's merge by
+NUMBER.** Two triples sharing exactly one member, with the numbering carried across unchecked.
+⇒ **Her predecessor's merge was RIGHT** — fixture and ternary-coverage are both *an instrument
+structurally incapable of producing the failing case, green either way.* **The accusation was about
+a position nobody took.**
+⚠️ **She named the shape and declined to file it**, which is the right call at n=1: *a set of three,
+correct about population A, renumbered onto population B without re-deriving the members.* Recorded
+as an observation, **not** welded to anything.
+
+🔴 **WHY A NEGATIVE CONTROL OUTRANKS A CONFIRMING INSTANCE, in his words**: *a shape that declines to
+swallow two of its four same-evening neighbours is discriminating; a shape that absorbs everything
+nearby is a name, not a mechanism.* Same reason he refused the first weld — **a shape covering every
+error of an evening predicts none of them.** ⇒ **Two refusals from the inside beat one confirmation
+from the outside.**
 
 
 ---
