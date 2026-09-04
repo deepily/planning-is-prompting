@@ -225,8 +225,12 @@ as an observation, **not** welded to anything.
 🔴 **WHY A NEGATIVE CONTROL OUTRANKS A CONFIRMING INSTANCE, in his words**: *a shape that declines to
 swallow two of its four same-evening neighbours is discriminating; a shape that absorbs everything
 nearby is a name, not a mechanism.* Same reason he refused the first weld — **a shape covering every
-error of an evening predicts none of them.** ⇒ **Two refusals from the inside beat one confirmation
-from the outside.**
+error of an evening predicts none of them.**
+
+⚠️ **HE THEN NARROWED THAT ARGUMENT HIMSELF, ON HER CAVEAT.** He had written *"two refusals from the
+inside beat one confirmation from the outside."* **It does not carry**: her limit lands on his
+sentence too. ⇒ **Two refusals from inside are better than nothing, and they are NOT the outside
+evidence §4 says would settle it.** The confirming instance from another run is still owed.
 
 
 ---
