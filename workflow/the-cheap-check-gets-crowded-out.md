@@ -37,6 +37,12 @@ what the correcting artifact is.
 This refines his earlier line — *a shape you have just corrected is not thereby a shape you will
 notice* — from an observation into an explanation of why.
 
+⚠️ **AND IT CHARGED HIM A SECOND TIME, WHICH IS WHY THIS IS NOT A FORMATTING NOTE.** He answered
+a question I had put to him **on the topic, in one of the three malformed posts** — so it read as
+truncated and **I never saw the answer.** I chased him for it hours later and he had to reconstruct
+it. ⇒ The first instance cost a tidy post. **The second cost an answer, and neither of us knew it
+was missing** — a malformed artifact does not announce which of its content went unread.
+
 ⚠️ **The practical form, and it is not "be careful next time"**: after correcting an instance,
 **the next thing to check is the artifact you are correcting it in.** If that check depends on
 remembering, it is not installed — prefer something mechanical (a lint, a template, a formatter)
