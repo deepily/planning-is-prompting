@@ -2535,6 +2535,60 @@ def linked_worktrees( repo_root ):
         if path != repo_root.resolve(): yield path
 
 
+def out_of_scope_slots( repo_root ):
+    """
+    Enumerate the record populations `iter_repo_mementos` does NOT cover, so verify can NAME
+    them instead of silently omitting them.
+
+    🔴 WHY THIS EXISTS, AND WHY IT IS NOT A WIDENING OF `iter_repo_mementos` (María 🌸's ruling,
+    2026-09-04, on Tiberius 👑's finding). That function is REPO-scoped and the name says so;
+    broadening it would misrepresent what it is. But a reader of `verify` cannot tell
+    "repo-scoped by design" from "the checker did not look", because BOTH print as an absence.
+
+    TWO populations sit outside the repo scan, for two different reasons:
+
+      root-slot records in LINKED WORKTREES — since `cd1c67d` a seat's root memento lives in
+          its OWN tree, which is exactly where a repo-scoped walk cannot see it. Reported as
+          an ORPHAN MIRROR before this: the mirror is repo-keyed and the record is not in the
+          repo, so the correctly-placed memento of every live worktree seat read as damage.
+      the `tmp` base — ephemeral by construction, outside the repo, no mirror and no gitignore.
+          It was never in scope and never will be; what was missing is SAYING so.
+
+    ⚠️ THIS IS READ-ONLY AND IT DOES NOT CREATE FINDINGS. Naming an out-of-scope population is
+    a scope statement, not a judgement about it — the same discipline `find_misdirected_mementos`
+    already applies when it returns `searched` alongside an empty hit list.
+
+    Requires:
+        - repo_root is a resolved repo root
+    Ensures:
+        - returns ( worktree_records, tmp_records, searched ) where the first two are lists of
+          absolute Paths and `searched` describes the space covered
+        - `searched` is returned even when both lists are empty, because a null that does not
+          name its boundary reads as "nothing is wrong" when it may only mean "I did not look"
+        - never raises: an unreadable worktree or a missing tmp base contributes nothing and
+          is named in `searched` rather than swallowed
+    """
+    worktree_records = []
+    trees            = list( linked_worktrees( repo_root ) )
+    for wt in trees:
+        try:
+            worktree_records.extend( sorted( wt.glob( ".claude-memento-*.md" ) ) )
+        except OSError:
+            continue
+
+    tmp_base    = slot_base_dir( repo_root, "tmp" )
+    tmp_records = []
+    try:
+        if tmp_base.is_dir():
+            tmp_records = sorted( q for q in tmp_base.glob( "*.md" ) if HEX8_SUFFIX_RE.search( q.stem ) )
+    except OSError:
+        pass
+
+    searched = ( f"{len( trees )} linked worktree(s) for root-slot records"
+                 f" + the tmp base {tmp_base}" )
+    return worktree_records, tmp_records, searched
+
+
 def find_misdirected_mementos( repo_root ):
     """
     Find memento records that landed somewhere a reader will never look.
@@ -2938,14 +2992,41 @@ def cmd_verify( args ):
     # that VANISHED from it. Pointers are excluded from this side too — a mirrored pointer whose
     # slot was later re-pointed is derived churn, not loss.
     repo_set = set( files )
+
+    # 🔴 A LIVE SEAT'S RECORD IS NOT AN ORPHAN, AND BEFORE THIS IT READ AS ONE (Tiberius 👑,
+    # 2026-09-04). Since `cd1c67d` the root slot lives in the SEAT's own tree, so a
+    # correctly-placed record is absent from a REPO-scoped walk while its mirror — which is
+    # repo-keyed, deliberately, and must stay so — is present. The subtraction below is by
+    # FILENAME because that is exactly what `mirror_path_for` keys the mirror on.
+    #
+    # ⚠️ This is a SCOPE correction, not a leniency: an orphan whose name matches no live
+    # worktree record is still reported. What changes is that the checker stops calling a
+    # healthy seat's memento damage.
+    wt_records, tmp_records, oos_searched = out_of_scope_slots( repo_root )
+    live_names = { q.name for q in wt_records }
+
     orphans  = [ rel for rel in iter_mirror_mementos( repo_root )
-                 if rel not in repo_set and not is_pointer_file( mir_root / rel ) ]
+                 if rel not in repo_set
+                 and not is_pointer_file( mir_root / rel )
+                 and rel.name not in live_names ]
 
     print( f"=== verify {repo_root}" )
     print( f"--- mirror root : {mir_root}" )
     print( f"--- scanned     : {len( files )} in-repo memento file(s) "
            f"= {len( records )} record(s) + {len( pointers )} pointer(s), "
            f"plus {len( orphans )} orphan mirror(s)" )
+
+    # NAME WHAT WAS NOT SCANNED. `iter_repo_mementos` is REPO-scoped by design and stays that
+    # way; this block is how a reader tells that from "the checker did not look". It prints on
+    # EVERY run, including the zero case, and it raises no finding and moves no exit code.
+    print( f"--- OUT OF SCOPE: {len( wt_records )} worktree root-slot record(s), "
+           f"{len( tmp_records )} tmp record(s)   searched: {oos_searched}" )
+    for q in wt_records:
+        print( f"  WORKTREE-ROOT {q}" )
+        print(  "                a live seat's own root memento — repo-scoped checks cannot see it, and it is NOT an orphan" )
+    for q in tmp_records:
+        print( f"  TMP-EPHEMERAL {q}" )
+        print(  "                ephemeral by design — outside the repo, no mirror, no gitignore, boot-wiped" )
 
     # EXIT 4, AND IT IS THE POINT OF THE REWRITE. A scan set of zero has nothing to be clean
     # about, so reporting it as clean is a lie the old exit code told. Named before the findings
