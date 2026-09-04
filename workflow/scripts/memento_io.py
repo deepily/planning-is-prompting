@@ -220,22 +220,58 @@ def is_ephemeral_slot( slot ):
     return slot == "tmp"
 
 
-def slot_base_dir( repo_root, slot ):
+def slot_base_dir( repo_root, slot, seat_root=None ):
     """
     The directory a slot's RECORD and POINTER paths are relative to.
 
+    🔴 THE TWO SLOTS HAVE TWO READERS STANDING IN TWO PLACES, SO THEY TAKE TWO ROOTS.
+    This function used to answer `repo_root` for BOTH io and root, and that single line
+    is why no seat in a linked worktree could `self_respin` at all (row 6c64d2f5):
+
+      root / self_respin — read by THE SEAT ITSELF, rehydrating in its own tree. The
+                           reader is always standing in the worktree, so the record must
+                           be there. `lupin/src/lupin_mcp/memento_slot.py:239` resolves it
+                           with `--show-toplevel`, and the writer must agree.
+      io   / reap        — read by A MANAGER from the main checkout, about a seat that may
+                           already be dead and whose successor may live in a DIFFERENT
+                           worktree. The reader must find it without knowing the dead
+                           seat's tree, so repo-canonical is correct.
+
+    ⚠️ THIS PRESERVES ROW af0c5700, IT DOES NOT REVERT IT. That row measured the io/reap
+    case, where `find_repo_root`'s collapse to the main checkout is exactly right and its
+    in-line comment at `find_repo_root` explains why. The defect was GENERALISING a correct
+    io answer onto root. Do not read this change as a licence to make io per-seat.
+
+    ⚠️ AND THE MIRROR STAYS ON `repo_root` — see `mirror_path_for`. A root record living in
+    a prunable worktree is still durable because its mirror is out-of-tree and repo-keyed.
+    Making the mirror follow `seat_root` for symmetry would fragment it per worktree and
+    destroy that durability, which is the whole answer to the prunable-tree objection.
+
+    Requires:
+        - repo_root is the REPO-canonical root (find_repo_root)
+        - seat_root is the tree the SEAT stands in (find_seat_root); REQUIRED for "root"
+
     Ensures:
-        - io / root  -> repo_root itself (repo-relative, byte-identical to the old behaviour)
-        - tmp        -> tmp_memento_base() / <repo-basename> (absolute, outside the repo)
+        - io    -> repo_root itself
+        - root  -> seat_root — the seat's own tree, which in the main checkout IS repo_root
+        - tmp   -> tmp_memento_base() / <repo-basename> (absolute, outside the repo)
+
     Raises:
         - ValueError on an unknown slot
-
-    This is the single seam that keeps the ephemeral slot from leaking absolute paths into the
-    repo-relative helpers. Every `base / rel_path` join goes through here; for io/root the base
-    IS repo_root, so those two slots see no change at all.
+        - ValueError when slot is "root" and seat_root was not supplied — a caller that
+          forgets FAILS LOUDLY rather than silently falling back to repo_root, which is
+          exactly the bug this signature exists to close
     """
-    if slot in ( "io", "root" ): return repo_root
-    if slot == "tmp":            return tmp_memento_base() / repo_root.name
+    if slot == "io":   return repo_root
+    if slot == "root":
+        if seat_root is None:
+            raise ValueError(
+                "the 'root' slot needs the SEAT's own tree and none was supplied — pass "
+                "seat_root=find_seat_root( start ). Defaulting to repo_root here is what "
+                "made every worktree seat unable to self_respin (row 6c64d2f5)."
+            )
+        return seat_root
+    if slot == "tmp":  return tmp_memento_base() / repo_root.name
     raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
 
 
@@ -480,6 +516,39 @@ def find_repo_root( start ):
     if git_dir == common_dir:
         return toplevel                     # plain repo / subdir / nested repo
     return common_dir.parent                # linked worktree -> the MAIN root
+
+
+def find_seat_root( start ):
+    """
+    Resolve the TREE the seat is standing in — the counterpart to `find_repo_root`.
+
+    🔴 THESE TWO ANSWER DIFFERENT QUESTIONS AND AGREE EVERYWHERE EXCEPT THE CASE THAT
+    BITES. `find_repo_root` asks "which REPO owns this work" and collapses a linked
+    worktree to the main checkout. This asks "which TREE am I in" and does not. In the
+    main checkout they return the same path — which is precisely why the disagreement
+    went unnoticed: managers work there and are immune, workers live in worktrees and
+    are not (row 6c64d2f5).
+
+    ⚠️ IT IS NOT A REPLACEMENT FOR `find_repo_root` AND MUST NOT BE USED FOR THE io SLOT.
+    Row af0c5700 measured what happens when the io slot follows the tree: the write
+    succeeds, reports "written", and lands where no reader reads and no reap verifies.
+
+    Requires:
+        - start is a path inside a git working tree
+    Ensures:
+        - returns an absolute Path to the working tree containing `start`
+        - from a linked worktree, returns THE WORKTREE (not the main root)
+        - from the main checkout, returns the same path `find_repo_root` would
+    Raises:
+        - RuntimeError if start is not inside a git working tree
+    """
+    result = subprocess.run(
+        [ "git", "-C", str( start ), "rev-parse", "--show-toplevel" ],
+        capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        raise RuntimeError( f"not inside a git working tree: {start}\n{result.stderr.strip()}" )
+    return Path( result.stdout.strip() ).resolve()
 
 
 def _git_path( start, flag ):
@@ -1310,6 +1379,7 @@ def cmd_write( args ):
         - SystemExit(non-zero) on any failed leg — a record NEVER lands unmirrored
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+    seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
 
     # THE ANTI-FLIP BANNER, FIRST THING AND BEFORE ANY WORK. This is the seat's re-spin moment
     # — the point of highest attention in the whole lifecycle — and it is the only surface that
@@ -1326,7 +1396,7 @@ def cmd_write( args ):
         sys.exit( "REFUSED: memento body is empty — nothing to record." )
 
     ephemeral = is_ephemeral_slot( args.slot )       # tmp: outside the repo, no mirror, no gitignore
-    base      = slot_base_dir( repo_root, args.slot ) # repo_root for io/root; TMP base for tmp
+    base      = slot_base_dir( repo_root, args.slot, seat_root ) # repo_root for io/root; TMP base for tmp
     rec_rel = record_rel_path( args.slot, persona, sid )
     ptr_rel = pointer_rel_path( args.slot, persona )
     rec_abs = base / rec_rel
@@ -1390,11 +1460,18 @@ def cmd_write( args ):
     # 2. CANDOR GUARD — a record that git can see is a record someone commits.
     #    SKIPPED for the ephemeral slot: its record lives OUTSIDE the repo, so there is nothing
     #    for git to see and nothing for check-ignore to say (is_ephemeral_slot).
+    #    🔴 GUARD THE TREE THE RECORD LANDS IN, WHICH IS `base` AND NOT ALWAYS `repo_root`.
+    #    Once the root slot moved to the seat's own worktree (row 6c64d2f5), asking
+    #    `repo_root` this question checks the MAIN checkout about a file sitting in the
+    #    WORKTREE — and `check-ignore` answers about the tree you ask, so the guard passes
+    #    while the record shows as `??` where it really lives. Measured on a throwaway repo
+    #    while building this change. Latent in THIS repo, where the patterns are already
+    #    committed and a worktree inherits them — which is why it would have shipped.
     if not ephemeral:
-        if not ensure_gitignored( repo_root, rec_rel ):
+        if not ensure_gitignored( base, rec_rel ):
             print( f"REFUSED: {rec_rel} is NOT gitignored and .gitignore could not be repaired.", file=sys.stderr )
             sys.exit( 4 )
-        ensure_gitignored( repo_root, ptr_rel )
+        ensure_gitignored( base, ptr_rel )
 
     text = stamp_header( body, persona, sid, args.slot, written,
                          no_post_game_reason=args.no_post_game if owed else None,
@@ -1447,7 +1524,9 @@ def cmd_write( args ):
         if not mir_abs.exists():               problems.append( f"mirror missing: {mir_abs}" )
         if not problems and sha256_of( rec_abs ) != sha256_of( mir_abs ):
             problems.append( "mirror bytes != record bytes" )
-        if run_git( repo_root, "check-ignore", "-q", str( rec_rel ) ).returncode != 0:
+        # ⚠️ `base`, NOT `repo_root` — the SAME wrong-tree question as the candor guard
+        # above, one step later and about the write that already happened.
+        if run_git( base, "check-ignore", "-q", str( rec_rel ) ).returncode != 0:
             problems.append( f"record is NOT gitignored: {rec_rel}" )
     if problems:
         for p in problems: print( f"FAILED: {p}", file=sys.stderr )
@@ -1455,7 +1534,7 @@ def cmd_write( args ):
 
     # THE INVARIANT, at the seam — see assert_pointer_names_newest. Asserted AFTER the surfaces
     # land and BEFORE the success banner, so a violation is never reported as a success.
-    assert_pointer_names_newest( repo_root, args.slot, persona )
+    assert_pointer_names_newest( repo_root, args.slot, persona, seat_root=seat_root )
 
     print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}" )
@@ -1467,7 +1546,7 @@ def cmd_write( args ):
     return 0
 
 
-def newest_record( repo_root, slot, persona_slug ):
+def newest_record( repo_root, slot, persona_slug, seat_root=None ):
     """
     Ensures: returns the newest RECORD path for (slot, persona), or None if there is none.
              Used only to REGENERATE a lost pointer — never on the normal read path,
@@ -1476,7 +1555,7 @@ def newest_record( repo_root, slot, persona_slug ):
     if slot == "io":
         cands = sorted( ( repo_root / "io/mementos" ).glob( f"{persona_slug}-*.md" ) )
     elif slot == "tmp":
-        cands = sorted( slot_base_dir( repo_root, slot ).glob( f"{persona_slug}-*.md" ) )
+        cands = sorted( slot_base_dir( repo_root, slot, seat_root ).glob( f"{persona_slug}-*.md" ) )
     else:
         cands = sorted( repo_root.glob( f".claude-memento-{persona_slug}-*.md" ) )
     cands = [ c for c in cands if HEX8_SUFFIX_RE.search( c.stem ) ]
@@ -1484,7 +1563,7 @@ def newest_record( repo_root, slot, persona_slug ):
     return max( cands, key=lambda p: p.stat().st_mtime )
 
 
-def resolve_record( repo_root, slot, persona_slug, quiet=False ):
+def resolve_record( repo_root, slot, persona_slug, quiet=False, seat_root=None ):
     """
     Resolve the CURRENT record for (slot, persona) by FOLLOWING the pointer.
 
@@ -1495,7 +1574,7 @@ def resolve_record( repo_root, slot, persona_slug, quiet=False ):
           removed — it must never run silently)
         - returns None when there is no record at all
     """
-    base    = slot_base_dir( repo_root, slot )
+    base    = slot_base_dir( repo_root, slot, seat_root )
     ptr_abs = base / pointer_rel_path( slot, persona_slug )
 
     if ptr_abs.exists():
@@ -1507,7 +1586,7 @@ def resolve_record( repo_root, slot, persona_slug, quiet=False ):
                 if not quiet:
                     print( f"WARNING: pointer names a missing record: {target}", file=sys.stderr )
 
-    fallback = newest_record( repo_root, slot, persona_slug )
+    fallback = newest_record( repo_root, slot, persona_slug, seat_root=seat_root )
     if fallback and not quiet:
         print( f"WARNING: no usable pointer at {ptr_abs} — falling back to newest-by-mtime.", file=sys.stderr )
         print(  "         Run `regenerate-pointer` to restore the pointer.", file=sys.stderr )
@@ -1579,6 +1658,7 @@ def cmd_amend( args ):
         - SystemExit(non-zero) if there is no record to amend, or any leg fails
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+    seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
     persona   = slugify( args.persona )
     sid       = short_sid( args.session_id )
     stamped   = datetime.datetime.now().astimezone().isoformat( timespec="seconds" )
@@ -1650,11 +1730,11 @@ def cmd_amend( args ):
         sys.exit( 9 )
 
     if args.allow_foreign_record:
-        rec_abs = resolve_record( repo_root, args.slot, persona )
+        rec_abs = resolve_record( repo_root, args.slot, persona, seat_root=seat_root )
         if rec_abs is None:
             sys.exit( f"no record to amend for persona={persona} slot={args.slot} in {repo_root}" )
     else:
-        rec_abs = slot_base_dir( repo_root, args.slot ) / record_rel_path( args.slot, persona, sid )
+        rec_abs = slot_base_dir( repo_root, args.slot, seat_root ) / record_rel_path( args.slot, persona, sid )
         if not rec_abs.exists():
             # "no record to amend" is load-bearing PHRASING, not prose — the postgame suite
             # greps it as the contract for "amend is not a create path". Reworded here without
@@ -1669,7 +1749,7 @@ def cmd_amend( args ):
             # the collision but would also remove that information, and "you have no record"
             # is a thinner answer than "you have no record AND the pointer names someone
             # else's". Reporting what the pointer says is not following it.
-            pointed = resolve_record( repo_root, args.slot, persona, quiet=True )
+            pointed = resolve_record( repo_root, args.slot, persona, quiet=True, seat_root=seat_root )
             if pointed is not None and pointed != rec_abs:
                 other_sid = sid_of_record( pointed )
                 print( f"         the pointer names : {pointed.name}"
@@ -1772,7 +1852,7 @@ def cmd_amend( args ):
 
     rec_rel, mir_abs, ptr_abs = sync_record( repo_root, rec_abs )
 
-    assert_pointer_names_newest( repo_root, args.slot, persona )
+    assert_pointer_names_newest( repo_root, args.slot, persona, seat_root=seat_root )
 
     print_correlation_disclosure( correlated, corr_detail, evidence )
     print( f"RECORD   {rec_abs}  (appended; nothing overwritten)" )
@@ -1784,7 +1864,7 @@ def cmd_amend( args ):
     return 0
 
 
-def current_pointer_record( repo_root, slot, persona_slug ):
+def current_pointer_record( repo_root, slot, persona_slug, seat_root=None ):
     """
     What record does the POINTER for (slot, persona) name RIGHT NOW?
 
@@ -1801,7 +1881,7 @@ def current_pointer_record( repo_root, slot, persona_slug ):
         - the returned path MAY NOT EXIST — a dangling pointer is a real state, and callers
           check for themselves rather than being handed a silent substitution
     """
-    base    = slot_base_dir( repo_root, slot )
+    base    = slot_base_dir( repo_root, slot, seat_root )
     ptr_abs = base / pointer_rel_path( slot, persona_slug )
     if not ptr_abs.exists(): return None
 
@@ -1811,7 +1891,7 @@ def current_pointer_record( repo_root, slot, persona_slug ):
     return None
 
 
-def assert_pointer_names_newest( repo_root, slot, persona_slug, deliberate_older=False ):
+def assert_pointer_names_newest( repo_root, slot, persona_slug, deliberate_older=False, seat_root=None ):
     """
     THE INVARIANT, asserted at the seam every write crosses: after any verb touches a persona's
     surfaces, that persona's POINTER names that persona's NEWEST record.
@@ -1861,8 +1941,8 @@ def assert_pointer_names_newest( repo_root, slot, persona_slug, deliberate_older
     """
     if deliberate_older: return
 
-    newest = newest_record( repo_root, slot, persona_slug )
-    named  = current_pointer_record( repo_root, slot, persona_slug )
+    newest = newest_record( repo_root, slot, persona_slug, seat_root=seat_root )
+    named  = current_pointer_record( repo_root, slot, persona_slug, seat_root=seat_root )
     if newest is None or named is None: return
     if named.resolve() == newest.resolve(): return
 
@@ -1943,6 +2023,7 @@ def cmd_adopt( args ):
     checkout precisely BECAUSE git does not manage it.
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+    seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
     persona   = slugify( args.persona )
     sid       = short_sid( args.session_id )
 
@@ -1968,7 +2049,7 @@ def cmd_adopt( args ):
         sys.exit( 1 )
 
     # REGRESSION CHECK — refuse to move the pointer BACKWARD (Finding 3, Rachel 2026-07-21).
-    currently = current_pointer_record( repo_root, args.slot, persona )
+    currently = current_pointer_record( repo_root, args.slot, persona, seat_root=seat_root )
     if ( currently is not None and currently != rec_abs and currently.exists()
          and currently.stat().st_mtime > rec_abs.stat().st_mtime and not args.allow_older ):
         print(  "REFUSED: this adopt would move the pointer BACKWARD, to an OLDER record.", file=sys.stderr )
@@ -2005,7 +2086,7 @@ def cmd_adopt( args ):
 
     # deliberate_older: `--allow-older` makes the divergence a RECORDED CHOICE, not a defect.
     # The invariant still runs on every other adopt, including the whole bulk-sweep path.
-    assert_pointer_names_newest( repo_root, args.slot, persona, deliberate_older=args.allow_older )
+    assert_pointer_names_newest( repo_root, args.slot, persona, deliberate_older=args.allow_older, seat_root=seat_root )
 
     print( f"RECORD   {rec_abs}  (UNCHANGED — adopt never writes record bytes)" )
     print( f"MIRROR   {mir_abs}  (written/refreshed in this call)" )
@@ -2024,8 +2105,9 @@ def cmd_resolve( args ):
         - SystemExit(1) if no record can be found at all
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+    seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
     persona   = slugify( args.persona )
-    rec_abs   = resolve_record( repo_root, args.slot, persona )
+    rec_abs   = resolve_record( repo_root, args.slot, persona, seat_root=seat_root )
     if rec_abs is None:
         print( f"no record found for persona={persona} slot={args.slot} in {repo_root}", file=sys.stderr )
         sys.exit( 1 )
@@ -2044,12 +2126,13 @@ def cmd_regenerate_pointer( args ):
         - SystemExit(1) if there is no record to point at
     """
     repo_root = find_repo_root( args.repo or Path.cwd() )
+    seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
     persona   = slugify( args.persona )
-    rec_abs   = newest_record( repo_root, args.slot, persona )
+    rec_abs   = newest_record( repo_root, args.slot, persona, seat_root=seat_root )
     if rec_abs is None:
         sys.exit( f"no record found for persona={persona} slot={args.slot} in {repo_root}" )
 
-    base    = slot_base_dir( repo_root, args.slot )
+    base    = slot_base_dir( repo_root, args.slot, seat_root )
     rec_rel = rec_abs.relative_to( base )
     ptr_abs = base / pointer_rel_path( args.slot, persona )
     mir_abs = None if is_ephemeral_slot( args.slot ) else mirror_path_for( repo_root, rec_rel )
