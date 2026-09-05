@@ -56,6 +56,26 @@ def tmp_base( tmp_path ):
     return tmp_path / "ephemeral"
 
 
+# ── row 2dbf9618: these tests have NO SESSION BRIDGE, so they must SAY they mean it ────
+# `write`/`amend` now refuse any --session-id the bridge cannot confirm, and a test process
+# has no bridge to confirm against. `--allow-foreign-session-id` is the sanctioned way to
+# say "stamp this id as given"; it is added HERE, once, rather than at every call site, so a
+# new case cannot forget it. ⚠️ It is added ONLY for write/amend — `adopt`'s --session-id
+# names a record ON DISK and never went through the bridge check, so handing it this flag
+# would be an argparse error.
+def _allow_foreign_session_id( args ):
+    """
+    Requires:  args is the CLI argument tuple, whose FIRST element is the verb
+    Ensures:   returns args unchanged unless the verb is write/amend AND --session-id is
+               present AND the flag is not already there; never raises
+    """
+    a = list( args )
+    if a and a[ 0 ] in ( "write", "amend" ) \
+       and "--session-id" in a and "--allow-foreign-session-id" not in a:
+        a.append( "--allow-foreign-session-id" )
+    return a
+
+
 def run_cli( repo, tmp_base, *cli, stdin="# Memento\n\nephemeral body\n" ):
     """
     Ensures: runs the real CLI end-to-end with LUPIN_MEMENTO_DIR redirected to `tmp_base`
@@ -66,7 +86,7 @@ def run_cli( repo, tmp_base, *cli, stdin="# Memento\n\nephemeral body\n" ):
     env = dict( os.environ,
                 LUPIN_MEMENTO_DIR = str( tmp_base ),
                 HOME              = str( Path( repo ).parent / "home" ) )
-    cmd = [ sys.executable, str( SCRIPT ), *cli, "--repo", str( repo ) ]
+    cmd = [ sys.executable, str( SCRIPT ), *_allow_foreign_session_id( cli ), "--repo", str( repo ) ]
     return subprocess.run( cmd, input=stdin, cwd=repo, capture_output=True, text=True, env=env )
 
 

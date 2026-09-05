@@ -81,7 +81,8 @@ def write_memento( repo, persona, slot, home, sid="deadbeef" ):
     """
     env = dict( __import__( "os" ).environ, HOME=str( home ) )
     cmd = [ sys.executable, str( SCRIPT ), "write",
-            "--persona", persona, "--session-id", sid, "--slot", slot, "--repo", str( repo ) ]
+            "--persona", persona, "--session-id", sid, "--allow-foreign-session-id",
+            "--slot", slot, "--repo", str( repo ) ]
     return subprocess.run( cmd, input=f"# Memento\n\nbody for {persona}\n",
                            cwd=repo, capture_output=True, text=True, env=env )
 

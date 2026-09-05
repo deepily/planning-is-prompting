@@ -132,6 +132,9 @@ codes, and until now nothing said what any of them meant.
     9   amend: --allow-foreign-record does not apply on the `root` slot
     10  adopt: would move the pointer BACKWARD to an older record
     11  the pointer does not name the newest record for this persona
+    12  write, amend: the session id could not be CONFIRMED against the seat's bridge
+        (row 2dbf9618) — a disagreeing value, an unreadable bridge, or no id at all. One
+        condition, correctly shared by both verbs. --allow-foreign-session-id is the escape
 
 ⚠️ SHARING A CODE IS FINE. COVERING TWO CONDITIONS WITH ONE CODE IS NOT — and my first cut
 of this table said all three shared codes were "the same thing wherever they fire" without
@@ -167,6 +170,7 @@ rather than my assertion.
 import argparse
 import datetime
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -628,6 +632,325 @@ def short_sid( session_id ):
     if not SID_RE.match( sid ):
         raise ValueError( f"session_id must start with 8 hex chars, got {session_id!r}" )
     return sid
+
+
+# ── THE SEAT'S OWN SESSION ID — RESOLVED, NOT TRUSTED (row 2dbf9618) ───────────────
+#
+# 🔴 WHAT WENT WRONG, measured by María 🌸 2026-09-05. `write --session-id <X>` TRUSTED
+# the value it was handed: it stamped X into the record header and named the file
+# `.claude-memento-<persona>-<X>.md`, and it never asked the bridge whether X was this
+# seat's id at all. `self_respin` — the verb that later READS that record — resolves the
+# seat FROM THE BRIDGE, deliberately: "NEVER taken from a caller argument — so this can
+# only ever aim at your own pane."
+#
+# Two derivations of one value. And a seat has TWO plausible ids to hand this flag:
+#
+#     get_session_info().claude_code.session_id          the HARNESS / transient id
+#     get_session_info().claude_code.stable_session_id   the seat's durable id
+#
+# The flag's own help said "from get_session_info()" and named neither. She passed the
+# first — the field literally called `session_id` — and the memento she had written
+# ninety seconds earlier came back to her as A PRIOR HOLDER'S.
+#
+# 🔴 AND IT IS NOT A COIN FLIP BETWEEN TWO EQUALLY-VALID IDS: ONE OF THEM IS DESTROYED BY
+# THE VERY OPERATION THE MEMENTO EXISTS TO SURVIVE. Measured on her seat, same field,
+# either side of one /clear:
+#
+#     BEFORE   claude_code.session_id        = 67f36ad1
+#     AFTER    claude_code.session_id        = 44f9c4be-...
+#     BOTH     claude_code.stable_session_id = b9c93948
+#
+# So a memento stamped with the harness id names a session that does not exist on the far
+# side of the clear. The successor derives a different id and correctly reports that it
+# cannot find itself. That settles which id is canonical without appealing to preference:
+# the stable id is the only value that survives the operation.
+#
+# ⚠️ AND THE COST IS NOT A CONFUSING ERROR. The instructed response to a missing memento
+# is to WRITE ONE — and a seat at high context with a clear pending is exactly the
+# population that hand-writes a record, which is the one anti-pattern this whole file
+# exists to remove. A false "prior holder" verdict sits directly on that path.
+#
+# ⇒ THE FIX REMOVES THE SECOND DERIVATION RATHER THAN DOCUMENTING IT BETTER (ruled
+# 2026-09-05). `--session-id` is now OPTIONAL on `write` and `amend`, and where it is
+# passed it is an ASSERTION, never an override:
+#
+#     omitted, bridge resolves   -> the seat's STABLE id -- THE PRESCRIBED CALL
+#     == the seat's stable id    -> accepted, and says so
+#     == the seat's TRANSIENT id -> REFUSED, exit 12, naming BOTH ids
+#     any other value            -> REFUSED, exit 12 -- the bridge cannot CONFIRM it
+#     passed, but no bridge      -> REFUSED, exit 12 -- there is nothing to confirm against
+#     omitted, and no bridge     -> REFUSED, exit 12 -- never a guess
+#     --allow-foreign-session-id -> the ONLY way through, and it must be spelled out loud
+#
+# 🔴 THE THIRD AND FOURTH ROWS ARE MARÍA'S RULING OF 2026-09-05 15:17, AND THEY OVERRULED
+# MY OWN FIRST CUT — recorded because the rejected version is the one a later reader will
+# be tempted to restore. I built the narrow form first: refuse the transient id, WARN on
+# anything else. Her objection is the correct one and it is about POPULATIONS, not taste:
+# the narrow form catches only "a harness id where a stable id belongs", while the defect
+# class is "the writer stamped an id the verifier will not derive", and a stale id from
+# three clears ago sits in the second set and not the first. A warning does not stop it.
+#
+# ⇒ ANY id the bridge cannot CONFIRM is refused. "Cannot confirm" includes the case where
+# there is no bridge at all: an unconfirmable id and an unconfirmed one are the same fact
+# about what this process knows, and giving them different answers would be this file's
+# own two-derivations defect wearing a third face.
+#
+# ⚠️ AND THE ESCAPE IS REQUIRED TO BE SPELLED, ALSO HER RULING: "a rescue path that works
+# without the flag is not acceptable." The rescue — writing ANOTHER seat's fragment under
+# your own persona, `--persona "rescued maria" --session-id 35446389`, see
+# `guard_pointer_collision` — is real and must stay reachable. It is now reachable only
+# through `--allow-foreign-session-id`, which is the same shape as `amend`'s existing
+# `--allow-foreign-record`: refuse by default, and make the deliberate act a thing you
+# have to TYPE. An escape you can take by accident is not a gate.
+#
+# ⚠️ THE COST, STATED SO NOBODY DISCOVERS IT: any caller with no session bridge — CI, a
+# plain shell, this directory's own test suite — must now pass BOTH `--session-id` and
+# `--allow-foreign-session-id`. That is a deliberate trade of convenience for the property
+# that no unconfirmed id is ever stamped silently. Ten test files in this directory were
+# updated in the same commit; a new one written against the old two-argument call will
+# refuse at exit 12 and say exactly which flag it wants.
+#
+# ⚠️ `adopt --session-id` IS NOT TOUCHED AND MUST NOT BE. Its flag answers a different
+# question -- "which session does the record ON DISK belong to", read off that record's
+# own filename -- and is routinely and correctly another seat's id.
+
+
+def bridge_sessions_dir():
+    """
+    Ensures:
+        - returns $LUPIN_HOOK_SESSIONS_DIR as a Path when set and non-empty
+        - else Path( ~/.claude/sessions ) — read at CALL time, so redirecting $HOME or
+          the variable inside a test is honoured without an import-order dance
+        - never raises
+
+    ⚠️ The variable is `LUPIN_HOOK_SESSIONS_DIR` and deliberately NOT `LUPIN_SESSIONS_DIR`.
+    The latter is pinned to the REAL directory by `tmux-server.service` and inherited by
+    every seat in the fleet, so honouring it would defeat redirection rather than provide
+    it. This mirrors lupin's `lupin_cli.claude_code.hooks.lib.sessions_dir`, whose module
+    docstring carries the measurement; it is copied rather than imported because this
+    script is repo-agnostic and runs where that package is not importable.
+    """
+    override = os.environ.get( "LUPIN_HOOK_SESSIONS_DIR" )
+    if override:
+        return Path( override )
+    return Path( os.path.expanduser( "~/.claude/sessions" ) )
+
+
+def parent_pid_of( pid ):
+    """
+    Requires:
+        - pid is an int
+    Ensures:
+        - returns the parent pid read from /proc/<pid>/stat, or None when it cannot be
+          read or parsed
+        - parses past the LAST ')' so a comm containing spaces or parens cannot shift
+          the field offsets
+        - never raises
+    """
+    try:
+        stat  = Path( f"/proc/{pid}/stat" ).read_text()
+        after = stat[ stat.rindex( ")" ) + 2 : ].split()
+        return int( after[ 1 ] )
+    except ( OSError, ValueError, IndexError ):
+        return None
+
+
+def read_seat_bridge():
+    """
+    Read THIS seat's session bridge by walking the process tree upward.
+
+    Ensures:
+        - returns the parsed bridge dict of the nearest ancestor that has one, checking
+          the caller's PPID and then ITS parent — measured, a verb run from a seat's Bash
+          tool is `python3 -> bash -> claude`, so two levels is what the real call needs
+        - returns None when neither ancestor has a bridge, when the directory is absent,
+          or when the file will not parse
+        - reads only; never raises
+
+    🔴 NO CWD FALLBACK, AND THAT IS THE POINT. `session_bridge._find_session_file()` ends
+    by globbing `cc-*.json` and returning the newest bridge whose stored `cwd` matches the
+    caller's — which, for a process not nested under its own `claude`, selects THE MOST
+    RECENTLY ACTIVE PEER SEAT SHARING THAT DIRECTORY. Lupin's `sessions_dir` module
+    docstring records three live seats having their bridges overwritten that way. Here the
+    consequence would be stamping a PEER's session id into YOUR memento — this function's
+    own defect class, arriving through the back door. An unresolvable bridge must read as
+    unresolvable, and the caller must refuse rather than guess.
+    """
+    d = bridge_sessions_dir()
+    if not d.is_dir():
+        return None
+    pid = os.getppid()
+    for _ in range( 2 ):
+        if not pid or pid <= 1:
+            return None
+        f = d / f"cc-{pid}.json"
+        if f.exists():
+            try:
+                return json.loads( f.read_text() )
+            except ( OSError, ValueError ):
+                return None
+        pid = parent_pid_of( pid )
+    return None
+
+
+def seat_session_ids( bridge=None ):
+    """
+    Requires:
+        - bridge is a parsed bridge dict, or None to read this seat's own
+    Ensures:
+        - returns ( stable_sid8, transient_sid8 ); either may be None, and both are None
+          when no bridge resolves
+        - BOTH are normalised through `short_sid`, so no later comparison can disagree
+          with another on case or length — the two derivations die at this one boundary
+        - never raises: an id the bridge carries in an unexpected shape reads as None
+    """
+    if bridge is None:
+        bridge = read_seat_bridge()
+    if not bridge:
+        return None, None
+
+    def _norm( v ):
+        try:
+            return short_sid( v ) if v else None
+        except ValueError:
+            return None
+
+    return _norm( bridge.get( "stable_session_id" ) ), _norm( bridge.get( "session_id" ) )
+
+
+def resolve_session_id( passed, verb, allow_foreign=False ):
+    """
+    Resolve the ONE session id this write will be stamped with (row 2dbf9618).
+
+    Requires:
+        - passed is the caller's --session-id, or None when the flag was omitted
+        - verb is "write" or "amend" — used only to spell the corrected command back
+        - allow_foreign is the caller's --allow-foreign-session-id
+    Ensures:
+        - returns an 8-char short session id
+        - flag omitted + bridge resolves -> the seat's STABLE id, announced on stderr
+        - flag agrees with the stable id  -> that id, announced on stderr
+        - flag is the seat's TRANSIENT id -> SystemExit(12), naming BOTH ids; this is the
+          measured defect and its refusal is written to be recognised
+        - ANY other value, INCLUDING when no bridge resolves -> SystemExit(12). The bridge
+          cannot confirm it, and an unconfirmable id is stamped only on purpose
+        - allow_foreign=True + a value -> that value, with a loud stderr banner — EXCEPT the
+          seat's own transient id, which refuses even so: the escape is for another seat's
+          fragment, and stamping your own dead id is never deliberate
+        - allow_foreign=True + NO value -> SystemExit(12): the flag waives a check on an id
+          the caller did not supply, which is a misuse rather than a permission
+        - writes nothing; the only side effect is stderr
+    """
+    stable, transient = seat_session_ids()
+
+    if passed is None:
+        if allow_foreign:
+            print(  "REFUSED: --allow-foreign-session-id was passed with no --session-id.", file=sys.stderr )
+            print(  "         That flag waives the bridge check on an id you supply; with no id", file=sys.stderr )
+            print(  "         there is nothing to waive, and the bridge would have answered anyway.", file=sys.stderr )
+            print(  "         Drop the flag, or name the id you mean.", file=sys.stderr )
+            sys.exit( 12 )
+        if stable:
+            print( f"session id: {stable} — resolved from this seat's bridge (stable id).", file=sys.stderr )
+            return stable
+        if transient:
+            print( f"session id: {transient} — resolved from this seat's bridge.", file=sys.stderr )
+            print(  "            WARNING: the bridge carries no stable_session_id, so this is the",
+                    file=sys.stderr )
+            print(  "            TRANSIENT id. It will not survive a /clear.", file=sys.stderr )
+            return transient
+        print(  "REFUSED: no --session-id given, and this seat's bridge could not be read.", file=sys.stderr )
+        print( f"         looked for cc-<pid>.json under {bridge_sessions_dir()}", file=sys.stderr )
+        print(  "         walking this process's parent and grandparent (no cwd fallback —", file=sys.stderr )
+        print(  "         a cwd match selects a PEER seat's bridge, which is worse than none).", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  A guessed session id writes a memento that nothing can find, so this refuses", file=sys.stderr )
+        print(  "  rather than picking one. Name the id AND say you mean it:", file=sys.stderr )
+        print( f"      memento_io.py {verb} ... --session-id <id> --allow-foreign-session-id", file=sys.stderr )
+        sys.exit( 12 )
+
+    sid = short_sid( passed )
+
+    if stable and sid == stable:
+        print( f"session id: {sid} — matches this seat's bridge (stable id).", file=sys.stderr )
+        return sid
+
+    # 🔴 THE TRANSIENT REFUSAL COMES FIRST, AND --allow-foreign-session-id DOES NOT REACH IT.
+    #
+    # THE ESCAPE EXISTS FOR ONE PURPOSE: recording ANOTHER seat's fragment. Stamping YOUR OWN
+    # dead id is never that — it is always the mistake row 2dbf9618 is about, because that id is
+    # gone on the far side of the clear the memento exists to survive.
+    #
+    # ⇒ So the harmful case gets NO SPELLING AT ALL, rather than a spelling with a warning on
+    # it. An escape that covers the legitimate case and leaves the illegitimate one UNREACHABLE
+    # is worth more than a flag that makes both reachable and merely LABELS one — because a
+    # discouraged spelling is still a spelling, and a seat under context pressure with a clear
+    # pending is exactly who reaches for one and calls it deliberate.
+    #
+    # ⚠️ HOW THIS WAS CAUGHT, since it nearly shipped inverted: the first cut checked the flag
+    # BEFORE the transient branch, so the flag DID waive it — while the guard written alongside
+    # was named `test_the_escape_flag_does_not_rescue_the_transient_id` and asserted exit 0
+    # under a "pending decision" banner. The code and the test's own NAME asserted opposite
+    # things, and the test had been written to agree with whatever the code happened to do,
+    # which is not a test. The name was right; the order moved. (María 🌸 reached the same
+    # conclusion independently at 15:27 the same day; the change was already in when it landed,
+    # so this is corroboration rather than a ruling — recorded because two people arriving
+    # separately is worth more than either of us arriving alone.)
+    # ⚠️ ORDER IS LOAD-BEARING: swap these two blocks and the defect is reachable again while
+    # every other case stays green. `test_the_escape_flag_does_not_rescue_the_transient_id` is
+    # the only thing that notices.
+    if transient and sid == transient and stable and transient != stable:
+        print(  "REFUSED: --session-id is this seat's TRANSIENT (harness) id, not its stable id.", file=sys.stderr )
+        print( f"         you passed        : {sid}   (claude_code.session_id)", file=sys.stderr )
+        print( f"         this seat's stable: {stable}   (claude_code.stable_session_id)", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  THE TRANSIENT ID DIES AT THE /clear THIS MEMENTO EXISTS TO SURVIVE. Measured", file=sys.stderr )
+        print(  "  2026-09-05, one seat, same field either side of one clear: the transient id", file=sys.stderr )
+        print(  "  changed and the stable id did not. A record stamped with the transient id", file=sys.stderr )
+        print(  "  names a session that no longer exists afterwards, so `self_respin` — which", file=sys.stderr )
+        print(  "  resolves the seat from the bridge — reports your own fresh memento as", file=sys.stderr )
+        print(  "  A PRIOR HOLDER'S, and refuses to clear.", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  WHAT TO DO — omit the flag and let this resolve it:", file=sys.stderr )
+        print( f"      memento_io.py {verb} ...            (no --session-id at all)", file=sys.stderr )
+        print(  "  or name the stable id explicitly:", file=sys.stderr )
+        print( f"      memento_io.py {verb} ... --session-id {stable}", file=sys.stderr )
+        print(  "", file=sys.stderr )
+        print(  "  --allow-foreign-session-id DOES NOT WAIVE THIS ONE, deliberately. That flag is", file=sys.stderr )
+        print(  "  for recording ANOTHER seat's fragment; stamping your own dead id is never a", file=sys.stderr )
+        print(  "  deliberate act, so there is no way to spell it.", file=sys.stderr )
+        sys.exit( 12 )
+
+    if allow_foreign:
+        print( f"session id: {sid} — TAKEN AS GIVEN. --allow-foreign-session-id waived the "
+               f"bridge check.", file=sys.stderr )
+        print( f"            this seat's bridge says: stable {stable}, transient {transient}", file=sys.stderr )
+        print(  "            If this record is meant to be YOURS, it is about to be written under", file=sys.stderr )
+        print(  "            an id no verifier will derive for you. That is only correct when you", file=sys.stderr )
+        print(  "            are recording ANOTHER seat's fragment.", file=sys.stderr )
+        return sid
+
+    if stable or transient:
+        print( f"REFUSED: --session-id {sid} is not an id this seat's bridge carries.", file=sys.stderr )
+        print( f"         you passed        : {sid}", file=sys.stderr )
+        print( f"         this seat's stable: {stable}", file=sys.stderr )
+        print( f"         its transient     : {transient}", file=sys.stderr )
+    else:
+        print( f"REFUSED: --session-id {sid} cannot be confirmed — this seat's bridge could not "
+               f"be read.", file=sys.stderr )
+        print( f"         looked for cc-<pid>.json under {bridge_sessions_dir()}", file=sys.stderr )
+    print(  "", file=sys.stderr )
+    print(  "  A memento is found again by the id stamped on it, and the verifier derives that", file=sys.stderr )
+    print(  "  id FROM THE BRIDGE. An id the bridge cannot confirm therefore writes a record", file=sys.stderr )
+    print(  "  nothing will look for — silently, at exit 0, which is how row 2dbf9618 happened.", file=sys.stderr )
+    print(  "", file=sys.stderr )
+    print(  "  RECORDING YOUR OWN STATE? Omit the flag entirely — the bridge resolves it:", file=sys.stderr )
+    print( f"      memento_io.py {verb} ...            (no --session-id at all)", file=sys.stderr )
+    print(  "", file=sys.stderr )
+    print(  "  RECORDING ANOTHER SEAT'S FRAGMENT, or running with no bridge (CI, a plain", file=sys.stderr )
+    print(  "  shell, a test)? Say so out loud and it proceeds:", file=sys.stderr )
+    print( f"      memento_io.py {verb} ... --session-id {sid} --allow-foreign-session-id", file=sys.stderr )
+    sys.exit( 12 )
 
 
 def sid_of_record( rec_abs ):
@@ -1529,7 +1852,7 @@ def cmd_write( args ):
     print_verify_staleness_banner( repo_root )
 
     persona   = slugify( args.persona )
-    sid       = short_sid( args.session_id )
+    sid       = resolve_session_id( args.session_id, "write", args.allow_foreign_session_id )   # row 2dbf9618
     written   = datetime.datetime.now().astimezone().isoformat( timespec="seconds" )
 
     body = Path( args.content_file ).read_text() if args.content_file else sys.stdin.read()
@@ -1828,7 +2151,7 @@ def cmd_amend( args ):
     repo_root = find_repo_root( args.repo or Path.cwd() )
     seat_root = find_seat_root( args.repo or Path.cwd() )   # the SEAT's own tree; the root slot lives here, never the main checkout (row 6c64d2f5)
     persona   = slugify( args.persona )
-    sid       = short_sid( args.session_id )
+    sid       = resolve_session_id( args.session_id, "amend", args.allow_foreign_session_id )   # row 2dbf9618
     stamped   = datetime.datetime.now().astimezone().isoformat( timespec="seconds" )
 
     # POINTER-COLLISION CHECK, BEFORE THE APPEND. `sync_record` reaches this same path only
@@ -3299,7 +3622,17 @@ def build_parser():
     w = sub.add_parser( "write", help="write RECORD + MIRROR + POINTER in one call" )
     common( w )
     w.add_argument( "--persona",      required=True )
-    w.add_argument( "--session-id",   required=True, help="from get_session_info()" )
+    w.add_argument( "--session-id",   default=None,
+                    help="OPTIONAL, and an ASSERTION rather than an override (row 2dbf9618). "
+                         "OMIT IT — this resolves your seat's STABLE id from the session bridge. "
+                         "ANY value the bridge cannot confirm is REFUSED at exit 12, including "
+                         "claude_code.session_id (the TRANSIENT/harness id), which dies at the "
+                         "/clear the memento exists to survive" )
+    w.add_argument( "--allow-foreign-session-id", action="store_true",
+                    help="waive the bridge check and stamp --session-id AS GIVEN. Required to "
+                         "record ANOTHER seat's fragment, and required anywhere no session bridge "
+                         "exists (CI, a plain shell, this directory's tests). Never needed for "
+                         "your own memento — omit --session-id instead" )
     w.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
     w.add_argument( "--self-respin-nonce", metavar="UUID", default=None,
                     help="stamp SELF-RESPIN-NONCE: <uuid> @ <ts> as the record's last line; "
@@ -3311,7 +3644,14 @@ def build_parser():
     a = sub.add_parser( "amend", help="APPEND to the current record + re-sync mirror + pointer, in ONE call" )
     common( a )
     a.add_argument( "--persona",      required=True )
-    a.add_argument( "--session-id",   required=True, help="who is amending (from get_session_info())" )
+    a.add_argument( "--session-id",   default=None,
+                    help="OPTIONAL, and an ASSERTION rather than an override (row 2dbf9618). "
+                         "OMIT IT — this resolves your seat's STABLE id from the session bridge. "
+                         "ANY value the bridge cannot confirm is REFUSED at exit 12" )
+    a.add_argument( "--allow-foreign-session-id", action="store_true",
+                    help="waive the bridge check and stamp --session-id AS GIVEN (see `write`). "
+                         "DISTINCT from --allow-foreign-record: that one is about WHOSE RECORD "
+                         "you append to, this one is about WHOSE IDENTITY you stamp" )
     a.add_argument( "--content-file", type=Path, default=None, help="default: read stdin" )
     a.add_argument( "--no-post-game", metavar="REASON", default=None,
                     help="waive the post-game gate; REASON is RECORDED in the amendment, never silent" )

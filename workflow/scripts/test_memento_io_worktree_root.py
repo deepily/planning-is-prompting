@@ -69,7 +69,8 @@ def _write_from( cwd, home, persona="clayton", sid="af0c5700", slot="io" ):
     only thing under test — that is exactly how a worker in a worktree calls it."""
     return subprocess.run(
         [ sys.executable, str( SCRIPT ), "write",
-          "--slot", slot, "--persona", persona, "--session-id", sid ],
+          "--slot", slot, "--persona", persona, "--session-id", sid,
+          "--allow-foreign-session-id" ],
         input="# Memento\n\nbody text\n", cwd=cwd,
         capture_output=True, text=True, env=dict( os.environ, HOME=str( home ) ) )
 

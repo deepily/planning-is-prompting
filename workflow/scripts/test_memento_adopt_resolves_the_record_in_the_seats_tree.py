@@ -116,7 +116,7 @@ def _write( cwd, session_id ):
     """Ensures: runs the real write verb from `cwd`; returns the CompletedProcess."""
     return subprocess.run(
         [ "python3", str( SCRIPT ), "write", "--slot", "root", "--persona", PERSONA,
-          "--session-id", session_id, "--no-post-game", "probe" ],
+          "--session-id", session_id, "--allow-foreign-session-id", "--no-post-game", "probe" ],
         cwd=str( cwd ), input=BODY, capture_output=True, text=True
     )
 

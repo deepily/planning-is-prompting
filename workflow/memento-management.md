@@ -78,7 +78,7 @@ given work is the moment your attention is furthest from the file that records w
 
 ```bash
 # a record is IMMUTABLE; `write` REFUSES a second time and names this verb
-memento_io.py amend --slot <io|root> --persona '<Persona>' --session-id <sid8>
+memento_io.py amend --slot <io|root> --persona '<Persona>'      # NO --session-id: the bridge resolves it (row 2dbf9618)
 ```
 
 ⚠️ **`amend` appends under its own stamp, then re-mirrors and re-points in ONE call or fails
@@ -256,10 +256,35 @@ There are now **three** slots. The two durable ones are unchanged; `tmp` is new 
 
 ```bash
 python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
-    --persona "<persona>" --session-id "<session_id>" --slot io   < memento.md
+    --persona "<persona>" --slot io   < memento.md
 ```
 
-`--slot io` = the spawned-worker slot · `--slot root` = the self-`/clear` slot · **`--slot tmp` = the ephemeral slot** (writes to `$LUPIN_MEMENTO_DIR || /tmp/mementos/<repo>/`, outside the repo, boot-wiped, **no mirror, no gitignore** — see §3.0b). `--persona` and `--session-id` both come from the **`get_session_info()` call every session already makes at Phase A, before it is allowed to emit any user-facing text**. The writer needs **zero new information** and the author performs **zero new steps**.
+`--slot io` = the spawned-worker slot · `--slot root` = the self-`/clear` slot · **`--slot tmp` = the ephemeral slot** (writes to `$LUPIN_MEMENTO_DIR || /tmp/mementos/<repo>/`, outside the repo, boot-wiped, **no mirror, no gitignore** — see §3.0b). `--persona` comes from the **`get_session_info()` call every session already makes at Phase A**. The writer needs **zero new information** and the author performs **zero new steps**.
+
+> 🔴 **DO NOT PASS `--session-id`. THIS PARAGRAPH USED TO TELL YOU TO, AND THAT INSTRUCTION COST A SEAT HER RE-SPIN** (store row `2dbf9618`, 2026-09-05).
+>
+> It said *"`--persona` and `--session-id` both come from the `get_session_info()` call"* — and **named neither field**, while `get_session_info()` returns **two** plausible ones:
+>
+> | field | survives a `/clear`? |
+> |---|---|
+> | `claude_code.session_id` — the HARNESS / transient id | 🔴 **no — it is replaced** |
+> | `claude_code.stable_session_id` — the seat's durable id | ✅ yes |
+>
+> María passed the first, because it is the field literally called `session_id`. The write reported success. `self_respin` — which resolves the seat **from the bridge** — then called the memento she had written **ninety seconds earlier** *"a prior holder's"* and refused to clear. **Measured, same field either side of one clear: `67f36ad1` → `44f9c4be`, while stable stayed `b9c93948`.** A memento stamped with the transient id names a session that no longer exists on the far side of the very operation the memento exists to survive.
+>
+> ⚠️ **AND THE COST IS NOT A CONFUSING ERROR.** The instructed response to a memento that cannot be found is to **write one** — and a seat at high context with a clear pending is exactly the population that **hand-writes** a record, which is the one anti-pattern this whole document exists to remove.
+>
+> ⇒ **`--session-id` is now OPTIONAL, and omitting it is the prescribed call.** The writer resolves your seat's **stable** id from the session bridge itself, so the writer and the verifier derive one value from one place and cannot disagree.
+>
+> **ANY value the bridge cannot CONFIRM is refused at exit 12** — the transient id, a stale id from three clears ago, someone else's id, or any id at all when no bridge can be read. *(Ruled by María 2026-09-05 15:17, over a narrower first cut that only refused the transient id and warned on the rest. The narrow form catches "a harness id where a stable id belongs"; the defect class is "an id the verifier will not derive", and a stale id is in the second set and not the first.)*
+>
+> | you want to | you type |
+> |---|---|
+> | record **your own** state | **nothing** — omit the flag |
+> | record **another seat's** fragment (§3.4 rescue) | `--session-id <theirs> --allow-foreign-session-id` |
+> | run where there is **no bridge** (CI, a plain shell, a test) | `--session-id <id> --allow-foreign-session-id` |
+>
+> ⚠️ **`--allow-foreign-session-id` does NOT waive the transient-id refusal, deliberately.** The escape is for recording someone else's fragment; stamping **your own** dead id is never a deliberate act, so there is no way to spell it. Order is load-bearing in the code and one test guards it.
 
 **For `io`/`root` that single call does all three writes — RECORD, MIRROR, POINTER — or it fails loud and non-zero** (`tmp` writes RECORD + POINTER only; it has no mirror by design). They are not three things you could do two of. Specifically, the writer:
 
@@ -272,7 +297,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 
 ```bash
 python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py amend \
-    --persona "<persona>" --session-id "<session_id>" --slot io   < amendment.md
+    --persona "<persona>" --slot io   < amendment.md
 ```
 
 **One call appends the stamped amendment to the record, re-syncs the mirror, and regenerates the pointer** — or fails loud. **Append-only**: a record is immutable, so an amendment *adds* testimony under its own `<!-- memento-amendment: … -->` stamp; it never rewrites what came before.

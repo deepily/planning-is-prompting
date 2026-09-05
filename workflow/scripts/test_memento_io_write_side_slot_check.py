@@ -170,7 +170,8 @@ def test_the_warning_reaches_stderr_and_the_record_still_lands( tmp_path ):
 
     proc = subprocess.run(
         [ sys.executable, str( SCRIPT ), "write", "--slot", "root",
-          "--persona", "maria", "--session-id", "21979045", "--repo", str( repo ) ],
+          "--persona", "maria", "--session-id", "21979045", "--allow-foreign-session-id",
+          "--repo", str( repo ) ],
         input="# a memento\n\nbody\n", capture_output=True, text=True,
     )
 
@@ -226,7 +227,8 @@ def test_REACHABILITY_a_worktree_seat_warns_when_the_root_slot_collapses_to_the_
 
     proc = subprocess.run(
         [ sys.executable, str( mutated ), "write", "--slot", "root",
-          "--persona", "maria", "--session-id", "21979045", "--repo", str( seat ) ],
+          "--persona", "maria", "--session-id", "21979045", "--allow-foreign-session-id",
+          "--repo", str( seat ) ],
         input="# a memento\n\nbody\n", capture_output=True, text=True,
     )
 
@@ -263,6 +265,9 @@ def test_cmd_write_ACTUALLY_CALLS_the_check_and_prints_what_it_returns( tmp_path
     args = argparse.Namespace(
         repo=str( repo ), slot="root", persona="maria", session_id="21979045",
         content_file=None, no_post_game=None, self_respin_nonce=None,
+        # row 2dbf9618: TRUE because an IN-PROCESS call has no isolated bridge — the walk
+        # reaches the REAL seat running pytest, whose stable id is not "21979045".
+        allow_foreign_session_id=True,
     )
 
     try:

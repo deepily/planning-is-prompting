@@ -84,7 +84,8 @@ def write_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=Non
              an agent actually types.
     """
     cmd = [ sys.executable, str( SCRIPT ), "write", "--repo", str( repo ),
-            "--slot", slot, "--persona", persona, "--session-id", sid ]
+            "--slot", slot, "--persona", persona, "--session-id", sid,
+            "--allow-foreign-session-id" ]   # row 2dbf9618 — no bridge in a test process
     if extra: cmd += extra
     env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input="# Memento\n\nbody text\n", cwd=repo,
@@ -287,7 +288,8 @@ def test_a_committed_retro_edited_now_still_counts( repo ):
 def amend_memento( repo, persona="maria", sid="45b897f6", slot="root", extra=None ):
     """Ensures: runs the real `amend` CLI — the path a SAME-SESSION re-spin actually takes."""
     cmd = [ sys.executable, str( SCRIPT ), "amend", "--repo", str( repo ),
-            "--slot", slot, "--persona", persona, "--session-id", sid ]
+            "--slot", slot, "--persona", persona, "--session-id", sid,
+            "--allow-foreign-session-id" ]   # row 2dbf9618 — no bridge in a test process
     if extra: cmd += extra
     env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input="an amendment\n", cwd=repo,
@@ -1462,7 +1464,9 @@ def test_KNOWN_a_cp_restore_defeats_the_mtime_ordering_clock( repo ):
 def _run( repo, verb, body, persona="maria", sid="45b897f6", slot="root", extra=None ):
     """Ensures: runs any verb through the real CLI with an arbitrary body on stdin."""
     cmd = [ sys.executable, str( SCRIPT ), verb, "--repo", str( repo ),
-            "--slot", slot, "--persona", persona, "--session-id", sid ] + ( extra or [] )
+            "--slot", slot, "--persona", persona, "--session-id", sid ] \
+          + ( [ "--allow-foreign-session-id" ] if verb in ( "write", "amend" ) else [] ) \
+          + ( extra or [] )   # row 2dbf9618 — adopt never went through the bridge check
     env = dict( os.environ, HOME=str( home_for( repo ) ) )
     return subprocess.run( cmd, input=body, cwd=repo, capture_output=True, text=True, env=env )
 
@@ -1516,6 +1520,11 @@ def test_write_hard_fails_when_its_own_post_write_verification_finds_a_divergent
     a.no_post_game = None
     a.content_file = None
     a.self_respin_nonce = None     # argparse supplies this (default None); a hand-built namespace must too          # argparse supplies this; a hand-built namespace must too
+    a.allow_foreign_session_id = True   # row 2dbf9618: argparse supplies this, and a hand-built
+                                        # namespace must too. TRUE because an IN-PROCESS test has no
+                                        # isolated bridge — os.getppid() walks to the REAL seat running
+                                        # pytest, whose stable id is not "45b897f6". Without the waiver
+                                        # this refuses at 12 and the exit-5 path under test is never reached.
     monkeypatch.setattr( sys, "stdin", __import__( "io" ).StringIO( "# Memento\n\nbody\n" ) )
     monkeypatch.setattr( m, "sha256_of", lying_sha )
 
@@ -1557,6 +1566,11 @@ def test_write_hard_fails_when_the_landed_record_is_not_gitignored( repo, monkey
     a.no_post_game = None
     a.content_file = None
     a.self_respin_nonce = None     # argparse supplies this (default None); a hand-built namespace must too
+    a.allow_foreign_session_id = True   # row 2dbf9618: argparse supplies this, and a hand-built
+                                        # namespace must too. TRUE because an IN-PROCESS test has no
+                                        # isolated bridge — os.getppid() walks to the REAL seat running
+                                        # pytest, whose stable id is not "45b897f6". Without the waiver
+                                        # this refuses at 12 and the exit-5 path under test is never reached.
     monkeypatch.setattr( sys, "stdin", __import__( "io" ).StringIO( "# Memento\n\nbody\n" ) )
 
     with pytest.raises( SystemExit ) as exc:
@@ -1644,6 +1658,7 @@ def test_a_typed_slot_still_works_in_both_directions( repo ):
     for slot in ( "io", "root" ):
         r = subprocess.run( [ sys.executable, str( SCRIPT ), "write", "--repo", str( repo ),
                               "--slot", slot, "--persona", "maria", "--session-id", "d3254802",
+                              "--allow-foreign-session-id",
                               "--no-post-game", "negative-control for the required-slot fix" ],
                             input="# Memento\n\nbody text\n", cwd=repo,
                             capture_output=True, text=True, env=env )
@@ -1773,11 +1788,13 @@ def test_amend_stamps_correlation_too( repo ):
     env = dict( os.environ, HOME=str( home_for( repo ) ) )
     base = [ sys.executable, str( SCRIPT ), "--repo", str( repo ) ]
     first = subprocess.run( base[ :2 ] + [ "write" ] + base[ 2: ] +
-                            [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ],
+                            [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6",
+                              "--allow-foreign-session-id" ],
                             input="# Memento\n\nbody\n", cwd=repo, capture_output=True, text=True, env=env )
     assert first.returncode == 0, first.stderr
     r = subprocess.run( base[ :2 ] + [ "amend" ] + base[ 2: ] +
-                        [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ],
+                        [ "--slot", "root", "--persona", "maria", "--session-id", "45b897f6",
+                          "--allow-foreign-session-id" ],
                         input="more state\n", cwd=repo, capture_output=True, text=True, env=env )
     assert r.returncode == 0, r.stderr
     assert _record_text( repo ).count( "post-game-correlation" ) == 2   # write's, then amend's
@@ -1847,7 +1864,8 @@ def test_EVERY_waiver_is_read_not_just_the_first( repo ):
 
     env  = dict( os.environ, HOME=str( home_for( repo ) ) )
     base = [ sys.executable, str( SCRIPT ), "amend", "--repo", str( repo ),
-             "--slot", "root", "--persona", "maria", "--session-id", "45b897f6" ]
+             "--slot", "root", "--persona", "maria", "--session-id", "45b897f6",
+             "--allow-foreign-session-id" ]
     for reason in ( "first waiver reason", "second waiver reason" ):
         a = subprocess.run( base + [ "--no-post-game", reason ], input="more\n",
                             cwd=repo, capture_output=True, text=True, env=env )

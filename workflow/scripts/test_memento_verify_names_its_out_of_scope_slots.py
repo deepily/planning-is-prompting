@@ -52,9 +52,29 @@ def _git( cwd, *args ):
                            capture_output=True, text=True, check=True )
 
 
+# ── row 2dbf9618: these tests have NO SESSION BRIDGE, so they must SAY they mean it ────
+# `write`/`amend` now refuse any --session-id the bridge cannot confirm, and a test process
+# has no bridge to confirm against. `--allow-foreign-session-id` is the sanctioned way to
+# say "stamp this id as given"; it is added HERE, once, rather than at every call site, so a
+# new case cannot forget it. ⚠️ It is added ONLY for write/amend — `adopt`'s --session-id
+# names a record ON DISK and never went through the bridge check, so handing it this flag
+# would be an argparse error.
+def _allow_foreign_session_id( args ):
+    """
+    Requires:  args is the CLI argument tuple, whose FIRST element is the verb
+    Ensures:   returns args unchanged unless the verb is write/amend AND --session-id is
+               present AND the flag is not already there; never raises
+    """
+    a = list( args )
+    if a and a[ 0 ] in ( "write", "amend" ) \
+       and "--session-id" in a and "--allow-foreign-session-id" not in a:
+        a.append( "--allow-foreign-session-id" )
+    return a
+
+
 def _run( cwd, *args, stdin=None ):
     """Ensures: runs the real script as a SUBPROCESS from `cwd`."""
-    return subprocess.run( [ "python3", str( SCRIPT ) ] + list( args ),
+    return subprocess.run( [ "python3", str( SCRIPT ) ] + _allow_foreign_session_id( args ),
                            cwd=str( cwd ), input=stdin, capture_output=True, text=True )
 
 
