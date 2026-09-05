@@ -1191,22 +1191,73 @@ If commit count is `0`: skip Step 6 with the line *"LoC Delta Summary: nothing t
 
 **Module**: `cosa.repo.git_loc_delta` (sister to `branch_analyzer` — same `cosa.repo` package). Where `branch_analyzer` answers "what does this whole branch change vs main", `git_loc_delta` answers **"what changed when"** with a per-day temporal axis. Critically, it writes a **stable per-branch CSV** that grows day-by-day across sessions, giving you a persistent artifact of the branch's progress.
 
-**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The CLI lives at `$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py`.
+**Prerequisite**: the `run_git_loc_delta` CLI, which lives in a **lupin** checkout at
+`src/cosa/repo/run_git_loc_delta.py`. It is resolved from **the repo you are standing in first**
+and from `$LUPIN_ROOT` only as a fallback — see the note below, which is the whole reason this
+section was rewritten.
+
+🔴 **THIS SECTION USED TO READ `LUPIN_ROOT` AND NOTHING ELSE, AND THIS FILE IS THE CROSS-REPO
+RITUAL.** Measured 2026-09-05, four states, one variable:
+
+| standing in | `LUPIN_ROOT` | old block |
+|---|---|---|
+| a lupin worktree | set | ✅ status 0 |
+| planning-is-prompting | set | ✅ status 0 |
+| planning-is-prompting | **unset** | 🔴 `skip_to_fallback: command not found`, **status 127** |
+| **a lupin worktree** | **unset** | 🔴 same — **and the analyzer is RIGHT THERE, in the tree you are standing in** |
+
+⇒ The fourth row is the defect: the step failed in the very repo that carries the tool, because
+it consulted an environment variable instead of its own location. And `skip_to_fallback` was
+**pseudocode that has never existed anywhere in this repository** — so the documented failure
+path was a `command not found`, which is the stack trace §6.2 is now required not to produce.
 
 **Invocation** (two-pass — one for the persistent CSV, one for the renderer's structured data):
 
 ```bash
-# Verify LUPIN_ROOT and the module
-[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py" ] || skip_to_fallback
+# The TARGET repo is the one you are standing in — never an environment variable.
+PROJECT_ROOT="$( git rev-parse --show-toplevel 2>/dev/null )"
+
+# The ANALYZER is a lupin tool. Look in THIS repo first (a lupin checkout or any of
+# its worktrees carries it), and consult $LUPIN_ROOT only as the cross-repo fallback.
+# The old order was env-var-only, which failed inside lupin worktrees whose shell had
+# no LUPIN_ROOT — the tool present, and the step declining to find it.
+ANALYZER=""
+for CAND in "$PROJECT_ROOT" "$LUPIN_ROOT"; do
+    [ -n "$CAND" ] && [ -f "$CAND/src/cosa/repo/run_git_loc_delta.py" ] && { ANALYZER="$CAND"; break; }
+done
+
+# 🔴 DEGRADE LOUDLY, AND NAME WHAT IS MISSING. A skip and a zero delta are different
+# facts and only one of them is safe to report. Say which paths were tried, so the
+# reader can fix it rather than guess — and say plainly that nothing was measured.
+# ONE skip line per state, never two. The not-a-repo case must not also report a
+# missing analyzer under a path that reads "<not a git repo>/src/..." — a second,
+# less true sentence dilutes the first and is the reason this is an elif chain.
+if   [ -z "$PROJECT_ROOT" ]; then
+    echo "loc-delta: SKIPPED — not a git repository. Nothing was measured."
+elif [ -z "$ANALYZER" ]; then
+    echo "loc-delta: SKIPPED — no run_git_loc_delta found. Looked in:"
+    echo "    ${PROJECT_ROOT:-<not a git repo>}/src/cosa/repo/run_git_loc_delta.py   (this repo)"
+    echo "    ${LUPIN_ROOT:-<LUPIN_ROOT unset>}/src/cosa/repo/run_git_loc_delta.py   (\$LUPIN_ROOT)"
+    echo "  This is NOT a zero LoC delta. Nothing was measured."
+else
+
+# 🔴 EVERYTHING BELOW RUNS ONLY IN THE `else`. Printing a skip line is not the same
+# as SKIPPING: measured 2026-09-05, an earlier cut of this fix printed the skip and
+# then fell through into the lines below, producing `fatal: not a git repository`
+# and `mkdir: cannot create directory '/io'` immediately after it. That is the stack
+# trace this section is required not to emit, arriving one line after the sentence
+# that says it was skipped. The refusal has to STOP the step, not narrate it.
+#
+# It was found by extracting this block VERBATIM from the doc and running it. A
+# hand-retyped probe stopped at the preflight and showed a clean skip — the fixture
+# was tidier than the thing it stood in for.
 
 # Pick the Python interpreter. git_loc_delta itself has no PyYAML dep, but the
 # --rich opt-in (§6.2.alt) does, so the same PYBIN selection serves both paths.
-# Post-COSA-merge: $LUPIN_ROOT/.venv is the canonical Lupin venv (carries cosa +
-# PyYAML); fall back to system python.
-PYBIN="$LUPIN_ROOT/.venv/bin/python"
-[ -x "$PYBIN" ] || PYBIN="python3"
+# The venv travels with the ANALYZER, not with LUPIN_ROOT, now that the two can differ.
+PYBIN="$ANALYZER/.venv/bin/python"
+[ -x "$PYBIN" ] || PYBIN="$( command -v python3 )"
 
-PROJECT_ROOT="$(git -C . rev-parse --show-toplevel)"
 REPO_NAME="$(basename "$PROJECT_ROOT")"
 BRANCH_SLUG="$(git -C "$PROJECT_ROOT" symbolic-ref --short HEAD)"
 CSV_PATH="$PROJECT_ROOT/io/git-loc-delta/${REPO_NAME}-${BRANCH_SLUG}-loc-delta.csv"
@@ -1214,10 +1265,10 @@ mkdir -p "$PROJECT_ROOT/io/git-loc-delta"
 
 # Pass 1 — write the persistent per-branch CSV into the TARGET project's io/.
 # We must use --save-output explicitly because git_loc_delta's default path is
-# computed relative to cu.get_project_root() (i.e. LUPIN_ROOT), not relative to
+# computed relative to cu.get_project_root(), not relative to
 # --repo-path. Without --save-output, the CSV lands in $LUPIN_ROOT/io/, which
 # is wrong for the cross-repo "every session, every repo" use case.
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_git_loc_delta \
     --repo-path "$PROJECT_ROOT" \
     --branch \
@@ -1225,11 +1276,13 @@ cd "$LUPIN_ROOT/src" && \
     --save-output "$CSV_PATH"
 
 # Pass 2 — emit JSON to stdout for §6.4 renderer (no disk side-effect)
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_git_loc_delta \
     --repo-path "$PROJECT_ROOT" \
     --branch \
     --output json
+
+fi
 ```
 
 **Outputs**:
@@ -1284,7 +1337,7 @@ cd "$LUPIN_ROOT/src" && \
 **Invocation**:
 
 ```bash
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_branch_analyzer \
     --repo-path "$PROJECT_ROOT" \
     --base main \
@@ -1443,7 +1496,7 @@ Anti-patterns (DO NOT do any of these):
 
 ```bash
 # Reuse the same $PYBIN selection from §6.2
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_directory_analyzer \
     --path /absolute/path/to/current/project \
     --output json
