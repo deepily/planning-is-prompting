@@ -230,8 +230,27 @@ def slot_base_dir( repo_root, slot, seat_root=None ):
 
       root / self_respin — read by THE SEAT ITSELF, rehydrating in its own tree. The
                            reader is always standing in the worktree, so the record must
-                           be there. `lupin/src/lupin_mcp/memento_slot.py:239` resolves it
-                           with `--show-toplevel`, and the writer must agree.
+                           be there.
+
+                           🔴 DO NOT RE-ADD A PARITY CLAIM HERE NAMING THE READER'S
+                           IMPLEMENTATION. This block used to assert that
+                           `lupin/src/lupin_mcp/memento_slot.py:239` resolves root with
+                           `--show-toplevel` "and the writer must agree." On 2026-09-04
+                           that reader was changed to collapse a worktree to the MAIN
+                           checkout — so the sentence went on vouching for behaviour that
+                           had stopped existing, in the file that warns about wrong
+                           reassurances, one paragraph above where it stopped being true.
+                           Found by john 🏄🏽 (row be452d5f) by running one `amend` twice
+                           with only `--slot` changed and watching the two land in
+                           different trees.
+                           ⇒ RULED 2026-09-05, María 🌸 + Mr. Radio 🦉: ROOT STAYS AT THE
+                           SEAT'S TREE. THE WRITER OWNS THE PATH AND THE READER FOLLOWS —
+                           moving root back to main would re-open the 6c64d2f5 outage,
+                           and a resolver that RAISES beats one that defaults silently.
+                           The reader is lupin's to fix; this file does not change.
+                           ⇒ A cross-repo parity claim cannot be kept true by a comment.
+                           If it needs proving, it needs a TEST THAT VARIES THE SLOT in a
+                           real linked worktree and asserts writer path == reader path.
       io   / reap        — read by A MANAGER from the main checkout, about a seat that may
                            already be dead and whose successor may live in a DIFFERENT
                            worktree. The reader must find it without knowing the dead
@@ -653,6 +672,128 @@ def record_rel_path( slot, persona_slug, sid ):
     if slot == "root": return Path( f".claude-memento-{persona_slug}-{sid}.md" )
     if slot == "tmp":  return Path( f"{persona_slug}-{sid}.md" )   # relative to slot_base_dir(tmp)
     raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
+
+
+# ── THE WRITE-SIDE SLOT CHECK (row b0f60712, Rick's ruling: validate on WRITE) ──────
+#
+# `slot=` was STAMPED INTO EVERY RECORD AND READ BY NOBODY. A header could claim one slot
+# while the file sat somewhere else entirely, and no surface noticed — which is the row's
+# whole complaint, and the same shape as the ruling I once left in a DM while its row sat
+# blocked on me: a value produced in one place and never read in the other.
+#
+# WHY THE CHECK IS HERE AND NOT ON THE READ SIDE. Pocholo surveyed the corpus: a read-side
+# warning fires on 1 true positive in 7, a 1.5% base rate, and is BLIND ON 44% of records.
+# A warning wrong six times out of seven trains people to stop reading warnings — so it
+# would cost more than the defect. Validating at write time kills 3 of those 7
+# PROSPECTIVELY ONLY: the 3 already on disk (`slot=persona` x2, `slot=canonical`) are
+# historical and a write-time check never sees them. State the population you mean —
+# ~0.9% for NEW records, 1.5% across the whole corpus.
+#
+# BINDING CONSTRAINTS (Cheech's, adopted verbatim):
+#   · NEVER A REFUSAL, always a warning, and it must NAME BOTH VALUES. A memento is written
+#     at the seat's re-spin moment; a refusal there costs a seat its continuity over a
+#     bookkeeping field.
+#   · `slot=tmp` IS EXPLICITLY EXEMPT — it writes outside the repo by construction, so
+#     declared and actual can never match, and flagging it would be the false-positive
+#     engine all over again.
+#   · The hand-written path must still produce a passing file.
+#
+# WHAT IT ACTUALLY CATCHES, since the tool derives the path FROM the slot: the two of them
+# can only disagree when the BASE resolves to a tree the caller did not mean — the worktree
+# collapse that produced a refused `self_respin`, a FALSE `timeout_no_memento`, and a
+# `SEED_NOT_CONSUMED` in one afternoon. That write SUCCEEDED and reported "written", at a
+# slot no reader reads.
+
+PLACEMENT_UNKNOWN = "unknown"
+
+
+def classify_placement( rec_abs, repo_root, seat_root ):
+    """
+    Name the slot a record's PATH actually represents, deriving it from the path alone.
+
+    Deliberately does NOT consult the declared slot — a classifier that reads the claim it
+    is checking cannot disagree with it, and a guard deriving its answer from the thing
+    under test cannot tell a real placement from a broken one.
+
+    Requires:
+        - rec_abs is the absolute path the record will land at
+        - repo_root is the main checkout; seat_root is the SEAT's own tree (they differ
+          in a worktree, which is the case this exists for)
+    Ensures:
+        - returns "tmp"  when the path is under the ephemeral base (outside the repo)
+        - returns "io"   when the path is <repo_root>/io/mementos/<file>
+        - returns "root" when the path is a record sitting AT the seat's own tree root
+        - returns PLACEMENT_UNKNOWN otherwise — including a root-shaped record that landed
+          in the MAIN checkout instead of the seat's tree, which is the defect this catches
+        - never raises
+    """
+    try:
+        rec_abs = Path( rec_abs ).resolve()
+    except OSError:
+        return PLACEMENT_UNKNOWN
+
+    def _under( parent ):
+        if parent is None: return False
+        try:
+            rec_abs.relative_to( Path( parent ).resolve() )
+            return True
+        except ( ValueError, OSError ):
+            return False
+
+    # ORDER IS LOAD-BEARING, and I got it backwards on the first pass. Checking the tmp base
+    # FIRST means that if LUPIN_MEMENTO_DIR is ever pointed at a path containing the repo, every
+    # correctly-filed io record classifies as "tmp" and the guard warns on all of them — the
+    # false-positive engine this design exists to avoid. The repo-relative placements are the
+    # specific ones; tmp is the fallback, because tmp is defined as OUTSIDE the repo.
+    # 🔴 THE io LEG ACCEPTS ONLY repo_root, AND THAT NARROWNESS IS THE POINT.
+    # My first draft accepted `io/mementos` under EITHER tree. maya measured what that costs:
+    # narrow the loop to repo_root and a mis-based io record WARNS; accept both and it goes
+    # SILENT. `slot_base_dir` sends io to repo_root, so an io record sitting under the SEAT's
+    # tree is the row af0c5700 defect — the io slot following the working tree — and a leg that
+    # accepts it swallows exactly the failure this guard exists to name. A permissive branch in
+    # a detector can only ever suppress; it can never raise.
+    if repo_root is not None:
+        try:
+            if rec_abs.parent == Path( repo_root ).resolve() / "io" / "mementos":
+                return "io"
+        except OSError:
+            pass
+
+    if seat_root is not None:
+        try:
+            if rec_abs.parent == Path( seat_root ).resolve():
+                return "root"
+        except OSError:
+            pass
+
+    if _under( tmp_memento_base() ):
+        return "tmp"
+
+    return PLACEMENT_UNKNOWN
+
+
+def slot_placement_warning( declared, rec_abs, repo_root, seat_root ):
+    """
+    Ensures:
+        - returns None when the declared slot agrees with where the file is landing,
+          and when declared is "tmp" — EXEMPT by construction, rationale in the
+          THE WRITE-SIDE SLOT CHECK block above `classify_placement`, not here
+        - otherwise returns a warning string NAMING BOTH VALUES and the path
+        - NEVER refuses, never raises: the caller prints this and writes anyway
+    """
+    if declared == "tmp":
+        return None
+
+    actual = classify_placement( rec_abs, repo_root, seat_root )
+    if actual == declared:
+        return None
+
+    return ( f"WARNING: slot= will be stamped {declared!r} but this record is landing at a "
+             f"{actual!r} placement — {rec_abs}\n"
+             f"         The record still lands; nothing is refused. But a reader that trusts "
+             f"the header will look in the wrong place.\n"
+             f"         If this is a worktree, check that the seat's own tree is what "
+             f"resolved, not the main checkout." )
 
 
 class PointerCollision( Exception ):
@@ -1396,7 +1537,7 @@ def cmd_write( args ):
         sys.exit( "REFUSED: memento body is empty — nothing to record." )
 
     ephemeral = is_ephemeral_slot( args.slot )       # tmp: outside the repo, no mirror, no gitignore
-    base      = slot_base_dir( repo_root, args.slot, seat_root ) # repo_root for io/root; TMP base for tmp
+    base      = slot_base_dir( repo_root, args.slot, seat_root ) # io -> repo_root; root -> SEAT_ROOT (row 6c64d2f5); tmp -> the ephemeral base
     rec_rel = record_rel_path( args.slot, persona, sid )
     ptr_rel = pointer_rel_path( args.slot, persona )
     rec_abs = base / rec_rel
@@ -1472,6 +1613,11 @@ def cmd_write( args ):
             print( f"REFUSED: {rec_rel} is NOT gitignored and .gitignore could not be repaired.", file=sys.stderr )
             sys.exit( 4 )
         ensure_gitignored( base, ptr_rel )
+
+    # The slot claim is checked against the placement HERE, before it is stamped into a
+    # record that outlives this process. Warning only, by ruling — see slot_placement_warning.
+    placement_warning = slot_placement_warning( args.slot, rec_abs, repo_root, seat_root )
+    if placement_warning: print( placement_warning, file=sys.stderr )
 
     text = stamp_header( body, persona, sid, args.slot, written,
                          no_post_game_reason=args.no_post_game if owed else None,
