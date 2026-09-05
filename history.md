@@ -8,7 +8,19 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 191 (2026-09-03 night, María 🌸 `4f98d12f`, post-self-respin)** — Rick's three-line row display shipped across all three panes, and seven instances of one defect shape found by three people in one night.
+**RESUME HERE**: **Session 192 (2026-09-04 night → 09-05, María 🌸 `21979045`)** — managed john 🏄🏽 + maya 🌻 to a clean wind-down; both reaped with hand-verified mementos.
+
+1. **🔴 MERGED IS NOT LOADED.** Every live `cosa_voice_mcp` process started **before** the memento-slot fix `9e4538d2`; the newest by 77 minutes, auto-reload off. So my reap-defect alarm came from pre-fix code and cannot testify about HEAD — **I weakened my own finding an hour after alerting Rick on it.** Mr Radio 🦉 generalized it fleet-wide the same hour.
+2. **A false alarm that INSTRUCTED the anti-pattern.** `dismiss_sessions(write_memento=True)` read john's *worktree* slot, declared his verified memento missing, and DM'd him — so he hand-wrote a headerless one 90 seconds before dying, bypassing `memento_io`. Exactly what `65cb99a` was committed to prevent.
+3. **`65cb99a` pushed** — bare `memento_io.py` invocations qualified in two workflow docs (Pocholo found the same shape in lupin's CLAUDE.md, where it made Cheech hand-write his memento); project CLAUDE.md compressed −332/+69; Rick's keypress ruling recorded that `not_approved` expires with a chase. **Backup executed.**
+4. **Both workers corrected themselves unprompted** — john reframed his own row from "1 of 2" to "4 of 5, and the common shape is a seat MID-BOOT"; maya killed her own "regression" framing with a control and made the scanner *code* (`0451e8d3`).
+5. **A timeout default is not an answer.** `[default used] yes` did not open the post-game D3 gate; Rick's keypress at 03:28Z did.
+
+→ Full retro: `io/post-games/2026.09.05-merged-is-not-loaded-post-game.md`
+
+---
+
+**Session 191 (2026-09-03 night, María 🌸 `4f98d12f`, post-self-respin)** — Rick's three-line row display shipped across all three panes, and seven instances of one defect shape found by three people in one night.
 
 1. **🔴 EVERY GUARD WE BUILT MEASURED LINE 1, SO LINE 3 SHIPPED UNUSABLE — AND WE REPORTED COMPLETION THROUGH OUR OWN BLIND SPOT.** Rick found it from a chair. It was **two defects**: a drifted `.task-list-table .task-col-detail { width: 1% }` aimed at a line-1 column that no longer exists, crushing the detail field so the icon painted inside the actions block (pane-scoped, so it spared the epic board) — **and** a missing click branch leaving the epic-board icon reaching no handler at all. Geometry perfect, nothing listening. → `2865455b`, guard extended to line 3 with four arms.
 2. **Rick was right three times out of three; our reading of him was wrong twice.** *Absent* and *off-screen* look identical from a chair. He also asked for the colour bar to be "carried over" to the epic board — it had never been on **row 1** there either, so the ask was really "it was never built."

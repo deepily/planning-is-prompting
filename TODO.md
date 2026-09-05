@@ -472,6 +472,18 @@ Last updated: 2026-09-03 (**Session 191** (María 🌸 `4f98d12f`) — Rick's th
 > - **The tutor is a cost tool, not a compliance tool** — three independent measurements now agree (79% fire rate · 4.0 delivered average · learning dies at re-spin). It cuts half of all DM words; it does not make the fleet comply.
 > - **⚠️ TODO.md horizon archive still owed** — 339 lines, Decisions Log reaching back to 07-19.
 
+> ### 🌸 **2026-09-05 (S192, María 🌸 `21979045`) — fleet wind-down: six rulings**
+> - **🔴 MERGED IS NOT LOADED.** Every live `cosa_voice_mcp` process predates the memento-slot fix `9e4538d2` (newest by 77 min; auto-reload off), so the fleet ran pre-fix code all night. **Until `:7999` is bounced, reap by hand-verifying the record in the MAIN checkout and passing `write_memento=False`.** Adopted fleet-wide with Mr Radio 🦉. The bounce is also the **precondition** for testing the reap path defect — not a follow-up to it. I did not fire it: three managers were mid-wrap-up.
+> - **Half 2 of `26f0cecf` — fail-CLOSED, direction MINE; TIMING stays the measurer's gate.** I ruled the direction, then read john's held-on-evidence amendment and amended myself two minutes later rather than force a reversal without the data its author had gated it on. Three conditions ride on it: cap-unknown must not render as over-cap · the refusal names the exception · a loudly-logged env escape hatch ships in the **same** change.
+> - **An un-run test is named as its own fact, never inside a pass.** *"Suite passed except one not run for time"* is two facts in one sentence. John discharged this unprompted on `9c3b817a` with the baseline failing set and the rule **compare the SET, not the count**.
+> - **A worker's commits rest LOCAL with sha + branch + worktree in the memento.** Lupin is not my lane to push. All three coordinates, because a bare sha moved under john once in one evening.
+> - **Test files are DO-NOT-TOUCH in a citation sweep** — editing one changes what the test *checks*; it does not fix a stale pointer.
+> - **A TIMEOUT DEFAULT IS NOT AN ANSWER.** `[default used] yes` did **not** open the post-game D3 gate; Rick's keypress at 03:28Z did. Precedent: row `e5f21fff`, where five ratified decisions carry a permanent provenance caveat because an unanswered question read as a ruling.
+> - **⚠️ PATTERN-WATCH, deliberately NOT graduated** (accumulate rule — two supports each, both inside ONE session): `prose-is-not-installed` (maya's scanner exclusion + my `65cb99a`) and `merged-is-not-loaded`.
+> - **🔴 STILL INVISIBLE, NOT MINE:** Rio's `bf4f65c3`, P1, `not_approved`, filed by a reaped seat — hidden from the default board. Left unadmitted rather than rule on another manager's orphan at wind-down. **Someone must admit or drop it.**
+> - **🔴 UNCHECKED AND SILENT IF WRONG:** whether `seed_memento` on re-spawn derives the same wrong tree as the reap did. A reap that cries wolf is loud; a re-spawn seeding from the wrong tree is not.
+> - Retro: `io/post-games/2026.09.05-merged-is-not-loaded-post-game.md`
+
 > ### 🌅 **2026-08-11 (S163, María 🌸 `350ac4c2`) — the tutor is GREENLIT** *(superseded by S164 above)*
 > - **🌅 FIRST THING — the DM tutor** (Rick, relayed by Mr Radio: *"let's return to this tomorrow first thing"*). ✅ **BUILT and green**: `DmTutorAgent` on `AgentBase`, fail-closed `rewrite_dm()`, 387/400 delivered, a 250+ word DM at 17% of its length, 99 tests at full branch coverage, gate 13,529 green. Record: `lupin/src/rnd/v0.2.0/2026.08.04-dm-verbosity-reduction/2026.08.11-dm-tutor-agent-implementation-record.md`.
 > - **⏸️ `9ca6e8a2` (lupin) is COMMITTED AND HELD** — 10 files, both plan docs. **The push is Rick's call and has not been given.** Do not push it on a relay.
