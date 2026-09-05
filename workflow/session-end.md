@@ -1484,15 +1484,131 @@ In all skip/fallback paths, **continue to Final Verification**. Step 6 is inform
 
 ---
 
+## 7) Delivery Collision Check (Day's Work, second half)
+
+**Purpose**: name the files where *somebody else's* undelivered work overlaps yours, at the
+one moment every seat is already stopped. §6 answers "what did I write". This answers
+**"is anyone else standing on it"** — and unlike §6, its answer is about other people's
+branches, not yours.
+
+**Why it lives HERE and not in a janitor, a dashboard or a merge gate** (row `d2dd3ee3`,
+2026-09-05): the fleet wrote the same gister fix four times in twenty-four hours, each
+author looking at a clean tree. The one delivery-chain surface that already existed —
+`disk-hygiene-report.sh` — was dead and silent for an unknown period and nobody noticed,
+*because it was a thing you had to remember to open*. A janitor beside the ritual would
+have been a second thing to ignore. This fires without being asked, on the channel §6
+already proves reaches the user.
+
+**When**: immediately after Step 6, before Final Verification.
+
+### MANDATE — Step 7 carries §6's three obligations
+
+1. **MUST FIRE** — including, and especially, when it finds nothing. "Scanned 192
+   branches, 0 collisions" and "scanned nothing" are different facts and only one of them
+   is safe to act on. A clean run that prints no denominator is indistinguishable from a
+   run that never happened.
+2. **MUST SURFACE** — the collision list lands in the closing `notify()`'s `abstract`,
+   beside §6's table. Terminal-only delivery means invisible delivery.
+3. **MUST SPEAK** — one line, stating the count, in the same 8-15 word shape §6 uses:
+   *"Three files carry undelivered work from other branches"* · *"No collisions across
+   192 branches"*.
+
+### 7.1) Preflight — INDEPENDENT of §6's diff scope
+
+🔴 **Do NOT reuse §6.1's preflight.** §6 skips when this branch has **no commits since
+merge-base**, which is correct for a LoC delta and wrong here: a collision is about
+*other* branches' undelivered edits to files you are standing on, and has nothing to do
+with whether **you** have committed yet. A seat with zero commits is precisely the seat
+that can still decide not to write the duplicate at all — which is what happened on
+`d2dd3ee3`, where the fourth copy of the gister fix was written before its author
+committed anything.
+
+```bash
+# The only precondition: a repo with branches to compare.
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "delivery-collision: skipped — not a git repo"; }
+```
+
+### 7.2) Run it — REPO-AGNOSTIC, and this file is not lupin's
+
+🔴 **THIS DOCUMENT IS THE CROSS-REPO RITUAL.** It runs in `planning-is-prompting`,
+`lupin-mobile`, and every other repo that installs the workflow — so a hardcoded
+`$LUPIN_ROOT` here would make Step 7 either silently do nothing or point at another
+repo's tree from inside yours. That is the wrong-tree family this very step exists to
+detect, committed by the step itself.
+
+Resolve the interpreter and the script **from the repo you are standing in**, and skip
+loudly when it is not installed there:
+
+```bash
+# The repo you are IN, never an inherited env var naming somebody else's checkout.
+repo_root="$( git rev-parse --show-toplevel )"
+scan="$repo_root/src/scripts/delivery-collision-scan.py"
+py="$repo_root/.venv/bin/python"; [ -x "$py" ] || py="$( command -v python3 )"
+
+if [ -f "$scan" ]; then
+    "$py" "$scan" --quiet
+else
+    echo "delivery-collision: skipped \u2014 no scan installed in $( basename "$repo_root" )"
+fi
+```
+
+⚠️ **THE SCAN CURRENTLY SHIPS IN LUPIN ONLY.** In every other repo the `else` branch
+fires and prints its line. That is the correct behaviour and not a gap to paper over:
+an absent tool must announce itself, exactly like the two skips in §7.3. Porting the scan
+to another repo is a separate piece of work, and until it happens those repos get an
+honest one-line "not installed" rather than a silent nothing.
+
+**Cost**: ~14s measured 2026-09-05 in lupin, across 192 branches / 9,105 candidate commits.
+Re-derive it in your own repo rather than quoting this figure — it scales with branch count.
+**Exit codes** — three, so two failure modes wanting opposite remedies never share one:
+`0` clean · `1` collisions found · `2` REFUSED, nothing scanned.
+
+⚠️ **`1` IS NOT A FAILURE AND MUST NOT BLOCK ANYTHING.** 222 collisions existed on the
+day this shipped. A step that fails the ritual on exit 1 fails for every seat on its
+first run and gets switched off — which is the not-installed failure the whole row is
+about. **Report and name. Never block.**
+
+⚠️ **`2` IS THE ONE THAT MEANS SOMETHING IS WRONG** — the scan could not see its
+population. Surface it as loudly as a collision, never as a clean run.
+
+### 7.3) Failure handling
+
+| Failure | Behavior |
+|---------|----------|
+| exit `0` | Report the denominator anyway: "scanned N branches, no collisions". |
+| exit `1` | List the contested files with the other branch names. **Non-blocking.** |
+| exit `2` | Surface "REFUSED — nothing was scanned" verbatim. **Never render as clean.** |
+| the scan is not installed in this repo | Print `delivery-collision: skipped — no scan installed in <repo>`. **Non-fatal**, and the expected case outside lupin. |
+| not a git repo, or `git rev-parse` fails | Print `delivery-collision: skipped — not a git repo`. **Non-fatal.** |
+| scan exceeds ~60s | Print `delivery-collision: skipped — scan exceeded budget`. **Non-fatal.** |
+
+🔴 **THE NEXT SKIP ANYONE ADDS TO THIS TABLE MUST PRINT A LINE.** That is the whole
+discipline of this step and it is written here, in the place someone would add one,
+rather than in a paragraph they will not re-read. §6.2.alt and §6.5 both skip
+*"silently"* — that idiom is house style two sections up and it is **forbidden here**. A
+silently-skipped collision report is the dead dashboard arriving through the back door
+of a surface that otherwise works, and it is exactly how `disk-hygiene-report.sh` came to
+print nothing at all for an unknown period.
+
+**Skip condition** (the only one): `--no-summary`. It silences Step 6 and Step 7
+together — **one flag, not two**. A seat that has opted out of the day's summary has
+opted out of both halves of it, and a second flag is a second thing to remember.
+
+In all skip/fallback paths, **continue to Final Verification**. Step 7 is informational;
+like Step 6 it must never block session-end.
+
+---
+
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
 
-### Step-6 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
+### Step-6 and Step-7 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
 
 Before sending the final close-out notification, audit:
 
 - [ ] **Did Step 6 fire?** — unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line, Step 6 MUST have run. Silent omission is a violation.
+- [ ] **Did Step 7 fire, INCLUDING on a clean run?** — the delivery-collision check reports its denominator whether or not it found anything. A closing notification with no collision line at all means either the step was skipped silently (a violation) or the scan refused and that was rendered as clean (worse). Only `--no-summary`, which silences Steps 6 and 7 together, or an explicit printed skip line, excuses its absence.
 - [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
 - [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
 - [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
