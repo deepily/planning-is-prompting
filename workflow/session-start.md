@@ -896,6 +896,109 @@ This prevents accidentally committing the session manifest.
 
 ---
 
+## Step 3.6: Seat Staleness Check (before you read one line of source)
+
+**Purpose**: find out whether the tree you were placed in is behind the branch the fleet
+merges into — **and whether that behind-ness touches anything you are about to work on** —
+at the one moment the answer is still cheap to act on.
+
+**Why HERE and not at session end** (row `d2dd3ee3`, 2026-09-05). A stale tree is a
+*premise*, not a result. At session start the remedy is one fast-forward and costs nothing.
+At session end the work is already written against the wrong source, and the same finding
+buys you a rebase, a re-review, or the discovery that somebody else wrote your fix while
+you were writing it. **The end of the ritual is where you learn it was too late.**
+
+🔴 **THIS IS NOT A DUPLICATE OF SESSION-END §7, AND THE TWO MUST NOT BE COPIED INTO EACH
+OTHER.** They ask different questions of different populations:
+
+| | §7, session END | **Step 3.6, session START** |
+|---|---|---|
+| asks | is anyone else standing on the files **I** touched? | is **my own tree** behind, on files I am about to touch? |
+| population | other branches' undelivered commits | the delivery target's commits **my tree lacks** |
+| when it helps | before you strand work | **before you write it against the wrong source** |
+
+⚠️ **THE SEAT DID NOT CHOOSE ITS TREE.** A spawn places you, and nothing in the placement
+promises the tree is current. Two receipts from one seat on one day: a census found **7 of 8
+live-occupied worktrees behind the working branch**, its own among them; and that same seat
+came back from a context clear **30 commits behind**, having written the census three hours
+earlier. **Nothing warned it either time.** On that evidence a stale seat is the default,
+not the exception — which is exactly why this cannot be left to "check if you suspect it."
+
+**When**: immediately after Step 3.5, before Step 4 loads history. You have a repo and a
+manifest by now, and you have not yet read a source file.
+
+### MANDATE — three obligations, and the first one is the unusual one
+
+1. 🔴 **ASSERT THE CONTROL EXISTS BEFORE YOU REPORT WHAT IT FOUND.** Say out loud whether a
+   scan is installed in *this* repo **before** any sentence about staleness. A missing
+   scanner and a clean tree produce the same silence, and the flattering reading of silence
+   is "nothing is wrong." State which one you are in, in that order — control, then finding.
+2. **MUST FIRE, including when it finds nothing.** "10 occupied trees, 0 overlapping" and
+   "nothing was scanned" are different facts and only one is safe to build on.
+3. **MUST REACH THE USER** — the finding goes in Step 6's context presentation, not only
+   into the terminal. Terminal-only delivery means invisible delivery.
+
+### 3.6.1) Preflight — repo-agnostic, and this file is not lupin's
+
+🔴 **THIS DOCUMENT IS THE CROSS-REPO RITUAL.** It runs in `planning-is-prompting`,
+`lupin-mobile`, and every other repo that installs the workflow, so a hardcoded
+`$LUPIN_ROOT` would make this step either do nothing or **point at another repo's tree from
+inside yours** — the wrong-tree family the step exists to detect, committed by the step
+itself. Resolve everything from the repo you are standing in.
+
+```bash
+REPO="$( git rev-parse --show-toplevel 2>/dev/null )" || REPO=""
+[ -n "$REPO" ] || echo "seat-staleness: skipped — not a git repo"
+```
+
+### 3.6.2) Assert the control, THEN run it
+
+```bash
+SCAN="$REPO/src/scripts/stale-seat-scan.py"
+PY="$REPO/.venv/bin/python"; [ -x "$PY" ] || PY="$( command -v python3 )"
+
+if [ ! -f "$SCAN" ]; then
+    # NOT a clean result. Say so in these words, or the next reader hears "up to date".
+    echo "seat-staleness: NO SCAN INSTALLED in $( basename "$REPO" ) — this tree was NOT checked"
+else
+    "$PY" "$SCAN" --mine "$REPO"; echo "seat-staleness exit: $?"
+fi
+```
+
+**Read the exit code, never the absence of output:**
+
+| exit | meaning | what to do |
+|---|---|---|
+| **0** | scanned; your tree carries no overlap | proceed |
+| **1** | **your tree is behind ON A FILE YOU HAVE TOUCHED** | see 3.6.3 |
+| **2** | **REFUSED — nothing was scanned** | say so; do NOT record a clean start |
+
+⚠️ `--mine "$REPO"` narrows **exit 1** to *your* tree; other seats' hits still print, and
+they are worth reading — they name who else is standing where you are about to work.
+
+### 3.6.3) On a hit — the remedy is a sentence, not a project
+
+A hit means the delivery target moved a file you have dirty or committed-and-undelivered.
+
+1. **Read the other version before you finish yours.** That is the whole point: the four
+   engineers who wrote the same fix in one day each had a clean tree and no reason to look.
+2. **Fast-forward if you can** — `git merge --ff-only <target>`. A tree with local commits
+   may refuse, and that refusal is information, not an obstacle to route around.
+3. **Never fast-forward somebody else's tree.** Another seat's hit is theirs to act on; DM
+   them. A tree being edited while it moves under its occupant is the defect, not the fix.
+
+⚠️ **BEHIND IS NOT HARMED, AND AN OVERLAP IS EXPOSURE, NOT DAMAGE.** Two parties touching
+one file is not a wrong result. Say "exposure" when you report it — a step that announces
+damage it has not measured is the cry-wolf instrument that gets switched off in a week.
+
+### 3.6.4) Cost, and why it is not optional on that ground
+
+~15 seconds, measured 2026-09-05 across 191 worktrees. It is the cheapest step in this
+document and the only one whose finding expires: every minute you work makes the same
+finding more expensive to act on.
+
+---
+
 ## Step 4: Load Session History
 
 **Purpose**: Read recent session history to understand project state, progress, and context
