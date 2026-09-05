@@ -74,7 +74,7 @@ def _mirror_home_stays_in_the_test_tree( tmp_path, monkeypatch ):
 
 
 @pytest.fixture
-def trees( tmp_path ):
+def trees( tmp_path, monkeypatch ):
     """
     Ensures:
         - returns ( main_checkout, linked_worktree ), both real git working trees
@@ -82,7 +82,11 @@ def trees( tmp_path ):
           asserted rather than assumed — the precondition of the whole defect
         - the repo basename is UNIQUE to this test, so the shared mirror home cannot confound
           the result with another suite's leavings
+        - the tmp base is PINNED into tmp_path, so no case reads the operator's real
+          /tmp/mementos and the expected path is a value this test WROTE rather than one
+          derived from the helper under test
     """
+    monkeypatch.setenv( "LUPIN_MEMENTO_DIR", str( tmp_path / "tmpbase" ) )
     main = tmp_path / "oosrepo"
     seat = tmp_path / "oosseat"
     main.mkdir()
@@ -163,7 +167,7 @@ def test_a_genuine_orphan_is_still_reported( trees ):
     )
 
 
-def test_the_tmp_base_is_stated_explicitly_even_when_empty( trees ):
+def test_the_tmp_base_is_stated_explicitly_even_when_empty( trees, tmp_path ):
     """
     MARÍA'S WIDENING: `tmp` must be handled EXPLICITLY, not merely missed.
 
@@ -178,6 +182,20 @@ def test_the_tmp_base_is_stated_explicitly_even_when_empty( trees ):
     assert "tmp record(s)" in out, f"verify never mentions the tmp base:\n{out}"
     assert "searched:" in out, (
         f"the out-of-scope line does not name the space it covered:\n{out}"
+    )
+
+    # 🔴 THE ASSERTION THAT MAKES THIS TEST ABOUT ITS OWN NAME (Krishna 🦚, review of 8c69eef).
+    # The two assertions above are satisfied by LABELS. Delete the `{tmp_base}` interpolation
+    # from verify's `searched` line and both still pass — measured, it SURVIVED — so a test
+    # called "the tmp base is stated EXPLICITLY" could not see the base go unstated. Naming the
+    # POPULATION is not naming the SPACE, which is this file's own defect one level down.
+    #
+    # The expected value is pinned by the fixture's monkeypatch, NOT read back from
+    # tmp_memento_base(): two sides derived from one source agree by construction and cannot
+    # disagree. This one can.
+    expected_base = tmp_path / "tmpbase" / main.name
+    assert str( expected_base ) in out, (
+        f"the scope line names no tmp PATH — it could be searching anywhere, or nowhere:\n{out}"
     )
 
 
