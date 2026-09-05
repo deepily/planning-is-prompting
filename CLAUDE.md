@@ -1,21 +1,17 @@
 # CLAUDE.md
 
 > ## 🛑 BREVITY MANDATE — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
-> **Verbosity is a defect, not a style.** Three lines or less (headline + two supporting sentences). **A line is one sentence that makes a claim** — tables, headings, code blocks and **file paths are free**. When the detail lives somewhere, send the path instead of the detail — a pointer, not a fourth sentence. **Verdict first, evidence second, stop.** No narrating your plan, no restating the request, no preambles, no peer-praise paragraphs.
-> **GO LONGER ONLY WHEN ASKED** — the reader holds that discretion, not you.
-> Detail → the `abstract` card. Tables and code are content, not prose.
-> **The glyph palette** — 😘 = this entire mandate in one character · **🏆** = that was right, do more of that (ack **🙏🏼**) · **📷** = document and checkpoint your work · **☕** = coffee break's over, drive your board (the Riot Act → `/plan-push`) · **🫡** = the ack for 😘, 📷, and ☕. 😘 alone needs no explanation; never ask what it refers to. **☕ is the one whose 🫡 does not discharge it** — salute, then deliver the receipts.
-> Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+> **Verdict first, evidence second, stop.** Full mandate + the glyph palette (😘 🏆 📷 ☕ 🫡): `~/.claude/CLAUDE.md` § BREVITY MANDATE. Canonical rationale and receipts: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview
 
-**Short Prefix**: `[PLAN]` - Use this prefix in all TODO items and notifications for this project.
+**Short Prefix**: `[PLAN]` — use this in all TODO items and notifications for this project.
 
-This is a meta-repository for Claude Code workflow templates and configuration strategies — documentation, workflow templates, and prompts designed to be referenced by or copied into other projects.
+A meta-repository for Claude Code workflow templates and configuration strategies — documentation, workflow templates, and prompts designed to be referenced by or copied into other projects.
 
-⚠️ **CORRECTED 2026-08-28.** This paragraph used to end *"It contains no executable code."* That has not been true for some time: **`workflow/scripts/` holds 25 files — Python plus shell — of which 13 are tests.** They are not incidental; they exist because a rule that depends on remembering is not installed, so several workflows now ship the mechanism that enforces them (the context-pressure crontab, the memento write guard, the worktree orphan scan, the command-drift check). Treat `workflow/scripts/` as real code: it has tests, run them.
+⚠️ **CORRECTED 2026-08-28.** This used to end *"It contains no executable code."* Not true for some time: **`workflow/scripts/` holds 25 files — Python plus shell — of which 13 are tests.** Several workflows now ship the mechanism that enforces them (the context-pressure crontab, the memento write guard, the worktree orphan scan, the command-drift check), because a rule that depends on remembering is not installed. **Treat `workflow/scripts/` as real code: it has tests, run them.**
 
 ## Repository Structure
 
@@ -27,363 +23,89 @@ planning-is-prompting/
 │   └── skill-templates/   # Agent Skill reference templates
 ├── .claude/
 │   ├── commands/          # Slash command wrappers (41) — thin, they reference workflow/
-│   └── skills/            # Agent Skills (5) — brevity-mandate, push-to-completion, post-game, …
+│   └── skills/            # Agent Skills (5)
 ├── src/rnd/               # Research + planning docs, `yyyy.mm.dd-slug.md`
-├── docs/explainer/        # Long-form explainers written for readers outside the fleet
+├── docs/explainer/        # Long-form explainers for readers outside the fleet
 ├── global/                # Snapshot of ~/.claude/CLAUDE.md (reference template)
-├── history/               # Archived session history
-├── todo-archive/          # Archived TODO recuts
+├── history/ · todo-archive/   # Archived session history / TODO recuts
 ├── io/                    # Runtime artifacts (mementos, post-games, LoC deltas) — gitignored
-├── history.md             # Active session history (rolling window)
-├── TODO.md                # Decisions Log + pending decisions + backlog
-└── README.md              # Repository overview — the full per-file catalog lives here
+├── history.md · TODO.md · README.md
 ```
 
-> **This tree names DIRECTORIES, not every file, on purpose.** It used to enumerate ~19 of the
-> 55 workflow docs and one entry — `commit-management.md` — had been deleted in Session 42
-> (`5aaae5d`) while four live docs plus this tree went on citing it. A hand-maintained file list
-> on an entry page rots silently, which is the same defect `test_workflow_doc_coverage_claims.py`
-> guards against in prose. **The per-file catalog is `README.md`; the command list is
-> `workflow/MANIFEST.json`, regenerated by `workflow/scripts/pip_manifest.py`.**
+> **This tree names DIRECTORIES, not every file, on purpose.** It used to enumerate ~19 of the 55 workflow docs, and one entry — `commit-management.md` — had been deleted in Session 42 while four live docs plus this tree went on citing it. **A hand-maintained file list on an entry page rots silently.** The per-file catalog is `README.md`; the command list is `workflow/MANIFEST.json`, regenerated by `workflow/scripts/pip_manifest.py`.
 
 ## Core Architectural Patterns
 
-### 1. Canonical Workflow Documents
+**1. Canonical workflow documents.** Files in `workflow/` are canonical references — cited by path from other repos ("See planning-is-prompting → workflow/history-management.md"), copied into project slash commands, used as templates. **DO NOT** add implementation-specific code to them; keep them portable.
 
-Workflow files in `workflow/` are **canonical references** - they are designed to be:
-- Referenced by path from other repos (e.g., "See planning-is-prompting → workflow/history-management.md")
-- Copied into project-specific slash commands or documentation
-- Used as templates for new project configurations
+**2. Two-tier configuration.** `claude-config-global.md` → `~/.claude/CLAUDE.md` (user defaults); `claude-config-local.md` → `<project>/.claude/CLAUDE.md` (project overrides). Local configs define `[SHORT_PROJECT_PREFIX]` and *reference* global workflows rather than duplicating them.
 
-**DO NOT** add implementation-specific code to these files. Keep them portable and generalizable.
+**3. Session history.** `history.md` uses adaptive archival — ~30-day rolling window, archive before the 25k-token limit, velocity forecasting. Date format `yyyy.mm.dd`, reverse chronological, status summary at top, accomplishments only (not TODOs). Algorithm: `workflow/history-management.md`.
 
-### 2. Two-Tier Configuration System
-
-- **Global config** (`claude-config-global.md`): User-level defaults, installed at `~/.claude/CLAUDE.md`
-- **Local config** (`claude-config-local.md`): Project-specific overrides, installed at `<project>/.claude/CLAUDE.md`
-
-Local configs should define the `[SHORT_PROJECT_PREFIX]` and reference global workflows rather than duplicating them.
-
-### 3. Session History Management
-
-The `history.md` file uses an **adaptive archival strategy**:
-- Maintains ~30-day rolling window of recent sessions
-- Archives older content when approaching 25k token limit
-- Uses velocity forecasting to predict breach dates
-- See planning-is-prompting → workflow/history-management.md for complete algorithm
-
-**Key conventions**:
-- Date format: `yyyy.mm.dd`
-- Reverse chronological order (newest sessions at top)
-- Status summary at top of file (3 lines)
-- Session accomplishments documented (NOT TODO items - see TODO.md)
-
-### 4. Notification Integration
-
-All workflow steps use cosa-voice MCP tools (v0.3.0):
-```python
-# Fire-and-forget (progress updates, completions)
-notify( "Message", notification_type="progress", priority="medium" )
-
-# Response-required (approvals, decisions)
-ask_yes_no( "Proceed with changes?", default="no", timeout_seconds=300 )
-ask_multiple_choice( questions=[...] )  # AskUserQuestion-compatible format
-ask_open_ended_batch( questions=[...] )  # Batch open-ended questions (single screen)
-converse( "Which approach?", response_type="open_ended", timeout_seconds=600 )
-```
-
-**Key Features**:
-- Project auto-detected from working directory (no [PLAN] prefix needed)
-- No --target-user parameter (handled internally)
-
-Priority levels:
-- `urgent`: Blockers, errors, time-sensitive
-- `high`: Approval requests, important status
-- `medium`: Progress milestones
-- `low`: Task completions, informational
-
-**See**: planning-is-prompting → workflow/cosa-voice-integration.md
+**4. Notification integration.** All workflow steps use the cosa-voice MCP tools; project is auto-detected from the working directory. Priorities: `urgent` blockers/errors · `high` approvals · `medium` milestones · `low` completions. See `workflow/cosa-voice-integration.md`.
 
 ## Planning is Prompting Workflows
 
-**This repository uses its own workflows for self-management** (dogfooding).
+**This repository dogfoods its own workflows.** Entry point: `workflow/p-is-p-00-start-here.md`. Commands: `/p-is-p-00-start-here` (decision matrix) · `/p-is-p-01-planning` (classify → pattern → breakdown) · `/p-is-p-02-documentation`.
 
-**Entry Point**: planning-is-prompting → workflow/p-is-p-00-start-here.md
-
-**Slash Commands** (available in this repo):
-- `/p-is-p-00-start-here` - Entry point with decision matrix and philosophy
-- `/p-is-p-01-planning` - Work planning workflow (classify → pattern → breakdown)
-- `/p-is-p-02-documentation` - Implementation documentation (for meta-repo work)
-
-**Project Prefix**: `[PLAN]`
-
-### When to Use Which Workflow
-
-**Small changes** (updating templates, fixing typos, adding examples):
-- Skip Planning is Prompting workflows
-- Use `/plan-session-start` and `/plan-session-end` only
-- Track in history.md
-
-**Medium work** (creating new workflow document, major template updates):
-- Use `/p-is-p-01-planning`
-- Pattern 3 (Feature Development) or Pattern 2 (Research)
-- Track in history.md
-- No need for `/p-is-p-02-documentation`
-
-**Large work** (major repository restructuring, multiple workflow creation):
-- Use `/p-is-p-01-planning` → Likely Pattern 1 (Multi-Phase)
-- Then `/p-is-p-02-documentation` to create structure
-- Track in dedicated implementation docs (src/rnd/)
-- Archive completed phases
-
-**Example: This session**:
-- Work type: Create p-is-p workflows and naming system
-- Pattern: Pattern 3 (Feature Development - well-scoped, 1-2 hours)
-- Workflow used: History.md only (no dedicated docs needed)
-- Todo tracking: TodoWrite with [PLAN] prefix
+| Work size | Use |
+|---|---|
+| **Small** (templates, typos, examples) | skip the p-is-p workflows; `/plan-session-start` + `/plan-session-end`, track in history.md |
+| **Medium** (new workflow doc, major template update) | `/p-is-p-01-planning` → Pattern 3 or 2; track in history.md |
+| **Large** (restructuring, multiple new workflows) | `/p-is-p-01-planning` → Pattern 1, then `/p-is-p-02-documentation`; track in `src/rnd/` |
 
 ## Common Workflows
 
-### Starting a Session
+**Starting a session**: read `history.md`, then `TODO.md`, then any relevant workflow docs.
 
-1. Read `history.md` to understand current project status
-2. Read `TODO.md` to review pending items from previous sessions
-3. Reference relevant workflow documents as needed
+**Ending a session**: follow `workflow/session-end.md` — health-check history.md, update history (accomplishments only), update TODO.md, update planning docs, summarize uncommitted changes, propose a commit message, commit after approval, notify at each step.
 
-### Ending a Session
+**Managing TODO.md**: read at session-start, update at session-end, or `/plan-todo`. See `workflow/todo-management.md`.
 
-Follow the workflow in planning-is-prompting → workflow/session-end.md:
-1. Health check history.md (archive if needed)
-2. Update session history (accomplishments only, NOT TODOs)
-3. Update TODO.md with new items and mark completions
-4. Update planning documents
-5. Summarize uncommitted changes
-6. Propose commit message
-7. Commit changes (after approval)
-8. Send notifications at each step
+**Modifying workflow templates**: keep them portable (no hardcoded project paths), update the version history at the bottom, test in at least one consuming project, update `README.md` if adding a file.
 
-### Managing TODO.md
+**Adding a new workflow**: `workflow/<topic>-<action>.md`, follow the Purpose → When to use → Content structure, add a README entry, include examples and integration points.
 
-This project uses a persistent `TODO.md` file for tracking pending work:
+**Installing in other projects**: `/plan-install-wizard`, or share `workflow/INSTALLATION-GUIDE.md`.
 
-- **At session start**: Read TODO.md, review pending items
-- **At session end**: Add new items, mark completions, update timestamp
-- **Via slash command**: `/plan-todo` for quick operations
+## Feature Workflows
 
-**Canonical Workflow**: See workflow/todo-management.md for complete documentation.
+Each has a canonical doc in `workflow/` and a usage section in `INSTALLATION-GUIDE.md`.
 
-**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
-
-### Modifying Workflow Templates
-
-When updating workflow documents:
-1. Maintain portability (avoid project-specific hardcoded paths)
-2. Update version history at bottom of document
-3. Test changes in at least one consuming project
-4. Update README.md if adding new workflow files
-
-### Installing Workflows in Other Projects
-
-Use the interactive installation wizard:
-1. Share INSTALLATION-GUIDE.md in target project, or
-2. Use `/plan-install-wizard` (if installed)
-
-The wizard will:
-- Detect existing workflows (clean vs. partial vs. complete installation)
-- Present catalog of available workflows
-- Guide configuration collection ([PREFIX], paths, etc.)
-- Install and validate selected workflows
-- Optionally install `/plan-install-wizard` for future use
-
-**See**: planning-is-prompting → workflow/INSTALLATION-GUIDE.md
+| Area | Commands | Canonical |
+|---|---|---|
+| **Testing** — for this doc-only repo, "testing" means validating documentation structure (files exist, cross-references resolve) | `/plan-test-baseline` · `/plan-test-remediation` · `/plan-test-harness-update` | `workflow/testing-{baseline,remediation,harness-update}.md` |
+| **Skills management** — discover, create, edit, audit, delete Agent Skills. Progressive disclosure, agentskills.io compliance, <500-line SKILL.md, trigger-rich descriptions. Skills live in target repos at `.claude/skills/`, not here | `/plan-skills-management <mode>` | `workflow/skills-management.md` + `workflow/skill-templates/` |
+| **Bug fix mode** — iterative fixing with atomic per-bug commits and history tracking across context clears. Queue v2.0 supports parallel sessions: an Active Sessions table, bugs claimed with `Owner:` tags, completions attributed with `By:`. Creates `bug-fix-queue.md` in the project root | `/plan-bug-fix-mode {start,continue,close}` | `workflow/bug-fix-mode.md` |
+| **Branch PR and merge** — 12 steps: doc surface check → branch audit → tests → PR generation → merge → sync → cleanup → release tag → next dev branch | `/plan-branch-pr-and-merge` | `workflow/branch-pr-and-merge.md` |
 
 ## Development Guidelines
 
-### Editing Workflow Templates
+**Editing workflow templates**: keep them generalizable — use placeholders (`[PROJECT]`, `[SHORT_PROJECT_PREFIX]`, `/path/to/project/`). Include **Purpose**, **When to use**, **Key activities** at the top. Add examples. Version significant changes with a date and change summary.
 
-- Keep templates **generalizable** - use placeholders like `[PROJECT]`, `[SHORT_PROJECT_PREFIX]`, `/path/to/project/`
-- Include **Purpose**, **When to use**, and **Key activities** sections at top
-- Add examples demonstrating usage patterns
-- Version significant changes (include date and change summary)
-
-### Adding New Workflows
-
-1. Create new file in `workflow/` directory
-2. Use naming pattern: `<topic>-<action>.md` (e.g., `testing-strategy.md`)
-3. Add reference to README.md with brief description
-4. Follow existing template structure (Purpose → When to use → Content)
-5. Include examples and integration points with other workflows
-
-### History Management
-
-- **Never** let `history.md` exceed 25k tokens
-- Run health check before adding large session summaries
-- Archive proactively when forecast shows breach <7 days
-- Use milestone markers (`✅ COMPLETE`, `🎯 ACHIEVEMENT`) to guide split points
+**History management**: never let `history.md` exceed 25k tokens; health-check before adding a large session summary; archive proactively when the forecast shows a breach within 7 days; use milestone markers (`✅ COMPLETE`, `🎯 ACHIEVEMENT`) to guide split points.
 
 ## File Naming Conventions
 
-- Research/planning documents: `yyyy.mm.dd-description.md`
-- Archive files: `YYYY-MM-DD-to-DD-history.md` (partial month) or `YYYY-MM-history.md` (complete month)
-- Workflow templates: `topic-name.md` (lowercase with hyphens)
+- Research/planning: `yyyy.mm.dd-description.md`
+- Archives: `YYYY-MM-DD-to-DD-history.md` (partial month) or `YYYY-MM-history.md` (complete)
+- Workflow templates: `topic-name.md` (lowercase, hyphens)
 
 ## Integration with Other Projects
 
-When referencing this repository from other projects:
-
-**In global CLAUDE.md**:
-```markdown
-See planning-is-prompting → workflow/history-management.md
-```
-
-**In project-specific CLAUDE.md**:
-```markdown
-**Session-End Workflow**: See planning-is-prompting → workflow/session-end.md
-**History Management**: See planning-is-prompting → workflow/history-management.md
-```
-
-**In slash commands** (e.g., `/history-management`):
-```markdown
-Read the canonical workflow from planning-is-prompting → workflow/history-management.md
-Then execute based on the mode parameter...
-```
-
-**In project documentation**:
-```markdown
-This project follows the session-end ritual defined in planning-is-prompting → workflow/session-end.md
-```
-
-## Testing Workflows
-
-**New in this repository**: Testing workflow abstractions for baseline collection, post-change remediation, and test harness maintenance.
-
-**Available Commands**:
-- `/plan-test-baseline` - Establish pre-change baseline (documentation validation for this repo)
-- `/plan-test-remediation` - Post-change verification (documentation structure validation)
-- `/plan-test-harness-update` - Analyze documentation changes and identify missing cross-references
-
-**Canonical Workflows**:
-- planning-is-prompting → workflow/testing-baseline.md
-- planning-is-prompting → workflow/testing-remediation.md
-- planning-is-prompting → workflow/testing-harness-update.md
-
-**Note**: For this documentation-only repository, "testing" means validating documentation structure (all workflow files exist, cross-references work, etc.). For code projects, these workflows run actual test suites (smoke, unit, integration).
-
-**See**: [Testing Workflows](workflow/INSTALLATION-GUIDE.md#testing-workflows) in installation guide for complete usage documentation.
-
-## Skills Management
-
-**Purpose**: Ongoing Agent Skills lifecycle management - discovery, creation, editing, auditing, and deletion of skills across repositories.
-
-**Entry Points**:
-- `/plan-skills-management discover` - Find documentation candidates for skill conversion
-- `/plan-skills-management create` - Build new skill from documentation
-- `/plan-skills-management edit` - Update existing skill
-- `/plan-skills-management audit` - Check skills health against documentation
-- `/plan-skills-management delete` - Remove obsolete skill
-
-**Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
-
-**Key Features**:
-- Progressive disclosure pattern (metadata → instructions → references)
-- agentskills.io specification compliance
-- Token-aware skill design (<500 lines per SKILL.md)
-- Intent-based activation via trigger-rich descriptions
-- Skill templates for common patterns (testing, API, generic)
-
-**Skill Templates**:
-- `workflow/skill-templates/testing-skill-template.md` - Testing patterns template
-- `workflow/skill-templates/api-skill-template.md` - API conventions template
-- `workflow/skill-templates/generic-skill-template.md` - Minimal starting template
-
-**Skills Location**: Skills live in target repos at `.claude/skills/`, not in planning-is-prompting.
-
-**See**: [Skills Management](workflow/INSTALLATION-GUIDE.md#skills-management-workflow) in installation guide for complete usage documentation.
-
-## Bug Fix Mode
-
-**Purpose**: Iterative bug fixing with incremental commits and history tracking across context clears.
-
-**Entry Points**:
-- `/plan-bug-fix-mode start` - Initialize new bug fix session
-- `/plan-bug-fix-mode continue` - Resume after context clear
-- `/plan-bug-fix-mode close` - End bug fix session for the day
-
-**Canonical Workflow**: planning-is-prompting → workflow/bug-fix-mode.md
-
-**Key Features**:
-- Atomic commits per bug (only bug-related files staged)
-- **Parallel session support** via v2.0 queue format with Active Sessions table
-- Per-bug ownership: bugs are claimed (Queued → In Progress) with Owner tags
-- `bug-fix-queue.md` tracks queued, in-progress, and completed bugs with attribution
-- `history.md` provides persistent memory across context clears
-- GitHub integration (fetch issues, auto-close with `Fixes #N`)
-
-**Queue Format (v2.0)**:
-- Active Sessions table tracks multiple concurrent sessions
-- Queued bugs are available for any session to claim
-- In Progress bugs have `| Owner: [session_id]` tags
-- Completed bugs have `| By: [session_id]` attribution
-- Backward compatible: v1.0 queues auto-migrate to v2.0
-
-**Runtime Artifacts**:
-- `bug-fix-queue.md` - Created in project root when bug fix mode starts
-
-**See**: [Bug Fix Mode](workflow/INSTALLATION-GUIDE.md#bug-fix-mode-workflow) in installation guide for complete usage documentation.
-
-## Branch PR and Merge
-
-**Purpose**: Complete feature branches, create pull requests, and transition to the next development branch.
-
-**Entry Point**: `/plan-branch-pr-and-merge`
-
-**Canonical Workflow**: planning-is-prompting → workflow/branch-pr-and-merge.md
-
-**Key Features**:
-- Documentation surface check (README validation against history.md, TODO.md)
-- Branch state audit with uncommitted changes handling
-- Test suite verification (smoke + unit required, integration optional)
-- PR description auto-generation from git log and history.md
-- GitHub CLI integration for PR creation
-- Post-merge sync and branch cleanup
-- Release tagging with version extraction from branch name
-- Next development branch creation with version increment
-
-**Workflow Steps** (12 total):
-1. Documentation surface check (README vs history.md/TODO.md)
-2. Branch state audit
-3. Test verification
-4. Outstanding work review
-5. PR description generation
-6. Create pull request
-7. Push branch (if needed)
-8. Wait for PR merge
-9. Post-merge sync
-10. Branch cleanup
-11. Release tagging (optional)
-12. Create next development branch
-
-**See**: [Branch PR and Merge](workflow/INSTALLATION-GUIDE.md#branch-pr-and-merge-workflow) in installation guide for complete usage documentation.
-
-## References
-
-- **Repository**: Meta-knowledge base for Claude Code workflow patterns
-- **Primary Use**: Template source and canonical workflow reference
-- **Related Projects**: All projects using Claude Code should reference these workflows
+Cite this repo by path, never by copying content: `See planning-is-prompting → workflow/history-management.md`. Use the same form in a consuming project's `CLAUDE.md`, in slash commands ("Read the canonical workflow from planning-is-prompting → workflow/<name>.md, then execute based on the mode parameter"), and in project documentation.
 
 ## Doc Viewer Scope
 
-When sending document viewer links from this repo, use:
+When sending document viewer links from this repo:
 
 - **Scope name**: `planning-is-prompting` (first path segment of the URL)
 - **URL form** (canonical, post-2026.05.15 unification): `/app/docs?path=<scope>/<rel>` — the legacy `?scope=` query param is **ignored**
 - **Allowed prefixes**: `src/`, `workflow/`, `docs/` (per Lupin INI § `external repos`)
 - **Allowed root files** (per `.docview.yml` at repo root): `README.md`, `CHANGELOG.md`, `TODO.md`, `history.md`, `CLAUDE.md`, `bug-fix-queue.md`
-- **Manifest source of truth**: `.docview.yml` at this repo's root (overrides INI prefixes when present per Q2-C semantics; loaded at lupin-rest-dev startup, requires bounce after edits)
-- **Runtime discovery**: inspect the `doc_scope` field returned by `mcp__cosa-voice__get_session_info()`
+- **Manifest source of truth**: `.docview.yml` at this repo's root (overrides INI prefixes when present; loaded at lupin-rest-dev startup, requires a bounce after edits)
+- **Runtime discovery**: the `doc_scope` field returned by `get_session_info()`
 
-**Examples**:
-- Prefix-rooted: `/app/docs?path=planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
-- Root-file: `/app/docs?path=planning-is-prompting/TODO.md`
+**Examples**: `/app/docs?path=planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` · `/app/docs?path=planning-is-prompting/TODO.md`
 
-**If a link 404s**: confirm (a) the path uses the `<scope>/<rel>` form, (b) the file's path matches one of the allowed prefixes OR is enumerated in `.docview.yml` `allowed_root_files`, (c) `.docview.yml` has been picked up by a lupin-rest-dev restart since the last edit. Design background: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`.
+**If a link 404s**: confirm (a) the path uses the `<scope>/<rel>` form, (b) the file matches an allowed prefix OR is enumerated in `.docview.yml` `allowed_root_files`, (c) `.docview.yml` has been picked up by a lupin-rest-dev restart since the last edit.

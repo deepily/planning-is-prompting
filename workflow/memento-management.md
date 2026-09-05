@@ -452,9 +452,9 @@ When `spawn_sessions(seed_memento=<path>)` fires, the MCP **appends** the mement
 
 | Event | Action |
 |---|---|
-| Memento you are content to lose at the next reboot | `memento_io.py write --slot tmp` — writes outside the repo to `$LUPIN_MEMENTO_DIR \|\| /tmp/mementos/<repo>/`, boot-wiped, no mirror, no gitignore (§3.0b). The ephemeral default now that overnight carryover is not wanted |
-| Session about to `/clear` (durable record) | `memento_io.py write --slot root` with all 9 elements (§3.1) — **never a hand-`Write`** |
-| Worker told "prepare for re-spin" | Run the §0 3-beat sequence: safe checkpoint → `memento_io.py write --slot io` (§2, **element 9 included**) → ACK "ready for re-spin" |
+| Memento you are content to lose at the next reboot | `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write --slot tmp` — writes outside the repo to `$LUPIN_MEMENTO_DIR \|\| /tmp/mementos/<repo>/`, boot-wiped, no mirror, no gitignore (§3.0b). The ephemeral default now that overnight carryover is not wanted |
+| Session about to `/clear` (durable record) | `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write --slot root` with all 9 elements (§3.1) — **never a hand-`Write`** |
+| Worker told "prepare for re-spin" | Run the §0 3-beat sequence: safe checkpoint → `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write --slot io` (§2, **element 9 included**) → ACK "ready for re-spin" |
 | Worker reaped at **engagement teardown** | Element 9 (retro deposit) is **MANDATORY** — the Manager may not reap through an open harvest (`manager-autonomy.md` §6; `post-game.md` §3.5.2) |
 | Session post-`/clear` (rehydration) | Read the **pointer** (`.claude-memento-<persona-slug>.md` / `io/mementos/<persona-slug>.md`) — it carries the current record's full content; follow §7 |
 | Rehydration successful | **Do nothing.** The record is immutable and stays; the pointer is refreshed by the next write. **There is no archive step any more — that step was the bug.** |
