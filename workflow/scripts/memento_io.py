@@ -2201,7 +2201,15 @@ def cmd_adopt( args ):
     pointer_rel_path( args.slot, persona )
 
     rec_rel = record_rel_path( args.slot, persona, sid )
-    rec_abs = repo_root / rec_rel
+    # 🔴 seat_root THREADED, row 1d40b477. This line hardcoded `repo_root` while
+    # `current_pointer_record` below derives the same value from `seat_root` — TWO DERIVATIONS
+    # OF ONE VALUE. They coincide in the main checkout and DIVERGE in every linked worktree, so
+    # a root-slot adopt from a worktree looked in the MAIN checkout, where cd1c67d guarantees
+    # the record is not, and exited 1 with "no record to adopt" naming the wrong tree.
+    # ⇒ AND THE REFUSAL FIRED BEFORE THE BACKWARD-POINTER CHECK BELOW COULD RUN, so Rachel's
+    # Finding-3 regression guard (2026-07-21) was structurally UNREACHABLE in every worktree.
+    # Measured both directions: pre-fix a worktree adopt of an older record exits 1, not 10.
+    rec_abs = slot_base_dir( repo_root, args.slot, seat_root ) / rec_rel
 
     if not rec_abs.exists():
         print( f"REFUSED: no record to adopt — {rec_abs}", file=sys.stderr )
