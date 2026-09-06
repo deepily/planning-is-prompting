@@ -551,14 +551,21 @@ def test_edit_onto_an_existing_canonical_record_is_refused_too( tree, tool, monk
 # Found by coverage — the `else` branch computing `<toplevel>/<basename>` had never executed.
 
 def test_root_slot_record_at_the_toplevel_is_not_slot_denied( tree, monkeypatch, capsys ):
-    """A `.claude-memento-<persona>-<sid8>.md` directly at the git toplevel IS canonical."""
+    """A `.claude-memento-<persona>-<sid8>.md` directly at the git toplevel IS canonical.
+
+    SCOPE — ONE ROOT (row fa583462). `tree.root` is both the repo and the seat here, so this
+    arm cannot tell a guard that resolves the TARGET's own toplevel from one that resolves a
+    single fixed root. The divergent case is the worktree arm below."""
     target = tree.root / ".claude-memento-rachel-df2cc55d.md"
     assert_not_slot_denied( run_guard_cli( target ),
                             run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys ) )
 
 
 def test_root_slot_pointer_at_the_toplevel_is_allowed( tree, monkeypatch, capsys ):
-    """`.claude-memento.md` is the root-slot POINTER — rewritten on every write, always allowed."""
+    """`.claude-memento.md` is the root-slot POINTER — rewritten on every write, always allowed.
+
+    SCOPE — ONE ROOT (row fa583462). Always-allowed is a verdict that does not depend on which
+    root was resolved, so this arm is silent about resolution by construction."""
     target = tree.root / ".claude-memento.md"
     assert_allowed( run_guard_cli( target ),
                     run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys ) )
@@ -568,12 +575,44 @@ def test_root_slot_memento_in_a_subdirectory_is_refused( tree, monkeypatch, caps
     """
     The root-slot half of F5, which no AC asked for. `.claude-memento.md` in a SUBDIRECTORY is
     the same silent misdirect as the io-slot case: `resolve` never finds it, and nothing errors.
+
+    SCOPE — ONE ROOT (row fa583462). Subdirectory-vs-toplevel is a different axis from
+    worktree-vs-main-checkout; both roots in play here are the same tree.
     """
     canonical = str( tree.root / ".claude-memento.md" )
     assert_blocked( run_guard_cli( tree.subdir / ".claude-memento.md" ),
                     run_guard_inproc( tree.subdir / ".claude-memento.md",
                                       monkeypatch=monkeypatch, capsys=capsys ),
                     must_name=canonical )
+
+
+def test_root_slot_record_at_a_WORKTREE_toplevel_is_canonical_for_THAT_worktree( tree, monkeypatch, capsys ):
+    """
+    THE DIVERGENT-ROOTS ARM (row fa583462, María's ruling 2026-09-05).
+
+    AC 13 asks this question of the `io` slot and nothing asked it of `root`. Every other
+    root-slot arm above stands in `tree.root`, where the repo and the seat are ONE OBJECT — so
+    none of them can tell a guard that resolves the TARGET's own toplevel from one that
+    resolves a single fixed root, and the whole subject of F5 is which root it resolves.
+
+    THE FAILURE THIS WOULD BE. Memento canonicality splits by slot, and the split is the point:
+    `io` is a REPO question (`--git-common-dir`, so a worktree's io/mementos is NOT canonical —
+    that is `find_misdirected_mementos`' entire job) while `root` is a SEAT question (the record
+    must sit in the tree the seat stands in, or the seat cannot find it after a /clear; row
+    6c64d2f5). A guard that answered the repo question for BOTH would refuse every root-slot
+    write made from a worktree — which is where this crew's workers live, and the same outage
+    the five ALLOW rows in this file's header exist to prevent.
+
+    ⚠️ IT IS THE DIVERGENCE THAT DOES THE WORK, NOT THE WORKTREE. The assertion below that the
+    two roots differ is what stops this arm degrading into a second copy of the toplevel case
+    if the fixture is ever rebuilt.
+    """
+    assert tree.worktree.resolve() != tree.root.resolve(), \
+        "the fixture must supply two DIFFERENT roots, or this arm is a duplicate of the toplevel case"
+
+    target = tree.worktree / ".claude-memento-rachel-fa583462.md"
+    assert_not_slot_denied( run_guard_cli( target ),
+                            run_guard_inproc( target, monkeypatch=monkeypatch, capsys=capsys ) )
 
 
 # ---------------------------------------------------------------- cross-cutting hardening
