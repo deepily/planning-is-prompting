@@ -107,6 +107,11 @@ def test_record_path_varies_with_persona_on_root():
     The RECORD is per-persona on root (`memento_io.py:583`) even today. Pinning that here keeps
     the xfail below honest about its scope: the defect is the POINTER, not the record, and a
     reader who conflates the two will mis-price the fix.
+
+    DECLARED UNTESTED HERE — the root slot's BASE (row fa583462). `record_rel_path` returns a
+    REPO-RELATIVE name and never sees a root of any kind, so this arm says what the file is
+    called and nothing whatever about which tree it lands in. Both halves must be right for a
+    seat to find its own record; only the first is under test on this line.
     """
     paths = { mio.record_rel_path( "root", p, "deadbeef" ) for p in PERSONAS }
     assert len( paths ) == len( PERSONAS )
@@ -128,6 +133,13 @@ def test_record_path_varies_with_persona_on_root():
 
 
 def test_root_pointer_path_should_vary_with_persona():
+    """
+    DECLARED UNTESTED HERE — the root slot's BASE (row fa583462). This is the file's headline
+    claim and the one most likely to be read as "the root slot is covered". It is not: like the
+    record arm above, it exercises a REPO-RELATIVE name. Five personas can hold five distinct
+    pointer names while every one of them is written into the WRONG TREE, and this assertion
+    would still be green — that combination is exactly row 6c64d2f5.
+    """
     paths = { mio.pointer_rel_path( "root", p ) for p in PERSONAS }
     assert len( paths ) == len( PERSONAS ), (
         f"{len( PERSONAS )} personas share {len( paths )} root pointer: {paths}"
@@ -147,6 +159,14 @@ def test_root_resolve_should_not_answer_for_a_persona_with_no_record( repo, tmp_
     home.mkdir()
     assert write_memento( repo, "maria", "root", home ).returncode == 0
 
+    # DECLARED UNTESTED HERE — DIVERGENT ROOTS (row fa583462). This is the deliberate one: the
+    # two roots handed in below are THE SAME OBJECT, so this arm cannot tell `seat_root` from
+    # `repo_root` and would pass identically if `root` fell back to repo_root. That is not a
+    # defect in the arm — one tree, one seat, one writer IS the scenario it was written for, and
+    # this file's subject is persona-blindness, not tree resolution. The divergent case has its
+    # own home: test_memento_io_worktree_root.py::test_the_root_SLOT_from_a_worktree_lands_in_the_WORKTREE,
+    # and test_memento_io_tmp_slot.py, which obtains two roots with no git at all.
+    #
     # seat_root THREADED at cd1c67d. `root` now resolves against the SEAT'S OWN tree and REFUSES a
     # caller who omits it — the old repo_root fallback is exactly row 6c64d2f5. Passing repo here
     # keeps the scenario identical to what it was testing: one tree, one seat, one writer.

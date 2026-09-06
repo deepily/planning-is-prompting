@@ -648,6 +648,12 @@ def test_a_linked_worktree_memento_is_misdirected_even_outside_the_repo_dir( rep
     `prunable` — so a memento written there is destroyed twice over having reported success
     both times. This plants the worktree OUTSIDE the repo directory, which is the case a walk
     structurally cannot see.
+
+    THE EXCEPTION IN A MOSTLY-UNBOUND FILE (row fa583462, María's ruling 2026-09-05). The other
+    33 arms here are about mirror/record DRIFT and hold no opinion about which tree a slot
+    resolves to; this one is the file's only arm whose subject is slot resolution, so it is the
+    only one the divergent-roots expectation binds — and it is retrofitted below rather than
+    declared away, because it already has two divergent roots in hand.
     """
     _init_repo( repo.root )
     outside = tmp_path / "far-away-worktree"
@@ -659,6 +665,20 @@ def test_a_linked_worktree_memento_is_misdirected_even_outside_the_repo_dir( rep
     hits, searched = memento_io.find_misdirected_mementos( repo.root )
     assert [ p.name for p in hits ] == [ "clayton-deadbeef.md" ]
     assert str( outside ) in searched, "the searched space must NAME the worktree it covered"
+
+    # THE DIVERGENT-ROOTS RETROFIT. Everything above asks the SWEEP where a stray record IS;
+    # `find_misdirected_mementos` takes one root, so no assertion above it can tell repo_root
+    # from seat_root. These two lines ask the WRITER where a record GOES, using the two roots
+    # this arm already built — and they are the half that makes the sweep's verdict coherent:
+    # the worktree's io/mementos is misdirected precisely BECAUSE the seat's own slot is the
+    # worktree while io's canonical slot is the repo. Collapse `root` back onto repo_root
+    # (row 6c64d2f5) and the second line reddens while every assertion above stays green.
+    assert repo.root.resolve() != outside.resolve(), \
+        "the two roots must differ, or the divergence assertions below are vacuous"
+    assert memento_io.slot_base_dir( repo.root, "io" ).resolve() == repo.root.resolve(), \
+        "io canonicality is a REPO question"
+    assert memento_io.slot_base_dir( repo.root, "root", seat_root=outside ).resolve() == outside.resolve(), \
+        "root placement is a SEAT question — it must follow the worktree, not the main checkout"
 
 
 def test_the_null_names_its_search_space( repo ):

@@ -77,7 +77,11 @@ def _write_from( cwd, home, persona="clayton", sid="af0c5700", slot="io" ):
 
 def test_a_memento_written_from_a_worktree_lands_in_the_repo( repo_with_worktree ):
     """THE DEFECT. Run from inside the worktree, the record must appear at the
-    REPO's canonical slot — the one every reader and every reap looks at."""
+    REPO's canonical slot — the one every reader and every reap looks at.
+
+    SCOPE — `io` ONLY. `io`'s base IS repo_root, so this arm passes whether or not the two
+    roots are told apart; it cannot speak for the `root` slot, whose contract is the
+    opposite. That case is `test_the_root_SLOT_from_a_worktree_lands_in_the_WORKTREE`."""
     root, wt, home = repo_with_worktree
     result = _write_from( wt, home )
     assert result.returncode == 0, result.stderr
@@ -87,7 +91,11 @@ def test_a_memento_written_from_a_worktree_lands_in_the_repo( repo_with_worktree
 
 def test_a_worktree_write_leaves_NOTHING_in_the_worktree( repo_with_worktree ):
     """The other half, and the one that makes the failure invisible: a stray copy
-    in the worktree is a record that reports written and then gets pruned."""
+    in the worktree is a record that reports written and then gets pruned.
+
+    SCOPE — `io` ONLY, and this is the arm most likely to be over-read. Generalised to every
+    slot it would say "a worktree never holds a memento", which is FALSE: a `root` record
+    belongs in the seat's tree and nowhere else. Read wide, this arm asserts the defect."""
     root, wt, home = repo_with_worktree
     _write_from( wt, home )
     assert not ( wt / "io" / "mementos" ).exists(), \
@@ -96,10 +104,50 @@ def test_a_worktree_write_leaves_NOTHING_in_the_worktree( repo_with_worktree ):
 
 def test_the_pointer_also_lands_in_the_repo( repo_with_worktree ):
     """Record and pointer are resolved from the same root; if only one were fixed
-    the pointer would dangle at a slot the record never reached."""
+    the pointer would dangle at a slot the record never reached.
+
+    SCOPE — `io` ONLY. "The same root" is the claim; WHICH root is not under test here,
+    because for `io` there is only one candidate."""
     root, wt, home = repo_with_worktree
     _write_from( wt, home )
     assert ( root / "io" / "mementos" / "clayton.md" ).exists()
+
+
+def test_the_root_SLOT_from_a_worktree_lands_in_the_WORKTREE( repo_with_worktree ):
+    """
+    THE DIVERGENT-ROOTS ARM (row fa583462, María's ruling 2026-09-05).
+
+    WHY THIS FILE NEEDED ONE. Every other case here drives `--slot io`, whose base IS
+    repo_root — so repo_root and seat_root may be the SAME OBJECT and nothing in this file
+    would notice. That is precisely the shape row 6c64d2f5 shipped in: `root` silently
+    falling back to repo_root, a worktree seat writing its memento into the main checkout,
+    and every io test green throughout. A file whose entire subject is root resolution was
+    structurally unable to see the root-resolution defect.
+
+    `root` is the OPPOSITE contract to this file's thesis. io canonicality is a REPO
+    question — that is what `--git-common-dir` settles. `root` placement is a SEAT question:
+    the record must follow the tree the seat stands in, so that after a `/clear` the same
+    seat finds it again. Point `slot_base_dir( "root" )` back at repo_root and this arm
+    reddens; nothing else in this file does.
+
+    ⚠️ IT IS THE DIVERGENCE THAT DOES THE WORK, NOT THE WORKTREE. `test_memento_io_tmp_slot`
+    catches the same defect with no git at all, by handing `slot_base_dir` two different
+    roots. Building a worktree is one way to obtain two roots; it is neither necessary nor
+    sufficient. The assertion below that they differ is what makes the rest mean anything.
+    """
+    root, wt, home = repo_with_worktree
+    assert root.resolve() != wt.resolve(), \
+        "the fixture must supply two DIFFERENT roots, or every assertion below is vacuous"
+
+    result = _write_from( wt, home, persona="rachel", sid="fa583462", slot="root" )
+    assert result.returncode == 0, result.stderr
+
+    assert ( wt / ".claude-memento-rachel-fa583462.md" ).exists(), \
+        "the root slot must land in the SEAT'S OWN tree"
+    assert not ( root / ".claude-memento-rachel-fa583462.md" ).exists(), \
+        "a root record in the main checkout is row 6c64d2f5 — the seat cannot find it again"
+    assert ( wt / ".claude-memento-rachel.md" ).exists(), \
+        "the pointer follows the record; a pointer left in the repo dangles forever"
 
 
 def test_an_ordinary_repo_is_UNCHANGED( repo_with_worktree ):
