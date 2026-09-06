@@ -416,3 +416,26 @@ def test_an_unasked_tmux_is_NONE_and_not_an_empty_roster():
     """None ("did not look") and [] ("nothing runs") are different facts; both must refuse (ii)."""
     assert ohs.live_seat_worktrees( "/p/repo", None ) is None
     assert ohs.live_seat_worktrees( "/p/repo", []   ) == set()
+
+
+# ------------------------------------------------------------------------------ exit codes
+#
+# THREE, so that two failure modes wanting opposite remedies never share one. Modelled on the
+# delivery-collision scan's contract in session-end.md §7, for the same reason it has one.
+
+
+def test_a_FOUND_run_exits_1_and_a_CLEAN_one_exits_0( repo, tmp_path, capsys ):
+    """1 is the ORDINARY case — 67 abandoned branches existed the day this shipped."""
+    assert ohs.main( [ str( repo ), "target" ] ) == 0
+    _branch_ahead( repo, tmp_path, "stranded", 1 )
+    assert ohs.main( [ str( repo ), "target" ] ) == 1
+
+
+def test_a_REFUSED_category_exits_2_and_never_0( repo, tmp_path, capsys ):
+    """
+    🔴 No target means category (ii) was never computed, and a run that measured half of what it
+    claims must not exit like a clean one. § A CLEAN EXIT IS NOT EVIDENCE THE WORK HAPPENED.
+    """
+    assert ohs.main( [ str( repo ) ] ) == 2
+    out = capsys.readouterr().out
+    assert "REFUSED" in out

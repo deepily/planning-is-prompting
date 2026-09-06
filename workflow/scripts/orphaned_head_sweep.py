@@ -343,8 +343,18 @@ def render_report( findings, scanned, repo_root, abandoned=None, target_branch=N
 
 def main( argv=None ):
     """
-    Ensures: prints the report; exit 0 always — this REPORTS, it never gates. A sweep that can
-             fail a build is an alert, and the alert version was measured and refused.
+    Ensures:
+        - prints the report, and returns one of THREE exit codes so that two failure modes
+          wanting opposite remedies never share one:
+              0  both categories computed, nothing found
+              1  something found — NEVER A FAILURE AND IT MUST NOT BLOCK ANYTHING
+              2  a category could NOT be computed — part of this report is missing
+        - 🔴 `1` is the ordinary case. 67 abandoned branches existed the day this shipped, so a
+          caller that treats 1 as an error fails for every seat on its first run and gets
+          switched off — which is the not-installed failure this whole line of work is about.
+          Report and name. Never block.
+        - 🔴 `2` is the one that means something is wrong: the sweep could not see its
+          population. Surface it as loudly as a finding, never as a clean run.
     """
     import sys
     argv = sys.argv[ 1: ] if argv is None else argv
@@ -353,7 +363,10 @@ def main( argv=None ):
     findings, scanned = sweep( repo_root )
     abandoned = abandoned_branches( repo_root, target, live_tmux_sessions() ) if target else None
     print( render_report( findings, scanned, repo_root, abandoned, target ) )
-    return 0
+    if abandoned is None or ( scanned == 0 and not findings and not os.path.isdir(
+            os.path.join( repo_root, ".git" ) ) ):
+        return 2
+    return 1 if ( findings or abandoned ) else 0
 
 
 if __name__ == "__main__":

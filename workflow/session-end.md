@@ -1652,6 +1652,108 @@ like Step 6 it must never block session-end.
 
 ---
 
+## 8) Orphaned-Work Sweep (Day's Work, third half — the work no LIVE SEAT is behind)
+
+### MANDATE — Step 8 carries §7's three obligations
+
+A THIRD SIBLING of §6 and §7, inheriting them verbatim: **MUST FIRE**
+(including and especially on a clean run), **MUST SURFACE** into the closing notify's
+abstract, **MUST SPEAK** one line stating the counts.
+
+🔴 **WHY IT IS NOT §7 AND NOT THE CONTEXT TICK'S COLUMN.** Three surfaces now watch
+delivery and they partition the space rather than overlapping:
+
+| surface | keyed on | asks |
+|---|---|---|
+| the tick's undelivered COLUMN | a **LIVE SEAT** (`tmux_session`) | is *this seat's* work delivered? |
+| §7 delivery-collision | **FILES** | is somebody else's undelivered edit on a file I am standing on? |
+| **§8, this step** | the **REPO** | is there work no live seat is behind at all? |
+
+The column is seat-keyed by design — a persona outlives its seats, so keying on a name
+misattributes. **That same correctness is why it is blind here**: reap a seat, remove its
+worktree, and its commits leave every surface a manager reads. Measured 2026-09-05: seven
+detached worktrees held commits **no branch contained**, one `git worktree remove` from
+being collected, and **0 of those 7 seats were live** — so the column had no quiet line
+for them, it had no line. Nothing was watching.
+
+### 8.1) Preflight — the same one as §7, and for the same reason
+
+A seat with zero commits is not exempt: this step is about *other* people's stranded
+work, not yours.
+
+```bash
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "orphaned-sweep: skipped — not a git repo"; }
+```
+
+### 8.2) Run it — REPO-AGNOSTIC, resolved from where you are standing
+
+🔴 Same rule as §7.2: **no `$LUPIN_ROOT`, no inherited env var naming somebody else's
+checkout.** This ritual runs in every repo that installs the workflow.
+
+```bash
+repo_root="$( git rev-parse --show-toplevel )"
+sweep="$repo_root/workflow/scripts/orphaned_head_sweep.py"
+py="$repo_root/.venv/bin/python"; [ -x "$py" ] || py="$( command -v python3 )"
+
+if [ -f "$sweep" ]; then
+    "$py" "$sweep" "$repo_root" "$( git rev-parse --abbrev-ref HEAD )"
+else
+    echo "orphaned-sweep: skipped — no sweep installed in $( basename "$repo_root" )"
+fi
+```
+
+**Exit codes** — three, so two failure modes wanting opposite remedies never share one:
+`0` clean · `1` findings · `2` REFUSED, a category could not be computed.
+
+⚠️ **`1` IS THE ORDINARY CASE AND MUST NOT BLOCK ANYTHING.** Sixty-seven abandoned
+branches existed on the day this shipped. A step that fails the ritual on exit 1 fails
+for every seat on its first run and gets switched off — the not-installed failure this
+whole line of work is about. **Report and name. Never block.**
+
+⚠️ **`2` MEANS PART OF THE REPORT IS MISSING** — most often no live-seat roster, without
+which *every* branch reads as abandoned. Surface it as loudly as a finding.
+
+### 8.3) The two categories carry DIFFERENT urgency — do not merge them
+
+| category | meaning | how to report |
+|---|---|---|
+| **(i) UNREACHABLE** | no branch contains it — **gc takes it when the worktree goes** | **Loud.** Act now. The fix is one `git branch` command the report prints. Normally zero; it was seven on 2026-09-05. |
+| **(ii) ABANDONED** | ahead of the target, no live seat behind it — safe, but nobody owns it | A **LIST a human reads once**, oldest first. Never an alarm. |
+
+⚠️ **(ii) IS LARGE BY CONSTRUCTION AND MUST NEVER BECOME AN ALERT.** Sixty-seven on
+lupin. Twenty-three of thirty-one branches fired on an earlier ≥6h threshold, and that
+wall of corpses is exactly what killed the alert version of the tick's column: a wall
+trains its reader to stop looking inside a day.
+
+⚠️ **A RESCUE MOVES AN ITEM FROM (i) TO (ii). IT DELIVERS NOTHING.** The work stops being
+one command from destruction and is still absent from the target. Do not read a quiet (i)
+as delivery — the report says so itself, in its own closing line.
+
+### 8.4) Failure handling
+
+| Failure | Behavior |
+|---------|----------|
+| exit `0` | Report the denominators anyway: "0 of N detached worktrees, 0 abandoned branches". |
+| exit `1` | List category (i) in full; category (ii) as a count plus its oldest few. **Non-blocking.** |
+| exit `2` | Surface "REFUSED — a category could not be computed" verbatim. **Never render as clean.** |
+| the sweep is not installed in this repo | Print `orphaned-sweep: skipped — no sweep installed in <repo>`. **Non-fatal.** |
+| not a git repo | Print `orphaned-sweep: skipped — not a git repo`. **Non-fatal.** |
+| sweep exceeds ~60s | Print `orphaned-sweep: skipped — sweep exceeded budget`. **Non-fatal.** |
+
+🔴 **EVERY SKIP IN THIS TABLE PRINTS A LINE, AND SO MUST THE NEXT ONE ANYONE ADDS.** §7
+says this in the same place and for the same reason; it is repeated here rather than
+cross-referenced because a reader adding a row to *this* table will not go and read that
+one. A silently-skipped sweep is a dead dashboard, and the seven stranded worktrees are
+what a dead dashboard costs.
+
+**Skip condition** (the only one): `--no-summary`, which silences Steps 6, 7 and 8
+together — **one flag, not three.**
+
+In all skip/fallback paths, **continue to Final Verification**. Step 8 is informational;
+like Steps 6 and 7 it must never block session-end.
+
+---
+
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
@@ -1662,6 +1764,7 @@ Before sending the final close-out notification, audit:
 
 - [ ] **Did Step 6 fire?** — unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line, Step 6 MUST have run. Silent omission is a violation.
 - [ ] **Did Step 7 fire, INCLUDING on a clean run?** — the delivery-collision check reports its denominator whether or not it found anything. A closing notification with no collision line at all means either the step was skipped silently (a violation) or the scan refused and that was rendered as clean (worse). Only `--no-summary`, which silences Steps 6 and 7 together, or an explicit printed skip line, excuses its absence.
+- [ ] **Did Step 8 fire, INCLUDING on a clean run?** — the orphaned-work sweep reports its denominators whether or not it found anything. No sweep line at all means either a silent skip (a violation) or a REFUSED category rendered as clean (worse). Only `--no-summary` or an explicit printed skip line excuses its absence.
 - [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
 - [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
 - [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
