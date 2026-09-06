@@ -997,6 +997,37 @@ def record_rel_path( slot, persona_slug, sid ):
     raise ValueError( f"unknown slot {slot!r} (expected 'io', 'root' or 'tmp')" )
 
 
+def record_glob( slot, persona_slug ):
+    """
+    The READER's glob pattern for (slot, persona), DERIVED from the WRITER's own naming.
+
+    WHY THIS EXISTS. `newest_record` used to hand-copy `record_rel_path`'s layout into a
+    glob — the reader's population restated in a second place. They agreed, so nothing was
+    broken; what was missing is any REASON they had to keep agreeing. Move the layout and the
+    reader globs the old directory, finds nothing, and returns None — which reads as "no
+    record exists". A SILENT ABSENCE, not an error.
+
+    🔴 THE IDENTICAL SHAPE ALREADY FIRED ONE BRANCH OVER — see the `else` branch of
+    `newest_record`, where a hardcoded `repo_root` diverged from a `seat_root` derivation in
+    every linked worktree and failed a write that was entirely correct. `io` is the branch
+    nobody threaded.
+
+    Requires:
+        - slot is one of "io", "root", "tmp"
+        - persona_slug is a non-empty persona slug
+
+    Ensures:
+        - returns a glob PATTERN string, relative to slot_base_dir( repo_root, slot ), that
+          matches exactly the records `record_rel_path` writes for that (slot, persona)
+        - the pattern is derived by calling `record_rel_path` with "*" as the session id, so
+          it CANNOT drift from the writer — it is the same function, not the same shape
+
+    Raises:
+        - ValueError on an unknown slot (propagated from record_rel_path)
+    """
+    return str( record_rel_path( slot, persona_slug, "*" ) )
+
+
 # ── THE WRITE-SIDE SLOT CHECK (row b0f60712, Rick's ruling: validate on WRITE) ──────
 #
 # `slot=` was STAMPED INTO EVERY RECORD AND READ BY NOBODY. A header could claim one slot
@@ -2022,7 +2053,13 @@ def newest_record( repo_root, slot, persona_slug, seat_root=None ):
              where the pointer already carries the answer.
     """
     if slot == "io":
-        cands = sorted( ( repo_root / "io/mementos" ).glob( f"{persona_slug}-*.md" ) )
+        # DERIVED, not hand-copied (row 2f430ee8). This line used to restate
+        # `record_rel_path`'s layout as its own glob; `record_glob` now asks the writer.
+        # ⚠️ IN SCOPE: the `io` branch only. `tmp` and `else` below still hand-copy their
+        # patterns and could be closed the same way — deliberately NOT taken here, because
+        # collapsing this conditional touches the seat_root fix documented in the `else`
+        # branch and is a wider change than this row was scoped to.
+        cands = sorted( repo_root.glob( record_glob( slot, persona_slug ) ) )
     elif slot == "tmp":
         cands = sorted( slot_base_dir( repo_root, slot, seat_root ).glob( f"{persona_slug}-*.md" ) )
     else:
