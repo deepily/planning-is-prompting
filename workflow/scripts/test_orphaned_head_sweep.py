@@ -439,3 +439,92 @@ def test_a_REFUSED_category_exits_2_and_never_0( repo, tmp_path, capsys ):
     assert ohs.main( [ str( repo ) ] ) == 2
     out = capsys.readouterr().out
     assert "REFUSED" in out
+
+
+# ------------------------------------------------------- refs vs tips: the same work, twice named
+#
+# María 2026-09-06, on a corrected premise. Her FIRST reason for prioritising this — "commits that
+# no branch contains get garbage-collected" — does not apply and was withdrawn: a duplicate ref
+# makes the list LONGER, never shorter, and a commit with a branch ref is anchored by definition.
+# The reason that survives is about the READER: "a sweep emitting redundant rows trains people to
+# ignore it." An ignored report is a report that is not installed.
+#
+# ⚠️ The rows are NOT deduped, and that is the load-bearing decision rather than an omission. Two
+# refs at one tip ARE two branches, and one of them is probably the stale one somebody should
+# delete — deduping would hide exactly the ref a reader needs to see.
+
+
+def test_two_refs_at_ONE_TIP_are_BOTH_still_listed( repo, tmp_path ):
+    """
+    🔴 THE ANTI-DEDUPE GUARD. The obvious "fix" for a redundant row is to collapse it, and that
+    silently drops a branch a human may want to delete. Both names must survive.
+    """
+    _branch_ahead( repo, tmp_path, "first-name", 2 )
+    _run( "git", "branch", "second-name", "first-name", cwd=repo )
+
+    got  = ohs.abandoned_branches( str( repo ), "target", [ "x" ] )
+    refs = [ f[ "ref" ] for f in got ]
+
+    assert "first-name"  in refs
+    assert "second-name" in refs
+    assert len( got ) == 2, "a row was deduped away — that hides the stale ref"
+
+
+def test_the_two_rows_carry_the_SAME_TIP_so_the_report_can_tell_they_are_one_body_of_work( repo, tmp_path ):
+    """The `tip` field is what makes the redundancy computable at all; without it the report
+    cannot distinguish two names for one commit from two genuinely different branches."""
+    _branch_ahead( repo, tmp_path, "alpha", 2 )
+    _run( "git", "branch", "beta", "alpha", cwd=repo )
+
+    got  = ohs.abandoned_branches( str( repo ), "target", [ "x" ] )
+    tips = { f[ "ref" ]: f[ "tip" ] for f in got }
+
+    assert tips[ "alpha" ] is not None
+    assert tips[ "alpha" ] == tips[ "beta" ]
+    assert tips[ "alpha" ] == _sha( repo, "alpha" ), "the tip must be the REAL sha, not a placeholder"
+
+
+def test_DISTINCT_branches_do_NOT_share_a_tip( repo, tmp_path ):
+    """
+    THE POSITIVE CONTROL, and the test above is worthless without it: a `tip` field hardcoded to
+    one constant would satisfy every equality assertion up there. This is what fails if it were.
+    """
+    _branch_ahead( repo, tmp_path, "one", 2 )
+    _branch_ahead( repo, tmp_path, "two", 3 )
+
+    got  = ohs.abandoned_branches( str( repo ), "target", [ "x" ] )
+    tips = { f[ "ref" ]: f[ "tip" ] for f in got }
+
+    assert tips[ "one" ] != tips[ "two" ]
+
+
+def test_the_report_NAMES_the_tip_count_and_MARKS_the_sharers( repo, tmp_path ):
+    """A count nobody can act on is a rumour: the report must say how many rows are a second
+    name, and mark WHICH ones, or the reader cannot skip them."""
+    _branch_ahead( repo, tmp_path, "twin-a", 2 )
+    _run( "git", "branch", "twin-b", "twin-a", cwd=repo )
+    _branch_ahead( repo, tmp_path, "solo", 3 )
+
+    ab  = ohs.abandoned_branches( str( repo ), "target", [ "x" ] )
+    out = ohs.render_report( [], 0, str( repo ), abandoned=ab, target_branch="target" )
+
+    assert "3 branches across 2 distinct tips" in out
+    marked = [ l for l in out.splitlines() if "≡" in l and "last" in l ]
+    assert len( marked ) == 2, f"expected the twins marked and solo unmarked, got {marked}"
+    assert all( "twin-" in l for l in marked ), "solo was marked — the marker does not discriminate"
+
+
+def test_when_every_tip_is_DISTINCT_the_report_does_not_cry_wolf( repo, tmp_path ):
+    """
+    🔴 THE OTHER DIRECTION, and without it a report that shouted on EVERY run would pass the test
+    above. "The marker fires" and "the marker fires WHEN IT SHOULD" are different claims.
+    """
+    _branch_ahead( repo, tmp_path, "alpha", 2 )
+    _branch_ahead( repo, tmp_path, "bravo", 3 )
+
+    ab  = ohs.abandoned_branches( str( repo ), "target", [ "x" ] )
+    out = ohs.render_report( [], 0, str( repo ), abandoned=ab, target_branch="target" )
+
+    assert "2 branches, every one a distinct tip." in out
+    assert "≡"              not in out
+    assert "distinct tips —" not in out

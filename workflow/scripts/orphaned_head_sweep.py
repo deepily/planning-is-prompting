@@ -242,8 +242,12 @@ def abandoned_branches( repo_root, target_branch, live_sessions ):
 
     Requires:  repo_root is a git repo; target_branch names a ref in it
     Ensures:
-        - returns a list of { "ref", "ahead", "last_ts", "live" } sorted by last_ts, OLDEST FIRST
-          — the top of a long list is then the part most worth reading
+        - returns a list of { "ref", "ahead", "last_ts", "tip", "live" } sorted by last_ts,
+          OLDEST FIRST — the top of a long list is then the part most worth reading
+        - ONE ROW PER REF, NEVER PER TIP. Two refs at one tip ARE two branches and a human may
+          want to delete both, so deduping here would HIDE a stale ref. The redundancy is made
+          VISIBLE by the report instead (see render_report), which is the same choice the rescue
+          path makes: report the problem, leave the decision.
         - the target itself is never a finding, and neither is a branch a live seat has checked out
         - 🔴 returns None when `live_sessions` is None OR EMPTY. The category is DEFINED by the
           absence of a live seat, so a missing roster would mark every branch abandoned and print
@@ -267,10 +271,15 @@ def abandoned_branches( repo_root, target_branch, live_sessions ):
         if ref == target_branch or ref in held: continue
         ahead_raw = _git( repo_root, "rev-list", "--count", f"{target_branch}..{ref}" ).stdout.strip()
         if not ahead_raw.isdigit() or int( ahead_raw ) == 0: continue
-        ts_raw = _git( repo_root, "log", "-1", "--format=%at", ref ).stdout.strip()
+        # `%at %H` in ONE call rather than a second rev-parse: the tip is needed for the
+        # refs-vs-tips line below, and 228 branches is 228 extra processes if asked separately.
+        meta    = _git( repo_root, "log", "-1", "--format=%at %H", ref ).stdout.split()
+        ts_raw  = meta[ 0 ] if meta else ""
+        tip     = meta[ 1 ] if len( meta ) > 1 else None
         out.append( { "ref"     : ref,
                       "ahead"   : int( ahead_raw ),
                       "last_ts" : int( ts_raw ) if ts_raw.isdigit() else None,
+                      "tip"     : tip,
                       "live"    : False } )
     out.sort( key=lambda f: ( f[ "last_ts" ] is not None, f[ "last_ts" ] or 0 ) )
     return out
@@ -298,6 +307,10 @@ def render_report( findings, scanned, repo_root, abandoned=None, target_branch=N
         - CATEGORY (i) prints first and is allowed to be loud — it is the one that gets LOST
         - CATEGORY (ii) prints as a LIST, oldest first, explicitly marked as wanting a decision
           rather than an action. It is large by construction and must never read as an alarm
+        - 🔴 IT NAMES ITS REFS **AND** ITS DISTINCT TIPS WHEN THEY DIFFER, and marks the sharers
+          with ≡. A sweep that prints the same work twice under two names trains its reader to
+          stop reading it, and an ignored report is a report that is not installed. The rows are
+          NOT deduped: two refs at one tip are two branches, and hiding one hides the stale one
         - a CLEAN category names its DENOMINATOR — an empty population and a healthy one print
           identically otherwise, and a zero nobody stated the denominator of is a rumour
         - `abandoned is None` renders as REFUSED-TO-LOOK, never as "none". The category is defined
@@ -328,12 +341,23 @@ def render_report( findings, scanned, repo_root, abandoned=None, target_branch=N
     elif not abandoned:
         lines.append(  "      CLEAN — every branch ahead of the target has a live seat behind it." )
     else:
-        lines.append( f"      {len( abandoned )} branches. A LIST for a human to read once — not an alarm." )
+        tips   = [ f[ "tip" ] for f in abandoned if f[ "tip" ] ]
+        shared = { t for t in tips if tips.count( t ) > 1 }
+        n_tips = len( set( tips ) ) + sum( 1 for f in abandoned if not f[ "tip" ] )
+        if shared:
+            lines.append( f"      {len( abandoned )} branches across {n_tips} distinct tips — "
+                          f"{len( abandoned ) - n_tips} of these rows are a SECOND NAME for work" )
+            lines.append(  "      already listed. Marked ≡; they are NOT deduped, because two refs at one" )
+            lines.append(  "      tip are two branches and one of them may be the stale one to delete." )
+        else:
+            lines.append( f"      {len( abandoned )} branches, every one a distinct tip." )
+        lines.append(  "      A LIST for a human to read once — not an alarm." )
         lines.append(  "      Oldest first: the top of this is worth reading even when the bottom is not." )
         for f in abandoned:
             age = "?" if f[ "last_ts" ] is None else dt.datetime.fromtimestamp(
                 f[ "last_ts" ] ).strftime( "%Y-%m-%d" )
-            lines.append( f"        {f[ 'ahead' ]:>5}^  last {age}  {f[ 'ref' ]}" )
+            mark = f"  ≡{f[ 'tip' ][ :8 ]}" if f[ "tip" ] in shared else ""
+            lines.append( f"        {f[ 'ahead' ]:>5}^  last {age}  {f[ 'ref' ]}{mark}" )
 
     lines.append( "" )
     lines.append( "  ⚠️ A rescue moves an item from (i) to (ii). It stops the loss and it does NOT" )
