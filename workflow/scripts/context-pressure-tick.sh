@@ -45,6 +45,11 @@ set -uo pipefail
 # cron, whose environment is bare. Measured: every fire since install logged
 # "TICK ERROR: could not read the context-pressure sensor after a retry: HTTP Error 401".
 export LUPIN_ROOT="${LUPIN_ROOT:-/mnt/DATA01/include/www.deepily.ai/projects/lupin}"
+# The UNDELIVERED-WORK COLUMN needs its helper module, which ships beside this script. Derived
+# from BASH_SOURCE unconditionally: a script that lives inside the tree it reads can only be
+# DISAGREED with by the environment, never informed by it (lupin CLAUDE.md, the purge-script rule).
+export TICK_SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+export CONTEXT_TICK_TARGET_BRANCH="${CONTEXT_TICK_TARGET_BRANCH:-wip-v0.2.1-2026.08.29-cjflow-v2-followup}"
 export API_BASE="${CONTEXT_TICK_API_BASE:-http://localhost:7999}"
 SENSOR_URL="${CONTEXT_PRESSURE_URL:-$API_BASE/api/arbiter/context-pressure}"
 
@@ -69,7 +74,7 @@ export CONTEXT_TICK_DRILL="${CONTEXT_TICK_DRILL:-0}"
 cd "$LUPIN_ROOT" || { echo "TICK ERROR: cannot cd to LUPIN_ROOT=$LUPIN_ROOT" >&2; exit 1; }
 
 python3 - "$SENSOR_URL" <<'PY'
-import sys, os, json, time, urllib.request, urllib.parse, urllib.error, datetime, uuid
+import sys, os, json, time, subprocess, urllib.request, urllib.parse, urllib.error, datetime, uuid
 
 sys.path.insert( 0, "src" )
 url        = sys.argv[ 1 ]
@@ -88,6 +93,31 @@ BANNER     = ( "[DRILL — test fire of the context tick, NOT a real reading. Se
 
 from lupin_cli.claude_code.hooks.lib.task_store_client import read_api_key
 API_KEY = read_api_key()
+
+# ── THE UNDELIVERED-WORK COLUMN (María's approval 2026-09-05; lupin §9e) ──────────────
+# A COLUMN, NOT AN ALERT. The alert version was built and killed by its own numbers: 23 of 31
+# branches would have fired, twenty silent 68-153 h. A field on a line already being read has no
+# false-positive cost, so the wall never forms. It must NEVER gate, DM or change an exit code.
+sys.path.insert( 0, os.environ[ "TICK_SCRIPT_DIR" ] )
+TARGET_BRANCH = os.environ[ "CONTEXT_TICK_TARGET_BRANCH" ]
+try:
+    import undelivered_column as UC
+    BOOTS = UC.parse_boot_intervals(
+        subprocess.run( [ "journalctl", "--list-boots", "--no-pager" ],
+                        capture_output=True, text=True, timeout=20 ).stdout )
+    # An empty boot list would make every silence read 0.0 h — a confident wrong answer. The
+    # column goes dark instead, which is the honest rendering of "I could not look".
+    UNDELIVERED_OK = bool( BOOTS )
+except Exception as _e:                                    # noqa: BLE001 - never break the tick
+    UC, BOOTS, UNDELIVERED_OK = None, [], False
+    print( f"  (undelivered column unavailable: {_e} — context reporting is unaffected)" )
+
+def undelivered_cell( row ):
+    """Ensures: the seat's column text; never raises, never gates. '?' when it could not look."""
+    if not UNDELIVERED_OK: return UC.UNKNOWN if UC else "?"
+    return UC.render_cell( UC.undelivered_for_seat(
+        os.environ[ "LUPIN_ROOT" ], TARGET_BRANCH,
+        row.get( "tmux_session" ), BOOTS, time.time() ) )
 
 def read_sensor():
     req = urllib.request.Request( url, headers={ "X-API-Key": API_KEY } )
@@ -215,7 +245,9 @@ for seat in seats:
     live   = str( row.get( "liveness" ) or "?" )
     flag   = "  <-- OVER" if status == "over_budget" else ""
     mgr    = resolve_manager( row.get( "tmux_session" ), personas ) or "unresolved"
-    print( f"  {seat['label']:<20} {status:<14} {shown}%  {live:<8} mgr:{mgr:<10}{flag}" )
+    undel  = undelivered_cell( row )
+    print( f"  {seat['label']:<20} {status:<14} {shown}%  {live:<8} mgr:{mgr:<10} "
+           f"undelivered:{undel:>9}{flag}" )
     if status == "over_budget":       over.append( seat )
     elif pct is None:                 blind.append( seat[ "label" ] )
 
