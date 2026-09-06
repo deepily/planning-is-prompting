@@ -220,3 +220,51 @@ def test_io_slot_still_writes_into_repo_with_a_mirror( repo, tmp_base ):
     mirror = ( Path( repo ).parent / "home" / ".claude" / "mementos"
                / repo.name / "io" / "mementos" / "krishna-abcd1234.md" )
     assert mirror.exists(), "io slot must still mirror — the refactor changed io behaviour"
+
+
+# ====================================================================================
+# SALVAGED 2026-09-05 from the held branch `wt-rachel-memento-root-slot` (`957461db`), which
+# is NOT being merged — the rest of it is superseded and it conflicts in four files. María
+# ruled the branch held at 22:08 and authorised this one test at 22:20.
+#
+# Krishna 🦚 established it is worth taking the way it should be established: he lifted it onto
+# the target and RAN it. It PASSES here — so it guards behaviour this tree ALREADY HAS and was
+# NOT WATCHING. That is the cheapest kind of salvage and the easiest to lose: a passing test on
+# a dead branch looks like redundancy, and is actually an unwatched invariant.
+# ====================================================================================
+
+
+def test_every_slot_derives_its_record_population_from_slot_base_dir( repo, tmp_path, monkeypatch ):
+    """
+    MR. RADIO'S ASK, 2026-09-04: prove `root` derives the same way `tmp` already does.
+
+    🔴 THIS IS THE READ-SIDE DEFECT'S GUARD. `newest_record` carries THREE hand-rolled
+    populations; the `tmp` branch consumes `slot_base_dir` and the `root` branch used to glob
+    `repo_root`, so a worktree seat selected a MAIN-CHECKOUT record and then failed the
+    containment check against its own base.
+
+    The assertion is behavioural, not textual: for EVERY slot, a record placed under that
+    slot's `slot_base_dir` is the one `newest_record` returns, and it is under that base.
+    A branch that hand-rolls a different population cannot satisfy this for a base that
+    differs from repo_root — which is why `seat` and the tmp base are deliberately NOT the
+    repo here. If they were, every branch would pass for the wrong reason.
+    """
+    monkeypatch.setenv( "LUPIN_MEMENTO_DIR", str( tmp_path / "ep" ) )
+    seat = tmp_path / "seat"; seat.mkdir()
+
+    for slot in ( "io", "root", "tmp" ):
+        base = mio.slot_base_dir( repo, slot, seat_root=seat )
+        rec  = base / mio.record_rel_path( slot, "krishna", "abcd1234" )
+        rec.parent.mkdir( parents=True, exist_ok=True )
+        rec.write_text( "# body\n" )
+
+        found = mio.newest_record( repo, slot, "krishna", seat_root=seat )
+        assert found == rec, f"slot={slot}: newest_record returned {found}, not {rec}"
+        assert mio._path_is_under( found, base ), f"slot={slot}: {found} is not under its own base {base}"
+
+    # THE DISCRIMINATOR: root's base is NOT the repo here, so a `repo_root`-globbing branch
+    # would have to miss. Prove the repo genuinely holds a decoy it must not pick.
+    decoy = repo / mio.record_rel_path( "root", "krishna", "deadbeef" )
+    decoy.write_text( "# decoy in the WRONG tree\n" )
+    again = mio.newest_record( repo, "root", "krishna", seat_root=seat )
+    assert again != decoy, "newest_record picked the repo-root decoy — it is globbing repo_root again"
