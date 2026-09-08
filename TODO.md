@@ -4,6 +4,62 @@ Last updated: 2026-09-03 (**Session 191** (María 🌸 `4f98d12f`) — Rick's th
 
 ## 📍 Resume Here
 
+> ### 🔴 **S195 — I closed a row whose code is on no branch anyone will open.** (María 🌸, 2026-09-07)
+>
+> `horizon: current` — a decisions-log entry against myself, and the candidate lesson under it.
+>
+> Rick's self-claim exemption (`54b50fe6`) reads **`done`**. Measured at wrap: `git branch --merged HEAD`
+> finds no `sam-rescind`, and the symbols are absent at HEAD. Nine approved commits sit on
+> `sam-rescind-onto-cjflow-v2`, unmerged and unpushed, because two gates I set never cleared — the
+> 16-site sweep never reached the integration file and resolves **per-file, not per-site**, and the
+> shared main checkout blocked a direct cherry-pick.
+>
+> **The hole is in the receipt contract, not in anyone's diligence.** The row asked for a commit, and a
+> commit IS a real receipt — it proves the work **exists**. It does not prove the work **landed**. The
+> store cannot distinguish those, and at close time neither did I — in the same session where I refused
+> to let a worker delete a lane without a parity delta *because of that exact pattern*.
+>
+> **CANDIDATE, NOT DOCTRINE**: for a row whose value is a behaviour change, `done` should require the
+> change be **reachable from the branch the next reader opens**. One instance plus tonight's five is a
+> pattern worth proposing at the post-game — not a rule to graduate off one night.
+>
+> Landing adopted as mine (`b1910bc8`): sweep → verify-applies → merge. Until then **the exemption Rick
+> ruled at ~22:01 is not in force**, and tomorrow's first worker meets the same 409 that froze the crew.
+
+> ### **S195 — the instrument that would have caught it doesn't exist, and three that sound like it don't either.** (María 🌸, 2026-09-07)
+>
+> `horizon: next`
+>
+> Rick's `WHAT`→`TITLE` rename reached the legacy client and not the multiplexer, whose own test
+> asserted the superseded word — **pinning the defect rather than catching it**. Three instruments were
+> live and none could see it: the **TS tier** is green because each client's tests assert against that
+> same client; the **parity oracle's** `test_tier1_accordions_cross_client.py` **does not read column
+> headers**; and the newly wired reachability gate touches the gap not at all — Cheech said so of his
+> own commit, unprompted.
+>
+> ⇒ **Nothing anywhere compares column headers across the two clients.** Filed `67ffd249` at P5 under my
+> name, credited to Cheech, owned by me only because Rick wants two names on the board overnight.
+>
+> **Open question worth more than the row**: are headers the only uncomparable cross-client surface, or
+> merely the first one anyone looked at? Nobody has swept. I would bet against headers being unique.
+
+> ### **S195 — five of my claims died to other people's measurements, none to my own re-reading.** (María 🌸, 2026-09-07)
+>
+> `horizon: current` — recorded because the *ratio* is the finding, not any single miss.
+>
+> *"The table IS the receipt"* — wrong against a deliberate rule (`9bfb4b73`); `doc_path` may accompany
+> a close, never be one (Chloé). *"`test_no_manager_batches:138` goes vacuous"* — it **fires** (Sam).
+> *"13 sites"* — **16**, with a positive control on the grep (Sam). *"Report the count both ways"* —
+> counts lie; same count with different members is a different world (Mr. Radio). *"Expect a
+> `What`/`Title` red"* — a green tier proves self-agreement, never cross-client agreement (Mr. Radio).
+>
+> And my **self-correction** on the P5 filing ceiling was the error — my original instruction was right,
+> and Rick's ~23:00 ruling settled it. **Correcting toward a worker's judgement felt like the humble
+> move and was simply wrong.**
+>
+> ⇒ Every one was killed by someone **measuring**, not by me re-reading. That is the argument for the
+> arm over the inspection, and it is now costed rather than asserted.
+
 > ### 🔴 **S191 — the ratio gate refused NINE legitimate rows in one night, across two managers.** (María 🌸, 2026-09-03)
 >
 > `horizon: current` — data about Rick's own control, not a complaint about it.
