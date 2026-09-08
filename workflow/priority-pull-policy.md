@@ -112,8 +112,57 @@ change — but it should be a decision made knowing workers self-pull, not one m
 
 ---
 
+## 7. The value space and who may set it
+
+§2 answers *which row do I take*. This answers *what priority may I set, and who am I to set it* — the same
+subject from the other end.
+
+Declared by Rick 2026-09-07 (fleet broadcast), approved for the workflow docs the same evening.
+
+| | Declaration | What it means at the keyboard |
+|---|---|---|
+| **D1** | **Default `P5` on every creation path** | A row nobody prioritised is a **P5**, not an unspecified middle. Filing costs nothing and claims nothing. |
+| **D2** | **The range is `P0`–`P5`** | Six values, `P0` highest. No values outside it, no unset. |
+| **D3** | **A raise into `P4`–`P1` — operator or manager** | A worker may **ask**; it may not **set**. |
+| **D4** | **`P0` — the operator ALONE** | Not managers. Not a manager acting "on the operator's behalf." |
+| **D5** | **Workers file `P5`, and only `P5`** | Anything higher is a **petition** — to a manager for `P4`–`P1`, and through a manager to the operator for `P0`. |
+
+### D4 is a FIREWALL, not a permission check
+
+The distinction is the whole point, so it gets its own sentence: **no path sets `P0` without an operator
+identity — managers included.**
+
+A permission check asks *is this caller allowed?*, and a caller who asserts the right role satisfies it. A
+firewall asks *is an operator present?*, and there is no answer a non-operator can supply. A manager is not a
+near-operator who happens to hold `P0` among its powers; a manager stands on the same side of the wall as a
+worker, holding the same petition.
+
+**Corollary, already carried:** *raising any row to `P0`* sits in the **STILL GATED** tier of
+`manager-autonomy.md` — beside push-to-origin, and for the same reason.
+
+### 🔴 ENFORCEMENT GAP — this section states a RULE, not a guard that exists
+
+**None of D1–D5 is checked by code today.** Measured 2026-09-07: the whole system carries exactly **one**
+role check, and it is **partial, status-only, and satisfied by a string the caller supplies**. It never reads
+`priority`, and it cannot tell an operator from a manager from a worker.
+
+So, plainly:
+
+- D1's *"every creation path"* is the **intended** default. Whether every path applies it today is
+  **unverified** — do not cite it as observed behavior.
+- D3, D4 and D5 are **practice-bound, not machine-bound**. A worker that files a `P0` today will succeed.
+
+⇒ **Until a check exists, the record is the control.** A raise above `P5` names who authorized it, in the
+row. That is auditable after the fact, which is more than the code currently offers.
+
+**This is written as a gap on purpose rather than left implied.** A workflow doc that asserts a guard nobody
+built is worse than one that admits the hole: the next reader trusts the wall and stops watching the door.
+
+---
+
 ## Version History
 
 | Date | Change |
 |---|---|
 | 2026.09.06 | Created. Ruled in force by Rick: enforcement B, P0s flow-ratio exempt. §4 records the correction to the managers-only premise. |
+| 2026.09.07 | Added §7 *The value space and who may set it* — D1–D5 (default `P5`, range `P0`–`P5`, `P4`–`P1` = operator or manager, `P0` = operator alone, workers file `P5` only), `P0` stated as a **firewall** rather than a permission check, and an explicit **enforcement gap**: none of D1–D5 is checked in code today. Approved by Rick 2026-09-07. §§1–6 unchanged; **R1 and R2 untouched**. Written by Tiffany 💍. |
