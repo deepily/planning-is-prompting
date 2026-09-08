@@ -26,16 +26,25 @@ P2/P3**, most of the P2s tooling found while working on tooling.
 
 ## 2. The rule
 
-### R1 — Take the highest priority you can actually work
-> A seat takes the **highest-priority workable row it owns**. **Workable** = `queued`, not `blocked`,
-> not `parked`.
+### R1 — Assign the highest priority that can actually be worked
+> A **manager** assigns the **highest-priority workable row** the owner can take. **Workable** =
+> `queued`, not `blocked`, not `parked`.
 
 ### R2 — Skipping is allowed; the reason goes in the skipped row
-> A seat MAY take a lower-priority row when a higher one is not workable. **It must write why in the
-> SKIPPED row's body, in one line, before taking the other.**
+> A manager MAY assign a lower-priority row when a higher one is not workable. **The manager must
+> write why in the SKIPPED row's body, in one line, before assigning the other.**
 
 Not permission-seeking — a **receipt**. It stops *"the P0 was blocked"* and *"the P0 was unappealing"*
 from printing identically.
+
+> ⚠️ **THE SUBJECT CHANGED, AND SO DID WHAT THIS CATCHES.** R1/R2 used to read *"a seat"* — the worker
+> chose, and wrote its own receipt. D6/D7 removed the worker from pulling entirely, so the old wording
+> described an act that can no longer happen. The receipt survives; its **author** is now the manager.
+>
+> **What was lost, said plainly rather than left for a reader to notice:** the old rule caught a
+> *worker* quietly skipping unappealing work. **Nothing here catches a MANAGER who assigns around a
+> P0.** That gap is real, it is not closed by this rewrite, and closing it would need a new rule rather
+> than an edit to this one. Rick was told this before he approved the change.
 
 ### R3 — Discovered work is filed, not worked
 > A defect found while working a P0 is **filed and left**. It is worked when it is the highest-priority
@@ -166,3 +175,5 @@ built is worse than one that admits the hole: the next reader trusts the wall an
 |---|---|
 | 2026.09.06 | Created. Ruled in force by Rick: enforcement B, P0s flow-ratio exempt. §4 records the correction to the managers-only premise. |
 | 2026.09.07 | Added §7 *The value space and who may set it* — D1–D5 (default `P5`, range `P0`–`P5`, `P4`–`P1` = operator or manager, `P0` = operator alone, workers file `P5` only), `P0` stated as a **firewall** rather than a permission check, and an explicit **enforcement gap**: none of D1–D5 is checked in code today. Approved by Rick 2026-09-07. §§1–6 unchanged; **R1 and R2 untouched**. Written by Tiffany 💍. |
+| 2026.09.07 | **R1 and R2 rewritten** for D6/D7 — the subject moves from *"a seat"* to the **manager**, because a worker no longer pulls at all and the old wording described an act that can no longer happen. The one-line receipt survives; its author changes. The rewrite states the **loss** in the doc rather than only in the commit: nothing now catches a **manager** who assigns around a P0. Approved by Rick 2026-09-07, after he was told what it costs. Written by María 🌸. |
+| 2026.09.07 | §7's D5 clarified against Rick's ~23:00 ruling: **filing is open to every seat and enters at `P5` regardless of queue** — including the `not_approved` petition queue. The **raise** is the manager's act (to `P1`) or Rick's (`P0`), never the filer's. His words: *"Filing stays open to everyone… it comes in as a P5. It is I or the manager who has to bump it up."* |
