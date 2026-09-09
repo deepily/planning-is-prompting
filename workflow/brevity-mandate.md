@@ -1,10 +1,10 @@
-# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH
+# Brevity Mandate — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH · NoYell
 
 **Purpose**: Stop the token burn. This is the canonical source for the fleet's brevity rules; every other surface restates a rider that points here.
 
 **Status**: LIVE — Rick's directive, 2026-07-19. Not a style preference. A defect classification.
 
-**Scope note**: the last three rules (`NoAA`, `NoDrama`, `WaHH`) govern **register** — *how* you write — rather than length. They live here because this is the artifact that reaches every session. The title is narrower than the contents; that is known debt, not an oversight.
+**Scope note**: the last four rules (`NoAA`, `NoDrama`, `WaHH`, `NoYell`) govern **register** — *how* you write — rather than length. They live here because this is the artifact that reaches every session. The title is narrower than the contents; that is known debt, not an oversight.
 
 ---
 
@@ -18,6 +18,7 @@
 > **NoAA** — No Aphorisms or Apologies.
 > **NoDrama** — State the defect, the fix, the receipt. Cut the stakes clause.
 > **WaHH** — We're All Humans Here. Plain English, no jargon. Write every message as if a human colleague will read it.
+> **NoYell** — No all-caps yelling. Capitals are for headings, acronyms and code identifiers, never for emphasis. Use **bold** on the one word that carries the point.
 >
 > **Lead with the verdict. Evidence second. Stop.**
 >
@@ -166,6 +167,40 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 **Why**: an invented term saves the *writer* one sentence and costs the *reader* a lookup. It also costs the **user**, who can read the peer channel but was not written for — and an audit that requires translation is not an audit.
 
 ⇒ **Terms of art that predate this fleet are fine** (`idempotent`, `regression`, `migration`, `mutation test`). The ban is on vocabulary **we invented**, and on ordinary words bent into private meanings.
+
+---
+
+## NoYell — no all-caps yelling
+
+**Ruled by Rick, 2026-09-08**, after Mr. Radio 🦉 found the example below while reviewing Lupin's `CLAUDE.md`. His words: *"It is annoying and inappropriate."*
+
+**The rule.** Capitals are for headings, acronyms and code identifiers, never for emphasis. Use **bold** on the one word that carries the point, and write the rest like a person talking to a person.
+
+### Where the line falls
+
+| Fine | Not fine |
+|---|---|
+| Headings | A clause set in capitals to make it louder |
+| Acronyms — `TTS`, `P0`, `KISS` | A whole sentence in capitals |
+| Code identifiers and proper nouns | Capitals stacked on bold, on an emoji, on a rule already marked mandatory |
+| A single flagged keyword the surrounding doc already leans on — `MANDATE`, `NEVER` — though bold is better even there | |
+
+### The receipt
+
+Found in Lupin's `CLAUDE.md`, 2026-09-08:
+
+> ~~A TIER RUN FROM A WORKTREE REPORTS 10 OR 11 FAILURES THE MAIN TREE DOES NOT HAVE~~
+> A tier run from a **worktree** reports 10–11 failures the main tree does not have.
+
+Same sentence, same weight, and the second one does not shout.
+
+### Why it is a defect and not a taste
+
+Shouting does not add emphasis — it **spends** it. A document where every third clause is capitalised has no way left to mark the one clause that genuinely matters, so the next real warning lands cheaper than it should. The cost is paid by the reader who needed that warning, not by the writer who felt strongly.
+
+**Applies everywhere text goes**: prose, workflow docs, `CLAUDE.md` files, task-store row bodies and amendments, commit messages, peer DMs, and `abstract` cards.
+
+**Known debt, stated plainly**: this repo's own docs and the fleet's store rows are full of the thing this rule bans, including several written by the sessions that now have to follow it. Nobody is rewriting them wholesale. The rule binds new text; old text gets fixed when it is edited for another reason.
 
 ---
 
@@ -413,6 +448,7 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 
 ## Version History
 
+- **1.5 (2026-09-08)**: **`NoYell` added as the seventh rule, ruled by Rick** after Mr. Radio 🦉 found a full sentence in capitals while reviewing Lupin's `CLAUDE.md`. His words: *"It is annoying and inappropriate."* Capitals are for headings, acronyms and code identifiers, never emphasis. New § *NoYell — no all-caps yelling* carries the boundary table, the receipt and the reason it is a defect rather than a taste — shouting **spends** emphasis instead of adding it, leaving no way to mark the clause that matters. The rule row went into `~/.claude/CLAUDE.md`; **the receipt stayed here**, per Rick's same-morning *split rule from receipt* ruling on the `CLAUDE.md` load-limit overage. Known debt recorded in the section: the existing docs and store rows are full of the thing the rule bans, and are being left alone until touched for another reason.
 - **1.4 (2026-08-12)**: **Words → sentences, ruled by Rick across seven decisions in one walkthrough.** The unit of the rule is now a **claim-carrying sentence**, not a word and not a display line — extending to every surface a call already made for the spoken channel on 2026-06-13, on the measured finding that *models count sentences reliably and words badly*. **Rick's clause, his words: "File paths are free."** New § *What counts as a line* carries the rule and its table; the per-surface defaults, the spawn-brief rider and the trigger vocabulary follow it. **`3LoL` keeps its name** — the acronym sits in 19 files with a July-ratified trigger vocabulary, so a rename would spend a fleet-wide reinstall for a cosmetic gain. **Scope ruled explicitly as every surface, not DMs alone**, because a "DM rule" reading would exempt status updates, commons posts and review findings. ⚠️ **The rider deliberately states three and names no enforcement number** — publishing where the line sits teaches that number instead of the bar. Companion analysis and the full reasoning per ruling: `src/rnd/2026.08.12-words-to-sentences.md` + `TODO.md` § Decisions Log.
 
 - **1.0 (2026-07-19)**: Initial. Rick's directive + his escape-clause amendment ("only when ASKED"). Landing sites ruled via checkbox walkthrough.
