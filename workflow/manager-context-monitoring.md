@@ -63,6 +63,29 @@ A tick where nobody is `over_budget` ends silently. Do not notify the user for a
 do not DM a worker to ask how full it is — the endpoint already answers that. Design background:
 `lupin/src/rnd/v0.1.8/2026.06.07-managing-context-memory/2026.06.09-context-pressure-published-headroom-service-design.md`.
 
+🔴 **AND THE RULE IS LOAD-BEARING, BECAUSE A WORKER IN A WORKTREE PHYSICALLY CANNOT ANSWER.**
+Asked twice by his manager for a context percentage, a worktree seat could not produce a measured
+one: `GET :7999/api/arbiter/context-pressure` returns **HTTP 401** from a worktree checkout.
+
+*Measured by Cheech 🌿 (seat `70079104`), 2026-09-08 ~21:08 EDT.*
+
+The key file is `lupin/src/conf/keys/notification-api-claude-code-dev`, matched by `.gitignore`,
+and it is **deliberately never borrowed into a worktree** — Mr. Radio's 2026-09-01 ruling, *"a venv
+is a build artifact, a key is a secret."* ⇒ **The ruling is right and this is its cost**, not an
+argument against it.
+
+⇒ So the cost of breaking the rule above is not a wasted turn. It is that you ask a seat for a
+number **its environment cannot produce**, and the only honest reply it can give is a labelled
+ESTIMATE — a coordinate manufactured rather than read, which is exactly what the global mandate's
+*"a context reading is a COORDINATE, not a reference"* forbids (`~/.claude/CLAUDE.md` § MANAGER
+CONTEXT MONITORING). **The manager holds the roster; the worker does not hold its own number.**
+
+⚠️ **This is a WORKTREE constraint, not general blindness.** The same manager reads the full roster
+fine from the **main checkout** — verified 2026-09-09, live figures returned for every seat.
+
+**NOT ESTABLISHED**: one measurement, one seat; frequency unknown. No fix is proposed here — key
+distribution is a ruling that does not belong to this document. Row: `f4f43c25`.
+
 ---
 
 ## 1b. INSTALL THE TIMER. A policy that depends on remembering is not installed.
@@ -930,3 +953,12 @@ predictable event can have.
   strands a manager at its ceiling. §1 gains the rule that the 50% line is tunable in the **sensor's**
   config, never in the tick script, and that the tick must read its own row. Mechanism note:
   `src/rnd/2026.08.13-manager-self-respin-mechanism.md`; verb filed to Mr Radio as `9e0678f6`.
+- **2026.09.09 (María 🌸), §1 — why "do not DM a worker to ask how full it is" is load-bearing**:
+  the rule was already here; the **measured reason** was not. A worktree seat gets **HTTP 401** from
+  the context-pressure endpoint, because the API key is deliberately never borrowed into a worktree
+  (Mr. Radio's 2026-09-01 ruling, *"a venv is a build artifact, a key is a secret"*). Measured by
+  Cheech 🌿 (`70079104`) 2026-09-08 ~21:08 EDT, after being asked twice for a figure he could not
+  read. ⇒ Breaking the rule does not waste a turn, it **induces a manufactured coordinate**. Scoped
+  as a worktree constraint, not general blindness — the manager reads the full roster fine from the
+  main checkout. One measurement, one seat, no fix proposed; key distribution is not this document's
+  call. Row: `f4f43c25`.
