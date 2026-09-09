@@ -83,8 +83,34 @@ CONTEXT MONITORING). **The manager holds the roster; the worker does not hold it
 ⚠️ **This is a WORKTREE constraint, not general blindness.** The same manager reads the full roster
 fine from the **main checkout** — verified 2026-09-09, live figures returned for every seat.
 
-**NOT ESTABLISHED**: one measurement, one seat; frequency unknown. No fix is proposed here — key
-distribution is a ruling that does not belong to this document. Row: `f4f43c25`.
+🟢 **AND THERE IS A SECOND DOOR ONTO THE SAME READING THAT NEEDS NO KEY AT ALL.**
+
+    GET http://127.0.0.1:8001/state      HTTP 200, no auth header
+      -> .context_pressure.personas
+
+*Driven over HTTP 2026-09-09 ~17:28 EDT, not read at source.* The arbiter's own state service is
+plain loopback. The 401 above is on the **`:7999` reverse-proxy router**, which checks `X-API-Key`;
+`:8001` does not. **Two doors, one reading, only one gated.**
+
+⇒ So a worktree seat is **not blind** — it is using the wrong door. It can read its own row, and
+`self_respin` already reads this one: `self_respin_observer._fetch_live_pressure` builds a bare
+`httpx.get` against `:8001` with no auth, deliberately (its docstring records that reading the
+container-scoped URL instead once made *every* self_respin marker record `pre_clear_status:
+"unknown"`).
+
+⚠️ **This does NOT license DMing a worker for its number** — the rule above stands, because the
+manager already holds the whole roster and a worker's self-report is a coordinate the manager did
+not read. It licenses a worker checking **itself**, which is a different act.
+
+⚠️ **A LOUDER VERSION OF THIS WAS ALMOST WRITTEN DOWN AND WAS WRONG.** The chain reads: a failed
+pressure fetch degrades to `PRESSURE_UNKNOWN` (never a forged status), and `self_respin_core:689`
+aborts unless the pre-clear status is a proven `over_budget`. **So if the pre-clear read went
+through the gated door, a worktree seat could never self-respin** — the safety verb unavailable to
+exactly the seats most likely to need it. One `urlopen` showed it does not. **The false version was
+more dramatic and would have shipped off a source read.**
+
+**NOT ESTABLISHED**: one measurement, one seat; frequency unknown. Key distribution itself is a
+ruling that does not belong to this document. Row: `f4f43c25`.
 
 ---
 
@@ -962,3 +988,12 @@ predictable event can have.
   as a worktree constraint, not general blindness — the manager reads the full roster fine from the
   main checkout. One measurement, one seat, no fix proposed; key distribution is not this document's
   call. Row: `f4f43c25`.
+- **2026.09.09 (María 🌸), §1 — the second door, and a dramatic wrong answer it replaced**: the 401
+  above is on the **`:7999` router only**. `GET http://127.0.0.1:8001/state` returns the same
+  `context_pressure` roster with **no auth header at all** — driven over HTTP, not read at source.
+  So a worktree seat is using the wrong door rather than being blind, and `self_respin` already uses
+  the ungated one. ⚠️ Records the finding that was almost published instead: a failed pressure fetch
+  degrades to `PRESSURE_UNKNOWN` and `self_respin_core:689` aborts without a proven `over_budget`,
+  so *if* the pre-clear read had gone through the gated door, a worktree seat could never
+  self-respin. It does not. **The false version was louder, more publishable, and would have shipped
+  off a source read.** Row: `f4f43c25`.
