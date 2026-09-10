@@ -1,6 +1,10 @@
 # Planning is Prompting - Session History
 
-> ✅ **Healthy at 9,397 tokens (2026-09-03, `tiktoken` `cl100k_base`, measured AFTER the archive and WITH the S191 entry).** Inside the workflow's 8–12k retention target. Sessions 176–183 → `history/2026-08-23-to-29-history.md`.
+> ✅ **Healthy at 14,071 tokens (2026-09-09, `tiktoken` `cl100k_base`, measured WITH the S197 entry before it was written).** 56% of the 25k limit; no archive due.
+>
+> 🔴 **NINTH SIGHTING, AND THE WIDEST YET: `get-token-count.sh` reported 10,460 against a true 13,173 — low by 2,713.** The previous banner recorded a 1,085 gap and instructed *"measure with a tokenizer"*; doing so is what produced this number. **The ratio is not stable — it widens.** Do not threshold on the pre-approved script.
+>
+> 🗄️ *Previous banner (2026-09-03):* **Healthy at 9,397 tokens (2026-09-03, `tiktoken` `cl100k_base`, measured AFTER the archive and WITH the S191 entry).** Inside the workflow's 8–12k retention target. Sessions 176–183 → `history/2026-08-23-to-29-history.md`.
 >
 > **The cut was chosen by the workflow's priority order, not by the clock.** Priority 1 (a `✅ COMPLETE` / `🎯 ACHIEVEMENT` marker) found none in the retained window; priority 2, the most recent week boundary, resolves to **Sunday 2026-08-30** — the two nearer Sundays fail the 5-day floor. Retention spans **5 days**, inside the 5–14 validation.
 >
@@ -8,7 +12,21 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 196 (2026-09-08 evening → 09-09, María 🌸 `536c8ff7`, post-`/clear`)** — Rick's un-park P0 shipped and pushed; four of my own instruments lied to me and every one was caught by someone else.
+**RESUME HERE**: **Session 197 (2026-09-09 evening, María 🌸 `31297e6d`, post-`/clear`)** — one P0 closed on work already shipped, the orphan census re-measured with a sound instrument, and **seven instances of one failure shape in a single evening**.
+
+1. **🔴 THE FAILURE SHAPE, SEVEN TIMES, SIX CAUGHT BY RIO ⚡** — merge commits · patch-id · bare date · a 33/32 near-collision · worktree occupancy · an unarmed order check · a claim about what an oracle *cannot* do. **Every time: I confirmed a mechanism EXISTS, then reported as though I had confirmed what it is WORTH** — measured impacts were 1 fleet-wide, 2 of 164, 0, caught-before-publishing, three deleted branches, worthless, and refuted. ⇒ **A mechanism is not an impact; measure the population you are CLAIMING about, not the one where you found the bug.**
+2. **THE CENSUS IS CLOSED AND ITS INSTRUMENT IS SETTLED** — **31 branches nothing-landed, of 54 carrying unlanded work, scope 243, sha `97a65464`**; window OFF the branch shape, ON the commit count. Verified by **two independently written extractors with identical per-commit output over 1,204 commits** plus git's own `--numstat` at **0 mismatches over 5,229 file-entries** — and `git patch-id` was retired as unsound, since it hashes context lines so identical work landing into a diverged file reads unlanded.
+3. **I FIRED AN ASK AT RICK ON A QUESTION HE HAD ANSWERED TWO HOURS EARLIER, ON WORK ALREADY COMMITTED** (`4afb68a5`, node_modules → symlink). Caught it in `git log` and killed the ask before it reached him. ⇒ **Read the tree before the board** — a `queued` row is a claim about the world that may be hours stale.
+4. **🔴 THE DM CONDENSER SILENTLY REPLACES EXECUTABLE CODE WITH A PARAPHRASE, AND TELLS NEITHER END.** Rio stopped only because the paraphrase contradicted his own rebuild; had it happened to agree he would have run a subtly different instrument with full confidence. ⇒ **Code, shas and exact strings go to DISK with a checksum — the DM carries the path, never the artifact.**
+5. **THE MEMENTO GUARD CAUGHT A BARE-SLOT WRITE THAT WOULD HAVE BEEN THE LAST THING TO HAPPEN TO IT** — I had hand-written the evening's findings into the *pointer* via shell, bypassing the hook, until an Edit call tripped it (row `a18bfec9`: this shape went unnoticed for eight days). Repaired through the sanctioned path — migrate, then `amend`, record `== ` mirror at `c456759a`.
+
+**Checkpoint**: P0 `fd9629ce` closed (`4afb68a5`) · census `2761e6b4` handed to Mr. Radio per Rick's broadcast (event 13115, user_direct) · `35e4ff00` moot and inert at `not_approved`, needs an approver's drop · two whole-branch-verified safe-delete candidates await Rick's verdict; nothing deleted, no branch opened.
+
+**Rules earned, with receipts**: arm every check against a **known-bad input** before trusting its zeros · a claim that something **cannot** be detected is a measurement, not an intuition · **exchange the SET, never the TOTAL** (matching totals hid a 36-member disagreement) · **ceiling as well as floor** — every control I wrote tested for *missing*, none for *inventing*.
+
+**Files**: `.claude-memento.md` · `.claude-memento-maria-31297e6d.md` · `.claude-session.md` · `.heartbeat-hold-31297e6d-*.json` · `lupin/io/census-added-line-extractor-maria-31297e6d.py` (+ block-set and diff artifacts).
+
+**PRIOR**: **Session 196 (2026-09-08 evening → 09-09, María 🌸 `536c8ff7`, post-`/clear`)** — Rick's un-park P0 shipped and pushed; four of my own instruments lied to me and every one was caught by someone else.
 
 1. **THE P0 SHIPPED AND IS PUSHED** — `f0e05e54`, 19 commits `98319e12..f0e05e54`. Un-park now reaches the operator: `notifications.js` `_taskActionsCell` built its `<option>` list from a **hardcoded array** and never iterated `LUPIN_TASK_VERB_SPECS`, so the verb reached the API (`:13011`) and never reached a button. Legality keys on the **stored** status, which deliberately covers an **expired** park — expiry is computed at read time and never rewrites the row, so a liveness predicate would hide the verb on exactly the rows that need it. Full tier **3363/3363** run by me in my own provisioned worktree. Row `03d3bf78` closed with receipts.
 2. **RICK RULED THREE TIMES, ALL REAL KEYPRESSES.** The **tsc merge gate: YES, blocking** (`answered: true`, `default_used: false`) — after **three prior timeouts** recorded as UNANSWERED with no default passed. ⇒ **The framing was never the problem; he was offline.** He answered within minutes of broadcasting he was back. **Watch for the availability signal, do not re-ask on a timer.** He also ruled the **admission wall is working as designed** — *"this is the holding area doing exactly what I intended… it will require my Executive action to reprioritize"* — and assigned María + Mr. Radio a **22-row holding-area triage, top 4 to promote**, explicitly deferred behind live work.
@@ -68,7 +86,7 @@
 
 ---
 
-**RESUME HERE**: **Session 190 (2026-09-02 evening, María 🌸 `611e3c47`)** — four workers on Rick's authorisation, one rename with four classes of reader, and a dead button whose cause selected for one person in the building.
+**PRIOR**: **Session 190 (2026-09-02 evening, María 🌸 `611e3c47`)** — four workers on Rick's authorisation, one rename with four classes of reader, and a dead button whose cause selected for one person in the building.
 
 1. **🔴 RICK'S DEAD WON'T-FIX BUTTON — CAUSE FOUND AFTER FIVE MECHANISMS WERE ELIMINATED, AND IT WAS NONE OF THEM.** The task list repaints every 60s by replacing `innerHTML`, and that repaint **destroys a reason the operator has typed but not yet submitted**. Type → a poll lands → click: text gone, the blank-reason guard fires, **zero requests** — and **the next poll wipes the refusal stripe too**, so within a minute there is nothing left to see. Forced deterministically by Rio through the real poll path. ⇒ **Why five people measuring carefully all missed it: a tester types and clicks in one motion, well inside the window. Rick does not type fast, and the window is seconds wide.** ⇒ **And it explains why my own repro went green** — my tests call the handler directly, so no poll could run between the typing and the click. **The path I could not reach is the path he used.** → `529b447c`, extended to all three panes at `d99975da`
 2. **🔴 MY AFTERNOON FIX WAS REAL, FIXED A DIFFERENT BUG, AND I TOLD RICK IT HAD FIXED HIS.** `cd2ea523` repaired a genuine two-pane lookup collision. It could not have been his: the row carries no epic key, so it renders once and there is no second copy. Mr Radio's split is the accurate self-description — **"I closed a symptom on the strength of a mechanism I had not tied to it"** — and only the second claim was ever owed. **Rick was told in one line, by me, the moment it was established.** The keeper: **a repro that cannot reach the path the operator used is not a repro of the operator's bug**, and `cd2ea523` says *"the fix being the thing that fixed it rather than a hope"* directly beneath the test that made it one.
@@ -113,7 +131,7 @@
 
 ---
 
-**RESUME HERE**: **Session 187–188 (2026-09-01, María 🌸 `3396ba14`)** — four documents that were confidently wrong about themselves, and one failure shape underneath them.
+**PRIOR**: **Session 187–188 (2026-09-01, María 🌸 `3396ba14`)** — four documents that were confidently wrong about themselves, and one failure shape underneath them.
 
 1. **The parity tool had been reading two thirds of every file.** `MIN_BLOCK_CHARS = 120` deleted every short block before comparison — **38% / 52% / 31%** of the blocks per pair — so every `PARITY OK` it printed covered the long paragraphs only, and missed exactly where one-line rules live. Short blocks are now compared under an exact-match-or-anchor rule; measured first (126/126 matched exactly, zero new pairings) and falsified against a changed table row. → `284271f`
 2. **Three more documents disagreed with themselves, each found by using them.** `post-game.md` named two output directories — `src/rnd/` (committed) against `io/post-games/` (gitignored, per Rick's ruling) — so the table a reader hits first sent retros into the tree he had said to keep them out of. `plan-decide.md` told every seat a `default` is "AFK-safe", disproved by accident the same afternoon when an `ask_multiple_choice` carrying a `default` returned `503, user offline`. Both carry guard tests now; `decision-walkthrough.md` had already asked people to *remember* not to write the second one. → `346c5d6`, `f14df47`
