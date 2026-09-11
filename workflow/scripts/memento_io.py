@@ -1373,15 +1373,15 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
     Guarantee the record carries its own provenance (element-1: session_id + written_at).
 
     The machine-readable comment is ALWAYS line 1 — provenance must not depend on the
-    author having remembered the markdown header. If the human-readable `**Written by**`
-    line is absent, it is injected too.
+    author having remembered the markdown header. It is the ONLY identity the writer
+    emits (ruling (a), 2026-09-06): no `**Written**` / `**Written by**` body lines.
 
     Requires:
         - body is the memento markdown as written by the session
     Ensures:
         - returned text begins with a `<!-- memento-record: ... -->` line carrying
           persona, session_id, written_at and slot
-        - returned text contains a `**Written by**:` line naming persona + session id
+        - no `**Written**:` / `**Written by**:` line is ADDED; any the author wrote survive
         - when `correlation` is given, the returned text carries it as its own machine line
           (547f6565 H3 — see POST_GAME_CORRELATION_STAMP: the stamp is the reader the
           waiver never had)
@@ -1416,16 +1416,12 @@ def stamp_header( body, persona, sid, slot, written_at, no_post_game_reason=None
         lines.append( f"**POST-GAME WAIVED** by {persona} ({sid}) at {written_at} — "
                       f"a crew ran and no retro was written. Reason given: {no_post_game_reason}" )
 
-    has_written_by = any( l.startswith( "**Written by**:" ) for l in lines )
-    has_written    = any( l.startswith( "**Written**:" )    for l in lines )
-
-    injected = []
-    if not has_written:    injected.append( f"**Written**: {written_at}" )
-    if not has_written_by: injected.append( f"**Written by**: {persona} ({sid})" )
-
-    if injected:
-        insert_at = 1 if lines and lines[ 0 ].startswith( "# " ) else 0
-        lines     = lines[ :insert_at ] + injected + lines[ insert_at: ]
+    # 🔨 NO BODY IDENTITY LINES ARE INJECTED ANY MORE — Rick's ruling (a), 2026-09-06, landed
+    # 2026-09-11 (row 47f33bba). This used to add `**Written**: <written_at>` and
+    # `**Written by**: <persona> (<sid>)` under the title. `cmd_amend` re-stamps only the
+    # machine header, so the injected `**Written**` froze at first write while line 1 moved:
+    # an amended memento showed a human its OLDEST timestamp first. Line 1 is now the single
+    # identity. An author's OWN lines are left exactly as typed (test_memento_io_postgame).
 
     text = machine + "\n" + "\n".join( lines ).rstrip() + "\n"
 
