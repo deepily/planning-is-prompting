@@ -1,6 +1,6 @@
 # Planning is Prompting - Session History
 
-> ✅ **Healthy at 14,071 tokens (2026-09-09, `tiktoken` `cl100k_base`, measured WITH the S197 entry before it was written).** 56% of the 25k limit; no archive due.
+> ✅ **Healthy at 14,845 tokens (2026-09-10, `tiktoken` `cl100k_base`, measured WITH the S198 entry in place).** 59% of the 25k limit; no archive due.
 >
 > 🔴 **NINTH SIGHTING, AND THE WIDEST YET: `get-token-count.sh` reported 10,460 against a true 13,173 — low by 2,713.** The previous banner recorded a 1,085 gap and instructed *"measure with a tokenizer"*; doing so is what produced this number. **The ratio is not stable — it widens.** Do not threshold on the pre-approved script.
 >
@@ -12,7 +12,19 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 197 (2026-09-09 evening, María 🌸 `31297e6d`, post-`/clear`)** — one P0 closed on work already shipped, the orphan census re-measured with a sound instrument, and **seven instances of one failure shape in a single evening**.
+**RESUME HERE**: **Session 198 (2026-09-10, María 🌸 stable `abe7d752`, seven seats across self-respins)** — a manager seat that spent the day in `lupin`: one P0 parity job closed, four crew rows landed under review, and the skeleton-crew workflow ratified here.
+
+1. **P0 `5ebd2aff` (multiplexer CC-notifications parity) DONE on `266716ff`**, with Action Required steps 1–2, the Mine switch (`5f784c1d`) and legacy's doubled counts fixed along the way. Every piece was built, served on both ports and driven in Chrome before its row closed.
+2. **Crew rows landed tonight, each reviewed before merge**: hook false-deny on peer DMs `bb1a9062` (Sam, `2c866812`) · P0 focus mode `8cb5c22e` (Clayton, `585ba671`) · jobs-pane Mine filter `83c3ff74` (Pocholo, `47f0a623` + E2E `73571526`, closed on scheduled run `ts-4cda083a`) · one-card-at-a-time `360de81b` (Krishna, `d1728048`). The last still waits on Rick's Approve click and his landing check.
+3. **Skeleton crew ratified (`9ba2b46`)**: declared days only, **no subagents** ("you get no extra workers, you do the work yourselves"), and the arbiter's pokes stay on. Mr. Radio's Sword of Damocles trial doc lands beside it.
+4. **🔴 A merged test is not a passing test, and a host run is not a closing receipt.** I wrote "merged E2E" into a hold before reading a commit body that said "Not yet run"; Mr. Radio then had me close `83c3ff74` on a scheduled run id rather than my own host pass.
+5. **The "user-initiated voice message" tool-call deny was never Rick** — 29 of 30 interrupts had a peer DM within ±5 s, against a 5.4% baseline. Fixed as `bb1a9062`, and my earlier "his voice arrives blank" lines were withdrawn.
+
+**Checkpoint**: plan repo committed and pushed on Rick's session-end broadcast; the one `lupin` push is Mr. Radio's (~23:20); my crew is empty; open: `360de81b` Approve click + landing check on `4311c503`.
+
+**Files**: `workflow/skeleton-crew.md` · `workflow/sword-of-damocles.md` (Mr. Radio) · `README.md` · `history.md` · `TODO.md` · `.claude-memento-maria-abe7d752.md`.
+
+**PRIOR**: **Session 197 (2026-09-09 evening, María 🌸 `31297e6d`, post-`/clear`)** — one P0 closed on work already shipped, the orphan census re-measured with a sound instrument, and **seven instances of one failure shape in a single evening**.
 
 1. **🔴 THE FAILURE SHAPE, SEVEN TIMES, SIX CAUGHT BY RIO ⚡** — merge commits · patch-id · bare date · a 33/32 near-collision · worktree occupancy · an unarmed order check · a claim about what an oracle *cannot* do. **Every time: I confirmed a mechanism EXISTS, then reported as though I had confirmed what it is WORTH** — measured impacts were 1 fleet-wide, 2 of 164, 0, caught-before-publishing, three deleted branches, worthless, and refuted. ⇒ **A mechanism is not an impact; measure the population you are CLAIMING about, not the one where you found the bug.**
 2. **THE CENSUS IS CLOSED AND ITS INSTRUMENT IS SETTLED** — **31 branches nothing-landed, of 54 carrying unlanded work, scope 243, sha `97a65464`**; window OFF the branch shape, ON the commit count. Verified by **two independently written extractors with identical per-commit output over 1,204 commits** plus git's own `--numstat` at **0 mismatches over 5,229 file-entries** — and `git patch-id` was retired as unsound, since it hashes context lines so identical work landing into a diverged file reads unlanded.

@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-09-03 (**Session 191** (María 🌸 `4f98d12f`) — Rick's three-line row display shipped across all three panes; the line-3 detail cell turned out to be TWO defects, a drifted width rule aimed at a column that no longer exists and a click branch that was never wired. Seven instances of one shape in one night — a declaration present, correct, and never reaching the surface it was written for — recorded, not graduated. I manufactured two blockers Rick had already answered. Gated promotion merged green AND reviewed after Maya rejected it for an ask path that could not run. — *Previous:* **Session 189** — the memento-pointer rename with four classes of reader.)
+Last updated: 2026-09-10 (**Session 198** (María 🌸 stable `abe7d752`) — a manager seat spent in `lupin`; skeleton crew ratified here with Rick's three rulings. — *Previous:* **Session 191** (María 🌸 `4f98d12f`) — Rick's three-line row display shipped across all three panes; the line-3 detail cell turned out to be TWO defects, a drifted width rule aimed at a column that no longer exists and a click branch that was never wired. Seven instances of one shape in one night — a declaration present, correct, and never reaching the surface it was written for — recorded, not graduated. I manufactured two blockers Rick had already answered. Gated promotion merged green AND reviewed after Maya rejected it for an ask path that could not run. — *Previous:* **Session 189** — the memento-pointer rename with four classes of reader.)
 
 ## 📍 Resume Here
 
@@ -1035,6 +1035,17 @@ whole reason that prefix exists.
 - [ ] **🆕 Manager comms-funnel SWAMP risk — revisit with Tiberius (Rick 2026-06-10, "make a note").** Current doctrine: all workers communicate UP THROUGH their manager (Tiberius) to reach Rick — good in principle (single accountable throat, no worker-floods-Rick), but it risks **swamping the manager** as the fleet grows. Revisit WITH Tiberius later: load-shedding / batching / triage tiers / a direct-to-Rick escape hatch for true-urgent, so the funnel doesn't become a bottleneck. Not urgent; a standing topic for a manager-doctrine session. | priority: P2 | raised: 2026-06-10 | owner: María + Tiberius | **`horizon: someday`**
 
 ## Decisions Log
+
+### S198 — 2026-09-10 (María 🌸 stable `abe7d752`)
+
+- **✅ SKELETON CREW RUNS ONLY ON DAYS THE OPERATOR DECLARES IT** (Rick, ~22:32, `answered: true`, `default_used: false`). Never a standing weekday default. Recorded in `workflow/skeleton-crew.md` v0.3, `9ba2b46`. | horizon: reference
+- **🔴 NO SUBAGENTS DURING SKELETON CREW** — the draft's assumption, reversed. Rick: *"When I say we're in Skeleton Crew you get no extra workers. You do the work yourselves."* | horizon: now
+- **✅ THE ARBITER'S MANAGER POKES STAY ON DURING SKELETON CREW.** With two seats they are the only stall alarm while the operator is away; only the Stop poke is muted. | horizon: reference
+- **🔴 A MERGED TEST IS NOT A PASSING TEST.** I wrote "merged E2E" into a hold before reading a commit body that said "Not yet run", and the run was red. ⇒ Read the commit body before recording a test as evidence. | horizon: now
+- **✅ CLOSE ON A SCHEDULED RUN ID, NOT A HOST RUN** (Mr. Radio's condition, adopted). A host `run-e2e-ui-tests.sh` pass leaves no run id and no protection from a job starting mid-run; `/api/test-suite/submit` after an idle check gives both (`83c3ff74` closed on `ts-4cda083a`). | horizon: now
+- **⚠️ A CONDENSED DM DROPS ARMS TABLES AND GARBLES NUMBERS.** Two worker reports tonight arrived with the receipts stripped; the arm logs in the worker's scratchpad settled both without a third round-trip. ⇒ Read the worker's own logs before deciding a gate. | horizon: now
+- **⚠️ NEVER RESTORE AN UNCOMMITTED FILE WITH `git checkout` IN AN ARM SCRIPT.** Mine wiped the fix it was meant to test. Restore from a saved copy and verify the sha. | horizon: reference
+- **⚠️ THE "USER-INITIATED VOICE MESSAGE" DENY WAS NEVER RICK.** 29 of 30 interrupted tool results had a peer DM within ±5 s, against a 5.4% baseline; the PreToolUse hook denied whenever its buffer held a DM (`bb1a9062`, fixed `2c866812`). | horizon: reference
 
 ### S197 — 2026-09-09 evening (María 🌸 `31297e6d`, post-`/clear`)
 

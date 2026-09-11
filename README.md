@@ -246,6 +246,8 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**session-checkpoint.md**](workflow/session-checkpoint.md) - Mid-session commit that preserves continuity without ending the session. Fired by the **📷** glyph or `/plan-session-checkpoint`
 - [**memento-management.md**](workflow/memento-management.md) - The pre-`/clear` snapshot a re-spun seat inherits. `/plan-memento`
 - [**fleet-pause-resume.md**](workflow/fleet-pause-resume.md) - Halting a live fleet and bringing it back
+- [**skeleton-crew.md**](workflow/skeleton-crew.md) - **Ratified 2026-09-10.** Managers only, on days the operator declares it: no spawns and no subagents, they build and sanity-check each other, the Stop poke is muted, and the arbiter's pokes stay on
+- [**sword-of-damocles.md**](workflow/sword-of-damocles.md) - **DRAFT, in force until the operator says otherwise.** Every request to promote a row out of the holding area carries the same number of deletion candidates, and the other manager agrees before it is sent
 - [**fleet-recovery.md**](workflow/fleet-recovery.md) - **Resume, don't re-trace**: recovering sessions killed by tmux/process death. A dead session is *resumable, not lost* — Claude Code streams every session to `~/.claude/projects/<slug>/<uuid>.jsonl`, so `claude --resume <uuid>` (via `start-cc-with-tmux.sh`, no modification needed) restores it verbatim. Covers identifying the dead sessions, the resurrect-the-managers-and-let-them-resurrect-their-crews delegation shape, and the two gotchas (persona re-allocation on resume; `/clear` starting a new transcript file). Written after the 2026-07-13 whole-fleet wipe took 7 sessions with **zero work lost**.
 
 ### Team Orchestration
