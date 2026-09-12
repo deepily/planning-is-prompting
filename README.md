@@ -487,6 +487,7 @@ Shorter working artifacts from the same period — designs awaiting a ruling, au
 - [Post-Game — M1 Panel Build + the 07-18 Cross-Reviews](src/rnd/2026.07.16-to-18-m1-panel-and-cross-review-post-game.md) - Owed for ten days, and **the lateness is its own first finding**
 - [Plan-Review Dispatch — Canonization Draft](src/rnd/2026.07.18-plan-review-dispatch-canonization-draft.md) - Worker-drafted canonization handed up for the Steward's pen
 - [Q2 Demo: "The Lockroom"](src/rnd/2026.08.05-q2-demo-toy-plan-one-room-text-adventure.md) · [Operator Notes](src/rnd/2026.08.05-q2-demo-toy-plan-operator-notes.md) - A deliberately tiny plan (one room, one puzzle, one exit) built to be reviewed live in five minutes
+- [Post-Game — Cascaded Review of the Spoken-Ask Door](src/rnd/2026.09.11-cascade-spoken-ask-door-retro.md) - Nine stages, 0 rounds, 0 votes; the freeze broke twice and five claims stated as measured were caught by seats that checked instead of complying — the Steward's three included
 
 **Board hygiene, audits, and mandates**
 - [PIP Command/Skill Activation & Keyword Audit](src/rnd/2026.06.29-pip-command-activation-keyword-audit.md) - Which surfaces auto-activate by intent vs which are explicit-`/name`-only, and where the keywords collide
