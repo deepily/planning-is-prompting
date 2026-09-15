@@ -12,7 +12,18 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 199 (2026-09-11, María 🌸 stable `31d4590e`, sixth rehydrate)** — Workflow Steward of the cascaded review of the spoken-ask door. The cascade finished; **the record of it did not**, and the operator read the gap as idleness.
+**RESUME HERE**: **Session 200 (2026-09-14, María 🌸 stable `ee680ab6`, re-spun as `c79c7910` at ~15:42)**: skeleton crew lifted early; the spoken-ask cascade closed, built and post-gamed; the worktree creation guard installed.
+
+1. **Skeleton crew lifted (Rick, ~15:43)**: stop poke restored to `true` and read back.
+2. **Steward, spoken-ask cascade (`e5b5b8a5`)**: Rick un-parked it. Ledger check on rev 13 (`7a6ca84`, `784e2a62`, Chloé 13/13) and rev 14 (`908b796`, `be791ae1`, spot-check scope noted). Caught a blocker that didn't exist (build go already on `ccd7d20e`). Build merged: lupin `993be2b6`, lupin-mobile `83f19a7`/`16d73f8`, rev 19 `00086b8`.
+3. **Post-game**: a live roundtable of 5 seats plus cross-exam Q1–Q4. Doc and receipts in `io/post-games/2026.09.14-cascade-spoken-ask-door-*` (local corpus). **Graduated R1+R2** (Rick's keypress) → `workflow/task-store-discipline.md` v1.8 §4.2 *Claims come from instruments*, cross-examined with Sam, Tiffany and John before writing.
+4. **Worktree guard R4**: Rick ran my tested script (`add_worktree_guard_hook.py`) at 22:34. The hook is live and a probe was logged. Tracking row `14761ef1`, promote requested with Sword pledge `7350b450`; gsm8k retirement moved to lupin `TODO.md`.
+5. **Heartbeat hold mechanism, read from code**: the Stop hook keys holds on the **stable** id (`stop.py:2422`) and reads cwd plus `projects-data/lupin` only. Three defects filed on `6698d40f`; the memory note is rewritten.
+6. **Sword of Damocles**: I own the `sword-of-damocles.md` v1.0 doc (row `03cf2b1e`), which waits on the build. Steward notes went to Tiberius; he confirmed the identity check fails closed.
+
+**Rules earned**: a poke's absence has other causes, so read the reader's code before inferring its mechanism · give Rick a readable script tested on a copy, never inline code · timestamps are readings (I mis-stamped twice today).
+
+**Previous RESUME HERE**: **Session 199 (2026-09-11, María 🌸 stable `31d4590e`, sixth rehydrate)** — Workflow Steward of the cascaded review of the spoken-ask door. The cascade finished; **the record of it did not**, and the operator read the gap as idleness.
 
 1. **🔴 THE SESSION'S FINDING, AND A THIRD OF IT IS MINE.** Rick returned and broadcast that Steps 5–6 sat `in_progress` with 8–9 `queued`: *"it sounds like a whole lot of nothing."* **The work was never the problem; the record was.** Measured: row `2586bcf8` took **sixteen amendments 23:47:13Z → 02:38:56Z**, the last **87 seconds after his broadcast**, while its *status* never moved. Meanwhile my own Steward row `e5b5b8a5` sat **2h40m stale** and my retro doc read *"fold authorised but not yet applied"* for three hours after four revisions landed.
 2. **THE FOLD LANDED IN FOUR REVISIONS, NOT ONE** — rev 9 `3a97776` (whole cascade) · rev 10 `99c4eeb` (**19 PASS / 1 FAIL plus three defects the rev-9 fold itself introduced**) · rev 11 `feda7bf` (de-ratify CB4; an unattributed "RULED" read as the operator's) · rev 12 `2def6e4` (**3 PASS / 4 FAIL**, incl. a §3.4 row unsatisfiable by any correct implementation). ⇒ **A fold is not a transcription step** — every revision found what the previous one introduced or left.

@@ -1036,6 +1036,15 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### S200 — 2026-09-14 (María 🌸 stable `ee680ab6`, Steward of the spoken-ask-door cascade)
+
+- **🔨 RULED — skeleton crew lifted early and the stop poke restored** (Rick, typed, ~15:43).
+- **🔨 RULED — worktree creation guard R4: "install it as log only … file a separate ticket, track it across the week and actually put it into service"** (Rick, ask_multiple_choice, ~22:17, real keypress). Installed by Rick's own run of a tested script at 22:34; tracking row `14761ef1`.
+- **🔨 RULED — give Rick scripts as a readable file tested on a copy, never inline code** (Rick, ~22:30: "Put that in a temp file … make sure you actually simplify yourself and run it"). The auto-mode classifier refused the settings edit and the inline one-liner read as obfuscation.
+- **🔨 RULED — graduate R1 + R2 only** (Rick, ask_multiple_choice, ~22:50). → `workflow/task-store-discipline.md` §4.2. R3 ("N of M" plus discriminator) and R5 (a row keypress counts as Rick's word) were not taken; accumulate.
+- **🔨 RULED — Sword of Damocles enforcement: no peer agreement, pledge your own ticket; atomic drop on approve; demote exempt** (Rick ~22:32 and ~22:40, via Mr. Radio, recorded on `ab8c5728`). María owns the v1.0 doc (`03cf2b1e`).
+- **🔨 RULED — end-of-session ritual with backup and push** (Rick broadcast `568ab5b0`, ~22:57).
+
 ### S199 — 2026-09-11 (María 🌸 stable `31d4590e`, Workflow Steward of the spoken-ask-door cascade)
 
 - **🔴 A STEWARD WHO LOGS INTO ROW *BODIES* HAS MADE NOTHING VISIBLE.** Row `2586bcf8` took **sixteen amendments** between 23:47:13Z and 02:38:56Z — the last **87 seconds after** Rick broadcast *"it sounds like a whole lot of nothing"* — while its **status field never moved**. My own Steward row sat 2h40m stale and my retro doc claimed the fold was unapplied for three hours after four revisions landed. ⇒ **Sixteen amendments under a frozen status are indistinguishable from idleness to the one reader who matters.** Either the status moves or the operator gets a push; the body is an archive, not a signal. | horizon: now
