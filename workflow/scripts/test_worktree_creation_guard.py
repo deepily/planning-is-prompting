@@ -301,6 +301,115 @@ def test_zone_for_resolvable_sandbox_path_is_in( repo ):
     assert guard.zone_for( target, str( repo ), True ) == "in"
 
 
+# ================================================================ THE FIRST LIVE DAY (2026-09-15, row 14761ef1)
+# The census's first day logged 15 "out" and no line was a real out-of-lane tree. Three
+# detector defects, each reproduced here from the log line that exposed it, each beside the
+# control that shows the fix did not simply stop saying "out".
+
+@pytest.fixture
+def two_repos( tmp_path ):
+    """
+    Ensures: returns ( session_repo, other_repo ), both project roots with a sandbox lane, and a
+             linked worktree inside other_repo's lane whose `.git` FILE points back into
+             other_repo's `.git/worktrees/<name>` exactly as git writes it.
+    """
+    session = tmp_path / "planning"
+    other   = tmp_path / "lupin"
+    for root in ( session, other ):
+        ( root / ".git" ).mkdir( parents=True )
+        ( root / ".claude" / "worktrees" ).mkdir( parents=True )
+    linked = other / ".claude" / "worktrees" / "radio-e2e-nits"
+    linked.mkdir()
+    ( other / ".git" / "worktrees" / "radio-e2e-nits" ).mkdir( parents=True )
+    ( linked / ".git" ).write_text( f"gitdir: {other}/.git/worktrees/radio-e2e-nits\n" )
+    return session, other, linked
+
+
+def test_cd_into_another_repo_then_add_in_its_lane_is_IN( two_repos, audit_log ):
+    """Defect 1: `cd lupin && git worktree add .claude/worktrees/x` from a planning session read OUT."""
+    session, other, _ = two_repos
+    proc = run_cli( bash_payload( f"cd {other} && git worktree add -q .claude/worktrees/maria-x -b b1", session ), audit_log )
+    assert proc.returncode == 0
+    assert audit_lines( audit_log )[ 0 ][ 2 ] == "in"
+
+
+def test_CONTROL_cd_into_another_repo_then_add_a_sibling_is_still_OUT( two_repos, audit_log ):
+    session, other, _ = two_repos
+    run_cli( bash_payload( f"cd {other} && git worktree add ../lupin-sibling", session ), audit_log )
+    assert audit_lines( audit_log )[ 0 ][ 2 ] == "out"
+
+
+def test_an_absolute_target_in_another_repos_lane_is_IN( two_repos ):
+    session, other, _ = two_repos
+    target = str( other / ".claude" / "worktrees" / "maria-y" )
+    assert guard.zone_for( target, str( session ), True ) == "in"
+
+
+def test_a_sibling_added_from_inside_a_linked_worktree_into_the_main_lane_is_IN( two_repos, audit_log ):
+    """Defect 3: a session inside radio-e2e-nits adding lupin/.claude/worktrees/radio-sword-probe read OUT."""
+    _, other, linked = two_repos
+    target = other / ".claude" / "worktrees" / "radio-sword-probe"
+    run_cli( bash_payload( f"git worktree add {target} -b probe", linked ), audit_log )
+    assert audit_lines( audit_log )[ 0 ][ 2 ] == "in"
+
+
+def test_the_linked_worktrees_root_is_the_main_repo( two_repos ):
+    _, other, linked = two_repos
+    assert guard.project_root_for( str( linked ) ) == str( other )
+
+
+def test_CONTROL_a_tree_beside_the_main_repo_from_inside_a_linked_worktree_is_OUT( two_repos ):
+    _, other, linked = two_repos
+    assert guard.zone_for( str( other.parent / "stray" ), str( linked ), True ) == "out"
+
+
+@pytest.mark.parametrize( "content", [
+    "gitdir: /somewhere/.git/modules/sub\n",     # a submodule, not a linked worktree
+    "not a gitdir line\n",                        # malformed
+] )
+def test_a_git_file_that_is_not_a_linked_worktree_keeps_its_own_root( tmp_path, content ):
+    root = tmp_path / "sub"
+    root.mkdir()
+    ( root / ".git" ).write_text( content )
+    assert guard.project_root_for( str( root ) ) == str( root )
+
+
+def test_a_relative_gitdir_resolves_against_the_git_files_directory( tmp_path ):
+    main   = tmp_path / "main"
+    linked = main / ".claude" / "worktrees" / "rel"
+    linked.mkdir( parents=True )
+    ( main / ".git" / "worktrees" / "rel" ).mkdir( parents=True )
+    ( linked / ".git" ).write_text( "gitdir: ../../../.git/worktrees/rel\n" )
+    assert guard.project_root_for( str( linked ) ) == str( main )
+
+
+def test_an_unreadable_git_file_keeps_its_own_root( tmp_path, monkeypatch ):
+    root = tmp_path / "locked"
+    root.mkdir()
+    ( root / ".git" ).write_text( "gitdir: /x/.git/worktrees/y\n" )
+    def _refuse( *a, **k ): raise PermissionError( "denied" )
+    monkeypatch.setattr( "builtins.open", _refuse )
+    assert guard.main_root_of_linked_worktree( str( root / ".git" ) ) is None
+
+
+@pytest.mark.parametrize( "command", [
+    "git worktree add $R/$T",                                  # relative, both parts expanded
+    "git worktree add /projects/lupin/$W -b x",                # ABSOLUTE but with an expansion in it
+    "git -C $R worktree add $R/.claude/worktrees/tiffany-x",   # expanded -C and target
+    "git -C $R worktree add .claude/worktrees/tiffany-x",      # expanded -C only
+] )
+def test_defect_2_a_shell_expansion_in_the_target_or_dash_C_is_UNKNOWN( repo, command ):
+    """Defect 2: `$R/$T` and `…/lupin/$W` were logged OUT — a verdict on a path never seen."""
+    hit = guard.creation_target( bash_payload( command, repo ) )
+    assert hit is not None, "detection must still fire"
+    assert hit[ 2 ] is False, f"guessed a zone for an unexpanded path: {command!r}"
+
+
+def test_CONTROL_a_literal_dash_C_and_target_stay_resolvable( repo ):
+    hit = guard.creation_target( bash_payload( "git -C /projects/lupin worktree add .claude/worktrees/x", repo ) )
+    assert hit[ 2 ] is True
+
+
 # ================================================================ MUST NOT FIRE
 # The negative controls. If these go red the guard is measuring "a tool was called."
 

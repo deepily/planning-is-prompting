@@ -114,12 +114,45 @@ def project_root_for( start_dir ):
     """
     cur = start_dir
     while True:
-        if os.path.exists( os.path.join( cur, ".git" ) ):
+        marker = os.path.join( cur, ".git" )
+        if os.path.isdir( marker ):
             return cur
+        if os.path.isfile( marker ):
+            # A linked worktree carries a `.git` FILE pointing into the main repo's
+            # `.git/worktrees/<name>`. Its lane is the MAIN repo's, not a nested one of its own
+            # (census 2026-09-15: a sibling created from inside a worktree read "out").
+            return main_root_of_linked_worktree( marker ) or cur
         parent = os.path.dirname( cur )
         if parent == cur:
             return start_dir
         cur = parent
+
+
+def main_root_of_linked_worktree( git_file ):
+    """
+    Resolve the main repository root behind a linked worktree's `.git` file.
+
+    Requires:
+        - git_file is a path to a `.git` FILE (not a directory)
+    Ensures:
+        - returns the main repo root when the file reads `gitdir: <main>/.git/worktrees/<name>`
+          (absolute, or relative to the file's directory, as git writes either)
+        - returns None for any other shape (a submodule's `gitdir: …/.git/modules/…`, an
+          unreadable or malformed file) so the caller keeps its conservative answer
+    """
+    try:
+        with open( git_file, encoding="utf-8" ) as fh:
+            first = fh.readline().strip()
+    except OSError:
+        return None
+    if not first.startswith( "gitdir:" ):
+        return None
+    gitdir = first[ len( "gitdir:" ): ].strip()
+    gitdir = os.path.normpath( os.path.join( os.path.dirname( git_file ), gitdir ) )
+    marker = os.sep + os.path.join( ".git", "worktrees" ) + os.sep
+    if marker not in gitdir + os.sep:
+        return None
+    return ( gitdir + os.sep ).split( marker )[ 0 ]
 
 
 def worktree_path_from_bash( command ):
@@ -286,6 +319,11 @@ def shell_chdir_prefix( command ):
     return ( value, True )
 
 
+def _has_shell_expansion( text ):
+    """Ensures: True iff `text` carries a character the shell expands at runtime."""
+    return any( ch in SHELL_EXPANSION_CHARS for ch in text )
+
+
 def is_out_of_sandbox( target_path, cwd ):
     """
     Classify whether a worktree target lands OUTSIDE the sanctioned sandbox lane.
@@ -294,13 +332,27 @@ def is_out_of_sandbox( target_path, cwd ):
         - target_path is the path as written on the command line (absolute or cwd-relative)
         - cwd is the session working directory (absolute)
     Ensures:
-        - returns True iff the resolved target is not under <project_root>/.claude/worktrees
+        - returns True iff the resolved target is not under <project_root>/.claude/worktrees,
+          where <project_root> is the project that CONTAINS THE TARGET (found from the target's
+          nearest existing ancestor), not the project of the session cwd
         - resolution is realpath-based on both sides so `..`, symlinks, and trailing slashes
           cannot sneak an out-of-sandbox path past as in-sandbox
+
+    WHY THE TARGET'S PROJECT, NOT THE CWD'S (census 2026-09-15, row 14761ef1). The lane exists
+    so a worktree is somewhere a reaper looks: <project>/.claude/worktrees. A seat in one repo
+    that runs `cd <other-repo> && git worktree add .claude/worktrees/x` lands squarely in the
+    other repo's lane, and on the first live day 7 of 15 "out" lines were exactly that: every
+    one a correctly placed tree, logged out because the lane was measured from the session's
+    own repo. Enforcement on that reading would have refused legitimate work all day.
+    Known limit, stated: a worktree of repo A placed inside repo B's lane reads "in". It is
+    visible there, which is the lane's purpose, but B's reaper cannot `git worktree remove` it.
     """
     resolved = os.path.realpath( os.path.join( cwd, target_path ) )
+    anchor = resolved
+    while not os.path.exists( anchor ) and os.path.dirname( anchor ) != anchor:
+        anchor = os.path.dirname( anchor )
     sandbox_root = os.path.realpath(
-        os.path.join( project_root_for( cwd ), SANDBOX_SUBPATH )
+        os.path.join( project_root_for( anchor ), SANDBOX_SUBPATH )
     )
     # A path is in-sandbox iff it equals or is nested under the sandbox root.
     return os.path.commonpath( [ resolved, sandbox_root ] ) != sandbox_root
@@ -338,6 +390,14 @@ def creation_target( payload ):
         cd_dir, resolvable = shell_chdir_prefix( command )
         git_dir            = git_chdir_from_bash( command )
 
+        # A shell expansion in the `-C` directory or in the TARGET itself is as unknowable as
+        # one in a `cd` (census 2026-09-15: `$R/$T` and `…/lupin/$W` were logged "out", a
+        # confident verdict on a path the guard never saw). Checked before the joins below,
+        # and it overrides the absolute-target confidence: `/abs/$W` is not a known place.
+        if git_dir is not None and _has_shell_expansion( git_dir ):
+            resolvable = False
+        path_is_opaque = _has_shell_expansion( path )
+
         base = cd_dir
         if git_dir is not None:
             base = git_dir if base is None else os.path.join( base, git_dir )
@@ -352,6 +412,8 @@ def creation_target( payload ):
         # cannot make it unknown — we still know precisely where it lands.
         if os.path.isabs( path ):
             resolvable = True
+        if path_is_opaque:
+            resolvable = False
         return ( "bash", path, resolvable )
 
     # Task / Agent spawn with worktree isolation. The harness creates the worktree under its own
