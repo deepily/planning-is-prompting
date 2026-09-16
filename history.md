@@ -1,6 +1,12 @@
 # Planning is Prompting - Session History
 
-> ✅ **Healthy at 14,845 tokens (2026-09-10, `tiktoken` `cl100k_base`, measured WITH the S198 entry in place).** 59% of the 25k limit; no archive due.
+> ⚠️ **WARNING LINE CROSSED — archive before adding the next entry. 17,689 tokens (2026-09-15, `tiktoken` `cl100k_base`, measured WITH the S201 entry in place; 16,322 measured immediately before writing it, so that entry cost 1,367).** Past the 17k warning, under the 19k critical, **71%** of the 25k limit. **An archive is due at the START of the next session, before its entry is written** — one more entry at this one's cost (1,367) lands at ~19,056, which is the critical line. The velocity that matters is entry SIZE, not entry count: S198 → S201 added 2,844 tokens across five days in only two entries.
+>
+> ⚠️ **And this banner is itself a receipt for the defect it nearly committed.** Its first draft carried `17,2xx` — a placeholder written before the file was re-measured, sitting beside two real figures. That is precisely the *"a number written before its tally exists gets inherited as measured"* candidate filed to `TODO.md` this same session. Caught by re-encoding rather than by reading it back. **The true cost was 1,367, not the ~500 the placeholder implied.**
+>
+> 🔴 **TENTH SIGHTING — I did not re-run `get-token-count.sh` to add to the tally, and that is deliberate.** Nine prior banners each recorded the script understating (widest gap: 2,713 low), and each instructed *"measure with a tokenizer."* Running a known-broken instrument once more to watch it fail again is not a measurement, it is a ritual. Both figures above are `tiktoken`. **If you need a number from this file, encode it — the script's ratio is not stable and it widens.**
+>
+> 🗄️ *Previous banner (2026-09-10):* ✅ **Healthy at 14,845 tokens (`tiktoken` `cl100k_base`, measured WITH the S198 entry in place).** 59% of the 25k limit; no archive due.
 >
 > 🔴 **NINTH SIGHTING, AND THE WIDEST YET: `get-token-count.sh` reported 10,460 against a true 13,173 — low by 2,713.** The previous banner recorded a 1,085 gap and instructed *"measure with a tokenizer"*; doing so is what produced this number. **The ratio is not stable — it widens.** Do not threshold on the pre-approved script.
 >
@@ -117,7 +123,29 @@
 
 **For Rick**: the ratio gate refused **nine legitimate rows** across two managers tonight and nobody claimed the P0 exemption to slip past it · `context tick` is not an addressable session, so its escalation instruction names a correspondent that does not exist · `self_respin` had **three** distinct outcomes (scheduled, declined at the human gate, stale-module failure) — do not collapse the middle into "the verb refused."
 
-#### Checkpoint | 2026.09.03 23:20 | S191 — row display shipped, promotion gate merged, history archived
+#### Checkpoint | 2026.09.15 20:30 | S201 — the mux parity cascade closed, and the ownership stage found my plan had no Tester in it
+
+**Files** · planning-is-prompting: `TODO.md` (five workflow-guidance candidates), `history.md` · lupin: `src/rnd/v0.2.1/2026.09.15-cascade-revision-handoff.md` (NEW), `src/rnd/v0.2.1/2026.09.15-multiplexer-parity-build-plan.md`, `src/rnd/v0.2.1/2026.09.15-operator-state-preservation-spec.md`, `src/rnd/README.md`
+**Commits** (lupin): `d75b8318` revision 4 — the Stage 3 fold · `edc428d0` Steps 8 and 9 — the handoff artifact
+**Board at checkpoint**: `645a7da5` P0 in_progress (awaiting Tiffany's light-review gate) · `b5035039` P1 in_progress (Sam reviewing, one finding accepted, builder correcting) · `14761ef1` P2 queued, census day 2 due 2026-09-16
+
+1. **🔴 THE CASCADE'S LAST STAGE FOUND A ROLE I HAD DELETED FROM MY OWN FLOW.** Measured: zero occurrences of "tester" in build-plan revision 3, against four of "implementer" — and §5 clause 1 assigned unit, integration **and** E2E to the Implementer. **The green on the code under test was awarded by its author.** Same shape in the falsification receipt, the plan's single anti-vacuity control: produced and accepted by one person. Both split in revision 4 — Implementer owns unit, a Tester owns integration, E2E and the pass/fail table, the Reviewer verifies the receipt.
+
+2. **The decision register only tracked the decisions that happened to have been lifted into it.** Nine *Decide · Rule · Pick · Specify · Either…or* imperatives sat in §1/§2/§7 prose — owned by nobody, needed by something, invisible to the gate. Swept into the register as items 9–17, each back-linked from its prose site. **And the gate itself was the drift mechanism**: "until items 3–8 are clear" named a fixed span while the register grew, so anything registered later fell outside it by construction. Now *"until §6 is clear."*
+
+3. **Two of my own claims failed their own check.** I had marked a register item **done** off the spec's own heading, which still read *"my recommendation — Manager to ratify or overrule"* — a recommendation is not a ratification; reverted to open. And revision 3's banner said Stage 2 returned **"48 findings"**, a figure that appears nowhere in the ledger and that nothing in the record accounts for. The ledger supports **38** (11 + 17 + 10, each quoted from its stage-close entry and corroborated against the highest finding id). Corrected rather than inherited.
+
+4. **🔴 A DOCUMENT CAN BE INVISIBLE TO `grep` WHILE `git` READS IT AS TEXT.** The operator-state spec carried five raw NUL bytes documenting legacy's NUL-separated key format. Git's binary heuristic stops at 8 KB and the first NUL sat at byte 9461 — so the file diffed, reviewed and merged normally, while `grep` classified the whole file as binary and returned **zero hits for every term in it**, silently, exit 1. A reviewer grepping that spec would have measured *"not present"* for content that is present. Escaped as `\0`; `grep -c ""` now reads 353 lines where it read nothing.
+
+5. **The Step 8 tally has three empty cells, and they are the ledger's fault, not the doc's.** Stage 1's per-section counts were never recorded — the seat re-spun mid-stage. Written as "not recorded" rather than reconstructed from a mid-flight figure. **The cause is filed**: the cascade workflow mandates a task-store ledger the store forbids a Manager to mint (`in_progress` refused at create; a live status at create is P0-only), so the ledger rode on row amendments. *The telemetry loss is the measurable consequence of that gap, not a theoretical one.*
+
+6. **The cold-context rubric is six questions and I failed three on the first pass** — carried-item tagging, cross-section dependencies, standing implementer guidance. Added §4.1–§4.3 rather than claiming a pass.
+
+7. **Peer review caught a false claim in my own row's build.** Sam simulated a stale module against `b5035039`'s guard and showed fix 3 cannot detect what it claims: a stale writer writes a **complete** marker, so a field-set assertion catches malformed writes, never old ones. He supplied four anchor strings; the builder is correcting them on a follow-up commit so his review stays anchored to the reviewed sha.
+
+---
+
+**PRIOR**: ## Checkpoint | 2026.09.03 23:20 | S191 — row display shipped, promotion gate merged, history archived
 **Files**: `history.md`, `history/2026-08-23-to-29-history.md`, `TODO.md` · lupin: `src/rnd/2026.09.04-gated-promotion-out-of-the-holding-area.md`, `src/tests/e2e_ui/test_row_geometry_is_one_shape_in_all_three_panes.py`, `src/lupin_app/static/{css/task-list.css,js/notifications.js,html/notifications.html}`
 **Board at checkpoint**: 2 rows owned — `20775ec5` (Rick's broadcast 401, filed for tomorrow), `331c8852` (fleet cap, blocked on me, chase 11:00). Crew harvested, both mementos verified.
 
