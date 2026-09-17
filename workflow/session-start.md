@@ -784,6 +784,34 @@ Example with checkpoints:
 - Use relative paths from project root
 - Always update **YOUR** Last Activity timestamp (not another session's)
 
+### 🔴 The line format is a machine contract, not a style — and the fleet has already drifted off it
+
+**A guard parses these lines.** In Lupin, `src/lupin_cli/claude_code/hooks/lib/commit_scope_guard.py` refuses a commit naming a path your section does not claim. It matches exactly two shapes, and both are the ones documented above:
+
+| It parses | It does NOT parse |
+|---|---|
+| `## Session: 5c8a3081` — the id **alone** | `## Session: 5c8a3081 (María 🌸 — manager)` — the whole section goes invisible |
+| `- 2026-01-31T09:15:00 \| src/auth.py` | `` - `src/auth.py` `` — the line claims **nothing** |
+
+⚠️ **Measured 2026-09-17** (María 🌸, Lupin commit `8629857b`): both live manifests had drifted to the backtick-bullet style, and a new section copied from the ones above it inherited the drift. Three commits were refused before the format was read off this document. **The drift is the ordinary outcome**: the bullets are prose to a human writer and a contract to the parser, and nothing in the file says which it is — so this table exists to say it.
+
+🔴 **AND THE FAILURE IS SILENT IN THE DIRECTION THAT MATTERS.** The guard fails **open** on a section it cannot parse, because a seat with no section at all must not be blocked. So an unparseable section and an absent one are indistinguishable to it: the drifted seat is never refused, never warned, and its commits go **unexamined** while the manifest above them looks diligent. A refusal means your section parsed and the path was missing — that is the guard working. **Silence is not evidence that it is.**
+
+⇒ **Verify, do not assume**: after writing your section, a commit naming one of your claimed paths should be *allowed*; if you have never seen this guard say anything at all, check the format before concluding you are conformant.
+
+### Committing into ANOTHER repo: claim it in YOUR OWN repo's manifest
+
+The guard reads `.claude-session.md` **at the session's working directory**, not at the repo receiving the commit. A seat resident in repo A that commits a file in repo B must add that file to its section in **A's** manifest — the section in B's manifest is never consulted, and in some repos (Lupin) the manifest is gitignored, so it is not even committed.
+
+Record it under a clearly labelled heading so a reader is not misled about which tree the path lives in:
+
+```markdown
+### Touched in ANOTHER repo (lupin) — claimed here because the guard reads THIS tree's manifest
+- 2026-09-17T16:12 | src/rnd/v0.2.1/2026.09.15-multiplexer-parity-build-plan.md
+```
+
+**Still name what is NOT yours.** A pathspec commit takes each named path's *working-tree* content, so a peer's uncommitted edit inside a file you legitimately claim rides along with your commit. Check `git diff HEAD -- <path>` before committing, and keep a `### NOT MINE — deliberately left uncommitted` list for files you are stepping around.
+
 ---
 
 ### ⚠️ SESSION ISOLATION (CRITICAL)
@@ -1935,6 +1963,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
 - **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
 - **2026.06.16 (María + Mr Radio)**: **Added Step 4.7 — Rebuild the Harness TODO List (MANDATORY on rehydrate)** — the READ side of the memento↔harness-list contract (Rick broadcast `beaaaa2c`: a session with no visible harness to-do list has nothing driving it forward; rebuilding is "an absolute no-no" to skip). Documents the store-authoritative reconciliation algorithm (memento skeleton → verify each vs `task_query(owner=self)` → drop done, add store-missed, store-status wins → deduped union; VERIFY-don't-manufacture; FAIL-LOUD-if-empty only when owed work exists), the env-priority flip (lupin = store-primary, plan/non-lupin = memento-primary until mirror bug `9bf1dc4a` lands), and the `9b23d5bc` caveat (rebuild is VISIBILITY-only until the `/clear` correlation-key collision lands; trust MCP `task_create`/`task_query` for auditable truth). Added the rebuild item to the Step 0 init checklist. Companion WRITE side in `workflow/memento-management.md`. Joint design with Mr Radio 🦉 (lupin).
 - **2026.05.19 (Session 93)**: **Added Preliminary -1 (Preferred-Persona Env Var) + Preliminary 0.5 (Persona-Request Swap)** — two complementary conditional sections for persona selection at session start. Preliminary -1 documents the declarative env-var path (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` read by cosa-voice's SessionStart hook); Preliminary 0.5 documents the interactive slash-command swap path (`$ARGS` arg routed to `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` with atomic-swap flow + 200/409/422/500 response handling + ask_multiple_choice conflict resolution capped at 3 alternatives). Both paths preserve narrative continuity across days/sessions/`/clear` (Path A locked: allocation is immutable after first claim; only fresh allocation re-reads the env var). Updated the existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality. ~220 lines added across both Preliminaries. Paired with cosa-voice's server-side env-var allocator + `requested_persona_name` route handler.
