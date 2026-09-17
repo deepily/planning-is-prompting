@@ -646,6 +646,8 @@ git ls-files --others --exclude-standard | tree --fromfile -a
    **Find section `## Session: {my_session_id}`**:
    - Extract `### Touched Files` entries from that section
    - Parse lines matching pattern: `- [timestamp] | [file_path]`
+
+   > ⚠️ **That pattern is a machine contract, and both live manifests have drifted off it** — measured 2026-09-17. A commit guard parses these same two shapes and **fails open** on a section it cannot read, so a drifted section is indistinguishable from no section at all: silence is not proof the check ran. The parses / does-not-parse table, the fail-open warning, and the rule for a seat committing into ANOTHER repo are in `workflow/session-start.md` § Step 3.5 — *"The line format is a machine contract, not a style"*. Read it there rather than re-deriving it here.
    - Extract unique file paths (deduplicate if same file edited multiple times)
    - Store as `my_files` list
 
