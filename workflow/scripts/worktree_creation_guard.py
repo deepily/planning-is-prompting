@@ -194,7 +194,9 @@ def worktree_path_from_bash( command ):
         if tok.startswith( "-" ):
             j += 1                          # a valueless flag (e.g. --detach, --force)
             continue
-        return tok                          # first positional = the worktree path
+        # First positional = the worktree path, trimmed at a glued terminator so a compound
+        # command's second path is not welded onto the first (see _head_before_terminator).
+        return _head_before_terminator( tok )
     return None
 
 
@@ -206,6 +208,38 @@ SHELL_EXPANSION_CHARS = set( "$`*?{}[]~" )
 # one of these is a BARE cd (it goes to $HOME), not a cd into a directory named "&&" — a
 # distinction the first draft of shell_chdir_prefix got wrong, caught by its own test.
 SHELL_OPERATORS = { "&&", "||", ";", "|", "&" }
+
+# Characters that END one command and begin the next. shlex.split only separates on
+# WHITESPACE, so these are separators the shell honors and shlex does not: `add /a;/b`
+# arrives as the single token "/a;/b".
+COMMAND_TERMINATORS = ";&|\n"
+
+
+def _head_before_terminator( token ):
+    """
+    Trim a token at the first glued command terminator, so a compound command cannot
+    smuggle a second command's path into a field that means "one path".
+
+    Requires:
+        - token is a single shlex token
+    Ensures:
+        - returns the part of `token` before the first `;`, `&`, `|` or newline
+        - returns None when nothing precedes it (a bare operator token, or one starting
+          with an operator) — the caller then knows it does not know
+
+    WHY (census day 4, 2026-09-17, row 14761ef1). A live line carried the target
+    ".../seat-cc-author-mr-radio-2;/$S/mut/wt" — two paths from a compound command, joined
+    by a semicolon, handed to the zoner as ONE path. It landed in `unknown` only because
+    its tail happened to hold a `$`; a compound whose second half were literal would have
+    been zoned CONFIDENTLY, against a path that is half of one target and half of another.
+    That is the failure mode this trim exists to prevent, and no test at 458f81c covered it:
+    the three defects fixed there were about WHICH project to measure from and about
+    declining to guess at variables, never about the token being two paths in a trench coat.
+    """
+    head = token
+    for ch in COMMAND_TERMINATORS:
+        head = head.split( ch )[ 0 ]
+    return head if head else None
 
 
 def _worktree_add_index( tokens ):
@@ -266,7 +300,8 @@ def git_chdir_from_bash( command ):
     chdir = None
     for i in range( add_idx ):
         if tokens[ i ] == "-C" and i + 1 < add_idx:
-            value = tokens[ i + 1 ]
+            value = _head_before_terminator( tokens[ i + 1 ] )
+            if value is None: continue      # `-C ;…` — no directory to chdir into
             chdir = value if chdir is None else os.path.join( chdir, value )
     return chdir
 
@@ -314,6 +349,9 @@ def shell_chdir_prefix( command ):
         return ( None, False )          # bare `cd` -> $HOME
     if value.startswith( "-" ):
         return ( None, False )          # `cd -` -> $OLDPWD (and any cd flag)
+    value = _head_before_terminator( value )
+    if value is None:
+        return ( None, False )          # `cd ;git …` — a bare cd wearing a terminator
     if any( ch in SHELL_EXPANSION_CHARS for ch in value ):
         return ( None, False )          # expanded at runtime, not knowable from the text
     return ( value, True )

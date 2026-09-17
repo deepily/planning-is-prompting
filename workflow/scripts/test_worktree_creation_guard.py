@@ -557,3 +557,76 @@ def test_cli_survives_an_unwritable_audit_log( repo, tmp_path ):
     ( tmp_path / "nodir" ).write_text( "I am a file, not a directory" )
     proc = run_cli( bash_payload( "git worktree add ../sib", repo ), unwritable )
     assert proc.returncode == 0, "a failed audit write took the guard down"
+
+
+# ============================================ COMPOUND COMMANDS (census day 4, 2026-09-17)
+# A shlex token is split on WHITESPACE only, so `add /a;/b` arrives as one token holding two
+# paths. The live line that exposed it:
+#   2026-09-16T21:58:45 bash unknown <cwd> ".../seat-cc-author-mr-radio-2;/$S/mut/wt"
+# It read `unknown` only because its tail carried a `$`. With a literal tail the guard would
+# have zoned a path that is half of one target and half of another, CONFIDENTLY. Each case
+# below is paired with a control that must still read the whole path.
+
+def test_compound_target_is_trimmed_to_the_first_path( repo ):
+    """`add <in-lane>;<other>` is the first path, not the two welded together."""
+    lane = f"{repo}/.claude/worktrees/a"
+    assert guard.worktree_path_from_bash( f"git worktree add {lane};/other/mut/wt" ) == lane
+    assert guard.is_out_of_sandbox( lane, str( repo ) ) is False
+
+
+def test_the_live_day4_line_zones_in_not_unknown( repo ):
+    """
+    The real logged shape, replayed: the trim removes the `$`-bearing tail, so what is left
+    is a literal in-lane path and the census gets `in` — a true reading, where before the
+    variable in the SECOND command was deciding the verdict for the FIRST.
+    """
+    lane    = f"{repo}/.claude/worktrees/seat-cc-author-mr-radio-2"
+    payload = bash_payload( f"git worktree add {lane};/$S/mut/wt", repo )
+    kind, target, resolvable = guard.creation_target( payload )
+    assert ( kind, target, resolvable ) == ( "bash", lane, True )
+    assert guard.zone_for( target, str( repo ), resolvable ) == "in"
+
+
+def test_compound_with_ampersands_is_trimmed( repo ):
+    """`&&` glued to the path is the same defect wearing a different operator."""
+    assert guard.worktree_path_from_bash( "git worktree add ../sib&&echo done" ) == "../sib"
+    assert guard.is_out_of_sandbox( "../sib", str( repo ) ) is True
+
+
+def test_a_bare_terminator_is_not_a_path( repo ):
+    """`add ;echo` has no target. Before the trim, ";echo" itself was returned as one."""
+    assert guard.worktree_path_from_bash( "git worktree add ;echo hi" ) is None
+    assert guard.creation_target( bash_payload( "git worktree add ;echo hi", repo ) ) is None
+
+
+def test_cd_prefix_is_trimmed_at_a_terminator( tmp_path, repo ):
+    """
+    The `cd` channel carries the identical defect: `cd /x;git worktree add y` gave the base
+    "/x;git" — a directory that cannot exist — and called it resolvable.
+    """
+    other = tmp_path / "other"
+    other.mkdir()
+    cmd = f"cd {other};git worktree add .claude/worktrees/x"
+    assert guard.shell_chdir_prefix( cmd ) == ( str( other ), True )
+
+
+def test_git_dash_C_is_trimmed_at_a_terminator( tmp_path ):
+    """Same trim on git's own chdir flag, for the same reason."""
+    other = tmp_path / "other"
+    assert guard.git_chdir_from_bash( f"git -C {other};x worktree add w" ) == str( other )
+
+
+# -------- controls: a path that merely LOOKS operator-adjacent must survive intact
+
+def test_a_plain_path_is_never_trimmed( repo ):
+    """The negation of the four cases above. If this goes red, the trim eats real paths."""
+    lane = f"{repo}/.claude/worktrees/plain-name"
+    assert guard.worktree_path_from_bash( f"git worktree add {lane}" ) == lane
+
+
+def test_a_spaced_operator_still_yields_the_whole_path( repo ):
+    """
+    `add <path> ; echo` — the operator is its own token here, which shlex already separated
+    and the flag loop already stopped at. The trim must not change this case.
+    """
+    assert guard.worktree_path_from_bash( "git worktree add ../sib ; echo hi" ) == "../sib"
