@@ -22,7 +22,15 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 200 (2026-09-14, María 🌸 stable `ee680ab6`, re-spun as `c79c7910` at ~15:42)**: skeleton crew lifted early; the spoken-ask cascade closed, built and post-gamed; the worktree creation guard installed.
+**RESUME HERE**: **Session 202 (2026-09-16, María 🌸 stable `5bf2fa6f`, self-respun as `777ada58` at 19:57)**: the fleet demo clip was shot and kept; the external stale-MCP check merged; one bug closed.
+
+1. **Fleet demo clip (P0 `d696e910`, done)**: script in lupin `src/rnd/2026.09.16-fleet-demo-clip-workflow.md` (`1d802620`). About ten takes with 14 idle seats; Rick called the last one a keeper. What it taught is now in the script: spin up and hold first, and each seat says its line then nothing (§3b 😘 STFU, speakerphone off, Stop poke paused).
+2. **Stale-MCP external check (`b5035039`, done)**: lupin `9d4fd856`, `src/scripts/stale_mcp_check.py`. Sam built it; Krishna's review caught a blocker (a py_compile of the MCP file counted as a live MCP); fixed and approved. 40 passing tests; live run found 0 stale.
+3. **Holding-area short line (`081dac6d`, done)**: browser job `ts-0b651551` passed 5 of 5.
+4. **Pick up tomorrow**: ask Rick to admit `97c5bd94` (run the stale check from the observer sweep, and deliver what it finds). Run the worktree guard census for `14761ef1` on 09-17. Rick still owes the Stop poke restore (`heartbeat.poke_output_enabled` → `true`), and the uncommitted fleet-cap ini line (8→9) is his.
+5. **Rule earned**: the "notify at the end of every turn" rule makes seats narrate, so a 😘 reminder alone doesn't stop it; the switch has to be turned off.
+
+**Previous RESUME HERE**: **Session 200 (2026-09-14, María 🌸 stable `ee680ab6`, re-spun as `c79c7910` at ~15:42)**: skeleton crew lifted early; the spoken-ask cascade closed, built and post-gamed; the worktree creation guard installed.
 
 1. **Skeleton crew lifted (Rick, ~15:43)**: stop poke restored to `true` and read back.
 2. **Steward, spoken-ask cascade (`e5b5b8a5`)**: Rick un-parked it. Ledger check on rev 13 (`7a6ca84`, `784e2a62`, Chloé 13/13) and rev 14 (`908b796`, `be791ae1`, spot-check scope noted). Caught a blocker that didn't exist (build go already on `ccd7d20e`). Build merged: lupin `993be2b6`, lupin-mobile `83f19a7`/`16d73f8`, rev 19 `00086b8`.
