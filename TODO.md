@@ -9,7 +9,7 @@ Last updated: 2026-09-11 (**Session 199** (María 🌸 stable `31d4590e`) — Wo
 > 1. **Ask Rick to admit `97c5bd94`** (held): the observer sweep runs lupin `src/scripts/stale_mcp_check.py` and messages the stale seat's manager once. Staff it as build plus adversarial review.
 > 2. **`14761ef1` worktree guard trial**: run the day-4 census of its audit log (trial runs to 09-21).
 > 3. **Rick's, not mine, but check them**: Stop poke `heartbeat.poke_output_enabled` back to `true` (paused for the demo take); lupin `src/conf/lupin-app.ini` fleet cap 8→9 left uncommitted (written by his slider).
-> 4. **This file is ~1,500 lines**: the horizon archive (`/plan-todo archive`) is still owed.
+> 4. 🔴 **This file is 1,525 lines and the horizon archive is NOT YOURS TO START** — corrected 2026-09-17 (María 🌸 `10953318`). Earlier banners, including mine, listed it as "still owed", which reads as work to pick up. **Rick declined it by a real keypress in S164 (2026-08-12), the fifth deferral**, and the Pending item at the bottom of this file records that verbatim. Only he lifts it. Held as row `2dbd3159` (holding area); the ask, already framed and costed, is in that row. Do not cut a line of this file until he answers.
 
 > ### 🔴 **S195 — I closed a row whose code is on no branch anyone will open.** (María 🌸, 2026-09-07)
 >
