@@ -1050,6 +1050,25 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### S203 — 2026-09-17 (María 🌸 stable `10953318`, manager of Clayton 😎 + maya 🌻)
+
+**🔴 THREE RULINGS ARE OWED BY RICK AND NONE WERE GIVEN — two asks timed out at 600s each.** The second returned `[default used] no`, which is the **fallback, not a refusal**. Recorded here because a timeout and a refusal are not the same thing: only a refusal closes a question, and a `no` in a log beside a prepared fix is how a rework nobody asked for gets shipped.
+1. **`bd41d2fa` admit** — the `scratch`-zone build. Request filed and pending, no expiry, pledged against `2dbd3159`.
+2. **`f9a449c3` mic layout** — mics render *below* each box, flush right, card two rows taller. The other reading is *same line, right end*. Rick's sentence supports both.
+3. **Enforcement behaviour for `scratch` and `unknown`** — deliberately left unruled; a worker and a manager settling it between them would hand Rick a decision already made.
+
+**🔨 RULED BY ME, inside standing authority:**
+- **The scratchpad predicate requires the session-uuid segment** — `/tmp/claude-1001/respin-base` stays `out` and correctly so: no session segment means it is a *sibling* of the scratchpads, not one of them. Match on a **path segment boundary, never a string prefix**.
+- **The uuid must be the creating session's own**, and must match **either** `claude_code.session_id` **or** `claude_code.stable_session_id` — measured: both directories exist at once and both are the seat's. A foreign uuid falls through to `out` with a census marker; **no fourth zone invented**.
+- **`396f44f6` kept out of `bd41d2fa`** (Clayton's recommendation): one row adds a zone, the other fixes how a target is recognised at all.
+- **A receipt I demanded was withdrawn as impossible** — I asked for a historical replay of the own-session clause, but the log records no session id, so it cannot be checked against any existing line. Narrowed to the any-uuid rule, with the gap stated.
+- **maya's row `82e4f6d0` stays held on purpose** — she argued it better than I did: the work is done, committed and green, so admitting buys visibility and nothing else at the cost of a Sword ticket. The record went to lupin's Decisions Log (`cc2696fd`) instead.
+- **No post-game at a seat park** (Clayton flagged the tool's default rather than letting it stand in for my call); **nothing hand-placed into any tree** — a look-once artifact lives on its branch, findable by sha.
+
+**⚠️ CANDIDATE, not yet doctrine — accumulate before graduating:**
+- *An instrument narrower than the question returns empty, and empty reads as absent.* Three instances in one session: `task_query` excluding terminal and `not_approved` (I told two workers they owned zero rows; one has 139); a glob one level too shallow reporting a directory absent; and an mtime read as evidence about file content. Clayton's own summary is the better phrasing: **every one was fixed by looking at the thing itself instead of a proxy for it.**
+- *A rendered sentence is not a ruling.* A condensed DM closed a P0. A timeout default nearly closed a layout question. Both are the same defect wearing different clothes.
+
 ### S200 — 2026-09-14 (María 🌸 stable `ee680ab6`, Steward of the spoken-ask-door cascade)
 
 - **🔨 RULED — skeleton crew lifted early and the stop poke restored** (Rick, typed, ~15:43).
