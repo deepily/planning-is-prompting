@@ -630,3 +630,300 @@ def test_a_spaced_operator_still_yields_the_whole_path( repo ):
     and the flag loop already stopped at. The trim must not change this case.
     """
     assert guard.worktree_path_from_bash( "git worktree add ../sib ; echo hi" ) == "../sib"
+
+
+# ================================================================ THE `scratch` ZONE
+# Row bd41d2fa, 2026-09-18. Spec + predicate: src/rnd/2026.09.17-worktree-scratch-zone-predicate.md.
+# Before this zone, `out` conflated a hand-built tree in the wrong place (what the rule counts)
+# with a session-scratchpad throwaway (what the fleet config recommends instead of `git stash`).
+# Every must-be-scratch case below is paired with controls that must STAY `out`, so the new
+# zone cannot start swallowing real violations without a red test.
+
+OWN     = "1be2d060-7434-467c-83a9-42d07dda009e"
+STABLE  = "b2d5ceba-47dc-495e-a2ab-a10a3d5419b8"
+FOREIGN = "c79c7910-95ed-4815-8152-efd0535e8d99"
+SLUG    = "-mnt-DATA01-include-www-deepily-ai-projects-lupin-mobile"
+
+
+@pytest.fixture
+def scratch( tmp_path, monkeypatch ):
+    """
+    Ensures: the scratch parent points at an isolated tmp dir, so the root is
+             <tmp>/claude-<uid> for the REAL uid, and that root exists on disk.
+             Returns the resolved root.
+    """
+    parent = tmp_path / "tmpfs"
+    parent.mkdir()
+    monkeypatch.setattr( guard, "SCRATCH_PARENT", str( parent ) )
+    root = Path( guard.scratch_root() )
+    root.mkdir()
+    return root
+
+
+def pad( root, uuid=OWN, tail="scratchpad/wt" ):
+    """Ensures: returns the canonical <root>/<slug>/<uuid>/<tail> path as a string."""
+    return str( root / SLUG / uuid / tail )
+
+
+# ------------------------------------------------------------ the predicate
+
+def test_scratchpad_target_is_scratch( repo, scratch ):
+    """Clause 1–4 all hold: the canonical session-scratchpad throwaway."""
+    assert guard.zone_for( pad( scratch ), str( repo ), True, frozenset( { OWN } ) ) == "scratch"
+
+
+def test_scratch_root_is_derived_from_the_uid_not_hardcoded_1001( monkeypatch ):
+    """Clause 3. A different uid must move the root; the literal 1001 is one host's answer."""
+    monkeypatch.setattr( guard, "SCRATCH_PARENT", "/tmp" )
+    monkeypatch.setattr( guard.os, "getuid", lambda: 4242 )
+    assert guard.scratch_root() == os.path.realpath( "/tmp/claude-4242" )
+
+
+def test_tmp_root_alone_is_not_scratch( repo, scratch ):
+    """The root itself, with or without a trailing slash, carries no session segment."""
+    for target in ( str( scratch ), str( scratch ) + "/" ):
+        assert guard.zone_for( target, str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_a_non_uuid_segment_is_not_scratch( repo, scratch ):
+    """Replays the live `respin-base` line: a sibling OF the scratchpads, not one of them."""
+    assert guard.zone_for( str( scratch / "respin-base" ), str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_project_slug_without_a_uuid_is_not_scratch( repo, scratch ):
+    """<root>/<slug>/<non-uuid>/wt has three segments but no session segment."""
+    target = str( scratch / SLUG / "not-a-session" / "wt" )
+    assert guard.zone_for( target, str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_a_bare_scratchpad_path_is_not_scratch( repo, tmp_path ):
+    """The literal word `scratchpad` qualifies nothing; the uuid segment under the root does."""
+    target = str( tmp_path / "elsewhere" / OWN / "scratchpad" / "wt" )
+    assert guard.zone_for( target, str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_the_uuid_segment_needs_three_segments_below_the_root( repo, scratch ):
+    """<root>/<slug>/<uuid> is two segments — the session dir itself, not a tree under it."""
+    target = str( scratch / SLUG / OWN )
+    assert guard.zone_for( target, str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+@pytest.mark.parametrize( "segment", [
+    "1be2d060-7434-467c-83a9-42d07dda009",       # short last group
+    "1BE2D060-7434-467C-83A9-42D07DDA009E",      # uppercase
+    "1be2d060-7434-467c-83a9-42d07dda009g",      # non-hex
+    "1be2d060-7434-467c-83a9-42d07dda009e-x",    # uuid with a suffix
+] )
+def test_uuid_must_be_the_full_8_4_4_4_12_form( repo, scratch, segment ):
+    """A near-uuid is not a uuid, even when the caller claims it as its own."""
+    target = pad( scratch, uuid=segment )
+    assert guard.zone_for( target, str( repo ), True, frozenset( { segment } ) ) == "out"
+
+
+def test_dotdot_cannot_escape_the_scratch_root( repo, scratch ):
+    """`..` is resolved before comparing; walking out past the root reads as what it is."""
+    escaping = pad( scratch, tail="scratchpad/../../../../escaped/wt" )
+    assert guard.zone_for( escaping, str( repo ), True, frozenset( { OWN } ) ) == "out"
+    staying  = pad( scratch, tail="scratchpad/x/../wt" )
+    assert guard.zone_for( staying, str( repo ), True, frozenset( { OWN } ) ) == "scratch"
+
+
+def test_symlink_is_resolved_before_classifying( repo, scratch, tmp_path ):
+    """
+    Both directions. A link outside the root pointing IN is scratch; a link inside the
+    session dir pointing OUT to a project dir is out.
+    """
+    session_dir = scratch / SLUG / OWN / "scratchpad"
+    session_dir.mkdir( parents=True )
+    inbound = tmp_path / "inbound-link"
+    inbound.symlink_to( session_dir )
+    assert guard.zone_for( str( inbound / "wt" ), str( repo ), True, frozenset( { OWN } ) ) == "scratch"
+
+    project_dir = tmp_path / "some-project-dir"
+    project_dir.mkdir()
+    outbound = session_dir / "outbound-link"
+    outbound.symlink_to( project_dir )
+    assert guard.zone_for( str( outbound / "wt" ), str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_a_sibling_root_sharing_the_prefix_is_not_scratch( repo, scratch ):
+    """
+    The `-evil` case. `startswith` admits it; commonpath does not. If this goes red the
+    predicate has regressed to a string prefix.
+    """
+    evil = Path( str( scratch ) + "-evil" ) / SLUG / OWN / "scratchpad" / "wt"
+    assert guard.zone_for( str( evil ), str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_a_foreign_session_uuid_is_not_scratch( repo, scratch ):
+    """A peer's well-formed uuid is a peer's private tree, not yours (María, 2026-09-17)."""
+    assert guard.zone_for( pad( scratch, uuid=FOREIGN ), str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+def test_no_known_session_ids_means_nothing_is_scratch( repo, scratch ):
+    """With no id to own it by, even the canonical shape stays `out` — the default is not scratch."""
+    assert guard.zone_for( pad( scratch ), str( repo ), True ) == "out"
+
+
+def test_either_session_id_or_stable_session_id_satisfies_ownership( repo, scratch ):
+    """
+    A cleared seat owns one directory per id. Each bridge id alone must admit its own
+    directory, and a directory matching neither must stay out.
+    """
+    live_only   = guard.own_session_ids( {}, { "session_id": OWN } )
+    stable_only = guard.own_session_ids( {}, { "stable_session_id": STABLE } )
+    both        = guard.own_session_ids( {}, { "session_id": OWN, "stable_session_id": STABLE } )
+
+    assert guard.zone_for( pad( scratch, uuid=OWN ),    str( repo ), True, live_only )   == "scratch"
+    assert guard.zone_for( pad( scratch, uuid=STABLE ), str( repo ), True, stable_only ) == "scratch"
+    assert guard.zone_for( pad( scratch, uuid=OWN ),    str( repo ), True, both )        == "scratch"
+    assert guard.zone_for( pad( scratch, uuid=STABLE ), str( repo ), True, both )        == "scratch"
+    assert guard.zone_for( pad( scratch, uuid=FOREIGN ), str( repo ), True, both )       == "out"
+
+
+def test_the_payload_session_id_is_an_own_id( repo, scratch ):
+    """The hook payload's `session_id` is the harness's live id; with no bridge it stands alone."""
+    ids = guard.own_session_ids( { "session_id": OWN }, None )
+    assert ids == frozenset( { OWN } )
+    assert guard.zone_for( pad( scratch ), str( repo ), True, ids ) == "scratch"
+
+
+def test_the_eight_char_session_id_field_is_refused_as_a_candidate():
+    """
+    The 8-char form can never equal a 36-char segment. It must be SKIPPED, not kept to
+    compare-and-miss, wherever it arrives from.
+    """
+    ids = guard.own_session_ids( { "session_id": OWN[ :8 ] },
+                                 { "session_id": STABLE[ :8 ], "stable_session_id": 12345 } )
+    assert ids == frozenset()
+
+
+# ------------------------------------------------- interaction with the existing zones
+
+def test_scratch_is_carved_out_of_out_never_out_of_in( scratch ):
+    """A project living inside a scratchpad keeps its own lane: a tree there is `in`."""
+    proj = Path( pad( scratch, tail="scratchpad/proj" ) )
+    ( proj / ".git" ).mkdir( parents=True )
+    ( proj / ".claude" / "worktrees" ).mkdir( parents=True )
+    lane = str( proj / ".claude" / "worktrees" / "x" )
+    assert guard.zone_for( lane, str( proj ), True, frozenset( { OWN } ) ) == "in"
+
+
+def test_unknown_still_wins_over_scratch( repo, scratch ):
+    """An undeterminable base is never promoted, however scratch-shaped the text looks."""
+    assert guard.zone_for( pad( scratch ), str( repo ), False, frozenset( { OWN } ) ) == "unknown"
+
+
+def test_task_worktree_is_still_in_not_scratch( repo ):
+    """`target_path is None` — the harness-owned Task worktree — is unchanged."""
+    assert guard.zone_for( None, str( repo ), True, frozenset( { OWN } ) ) == "in"
+
+
+def test_every_zone_value_is_one_of_the_four( repo, scratch ):
+    """A closed enum: every branch of zone_for returns a member of ZONES, and ZONES has four."""
+    assert set( guard.ZONES ) == { "in", "out", "unknown", "scratch" }
+    lane = str( repo / ".claude" / "worktrees" / "x" )
+    seen = {
+        guard.zone_for( None,          str( repo ), True ),
+        guard.zone_for( lane,          str( repo ), True ),
+        guard.zone_for( "../sib",      str( repo ), False ),
+        guard.zone_for( "../sib",      str( repo ), True ),
+        guard.zone_for( pad( scratch ), str( repo ), True, frozenset( { OWN } ) ),
+    }
+    assert seen == set( guard.ZONES )
+
+
+# ------------------------------------------------------ controls: hand-built trees stay OUT
+# The behaviour the rule exists to count. Own ids are supplied on purpose: ownership of a
+# session must never leak into a verdict about a path outside that session's scratchpad.
+
+@pytest.mark.parametrize( "target", [ "../sib", "../../elsewhere/wt", "stray-wt" ] )
+def test_a_hand_built_tree_in_a_project_dir_stays_out( repo, scratch, target ):
+    assert guard.zone_for( target, str( repo ), True, frozenset( { OWN, STABLE } ) ) == "out"
+
+
+def test_a_project_path_carrying_an_own_uuid_stays_out( repo, scratch ):
+    """A uuid segment outside the scratch root proves nothing: clause 2 fails first."""
+    target = str( repo.parent / "sibling" / OWN / "scratchpad" / "wt" )
+    assert guard.zone_for( target, str( repo ), True, frozenset( { OWN } ) ) == "out"
+
+
+# ------------------------------------------------------------------ the census seam
+
+def test_cli_records_scratch_zone( tmp_path, repo ):
+    """
+    Mirrors test_cli_records_unknown_zone, as a real subprocess. The subprocess cannot be
+    monkeypatched, so it uses the real <"/tmp">/claude-<uid> root with a path that need not
+    exist, and an EMPTY bridge dir so no live seat's bridge can lend it an id.
+    """
+    audit   = tmp_path / "audit.log"
+    bridges = tmp_path / "no-bridges"
+    bridges.mkdir()
+    target  = f"/tmp/claude-{os.getuid()}/{SLUG}/{OWN}/scratchpad/wt-cli-test"
+    payload = bash_payload( f"git worktree add {target}", repo )
+    payload[ "session_id" ] = OWN
+    env = dict( os.environ, WORKTREE_CREATION_AUDIT_LOG=str( audit ), LUPIN_HOOK_SESSIONS_DIR=str( bridges ) )
+    proc = subprocess.run( [ sys.executable, str( SCRIPT ) ], input=json.dumps( payload ),
+                           text=True, capture_output=True, env=env )
+    assert proc.returncode == 0
+    rows = audit_lines( audit )
+    assert len( rows ) == 1 and rows[ 0 ][ 2 ] == "scratch"
+
+    # Control through the same seam: a foreign session creating the same path logs `out`.
+    payload[ "session_id" ] = FOREIGN
+    subprocess.run( [ sys.executable, str( SCRIPT ) ], input=json.dumps( payload ),
+                    text=True, capture_output=True, env=env )
+    assert audit_lines( audit )[ 1 ][ 2 ] == "out"
+
+
+def test_append_audit_accepts_scratch( audit_log ):
+    guard.append_audit( "bash", "/tmp/x", "/cwd", "scratch" )
+    assert audit_lines( audit_log )[ 0 ][ 2 ] == "scratch"
+
+
+# The six live `out` lines that target the scratch root, verbatim from
+# ~/.claude/worktree-creation-audit.log (read 2026-09-18). The first predates the 13:35 cutoff.
+LIVE_TMP_LINES = [
+    ( "/tmp/claude-1001/-mnt-DATA01-include-www-deepily-ai-projects-planning-is-prompting/c79c7910-95ed-4815-8152-efd0535e8d99/scratchpad/wt-probe", "scratch" ),
+    ( "/tmp/claude-1001/respin-base", "out" ),
+    ( "/tmp/claude-1001/-mnt-DATA01-include-www-deepily-ai-projects-lupin-mobile/1be2d060-7434-467c-83a9-42d07dda009e/scratchpad/rev23f6", "scratch" ),
+    ( "/tmp/claude-1001/-mnt-DATA01-include-www-deepily-ai-projects-lupin-mobile/1be2d060-7434-467c-83a9-42d07dda009e/scratchpad/wt/rr-krishna", "scratch" ),
+    ( "whose", "out" ),
+    ( "/tmp/claude-1001/-mnt-DATA01-include-www-deepily-ai-projects-lupin--claude-worktrees-seat-cc-author-mr-radio-2/b2d5ceba-47dc-495e-a2ab-a10a3d5419b8/scratchpad/base", "scratch" ),
+]
+
+
+def test_the_live_tmp_lines_replay_to_four_scratch_and_two_out( repo, scratch ):
+    """
+    Pins the rule to reality. Each line is rebased from this host's root onto the test root
+    and replayed under the ANY-UUID rule: the log records no session id, so each line is
+    credited with the uuid its own path carries. The own-session clause is NOT replayable.
+    """
+    got = []
+    for target, expected in LIVE_TMP_LINES:
+        rebased = target.replace( "/tmp/claude-1001", str( scratch ), 1 )
+        claimed = frozenset( s for s in rebased.split( os.sep ) if guard.SESSION_UUID_RE.fullmatch( s ) )
+        got.append( guard.zone_for( rebased, str( repo ), True, claimed ) )
+    assert got == [ e for _, e in LIVE_TMP_LINES ]
+    assert ( got.count( "scratch" ), got.count( "out" ) ) == ( 4, 2 )
+
+
+# ------------------------------------------------------------------ enforcement
+
+def test_scratch_creation_is_allowed_without_registration():
+    """María's standing ruling: it dies with the session and leaves the janitor nothing."""
+    assert guard.enforce_action( "scratch" ) == "allow"
+    assert guard.enforce_action( "out" ) == "register"
+    assert guard.enforce_action( "in" ) == "allow"
+
+
+@pytest.mark.parametrize( "zone", [ "unknown", "bogus", "" ] )
+def test_an_unruled_zone_refuses_rather_than_defaults( zone ):
+    """`unknown` is unruled; asking for its action must raise, never fall through to allow."""
+    with pytest.raises( guard.UnruledZoneError ):
+        guard.enforce_action( zone )
+
+
+def test_mode_is_still_log_only():
+    """This row changes zoning only. The enforcement flip is Rick's, and not in this commit."""
+    assert guard.MODE == "LOG_ONLY"
