@@ -99,6 +99,18 @@ SANDBOX_SUBPATH = os.path.join( ".claude", "worktrees" )
 # and missing one that appears later costs an orphan (the memento MUTATING_TOOLS lesson).
 CREATION_TOOLS = { "Bash", "Task", "Agent" }
 
+# The census zones, closed. `scratch` (row bd41d2fa, 2026-09-18) is carved out of `out`, never
+# out of `in` or `unknown`: see zone_for.
+ZONES = ( "in", "out", "unknown", "scratch" )
+
+# The session scratchpads live under <SCRATCH_PARENT>/claude-<uid>. The parent is a module
+# constant so tests can point it at a tmp dir; the uid is ALWAYS read from os.getuid(), never
+# written as a literal — `1001` is one host's answer, not the rule.
+SCRATCH_PARENT = "/tmp"
+
+# The full 8-4-4-4-12 lowercase form. A path segment qualifies only if it matches this whole.
+SESSION_UUID_RE = re.compile( r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" )
+
 
 def project_root_for( start_dir ):
     """
@@ -396,6 +408,121 @@ def is_out_of_sandbox( target_path, cwd ):
     return os.path.commonpath( [ resolved, sandbox_root ] ) != sandbox_root
 
 
+def scratch_root():
+    """
+    Ensures:
+        - returns realpath( <SCRATCH_PARENT>/claude-<uid> ), the uid read from os.getuid()
+          at CALL time — never a hardcoded 1001
+    """
+    return os.path.realpath( os.path.join( SCRATCH_PARENT, f"claude-{os.getuid()}" ) )
+
+
+def own_session_ids( payload, bridge ):
+    """
+    Collect the creating session's own full session uuids — the only uuids that may qualify
+    a target as `scratch`.
+
+    Requires:
+        - payload is the decoded PreToolUse JSON (its `session_id` is the harness's live id)
+        - bridge is this seat's parsed session bridge dict, or None when none resolves
+    Ensures:
+        - returns a frozenset holding payload["session_id"], bridge["session_id"] and
+          bridge["stable_session_id"] — each ONLY if it is a full-form uuid
+        - an id of any other shape is SKIPPED, never kept to compare-and-miss
+
+    WHY BOTH BRIDGE IDS (María's ruling, 2026-09-17): a /clear mints a new scratchpad
+    directory for the new live id, while the stable id survives the clear. A cleared seat
+    therefore owns one directory named for each, and accepting only one id demotes the other
+    to `out`. WHY THE SHAPE FILTER: get_session_info() also exposes a top-level `session_id`
+    that is the 8-char form. It can never equal a 36-char segment, so reading it would
+    silently demote EVERY scratch path to `out`. Anything not uuid-shaped is refused here.
+    """
+    candidates = [ payload.get( "session_id" ) ]
+    if bridge:
+        candidates += [ bridge.get( "session_id" ), bridge.get( "stable_session_id" ) ]
+    return frozenset(
+        c for c in candidates
+        if isinstance( c, str ) and SESSION_UUID_RE.fullmatch( c )
+    )
+
+
+def read_bridge():
+    """
+    Ensures:
+        - returns this seat's session bridge via memento_io.read_seat_bridge (the process-tree
+          walk, deliberately with NO cwd fallback that could pick a peer's bridge), or None
+        - never raises: a missing sibling module or an unreadable bridge reads as None, and
+          the payload's own id still stands on its own
+    """
+    try:
+        import memento_io
+        return memento_io.read_seat_bridge()
+    except Exception:
+        return None
+
+
+def is_session_scratch( target_path, cwd, own_ids ):
+    """
+    Decide whether a target lands in the creating session's OWN scratchpad tree.
+
+    Requires:
+        - target_path is the fully re-based target (absolute or cwd-relative)
+        - cwd is the session working directory (absolute)
+        - own_ids is the frozenset from own_session_ids
+    Ensures:
+        - returns True iff ALL FOUR clauses of src/rnd/2026.09.17-worktree-scratch-zone-
+          predicate.md hold:
+            1. target and root are both realpath-resolved before comparing
+            2. os.path.commonpath( [ resolved, root ] ) == root
+            3. the root derives from os.getuid() (scratch_root)
+            4. the path below the root has three or more segments, one of which is a
+               full-form uuid that is in own_ids
+        - returns False otherwise, including for a bare `<root>/<anything>` and a foreign uuid
+
+    WHY commonpath AND NOT startswith: `/tmp/claude-1001-evil` passes a string-prefix test
+    against `/tmp/claude-1001`. An admitted sibling would skip registration — the orphan this
+    guard exists to catch.
+    """
+    resolved = os.path.realpath( os.path.join( cwd, target_path ) )
+    root     = scratch_root()
+    if os.path.commonpath( [ resolved, root ] ) != root:
+        return False
+    segments = os.path.relpath( resolved, root ).split( os.sep )
+    if len( segments ) < 3:
+        return False
+    return any( SESSION_UUID_RE.fullmatch( s ) and s in own_ids for s in segments )
+
+
+class UnruledZoneError( Exception ):
+    """Raised by enforce_action for a zone with no ruled enforcement behaviour."""
+
+
+# The RULED enforcement behaviour per zone. `unknown` is deliberately ABSENT: it is not yet
+# ruled (see the ENFORCE comment in main), and an absent key RAISES rather than defaulting.
+ENFORCE_ACTIONS = {
+    "in"      : "allow",
+    "out"     : "register",
+    "scratch" : "allow",     # dies with the session; nothing for the janitor to reap (María)
+}
+
+
+def enforce_action( zone ):
+    """
+    Map a zone to its ruled enforcement action. Not called while MODE is LOG_ONLY.
+
+    Requires:
+        - zone is a string
+    Ensures:
+        - returns "allow" or "register" for a ruled zone
+    Raises:
+        - UnruledZoneError for any zone without a ruling, `unknown` included — so whoever
+          wires ENFORCE must handle it explicitly, and no default is taken by accident
+    """
+    if zone not in ENFORCE_ACTIONS:
+        raise UnruledZoneError( f"zone {zone!r} has no ruled enforcement action" )
+    return ENFORCE_ACTIONS[ zone ]
+
+
 def creation_target( payload ):
     """
     Given a tool-call payload, return ("bash"|"task", target_path_or_None) if it is a worktree
@@ -462,17 +589,25 @@ def creation_target( payload ):
     return None
 
 
-def zone_for( target_path, cwd, resolvable ):
+def zone_for( target_path, cwd, resolvable, own_ids=frozenset() ):
     """
-    Decide the census zone for one creation: "in" | "out" | "unknown".
+    Decide the census zone for one creation: "in" | "out" | "unknown" | "scratch".
 
     Requires:
         - target_path is the fully re-based target, or None for a harness-owned Task worktree
         - resolvable is False when the base directory could not be determined from the text
+        - own_ids is the creating session's uuids (own_session_ids); empty means none known
     Ensures:
         - returns "in" for a Task/Agent worktree (harness-owned path, in-sandbox by construction)
         - returns "unknown" when the base was undeterminable — never a guessed in/out
-        - otherwise returns "out"/"in" from the sandbox classification
+        - returns "in" for a target inside the sanctioned lane
+        - returns "scratch" for an out-of-lane target in the session's own scratchpad tree
+        - otherwise returns "out"
+
+    `scratch` IS CARVED OUT OF `out` ONLY (row bd41d2fa, 2026-09-18). It is checked after the
+    lane, so a tree in a project's lane stays `in`, and after `unknown`, so an undeterminable
+    base is never promoted. Before it existed, `out` conflated a hand-built tree in the wrong
+    place with the scratchpad throwaway the fleet config recommends instead of `git stash`.
 
     EXTRACTED FROM main() 2026-07-18 on Tiberius's structural note. The three-valued zone is
     the honesty of the whole census, and all three of its branches were reachable only
@@ -486,7 +621,11 @@ def zone_for( target_path, cwd, resolvable ):
         return "in"
     if not resolvable:
         return "unknown"
-    return "out" if is_out_of_sandbox( target_path, cwd ) else "in"
+    if not is_out_of_sandbox( target_path, cwd ):
+        return "in"
+    if is_session_scratch( target_path, cwd, own_ids ):
+        return "scratch"
+    return "out"
 
 
 def append_audit( kind, target_path, cwd, zone ):
@@ -494,7 +633,7 @@ def append_audit( kind, target_path, cwd, zone ):
     Best-effort append one census line. Never raises into the caller (fail-open).
 
     Requires:
-        - zone is one of "in" | "out" | "unknown"
+        - zone is one of ZONES: "in" | "out" | "unknown" | "scratch"
     Ensures:
         - appends "<iso8601>\\t<kind>\\t<zone>\\t<cwd>\\t<target>" to AUDIT_LOG
         - swallows every filesystem error — a guard that crashes on its own log is an outage
@@ -538,7 +677,8 @@ def main():
         # "in" is exactly the orphan this guard exists to catch, silently mislabelled as
         # sanctioned; "unknown" is greppable and recoverable. (Added 2026-07-18 after
         # Tiberius proved two chdir channels could each produce a confident wrong answer.)
-        zone = zone_for( target_path, cwd, resolvable )
+        own_ids = own_session_ids( payload, read_bridge() ) if target_path is not None else frozenset()
+        zone    = zone_for( target_path, cwd, resolvable, own_ids )
 
         append_audit( kind, target_path, cwd, zone )
 
@@ -547,7 +687,10 @@ def main():
 
         # --- ENFORCE (Rick-gated; unreachable until MODE flips WITH the wrapper) -------------
         # Intended behavior per the ALLOW-BUT-REGISTER ruling, NOT yet wired:
+        # The ruled part of this table is CODE, not only comment: enforce_action( zone ), which
+        # raises UnruledZoneError for `unknown` rather than letting it fall through to a default.
         #   zone "in"       -> return 0 (allow, no registration)
+        #   zone "scratch"  -> return 0 (allow, no registration: it dies with the session)
         #   zone "out"      -> wrapper.register(owner, ttl, path); allow on success, else
         #                      print a fail-loud denial to stderr and return 2
         #   zone "unknown"  -> ⚠️ RECOMMENDED: REGISTER, exactly as "out". **NOT YET RULED —
