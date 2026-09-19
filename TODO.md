@@ -1050,6 +1050,21 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### S204 — 2026-09-18 (María 🌸 stable `bbad68e9`, skeleton shift) — worktree and branch cleanup walkthrough
+
+Source: `src/rnd/2026.09.18-worktree-and-branch-cleanup-proposal.md`. All five were answered by Rick's keypress; none was a default.
+
+1. 2026-09-18 — safe-tier cleanup → **remove now, as a one-time manual pass.** Why: everything in it is merged, and `git branch -d` refuses anything that isn't. Rick asked whether this was a one-time manual removal; it is, and the automatic side is ruling 2.
+2. 2026-09-18 — prevention → **build P1 to P4.** Why: a report on its own just brings back a manual pass like this one. P1–P3 go to lupin; P4 is built here.
+3. 2026-09-18 — Rachel's held memento branch → **delete it, keeping a salvage tag.** Why: `72a6c5c` already salvaged the one useful test, and the tag keeps the three commits at no cost.
+4. 2026-09-18 — lupin's 16 unmerged branches → **María triages them** (*"you have the shortest list of the 3 of you right now"*). This overrides my recommendation that Mr. Radio do it.
+5. 2026-09-18 — this repo's six loose files → **delete** (overrides my recommendation to move them into `io/`).
+
+**Evening walkthrough (Rick's broadcast `65f248f8`, all real keypresses):**
+6. 2026-09-18 — cleanup run → **apply plus backups** (`--apply --prune-backups`). Rick runs it himself with the `!` prefix *"so that the classifier can learn from this."*
+7. 2026-09-18 — Stop poke → **back on.** *"we're not on skeleton shift … It should have been anyway."* Set `true` and read back through the hook's loader. Why it matters: the morning's "off" outlived the skeleton shift it was for; a temporary switch needs an owner and an end time.
+8. 2026-09-18 — `global/CLAUDE.md` vs live → **live is the base, and the 09-08 wording Rick trimmed goes back in.** It is an editorial merge (20 of 21 shared sections were rewritten, not just trimmed), so Clayton drafts it on a branch with a section-by-section note, and live is untouched until Rick reviews and installs it.
+
 ### S203 — 2026-09-17 (María 🌸 stable `10953318`, manager of Clayton 😎 + maya 🌻)
 
 **🔴 THREE RULINGS ARE OWED BY RICK AND NONE WERE GIVEN — two asks timed out at 600s each.** The second returned `[default used] no`, which is the **fallback, not a refusal**. Recorded here because a timeout and a refusal are not the same thing: only a refusal closes a question, and a `no` in a log beside a prepared fix is how a rework nobody asked for gets shipped.
