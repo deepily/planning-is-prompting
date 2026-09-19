@@ -162,3 +162,39 @@ def test_findings_deliver_once_and_a_failed_delivery_is_exit_3( repo, monkeypatc
     assert whr.main( [ "--repo", str( repo ), "--notify" ] ) == 3
     assert len( calls ) == 1
     assert "worker-done" in calls[ 0 ][ 0 ]
+
+
+def _merged_fix_line( repo ):
+    lines = [ l for l in whr.render( [ whr.census( str( repo ) ) ] ).splitlines() if l.strip().startswith( "fix:" ) and "branch -D" in l ]
+    assert len( lines ) == 1, lines
+    return lines[ 0 ].split( "`" )[ 1 ]
+
+
+def _tracked_branch_merged_into_current_only( repo, name ):
+    """A branch merged into the current branch whose UPSTREAM does not have its commit."""
+    _run( "git", "checkout", "-q", "-b", name, cwd=repo )
+    _commit( repo, f"{name}-work" )
+    _run( "git", "checkout", "-q", "wip-v9.9.9-current", cwd=repo )
+    _run( "git", "merge", "-q", "--no-ff", "-m", f"merge {name}", name, cwd=repo )
+    _run( "git", "branch", "--set-upstream-to=main", name, cwd=repo )
+
+
+def test_the_merged_fix_line_deletes_a_branch_that_branch_dash_d_refuses( repo ):
+    _tracked_branch_merged_into_current_only( repo, "tracked-done" )
+    plain = subprocess.run( [ "git", "branch", "-d", "tracked-done" ], cwd=str( repo ), capture_output=True, text=True )
+    assert plain.returncode != 0, "precondition: branch -d must refuse an upstream-tracked branch"
+    cmd = _merged_fix_line( repo ).replace( "<name>", "tracked-done" )
+    subprocess.run( cmd, shell=True, cwd=str( repo ), check=True, capture_output=True )
+    assert "tracked-done" not in whr.census( str( repo ) )[ "merged_leftovers" ]
+    assert _run( "git", "branch", "--list", "tracked-done", cwd=repo ).stdout.strip() == ""
+
+
+def test_the_merged_fix_line_still_refuses_a_branch_that_is_not_merged( repo ):
+    _tracked_branch_merged_into_current_only( repo, "tracked-done" )
+    cmd = _merged_fix_line( repo )
+    _run( "git", "checkout", "-q", "-b", "not-merged", cwd=repo )
+    _commit( repo, "unmerged-work" )
+    _run( "git", "checkout", "-q", "wip-v9.9.9-current", cwd=repo )
+    r = subprocess.run( cmd.replace( "<name>", "not-merged" ), shell=True, cwd=str( repo ), capture_output=True, text=True )
+    assert r.returncode != 0
+    assert _run( "git", "branch", "--list", "not-merged", cwd=repo ).stdout.strip() != ""

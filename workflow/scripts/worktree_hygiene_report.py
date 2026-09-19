@@ -224,7 +224,11 @@ def render( results, stale_hours=48, stale_branch_days=7 ):
             more  = len( c[ "merged_leftovers" ] ) - 8
             out.append( f"**{len( c[ 'merged_leftovers' ] )} merged branches left behind**: {shown}"
                         + ( f" and {more} more" if more > 0 else "" ) )
-            out.append( f"  fix: `git -C {c[ 'repo' ]} branch -d <name>` (refuses anything unmerged)" )
+            # Not `branch -d`: it checks a branch's UPSTREAM when one is set, so it refuses a
+            # tracked branch that is merged here but not there. -D behind the same ancestry
+            # test the census used deletes those and still refuses anything unmerged.
+            out.append( f"  fix: `git -C {c[ 'repo' ]} merge-base --is-ancestor refs/heads/<name> refs/heads/{c[ 'current' ]} "
+                        f"&& git -C {c[ 'repo' ]} branch -D <name>` (refuses anything unmerged)" )
         if c[ "stale_unmerged" ]:
             out.append( f"**{len( c[ 'stale_unmerged' ] )} unmerged branches idle over {stale_branch_days} days**, each needs a merge / salvage / drop ruling:" )
             for b in c[ "stale_unmerged" ][ :10 ]:
