@@ -1,8 +1,15 @@
 # TODO
 
-Last updated: 2026-09-11 (**Session 199** (María 🌸 stable `31d4590e`) — Workflow Steward of the spoken-ask-door cascade. The cascade finished; the record of it did not, and the operator read the gap as idleness. Sixteen amendments under a status field that never moved. — *Previous:* **Session 198** (María 🌸 stable `abe7d752`) — a manager seat spent in `lupin`; skeleton crew ratified here with Rick's three rulings. — *Previous:* **Session 191** (María 🌸 `4f98d12f`) — Rick's three-line row display shipped across all three panes; the line-3 detail cell turned out to be TWO defects, a drifted width rule aimed at a column that no longer exists and a click branch that was never wired. Seven instances of one shape in one night — a declaration present, correct, and never reaching the surface it was written for — recorded, not graduated. I manufactured two blockers Rick had already answered. Gated promotion merged green AND reviewed after Maya rejected it for an ask path that could not run. — *Previous:* **Session 189** — the memento-pointer rename with four classes of reader.)
+Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — worktree pile-up cleaned and fenced off; New Ticket mics in both clients; the P0 closed on Rick's word. — *Previous:* **Session 199** (María 🌸 stable `31d4590e`) — Workflow Steward of the spoken-ask-door cascade. The cascade finished; the record of it did not, and the operator read the gap as idleness. Sixteen amendments under a status field that never moved. — *Previous:* **Session 198** (María 🌸 stable `abe7d752`) — a manager seat spent in `lupin`; skeleton crew ratified here with Rick's three rulings. — *Previous:* **Session 191** (María 🌸 `4f98d12f`) — Rick's three-line row display shipped across all three panes; the line-3 detail cell turned out to be TWO defects, a drifted width rule aimed at a column that no longer exists and a click branch that was never wired. Seven instances of one shape in one night — a declaration present, correct, and never reaching the surface it was written for — recorded, not graduated. I manufactured two blockers Rick had already answered. Gated promotion merged green AND reviewed after Maya rejected it for an ask path that could not run. — *Previous:* **Session 189** — the memento-pointer rename with four classes of reader.)
 
 ## 📍 Resume Here
+
+> ### **S204 — pick up here on 2026-09-19** (María 🌸 stable `bbad68e9`)
+>
+> 1. **`ab1f06e7` New Ticket mics**: both clients merged in lupin (classic `bf8891e0`, multiplexer `c7a537bd`, bundle rebuilt). **Blocked only on Rick looking at the multiplexer card live**; the store chases at 09:00 EDT. On his yes, close it with his words. Then ask him to deny or drop held row `0a9e79bd`, which is superseded.
+> 2. **Global CLAUDE.md**: Rick reviews and installs it himself (`fae24de`; merge note `src/rnd/2026.09.18-global-claude-md-merge-note.md`). Only confirm afterwards that the live sha changed from `5991f2ff…`.
+> 3. **`14761ef1` worktree guard trial**: log-only until 09-21; run the day-7 census then.
+> 4. **Tiffany's `cea58ee0`** was promised the next free seat (server sender-id misresolution in lupin-rest-dev).
 
 > ### **S202 — pick up here on 2026-09-17** (María 🌸 stable `5bf2fa6f`)
 >
@@ -1064,6 +1071,12 @@ Source: `src/rnd/2026.09.18-worktree-and-branch-cleanup-proposal.md`. All five w
 6. 2026-09-18 — cleanup run → **apply plus backups** (`--apply --prune-backups`). Rick runs it himself with the `!` prefix *"so that the classifier can learn from this."*
 7. 2026-09-18 — Stop poke → **back on.** *"we're not on skeleton shift … It should have been anyway."* Set `true` and read back through the hook's loader. Why it matters: the morning's "off" outlived the skeleton shift it was for; a temporary switch needs an owner and an end time.
 8. 2026-09-18 — `global/CLAUDE.md` vs live → **live is the base, and the 09-08 wording Rick trimmed goes back in.** It is an editorial merge (20 of 21 shared sections were rewritten, not just trimmed), so Clayton drafts it on a branch with a section-by-section note, and live is untouched until Rick reviews and installs it.
+
+**After the 21:27 self-respin (María 🌸 `ba4c020f`), all real keypresses unless marked:**
+9. 2026-09-18 — install of the merged global CLAUDE.md → **Rick reviews, then installs it himself** (answered 21:26, just before the clear). At session end the live sha was still `5991f2ff…`, so it is not installed yet.
+10. 2026-09-18 — P0 `0be7d998` record button → **closed, no code change.** Rick, voice, 21:26: *"now it's working, it's actually appending like it should."* No space separator added to this one card.
+11. 2026-09-18 — mic layout `ab1f06e7` → **yes to Sam's picture** (21:59), then **yes, it's right live** on the classic page (~22:05). His earlier *no* was about the old build that :7999 was still serving; I only found that by looking at his screen through the Chrome extension.
+12. 2026-09-18 — multiplexer mics → **yes** (~22:01). Folded into `ab1f06e7` instead of admitting `0a9e79bd`, because an admit costs a live ticket. The final live check timed out (default used, not a ruling); the store chases it at 09:00 EDT.
 
 ### S203 — 2026-09-17 (María 🌸 stable `10953318`, manager of Clayton 😎 + maya 🌻)
 
