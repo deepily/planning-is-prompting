@@ -917,9 +917,33 @@ def test_scratch_creation_is_allowed_without_registration():
     assert guard.enforce_action( "in" ) == "allow"
 
 
-@pytest.mark.parametrize( "zone", [ "unknown", "bogus", "" ] )
+def test_unknown_is_ruled_register_not_a_raise():
+    """
+    Rick ruled `unknown` ALLOW AND REGISTER on 2026-09-19, mid-trial. Until then it raised.
+
+    This assertion is the ruling's only mechanical home: the trial's own audit log measured
+    `unknown` at 63 of 156 rows over six days — 40% of observed traffic — so an unruled
+    `unknown` at the moment MODE flips would refuse two calls in five, in the ENFORCE branch
+    where nobody is watching a test suite. A ruling recorded only in a memento is not installed.
+    """
+    assert guard.enforce_action( "unknown" ) == "register"
+
+
+def test_every_zone_the_guard_can_emit_has_a_ruled_action():
+    """
+    The negative control for the above, and the one that survives a new zone being added.
+
+    `unknown` was absent from ENFORCE_ACTIONS for the whole trial while being emitted by the
+    classifier — the gap was invisible because nothing asserted the two agreed. Assert the
+    relationship rather than the membership, so the next zone cannot repeat it.
+    """
+    unruled = [ z for z in guard.ZONES if z not in guard.ENFORCE_ACTIONS ]
+    assert unruled == [], f"zones the classifier emits with no ruled action: {unruled}"
+
+
+@pytest.mark.parametrize( "zone", [ "bogus", "", "IN", "Out" ] )
 def test_an_unruled_zone_refuses_rather_than_defaults( zone ):
-    """`unknown` is unruled; asking for its action must raise, never fall through to allow."""
+    """A zone nobody ruled on must raise, never fall through to allow. Case is not forgiven."""
     with pytest.raises( guard.UnruledZoneError ):
         guard.enforce_action( zone )
 

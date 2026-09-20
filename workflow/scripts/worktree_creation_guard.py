@@ -497,11 +497,18 @@ class UnruledZoneError( Exception ):
     """Raised by enforce_action for a zone with no ruled enforcement behaviour."""
 
 
-# The RULED enforcement behaviour per zone. `unknown` is deliberately ABSENT: it is not yet
-# ruled (see the ENFORCE comment in main), and an absent key RAISES rather than defaulting.
+# The RULED enforcement behaviour per zone. An absent key RAISES rather than defaulting, so a
+# zone nobody has ruled on cannot be answered by accident.
+#
+# 🔴 `unknown` WAS the absent one, and it is no longer: Rick ruled it ALLOW AND REGISTER on
+# 2026-09-19, during the trial this guard was installed to run. It was measured at 63 of 156
+# audit rows over the six days to 09-19 — 40% of everything the guard saw, and the largest
+# zone after `in`. So the pre-ruling state was not a small hole: flipping MODE to ENFORCE with
+# `unknown` unruled would have raised UnruledZoneError on two calls in five.
 ENFORCE_ACTIONS = {
     "in"      : "allow",
     "out"     : "register",
+    "unknown" : "register",  # Rick 2026-09-19 — same treatment as `out`: allow, but register
     "scratch" : "allow",     # dies with the session; nothing for the janitor to reap (María)
 }
 
