@@ -4,6 +4,14 @@ Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — wo
 
 ## 📍 Resume Here
 
+> ### **S205 — pick up here on 2026-09-20** (María 🌸 stable `2b9f67a1`, re-spun into `729e39e9`)
+>
+> 1. **`14761ef1` worktree guard trial — DATED, DO IT FIRST**: run the **day-7 census on 2026-09-20**; the trial ends 09-21. Audit log `~/.claude/worktree-creation-audit.log` stood at 153 rows over 6 days at session end. Rick ruled the `unknown` zone **allow-and-register** during S205.
+> 2. **`72e01fb3` fleet-panes umbrella (P0)**: nothing actionable from me — amended and re-keyed to `epic:mobile-pane-parity`. Phases 0–4 are merged in lupin-mobile; the only remaining child is **Phase 5 Broadcast `384591dd`**, owned by chloe under Tiffany and **blocked on Rick**. Do not re-ask him: Tiffany already has that ruling with him (the row carries `status: blocked` and `request_state: denied` at once).
+> 3. **Four commits here are UNPUSHED**: `c65c41e`, `08979d9`, `d476909` (the plan, frozen at pin `0332a5dd`) and `9a13fee` (the S205 history entry). Push is Rick's.
+> 4. **The plan doc is FROZEN** at `d476909`. Tiffany ruled no further fold owed. Do not write to `src/rnd/2026.09.19-mobile-client-fleet-panes.md` without her word.
+> 5. **A post-game IS owed on the cascade** — Tiffany's to write, not the author seat's. I waived it three times in S205 on that basis. `lupin-mobile e7afbbb` may already be it.
+
 > ### **S204 — pick up here on 2026-09-19** (María 🌸 stable `bbad68e9`)
 >
 > 1. **`ab1f06e7` New Ticket mics**: both clients merged in lupin (classic `bf8891e0`, multiplexer `c7a537bd`, bundle rebuilt). **Blocked only on Rick looking at the multiplexer card live**; the store chases at 09:00 EDT. On his yes, close it with his words. Then ask him to deny or drop held row `0a9e79bd`, which is superseded.
@@ -1056,6 +1064,23 @@ whole reason that prefix exists.
 - [ ] **🆕 Manager comms-funnel SWAMP risk — revisit with Tiberius (Rick 2026-06-10, "make a note").** Current doctrine: all workers communicate UP THROUGH their manager (Tiberius) to reach Rick — good in principle (single accountable throat, no worker-floods-Rick), but it risks **swamping the manager** as the fleet grows. Revisit WITH Tiberius later: load-shedding / batching / triage tiers / a direct-to-Rick escape hatch for true-urgent, so the funnel doesn't become a bottleneck. Not urgent; a standing topic for a manager-doctrine session. | priority: P2 | raised: 2026-06-10 | owner: María + Tiberius | **`horizon: someday`**
 
 ## Decisions Log
+
+### S205 — 2026-09-19 (María 🌸 stable `2b9f67a1`) — the fleet-panes cascade, and two of my own claims reversed
+
+Source: `src/rnd/2026.09.19-mobile-client-fleet-panes.md` (frozen, pin `0332a5dd`). Rick's rulings arrived by voice, broadcast and two targeted asks.
+
+1. 2026-09-19 — cascade manager → **Tiffany, not María** (Rick's broadcast `f93072ef`). Why: I authored the plan, and the playbook forbids the author managing review of their own work. I had already started the cascade and stood down. This is the identity-drift guard working as designed.
+2. 2026-09-19 — build hold → **LIFTED** (Rick, targeted ask ~20:45, corroborated independently by Tiffany). Why: worth recording because the prior ruling was the opposite — *plan only, cascade review first, not even Phase 0* — and my row carried the dead "BUILD IS HELD" line for three hours after it stopped being true.
+3. 2026-09-19 — freeze protocol during review → **batch all findings, apply in ONE fold, re-pin, hand the manager the sha** (Tiffany's ruling). Why: I had offered her a three-option menu when one option was correct and the other two were hedging; she ruled the method instead. Two folds ran under it (`08979d9`, `d476909`).
+4. 2026-09-19 — the Fleet Status null-guard clause → **no further fold owed** (Tiffany). Why: the shipped Dart already guards the two columns separately, so the clause would have been documentation-only.
+5. 2026-09-19 — `unknown` zone in the worktree guard → **allow and register** (Rick).
+
+**Two reversals of my own claims, recorded because both were mine and both were caught by someone else opening the source:**
+
+- **`% Window` / `Window` are NOT a producer defect.** I reported them as one. They are two independent nullables **by design** — the window is known once a pressure record exists, the percentage needs an occupancy the unmeasured branch never reads. The defective wording was mine, §8.1. Tiffany caught the mis-framing; the rendering rule itself stands.
+- **Rev 1's errors were inherited claims I had not opened; rev 2's were things I wrote myself while fixing something else** (a remedy with a defect inside it, and a line taken from a constructor whose neighbour was the one that mattered). **Reading the source is necessary and not sufficient.** In §13 of the doc, not only here.
+
+**Candidate for graduation, NOT yet doctrine — one sighting:** *a task row that cannot be read from outside is the same as a row that does not exist.* `72e01fb3` went three hours stale with a dead status line and `correlation_key: epic:unassigned`, and the visible cost was that the manager whose crew had just built four of its five panes had to DM me asking what my task was and whether it overlapped hers. Per the accumulate-before-graduating rule this needs more than one sighting before it goes into a workflow doc.
 
 ### S204 — 2026-09-18 (María 🌸 stable `bbad68e9`, skeleton shift) — worktree and branch cleanup walkthrough
 
