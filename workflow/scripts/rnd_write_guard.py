@@ -77,11 +77,13 @@ INSTALLATION IS NOT AUTOMATIC AND NOT MINE TO DO:
 """
 
 import argparse
+import glob
 import json
 import os
 import re
 import subprocess
 import sys
+import time
 
 RND_PREFIX       = "src/rnd/"
 ALLOWED_EXT      = ".md"
@@ -285,6 +287,76 @@ def check_initiative( rel_path, content, repo_root ):
              f"      doc_kind: post-game     (or: plan, design, census, review, spec)" )
 
 
+AUTHOR_LOG = os.environ.get(
+    "RND_AUTHOR_LOG", os.path.expanduser( "~/.claude/rnd-authorship-audit.log" ) )
+
+# A module constant rather than an inline literal, so a test can point it at a seeded bridge.
+# A warning in a docstring that no test can reach is a comment, not a control.
+SESSIONS_GLOB = os.path.expanduser( "~/.claude/sessions/*.json" )
+
+
+def writing_persona( payload ):
+    """
+    The persona of the session attempting this write, or "" when it cannot be resolved.
+
+    Requires:
+        - payload is the decoded PreToolUse JSON
+
+    Ensures:
+        - returns the canonical persona NAME (never the accented display name)
+        - returns "" on any failure — a census that guesses a name is worse than one that
+          records a blank, because a blank is greppable and a guess is not
+
+    ⚠️ THE CANONICAL `name`, NOT `display_name`. Measured on this host 2026-09-22: the two
+    fork silently wherever a caller takes the display name, because `í` accent-strips to `-`.
+    That produced two parallel memento chains under `maria` and `mar-a`, neither aware of the
+    other. The same mistake here would split this census by the same seam.
+    """
+    try:
+        sid = payload.get( "session_id" ) or ""
+        if not sid: return ""
+        for path in glob.glob( SESSIONS_GLOB ):
+            try:
+                d = json.load( open( path, encoding="utf-8" ) )
+            except Exception:
+                continue
+            if sid in ( d.get( "session_id" ), d.get( "stable_session_id" ) ) \
+               or sid in ( d.get( "session_ids" ) or [] ):
+                return ( d.get( "voice_persona" ) or {} ).get( "name" ) or ""
+    except Exception:
+        pass
+    return ""
+
+
+def append_author_audit( persona, rel, verdict ):
+    """
+    Best-effort one line recording WHO attempted a governed write. Never raises.
+
+    🔴 WHY THIS EXISTS, AND WHY IT ONLY OBSERVES. Rick asked 2026-09-22 whether src/rnd
+    writes should be restricted to managers. The honest answer was that the question cannot
+    be settled: 159 documents and NOTHING RECORDS WHO WROTE ANY OF THEM. Git author is one
+    identity for the whole fleet, and counting persona names inside the files measures
+    co-occurrence rather than authorship.
+
+    ⇒ So a role rule built today would be UNAUDITABLE BY CONSTRUCTION — nobody could tell
+      whether it ever refused anyone, or whether anyone it refused should have been. This
+      line is the prerequisite: it costs an author nothing, refuses nothing, and in a week
+      it answers the question with data instead of recollection.
+
+    ⇒ It is LOG-ONLY ON PURPOSE, and that is the same shape the worktree guard was ordered
+      to take: observe first, rule second, enforce third. That trial's day-1 reading would
+      have refused legitimate work all day had anyone enforced on it.
+    """
+    try:
+        os.makedirs( os.path.dirname( AUTHOR_LOG ), exist_ok=True )
+        stamp = time.strftime( "%Y-%m-%dT%H:%M:%S%z", time.localtime() )
+        line  = "\t".join( [ stamp, persona or "?", rel, verdict ] )
+        with open( AUTHOR_LOG, "a", encoding="utf-8" ) as fh:
+            fh.write( line + "\n" )
+    except Exception:
+        return
+
+
 def run_pretooluse( stream ):
     """
     PreToolUse arm — read one tool call as JSON, decide allow/block.
@@ -323,6 +395,12 @@ def run_pretooluse( stream ):
         verdict, reason = classify( rel, content )
         if verdict == "allow":
             verdict, reason = check_initiative( rel, content, os.getcwd() )
+
+        # OBSERVE EVERY governed attempt, allowed or refused — the refused ones are the
+        # interesting half, and a census of only the successes would answer the wrong
+        # question. Recorded BEFORE the hatch, so an override is visible too.
+        append_author_audit( writing_persona( payload ), rel, verdict )
+
         if verdict == "allow": return EXIT_ALLOW
 
         if _hatch_open():

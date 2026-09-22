@@ -375,3 +375,118 @@ def test_every_measured_non_md_extension_is_refused( ext, monkeypatch ):
     monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
     rc = guard.run_pretooluse( _call( "Write", f"src/rnd/2026.09.22-artifact.{ext}", "data" ) )
     assert rc == EXIT_BLOCK, f".{ext} was admitted under src/rnd"
+
+
+# ── THE AUTHORSHIP CENSUS (2026-09-22) ───────────────────────────────────────────────
+#
+# Rick asked whether src/rnd writes should be manager-only. The honest answer was that the
+# question CANNOT BE SETTLED: 159 documents and nothing records who wrote any of them. A role
+# rule built on that would be unauditable by construction. This is the prerequisite — it
+# costs an author nothing, refuses nothing, and in a week it answers with data.
+
+
+@pytest.fixture
+def author_log( tmp_path, monkeypatch ):
+    """Isolate the census; never touch the operator's real ~/.claude/rnd-authorship-audit.log."""
+    path = tmp_path / "authorship.log"
+    monkeypatch.setattr( guard, "AUTHOR_LOG", str( path ) )
+    return path
+
+
+def _author_rows( path ):
+    if not path.exists(): return []
+    return [ ln.split( "\t" ) for ln in path.read_text().splitlines() if ln ]
+
+
+def test_an_allowed_governed_write_is_recorded( author_log, monkeypatch ):
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+    assert guard.run_pretooluse(
+        _call( "Write", "src/rnd/2026.09.22-x.md", AUTHORIZED ) ) == EXIT_ALLOW
+
+    rows = _author_rows( author_log )
+    assert len( rows ) == 1
+    assert rows[ 0 ][ 2 ] == "src/rnd/2026.09.22-x.md"
+    assert rows[ 0 ][ 3 ] == "allow"
+
+
+def test_a_REFUSED_write_is_recorded_too( author_log, monkeypatch ):
+    """
+    🔴 THE INTERESTING HALF. A census of only the successes answers the wrong question —
+    "who writes here" is not "who was allowed to". If a role rule ever lands, the refusals
+    are the evidence for whether it refused the right people.
+    """
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+    assert guard.run_pretooluse(
+        _call( "Write", "src/rnd/2026.09.22-y.md", UNAUTHORIZED ) ) == EXIT_BLOCK
+
+    rows = _author_rows( author_log )
+    assert len( rows ) == 1 and rows[ 0 ][ 3 ] == "block"
+
+
+def test_an_ungoverned_write_is_NOT_recorded( author_log, monkeypatch ):
+    """The census is about src/rnd. Logging every Write in the repo would drown it."""
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+    guard.run_pretooluse( _call( "Write", "workflow/notes.md", UNAUTHORIZED ) )
+    assert _author_rows( author_log ) == []
+
+
+def test_an_unresolvable_session_records_a_blank_not_a_guess( author_log, monkeypatch ):
+    """
+    A census that guesses a name is worse than one that records a blank: the blank is
+    greppable and announces itself, the guess is indistinguishable from a measurement.
+    Same discipline the worktree guard's `unknown` zone was built on.
+    """
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+    monkeypatch.setattr( guard, "writing_persona", lambda payload: "" )
+    guard.run_pretooluse( _call( "Write", "src/rnd/2026.09.22-z.md", AUTHORIZED ) )
+
+    assert _author_rows( author_log )[ 0 ][ 1 ] == "?"
+
+
+def test_the_census_never_changes_the_verdict( author_log, monkeypatch ):
+    """
+    LOG-ONLY MEANS LOG-ONLY. If the recorder can ever turn an allow into a block, it has
+    stopped being an observer and nobody was told.
+    """
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+
+    def _explode( *a, **k ): raise RuntimeError( "the log is on fire" )
+    monkeypatch.setattr( guard, "append_author_audit", _explode )
+
+    # An exception inside the recorder must not reach the verdict; the arm fails open.
+    assert guard.run_pretooluse(
+        _call( "Write", "src/rnd/2026.09.22-w.md", AUTHORIZED ) ) == EXIT_ALLOW
+
+
+def test_the_census_records_the_CANONICAL_name_not_the_accented_display_name(
+        author_log, tmp_path, monkeypatch ):
+    """
+    🔴 THE SEAM THAT ALREADY SPLIT SOMETHING ELSE ON THIS HOST, TODAY.
+
+    `get_session_info()` returns BOTH `name: "maria"` and `display_name: "María"`. Anything
+    keying on the accented form strips `í` to `-` somewhere downstream and forks a parallel
+    namespace: that is exactly how two live memento pointer chains (`maria` and `mar-a`) came
+    to exist, neither aware of the other, with the fresher record on whichever one the last
+    writer happened to use.
+
+    A census split by the same seam would report one persona as two, and the halves would
+    each look like a complete answer.
+    """
+    monkeypatch.delenv( "RND_GUARD_ALLOW", raising=False )
+
+    bridges = tmp_path / "sessions"
+    bridges.mkdir()
+    ( bridges / "cc-1.json" ).write_text( json.dumps( {
+        "session_id"    : "abc-123",
+        "voice_persona" : { "name": "maria", "display_name": "María" },
+    } ) )
+    monkeypatch.setattr( guard, "SESSIONS_GLOB", str( bridges / "*.json" ) )
+
+    payload = { "tool_name": "Write", "session_id": "abc-123",
+                "tool_input": { "file_path": "src/rnd/2026.09.22-q.md",
+                                "content": AUTHORIZED } }
+    guard.run_pretooluse( io.StringIO( json.dumps( payload ) ) )
+
+    recorded = _author_rows( author_log )[ 0 ][ 1 ]
+    assert recorded == "maria"
+    assert recorded != "María", "the accented display name forks the namespace"
