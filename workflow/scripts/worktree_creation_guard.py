@@ -635,20 +635,62 @@ def zone_for( target_path, cwd, resolvable, own_ids=frozenset() ):
     return "out"
 
 
-def append_audit( kind, target_path, cwd, zone ):
+AUDIT_CMD_MAX = 300          # enough to read; short enough that the log stays a log
+
+
+def _audit_safe( text ):
+    """
+    Ensures: returns text with every field/record separator neutralised, truncated to
+             AUDIT_CMD_MAX with an explicit ellipsis so a cut is never mistaken for the end.
+
+    A command pasted verbatim into a TAB-separated log would invent columns, and a
+    multi-line command would invent ROWS — a census that counts lines would then count one
+    creation several times and never say so.
+    """
+    if not text: return ""
+    flat = " ".join( str( text ).split() )               # collapses \t, \n and runs of spaces
+    return flat if len( flat ) <= AUDIT_CMD_MAX else flat[ : AUDIT_CMD_MAX ] + "…[truncated]"
+
+
+def append_audit( kind, target_path, cwd, zone, command="", own_ids=frozenset() ):
     """
     Best-effort append one census line. Never raises into the caller (fail-open).
 
     Requires:
         - zone is one of ZONES: "in" | "out" | "unknown" | "scratch"
     Ensures:
-        - appends "<iso8601>\\t<kind>\\t<zone>\\t<cwd>\\t<target>" to AUDIT_LOG
+        - appends "<iso8601>\\t<kind>\\t<zone>\\t<cwd>\\t<target>\\t<command>\\t<own_ids>"
+        - the new fields are APPENDED LAST, so every existing positional reader ($1..$5, and
+          the `NF>=5` parse check) keeps working against the new lines unchanged
+        - own_ids is comma-joined and SORTED, so the field is stable across runs and a diff
+          of two census lines does not report a change that is only set-iteration order
         - swallows every filesystem error — a guard that crashes on its own log is an outage
+
+    🔴 WHY THE COMMAND IS LOGGED AT ALL — one census line could never be settled and never
+    will be. 2026-09-17T15:49:32 recorded target `whose`, an English word, zoned a confident
+    `out`. Every other defect this trial found was diagnosable because the target field
+    carried its own evidence: a `$W`, a semicolon, an unexpanded variable. A bare word
+    carries none, and the guard logged only the EXTRACTED target — so the primary evidence
+    needed to tell "someone ran `git worktree add whose`" from "the extractor pulled a word
+    out of prose" did not exist and cannot be recovered.
+
+    ⇒ The instrument recorded its own verdict and discarded the input it judged. That is the
+      defect, not the zone it chose.
     """
     try:
         os.makedirs( os.path.dirname( AUDIT_LOG ), exist_ok=True )
         stamp = time.strftime( "%Y-%m-%dT%H:%M:%S%z", time.localtime() )
-        line  = "\t".join( [ stamp, kind, zone, cwd, str( target_path ) ] )
+        # 🔴 THE SESSION IDS MAKE THE `scratch` OWN-SESSION CLAUSE REPLAYABLE — AND THE 157
+        # LINES STANDING TODAY ARE PERMANENTLY ON THE WRONG SIDE OF THAT LINE. The ruled
+        # predicate requires the uuid segment in a scratch path to be the CREATING session's
+        # own. Until now the log recorded no session at all, so a replay could establish that
+        # a path carried a well-formed uuid — never that the uuid belonged to the session
+        # that created it. Every pre-epoch line can therefore be replayed ONLY under the
+        # weaker any-uuid rule, and any summary that mixes the two is comparing two different
+        # measurements while printing one number.
+        line  = "\t".join( [ stamp, kind, zone, cwd, str( target_path ),
+                             _audit_safe( command ),
+                             ",".join( sorted( own_ids ) ) ] )
         with open( AUDIT_LOG, "a", encoding="utf-8" ) as fh:
             fh.write( line + "\n" )
     except Exception:
@@ -687,7 +729,12 @@ def main():
         own_ids = own_session_ids( payload, read_bridge() ) if target_path is not None else frozenset()
         zone    = zone_for( target_path, cwd, resolvable, own_ids )
 
-        append_audit( kind, target_path, cwd, zone )
+        # The ORIGINATING COMMAND, so a line like the 2026-09-17 `whose` entry is settleable
+        # rather than permanently ambiguous. Empty for a Task/Agent creation, which has no
+        # command text — the harness picks that path itself.
+        origin = ( payload.get( "tool_input" ) or {} ).get( "command" ) or ""
+
+        append_audit( kind, target_path, cwd, zone, origin, own_ids )
 
         if MODE == "LOG_ONLY":
             return 0

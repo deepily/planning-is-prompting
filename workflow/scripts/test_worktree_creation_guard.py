@@ -951,3 +951,113 @@ def test_an_unruled_zone_refuses_rather_than_defaults( zone ):
 def test_mode_is_still_log_only():
     """This row changes zoning only. The enforcement flip is Rick's, and not in this commit."""
     assert guard.MODE == "LOG_ONLY"
+
+
+# ── THE ORIGINATING COMMAND IS LOGGED (2026-09-22) ───────────────────────────────────
+#
+# 🔴 THE LINE THAT CAN NEVER BE SETTLED, AND WHY THESE EXIST. The 2026-09-17T15:49:32 census
+# entry recorded target `whose` — an English word — zoned a confident `out`. Every other
+# defect this trial found was diagnosable because the TARGET field carried its own evidence:
+# a `$W`, a semicolon, an unexpanded variable. A bare word carries none, and the guard
+# logged only the EXTRACTED target. So the evidence needed to tell "someone really ran
+# `git worktree add whose`" from "the extractor pulled a word out of prose" never existed.
+# The instrument recorded its verdict and discarded the input it judged.
+
+
+def test_the_originating_command_is_recorded_in_the_census( audit_log, tmp_path ):
+    """The whole point: a future `whose` line must be settleable from the log alone."""
+    cmd = "git worktree add /tmp/somewhere-else/wt"
+    run_cli( bash_payload( cmd, tmp_path ), audit_log )
+
+    rows = audit_lines( audit_log )
+    assert len( rows ) == 1
+    assert rows[ 0 ][ 5 ] == cmd
+
+
+def test_a_multiline_command_cannot_invent_rows_or_columns( audit_log, tmp_path ):
+    """
+    🔴 THE CONTROL THAT MATTERS MORE THAN THE FEATURE.
+
+    A command pasted verbatim into a TAB-separated, NEWLINE-delimited log would invent
+    columns with its tabs and invent ROWS with its newlines — and a census that counts
+    lines would then count one creation several times and never say so. That is a
+    instrument that lies about its own population, which is the failure this whole trial
+    kept finding in other forms.
+    """
+    cmd = "git worktree add /tmp/x/wt\t&& echo hi\nrm -rf /tmp/x\nmore"
+    run_cli( bash_payload( cmd, tmp_path ), audit_log )
+
+    raw = Path( audit_log ).read_text()
+    assert raw.count( "\n" ) == 1, "one creation must be exactly one row"
+
+    rows = audit_lines( audit_log )
+    assert len( rows )      == 1
+    assert len( rows[ 0 ] ) == 7, "no invented columns"
+    assert "\t" not in rows[ 0 ][ 5 ] and "\n" not in rows[ 0 ][ 5 ]
+
+
+def test_a_long_command_is_truncated_and_says_so( audit_log, tmp_path ):
+    """A cut that does not announce itself is read as the end of the command."""
+    cmd = "git worktree add /tmp/x/wt " + ( "A" * 900 )
+    run_cli( bash_payload( cmd, tmp_path ), audit_log )
+
+    field = audit_lines( audit_log )[ 0 ][ 5 ]
+    assert field.endswith( "…[truncated]" )
+    assert len( field ) <= guard.AUDIT_CMD_MAX + len( "…[truncated]" )
+
+
+def test_the_new_field_is_appended_so_old_readers_still_parse( audit_log, tmp_path ):
+    """
+    BACKWARDS-COMPAT CONTROL. Every census this trial ran reads positionally — `$1` for the
+    timestamp, `$3` for the zone, `NF>=5` for the parse check. The command field is APPENDED
+    LAST precisely so those keep working. If someone ever inserts it mid-row instead, this
+    is what goes red.
+    """
+    run_cli( bash_payload( "git worktree add /tmp/elsewhere/wt", tmp_path ), audit_log )
+
+    row = audit_lines( audit_log )[ 0 ]
+    assert len( row ) >= 5
+    assert row[ 0 ].startswith( "2026" ) or row[ 0 ][ 0 ].isdigit()   # $1 still the stamp
+    assert row[ 2 ] in guard.ZONES                                    # $3 still the zone
+
+
+def test_the_creating_sessions_own_ids_are_recorded( audit_log, tmp_path ):
+    """
+    🔴 WITHOUT THIS FIELD THE `scratch` OWN-SESSION CLAUSE IS UNREPLAYABLE.
+
+    The ruled predicate requires the uuid in a scratch path to be the CREATING session's
+    own. With no session recorded, a replay can only show that a path carried a well-formed
+    uuid — never that it was the right one. Every line written before this field existed is
+    permanently stuck on the weaker any-uuid reading.
+    """
+    sid     = "11111111-2222-3333-4444-555555555555"
+    payload = bash_payload( "git worktree add /tmp/elsewhere/wt", tmp_path )
+    payload[ "session_id" ] = sid
+
+    run_cli( payload, audit_log )
+
+    assert sid in audit_lines( audit_log )[ 0 ][ 6 ]
+
+
+def test_the_id_field_is_sorted_so_it_does_not_churn( audit_log ):
+    """
+    A set has no order. Joining one unsorted makes two identical creations produce two
+    different census lines, and a diff then reports a change that is only iteration order —
+    noise indistinguishable from signal, in the field added to settle disputes.
+
+    🔴 THIS TEST WAS VACUOUS WHEN FIRST WRITTEN, AND A MUTANT IS WHAT EXPOSED IT. It drove
+    the CLI with a payload carrying ONE session id, then asserted the joined field was
+    sorted. A one-element list is identical sorted, reverse-sorted or shuffled, so
+    `sorted( own_ids, reverse=True )` passed all 111 tests. An assertion that cannot go red
+    is not a test — the same defect this seat blocked another row on the same morning.
+
+    ⇒ So it now calls `append_audit` DIRECTLY with TWO ids chosen so that ascending and
+      descending differ, which is the only arrangement in which the property is observable.
+    """
+    lo, hi = "11111111-aaaa-bbbb-cccc-000000000000", "99999999-aaaa-bbbb-cccc-000000000000"
+
+    guard.append_audit( "bash", "/tmp/x/wt", "/cwd", "out", "git worktree add /tmp/x/wt",
+                        frozenset( { hi, lo } ) )
+
+    field = audit_lines( audit_log )[ 0 ][ 6 ]
+    assert field == f"{lo},{hi}", "ids must be ascending, not set-iteration order"
