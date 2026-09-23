@@ -22,6 +22,9 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
+**2026.09.23 — Memento sweep (María 🌸, row `5b29a807`)**: 146 mementos moved to the trash (4 kept for María). Per Rick's ruling, only the last two days were summarized; everything older was dead.
+- **09-22**: `/clear` does not re-read CLAUDE.md, so editing it needs a re-spin. A hook's liveness probe cannot measure itself. A comment is not a primary source. The worktree guard shipped with two holes that Mr. Radio found in live use.
+
 **RESUME HERE**: **Session 206 (2026-09-22, María 🌸 stable `be26cc2d`, two `/clear` rehydrates, managing Rachel 🕊️ + sam 🎙️)**: an R&D policy shipped with its guard, a week-long guard trial closed, and three of my own published claims overturned by my own workers.
 
 1. **R&D directory policy + enforcement (`408df8f`, `3c3c382`, `0946dc9`)**: `workflow/rnd-directory-policy.md` and `workflow/scripts/rnd_write_guard.py` — `src/rnd/` holds **authorized deliverables**, gated on class, authorization, one-doc-per-initiative-per-kind, and durability. The root cause was **our own rule set**: six workflow files instructed a write there and none required authorization. The guard later gained two fixes for holes Mr. Radio found in live use, and an authorship audit log.

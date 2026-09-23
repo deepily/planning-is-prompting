@@ -549,6 +549,44 @@ notify( "N gate-refused finding(s) harvested into TODO.md",
 
 ---
 
+## 1.7) Memento Sweep — Summarize the Last Two Days, Then Trash
+
+**Purpose**: stop mementos piling up in repo roots long after anyone reads them.
+
+**Rick's rulings, row `5b29a807` (2026-09-23, keypresses)**: add this step; keep each live seat's
+newest memento; and *"do not summarize 99% of the old mementos, only those from the last 2 days.
+Everything else is dead and unimportant."*
+
+**Runs after 1.6**, because 1.6 still reads your memento's element 8. Run it for every repo the
+session touched.
+
+**The mechanism**: `workflow/scripts/memento_sweep.py`. It searches the repo's root slot
+(`.claude-memento*`) and its io slot (`io/mementos/`), and nothing else: not worktrees,
+`~/.claude/mementos/` or `/tmp`.
+
+1. **Name the live seats RESIDENT IN THIS REPO.** Use `commons_who( retention_hours=24 )` plus
+   your own persona, and pass each seat as `--keep <slug>` only in the repo it runs in, including
+   alternate spellings on disk (`mar-a` for María, `mr-radio`). The sweep spares each one's newest
+   record per slot, plus the persona-less `.claude-memento.md` pointer, so a live seat can still
+   re-spin. ⚠️ A keep list applied to every repo spares stale records. Measured 2026-09-23: a
+   fleet-wide list kept a July Tiffany memento in planning-is-prompting and a June Cheech one in
+   lupin-mobile.
+2. **Dry run**: `python3 memento_sweep.py --repo <root> --keep <slug> …` and read the keep list.
+3. **Digest**: add `--digest`. It reads only files from the last two days (`--digest-days 2`);
+   older files are counted and swept unread.
+4. **Summarize into today's `history.md` entry** as a few terse bullets: lessons and rulings, not
+   the story.
+5. **Trash**: `--trash` moves the files with `gio trash`, which can be undone. It never calls
+   `rm`, and it stops on the first failure instead of falling back to deleting.
+
+**Notification**:
+```python
+notify( "Memento sweep: N summarized, M trashed, K kept for live seats",
+        notification_type="progress", priority="low" )
+```
+
+---
+
 ## 2) Update Planning and Tracking Documents
 
 **Target**: Documents in the repo's `src/rnd` directory
@@ -1796,6 +1834,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
 - **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now parses current session's section from multi-section manifest, detects conflicts with other active sessions, prompts user for conflict resolution. Step 4.4 updates session status to `committed` with commit hash instead of deleting manifest (preserves tracking for other active sessions). Added conflict detection UI with ask_multiple_choice(). (~180 lines rewritten).
 - **2026.01.29 (Session 53)**: Added parallel session safety with `.claude-session.md` manifest (v1.0). Step 3.5 reads manifest file, verifies files against git status, handles missing/empty manifest. Step 4.4 uses selective staging and deletes manifest after successful commit. NEVER use `git add .` or `git add -A`. (~150 lines added, ~30 modified)
