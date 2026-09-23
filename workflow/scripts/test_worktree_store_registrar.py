@@ -621,11 +621,14 @@ def test_no_failure_mode_ever_leaks_a_credential_into_its_message( mode ):
 
 # ---------------------------------------------------------------- INERTNESS (guarding the guard)
 
-def test_the_guard_is_still_in_LOG_ONLY_mode():
-    # 🔴 THE FLIP IS RICK'S, NOT A SIDE EFFECT OF THIS DEPENDENCY ARRIVING. This test exists so
-    # that the day someone flips MODE, a test says so out loud in the diff instead of leaving it
-    # to a reviewer to notice a three-word change in a 39KB file.
-    assert guard.MODE == "LOG_ONLY"
+def test_the_guard_enforces_through_the_registry_not_this_module():
+    # 🔴 THE FLIP WAS RICK'S, AND THIS TEST SAID SO OUT LOUD WHEN IT HAPPENED — which is what it
+    # was built for. 2026-09-23 (row 14761ef1): Rick ruled registration goes to a SEPARATE
+    # REGISTRY (worktree_registry.py), not a task-store row, because a guard-minted row lands in
+    # the holding area where nobody looks. So the guard ENFORCES, and this module stays unused.
+    source = ( Path( __file__ ).parent / "worktree_creation_guard.py" ).read_text( encoding="utf-8" )
+    assert guard.MODE == "ENFORCE"
+    assert "import worktree_registry" in source
 
 
 def test_the_guard_does_not_import_or_reference_this_module():

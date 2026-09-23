@@ -55,6 +55,19 @@ SCRIPT = Path( __file__ ).parent / "worktree_creation_guard.py"
 
 # ---------------------------------------------------------------- fixtures
 
+@pytest.fixture( autouse=True )
+def isolated_registry( tmp_path, monkeypatch ):
+    """
+    Ensures: EVERY test, including ones that build their own subprocess env from os.environ,
+             registers into a temp file, never ~/.claude/worktree-registry.jsonl. The guard
+             ENFORCES now, so an `out` creation writes a line. Measured 2026-09-23: before this
+             fixture existed, test_cli_records_scratch_zone wrote a line into the real registry.
+    """
+    path = tmp_path / "isolated-registry.jsonl"
+    monkeypatch.setenv( "WORKTREE_REGISTRY", str( path ) )
+    return path
+
+
 @pytest.fixture
 def repo( tmp_path ):
     """
@@ -96,6 +109,7 @@ def run_cli( payload, audit_path ):
     """
     env = dict( os.environ )
     env[ "WORKTREE_CREATION_AUDIT_LOG" ] = str( audit_path )
+
     return subprocess.run(
         [ sys.executable, str( SCRIPT ) ],
         input=json.dumps( payload ), text=True, capture_output=True, env=env
@@ -511,7 +525,7 @@ def test_unbalanced_quotes_fail_open( repo ):
 def test_cli_allows_a_detected_out_of_sandbox_creation( repo, audit_log ):
     """The case the ENFORCE mode will one day gate — today it must ALLOW and record."""
     proc = run_cli( bash_payload( "git worktree add ../sib", repo ), audit_log )
-    assert proc.returncode == 0, "inert guard blocked — MODE is not LOG_ONLY"
+    assert proc.returncode == 0, "an out-of-lane creation must be ALLOWED once registered"
     rows = audit_lines( audit_log )
     assert len( rows ) == 1
     assert rows[ 0 ][ 1 ] == "bash" and rows[ 0 ][ 2 ] == "out"
@@ -948,9 +962,9 @@ def test_an_unruled_zone_refuses_rather_than_defaults( zone ):
         guard.enforce_action( zone )
 
 
-def test_mode_is_still_log_only():
-    """This row changes zoning only. The enforcement flip is Rick's, and not in this commit."""
-    assert guard.MODE == "LOG_ONLY"
+def test_mode_is_enforce():
+    """Rick ruled it into service with a separate registry (row 14761ef1, 2026-09-23)."""
+    assert guard.MODE == "ENFORCE"
 
 
 # ── THE ORIGINATING COMMAND IS LOGGED (2026-09-22) ───────────────────────────────────
@@ -1061,3 +1075,80 @@ def test_the_id_field_is_sorted_so_it_does_not_churn( audit_log ):
 
     field = audit_lines( audit_log )[ 0 ][ 6 ]
     assert field == f"{lo},{hi}", "ids must be ascending, not set-iteration order"
+
+
+# ── ENFORCE: ALLOW-BUT-REGISTER INTO A SEPARATE REGISTRY (row 14761ef1, 2026-09-23) ──────
+#
+# Rick ruled a separate registry over a task row. Every zone is exercised in BOTH directions:
+# `out` and `unknown` must write a line, `in` and `scratch` must write nothing. The one block
+# is a registration that cannot be written, and that arm is run, not reasoned.
+
+def _registry_rows( path ):
+    if not Path( path ).exists(): return []
+    return [ json.loads( ln ) for ln in Path( path ).read_text().splitlines() if ln.strip() ]
+
+
+def test_enforce_registers_an_out_creation_and_allows_it( repo, audit_log, isolated_registry ):
+    proc = run_cli( bash_payload( "git worktree add ../sib", repo ), audit_log )
+    assert proc.returncode == 0
+    rows = _registry_rows( isolated_registry )
+    assert len( rows ) == 1
+    assert rows[ 0 ][ "zone" ] == "out" and rows[ 0 ][ "target" ].endswith( "sib" )
+    assert rows[ 0 ][ "command" ] == "git worktree add ../sib"
+
+
+def test_enforce_registers_an_unknown_creation_by_its_raw_text( repo, audit_log, isolated_registry ):
+    proc = run_cli( bash_payload( "cd $W && git worktree add ../x", repo ), audit_log )
+    assert proc.returncode == 0
+    rows = _registry_rows( isolated_registry )
+    assert len( rows ) == 1 and rows[ 0 ][ "zone" ] == "unknown"
+
+
+def test_enforce_does_not_register_an_in_lane_creation( repo, audit_log, isolated_registry ):
+    target = str( repo / ".claude" / "worktrees" / "wt1" )
+    proc = run_cli( bash_payload( f"git worktree add {target}", repo ), audit_log )
+    assert proc.returncode == 0
+    assert _registry_rows( isolated_registry ) == []
+
+
+def test_enforce_does_not_register_a_non_creation( repo, audit_log, isolated_registry ):
+    run_cli( bash_payload( "ls -la", repo ), audit_log )
+    assert _registry_rows( isolated_registry ) == []
+
+
+def test_enforce_BLOCKS_when_the_registration_cannot_be_written( repo, audit_log, tmp_path, monkeypatch ):
+    blocker = tmp_path / "not-a-dir"
+    blocker.write_text( "a file where the registry's directory should be" )
+    monkeypatch.setenv( "WORKTREE_REGISTRY", str( blocker / "registry.jsonl" ) )
+    proc = run_cli( bash_payload( "git worktree add ../sib", repo ), audit_log )
+    assert proc.returncode == 2
+    assert "BLOCKED" in proc.stderr and ".claude/worktrees" in proc.stderr
+
+
+def test_an_unwritable_registry_does_not_block_an_in_lane_creation( repo, audit_log, tmp_path, monkeypatch ):
+    """The hard stop is for UNREGISTERED out-of-lane trees only; the sanctioned lane never waits on it."""
+    blocker = tmp_path / "not-a-dir"
+    blocker.write_text( "x" )
+    monkeypatch.setenv( "WORKTREE_REGISTRY", str( blocker / "registry.jsonl" ) )
+    target = str( repo / ".claude" / "worktrees" / "wt1" )
+    assert run_cli( bash_payload( f"git worktree add {target}", repo ), audit_log ).returncode == 0
+
+
+@pytest.mark.parametrize( "exc", [ TypeError( "boom" ), ValueError( "bad zone" ), RuntimeError( "x" ) ] )
+def test_ANY_registration_failure_blocks_not_only_the_write_error( exc, monkeypatch, capsys ):
+    """
+    Mr. Radio's review, 2026-09-23: an exception other than RegistryWriteError used to escape to
+    main()'s fail-open handler and let the worktree through unregistered.
+    """
+    import worktree_registry
+    def _raise( *a, **k ): raise exc
+    monkeypatch.setattr( worktree_registry, "register", _raise )
+    assert guard.register_or_block( "out", "/x/sib", "/x", frozenset(), "git worktree add ../sib" ) == 2
+    assert "BLOCKED" in capsys.readouterr().err
+
+
+def test_a_successful_registration_still_allows( monkeypatch ):
+    import worktree_registry
+    monkeypatch.setattr( worktree_registry, "register", lambda *a, **k: {} )
+    assert guard.register_or_block( "out", "/x/sib", "/x", frozenset(), "" ) == 0
+

@@ -16,7 +16,12 @@ orphans were legitimate work. So the enforcing behavior is: allow in-sandbox fre
 out-of-sandbox worktree, auto-mint an owner+TTL store row and allow; only fail loud if the
 registration itself cannot be written.
 
-    ⚠️  THIS SHIPS **INERT** (mode = LOG_ONLY) AND **UNINSTALLED**. TWO deliberate gates remain,
+    🟢 STATUS 2026-09-23: MODE = ENFORCE. Both gates below are closed: the hook is installed in
+        ~/.claude/settings.json (Rick, 09-14), and registration goes to worktree_registry.py, a
+        separate registry file Rick chose over a task-store row (09-23). The history below is
+        kept because it explains why the guard waited.
+
+    ⚠️  THIS SHIPPED **INERT** (mode = LOG_ONLY) AND **UNINSTALLED**. TWO deliberate gates remained,
         both Rick's, and NEITHER is guessed here:
         (1) the register-or-fail behavior needs the authed store-write wrapper (auth pattern
             recorded on store item fc83b711; wired separately) — until it exists this guard must
@@ -77,11 +82,12 @@ import shlex
 import sys
 import time
 
-# The enforcing behavior (register-or-fail via the authed wrapper) is deliberately NOT wired.
-# Flipping this to "ENFORCE" is a Rick-gated act that lands WITH the wrapper + the settings
-# install — never a silent default. Kept as a single named constant so the flip is one obvious
-# edit reviewers can see, not a scatter of behavior.
-MODE = "LOG_ONLY"
+# ENFORCE since 2026-09-23 (row 14761ef1). Rick's rulings: allow-but-register (07-15), put it
+# into service (09-14), register `unknown` like `out` (09-19), and register into a SEPARATE
+# REGISTRY rather than a task row (09-23, worktree_registry.py). Enforcing means: `in` and
+# `scratch` are allowed untouched; `out` and `unknown` are registered and allowed; a creation is
+# blocked ONLY when its registration cannot be written. Set "LOG_ONLY" to go back to census-only.
+MODE = "ENFORCE"
 
 # Where the inert census lands. Under the user's ~/.claude so it survives repo `git clean` and is
 # not per-repo-scattered; overridable for tests via the env var.
@@ -697,6 +703,40 @@ def append_audit( kind, target_path, cwd, zone, command="", own_ids=frozenset() 
         return
 
 
+def register_or_block( zone, target_path, cwd, own_ids, origin ):
+    """
+    Register an out-of-lane creation, or block it when the registration cannot be written.
+
+    Requires:
+        - zone is one enforce_action maps to "register" ("out" or "unknown")
+
+    Ensures:
+        - returns 0 (allow) after one line is appended to the worktree registry
+        - returns 2 (block) with a reason on stderr when the registry module cannot be
+          imported or registration fails for ANY reason — an unregistered out-of-lane worktree is
+          exactly the orphan this guard exists to prevent, so this is the one hard stop
+        - an unresolved target is registered by its raw command text, never dropped
+    """
+    try:
+        import worktree_registry
+    except ImportError as e:
+        print( f"worktree creation BLOCKED: the registry module is missing ({e}). "
+               f"Create the worktree under <repo>/.claude/worktrees instead.", file=sys.stderr )
+        return 2
+    target = target_path if target_path is not None else ( origin or "<unresolved>" )
+    # EVERY failure blocks, not only RegistryWriteError. Anything else escaping here would reach
+    # main()'s fail-open handler and let the worktree through UNREGISTERED — the one outcome this
+    # path exists to prevent. Caught in review by Mr. Radio, 2026-09-23.
+    try:
+        worktree_registry.register( zone, target, cwd, own_ids, origin )
+    except Exception as e:
+        print( f"worktree creation BLOCKED: could not register it ({type( e ).__name__}: {e}). "
+               f"An out-of-lane worktree must be registered. Create it under "
+               f"<repo>/.claude/worktrees instead, or fix the registry.", file=sys.stderr )
+        return 2
+    return 0
+
+
 def main():
     """
     Ensures:
@@ -739,37 +779,12 @@ def main():
         if MODE == "LOG_ONLY":
             return 0
 
-        # --- ENFORCE (Rick-gated; unreachable until MODE flips WITH the wrapper) -------------
-        # Intended behavior per the ALLOW-BUT-REGISTER ruling, NOT yet wired:
-        # The ruled part of this table is CODE, not only comment: enforce_action( zone ), which
-        # raises UnruledZoneError for `unknown` rather than letting it fall through to a default.
-        #   zone "in"       -> return 0 (allow, no registration)
-        #   zone "scratch"  -> return 0 (allow, no registration: it dies with the session)
-        #   zone "out"      -> wrapper.register(owner, ttl, path); allow on success, else
-        #                      print a fail-loud denial to stderr and return 2
-        #   zone "unknown"  -> ⚠️ RECOMMENDED: REGISTER, exactly as "out". **NOT YET RULED —
-        #                      this line is a recommendation carried forward for whoever
-        #                      wires ENFORCE, not a settled decision. Do not read it as one.**
-        #
-        # WHY `unknown` MUST BE NAMED HERE EVEN THOUGH IT IS UNRULED (Tiberius, C6, 2026-07-18):
-        # the zone went three-valued on 2026-07-18; this comment did not. A spec that
-        # enumerates only in/out, sitting above an ambient `return 0`, will be read by whoever
-        # wires ENFORCE as complete — and `cd $SOMEVAR && git worktree add ../x` becomes a
-        # silent permanent bypass. That is precisely the "guard someone will trust"
-        # anti-pattern this file's own header warns about, arriving as an OMISSION rather than
-        # an error. An incomplete spec is more dangerous than an unruled one, because only the
-        # unruled one announces itself.
-        #
-        # The argument for register-on-unknown, so the ruling can be made on it: registering a
-        # worktree we did not need to costs ONE STORE ROW. Missing one costs what this guard
-        # exists for — 5.7 GB of git-dead orphans across 31 directories (design §2). That
-        # asymmetry is the whole reason the mechanism was built, and "we could not tell" is
-        # not evidence of innocence. The opposite default (allow-on-unknown) silently converts
-        # every unparseable creation into a sanctioned one.
-        #
-        # Deliberately not implemented here: a store write needs the authed wrapper that does
-        # not exist yet. Leaving a half-wired enforce path would be the exact false-guard trap.
-        return 0
+        # --- ENFORCE: allow-but-register (row 14761ef1) ---------------------------------------
+        # enforce_action RAISES for a zone nobody ruled on; that falls to the fail-open handler
+        # below, and test_an_unruled_zone_refuses_rather_than_defaults pins the raise itself.
+        if enforce_action( zone ) == "allow":
+            return 0
+        return register_or_block( zone, target_path, cwd, own_ids, origin )
 
     except Exception:
         return 0   # fail OPEN, always

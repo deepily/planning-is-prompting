@@ -25,6 +25,10 @@ Usage:
                  <repo>/.claude/worktrees and <repo>'s parent (one level deep)
     --scan-root  extra directory to scan (one level deep); repeatable
     --json       machine-readable output instead of the table
+
+It also reads the worktree registry (worktree_registry.py, row 14761ef1): every out-of-lane
+creation the guard registered, and which of those have passed their TTL. An EXPIRED
+registration is a candidate for the same value-check-then-clear pass, never an automatic reap.
 """
 
 import argparse
@@ -33,6 +37,8 @@ import os
 import subprocess
 import sys
 import time
+
+import worktree_registry
 
 
 def read_gitdir_pointer( dir_path ):
@@ -171,6 +177,9 @@ def main():
     for root in roots:
         scan_root( root, results, seen )
 
+    registrations, reg_skipped = worktree_registry.load()
+    expired  = [ e for e in registrations if worktree_registry.is_expired( e ) ]
+
     broken   = [ r for r in results if r[ "status" ] == "BROKEN" ]
     live     = [ r for r in results if r[ "status" ] == "LIVE" ]
     total_kb = sum( r[ "size_kb" ] for r in broken )
@@ -182,7 +191,10 @@ def main():
             "broken_orphans"      : broken,
             "live_pointer_dirs"   : live,
             "broken_count"        : len( broken ),
-            "broken_total_kb"     : total_kb
+            "broken_total_kb"     : total_kb,
+            "registrations"       : len( registrations ),
+            "expired_registrations" : expired,
+            "registry_lines_skipped" : reg_skipped
         }, indent=2 ) )
         return 0
 
@@ -197,6 +209,11 @@ def main():
         print( f"{'PATH':<{width}}  {'AGE(d)':>7}  {'SIZE(MB)':>9}  MISSING ADMIN TARGET" )
         for r in sorted( broken, key=lambda r: -r[ "size_kb" ] ):
             print( f"{r[ 'path' ]:<{width}}  {r[ 'age_days' ]:>7}  {r[ 'size_kb' ] / 1024:>9.1f}  {r[ 'gitdir' ]}" )
+    print()
+    print( f"registered (guard): {len( registrations )}   EXPIRED: {len( expired )}"
+           + ( f"   ({reg_skipped} unreadable registry line(s) skipped)" if reg_skipped else "" ) )
+    for e in expired:
+        print( f"  expired {e.get( 'expires', '?' )}  {e.get( 'zone', '?' ):<7}  {e.get( 'target', '?' )}" )
     print()
     print( "REPORT-ONLY: nothing was modified. Clearing requires a value-check pass" )
     print( "(blob-hash audit, rescue-to-branch) + the user's direct word — design §4-4." )
