@@ -1065,6 +1065,23 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### 2026-09-23 — Last Call (scheduled session close): Rick's walkthrough of the proposal, row `287e1cfb`
+
+All seven decisions were made through `ask_multiple_choice`, and every one came back `answered: true, default_used: false`. Proposal: `src/rnd/2026.09.22-scheduled-session-close-proposal.md` §9.
+
+| # | Decision | Ruling |
+|---|---|---|
+| Q3 | Where the schedule lives | **Cron + a store row.** Cron fires at the exact time and checks that the row is still open before it pokes. The row is the visible record, and dropping it cancels the schedule. **The row is not promoted**: the holding area is fine, because cron keys on "not done or dropped". Rick asked this directly |
+| Q3b | Who files the row and cron | **The first-named manager.** The second-named checks at last call and files it if it's missing |
+| Name | What to call it | **Last Call**: `/plan-last-call`, glyph 🔔. "Last call" is the wrap signal and "closing time" is the close. Also covers "cancel last call", "move last call to HH:MM", and "what's the last call?". Rick raised naming himself: *"easy for me to remember"* |
+| Q1 | Wrap acknowledgement | **Mandatory**, one line per named seat. The filer summarizes them in one card |
+| Q5 | A deliverable that can't be done | **Report it and carry it over, never block.** Every declared deliverable gets a line with a receipt or a reason |
+| Q2 | Roster | **Named personas are fixed when declared; "all managers" and "everyone" resolve when the bell rings** |
+| Q4 | Rick still present at closing time | **The close runs anyway.** He controls it with cancel or move |
+| Q6 | Scope | **Fleet-wide, defined in this repo.** Each repo points the deliverable names at its own procedures |
+
+Build status: **not authorized yet.** The proposal was propose-only, and the build waits for Rick's go.
+
 ### S206 — 2026-09-22 (María 🌸 stable `be26cc2d`, manager of Rachel 🕊️ + sam 🎙️) — three of my own published claims overturned by my own workers, and a week of correct work that rested on a premise Rick does not hold
 
 **Why this entry exists at all:** Rachel pointed out that the evening's *work* was durable — commits, docstrings, store rows — while the *process lessons* lived only in `.claude-session.md`, which is gitignored (`.gitignore:72`, confirmed untracked). A lesson written there dies with the tree. She was right and it was my job, not hers.
