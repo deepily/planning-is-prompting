@@ -45,6 +45,7 @@ Exit codes:
 """
 
 import argparse
+import contextlib
 import datetime
 import json
 import os
@@ -61,6 +62,7 @@ from pathlib import Path
 # imported by its tests.
 sys.path.insert( 0, str( Path( __file__ ).resolve().parent ) )
 from install_context_pressure_tick import canonical_persona_key, parse_roster   # noqa: E402
+from crontab_lock import crontab_lock, CrontabLockTimeout                        # noqa: E402
 
 STAGES        = ( "wrap", "close" )
 STAGE_WORDS   = { "wrap": "last call", "close": "closing time" }
@@ -390,6 +392,27 @@ def apply_crontab( new_text, old_text, crontab_file=None ):
     return write_crontab( new_text, crontab_file )
 
 
+def lock_for( crontab_file, owner="" ):
+    """
+    The exclusive lock to hold across a read-modify-write, or a no-op on the test seam.
+
+    Requires:
+        - crontab_file is the Path a test is acting on, or None for the REAL crontab
+
+    Ensures:
+        - returns the shared `crontab_lock` context manager when acting on the real crontab —
+          shared with install_context_pressure_tick.py, which is the entire point
+        - returns a no-op context manager for a `--crontab-file`: that file is per-tmpdir and has
+          no second writer, so locking it would serialize the test suite against one global lock
+          file for no gain. The lock guards THE crontab, not any file that resembles one
+
+    Raises:
+        - nothing here; CrontabLockTimeout comes out of the context manager on entry
+    """
+    if crontab_file is not None: return contextlib.nullcontext()
+    return crontab_lock( owner=owner )
+
+
 # ── the payload cache ────────────────────────────────────────────────────────────────────────────
 
 def schedule_path( row_id ):
@@ -664,10 +687,6 @@ def install( row_id, wrap, close, participants, deliverables, date=None, filer=N
                                             "which is the failure it exists to prevent" )
     wrap_dt, close_dt = resolve_window( wrap, close, date, today )
 
-    current = read_crontab( crontab_file )
-    if current is None:
-        return { "installed": False, "error": "the crontab could not be read" }
-
     logs = log_dir()
     try:
         logs.mkdir( parents=True, exist_ok=True )
@@ -675,13 +694,24 @@ def install( row_id, wrap, close, participants, deliverables, date=None, filer=N
         pass
     log = logs / f"last-call-{slug}.log"
 
-    stripped, _removed = strip_row( current, slug )
-    lines = [ build_line( row_id, "wrap",  wrap_dt,  script_path(), log ),
-              build_line( row_id, "close", close_dt, script_path(), log ) ]
-    new_text = stripped + "\n".join( lines ) + "\n"
+    # 🔴 THE LOCK SPANS THE READ AND THE WRITE, NOT THE WRITE ALONE. A lock taken only around
+    # `apply_crontab` would still lose lines: by the time this process asked for it, `current`
+    # would already be a snapshot from before the other writer's commit.
+    try:
+        with lock_for( crontab_file, owner=f"last_call set {slug}" ):
+            current = read_crontab( crontab_file )
+            if current is None:
+                return { "installed": False, "error": "the crontab could not be read" }
 
-    if not apply_crontab( new_text, current, crontab_file ):
-        return { "installed": False, "error": "the crontab write was refused" }
+            stripped, _removed = strip_row( current, slug )
+            lines = [ build_line( row_id, "wrap",  wrap_dt,  script_path(), log ),
+                      build_line( row_id, "close", close_dt, script_path(), log ) ]
+            new_text = stripped + "\n".join( lines ) + "\n"
+
+            if not apply_crontab( new_text, current, crontab_file ):
+                return { "installed": False, "error": "the crontab write was refused" }
+    except CrontabLockTimeout as e:
+        return { "installed": False, "error": f"the crontab lock was not free: {e}" }
 
     record = {
         "row"          : row_id,
@@ -699,26 +729,85 @@ def install( row_id, wrap, close, participants, deliverables, date=None, filer=N
              "wrap_at": record[ "wrap_at" ], "close_at": record[ "close_at" ] }
 
 
-def cancel( row_id, crontab_file=None ):
+def close_row( row_id, closer=None ):
     """
-    Remove this row's lines and its payload cache.
+    Close the store row, which is what actually cancels the Last Call fleet-wide.
+
+    🔴 CLOSE, NOT DROP — AND THAT IS MEASURED, NOT PREFERRED (Mr. Radio 🦉, reviewing `feeec70`,
+    2026-09-23). The row the design deliberately leaves unpromoted sits in `not_approved`, and
+    `task_approval_settings.requested_move` classifies `not_approved -> dropped` as an ADMISSION.
+    Run against the live gate: a manager seat is refused 403 on `->dropped` and ALLOWED on
+    `->done`; only Rick's authenticated account can drop it. So "drop the row", which is what this
+    workflow originally told the filer to do, is a step the filer cannot perform.
+
+    ⚠️ A PROMOTED row behaves differently — `queued -> dropped` passes no gate at all — so the
+    original advice was correct for exactly the case the ruling says not to create.
+
+    Requires:
+        - closer( row_id ) is the test seam, returning ( ok, detail ); None for the real store
 
     Ensures:
-        - returns { cancelled, removed }
-        - a row with no lines is reported as already cancelled, not as an error
-        - ⚠️ this stops the BELL. The visible cancellation is dropping the STORE ROW, which stops it
-          even on a machine where these lines were never removed. The caller is told so
+        - returns ( True, detail ) when the row is closed
+        - returns ( False, detail ) otherwise — and the caller REPORTS it rather than pretending
+          the Last Call is cancelled. A worker seat gets a 403 here and must ask its manager
+        - the `reason` says the Last Call was CANCELLED, so a `done` row is not a ledger claiming
+          a close that never ran. The attestation VALUE is a placeholder the server replaces with
+          the manager identity it resolved; only `reason` is stored
+        - never raises
     """
-    slug    = row_slug( row_id )
-    current = read_crontab( crontab_file )
-    if current is None:
-        return { "cancelled": False, "error": "the crontab could not be read" }
+    if closer is not None: return closer( row_id )
+    status, body = _post( f"/api/tasks/{row_id}/transition", payload={
+        "to_status"    : "done",
+        "actor"        : os.environ.get( "LAST_CALL_ACTOR", "last-call" ),
+        "reason"       : "Last Call CANCELLED by the operator — the schedule was called off, not run. "
+                         "Closed rather than dropped because a held row cannot be dropped by a seat.",
+        "receipt_refs" : { "manager_attestation": "cancelled by the operator's word" },
+    } )
+    if status == 200: return True, "row closed"
+    if status == 403:
+        return False, ( f"the store refused the close (HTTP 403): {body[ :200 ]} — a manager seat "
+                        f"closes a held row; a worker cannot. Ask your manager, or have Rick drop it" )
+    return False, f"the store refused the close (HTTP {status}): {body[ :200 ]}"
 
-    new_text, removed = strip_row( current, slug )
-    if removed and not apply_crontab( new_text, current, crontab_file ):
-        return { "cancelled": False, "error": "the crontab write was refused" }
+
+def cancel( row_id, crontab_file=None, close=False, closer=None ):
+    """
+    Remove this row's lines and its payload cache, and optionally close the row.
+
+    Requires:
+        - close is True for an operator-ordered cancellation, False for an internal sweep
+
+    Ensures:
+        - returns { cancelled, removed, row_closed, row_detail }
+        - a row with no lines is reported as already cancelled, not as an error
+        - 🔴 `close=False` for every sweep `fire` performs. A sweep at expiry runs from CRON with an
+          API key and no manager seat behind it, so a close attempt there could only ever 403 — and
+          a sweep that fires BECAUSE the row is already closed must not try to close it again
+        - the crontab read and write happen under the shared lock; a timeout ABORTS rather than
+          writing over the other writer's changes
+    """
+    slug = row_slug( row_id )
+
+    try:
+        with lock_for( crontab_file, owner=f"last_call cancel {slug}" ):
+            current = read_crontab( crontab_file )
+            if current is None:
+                return { "cancelled": False, "error": "the crontab could not be read" }
+
+            new_text, removed = strip_row( current, slug )
+            if removed and not apply_crontab( new_text, current, crontab_file ):
+                return { "cancelled": False, "error": "the crontab write was refused" }
+    except CrontabLockTimeout as e:
+        return { "cancelled": False, "error": f"the crontab lock was not free: {e}" }
+
     delete_schedule( row_id )
-    return { "cancelled": True, "removed": removed }
+
+    row_closed, row_detail = ( None, "not attempted — internal sweep" )
+    if close:
+        row_closed, row_detail = close_row( row_id, closer )
+
+    return { "cancelled": True, "removed": removed,
+             "row_closed": row_closed, "row_detail": row_detail }
 
 
 def status( row_id=None, crontab_file=None, reader=None ):
@@ -763,7 +852,7 @@ def status( row_id=None, crontab_file=None, reader=None ):
 
 
 def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=None,
-          active_reader=None, now=None, stale_hours=DEFAULT_STALE_HOURS ):
+          active_reader=None, now=None, stale_hours=DEFAULT_STALE_HOURS, closer=None ):
     """
     The cron-side verb: check the row, poke the seats, and clean up after the close.
 
@@ -789,7 +878,7 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
     record = read_schedule( row_id )
 
     if record is None:
-        cancel( row_id, crontab_file )
+        cancel( row_id, crontab_file, close=False, closer=closer )
         print( f"LAST CALL: no schedule for row {slug} — removed the orphaned crontab lines.",
                file=sys.stderr )
         return { "poked": False, "reason": "no schedule on disk", "swept": True }
@@ -799,12 +888,12 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
     except ( KeyError, ValueError ):
         close_at = None
     if close_at is not None and ( now - close_at ).total_seconds() > stale_hours * 3600:
-        cancel( row_id, crontab_file )
+        cancel( row_id, crontab_file, close=False, closer=closer )
         return { "poked": False, "reason": f"schedule expired at {record[ 'close_at' ]}", "swept": True }
 
     state = row_status( row_id, reader )
     if state in CLOSED or state == "missing":
-        cancel( row_id, crontab_file )
+        cancel( row_id, crontab_file, close=False, closer=closer )
         return { "poked": False, "reason": f"row is {state} — the Last Call was cancelled", "swept": True }
 
     unread = state is None
@@ -841,7 +930,7 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
 
     swept = False
     if stage == "close":
-        cancel( row_id, crontab_file )
+        cancel( row_id, crontab_file, close=False, closer=closer )
         swept = True
 
     return { "poked": True, "stage": stage, "row_status": state, "unread": unread,
@@ -917,15 +1006,23 @@ def main( argv=None ):
                 date=args.date, filer=record.get( "filer" ), crontab_file=crontab ) )
 
         if args.action == "cancel":
-            result = cancel( args.row, crontab )
+            result = cancel( args.row, crontab, close=True )
             if not result.get( "cancelled" ):
                 print( f"LAST CALL: NOT cancelled — {result.get( 'error' )}", file=sys.stderr )
                 return 2
             for line in result[ "removed" ]: print( f"removed  {line}" )
             if not result[ "removed" ]: print( f"no Last Call installed for row {args.row[ :8 ]}" )
-            print( "⚠️  the crontab lines are gone. To cancel it for the FLEET, drop the store row — "
-                   "that is the visible record, and cron checks it before every poke." )
-            return 0
+            if result[ "row_closed" ]:
+                print( f"row      CLOSED — {result[ 'row_detail' ]}. The bell is now off for the "
+                       f"whole fleet, on every machine, because `fire` reads the row before it pokes." )
+                return 0
+            # 🔴 SAY IT LOUDLY. The local lines are gone on THIS machine; a live line elsewhere will
+            # still ring, because the row is what every other machine checks.
+            print( f"row      NOT CLOSED — {result[ 'row_detail' ]}", file=sys.stderr )
+            print( "⚠️  the local crontab lines are gone, but the ROW IS STILL OPEN — a line on "
+                   "another machine would still ring. Ask a manager seat to close it, or Rick to "
+                   "drop it.", file=sys.stderr )
+            return 2
 
         if args.action == "status":
             rows = status( args.row, crontab )

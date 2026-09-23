@@ -55,6 +55,7 @@ Exit codes (hook mode always exits 0 — see main):
 """
 
 import argparse
+import contextlib
 import datetime
 import hashlib
 import os
@@ -65,6 +66,10 @@ import unicodedata
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+# The lock is shared with last_call.py; the path is decided in ONE place, there.
+sys.path.insert( 0, str( Path( __file__ ).resolve().parent ) )
+from crontab_lock import crontab_lock, CrontabLockTimeout   # noqa: E402
 
 DEFAULT_ROSTER   = Path.home() / ".claude" / "fleet-roster.env"
 DEFAULT_TICK     = Path( __file__ ).resolve().parent / "context-pressure-tick.sh"
@@ -480,6 +485,41 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
         report.append( f"context tick: no managers declared in {roster_path} — nothing to install" )
         return 0, report
 
+    # 🔴 THE SHARED CRONTAB LOCK (Mr. Radio 🦉, reviewing feeec70, 2026-09-23). This function's
+    # read-modify-write races `last_call.py`, which writes the same crontab on its own schedule.
+    # The lock is acquired HERE, before the read, and held past the write-and-verify below —
+    # locking only the write would leave the loser holding a snapshot taken before the winner's
+    # commit, which is the race with extra steps. See crontab_lock.py for why the lock file's
+    # path is chosen once, in one module, rather than twice.
+    try:
+        with _crontab_lock_for( crontab_file, owner="context tick reconcile" ):
+            return _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
+                                      dry_run, notifier, now, announce )
+    except CrontabLockTimeout as e:
+        report.append( f"TICK INSTALL ERROR: {e}. Changing nothing — another crontab writer is "
+                       f"mid-edit, and writing over it would delete its lines silently." )
+        return 2, report
+
+
+def _crontab_lock_for( crontab_file, owner="" ):
+    """
+    Ensures:
+        - the shared crontab lock for the REAL crontab, a no-op for a `--crontab-file` test seam
+          (that file is per-tmpdir and has no second writer)
+    """
+    if crontab_file is not None: return contextlib.nullcontext()
+    return crontab_lock( owner=owner )
+
+
+def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
+                       dry_run, notifier, now, announce ):
+    """
+    `reconcile`'s body, from the crontab read onward, with the lock already held.
+
+    🔴 SPLIT OUT SO THE LOCK CAN WRAP THE WHOLE READ-MODIFY-WRITE in one statement rather than
+    being threaded through with a flag. The body below is unchanged from what `reconcile` ran
+    before the lock was added; its contract is `reconcile`'s.
+    """
     current = read_crontab( crontab_file )
     if current is None:
         report.append( "TICK INSTALL ERROR: could not read the crontab — cannot tell whether the "

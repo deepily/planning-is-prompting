@@ -165,9 +165,29 @@ Three failure modes, all of them already measured in this fleet:
 
 | Verb | What it does |
 |---|---|
-| **cancel** — *"cancel last call"* | **Drop the store row.** That is the fleet-visible cancellation, and the fire-time check honours it on every machine. Then run `last_call.py cancel --row <id>` to remove the local cron lines |
+| **cancel** — *"cancel last call"* | `last_call.py cancel --row <id>` removes the local cron lines **and closes the store row**. Closing the row is the fleet-visible cancellation: the fire-time check honours it on every machine, whether or not anyone removed a line there |
 | **move** — *"move last call to 23:15"* | re-installs both lines at the new times, keeping the roster and the deliverables unchanged |
 | **status** — *"what's the last call?"* | prints the installed schedules, each row's live status, and whether the bell will actually ring |
+
+### 🔴 Close the row, do not drop it — and that is measured, not preferred
+
+**v1.0 of this document said "drop the store row", and that named a step the filer cannot perform.** Mr. Radio caught it reviewing `feeec70`.
+
+The row this design deliberately leaves **unpromoted** sits in `not_approved`. The store classifies `not_approved -> dropped` as an **admission**, which is approver-only. Run against the live gate (`task_approval_settings.refusal_for_admission`) on 2026-09-23:
+
+| Transition | Manager seat | Worker seat | Rick's login |
+|---|---|---|---|
+| `not_approved -> dropped` | **403** | 403 | allowed |
+| `not_approved -> done` | **allowed** | 403 | allowed |
+| `queued -> dropped` | allowed | allowed | allowed |
+
+⇒ **A manager seat closes a held row; nobody but Rick drops one.** So `cancel` closes it to `done`, with a `manager_attestation` receipt and a `reason` that says the Last Call was **cancelled, not run** — the attestation value is a placeholder the server replaces with the manager identity it resolved, so `reason` is the only field that carries the why.
+
+⚠️ **A worker seat gets a 403 here, and `cancel` says so loudly** rather than reporting a cancellation it did not achieve: the local lines are gone, but a line on another machine would still ring. Ask a manager seat to close it, or Rick to drop it.
+
+⚠️ **The last row of that table is why v1.0 read as correct.** A *promoted* row can be dropped by anyone — so the original advice worked for exactly the case the ruling tells you not to create.
+
+⚠️ **The cron-side `fire` never attempts a close.** It runs from cron with an API key and no manager seat behind it, so the attempt could only ever 403 — and a sweep that fires *because* the row is already closed must not try to close it again.
 
 **Expiry is automatic, three ways**:
 1. after the **closing-time** stage fires, the lines and the payload cache remove themselves;
@@ -188,11 +208,21 @@ python3 workflow/scripts/last_call.py move   --row <uuid> --wrap 23:15
 python3 workflow/scripts/last_call.py cancel --row <uuid>
 ```
 
-**Environment** (every path, no `__file__` chains): `PLANNING_IS_PROMPTING_ROOT` (required) · `LUPIN_ROOT` or `LAST_CALL_API_KEY_FILE` for the API key · `LAST_CALL_API_BASE` (default `http://localhost:7999`) · `LAST_CALL_STATE_DIR` · `LAST_CALL_LOG_DIR` · `LAST_CALL_ROSTER` · `LAST_CALL_OPERATOR` · `--crontab-file` is the test seam.
+**Environment** (every path, no `__file__` chains): `PLANNING_IS_PROMPTING_ROOT` (required) · `LUPIN_ROOT` or `LAST_CALL_API_KEY_FILE` for the API key · `LAST_CALL_API_BASE` (default `http://localhost:7999`) · `LAST_CALL_STATE_DIR` · `LAST_CALL_LOG_DIR` · `LAST_CALL_ROSTER` · `LAST_CALL_OPERATOR` · `LAST_CALL_ACTOR` · `CRONTAB_LOCK_PATH` · `CRONTAB_LOCK_TIMEOUT` (default 10s) · `--crontab-file` is the test seam.
 
 **Safety**: removal matches **only** a line whose trailing comment is exactly `# last-call-<8 hex>-wrap` / `-close`. Every other crontab line — the context ticks, the operator's own jobs — is structurally unmatched, not carefully avoided. The crontab is backed up before any write, and **no backup means no write**.
 
-**Tests**: `workflow/scripts/test_last_call.py` — run `pytest workflow/scripts/test_last_call.py -q`. No case in it touches the real crontab, the real store or the real notification server.
+### 🔴 The shared crontab lock
+
+`crontab -l` → edit → `crontab -` is a **read-modify-write**, and two scripts in this repo both perform it on schedules that overlap by construction: `install_context_pressure_tick.py` runs at **every** SessionStart including after a `/clear`, and `last_call.py` runs at declaration and again at each bell. With no lock the ordinary interleaving — A reads, B reads, A writes, B writes — leaves **A's lines silently gone**, and nothing goes red: the crontab is still valid, still parses, still runs. *A missing monitor looks exactly like a quiet one*, which is the failure `install_context_pressure_tick.py` was itself written to close. Found by Mr. Radio 🦉 reviewing `feeec70`.
+
+Both scripts now take one exclusive `fcntl.flock` across the **whole read-and-write span** — a lock held only over the write still loses lines, because the loser already holds a stale snapshot by the time it asks. **On timeout the operation aborts and says so; it never falls through and writes anyway**, which would be the race with extra steps.
+
+⚠️ **A lock is the one thing that must not be duplicated.** Two copies that disagree about which file to lock are not a lock — they are two processes each holding their own and taking turns to feel safe. The path is therefore decided in exactly one place, `workflow/scripts/crontab_lock.py`: `CRONTAB_LOCK_PATH`, else `$PLANNING_IS_PROMPTING_ROOT/io/crontab.lock`, else `~/.claude/crontab.lock`. **That last fallback is load-bearing** — the installer runs from a SessionStart hook and the tick runs from **cron, whose environment is bare**, so an unset variable must not send the two processes to different files. A `$HOME` path is the same string in both, with no environment at all.
+
+This closes the race between the two automated writers. A `crontab -e` typed by hand takes no lock and never will.
+
+**Tests**: `workflow/scripts/test_last_call.py` and `workflow/scripts/test_crontab_lock.py` — run `pytest workflow/scripts/test_last_call.py workflow/scripts/test_crontab_lock.py -q`. No case in either touches the real crontab, the real store or the real notification server.
 
 ---
 
@@ -226,5 +256,7 @@ python3 workflow/scripts/last_call.py cancel --row <uuid>
 ---
 
 ## Version history
+
+- **1.1 (2026-09-23, Rachel 🕊️)** — Mr. Radio's review of `feeec70`, two findings folded. **(1)** `install_context_pressure_tick.py` and `last_call.py` both read-modify-write the crontab with no lock, so either could silently delete the other's lines; both now take one shared exclusive `fcntl.flock` across the whole read-and-write span, path decided once in `workflow/scripts/crontab_lock.py`, and **abort on timeout rather than writing over the other writer**. **(2)** §9's *"drop the store row"* named a step the filer cannot perform — the held row is `not_approved`, and the store refuses `->dropped` to a manager seat with a 403 while allowing `->done`. `cancel` now **closes** the row with a manager attestation and a reason saying it was cancelled, reports a refusal loudly instead of claiming a cancellation it did not achieve, and the cron-side `fire` never attempts a close at all.
 
 - **1.0 (2026-09-23, Rachel 🕊️)** — first build. Two-stage close (last call · closing time), the four declaration elements with the deliverable set as the payload, the first-named/second-named filing rule, the mandatory ACK, report-and-carry on an unmet deliverable, cron + store row durability with the row as the cancellation authority, fire-time wildcard roster resolution, fail-open on an unreadable row, three-way expiry. Helper `workflow/scripts/last_call.py`, covered by `workflow/scripts/test_last_call.py`.

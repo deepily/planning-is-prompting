@@ -754,3 +754,42 @@ def test_a_removal_is_shouted_on_stderr_not_whispered_on_stdout( bed, monkeypatc
 
 if __name__ == "__main__":
     sys.exit( pytest.main( [ __file__, "-q" ] ) )
+
+
+# ── the shared crontab lock (Mr. Radio 🦉, reviewing feeec70, 2026-09-23) ───────────────────────
+#
+# This script's read-modify-write races last_call.py, which writes the same crontab on its own
+# schedule. 🔴 THESE TESTS WERE ADDED AFTER A SURVIVING MUTANT: replacing the lock with a plain
+# nullcontext passed the entire suite, because nothing asserted the lock was taken at all.
+
+def test_the_real_crontab_is_locked_and_a_test_file_is_not():
+    import contextlib
+    from pathlib import Path as _Path
+
+    # The lock guards THE crontab. A --crontab-file is per-tmpdir and has no second writer, so
+    # locking it would serialize the suite against one global lock file for no gain.
+    assert isinstance( inst._crontab_lock_for( _Path( "/tmp/x" ) ), contextlib.nullcontext )
+    assert not isinstance( inst._crontab_lock_for( None ), contextlib.nullcontext )
+
+
+def test_a_held_lock_aborts_the_reconcile_instead_of_writing_over_it( bed, monkeypatch ):
+    import crontab_lock as cl
+
+    def refuse( *_a, **_k ):
+        raise cl.CrontabLockTimeout( "another process has held it for more than 10s" )
+
+    monkeypatch.setattr( inst, "_crontab_lock_for", refuse )
+    code, report = run( bed )
+    assert code == 2
+    assert any( "lock" in line.lower() or "mid-edit" in line for line in report ), report
+    # And nothing was written: aborting is the point, falling through is the race with extra steps.
+    assert not bed[ "crontab" ].exists()
+
+
+def test_the_installer_and_last_call_share_one_lock_function():
+    # Two copies of a lock that disagree about the file are not a lock — they are two processes
+    # each holding their own and taking turns to feel safe.
+    import crontab_lock as cl
+    import last_call as lc
+    assert inst.crontab_lock is cl.crontab_lock
+    assert lc.crontab_lock   is cl.crontab_lock

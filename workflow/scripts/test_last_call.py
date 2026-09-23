@@ -424,8 +424,9 @@ def test_status_ignores_foreign_lines( isolate ):
 
 # ── the CLI ──────────────────────────────────────────────────────────────────────────────────────
 
-def test_cli_set_then_status_then_cancel( isolate, capsys ):
+def test_cli_set_then_status_then_cancel( isolate, capsys, monkeypatch ):
     crontab_arg = str( isolate[ "crontab" ] )
+    monkeypatch.setattr( lc, "close_row", lambda _r, _c=None: ( True, "row closed" ) )
     assert lc.main( [ "set", "--row", ROW, "--wrap", "22:45", "--close", "23:00",
                       "--participants", "Tiffany, María", "--deliverables", "push, backup",
                       "--date", "2026-09-23", "--crontab-file", crontab_arg ] ) == 0
@@ -433,7 +434,7 @@ def test_cli_set_then_status_then_cancel( isolate, capsys ):
 
     assert lc.main( [ "cancel", "--row", ROW, "--crontab-file", crontab_arg ] ) == 0
     assert live_lines( isolate ) == []
-    assert "drop the store row" in capsys.readouterr().out
+    assert "CLOSED" in capsys.readouterr().out
 
 
 def test_cli_refuses_a_bad_time_with_its_own_exit_code( isolate ):
@@ -466,3 +467,163 @@ def test_the_state_file_is_valid_json_carrying_the_whole_declaration( isolate ):
     assert record[ "close_at" ]     == "2026-09-23T23:00"
     assert record[ "participants" ] == [ "Tiffany", "María", "Mr. Radio" ]
     assert record[ "deliverables" ] == [ "push", "backup" ]
+
+
+# ── Mr. Radio's review of feeec70, fold 1: cancel must CLOSE the row ────────────────────────────
+#
+# The row the design deliberately leaves unpromoted sits in `not_approved`, and the store's own
+# gate classifies `not_approved -> dropped` as an ADMISSION. Measured against the live gate on
+# 2026-09-23: a manager seat is refused 403 on `->dropped` and ALLOWED on `->done`; only Rick's
+# authenticated account can drop it. So the original "drop the store row" advice named a step the
+# filer cannot perform.
+
+def test_cancel_closes_the_row_with_a_manager_attestation( isolate ):
+    seen = {}
+
+    def closer( row_id ):
+        seen[ "row" ] = row_id
+        return True, "row closed"
+
+    result = lc.cancel( ROW, isolate[ "crontab" ], close=True, closer=closer )
+    assert result[ "cancelled" ]  is True
+    assert result[ "row_closed" ] is True
+    assert seen[ "row" ] == ROW
+
+
+def test_a_refused_close_is_reported_not_swallowed( isolate ):
+    # The local lines are gone; a line on ANOTHER machine would still ring, because the row is what
+    # every other machine checks. Reporting cancelled-and-done here would be the lie.
+    install( isolate )
+    result = lc.cancel( ROW, isolate[ "crontab" ], close=True,
+                        closer=lambda _r: ( False, "the store refused the close (HTTP 403)" ) )
+    assert result[ "cancelled" ]  is True          # the local lines DID come out
+    assert result[ "row_closed" ] is False
+    assert "403" in result[ "row_detail" ]
+    assert live_lines( isolate ) == []
+
+
+def test_the_cli_exits_non_zero_when_the_row_could_not_be_closed( isolate, monkeypatch, capsys ):
+    install( isolate )
+    monkeypatch.setattr( lc, "close_row", lambda _r, _c=None: ( False, "HTTP 403 — worker seat" ) )
+    code = lc.main( [ "cancel", "--row", ROW, "--crontab-file", str( isolate[ "crontab" ] ) ] )
+    assert code == 2
+    assert "ROW IS STILL OPEN" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize( "state,stage", [
+    ( "dropped",      "wrap"  ),     # the row was already closed — closing it again is nonsense
+    ( "in_progress",  "close" ),     # the bell RANG and expired — cron has no manager seat behind it
+] )
+def test_fire_never_attempts_a_row_close( isolate, state, stage ):
+    # 🔴 Every sweep `fire` performs runs from CRON with an API key and no manager seat, so a close
+    # attempt there could only ever 403 — and a sweep that fires BECAUSE the row is already closed
+    # must not try to close it again.
+    install( isolate )
+    attempts = []
+    spy      = Spy()
+    lc.fire( ROW, stage, isolate[ "crontab" ], reader=lambda _r: state,
+             sender=spy.send, notifier=spy.notify,
+             closer=lambda _r: ( attempts.append( _r ), ( True, "x" ) )[ 1 ] )
+    assert attempts == [], "a cron-side sweep tried to close the store row"
+    assert live_lines( isolate ) == []
+
+
+# ── Mr. Radio's review of feeec70, fold 2: the shared crontab lock ──────────────────────────────
+
+def test_a_held_lock_aborts_the_install_instead_of_writing_over_it( isolate, monkeypatch ):
+    # Aborting is the whole point: falling through to the write would be the race with extra steps.
+    import crontab_lock as cl
+
+    def refuse( *_a, **_k ):
+        raise cl.CrontabLockTimeout( "another process has held it for more than 10s" )
+
+    monkeypatch.setattr( lc, "lock_for", refuse )
+    result = lc.install( ROW, "22:45", "23:00", [ "María" ], [ "push" ],
+                         crontab_file=isolate[ "crontab" ] )
+    assert result[ "installed" ] is False
+    assert "lock" in result[ "error" ]
+    assert not isolate[ "crontab" ].exists()
+
+
+def test_a_held_lock_aborts_the_cancel_too( isolate, monkeypatch ):
+    import crontab_lock as cl
+    install( isolate )
+    before = crontab( isolate )
+
+    def refuse( *_a, **_k ):
+        raise cl.CrontabLockTimeout( "held" )
+
+    monkeypatch.setattr( lc, "lock_for", refuse )
+    result = lc.cancel( ROW, isolate[ "crontab" ], close=True,
+                        closer=lambda _r: ( True, "row closed" ) )
+    assert result[ "cancelled" ] is False
+    assert crontab( isolate ) == before
+    assert lc.read_schedule( ROW ) is not None, "the payload cache was deleted despite the abort"
+
+
+def test_the_test_seam_does_not_take_the_global_lock( isolate, monkeypatch ):
+    # The lock guards THE crontab, not any file that resembles one. Locking a per-tmpdir fixture
+    # would serialize the whole suite against one global lock file for no gain.
+    import crontab_lock as cl
+    taken = []
+    monkeypatch.setattr( cl, "crontab_lock", lambda **kw: taken.append( kw ) )
+    install( isolate )
+    assert taken == []
+
+
+# ── close_row's OWN verdict mapping ─────────────────────────────────────────────────────────────
+#
+# 🔴 ADDED AFTER A SURVIVING MUTANT. Every test above passes a `closer` seam, which short-circuits
+# before `close_row`'s body — so a mutant that returned success for EVERY HTTP status survived the
+# whole suite. A seam that bypasses the code under test tests nothing about it.
+
+@pytest.mark.parametrize( "status,body,ok,must_say", [
+    ( 200, '{"item":{}}',                True,  "closed"        ),
+    ( 403, '{"detail":"not an approver"}', False, "manager"     ),
+    ( 409, '{"detail":"terminal"}',      False, "409"           ),
+    ( 0,   "Connection refused",         False, "0"             ),
+] )
+def test_close_row_maps_each_store_verdict( isolate, monkeypatch, status, body, ok, must_say ):
+    monkeypatch.setattr( lc, "_post", lambda *a, **k: ( status, body ) )
+    got_ok, detail = lc.close_row( ROW )
+    assert got_ok is ok
+    assert must_say in detail
+
+
+def test_close_row_sends_done_with_a_manager_attestation_and_a_cancelled_reason( isolate, monkeypatch ):
+    sent = {}
+
+    def capture( path, payload=None, params=None, timeout=30 ):
+        sent[ "path" ], sent[ "payload" ] = path, payload
+        return 200, "{}"
+
+    monkeypatch.setattr( lc, "_post", capture )
+    lc.close_row( ROW )
+    assert sent[ "path" ] == f"/api/tasks/{ROW}/transition"
+    assert sent[ "payload" ][ "to_status" ] == "done"
+    assert "manager_attestation" in sent[ "payload" ][ "receipt_refs" ]
+    # The ledger must not read as a close that ran. `reason` is the field the server actually keeps.
+    assert "CANCELLED" in sent[ "payload" ][ "reason" ]
+
+
+def test_every_internal_sweep_in_fire_leaves_the_row_alone( isolate ):
+    """
+    🔴 ADDED AFTER A SURVIVING MUTANT: the earlier version exercised only two of `fire`'s four
+    sweeps, so flipping ONE of them to close=True went unnoticed. This drives all four.
+    """
+    cases = [
+        ( "orphan",  lambda: lc.schedule_path( ROW ).unlink(), "wrap",  "in_progress", None ),
+        ( "stale",   lambda: None, "wrap",  "in_progress", datetime.datetime( 2027, 9, 23, 22, 45 ) ),
+        ( "closed",  lambda: None, "wrap",  "dropped",     None ),
+        ( "expiry",  lambda: None, "close", "in_progress", None ),
+    ]
+    for label, prep, stage, state, now in cases:
+        isolate[ "crontab" ].write_text( "", encoding="utf-8" )
+        install( isolate, date="2026-09-23" )
+        prep()
+        attempts, spy = [], Spy()
+        lc.fire( ROW, stage, isolate[ "crontab" ], reader=lambda _r: state,
+                 sender=spy.send, notifier=spy.notify, now=now,
+                 closer=lambda _r: ( attempts.append( _r ), ( True, "x" ) )[ 1 ] )
+        assert attempts == [], f"the {label} sweep tried to close the store row"
+        assert live_lines( isolate ) == [], f"the {label} sweep did not remove the lines"

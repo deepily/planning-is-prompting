@@ -70,14 +70,14 @@ That second check is the redundancy. A missing schedule looks exactly like a qui
 
 | He says | You do |
 |---|---|
-| *"cancel last call"* | **Drop the store row** — that is the fleet-visible cancellation — then `last_call.py cancel --row <id>` for the local lines |
+| *"cancel last call"* | `last_call.py cancel --row <id>` — it removes the local lines **and closes the row**, which is the fleet-visible cancellation. 🔴 **Close, do not drop**: the held row is `not_approved`, and the store refuses `->dropped` to a manager seat (403) while allowing `->done`. A worker seat is refused both — the command says so loudly; ask a manager, or Rick to drop it |
 | *"move last call to 23:15"* | `last_call.py move --row <id> --wrap 23:15` — roster and deliverables unchanged |
 | *"what's the last call?"* / 🔔 alone | `last_call.py status`, and report the times, the roster, the deliverables and whether the bell will ring |
 
 ## Hard rules
 
 - **Named means named** — a named roster is fixed at declaration; only "all managers" and "everyone" resolve at the bell.
-- **The row is the authority** — dropping it cancels the bell on every machine, whether or not anyone removed a cron line.
+- **The row is the authority** — closing it cancels the bell on every machine, whether or not anyone removed a cron line. A `cancel` that could not close the row has **not** cancelled the Last Call; say so rather than reporting it done.
 - **An unreadable row rings anyway** — "I could not look" is never spelled the same way as "cancelled".
 - **A receipt, not a claim** — a deliverable reported without one is not reported.
 - **Never infer a deliverable** — a push that was "probably implied" is not declared, and is not authorized.

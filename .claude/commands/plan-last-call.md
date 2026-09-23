@@ -19,7 +19,7 @@
 |---|---|---|
 | `set` (default) | a declaration naming both times | files the store row, installs two cron lines, announces once |
 | `status` | *"what's the last call?"* · 🔔 alone | prints the schedules, each row's live status, whether the bell will ring |
-| `cancel` | *"cancel last call"* | **drops the store row** (the fleet-visible cancellation), then removes the local cron lines |
+| `cancel` | *"cancel last call"* | removes the local cron lines **and closes the store row** — closing, not dropping: the store refuses `->dropped` on a held row even to a manager (403), and allows `->done`. A refusal is reported, never swallowed |
 | `move` | *"move last call to HH:MM"* | re-installs at the new times; roster and deliverables unchanged |
 
 ---
