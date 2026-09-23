@@ -35,6 +35,7 @@
 - The `heartbeat` block stays `enabled: true`. Only the poke **output** is muted, and owed work is still computed.
 - It takes effect on the next Stop, with no restart. The Stop hook is a fresh process that re-reads the file each time (`heartbeat_settings.py` → `load_heartbeat_settings`).
 - **Verify by reading it back** (`grep -A5 '"heartbeat"' ~/.claude/settings.json`) and quote the value and the file's modification time. A mute that nobody read back has not been installed.
+- **Flip it with the script**: `python3 workflow/scripts/stop_poke.py {mute [--message "..."] | restore | status}`. It changes only that one value, refuses if the key is missing or appears twice, and prints the read-back line (value · path · modification time) for you to quote. The operator ruled on 2026-09-23 that the manager runs it, so the restore no longer waits for his hand.
 
 **Who flips it**: the manager the operator names. That manager also restores it (`true`) when the window ends, reads it back, and announces the restore.
 
