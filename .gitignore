@@ -82,6 +82,11 @@ io/mementos/
 io/git-loc-delta/
 io/post-games/
 
+# The shared crontab lock (workflow/scripts/crontab_lock.py). A runtime mutex, not an
+# artifact: its CONTENTS never matter, only the fd's flock state. Committing it would
+# put one machine's stale PID in every checkout.
+io/crontab.lock
+
 # Claude mementos (records + pointers) — NEVER commit: a memento that
 # will be committed is written more carefully, and therefore less honestly.
 .claude-memento-*.md
