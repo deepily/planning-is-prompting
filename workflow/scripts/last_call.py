@@ -133,6 +133,44 @@ def log_dir():
     return Path( os.environ.get( "TMPDIR", "/tmp" ) ) / f"claude-{os.getuid()}" / "last-call"
 
 
+def last_fire( slug, logs=None ):
+    """
+    What the fire log says happened the last time cron ran this row's line.
+
+    Requires:
+        - slug is a row's 8-hex slug
+
+    Ensures:
+        - returns None when the log is absent or empty — cron has not fired yet, which is not
+          the same as "fired and said nothing" and must not print the same
+        - returns { "line": <last non-blank line>, "failed": bool }
+        - `failed` is True when the last line looks like the shell refusing to run the command:
+          a "Permission denied", a "not found", or a "command not found"
+
+    🔴 WHY status() READS THIS AT ALL (row 8a838de5). The bell fired twice into a
+    "Permission denied" and `status` went on printing LIVE, because it derived liveness from the
+    crontab and the store row and never asked whether the thing had actually run. A schedule that
+    is installed and a schedule that works are different claims; reading only the first and
+    reporting the second is how a silent failure acquires a green light.
+    """
+    logs = logs or log_dir()
+    path = Path( logs ) / f"last-call-{slug}.log"
+    try:
+        text = path.read_text( encoding="utf-8", errors="replace" )
+    except OSError:
+        return None
+
+    lines = [ ln.strip() for ln in text.splitlines() if ln.strip() ]
+    if not lines: return None
+
+    last    = lines[ -1 ]
+    lowered = last.lower()
+    return {
+        "line"   : last,
+        "failed" : any( m in lowered for m in ( "permission denied", "not found" ) ),
+    }
+
+
 def roster_path():
     """
     Ensures:
@@ -260,6 +298,20 @@ def split_list( text ):
 
 # ── the crontab, with the installer's safety contract ────────────────────────────────────────────
 
+# 🔴 THE CRON LINE NAMES ITS INTERPRETER, AND THE BELL NEVER RANG BECAUSE IT DID NOT (row 8a838de5).
+# The line used to start with the script path alone. `last_call.py` is mode 100644 — as is every
+# other .py in this directory; only the .sh files carry +x — so /bin/sh answered
+# "Permission denied" and cron logged it where nobody was looking. Two stages fired on 2026-09-23,
+# 22:45 wrap and 23:00 close, and NO SEAT WAS PAGED.
+#
+# ⚠️ THE ROW SUGGESTED COPYING THE CONTEXT-PRESSURE TICK, WHICH WRITES A BARE PATH. That works
+# there for a reason that does not transfer: its target is `context-pressure-tick.sh`, mode 100755.
+# Copying its SHAPE would have reproduced this defect. Naming the interpreter is what makes the
+# line independent of a mode bit that a fresh clone, a umask or a `git checkout` can change —
+# and it keeps this file consistent with every other .py here rather than making one the exception.
+CRON_INTERPRETER = "python3"
+
+
 def build_line( row_id, stage, when, script, log ):
     """
     Compose one crontab line.
@@ -276,7 +328,7 @@ def build_line( row_id, stage, when, script, log ):
     """
     slug = row_slug( row_id )
     return ( f"{when.minute} {when.hour} {when.day} {when.month} * "
-             f"{script} fire --row {row_id} --stage {stage} >> {log} 2>&1 "
+             f"{CRON_INTERPRETER} {script} fire --row {row_id} --stage {stage} >> {log} 2>&1 "
              f"# last-call-{slug}-{stage}" )
 
 
@@ -767,6 +819,16 @@ def close_row( row_id, closer=None ):
     if status == 403:
         return False, ( f"the store refused the close (HTTP 403): {body[ :200 ]} — a manager seat "
                         f"closes a held row; a worker cannot. Ask your manager, or have Rick drop it" )
+
+    # 🔴 ALREADY CLOSED IS NOT A REFUSED CLOSE (measured 2026-09-25, cancelling row 3d741e8b, which
+    # had been `done` for a day). The store answers 422 "item is terminal ('done')" when the row is
+    # ALREADY in the state this verb is reaching for. Reading that as a refusal made `cancel` print
+    # "the ROW IS STILL OPEN — a line on another machine would still ring" over a closed row, and
+    # exit 2. That is the same defect class as row 8a838de5 itself: the report and the world
+    # disagree, and the reader is sent to chase something that is not there.
+    if status == 422 and "is terminal" in body.lower():
+        return True, "row was already terminal — nothing to close"
+
     return False, f"the store refused the close (HTTP {status}): {body[ :200 ]}"
 
 
@@ -810,7 +872,7 @@ def cancel( row_id, crontab_file=None, close=False, closer=None ):
              "row_closed": row_closed, "row_detail": row_detail }
 
 
-def status( row_id=None, crontab_file=None, reader=None ):
+def status( row_id=None, crontab_file=None, reader=None, logs=None ):
     """
     What Last Calls are installed, and is each one still live?
 
@@ -821,6 +883,9 @@ def status( row_id=None, crontab_file=None, reader=None ):
         - returns [ { row, slug, stages, schedule, row_status, live } ]
         - `row_status` is None when the store could not be read, and `live` is then True — an
           unreadable row is reported as still ringing, because that is what will happen
+        - `last_fire` is what the fire log last recorded, or None when cron has not run the line
+        - `fire_failed` is True when that last line was the shell refusing the command — the
+          state this row was filed for, where the schedule is installed and rings into nothing
     """
     current = read_crontab( crontab_file )
     if current is None: return None
@@ -840,6 +905,7 @@ def status( row_id=None, crontab_file=None, reader=None ):
         full = record.get( "row" ) if record else None
         if row_id and slug != row_slug( row_id ): continue
         state = row_status( full, reader ) if full else None
+        fired = last_fire( slug, logs )
         out.append( {
             "row"        : full,
             "slug"       : slug,
@@ -847,6 +913,10 @@ def status( row_id=None, crontab_file=None, reader=None ):
             "schedule"   : record,
             "row_status" : state,
             "live"       : state not in CLOSED and state != "missing",
+            # row 8a838de5: installed is not the same as working. `last_fire` is None until cron
+            # has run the line at all, and carries failed=True when the shell refused it.
+            "last_fire"  : fired,
+            "fire_failed": bool( fired and fired[ "failed" ] ),
         } )
     return out
 
@@ -1035,11 +1105,23 @@ def main( argv=None ):
             for entry in rows:
                 record = entry[ "schedule" ] or {}
                 state  = entry[ "row_status" ] or "UNREAD (the store could not be reached)"
-                print( f"row {entry[ 'row' ] or entry[ 'slug' ]} · {state} · "
-                       f"{'LIVE' if entry[ 'live' ] else 'cancelled — the bell will not ring'}" )
+                fired  = entry[ "last_fire" ]
+                # row 8a838de5: LIVE on its own was the defect. The bell had already rung twice
+                # into a "Permission denied" and this line still printed LIVE, because liveness
+                # was read from the crontab and the store and never from whether cron's command
+                # ran. A failed fire now qualifies the word in the headline, not a footnote.
+                verdict = "LIVE" if entry[ "live" ] else "cancelled — the bell will not ring"
+                if entry[ "fire_failed" ]: verdict += " · 🔴 BUT THE LAST FIRE FAILED"
+                print( f"row {entry[ 'row' ] or entry[ 'slug' ]} · {state} · {verdict}" )
                 print( f"  last call {record.get( 'wrap_at', '?' )} · closing {record.get( 'close_at', '?' )}" )
                 print( f"  participants: {', '.join( record.get( 'participants', [] ) ) or '?'}" )
                 print( f"  deliverables: {', '.join( record.get( 'deliverables', [] ) ) or '?'}" )
+                if fired is None:
+                    print( "  last fire: cron has not run this line yet" )
+                elif fired[ "failed" ]:
+                    print( f"  last fire: FAILED — the shell refused the command: {fired[ 'line' ]}" )
+                else:
+                    print( f"  last fire: {fired[ 'line' ]}" )
                 for stage in STAGES:
                     if stage in entry[ "stages" ]: print( f"  {entry[ 'stages' ][ stage ]}" )
             return 0

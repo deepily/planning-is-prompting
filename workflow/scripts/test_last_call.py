@@ -16,6 +16,8 @@ Run: pytest workflow/scripts/test_last_call.py -q
 
 import datetime
 import json
+import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -627,3 +629,164 @@ def test_every_internal_sweep_in_fire_leaves_the_row_alone( isolate ):
                  closer=lambda _r: ( attempts.append( _r ), ( True, "x" ) )[ 1 ] )
         assert attempts == [], f"the {label} sweep tried to close the store row"
         assert live_lines( isolate ) == [], f"the {label} sweep did not remove the lines"
+
+
+# ── the bell actually rings: the installed line is RUN, not just inspected (row 8a838de5) ────────
+
+def cron_command( isolate, stage="wrap" ):
+    """
+    The command portion of an installed line, exactly as /bin/sh receives it from cron.
+
+    Ensures:
+        - strips the five schedule fields and the trailing `# last-call-…` tag, and NOTHING else —
+          the redirection stays, because that is where the evidence of a failure goes
+    """
+    line = [ l for l, _slug, st in lc.tagged_lines( crontab( isolate ) ) if st == stage ][ 0 ]
+    return line.split( None, 5 )[ 5 ].split( " # last-call" )[ 0 ]
+
+
+def test_the_cron_line_names_its_interpreter():
+    """A line that opens with the script path depends on a mode bit. This one does not."""
+    line = lc.build_line( ROW, "wrap", datetime.datetime( 2026, 9, 23, 22, 45 ),
+                          Path( "/x/last_call.py" ), Path( "/x/t.log" ) )
+    assert line.split( None, 5 )[ 5 ].startswith( "python3 /x/last_call.py fire " )
+
+
+def test_the_installed_cron_command_runs_verbatim( isolate, monkeypatch ):
+    """
+    🔴 THE REGRESSION TEST FOR row 8a838de5 — the one thing the whole suite could not do before:
+    take the string cron was given and RUN it. Every earlier test read the line and asserted on its
+    text, which is why two stages could fire into `/bin/sh: 1: …/last_call.py: Permission denied`
+    with a green suite and a `status` still printing LIVE.
+
+    The script it points at is a byte copy of this module at mode 0o644, chmod'd explicitly rather
+    than inherited, so the arm is unambiguous: if the command needed an execute bit, this fails.
+    That is also why +x was not the fix — a mode bit is not carried by a fresh clone's umask, and
+    every other .py in that directory is 0o644.
+    """
+    scripts = isolate[ "tmp" ] / "scripts"
+    scripts.mkdir()
+    here = Path( lc.__file__ ).resolve().parent
+    for name in ( "last_call.py", "crontab_lock.py", "install_context_pressure_tick.py" ):
+        target = scripts / name
+        target.write_bytes( ( here / name ).read_bytes() )
+        target.chmod( 0o644 )
+    assert not ( scripts / "last_call.py" ).stat().st_mode & 0o111, "the arm must be non-executable"
+
+    monkeypatch.setenv( "LAST_CALL_SCRIPT", str( scripts / "last_call.py" ) )
+    install( isolate )
+    command = cron_command( isolate )
+    assert command.startswith( f"python3 {scripts / 'last_call.py'} fire " )
+
+    proc = subprocess.run( command, shell=True, capture_output=True, text=True,
+                           env=dict( os.environ ), timeout=120 )
+    log = ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).read_text( encoding="utf-8" )
+
+    assert proc.returncode == 0, f"cron's own command failed: {proc.stderr or proc.stdout}"
+    assert "Permission denied" not in log, log
+    assert "not found" not in log, log
+    # It ran far enough to reach the verb and report. The store is unreachable in the fixture, so
+    # the row reads UNREAD and the wrap stage pokes anyway — the documented behaviour.
+    assert '"poked"' in log, log
+
+
+def test_last_fire_is_none_until_cron_has_run_the_line( isolate ):
+    install( isolate )
+    assert lc.last_fire( SLUG ) is None
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text( "\n\n  \n", encoding="utf-8" )
+    assert lc.last_fire( SLUG ) is None, "whitespace is not a fire"
+
+
+@pytest.mark.parametrize( "written,failed", [
+    ( "/bin/sh: 1: /x/last_call.py: Permission denied", True  ),
+    ( "/bin/sh: 1: python3: not found",                 True  ),
+    ( "sh: python3: command not found",                 True  ),
+    ( '{\n  "poked": true\n}',                          False ),
+] )
+def test_last_fire_says_whether_the_shell_refused_the_command( isolate, written, failed ):
+    install( isolate )
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text( written, encoding="utf-8" )
+    got = lc.last_fire( SLUG )
+    assert got[ "failed" ] is failed
+    assert got[ "line" ] == written.strip().splitlines()[ -1 ].strip()
+
+
+def test_last_fire_reads_only_the_most_recent_attempt( isolate ):
+    install( isolate )
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text(
+        "/bin/sh: 1: /x/last_call.py: Permission denied\n" + '{ "poked": true }\n', encoding="utf-8" )
+    got = lc.last_fire( SLUG )
+    assert got[ "failed" ] is False, "a repaired schedule must not keep reporting the old refusal"
+
+
+def test_status_carries_the_last_fire_and_flags_a_failed_one( isolate ):
+    install( isolate )
+    rows = lc.status( ROW, isolate[ "crontab" ], reader=lambda _r: "in_progress" )
+    assert rows[ 0 ][ "last_fire" ] is None and rows[ 0 ][ "fire_failed" ] is False
+
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text(
+        "/bin/sh: 1: /x/last_call.py: Permission denied", encoding="utf-8" )
+    rows = lc.status( ROW, isolate[ "crontab" ], reader=lambda _r: "in_progress" )
+    assert rows[ 0 ][ "fire_failed" ] is True
+    assert "Permission denied" in rows[ 0 ][ "last_fire" ][ "line" ]
+    # The row is still LIVE by the crontab and the store — which is exactly the pair of true
+    # statements that used to add up to a false all-clear.
+    assert rows[ 0 ][ "live" ] is True
+
+
+def test_the_cli_status_refuses_to_print_a_bare_live_over_a_failed_fire( isolate, capsys, monkeypatch ):
+    monkeypatch.setattr( lc, "row_status", lambda _r, _reader=None: "in_progress" )
+    install( isolate )
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text(
+        "/bin/sh: 1: /x/last_call.py: Permission denied", encoding="utf-8" )
+
+    assert lc.main( [ "status", "--crontab-file", str( isolate[ "crontab" ] ) ] ) == 0
+    out = capsys.readouterr().out
+    assert "BUT THE LAST FIRE FAILED" in out
+    assert "last fire: FAILED" in out
+    assert "Permission denied" in out
+
+
+def test_the_cli_status_says_so_when_cron_has_not_run_yet( isolate, capsys, monkeypatch ):
+    monkeypatch.setattr( lc, "row_status", lambda _r, _reader=None: "in_progress" )
+    install( isolate )
+    assert lc.main( [ "status", "--crontab-file", str( isolate[ "crontab" ] ) ] ) == 0
+    out = capsys.readouterr().out
+    assert "cron has not run this line yet" in out
+    assert "FAILED" not in out
+
+
+def test_an_already_terminal_row_is_a_close_that_is_already_done( isolate, monkeypatch ):
+    """
+    Measured 2026-09-25 while clearing the orphaned lines this row was filed for: the store answers
+    422 `item is terminal ('done')` for a row that is ALREADY closed, and `cancel` reported
+    "the ROW IS STILL OPEN — a line on another machine would still ring" and exited 2 over a row
+    that had been done for a day.
+    """
+    body = '{"detail":{"errors":["item is terminal (\'done\') — done/dropped/wont_fix are append-only"]}}'
+    monkeypatch.setattr( lc, "_post", lambda *a, **k: ( 422, body ) )
+    ok, detail = lc.close_row( ROW )
+    assert ok is True
+    assert "already terminal" in detail
+
+
+def test_the_cli_cancel_does_not_cry_still_open_over_a_closed_row( isolate, capsys, monkeypatch ):
+    body = '{"detail":{"errors":["item is terminal (\'done\')"]}}'
+    monkeypatch.setattr( lc, "_post", lambda *a, **k: ( 422, body ) )
+    install( isolate )
+    code = lc.main( [ "cancel", "--row", ROW, "--crontab-file", str( isolate[ "crontab" ] ) ] )
+    captured = capsys.readouterr()
+    assert code == 0, captured.err
+    assert "STILL OPEN" not in captured.err
+    assert "already terminal" in captured.out
+    assert live_lines( isolate ) == []
+
+
+def test_a_genuinely_refused_close_is_still_reported_loudly( isolate, capsys, monkeypatch ):
+    """The complement — the 422 branch must not swallow a real refusal."""
+    monkeypatch.setattr( lc, "_post", lambda *a, **k: ( 422, '{"detail":"next_chase_ts required"}' ) )
+    install( isolate )
+    code = lc.main( [ "cancel", "--row", ROW, "--crontab-file", str( isolate[ "crontab" ] ) ] )
+    err = capsys.readouterr().err
+    assert code == 2
+    assert "STILL OPEN" in err
