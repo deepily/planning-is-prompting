@@ -196,11 +196,29 @@ This is the test the 83 diary-shaped documents fail. Titles shaped like sentence
 |---|---|---|
 | Run output, probe rigs, receipts | the session scratchpad directory | the session |
 | Working notes during a build | worktree-local `.scratch/` (gitignored) | dies with the worktree |
+| **A report the operator reads once** (a shortlist, a status summary, a triage list) | the `abstract` of the notify that delivers it — **no file**. Too long for a card: `io/tmp/yyyy.mm.dd-slug.md` in the served repo, linked from the abstract | the card: the notification · `io/tmp/`: **7 days**, swept automatically |
+| A report a store row or a doc must cite later | not ephemeral — a store row amendment, or `src/rnd/` with authorization | permanent |
 | A finding worth keeping | a **store row** | permanent, queryable |
 | A lesson from a finished run | a **post-game** under `src/rnd/` (authorized by the run) | permanent |
 | An authorized deliverable | `src/rnd/yyyy.mm.dd-slug.md` + frontmatter | permanent |
 
 **Install `.scratch/` in the project's `.gitignore` when installing this policy.** A destination that is not gitignored is not a destination; it is a delay.
+
+### A doc the operator reads once goes to `io/tmp/`, never `io/write-ups/`
+
+The session scratchpad and `.scratch/` are ephemeral, but the doc viewer cannot serve them. So a seat that needed to hand the operator a **link** wrote into the nearest path the viewer *could* serve — `io/write-ups/` — and nothing there ever expires. Measured 2026.09.26: 10 one-off files in lupin `io/write-ups/`, the newest a holding-area shopping list the operator read once. His ruling the same day (broadcast `355f708f`, ask answered, not defaulted): *if it is in a temp directory it is by definition not my problem to clean up.*
+
+| | |
+|---|---|
+| **First choice** | put it in the `abstract`. A 12-row list fits a card; no file, nothing to clean |
+| **Too long for a card** | `io/tmp/yyyy.mm.dd-slug.md`, linked from the abstract |
+| **Lifetime** | 7 days from mtime, then deleted by a scheduled sweep — **nobody deletes by hand, and nobody may cite an `io/tmp/` path from a store row or a durable doc** |
+| **Must outlive the week** | then it was never ephemeral: amend the row, or write an authorized `src/rnd/` doc |
+
+**Installing it in a served repo** — three parts, and the rule is not installed until all three are. **This document is the rule, not the install**: in lupin the install is store row `730b33f2`, and it is not done until that row closes.
+1. `io/tmp/` is gitignored (`io/**` usually already covers it).
+2. `io/tmp/` is in the repo's `.docview.yml` `allowed_prefixes`, followed by a backend bounce — the manifest is read once at startup (`workflow/doc-viewer-links.md § Per-Repo .docview.yml Manifest`).
+3. A scheduled sweep deletes `io/tmp/` files older than 7 days — a crontab entry or an existing tick, never an in-session timer. **A rule that depends on remembering is not installed.**
 
 ---
 
@@ -300,6 +318,7 @@ The commit guard is the one that actually holds. The write guard exists because 
 
 ## Version History
 
+- **v1.2** (2026.09.26): Added the **operator-reads-once** row and the `io/tmp/` section: a one-off report goes in the notify abstract, or into a served, 7-day-swept `io/tmp/` — never `io/write-ups/`. Operator ruling, broadcast `355f708f`. María 🌸 with Mr. Radio 🦉, who proposed the same shape independently.
 - **v1.1** (2026.09.22): Added **Rule A** (an audit must prove each of its own signals fired) and **Rule B** (delinking is not line deletion), both earned during the live cleanup rather than reasoned out in advance. Corrected the door count **55 → 14 → 6**, the first two being grep artifacts published as findings; the wrong numbers are kept in the text deliberately. Named the widest door: the undefined word *"research"* in `claude-config-global.md`, now gated at source.
 - **v1.0** (2026.09.22): Initial policy. Authored by María 🌸 with Mr. Radio 🦉 under task `3a2f726b-caa5-469c-94aa-67d95f0c3936`. Evidence: 153-artifact September census of lupin `src/rnd/`, plus a door/authorization sweep of this repository's own workflow corpus.
 

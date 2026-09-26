@@ -132,6 +132,28 @@ ask_yes_no(
 
 ---
 
+## 0.35) Re-own the Holding Area (manager-role sessions only, every shift end)
+
+**Applies to**: every manager-role session, at every end of shift, **after** §0.3's harvest. A manager with no crew still runs it, because rows can be left behind by seats reaped earlier in the day, or by another manager's crew.
+
+**Rule (Rick, 2026-09-26, row `57486c03`)**: *"Anything that sits in the holding area should be re-owned at the end of every shift. That is the end of every day, as part of the end-of-session ritual."* **A held row belongs to a manager, never to a temporary worker.** Workers are reaped and respawned under new names, so a row left with a worker's name has an owner who no longer exists, and nobody reviews it in the next triage.
+
+**Why it happens**: a worker files a row and it lands in the holding area (`not_approved`) under the worker's name. A reap that keeps the persona (`respin_personas`) keeps the row there too. Measured 2026-09-26 11:52 EDT: 60 held rows, and 24 of them were owned by workers (Krishna, Rio, Maya, Sam, Tiberius, Rachel) or by nobody.
+
+**Process**:
+
+1. **List your share of the held rows**, with scoped queries (no bare `task_query()`):
+   - `task_query( status="not_approved", accountable_manager=<me>, terse=True )`
+   - `task_query( status="not_approved", owner_persona=<each worker I spawned today>, terse=True )`, which catches rows filed under a worker's name with no manager set.
+2. **Re-own every row whose `owner_persona` is not a manager**: `task_reassign( <id>, new_owner_persona=<me>, new_manager=<me>, reason="end-of-shift holding-area re-own (row 57486c03)" )`. A row whose `accountable_manager` is another manager goes to **that** manager, not to you.
+3. **Fill any empty `accountable_manager`** on a held row you own, in the same call. A row with no manager can't be found by a manager's own query.
+4. **Leave the status alone.** This step changes **owners only**. Admitting or dropping a held row is Rick's decision.
+5. **Receipt**: one line in the session-end notify: *"Holding area re-owned: N rows moved to managers, 0 left with workers."* Say it even when N is 0.
+
+⚠️ **Skip it and you break the next triage.** The rows filed today are exactly the ones whose worker is reaped tonight.
+
+---
+
 ## 0.4) Quick Token Count Check (Manual)
 
 **Purpose**: Quick spot-check of history.md token count using pre-approved script
