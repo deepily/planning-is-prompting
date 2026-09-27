@@ -42,6 +42,7 @@ Exit codes:
     1  the crontab or the schedule could not be read
     2  a write was attempted and did not take
     3  the declaration was rejected (bad time, bad row id, wrap not before close)
+    4  a bell fired and reached nobody
 """
 
 import argparse
@@ -50,6 +51,7 @@ import datetime
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 import urllib.error
@@ -82,6 +84,14 @@ WILDCARD_EVERYONE = ( "everyone", "all", "everybody", "all seats" )
 
 DEFAULT_STALE_HOURS = 24.0
 API_KEY_RELATIVE    = "src/conf/keys/notification-api-claude-code-dev"
+
+# 🔴 CRON RUNS WITH NEARLY NO ENVIRONMENT (row d92dc473). No LUPIN_ROOT means no API key, so every
+# read and every poke answered 401 — and "all managers" resolved to nobody while the log said
+# `"poked": true`. These are the variables the bell reads at fire time; the installer's values are
+# written INTO the cron line, the same way the disk-hygiene lines carry LUPIN_ROOT inline. Every
+# LAST_CALL_* override present at install travels too.
+CRON_ENV_KEYS = ( "LUPIN_ROOT", "PLANNING_IS_PROMPTING_ROOT", "LUPIN_DEV_EMAIL",
+                  "CRONTAB_LOCK_PATH", "CRONTAB_LOCK_TIMEOUT" )
 
 
 # ── paths, every one of them from the environment (CLAUDE.md § PATH MANAGEMENT) ──────────────────
@@ -145,7 +155,8 @@ def last_fire( slug, logs=None ):
           the same as "fired and said nothing" and must not print the same
         - returns { "line": <last non-blank line>, "failed": bool }
         - `failed` is True when the last line looks like the shell refusing to run the command:
-          a "Permission denied", a "not found", or a "command not found"
+          a "Permission denied", a "not found", or a "command not found" — or when `fire` itself
+          said the bell reached nobody
 
     🔴 WHY status() READS THIS AT ALL (row 8a838de5). The bell fired twice into a
     "Permission denied" and `status` went on printing LIVE, because it derived liveness from the
@@ -167,7 +178,7 @@ def last_fire( slug, logs=None ):
     lowered = last.lower()
     return {
         "line"   : last,
-        "failed" : any( m in lowered for m in ( "permission denied", "not found" ) ),
+        "failed" : any( m in lowered for m in ( "permission denied", "not found", "reached nobody" ) ),
     }
 
 
@@ -312,7 +323,26 @@ def split_list( text ):
 CRON_INTERPRETER = "python3"
 
 
-def build_line( row_id, stage, when, script, log ):
+def cron_env( environ=None ):
+    """
+    The environment the bell needs at fire time, captured from the installer's.
+
+    Ensures:
+        - returns [ ( name, value ), … ] for every CRON_ENV_KEYS entry and every LAST_CALL_*
+          variable that is set and non-empty, in a stable order
+
+    Raises:
+        - ValueError when a value contains a newline — no quoting survives that in a crontab line
+    """
+    environ = os.environ if environ is None else environ
+    names   = list( CRON_ENV_KEYS ) + sorted( k for k in environ if k.startswith( "LAST_CALL_" ) )
+    pairs   = [ ( k, environ[ k ] ) for k in names if environ.get( k ) ]
+    for k, v in pairs:
+        if "\n" in v or "\r" in v: raise ValueError( f"{k} contains a newline and cannot go in a cron line" )
+    return pairs
+
+
+def build_line( row_id, stage, when, script, log, env=() ):
     """
     Compose one crontab line.
 
@@ -320,15 +350,21 @@ def build_line( row_id, stage, when, script, log ):
         - stage is "wrap" or "close"
         - when is a datetime
         - script and log are Paths
+        - env is a sequence of ( name, value ) pairs, normally `cron_env()`
 
     Ensures:
         - returns a line that fires ONCE, on that date and minute, ending in the row's tag
+        - the command is prefixed with `NAME=value` for every env pair, quoted only when needed,
+          because cron supplies almost no environment of its own (row d92dc473)
         - the line carries only the row id and the stage; the payload is read from the state file
-          at fire time, so the line stays short, unquoted and readable in `crontab -l`
+          at fire time, so the line stays short and readable in `crontab -l`
     """
-    slug = row_slug( row_id )
+    slug   = row_slug( row_id )
+    # cron turns an unescaped % into a newline, so it is escaped after the shell quoting
+    values = [ ( k, shlex.quote( v ).replace( "%", "\\%" ) ) for k, v in env ]
+    prefix = "".join( f"{k}={v} " for k, v in values )
     return ( f"{when.minute} {when.hour} {when.day} {when.month} * "
-             f"{CRON_INTERPRETER} {script} fire --row {row_id} --stage {stage} >> {log} 2>&1 "
+             f"{prefix}{CRON_INTERPRETER} {script} fire --row {row_id} --stage {stage} >> {log} 2>&1 "
              f"# last-call-{slug}-{stage}" )
 
 
@@ -651,19 +687,27 @@ def dm( recipient, body ):
     } )
 
 
-def notify_operator( message, abstract ):
+def operator_target():
+    """
+    Ensures:
+        - returns the operator's user id, or "" when none is configured
+    """
+    return os.environ.get( "LAST_CALL_OPERATOR" ) or os.environ.get( "LUPIN_DEV_EMAIL" ) or ""
+
+
+def notify_operator( message, abstract, priority="high" ):
     """
     Ensures:
         - returns ( status_code, detail ); never raises
         - ( 0, "no target user" ) when no recipient is configured — a delivery failure that is
           reported, not a silent skip
     """
-    target = os.environ.get( "LAST_CALL_OPERATOR" ) or os.environ.get( "LUPIN_DEV_EMAIL" )
+    target = operator_target()
     if not target: return 0, "no target user (set LAST_CALL_OPERATOR or LUPIN_DEV_EMAIL)"
     return _post( "/api/notify", params={
         "message"     : message,
         "type"        : "alert",
-        "priority"    : "high",
+        "priority"    : priority,
         "target_user" : target,
         "sender_id"   : f"claude.code@{os.environ.get( 'LAST_CALL_PROJECT', 'plan' )}.deepily.ai#last-call",
         "abstract"    : abstract,
@@ -732,11 +776,19 @@ def install( row_id, wrap, close, participants, deliverables, date=None, filer=N
 
     Raises:
         - ValueError on a bad row id, a bad time, or an empty roster / deliverable list
+        - ValueError when the API key cannot be read or no operator is configured — the bell would
+          ring into 401s with nobody to tell, and install time is the one moment a human is watching
     """
     slug = row_slug( row_id )
     if not participants:  raise ValueError( "a Last Call with no participants binds nobody" )
     if not deliverables:  raise ValueError( "a Last Call with no deliverables is a reminder to close, "
                                             "which is the failure it exists to prevent" )
+    if not read_api_key():
+        raise ValueError( "the API key cannot be read (set LUPIN_ROOT or LAST_CALL_API_KEY_FILE) — "
+                          "every poke would answer 401 and reach nobody" )
+    if not operator_target():
+        raise ValueError( "no operator to alert (set LAST_CALL_OPERATOR or LUPIN_DEV_EMAIL) — "
+                          "a bell that fails would fail silently" )
     wrap_dt, close_dt = resolve_window( wrap, close, date, today )
 
     logs = log_dir()
@@ -756,8 +808,9 @@ def install( row_id, wrap, close, participants, deliverables, date=None, filer=N
                 return { "installed": False, "error": "the crontab could not be read" }
 
             stripped, _removed = strip_row( current, slug )
-            lines = [ build_line( row_id, "wrap",  wrap_dt,  script_path(), log ),
-                      build_line( row_id, "close", close_dt, script_path(), log ) ]
+            env   = cron_env()
+            lines = [ build_line( row_id, "wrap",  wrap_dt,  script_path(), log, env ),
+                      build_line( row_id, "close", close_dt, script_path(), log, env ) ]
             new_text = stripped + "\n".join( lines ) + "\n"
 
             if not apply_crontab( new_text, current, crontab_file ):
@@ -928,13 +981,15 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
 
     Requires:
         - stage is "wrap" or "close"
-        - sender( recipient, body ) and notifier( message, abstract ) are the delivery seams
+        - sender( recipient, body ) and notifier( message, abstract, priority ) are the delivery seams
 
     Ensures:
         - an ABSENT payload cache removes the orphaned lines and pokes nobody
         - a row that is done, dropped or missing removes every line for the row and pokes nobody —
           this is how dropping the row cancels the schedule
         - an UNREADABLE row pokes anyway and says the check did not run
+        - a bell that delivered to NO seat returns `poked: False, reached_nobody: True` and tells
+          the operator at urgent priority — never a `poked: true` over an empty recipient list
         - a schedule more than `stale_hours` past its close is swept, so the day-of-month cron line
           can never ring again a year later
         - after the CLOSE stage fires, the row's lines and its payload cache are removed — the
@@ -996,15 +1051,22 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
             if failed else "" )
         + "  \n[Open: last-call.md](/app/docs?path=planning-is-prompting/workflow/last-call.md)"
     )
-    tell( spoken, abstract )
+    # 🔴 A BELL THAT REACHED NOBODY DID NOT RING (row d92dc473). It used to report `poked: true`
+    # with an empty recipient list. Now it is urgent to the operator and false in the result.
+    reached_nobody = not delivered
+    if reached_nobody:
+        spoken   = f"{word.capitalize()} FAILED: the bell reached nobody. Close out by hand."
+        abstract = "🔴 **REACHED NOBODY**  \n" + abstract
+    tell_code, _tell_detail = tell( spoken, abstract, "urgent" if reached_nobody else "high" )
 
     swept = False
     if stage == "close":
         cancel( row_id, crontab_file, close=False, closer=closer )
         swept = True
 
-    return { "poked": True, "stage": stage, "row_status": state, "unread": unread,
-             "recipients": results, "notes": notes, "swept": swept }
+    return { "poked": not reached_nobody, "reached_nobody": reached_nobody, "stage": stage,
+             "row_status": state, "unread": unread, "recipients": results, "notes": notes,
+             "operator_notify": tell_code, "swept": swept }
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────────────────────────
@@ -1128,7 +1190,11 @@ def main( argv=None ):
 
         if args.action == "fire":
             result = fire( args.row, args.stage, crontab )
-            print( json.dumps( result, indent=2, ensure_ascii=False ) )
+            print( json.dumps( result, indent=2, ensure_ascii=False ), flush=True )
+            if result.get( "reached_nobody" ):
+                # The log's LAST line is what `status` reads, so the failure has to be last.
+                print( f"LAST CALL: FAILED — the {args.stage} bell reached nobody", file=sys.stderr )
+                return 4
             return 0
 
     except ValueError as e:

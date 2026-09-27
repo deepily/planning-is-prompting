@@ -47,7 +47,10 @@ def isolate( tmp_path, monkeypatch ):
     monkeypatch.setenv( "LAST_CALL_LOG_DIR",   str( tmp_path / "logs" ) )
     monkeypatch.setenv( "LAST_CALL_ROSTER",    str( roster ) )
     monkeypatch.setenv( "LAST_CALL_API_BASE",  "http://127.0.0.1:1"      )   # refused if ever used
-    monkeypatch.setenv( "LAST_CALL_API_KEY_FILE", str( tmp_path / "nokey" ) )
+    key = tmp_path / "key"
+    key.write_text( "test-key\n", encoding="utf-8" )
+    monkeypatch.setenv( "LAST_CALL_API_KEY_FILE", str( key ) )
+    monkeypatch.setenv( "LAST_CALL_OPERATOR",  "operator@example.test" )
     monkeypatch.delenv( "LAST_CALL_SCRIPT", raising=False )
     return { "crontab": tmp_path / "crontab.txt", "tmp": tmp_path }
 
@@ -70,14 +73,15 @@ class Spy:
     """Collects every delivery instead of sending one."""
 
     def __init__( self, code=200 ):
-        self.dms, self.notifies, self.code = [], [], code
+        self.dms, self.notifies, self.priorities, self.code = [], [], [], code
 
     def send( self, recipient, body ):
         self.dms.append( ( recipient, body ) )
         return self.code, "ok"
 
-    def notify( self, message, abstract ):
+    def notify( self, message, abstract, priority="high" ):
         self.notifies.append( ( message, abstract ) )
+        self.priorities.append( priority )
         return 200, "ok"
 
 
@@ -676,18 +680,155 @@ def test_the_installed_cron_command_runs_verbatim( isolate, monkeypatch ):
     monkeypatch.setenv( "LAST_CALL_SCRIPT", str( scripts / "last_call.py" ) )
     install( isolate )
     command = cron_command( isolate )
-    assert command.startswith( f"python3 {scripts / 'last_call.py'} fire " )
+    assert f"python3 {scripts / 'last_call.py'} fire " in command
 
     proc = subprocess.run( command, shell=True, capture_output=True, text=True,
-                           env=dict( os.environ ), timeout=120 )
+                           env=cron_environment( isolate ), timeout=120 )
     log = ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).read_text( encoding="utf-8" )
 
-    assert proc.returncode == 0, f"cron's own command failed: {proc.stderr or proc.stdout}"
     assert "Permission denied" not in log, log
     assert "not found" not in log, log
     # It ran far enough to reach the verb and report. The store is unreachable in the fixture, so
-    # the row reads UNREAD and the wrap stage pokes anyway — the documented behaviour.
+    # the row reads UNREAD, the wrap stage pokes anyway, every poke is refused — and that is now
+    # reported as the failure it is (row d92dc473), with exit 4.
     assert '"poked"' in log, log
+    assert proc.returncode == 4, f"exit {proc.returncode}: {proc.stderr or proc.stdout}"
+
+
+# ── the bell runs in CRON'S environment, not the installer's (row d92dc473) ──────────────────────
+
+def cron_environment( isolate ):
+    """
+    What cron hands a job: HOME and a minimal PATH, and nothing else.
+
+    HOME points inside tmp_path and PATH starts with a `crontab` that always fails, so a fire that
+    lost its environment and fell back to the real defaults can never read or rewrite the real
+    crontab — it finds no schedule, tries to sweep, and the sweep's read fails harmlessly.
+    """
+    fake = isolate[ "tmp" ] / "fakebin"
+    fake.mkdir( exist_ok=True )
+    stub = fake / "crontab"
+    stub.write_text( "#!/bin/sh\nexit 1\n", encoding="utf-8" )
+    stub.chmod( 0o755 )
+    home = isolate[ "tmp" ] / "home"
+    home.mkdir( exist_ok=True )
+    return { "HOME": str( home ), "PATH": f"{fake}:/usr/bin:/bin" }
+
+
+@pytest.fixture
+def stub_server( monkeypatch ):
+    """A local stand-in for :7999 that records every request's X-API-Key and answers 200."""
+    import http.server
+    import threading
+
+    seen = []
+
+    class Handler( http.server.BaseHTTPRequestHandler ):
+        def _answer( self, body ):
+            seen.append( ( self.command, self.path.split( "?" )[ 0 ], self.headers.get( "X-API-Key" ) ) )
+            ok = self.headers.get( "X-API-Key" ) == "test-key"
+            self.send_response( 200 if ok else 401 )
+            self.send_header( "Content-Type", "application/json" )
+            self.end_headers()
+            self.wfile.write( json.dumps( body if ok else { "detail": "bad key" } ).encode() )
+
+        def do_GET( self ):  self._answer( { "status": "in_progress" } )
+        def do_POST( self ):
+            self.rfile.read( int( self.headers.get( "Content-Length" ) or 0 ) )
+            self._answer( { "status": "sent" } )
+        def log_message( self, *_a ): pass
+
+    server = http.server.ThreadingHTTPServer( ( "127.0.0.1", 0 ), Handler )
+    thread = threading.Thread( target=server.serve_forever, daemon=True )
+    thread.start()
+    monkeypatch.setenv( "LAST_CALL_API_BASE", f"http://127.0.0.1:{server.server_address[ 1 ]}" )
+    yield seen
+    server.shutdown()
+
+
+def test_the_bell_reaches_its_seats_from_cron_s_empty_environment( isolate, stub_server, monkeypatch ):
+    """
+    🔴 THE REGRESSION TEST FOR row d92dc473. The earlier verbatim test ran cron's command with the
+    TEST RUNNER'S environment, so LUPIN_ROOT was always present and the 401 could not happen. Here
+    the command runs with only HOME and PATH, which is what cron gives it. Everything the bell needs
+    must therefore arrive through the line itself.
+
+    Prove it watches: build the lines without `env` and this test reddens — the child finds no
+    schedule (its state dir falls back to HOME) and no key, and the server sees no authenticated poke.
+    """
+    monkeypatch.setenv( "LAST_CALL_SCRIPT", str( Path( lc.__file__ ).resolve() ) )
+    install( isolate )
+    proc = subprocess.run( cron_command( isolate ), shell=True, capture_output=True, text=True,
+                           env=cron_environment( isolate ), timeout=120 )
+    log = ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).read_text( encoding="utf-8" )
+
+    assert proc.returncode == 0, log
+    dms = [ key for verb, path, key in stub_server if path == "/api/dm/send" ]
+    assert len( dms ) == 2, f"expected both named seats poked, got {stub_server}\n{log}"
+    assert set( dms ) == { "test-key" }, "a poke arrived without the key"
+    assert ( "POST", "/api/notify", "test-key" ) in stub_server, "the operator was not told"
+    assert '"reached_nobody": false' in log, log
+
+
+def test_the_cron_line_quotes_a_value_and_escapes_cron_s_percent():
+    line = lc.build_line( ROW, "wrap", datetime.datetime( 2026, 9, 23, 22, 45 ),
+                          Path( "/x/last_call.py" ), Path( "/x/t.log" ),
+                          [ ( "LUPIN_ROOT", "/a b/lupin" ), ( "LAST_CALL_OPERATOR", "50%@x" ) ] )
+    command = line.split( None, 5 )[ 5 ]
+    assert command.startswith( "LUPIN_ROOT='/a b/lupin' LAST_CALL_OPERATOR=50\\%@x python3 /x/last_call.py fire " )
+
+
+def test_cron_env_carries_the_roots_and_every_last_call_override_and_skips_empties():
+    got = lc.cron_env( { "LUPIN_ROOT": "/l", "PLANNING_IS_PROMPTING_ROOT": "/p", "LUPIN_DEV_EMAIL": "",
+                         "LAST_CALL_OPERATOR": "o@x", "LAST_CALL_API_BASE": "http://h", "HOME": "/h" } )
+    assert got == [ ( "LUPIN_ROOT", "/l" ), ( "PLANNING_IS_PROMPTING_ROOT", "/p" ),
+                    ( "LAST_CALL_API_BASE", "http://h" ), ( "LAST_CALL_OPERATOR", "o@x" ) ]
+
+
+def test_cron_env_refuses_a_newline_that_would_split_the_line():
+    with pytest.raises( ValueError, match="newline" ):
+        lc.cron_env( { "LAST_CALL_OPERATOR": "a@x\n* * * * * rm -rf ~" } )
+
+
+@pytest.mark.parametrize( "unset,expect", [
+    ( "LAST_CALL_API_KEY_FILE", "API key" ),
+    ( "LAST_CALL_OPERATOR",     "no operator" ),
+] )
+def test_install_refuses_a_bell_that_could_not_authenticate_or_alert( isolate, monkeypatch, unset, expect ):
+    monkeypatch.delenv( unset )
+    monkeypatch.delenv( "LUPIN_ROOT",      raising=False )
+    monkeypatch.delenv( "LUPIN_DEV_EMAIL", raising=False )
+    with pytest.raises( ValueError, match=expect ):
+        install( isolate )
+    assert not isolate[ "crontab" ].exists(), "a refused install must write nothing"
+
+
+@pytest.mark.parametrize( "code,roster", [ ( 401, ( "Tiffany", "María" ) ), ( 200, ( "all managers", ) ) ] )
+def test_a_bell_that_reaches_nobody_is_urgent_and_not_poked( isolate, code, roster ):
+    # Both halves of the 22:30 failure: every poke refused, and a wildcard that resolved to no one.
+    install( isolate, participants=roster )
+    spy    = Spy( code=code )
+    result = lc.fire( ROW, "wrap", isolate[ "crontab" ], reader=lambda _r: "in_progress",
+                      sender=spy.send, notifier=spy.notify, active_reader=lambda: [] )
+    assert result[ "poked" ] is False and result[ "reached_nobody" ] is True
+    assert spy.priorities == [ "urgent" ]
+    assert "REACHED NOBODY" in spy.notifies[ 0 ][ 1 ]
+
+
+def test_a_bell_that_reaches_one_seat_is_not_a_failure( isolate ):
+    install( isolate )
+    spy    = Spy()
+    result = lc.fire( ROW, "wrap", isolate[ "crontab" ], reader=lambda _r: "in_progress",
+                      sender=spy.send, notifier=spy.notify )
+    assert result[ "poked" ] is True and result[ "reached_nobody" ] is False
+    assert spy.priorities == [ "high" ]
+
+
+def test_status_flags_a_fire_that_reached_nobody( isolate ):
+    install( isolate )
+    ( isolate[ "tmp" ] / "logs" / f"last-call-{SLUG}.log" ).write_text(
+        '{ "poked": false }\nLAST CALL: FAILED — the wrap bell reached nobody\n', encoding="utf-8" )
+    assert lc.last_fire( SLUG )[ "failed" ] is True
 
 
 def test_last_fire_is_none_until_cron_has_run_the_line( isolate ):

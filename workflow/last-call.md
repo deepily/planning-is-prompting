@@ -158,6 +158,7 @@ Three failure modes, all of them already measured in this fleet:
 - **A named, receipted "not done, because X" is strictly more useful than a blank.**
 - **An unmet deliverable becomes a store row** before the seat reports it, so it is owed work somebody can see tomorrow.
 - **A failed DM is not a delivered DM.** The summary card names every seat the bell could not reach, with its HTTP status.
+- **A bell that reached nobody did not ring.** Zero delivered seats, whether every poke was refused or a wildcard resolved to no one, is reported as `poked: false, reached_nobody: true`. It goes to the operator at **urgent** priority and exits 4, and `status` shows it as a failed fire. On 2026-09-26 the bell reached no one and still logged `poked: true` (row d92dc473).
 
 ---
 
@@ -210,6 +211,8 @@ python3 workflow/scripts/last_call.py cancel --row <uuid>
 
 **Environment** (every path, no `__file__` chains): `PLANNING_IS_PROMPTING_ROOT` (required) · `LUPIN_ROOT` or `LAST_CALL_API_KEY_FILE` for the API key · `LAST_CALL_API_BASE` (default `http://localhost:7999`) · `LAST_CALL_STATE_DIR` · `LAST_CALL_LOG_DIR` · `LAST_CALL_ROSTER` · `LAST_CALL_OPERATOR` · `LAST_CALL_ACTOR` · `CRONTAB_LOCK_PATH` · `CRONTAB_LOCK_TIMEOUT` (default 10s) · `--crontab-file` is the test seam.
 
+🔴 **Cron's environment is nearly empty, so the line carries its own.** At install, `LUPIN_ROOT`, `PLANNING_IS_PROMPTING_ROOT`, `LUPIN_DEV_EMAIL` and every `LAST_CALL_*` variable that is set are written into both cron lines as `NAME=value` prefixes. This is the same pattern the disk-hygiene lines use. **`set` refuses** when the API key cannot be read or no operator is configured (`LAST_CALL_OPERATOR` or `LUPIN_DEV_EMAIL`), because install time is the one moment a human is watching. Without this, the 2026-09-26 bell had no key, answered 401 to everything, and resolved "all managers" to nobody (row d92dc473).
+
 **Safety**: removal matches **only** a line whose trailing comment is exactly `# last-call-<8 hex>-wrap` / `-close`. Every other crontab line — the context ticks, the operator's own jobs — is structurally unmatched, not carefully avoided. The crontab is backed up before any write, and **no backup means no write**.
 
 ### 🔴 The shared crontab lock
@@ -256,6 +259,8 @@ This closes the race between the two automated writers. A `crontab -e` typed by 
 ---
 
 ## Version history
+
+- **1.2 (2026-09-27, María 🌸)** — Row d92dc473: the bell reached nobody from cron. The cause was measured by running the bell's own reads under `env -i`: every call returned 401 and nobody was resolved, while the same code with the shell's environment resolved three managers. The roster was not at fault. Fixes: the cron line carries the installer's environment; `set` refuses without a readable key and an operator target; a fire that reaches nobody reports `poked: false`, goes to the operator at urgent priority, exits 4 and shows as failed in `status`. The regression test runs cron's exact command with only `HOME` and `PATH` against a stub server that checks the key. A mutant that drops the prefix reddens it.
 
 - **1.1 (2026-09-23, Rachel 🕊️)** — Mr. Radio's review of `feeec70`, two findings folded. **(1)** `install_context_pressure_tick.py` and `last_call.py` both read-modify-write the crontab with no lock, so either could silently delete the other's lines; both now take one shared exclusive `fcntl.flock` across the whole read-and-write span, path decided once in `workflow/scripts/crontab_lock.py`, and **abort on timeout rather than writing over the other writer**. **(2)** §9's *"drop the store row"* named a step the filer cannot perform — the held row is `not_approved`, and the store refuses `->dropped` to a manager seat with a 403 while allowing `->done`. `cancel` now **closes** the row with a manager attestation and a reason saying it was cancelled, reports a refusal loudly instead of claiming a cancellation it did not achieve, and the cron-side `fire` never attempts a close at all.
 
