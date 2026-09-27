@@ -1065,6 +1065,14 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### 2026-09-26 — Skeleton Shift rulings (Session 208)
+
+- **Ephemeral docs** (broadcast `355f708f`, ask answered): a doc Rick reads once goes in the notify card, or in a served `io/tmp/` swept after exactly 7 days. It never goes in `io/write-ups/`. Installed in lupin as row `730b33f2`.
+- **Holding-area ownership** (Rick P0 `57486c03`): every held row belongs to a manager, and managers re-own worker rows at every shift end (session-end §0.35).
+- **CC Broadcast chip** (Rick, typed): *"simple and explicit"*. A click inserts exactly `@name` with no spacing logic, and nothing is trimmed at send time.
+- **Doc links render in-app** (Rick, ask + voice, row `47759aa3`): history doc links and the new Files button open in the split content pane in both layouts, never a new tab. The Action Required card and its tooltip keep opening a new tab, a ruling María made as accountable manager.
+- **Crontab edits** (ask answered): the io/tmp sweep runs at 19:00 plus @reboot, and the Sunday disk jobs moved to 19:00 and 19:30, because the host is never on at 03:00.
+
 ### 2026-09-23 — Last Call (scheduled session close): Rick's walkthrough of the proposal, row `287e1cfb`
 
 All seven decisions were made through `ask_multiple_choice`, and every one came back `answered: true, default_used: false`. Proposal: `src/rnd/2026.09.22-scheduled-session-close-proposal.md` §9.

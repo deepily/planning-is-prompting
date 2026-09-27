@@ -22,10 +22,18 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
+**RESUME HERE**: **Session 208 (2026-09-26, María 🌸 `8f736574`, Skeleton Shift, manager beside Mr. Radio and Tiffany)**: holding area triaged, two workflow rules shipped, and five of Rick's rows delivered through Mr. Radio's crew with me as accountable manager.
+
+1. **Holding-area triage (broadcast `7938c019`)**: 60 rows split between Mr. Radio (lupin) and me (plan, lupin-mobile), 12 removals and 6 promotions agreed. Four "promote" picks were already merged (checked by `git merge-base --is-ancestor`), so they became close-as-delivered instead.
+2. **Rules shipped, commit `73d03a2`**: session-end §0.35 (managers re-own held rows at every shift end, Rick P0 `57486c03`), and `rnd-directory-policy` v1.2 (one-off docs go in the card or a self-clearing `io/tmp/`, never `io/write-ups/`).
+3. **Delivered as accountable manager (lupin)**: the CC Broadcast chip inserts exactly `@name` (`319c57a3`, `29ae2d0ab`, after Rick overruled our spacing rules); a served `io/tmp/` with a 7-day sweep (`730b33f2`, `947620a36`, Rick OK'd the crontab); the Sunday disk jobs moved to 19:00 (`77422be2`); the io_files symlink hole (`27398998`). Also reviewed Tiffany's New Task card, TaskRow guard and Focus thumb fixes.
+4. **Rick's doc-viewer P0 `47759aa3` is in flight** (Chloé building): step 0 confirmed his regression. In vertical layout, doc links open a new tab because of a horizontal-only guard in both clients. The rulings are on the row.
+5. 🔴 **The Last Call bell rang at 22:30 and reached nobody (bug `d92dc473`, P1, mine)**: cron has no `LUPIN_ROOT`, so the API key is empty, every call 401s, and "all managers" resolved to no one, yet the log says `poked: true`. Tonight's close ran on hand-sent DMs. **This is the second Last Call bell in four days that looked installed and wasn't working.**
+
 **2026.09.23 — Memento sweep (María 🌸, row `5b29a807`)**: 146 mementos moved to the trash (4 kept for María). Per Rick's ruling, only the last two days were summarized; everything older was dead.
 - **09-22**: `/clear` does not re-read CLAUDE.md, so editing it needs a re-spin. A hook's liveness probe cannot measure itself. A comment is not a primary source. The worktree guard shipped with two holes that Mr. Radio found in live use.
 
-**RESUME HERE**: **Session 207 (2026-09-23, María 🌸 stable `171945f0`, two self-respins, skeleton crew until 17:00, then reviewer for Mr. Radio's lupin parity train)**: four P0–P1 rows closed by day, Last Call built and used the same night, and ~25 lupin review verdicts by night.
+**Previous RESUME HERE**: **Session 207 (2026-09-23, María 🌸 stable `171945f0`, two self-respins, skeleton crew until 17:00, then reviewer for Mr. Radio's lupin parity train)**: four P0–P1 rows closed by day, Last Call built and used the same night, and ~25 lupin review verdicts by night.
 
 1. **Day rows (all DONE with receipts)**: accordion gap parity (`453e7e4d`, lupin `8f035bd0`); memento sweep, 1,010 trashed + session-end step 1.7 + `workflow/scripts/memento_sweep.py` (`5b29a807`, `e41576e`); attestation docs (`8639d1ad`); worktree guard MODE=ENFORCE with its own registry (`14761ef1`, `a5198c3`).
 2. **Session-close proposal walked through with Rick (`287e1cfb`)**: 7 rulings into the TODO.md Decisions Log (`e9ccf57`). **Last Call 🔔 built** (`feeec70`, `09ef5ea`, `b5b791a`), installed in lupin and lupin-mobile. **`stop_poke.py`** (`0adad2e`) restored the Stop poke at 17:14 after the skeleton crew ended.
