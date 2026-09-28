@@ -1033,8 +1033,10 @@ def fire( row_id, stage, crontab_file=None, reader=None, sender=None, notifier=N
         code, detail = send( name, body )
         results.append( { "persona": name, "status": code, "detail": detail } )
 
-    delivered = [ r for r in results if r[ "status" ] == 200 ]
-    failed    = [ r for r in results if r[ "status" ] != 200 ]
+    # Any 2xx is a delivery: /api/dm/send answers 201 Created. Counting only 200 made the
+    # 2026-09-27 22:15 bell reach all three seats and still report "reached nobody".
+    delivered = [ r for r in results if 200 <= r[ "status" ] < 300 ]
+    failed    = [ r for r in results if not 200 <= r[ "status" ] < 300 ]
     word      = STAGE_WORDS[ stage ]
     spoken    = ( f"{word.capitalize()}: {len( delivered )} of {len( results )} seats reached."
                   if results else f"{word.capitalize()} rang, but it resolved to no seats." )

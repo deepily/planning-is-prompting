@@ -727,7 +727,9 @@ def stub_server( monkeypatch ):
         def _answer( self, body ):
             seen.append( ( self.command, self.path.split( "?" )[ 0 ], self.headers.get( "X-API-Key" ) ) )
             ok = self.headers.get( "X-API-Key" ) == "test-key"
-            self.send_response( 200 if ok else 401 )
+            # the real /api/dm/send answers 201 Created, so the stub does too
+            created = self.command == "POST" and self.path.startswith( "/api/dm/send" )
+            self.send_response( ( 201 if created else 200 ) if ok else 401 )
             self.send_header( "Content-Type", "application/json" )
             self.end_headers()
             self.wfile.write( json.dumps( body if ok else { "detail": "bad key" } ).encode() )
@@ -813,6 +815,17 @@ def test_a_bell_that_reaches_nobody_is_urgent_and_not_poked( isolate, code, rost
     assert result[ "poked" ] is False and result[ "reached_nobody" ] is True
     assert spy.priorities == [ "urgent" ]
     assert "REACHED NOBODY" in spy.notifies[ 0 ][ 1 ]
+
+
+def test_a_201_created_counts_as_delivered( isolate ):
+    # The real /api/dm/send answers 201. The 2026-09-27 22:15 bell reached all three seats with
+    # 201s and still reported "reached nobody", because only 200 counted.
+    install( isolate )
+    spy    = Spy( code=201 )
+    result = lc.fire( ROW, "wrap", isolate[ "crontab" ], reader=lambda _r: "in_progress",
+                      sender=spy.send, notifier=spy.notify )
+    assert result[ "poked" ] is True and result[ "reached_nobody" ] is False
+    assert spy.priorities == [ "high" ]
 
 
 def test_a_bell_that_reaches_one_seat_is_not_a_failure( isolate ):
