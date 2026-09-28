@@ -228,7 +228,8 @@ def classify( rows, managers, live, exempt=DEFAULT_EXEMPT, now=None ):
 
     Ensures:
         - returns { "held", "departed", "unmanaged", "overdue", "unchecked" }, each a list of rows
-        - "overdue" is a blocked row whose next_chase_ts is before `now`, whoever owns it
+        - "overdue" is a blocked row whose next_chase_ts is before `now`, missing or unparseable,
+          whoever owns it
         - a row lands in at most one of held / departed; "unmanaged" is independent of both
         - "unchecked" lists live rows whose owner's liveness mattered but could not be read
     """
@@ -238,7 +239,9 @@ def classify( rows, managers, live, exempt=DEFAULT_EXEMPT, now=None ):
     for row in rows:
         owner = canonical( row.get( "owner_persona" ) )
         chase = parse_ts( row.get( "next_chase_ts" ) )
-        if row.get( "status" ) == "blocked" and chase is not None and chase < now:
+        # A blocked row with no readable chase is overdue too: a chase nobody can read is a chase
+        # nobody will act on (Tiffany's review of b23a579).
+        if row.get( "status" ) == "blocked" and ( chase is None or chase < now ):
             found[ "overdue" ].append( row )
         if not canonical( row.get( "accountable_manager" ) ):
             found[ "unmanaged" ].append( row )

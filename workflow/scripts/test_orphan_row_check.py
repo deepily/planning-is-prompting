@@ -139,11 +139,15 @@ def test_only_blocked_rows_can_be_overdue():
     assert orc.classify( [ r ], MANAGERS | { "tiffany" }, live=set(), now=NOW )[ "overdue" ] == []
 
 
-def test_a_z_suffixed_chase_parses_and_a_garbled_one_is_not_judged():
+def test_a_z_suffixed_chase_parses():
     assert orc.parse_ts( "2026-09-28T13:00:00Z" ) < NOW
     assert orc.parse_ts( "not a date" ) is None
-    rows = [ blocked( "z", "2026-09-28T13:00:00Z" ), blocked( "bad", "not a date" ) ]
-    assert [ r[ "id" ] for r in orc.classify( rows, MANAGERS | { "tiffany" }, live=set(), now=NOW )[ "overdue" ] ] == [ "z" ]
+
+
+def test_a_blocked_row_with_a_garbled_or_missing_chase_is_overdue_not_silently_clean():
+    rows = [ blocked( "bad", "not a date" ), blocked( "none", None ), blocked( "ahead", "2026-09-28T17:00:00Z" ) ]
+    found = orc.classify( rows, MANAGERS | { "tiffany" }, live=set(), now=NOW )
+    assert sorted( r[ "id" ] for r in found[ "overdue" ] ) == [ "bad", "none" ]
 
 
 def test_main_exits_1_on_an_overdue_block_and_names_the_blocker( isolate, monkeypatch, capsys ):
