@@ -22,7 +22,17 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 208 (2026-09-26, María 🌸 `8f736574`, Skeleton Shift, manager beside Mr. Radio and Tiffany)**: holding area triaged, two workflow rules shipped, and five of Rick's rows delivered through Mr. Radio's crew with me as accountable manager.
+**RESUME HERE**: **Session 209 (2026-09-27, María 🌸 stable `2b76a19a`, self-respun as `6c395bef` at ~17:37, manager beside Mr. Radio and Tiffany)**: transcript stream ruled and handed off, the Last Call bell fixed twice, and 47759aa3 carried to tomorrow.
+
+1. **Transcript stream (lupin `27760534`)**: Rick ruled all five post-cascade questions by live click (thinking folded; newest at bottom; `cc_transcript_{watch,unwatch,append,state}` + `/api/cc-transcript/`; chipless seats accepted; admin test on the override tier, test admin as `41eb0ef1`). Plan §7 and handoff §5 were updated; the build went to Mr. Radio (phases 0–2, phase 0 merged) and Tiffany (phase 3).
+2. **Last Call bell `d92dc473` DONE, commit `b40f717`**: proven under `env -i` that cron had no key (every call 401); the cron line now carries its env, `set` refuses without a key or operator, and zero reach is urgent and exit 4. **Then `2ff4ab7`**: the 22:15 bell reached all three seats (HTTP 201) but reported "reached nobody", because only 200 counted. My test stub had answered 200, the invented-fixture trap.
+3. **Doc-link P0 `47759aa3` NOT closed**: commits 1–3 merged (`c6f52bca8`); toolbar E2E 6/6 green; the mux in-app doc-link fails in both layouts, undiagnosed. Chase 09:00 on Mr. Radio.
+4. **Fleet**: Rick raised the cap to 11 (the seat went to Sam, phase 2) and the create-gate threshold to 1.5; 8 parked findings split into rows, and Rick admitted only the 2 merge blockers (`247061ed`, `5d40c859`).
+5. **Harvested Tiffany's crew (23 deposits)**: the strongest lesson is a false refutation from an instrument that stopped early (lcov mid-write, a partial JSON, a timeout shorter than the command); check completion before trusting an absence. Memento trash skipped: the sweep would trash my live record (`cb8f7757`).
+
+**Files**: workflow/scripts/last_call.py, workflow/scripts/test_last_call.py, workflow/last-call.md, history.md, TODO.md
+
+**Previous RESUME HERE**: **Session 208 (2026-09-26, María 🌸 `8f736574`, Skeleton Shift, manager beside Mr. Radio and Tiffany)**: holding area triaged, two workflow rules shipped, and five of Rick's rows delivered through Mr. Radio's crew with me as accountable manager.
 
 1. **Holding-area triage (broadcast `7938c019`)**: 60 rows split between Mr. Radio (lupin) and me (plan, lupin-mobile), 12 removals and 6 promotions agreed. Four "promote" picks were already merged (checked by `git merge-base --is-ancestor`), so they became close-as-delivered instead.
 2. **Rules shipped, commit `73d03a2`**: session-end §0.35 (managers re-own held rows at every shift end, Rick P0 `57486c03`), and `rnd-directory-policy` v1.2 (one-off docs go in the card or a self-clearing `io/tmp/`, never `io/write-ups/`).

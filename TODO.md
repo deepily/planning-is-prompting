@@ -1065,6 +1065,12 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### 2026-09-27 — Transcript stream and fleet rulings (Session 209)
+
+- **Transcript stream, post-cascade (live clicks)**: thinking blocks are folded and expandable; the newest entry is at the BOTTOM on phone and web, a deliberate exception to ruling 3; names are `cc_transcript_{watch,unwatch,append,state}` and REST `/api/cc-transcript/{cc_session_id}`, superseding Q4b.
+- **Chipless seats (OSQ-8)**: accepted for v1. **Admin test (A2.2b)**: the override tier for now; the dev-only test admin is row `41eb0ef1`.
+- **Staffing**: Mr. Radio leads the lupin build (Rick's pick); the fleet cap went to 11 and the create-gate threshold to 1.5 (72h window). Of the 8 parked findings, only the 2 merge blockers were admitted.
+
 ### 2026-09-26 — Skeleton Shift rulings (Session 208)
 
 - **Ephemeral docs** (broadcast `355f708f`, ask answered): a doc Rick reads once goes in the notify card, or in a served `io/tmp/` swept after exactly 7 days. It never goes in `io/write-ups/`. Installed in lupin as row `730b33f2`.
