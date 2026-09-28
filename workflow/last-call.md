@@ -263,6 +263,8 @@ The day's merged work goes to the project's remote host every night, so the host
 | 4 | the wake, deploy or parity check failed. The host is restored anyway | the reason, plus the follow-up row's id |
 | 1 | no config, or keys missing | fix the config |
 
+**Keep the config out of the repo when it holds per-machine values** (a cloud project id, host names), and pass it with `--config <path>`. lupin's lives at `…/projects-data/lupin/nightly-deploy.env.proposed`, where per-machine state belongs. That also avoids writing into `.claude/`, which the auto-mode permission check treats as self-modification. **Type the command with literal paths, no `$VARS`**, so it matches a `Bash(python3 /…/nightly_deploy.py:*)` allow rule.
+
 "Tested, approved and closed" means **the head of the working branch**: managers merge to it only once work is green and reviewed. Unreviewed work lives on worktree branches and never ships. 🔴 **Cron has a bare environment**: anything the deploy command needs from your login shell (a cloud project id, for example) goes in the config as `ENV_<NAME>=…`. The Last Call bell failed exactly this way (row `d92dc473`).
 
 ---
