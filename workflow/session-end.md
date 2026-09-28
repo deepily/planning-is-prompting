@@ -148,7 +148,19 @@ ask_yes_no(
 2. **Re-own every row whose `owner_persona` is not a manager**: `task_reassign( <id>, new_owner_persona=<me>, new_manager=<me>, reason="end-of-shift holding-area re-own (row 57486c03)" )`. A row whose `accountable_manager` is another manager goes to **that** manager, not to you.
 3. **Fill any empty `accountable_manager`** on a held row you own, in the same call. A row with no manager can't be found by a manager's own query.
 4. **Leave the status alone.** This step changes **owners only**. Admitting or dropping a held row is Rick's decision.
-5. **Receipt**: one line in the session-end notify: *"Holding area re-owned: N rows moved to managers, 0 left with workers."* Say it even when N is 0.
+5. **Run the check, and make its exit code the receipt** (Rick, 2026-09-28, row `3dead4cb`, after asking three times in two days):
+   ```bash
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/orphan_row_check.py     # needs LUPIN_ROOT for the API key
+   ```
+   It reads **the whole board, the holding area included** (the ordinary query hides held rows), and fails on four things: a held row owned by a non-manager, an open row owned by a worker whose seat is gone, any open row with no `accountable_manager`, and **a blocked row past its `next_chase_ts`**. The last one exists because a chase date is a field, not a trigger: nothing fires when it passes, so rows stayed blocked on Rick long after he answered (broadcast `2f417cd7`). For an overdue block, re-check the blocker, then unblock the row or set a new chase. Each finding names who should act.
+
+   | Exit | Meaning | Do |
+   |---|---|---|
+   | 0 | clean | report it |
+   | 1 | orphans listed | adopt each (steps 2–3), then **re-run until 0** |
+   | 2 | the store or the live roster could not be read | say so. **Never report a 2 as clean** |
+
+   **Receipt**: one line in the session-end notify, quoting the check's last line: *"Holding area re-owned: N rows moved to managers. Orphan check: exit 0, M open rows read."* Say it even when N is 0.
 
 ⚠️ **Skip it and you break the next triage.** The rows filed today are exactly the ones whose worker is reaped tonight.
 
