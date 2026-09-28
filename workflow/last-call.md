@@ -239,13 +239,31 @@ This closes the race between the two automated writers. A `crontab -e` typed by 
 | `task-store-discipline.md` | the row is ordinary owed work; an unmet deliverable becomes a new row |
 | `push-to-completion.md` | a declared `push` deliverable is the push order **for that item only** |
 
-**Deliverable names are portable; deliverable procedures are not** (Rick, Q6: *fleet-wide, canonical here*). This document names the slots — `push`, `backup`, `post-game` — and each repo binds them to its own commands:
+**Deliverable names are portable; deliverable procedures are not** (Rick, Q6: *fleet-wide, canonical here*). This document names the slots — `push`, `backup`, `post-game`, `deploy` — and each repo binds them to its own commands:
 
 | Slot | planning-is-prompting | Bind yours here |
 |---|---|---|
 | `push` | `/plan-session-end` push step | your repo's push procedure |
+| `deploy` | n/a (no remote host) | `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/nightly_deploy.py --repo <checkout>`, configured by `<repo>/.claude/nightly-deploy.env` |
 | `backup` | `/plan-backup-write` | your repo's backup command |
 | `post-game` | `/plan-post-game` | your repo's retro command |
+
+### The `deploy` slot (Rick, 2026-09-28, row `6eaad077`)
+
+The day's merged work goes to the project's remote host every night, so the host keeps parity with dev. Rick's rulings:
+- **Standing authority**, but **only if the merge worked**. If the day's merge failed, nothing is deployed that night, and a row is filed for the next morning to fix the merge and then deploy.
+- **The host goes back to the state it was in.** A suspended VM woken for the deploy is suspended again.
+
+`nightly_deploy.py` carries both rulings. It runs **after `push`, before `backup`**:
+
+| Exit | Meaning | Receipt line |
+|---|---|---|
+| 0 | deployed, and the remote runs the dev head | `VM parity: remote runs <sha> == dev <sha>` |
+| 3 | merge gate failed: not on the branch, mid-merge, unresolved paths, or `GATE_CMD` red. **Nothing ran** | the reason, plus the follow-up row's id |
+| 4 | the wake, deploy or parity check failed. The host is restored anyway | the reason, plus the follow-up row's id |
+| 1 | no config, or keys missing | fix the config |
+
+"Tested, approved and closed" means **the head of the working branch**: managers merge to it only once work is green and reviewed. Unreviewed work lives on worktree branches and never ships. 🔴 **Cron has a bare environment**: anything the deploy command needs from your login shell (a cloud project id, for example) goes in the config as `ENV_<NAME>=…`. The Last Call bell failed exactly this way (row `d92dc473`).
 
 ---
 

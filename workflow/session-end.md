@@ -1120,6 +1120,20 @@ Then continue to Final Verification.
 - Avoid `git commit --amend` except for pre-commit hook edits (see above)
 
 
+## 4.7) Nightly Deploy (repos with a remote host, manager-role sessions only)
+
+**Applies to**: a repo that has `<repo>/.claude/nightly-deploy.env`. No config means the step does not apply, and you say so in one line.
+
+**Rule** (Rick, 2026-09-28, row `6eaad077`): the day's merged work goes to the remote host every night, under **standing authority**, **only if the merge worked**. If it didn't, nothing deploys and a row is filed for the next morning. The host goes back to the state it was in.
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/nightly_deploy.py --repo <checkout>
+```
+
+Quote its last line in the session-end notify: the parity receipt on exit 0, or the reason plus the follow-up row id on exit 3 or 4. Exit codes and config keys: `workflow/last-call.md` § 11, "The `deploy` slot".
+
+---
+
 ## 5) Backup Prompt (Conditional)
 
 **Condition**: Only execute this step if Step 4 resulted in a commit (the normal autonomous-commit path). Skip this step if the commit was held back because the quality gate (green AND reviewed) was not met.
