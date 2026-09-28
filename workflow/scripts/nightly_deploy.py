@@ -24,7 +24,10 @@ KEY="value" lines:
     REMOTE_REF_CMD    required  prints a line whose FIRST field is the sha the remote now runs
     PROJECT, OWNER    required  where the follow-up row goes, and which manager owns it
     STATE_CMD         optional  prints the host's power state (e.g. RUNNING, SUSPENDED)
-    START_CMD         optional  wakes a suspended host;  STOP_CMD  puts it back
+    START_CMD         optional  wakes a sleeping host;  STOP_CMD  puts it back. Both run with
+                                NIGHTLY_PRIOR_STATE set to what STATE_CMD read, because waking and
+                                restoring differ by state (GCE: `resume`/`suspend` for SUSPENDED,
+                                `start`/`stop` for TERMINATED)
     SUSPENDED_STATES  optional  comma list, default "SUSPENDED,TERMINATED,STOPPED"
     GATE_CMD          optional  an extra merge gate; non-zero exit means the merge did not work
     ENV_<NAME>        optional  exported to every command as <NAME>. 🔴 This is how cron gets the
@@ -45,6 +48,7 @@ import argparse
 import datetime
 import json
 import os
+import shlex
 import subprocess
 import sys
 import urllib.error
@@ -168,6 +172,14 @@ def same_commit( a, b ):
     return a.startswith( b ) or b.startswith( a )
 
 
+def with_prior( state, cmd ):
+    """
+    Ensures:
+        - returns cmd prefixed so it runs with NIGHTLY_PRIOR_STATE=<state> exported
+    """
+    return f"export NIGHTLY_PRIOR_STATE={shlex.quote( state )}; {cmd}"
+
+
 def api_base():
     return os.environ.get( "NIGHTLY_DEPLOY_API_BASE", "http://localhost:7999" ).rstrip( "/" )
 
@@ -265,7 +277,7 @@ def deploy( repo, config, run, git_fn=git, filer=file_followup, dry_run=False ):
         state   = first_field( out ).upper() if rc == 0 else "unknown"
         if state in suspended_states:
             if not config.get( "START_CMD" ): return fail( 4, f"host is {state} and no START_CMD is configured" )
-            rc, out = run( config[ "START_CMD" ] )
+            rc, out = run( with_prior( state, config[ "START_CMD" ] ) )
             if rc != 0: return fail( 4, f"START_CMD exited {rc}: {out[ -200: ]}" )
             woke = True
 
@@ -283,7 +295,7 @@ def deploy( repo, config, run, git_fn=git, filer=file_followup, dry_run=False ):
             if not config.get( "STOP_CMD" ):
                 lines.append( f"⚠️ host was {state} before the deploy and no STOP_CMD is configured; it is left running" )
             else:
-                rc, out = run( config[ "STOP_CMD" ] )
+                rc, out = run( with_prior( state, config[ "STOP_CMD" ] ) )
                 lines.append( f"Host restored to {state}" if rc == 0 else f"🔴 STOP_CMD exited {rc}; the host is still running: {out[ -200: ]}" )
 
 

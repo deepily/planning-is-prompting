@@ -41,6 +41,9 @@ class Host:
         self.answers.update( { k.replace( "_", "-" ): v for k, v in answers.items() } )
         self.calls   = []
     def __call__( self, cmd ):
+        if cmd.startswith( "export NIGHTLY_PRIOR_STATE=" ):
+            prefix, cmd = cmd.split( "; ", 1 )
+            self.prior  = prefix.split( "=", 1 )[ 1 ]
         self.calls.append( cmd )
         return self.answers.get( cmd, ( 0, "" ) )
 
@@ -106,6 +109,17 @@ def test_a_suspended_host_is_woken_deployed_proved_and_suspended_again():
     assert host.calls == [ "state", "start", "deploy-it", "read-ref", "stop" ]
     assert f"remote runs {HEAD[ :12 ]} == dev {HEAD[ :12 ]}" in out and "restored to SUSPENDED" in out
     assert filer.calls == []
+
+
+def test_start_and_stop_see_the_prior_state():
+    host = Host( state=( 0, "TERMINATED" ) )
+    code, out, _ = go( host )
+    assert code == 0 and host.prior == "TERMINATED" and "restored to TERMINATED" in out
+
+
+def test_the_prior_state_reaches_a_real_command( tmp_path ):
+    run = nd.make_runner( tmp_path, { "PATH": "/usr/bin:/bin" } )
+    assert run( nd.with_prior( "SUSPENDED", 'echo "$NIGHTLY_PRIOR_STATE"' ) ) == ( 0, "SUSPENDED" )
 
 
 def test_a_running_host_is_left_running():
