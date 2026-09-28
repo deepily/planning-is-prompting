@@ -107,3 +107,50 @@ def test_the_digest_skips_files_older_than_the_window( repo, capsys ):
     out = capsys.readouterr().out
     assert "sam-2026-09-01.md" not in out
     assert "7 from the last 2 day(s); 1 older are swept unread" in out
+
+
+# ── row cb8f7757: a kept pointer keeps the record it names ────────────────────────────────────────
+
+POINTER_OF = "<!-- MEMENTO POINTER — NOT THE RECORD. -->\n<!-- current: {rel} -->\n# body copy\n"
+
+
+def test_a_kept_pointer_keeps_the_older_record_it_names( tmp_path ):
+    r = str( tmp_path )
+    record  = _write( os.path.join( r, ".claude-memento-maria-171945f0.md" ), age=500 )
+    stale   = _write( os.path.join( r, ".claude-memento-maria-00000000.md" ), age=900 )
+    pointer = _write( os.path.join( r, ".claude-memento-maria.md" ),
+                      POINTER_OF.format( rel=".claude-memento-maria-171945f0.md" ), age=1 )
+    kept = ms.select_kept( ms.find_mementos( r ), [ "maria" ] )
+    assert pointer in kept and record in kept
+    assert stale not in kept                                   # a record nobody names still sweeps
+
+
+def test_an_io_pointer_resolves_against_the_io_base( tmp_path ):
+    r = str( tmp_path )
+    record  = _write( os.path.join( r, "io", "mementos", "sam", "sam-abcd1234.md" ), age=500 )
+    pointer = _write( os.path.join( r, "io", "mementos", "sam.md" ),
+                      POINTER_OF.format( rel="sam/sam-abcd1234.md" ), age=1 )
+    kept = ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
+    assert pointer in kept and record in kept
+
+
+def test_a_pointer_naming_a_missing_record_adds_nothing( tmp_path ):
+    r = str( tmp_path )
+    pointer = _write( os.path.join( r, ".claude-memento-rio.md" ),
+                      POINTER_OF.format( rel=".claude-memento-rio-gone.md" ), age=1 )
+    assert ms.select_kept( ms.find_mementos( r ), [ "rio" ] ) == { pointer }
+
+
+def test_a_plain_record_is_not_read_as_a_pointer( tmp_path ):
+    r = str( tmp_path )
+    _write( os.path.join( r, ".claude-memento-rio-1.md" ), "# plain record\n", age=1 )
+    assert ms.pointer_target( "root", os.path.join( r, ".claude-memento-rio-1.md" ) ) is None
+
+
+def test_a_relative_repo_path_still_keeps_the_named_record( tmp_path, monkeypatch ):
+    # Measured live: with --repo . the found paths start "./", the resolved target does not.
+    monkeypatch.chdir( tmp_path )
+    _write( os.path.join( ".", ".claude-memento-maria-2b76a19a.md" ), age=500 )
+    _write( os.path.join( ".", ".claude-memento-maria.md" ), POINTER_OF.format( rel=".claude-memento-maria-2b76a19a.md" ), age=1 )
+    kept = { os.path.normpath( p ) for p in ms.select_kept( ms.find_mementos( "." ), [ "maria" ] ) }
+    assert ".claude-memento-maria-2b76a19a.md" in kept

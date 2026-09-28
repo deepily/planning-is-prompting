@@ -46,6 +46,7 @@ ROOT_PREFIX  = ".claude-memento"
 IO_DIR       = os.path.join( "io", "mementos" )
 POINTER_NAME = ".claude-memento.md"
 KEEP_HEADING = re.compile( r"LESSON|FINDING|WRONG|RULING|FACT|WORTH", re.I )
+CURRENT_LINE = re.compile( r"<!--\s*current:\s*(.+?)\s*-->" )
 
 
 def find_mementos( repo ):
@@ -85,6 +86,37 @@ def persona_matches( slot, path, persona ):
     return re.match( re.escape( persona.lower() ) + r"(-|\.|$)", name.lower() ) is not None
 
 
+def pointer_target( slot, path ):
+    """
+    The record a pointer file names, if this file is a pointer.
+
+    Requires:
+        - ( slot, path ) is an entry of find_mementos
+
+    Ensures:
+        - returns the absolute path named by a `<!-- current: … -->` line in the first five
+          lines, resolved against the slot's base (memento_io writes it relative to that
+          base: the repo root for "root", io/mementos for "io"), or None when the file
+          names nothing or cannot be read
+    """
+    try:
+        with open( path, encoding="utf-8", errors="replace" ) as f:
+            head = [ next( f, "" ) for _ in range( 5 ) ]
+    except OSError:
+        return None
+    for line in head:
+        match = CURRENT_LINE.search( line )
+        if match is None: continue
+        rel = match.group( 1 )
+        if slot == "io":
+            marker = os.sep + IO_DIR + os.sep
+            base   = path[ : path.index( marker ) + len( marker ) ] if marker in path else os.path.dirname( path )
+        else:
+            base = os.path.dirname( path )
+        return os.path.normpath( os.path.join( base, rel ) )
+    return None
+
+
 def select_kept( mementos, keep_personas ):
     """
     Pick the files a sweep must spare.
@@ -96,6 +128,10 @@ def select_kept( mementos, keep_personas ):
     Ensures:
         - returns a set of paths: the newest file per ( persona, slot ), plus the
           persona-less pointer when keep_personas is non-empty
+        - 🔴 plus every record a kept POINTER names, followed transitively (row cb8f7757).
+          A pointer is rewritten on every save, so it is usually the NEWEST file for its
+          persona, and "newest per slot" kept it while trashing the older record it names.
+          The pointer then dangled, and the seat's next rehydrate read nothing
     """
     kept = set()
     if not keep_personas: return kept
@@ -105,6 +141,19 @@ def select_kept( mementos, keep_personas ):
         for want_slot in ( "root", "io" ):
             owned = [ p for s, p in mementos if s == want_slot and persona_matches( s, p, persona ) ]
             if owned: kept.add( max( owned, key=os.path.getmtime ) )
+
+    # Compare NORMALIZED paths: with `--repo .` the found paths read `./.claude-memento-…`,
+    # while a resolved target reads `.claude-memento-…`, and the two never matched on a live run.
+    slot_of  = { p: s for s, p in mementos }
+    by_norm  = { os.path.normpath( p ): p for _, p in mementos }
+    pending  = list( kept )
+    while pending:
+        path   = pending.pop()
+        target = pointer_target( slot_of[ path ], path )
+        found  = by_norm.get( os.path.normpath( target ) ) if target is not None else None
+        if found is not None and found not in kept:
+            kept.add( found )
+            pending.append( found )
     return kept
 
 
