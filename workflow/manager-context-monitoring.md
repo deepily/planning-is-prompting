@@ -459,6 +459,29 @@ re-check after it has taken a turn.
 
 ---
 
+## 1.9 Skip the re-spin when closing time is near
+
+**A re-spin within an hour of a scheduled close is waste.** The fresh seat spends the rest of the session rebuilding what the old one knew, then closes. Measured 2026-09-28: a seat re-spun at 50.8% context 29 minutes before closing time, and Rick called it pointless (row `6380199b`).
+
+Before any re-spin, of a worker or of yourself, ask:
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/last_call_window.py check    # --within 60 is the default
+```
+
+| Exit | Meaning | Do |
+|---|---|---|
+| 0 | a Last Call closing time is within 60 minutes and its row is still open | **skip the re-spin**; finish the close-out on the current context |
+| 1 | no close in the window | re-spin as usual |
+| 2 | a row in the window could not be read | re-spin as usual, and say the check could not look |
+
+- **Keyed on closing time, not last call**: the session ends at closing time, so that is what makes a re-spin waste.
+- **A cancelled close does not count**: a row that is done, dropped or missing means the close is off.
+- **The window is 60 minutes**, one flag. It was set by María under skeleton-crew authority on 2026-09-29, from two measured cases (29 minutes out: waste; 78 minutes out: worth it), and it goes to Rick for ruling.
+- **Enforcement for self-clears** belongs in lupin's `self_respin` refusal. Until that lands, this check is a step you run, not a gate.
+
+---
+
 ## 2. Re-spinning a worker — the five steps
 
 **1. Tell it to prepare.** `dm_send` the worker: *"prepare for re-spin"*. That phrase already means
