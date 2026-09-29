@@ -478,7 +478,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/last_call_window.py check  
 - **Keyed on closing time, not last call**: the session ends at closing time, so that is what makes a re-spin waste.
 - **A cancelled close does not count**: a row that is done, dropped or missing means the close is off.
 - **The window is 60 minutes**, one flag. It was set by María under skeleton-crew authority on 2026-09-29, from two measured cases (29 minutes out: waste; 78 minutes out: worth it), and it goes to Rick for ruling.
-- **Enforcement for self-clears** belongs in lupin's `self_respin` refusal. Until that lands, this check is a step you run, not a gate.
+- **Self-clears are enforced**: lupin's `self_respin` refuses inside the window (lupin `a5fbb4d75`, row `b134feb9`), and says it could not look when the check fails. It takes effect for a seat once that seat's MCP has restarted; a `/clear` does not reload it. Re-spinning a **worker** is still a step you run.
 
 ---
 
