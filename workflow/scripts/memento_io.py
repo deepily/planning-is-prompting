@@ -176,6 +176,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 
 from pathlib import Path
 
@@ -604,14 +605,18 @@ def _git_path( start, flag ):
 
 def slugify( persona ):
     """
-    Slugify a persona name per PG-6 (lowercase, spaces to hyphens).
+    Slugify a persona name per PG-6 (lowercase, accents stripped, spaces to hyphens).
 
     Requires:
         - persona is a non-empty string
     Ensures:
         - returns a lowercase hyphenated slug containing only [a-z0-9-]
+        - an accented display name lands on its canonical key's slug: "María" → "maria",
+          "Chloé" → "chloe". Before row bb1dcbfc the accent became a hyphen or vanished
+          ("mar-a", "chlo"), forking the memento chain away from the canonical name
     """
-    slug = persona.strip().lower()
+    slug = unicodedata.normalize( "NFKD", persona.strip() )
+    slug = "".join( c for c in slug if not unicodedata.combining( c ) ).lower()
     slug = re.sub( r"[^a-z0-9]+", "-", slug ).strip( "-" )
     if not slug: raise ValueError( f"persona slugifies to nothing: {persona!r}" )
     return slug
