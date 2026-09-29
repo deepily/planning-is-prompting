@@ -293,6 +293,29 @@ def test_the_wrap_poke_names_every_declared_deliverable_and_demands_an_ack( isol
     assert "ACK" in body
 
 
+@pytest.mark.parametrize( "stage", [ "wrap", "close" ] )
+def test_the_bell_names_the_filer_and_a_reply_address_that_resolves( isolate, stage ):
+    install( isolate, filer="María" )
+    spy = Spy()
+    lc.fire( ROW, stage, isolate[ "crontab" ], reader=lambda _r: "in_progress",
+             sender=spy.send, notifier=spy.notify )
+    body = spy.dms[ 0 ][ 1 ]
+    assert "María" in body
+    assert 'dm_send( recipient="maria"' in body
+    assert 'recipient="last call"' not in body
+
+
+@pytest.mark.parametrize( "stage", [ "wrap", "close" ] )
+def test_a_record_with_no_filer_points_at_the_row_owner_not_a_dead_address( isolate, stage ):
+    install( isolate )
+    spy = Spy()
+    lc.fire( ROW, stage, isolate[ "crontab" ], reader=lambda _r: "in_progress",
+             sender=spy.send, notifier=spy.notify )
+    body = spy.dms[ 0 ][ 1 ]
+    assert f'task_get( "{ROW}" )' in body
+    assert "owner_persona" in body
+
+
 def test_the_close_poke_asks_for_a_receipt_per_deliverable( isolate ):
     install( isolate, deliverables=( "push", "backup" ) )
     spy = Spy()

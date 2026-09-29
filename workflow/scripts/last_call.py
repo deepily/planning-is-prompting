@@ -716,6 +716,27 @@ def notify_operator( message, abstract, priority="high" ):
 
 # ── the bodies the bell delivers ─────────────────────────────────────────────────────────────────
 
+def ack_address( record ):
+    """
+    Ensures:
+        - returns the sentence telling a seat WHERE to send its reply
+        - names the filer's persona and a literal dm_send line addressed to it when the record
+          carries a filer; otherwise points at the row's owner via task_get
+
+    The bell's own sender name ("last call") is not a session, so the harness reply hint the seat
+    sees ( dm_send( recipient="last call" ) ) bounces with recipient_unresolved. The server has no
+    reply-target field, so the body itself must carry the real address.
+    """
+    filer = record.get( "filer" )
+    if filer:
+        return ( f"**{filer}** filed this Last Call. Do NOT use the reply hint above — \"last call\" is a "
+                 f"bell, not a session, and a reply to it bounces. Reply with "
+                 f"`dm_send( recipient=\"{canonical_persona_key( filer )}\", body=\"<your reply>\" )`." )
+    return ( f"No filer is recorded. Do NOT use the reply hint above — \"last call\" is a bell, not a "
+             f"session, and a reply to it bounces. Read the row's `owner_persona` with "
+             f"`task_get( \"{record[ 'row' ]}\" )` and `dm_send` your reply to that persona." )
+
+
 def wrap_body( record ):
     """
     Ensures:
@@ -730,6 +751,7 @@ def wrap_body( record ):
         "🔴 **ACK this in one line, to the filer** — the ACK is the liveness check, not politeness. "
         "A seat that has wedged looks exactly like a seat that is quietly working, and the point of "
         "the warning is to find that out while there is still time to act on it.\n\n"
+        f"↳ {ack_address( record )}\n\n"
         f"Row `{record[ 'row' ][ :8 ]}` · workflow: planning-is-prompting → workflow/last-call.md"
     )
 
@@ -749,6 +771,7 @@ def close_body( record ):
         "unmet deliverable is reported and carried, never blocked on — but an omission and a "
         "failure look identical from the operator's side, which is the defect this exists to "
         "prevent.\n\n"
+        f"↳ Report to: {ack_address( record )}\n\n"
         "⚠️ The ritual runs what was **declared** and invents no scope. A deliverable named here "
         "carries its own authorization for that item only — nothing else in the standing gate list "
         "moves.\n\n"
