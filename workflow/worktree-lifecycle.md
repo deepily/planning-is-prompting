@@ -62,7 +62,7 @@ flowchart LR
 
 So a seat has no branch. It commits in a detached worktree; its manager merges the sha. If you find you need a branch, ask Rick to make it.
 
-⚠️ **Do not try to get around the hook** (editing `.git/hooks`, `core.hooksPath`, unsetting `CLAUDECODE`). The hook says it is a backstop: a PreToolUse guard is planned to deny those routes (not built yet, see §7), and the census flags any branch the ledger does not know.
+⚠️ **Do not try to get around the hook** (editing `.git/hooks`, `core.hooksPath`, unsetting `CLAUDECODE`). A PreToolUse guard (lupin `src/lupin_cli/claude_code/hooks/lib/branch_lock_guard.py`, row `3a592920`) denies all four routes before the command runs: setting `BRANCH_GUARD_ALLOW`, changing `core.hooksPath`, writing into the hooks directory, and unsetting or overriding `CLAUDECODE`. Reading about the lock stays allowed. A Claude seat has no way past the guard; if you think you need one of those routes, ask Rick. The census flags any branch the ledger does not know.
 
 ---
 
@@ -153,7 +153,7 @@ The guard has its own census: `python3 workflow/scripts/branch_guard.py census -
 | Hole | State |
 |---|---|
 | **`git branch -m` bypasses the hook** (git 2.34): a rename makes no ref transaction, so the hook never sees the new name | Caught after the fact by the census as an unledgered branch. Pinned by `test_a_rename_slips_past_the_hook_but_not_the_census` |
-| **A shell can go around a local hook** (`core.hooksPath`, editing `.git/hooks`, unsetting `CLAUDECODE`) | The hook is a backstop. A PreToolUse guard that denies those routes is lupin's half and is **not built yet** (checked 2026-09-29: no hook under `src/lupin_cli/claude_code/hooks/` mentions `BRANCH_GUARD` or `core.hooksPath`). Until it lands, the census is the only catch |
+| **A shell can go around a local hook** (`core.hooksPath`, editing `.git/hooks`, unsetting `CLAUDECODE`) | **Closed for accidents, 2026-09-29** (lupin `7267f7ea1`, row `3a592920`): the PreToolUse guard `branch_lock_guard.py` denies all four routes; verified live from a seat. Its threat model is accident, not evasion, because text matching cannot see through `eval`, encoded payloads or a Python subprocess that builds its own environment. The census still catches whatever gets past both layers |
 | **The janitor only sees `.claude/worktrees`** | A tree made elsewhere (`pisp-wt-*` beside the repo, `/tmp`) is invisible to it; only the census's registration listing sees it |
 | **The census cannot tell a live seat from an idle one** except by the lock | It skips locked trees; an unlocked tree over 48h is reported even if someone is using it |
 | **Merged branches with "wip" in the name are never deleted** | By design (the numbered release lines); they are skipped by the sweep and the census |
@@ -175,5 +175,7 @@ The guard has its own census: `python3 workflow/scripts/branch_guard.py census -
 | lupin commits `484470f40`, `6df8aefeb`, `7766e1013`, `e72b7f302` | the 2026-09-29 janitor changes (row `747199ef`) |
 
 ---
+
+*Version 1.1 (2026-09-29) — §3 and §7: the PreToolUse guard landed (lupin `7267f7ea1`, row `3a592920`), so the four routes around the hook are now denied before a command runs.*
 
 *Version 1.0 (2026-09-29) — first write-up. Describes the branch guard (row `0a9b1d68`), the janitor's artifact allowlist, straggler tickets and merged-branch sweep (row `747199ef`), and the Monday census with its unledgered-branch check.*
