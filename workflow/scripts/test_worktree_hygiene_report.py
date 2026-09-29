@@ -198,3 +198,15 @@ def test_the_merged_fix_line_still_refuses_a_branch_that_is_not_merged( repo ):
     r = subprocess.run( cmd.replace( "<name>", "not-merged" ), shell=True, cwd=str( repo ), capture_output=True, text=True )
     assert r.returncode != 0
     assert _run( "git", "branch", "--list", "not-merged", cwd=repo ).stdout.strip() != ""
+
+
+def test_a_branch_made_around_the_branch_guard_is_reported_even_with_a_wip_name( repo ):
+    import branch_guard
+    assert whr.census( str( repo ) )[ "unledgered" ] == []          # no guard installed: silent
+    branch_guard.install( str( repo ) )
+    assert whr.census( str( repo ) )[ "unledgered" ] == []          # baselined: clean
+    _run( "git", "-c", "core.hooksPath=/dev/null", "branch", "wip-v9.9.9-forged", cwd=repo )
+    c = whr.census( str( repo ) )
+    assert c[ "unledgered" ] == [ "wip-v9.9.9-forged" ]
+    assert whr.has_findings( c )
+    assert "branch guard never saw" in whr.render( [ c ] )

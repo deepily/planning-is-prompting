@@ -43,6 +43,8 @@ import time
 import urllib.parse
 import urllib.request
 
+import branch_guard
+
 FLEET_REPOS = [ "lupin", "lupin-mobile", "planning-is-prompting" ]
 
 
@@ -179,9 +181,16 @@ def census( repo, now=None, stale_hours=48, stale_branch_days=7 ):
             if days > stale_branch_days:
                 stale_unmerged.append( { "branch": name, "age_days": round( days, 1 ) } )
 
+    # Branches that went around the branch guard (row 0a9b1d68). Only once the guard is
+    # installed, and wip names are NOT skipped here: a forged `wip-v…` is exactly the case.
+    unledgered = [ ]
+    if os.path.exists( branch_guard.ledger_path( repo ) ):
+        unledgered = branch_guard.census( repo )[ "unledgered" ]
+
     stale_worktrees.sort( key=lambda w: -w[ "age_hours" ] )
     stale_unmerged.sort( key=lambda b: -b[ "age_days" ] )
     return {
+        "unledgered"       : unledgered,
         "repo"             : repo,
         "current"          : current,
         "stale_worktrees"  : stale_worktrees,
@@ -193,7 +202,8 @@ def census( repo, now=None, stale_hours=48, stale_branch_days=7 ):
 
 
 def has_findings( c ):
-    return bool( c[ "stale_worktrees" ] or c[ "prunable" ] or c[ "merged_leftovers" ] or c[ "stale_unmerged" ] )
+    return bool( c[ "stale_worktrees" ] or c[ "prunable" ] or c[ "merged_leftovers" ] or c[ "stale_unmerged" ]
+                 or c[ "unledgered" ] )
 
 
 def render( results, stale_hours=48, stale_branch_days=7 ):
@@ -233,6 +243,9 @@ def render( results, stale_hours=48, stale_branch_days=7 ):
             out.append( f"**{len( c[ 'stale_unmerged' ] )} unmerged branches idle over {stale_branch_days} days**, each needs a merge / salvage / drop ruling:" )
             for b in c[ "stale_unmerged" ][ :10 ]:
                 out.append( f"- {b[ 'age_days' ]:.0f}d `{b[ 'branch' ]}`" )
+        if c[ "unledgered" ]:
+            out.append( f"**{len( c[ 'unledgered' ] )} branches the branch guard never saw** (made by going around it): "
+                        + ", ".join( f"`{b}`" for b in c[ "unledgered" ][ :10 ] ) )
         out.append( "" )
     return "\n".join( out ).strip()
 
