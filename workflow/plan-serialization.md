@@ -86,6 +86,47 @@ yyyy.mm.dd-descriptive-slug.md
 
 ## Decision Criteria: When to Serialize
 
+> ### ⚠️ GATE 0 — AUTHORIZATION, AND IT COMES FIRST
+>
+> **Everything below this box is NECESSARY BUT NOT SUFFICIENT.** Before applying any criterion
+> in this section, the plan must pass the authorization test in
+> `workflow/rnd-directory-policy.md`: it carries frontmatter naming a live authorization that
+> **someone other than the author granted**.
+>
+> ```yaml
+> ---
+> authorized_by: task:<uuid>        # a task-store row
+> #              broadcast:<id>     # an operator broadcast
+> #              plan:<path>        # a plan this document implements
+> ---
+> ```
+>
+> **A row you minted for your own sub-project is not authorization.** Authorization runs
+> downward — from the operator, or from a manager acting inside a standing grant. A seat that
+> mints its own permission and then cites it has laundered nothing into a rule.
+>
+> **Why this box exists.** This document's criteria below are all judged by the author, and they
+> read as rigorous while gating nothing:
+>
+> | Criterion below | Who judges it | What it actually admits |
+> |---|---|---|
+> | "Architectural decisions" | the author | every author believes their own sub-project is architectural |
+> | "Extended development time (>30 min)" | the author | effort spent, not value to a reader |
+> | "Cross-session recall needed" | the author | the author always expects to want it back |
+> | "Novel approach" | the author | novelty to *you* is not novelty to the repo |
+>
+> The Skip criteria test only **triviality** — size, abandonment, one-line fixes. Nothing here
+> tested **authorization**, so an unrequested 40 KB deep-dive passed every gate in this file.
+>
+> Measured 2026.09.22 on the surveyed project: **153 artifacts** added to `src/rnd/` in one
+> month, **0** carrying frontmatter of any kind, **9** cited from any durable surface. Across
+> this repository's own corpus only **6 files** actually instruct a write into `src/rnd/`, and
+> **none** required authorization — this file being one of the two widest. The scratch work was
+> not the fleet breaking this rule. It was the fleet following it.
+>
+> ⇒ **Pass Gate 0 first. Then use the criteria below to decide whether an authorized plan is
+> substantial enough to be worth serializing at all.**
+
 ### Serialize (Yes)
 
 | Criterion | Explanation |
@@ -109,13 +150,18 @@ yyyy.mm.dd-descriptive-slug.md
 
 ```mermaid
 flowchart TD
-    A[Plan created in plan mode] --> B{Size > 1KB?}
+    A[Plan created in plan mode] --> G{"GATE 0 — AUTHORIZATION<br/>Does a live authorization<br/>someone ELSE granted<br/>name this work?"}
+    G -->|No| SCR["→ scratch dir that dies<br/>with the worktree.<br/>Finding worth keeping?<br/>Mint a store row."]
+    G -->|Yes| B{Size > 1KB?}
     B -->|No| SKIP1[SKIP]
     B -->|Yes| C{Architectural decisions?}
-    C -->|Yes| SER1[SERIALIZE]
+    C -->|Yes| SER1["SERIALIZE<br/>+ authorized_by frontmatter"]
     C -->|No| D{Future recall needed?}
-    D -->|Yes| SER2[SERIALIZE]
+    D -->|Yes| SER2["SERIALIZE<br/>+ authorized_by frontmatter"]
     D -->|No| SKIP2[SKIP]
+
+    style G fill:#c62828,color:#fff
+    style SCR fill:#455a64,color:#fff
 ```
 
 ---
@@ -228,6 +274,8 @@ yyyy.mm.dd-[subject]-[qualifier].md
 
 ## Anti-Patterns
 
+- **Don't serialize an unauthorized plan, however good it is.** This is Gate 0 and it outranks every other item in this list. A plan nobody asked for is a working note; its *finding* survives as a store row, the *file* does not.
+- **Don't check in receipts alongside the plan** — logs, probe rigs, `.failset`/`.meta`, screenshots and data dumps never enter `src/rnd/` at any authorization level. Cite the run; put the reference in the store row's `receipt_refs`.
 - **Don't serialize tiny plans** (<1KB) — they clutter the R&D directory
 - **Don't serialize abandoned plans** — they create confusion about current approaches
 - **Don't use the random Claude Code name** as the serialized name
@@ -239,4 +287,5 @@ yyyy.mm.dd-[subject]-[qualifier].md
 
 ## Version History
 
+- **v1.1** (2026.09.22, María 🌸 under task `3a2f726b`): Added **Gate 0 — Authorization**, ahead of every existing criterion, and folded it into the flowchart and anti-patterns. This document was identified as the largest single manufacturer of unauthorized `src/rnd/` traffic: its four "Serialize (Yes)" criteria are all self-judged by the author and none tested authorization, so it admitted every unrequested deep-dive a worker cared to write. It also governed only plan-mode plans, leaving findings notes — 83 of 108 September documents in the surveyed project — under no rule at all. Canonical: `workflow/rnd-directory-policy.md`.
 - **v1.0** (2026.02.13): Initial recommendation based on 169-file analysis of `~/.claude/plans/`

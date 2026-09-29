@@ -322,7 +322,8 @@ PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')
 - When delimiting strings I prefer double quotes, not single. Except in the case of print statements when it's handy to use a single quote and not have to escape a double quote
 - I'm going to be working with multiple repos at a time. Whenever you create a to do list, or you need to ask my permission or guidance on any issue please use the `[SHORT_PROJECT_PREFIX]` mentioned below. That would mean for every to do list item you would insert this short prefix at the beginning of each item
 - When running quick smoke tests always pipe the output to the console and summarize the results in tabular form when the run is finished
-- All research and planning documents should be stored in the `src/rnd` directory. They should always begin with the date in the format of yyyy.mm.dd. Anytime you add a new research document you should add a link to it in the readme file
+- **`src/rnd` HOLDS AUTHORIZED DELIVERABLES, NOT A NOTEBOOK.** Write a document there only if it carries frontmatter naming a live authorization **someone other than you granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. A row you minted for your own sub-project is not authorization. **One document per initiative per kind** — the second one appends to the first; add `doc_kind:` (plan · design · census · review · spec · post-game) when an initiative genuinely needs a different artifact. No authorization ⇒ worktree-local scratch that dies with the tree; a real finding inside it becomes a **store row** or a **post-game**, both of which outlive the worktree. **The finding survives; the file does not.** Never write logs, probe rigs, receipts, screenshots or data dumps to `src/rnd` at any authorization level — cite the run, don't check the run in. Authorized documents begin `yyyy.mm.dd` and get a README link. **Canonical**: planning-is-prompting → `workflow/rnd-directory-policy.md`
+  - ⚠️ *This bullet used to read "All research and planning documents should be stored in the `src/rnd` directory," with **research** left undefined — so a seat that had just spent forty minutes chasing a bug had, by any honest reading, produced one. Measured 2026.09.22 on lupin: **153 artifacts added in a single month, 0 carrying frontmatter of any kind, 9 cited from anywhere durable**; 1,366 `.md` in the directory overall. Six workflow files instructed a write there and none required authorization. The directory was not being abused — this sentence was being obeyed. Rick's ruling, 2026.09.22 (row `3a2f726b`): grant + one-doc-per-initiative.*
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
@@ -726,7 +727,9 @@ pytest --cov=module_name src/tests/  # With coverage
 
 ## PLAN FILE SERIALIZATION
 
-**MANDATE**: after plan mode produces a non-trivial plan, serialize it to the project's `src/rnd/` as `yyyy.mm.dd-descriptive-slug.md` (3–6 hyphenated words capturing the SUBJECT).
+**MANDATE**: after plan mode produces a non-trivial plan **that someone else authorized**, serialize it to the project's `src/rnd/` as `yyyy.mm.dd-descriptive-slug.md` (3–6 hyphenated words capturing the SUBJECT).
+
+**Gate 0, authorization first**: plans are R&D, so the file must begin with frontmatter naming a live grant from someone other than you: `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. "Non-trivial" is your own judgement and gates nothing on its own; a row you minted for yourself is not a grant. No authorization ⇒ worktree scratch, and a real finding becomes a store row. Canonical: planning-is-prompting → workflow/rnd-directory-policy.md
 
 ```
 ~/.claude/plans/dreamy-wiggling-pretzel.md

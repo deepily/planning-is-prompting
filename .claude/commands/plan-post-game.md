@@ -17,7 +17,7 @@
 1. **MUST use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: [PLAN]
    - **Canonical workflow**: planning-is-prompting → workflow/post-game.md
-   - **Output location**: `src/rnd/yyyy.mm.dd-<slug>-post-game.md` (full retro) or one line in `history.md` (lightweight)
+   - **Output location**: `src/rnd/yyyy.mm.dd-<slug>-post-game.md` (full retro) or one line in `history.md` (lightweight). A full retro carries `authorized_by:` frontmatter naming **the run it retrospects** — that run is its authorization, so this is a lookup, not an ask. Receipts (logs, failsets, screenshots) are cited, never checked in. Canonical: planning-is-prompting → `workflow/rnd-directory-policy.md`
    - Do NOT proceed without these parameters
 
 2. **MUST read the canonical workflow document**:

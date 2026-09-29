@@ -167,7 +167,7 @@ The guard has its own census: `python3 workflow/scripts/branch_guard.py census -
 |---|---|
 | `workflow/scripts/branch-guard-reference-transaction.sh` | the hook |
 | `workflow/scripts/branch_guard.py` | `install` · `status` · `census` |
-| `workflow/scripts/test_branch_guard.py` | 12 tests |
+| `workflow/scripts/test_branch_guard.py` | its tests: `pytest workflow/scripts/test_branch_guard.py` |
 | `workflow/scripts/worktree_hygiene_report.py` | the Monday census |
 | lupin `src/cosa/agents/shared/worktree_reaper.py` | drain, reap, branch sweep, rescue branches |
 | lupin `src/cosa/agents/shared/worktree_straggler_tickets.py` | straggler rows |

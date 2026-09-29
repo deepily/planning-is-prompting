@@ -2231,7 +2231,9 @@ Add this section to your project's CLAUDE.md (after HISTORY DOCUMENT MANAGEMENT,
 
 **The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
 
-**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+**MANDATE**: After plan mode produces a non-trivial plan that has **passed Gate 0** (below), serialize it to the project's `src/rnd/` directory:
+
+> ⚠️ **GATE 0 — AUTHORIZATION COMES FIRST.** "Non-trivial" is judged by the author and therefore gates nothing on its own: >1KB, "architectural", and "will need future recall" are all things an author believes about their own work by default. Before any of that, the plan must carry frontmatter naming a live authorization **someone else granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. No authorization ⇒ it goes to the worktree-local scratch dir; a real finding inside it becomes a store row. **Canonical**: `workflow/rnd-directory-policy.md`.
 
 \```
 ~/.claude/plans/dreamy-wiggling-pretzel.md

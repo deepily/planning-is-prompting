@@ -422,7 +422,7 @@ This metadata drives the interactive menu generation in Step 2.
     "CLAUDE.md section: PLAN FILE SERIALIZATION",
     "~/.claude/skills/plan-serialization/SKILL.md (global, not project-local)"
   ],
-  "notes": "No slash command - this is a practice directive, not a procedure. Adds behavioral mandate to serialize non-trivial plans from ~/.claude/plans/ to project src/rnd/ with semantic names."
+  "notes": "No slash command - this is a practice directive, not a procedure. Adds behavioral mandate to serialize AUTHORIZED non-trivial plans from ~/.claude/plans/ to project src/rnd/ with semantic names. Gate 0 (authorized_by frontmatter) precedes the non-trivial test; unauthorized plans go to the worktree scratch dir. Installs alongside workflow/rnd-directory-policy.md — do not install one without the other."
 }
 ```
 

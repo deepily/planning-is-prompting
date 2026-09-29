@@ -843,7 +843,7 @@ gantt
 **Example**: Building agent system with Google ADK - synthesize ADK documentation and 2 use case recommendations, design agent architecture based on ADK's Agent-Tool-Memory pattern, derive implementation phases (ADK integration, tool registry, context management, use case 1 implementation, use case 2 implementation), execute with TodoWrite tracking.
 
 **Integration with p-is-p-02**:
-- Phase 0 creates: `src/rnd/YYYY.MM.DD-{topic}-research-synthesis.md`
+- Phase 0 creates: `src/rnd/YYYY.MM.DD-{topic}-research-synthesis.md` — **only once Gate 0 is passed**: the synthesis carries `authorized_by:` frontmatter naming the task, broadcast or plan that asked for this work. A synthesis nobody asked for is a working note; it goes to scratch and its findings become store rows. Canonical: `workflow/rnd-directory-policy.md`
 - Phase 1 creates: Pattern B (Architecture & Design) docs
 - Phase 2 creates: Pattern A (Implementation Tracking) docs
 - Phases 3+ use: Pattern A for active work, archive completed phases

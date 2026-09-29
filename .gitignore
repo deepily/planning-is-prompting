@@ -96,3 +96,9 @@ io/crontab.lock
 # under workflow/scripts/ after a suite run. Empty it is invisible to git status;
 # the first file written into it would land as an untracked straggler at commit time.
 snapshot_failures/
+
+# Transient scratch — the sanctioned destination for work that fails the R&D
+# directory policy's tests (logs, probe rigs, receipts, working notes).
+# See workflow/rnd-directory-policy.md. A destination that is not ignored is
+# not a destination; it is a delay.
+.scratch/
