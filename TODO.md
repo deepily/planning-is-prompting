@@ -4,6 +4,13 @@ Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — wo
 
 ## 📍 Resume Here
 
+> ### **S210 — pick up here on 2026-09-29** (María 🌸 stable `87601812`, re-spun into `bab07bd3`)
+>
+> 1. **`bb1dcbfc` memento slug (P3), SPAWN FIRST**: the store chases at 13:00Z. The spawn brief is in memento §7.3: NFKD transliteration, refuse an unknown persona, a planted-bug proof, and no merge by the worker.
+> 2. **`6eaad077` nightly VM deploy**: close it on Mr. Radio's first parity receipt from Last Call `6620a67a`. If he reported not-done, chase him (03:30Z).
+> 3. **Last Call `6620a67a`**: close the row once all three managers have reported every deliverable. The push gate (the permission layer denied Tiffany's push) went to Rick as a direct ask.
+> 4. **Unpushed here**: `b23a579`, `2fe11fb`, `71cd76c`, `70e62b6`, `069d205`, `1fa8655`, plus tonight's session-end commit.
+
 > ### **S205 — pick up here on 2026-09-20** (María 🌸 stable `2b9f67a1`, re-spun into `729e39e9`)
 >
 > 1. **`14761ef1` worktree guard trial — DATED, DO IT FIRST**: run the **day-7 census on 2026-09-20**; the trial ends 09-21. Audit log `~/.claude/worktree-creation-audit.log` stood at 153 rows over 6 days at session end. Rick ruled the `unknown` zone **allow-and-register** during S205.

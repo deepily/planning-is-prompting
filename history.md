@@ -22,7 +22,18 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 209 (2026-09-27, María 🌸 stable `2b76a19a`, self-respun as `6c395bef` at ~17:37, manager beside Mr. Radio and Tiffany)**: transcript stream ruled and handed off, the Last Call bell fixed twice, and 47759aa3 carried to tomorrow.
+**RESUME HERE**: **Session 210 (2026-09-28, María 🌸 stable `87601812`, self-respun at 21:27 as `bab07bd3`, manager beside Mr. Radio and Tiffany)**: three workflow tools shipped, four lupin reviews, and the first Last Call filed from a live broadcast.
+
+1. **Shipped (plan)**: orphan/overdue session-end check `3dead4cb` (`b23a579`, `2fe11fb`; Tiffany PASS); nightly VM deploy `6eaad077` (`71cd76c`, `70e62b6`, `069d205`), still blocked until Mr. Radio's first parity receipt; memento sweep keeps a kept pointer's record `cb8f7757` (`1fa8655`).
+2. **Doc-link P0 `47759aa3` DONE** (`831a5a289`, ts-8e25e914 4/4). The "where's my button" report was fixed by a hard refresh.
+3. **Lupin reviews, after the respin**: walker `08b0e669`: changes requested (the descendant selector double-counted legacy's nested bodies), then approved at `d0bd6377b`. Device slot `dc446601`: approved at `b1866d1b9` (48 passed; with the supersede call removed, 4 failed), then at `cf22f0c0a` after two fixes I asked for (4003 was already reserved, so 4004; the ping bound confirmed at 20 s + 20 s); 57 passed and both planted bugs went red. Vertex re-harvest `922b261a` approved at `73497b25d` (tuple = the 2.1.284 binary, 19 keys; red → green).
+4. **Last Call `6620a67a`**: 22:30/22:45, all three managers; Rick picked all four deliverable options (session-end → post-game → backup → push → deploy). Tiffany's push was denied by the permission layer, so I sent Rick a direct ask.
+5. **`bb1dcbfc` memento slug** deferred to next session (chase 13:00Z); the brief is in the memento.
+6. **Wrong, withdrawn**: I flagged 3 Flash Lite reds that were a worktree artifact (no `cloud-run.env` linked). Mr. Radio disproved it. Lesson: link the worktree artifacts before calling a red real.
+
+**Files**: history.md, TODO.md, .claude-session.md (the code files are in the commits above)
+
+**Previous RESUME HERE**: **Session 209 (2026-09-27, María 🌸 stable `2b76a19a`, self-respun as `6c395bef` at ~17:37, manager beside Mr. Radio and Tiffany)**: transcript stream ruled and handed off, the Last Call bell fixed twice, and 47759aa3 carried to tomorrow.
 
 1. **Transcript stream (lupin `27760534`)**: Rick ruled all five post-cascade questions by live click (thinking folded; newest at bottom; `cc_transcript_{watch,unwatch,append,state}` + `/api/cc-transcript/`; chipless seats accepted; admin test on the override tier, test admin as `41eb0ef1`). Plan §7 and handoff §5 were updated; the build went to Mr. Radio (phases 0–2, phase 0 merged) and Tiffany (phase 3).
 2. **Last Call bell `d92dc473` DONE, commit `b40f717`**: proven under `env -i` that cron had no key (every call 401); the cron line now carries its env, `set` refuses without a key or operator, and zero reach is urgent and exit 4. **Then `2ff4ab7`**: the 22:15 bell reached all three seats (HTTP 201) but reported "reached nobody", because only 200 counted. My test stub had answered 200, the invented-fixture trap.
