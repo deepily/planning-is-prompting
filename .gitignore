@@ -4,9 +4,16 @@ venv/
 env/
 ENV/
 
-# Claude Code settings (exclude user-local settings but keep template slash commands)
+# Claude Code settings (exclude user-local settings but keep repo-level commands AND skills)
+# Rick's ruling 2026-07-16: repo-level Skills and Commands are BOTH tracked.
+# Before this, `.claude/*` ignored everything and only `commands/` was negated back in — so all four
+# skills (push-to-completion, plan-post-game, spin-up-swe-team, guided-decision-walkthrough) were
+# untracked: absent from a fresh clone, erased by `git clean -fd`, and propagating to nobody.
+# The commands were tracked and the SKILLS THAT ACTIVATE THEM WERE NOT — the rule was versioned and
+# the mechanism was not.
 .claude/*
 !.claude/commands/
+!.claude/skills/
 
 # IDE directories
 .idea/
@@ -39,12 +46,27 @@ wheels/
 # Testing
 .pytest_cache/
 .coverage
+# `.coverage` alone does NOT match the PER-PROCESS files that `parallel = True` writes
+# (`.coverage.<host>.<pid>.<rand>`) — and a subprocess-driven suite makes dozens of them per
+# run. 63 landed untracked on 2026-07-21, one `git add -A` away from being committed.
+.coverage.*
+coverage.xml
 htmlcov/
 .tox/
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Claude project-scope MCP registration — NEVER commit: it hardcodes ABSOLUTE
+# per-machine paths (interpreter, script, PYTHONPATH, LUPIN_ROOT), so a committed
+# copy cannot be correct on more than one machine. cosa-voice is a per-machine
+# USER-scope MCP (see lupin install-cosa-voice.sh). Committed here until 2026-07-24,
+# it pinned dev-box /mnt/DATA01 paths into every checkout — on the GCP test VM the
+# foreign-uid PIP tree made `claude mcp remove -s project` fail with EACCES and
+# raised a stale scope-conflict against the VM's correct user-scope entry.
+# Same anti-pattern killed in lupin (98a1ac7f).
+.mcp.json
 
 # Claude session manifest (parallel session tracking)
 .claude-session.md
@@ -55,3 +77,28 @@ io/mementos/
 
 # Claude heartbeat hold (runtime liveness-state file, rewritten every turn)
 .heartbeat-hold-*.json
+
+# Git LoC-delta artifacts (per-branch CSV + meta, regenerated every session-end)
+io/git-loc-delta/
+io/post-games/
+
+# The shared crontab lock (workflow/scripts/crontab_lock.py). A runtime mutex, not an
+# artifact: its CONTENTS never matter, only the fd's flock state. Committing it would
+# put one machine's stale PID in every checkout.
+io/crontab.lock
+
+# Claude mementos (records + pointers) — NEVER commit: a memento that
+# will be committed is written more carefully, and therefore less honestly.
+.claude-memento-*.md
+
+# Stray pytest-plugin output dir. Nothing in THIS repo creates it — the shared
+# structlog capture plugin drops it in whatever cwd pytest ran from, so it appears
+# under workflow/scripts/ after a suite run. Empty it is invisible to git status;
+# the first file written into it would land as an untracked straggler at commit time.
+snapshot_failures/
+
+# Transient scratch — the sanctioned destination for work that fails the R&D
+# directory policy's tests (logs, probe rigs, receipts, working notes).
+# See workflow/rnd-directory-policy.md. A destination that is not ignored is
+# not a destination; it is a delay.
+.scratch/

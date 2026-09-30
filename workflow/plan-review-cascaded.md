@@ -23,7 +23,9 @@ Before invoking this workflow:
 1. **5 Claude Code sessions launched** (typically 5 tmux panes). Each session is a peer; the cosa-voice MCP server allocates a persona to each (María, Tiberius, etc.)
 2. **The user designates one session as the manager** by invoking `/plan-review-cascaded` in that session — that session becomes the manager and drives this playbook
 3. **The user provides an input plan** to be reviewed (a path to a markdown plan, or pasted content)
-4. **External heartbeat scheduler running** (added 2026-05-18 post-Run-1 workflow update): a scheduler outside CC pokes the manager every 2-3 min during active cascade to compensate for turn-based-CC's lack of autonomous ticks. See §6.4 for the integration spec. If no scheduler is running, the cascade can still execute but will accumulate significant detection-delay; for production runs the scheduler is mandatory.
+4. **A waker is running — the standing arbiter, NOT a per-cascade daemon** (added 2026-05-18; **rewritten 2026-07-20** to match §6.4). Turn-based CC has no autonomous ticks, so the cascade needs an external waker to poke the manager. **That waker is the standing arbiter daemon plus the per-session Stop-hook** — verify it is up (`lupin_arbiter_app` on `:8001`) rather than standing anything up. **Do NOT launch a per-cascade scheduler**: the interim `cascade_heartbeat_scheduler.py` daemon was RETIRED on Rick's GO 2026-06-29 and is fenced HISTORICAL in §6.4. What makes a run chaseable is the Step 0.4 task-item ledger (`correlation_key` + `accountable_manager` on every step item), not a dedicated daemon.
+
+   > ⚠️ **This line previously read "for production runs the scheduler is mandatory"** — surviving text from before the 2026-06-29 retirement, which contradicted §6.4 in the same document. Corrected 2026-07-20 after it caused a Workflow Steward to raise a false blocking risk twice on a live run (found by Clayton 😎, cascade manager). A prerequisite that outlives the mechanism it names does not read as stale; it reads as an unmet requirement.
 5. **Participant context-clearing — explicit pre-cascade setup step (added 2026-05-28 post-Run-5 PG-1)**: cascade participants (all reviewers; arguably the Manager too) should `/clear` before taking their seat so the review is cold/uncontaminated. **Who clears**: every reviewer not satisfying the §Cold-cast fork 4-criteria orthogonal-context-acceptable test (see `plan-review-cascaded-common.md`). **When**: between Step 0 light-review PASS and Step 4 role-ack. **Why**: prior-context contamination causes reviewer bias — findings sharpened by what the reviewer already knew vs what the section itself demands. Empirical anchor: Run 5 — Rachel correctly recused from Stage 1 citing the cold-cast practice; codifying as explicit setup step prevents future cast members from skipping the `/clear` by default.
 
 ## Briefing delivery (optional Workflow Steward pattern)
@@ -66,6 +68,14 @@ Manager produces (or verifies inheritance from a prior cascade) the pre-cascade 
 Manager runs the **Step 0 light-review gate** with the review-cascade rubric (6-criterion focused pass per common.md §Step 0 light-review gate, narrowed to the input-plan-as-reviewable shape).
 
 On thumbs-up + Recon-checklist-verified: Manager posts `kind: "cascade_input_ready"`; state flips. Cascade Step 1 can fire.
+
+**Step 0.4 — Mint the stepwise task-item ledger (MANDATE; added 2026-07-12)**
+
+Before the cascade fires, the Manager mints the **step tier** of the ledger: one task-store item per cascade step (0, 1, 2, 3, 4, 5–6, 8, 9 — Step 7 is a policy, not a work unit, and correctly gets no item). Every item carries the run's shared `correlation_key`, a non-null `accountable_manager`, and a `body` stating that step's acceptance criteria.
+
+The **section tier** is minted later, at Step 2 close (see Step 2 below) — it cannot exist before the decomposition does.
+
+Canonical spec (both tiers, required fields, status discipline, Steward enforcement): `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger. Post `kind: "task_ledger_ready"` when the step tier is on the board.
 
 ### Authorship — Manager-default
 
@@ -117,6 +127,8 @@ Per `section_decomposition_authority = manager_autonomous`, the manager reads th
 - Cross-section dependencies should be explicit and minimal
 
 The manager produces a proposed decomposition: section labels (A, B, C, …), section boundaries (which content goes in each), and a brief rationale for the split.
+
+**At Step 2 close — mint the section tier of the ledger (MANDATE; added 2026-07-12)**: once the decomposition is ratified (Step 3), the Manager mints **one task-store item per section**, sharing the run's `correlation_key`, and transitions each as its section moves Stage 1 → 2 → 3 → closed. The step tier shows *which step*; the section tier is what shows *the pipeline advancing* — and pipelined section motion is this workflow's entire value proposition. See `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger.
 
 ---
 
@@ -341,35 +353,15 @@ When manager calls a vote per §5 turn cap:
 - Apply `vote_tiebreaker_policy`
 - Post result back to discussion thread + handoff topic
 
-### 6.4 Heartbeat handling (external-scheduler driven)
+### 6.4 Heartbeat handling (arbiter-driven — interim scheduler retired, Rick GO 2026-06-29)
 
-**Updated 2026.05.18 after Run 1 postmortem**: the original draft assumed the manager could autonomously tick on a cadence and fire heartbeat pings to peers. **Claude Code sessions are turn-based** — they only process on inbound events. The manager cannot fire a periodic ping without itself being woken first. The §6.4 protocol is now external-scheduler-driven:
+**Why a poke is needed at all**: **Claude Code sessions are turn-based** — they process only on inbound events. A manager cannot fire a periodic self-ping without first being woken. So fleet-stall detection during a cascade needs an external waker.
 
-- **An external scheduler** (a Python daemon, cron, systemd timer, or scheduled remote agent — runs outside CC) periodically pokes the manager with a no-op heartbeat DM via `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)`
-- **Cadence**: 2-3 min during active cascade, 5+ min when cascade is idle / awaiting user
+**The mechanism (current)**: the **standing arbiter daemon** is that waker — it pokes the manager on stall and re-surfaces aged gates, the same backstop the SWE crew and the proactive-manager loop rely on (`manager-autonomy.md §9.2`). The manager's own **Stop-hook** handles its per-session owed-work self-check (folded debounce, no brute-force tick). **No per-cascade Python daemon / cron / systemd timer / `/loop` is launched** — that interim external-scheduler crutch is **retired**; do NOT stand one up.
 
-**Reference implementation** (chosen 2026-05-18; ships in Lupin as the canonical example): a Python daemon at `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` with a wrapper at `<lupin>/src/scripts/start-cascade-heartbeat.sh`. **The Python-daemon shape was preferred over the `/schedule` skill** because `/schedule` spawns a fresh CC session per tick (5s cold start + Claude API call per tick = ~$0.50 of compute over a 30-min cascade with 20 ticks); a sleep-loop daemon is sub-second per tick with zero per-tick cost — order-of-magnitude better fit for sub-3-min cadence.
+> 🗄️ **HISTORICAL (2026-05-18 → 2026-06-29)**: before the arbiter was a standing daemon, this section specified an interim external scheduler — a Lupin Python daemon (`cascade_heartbeat_scheduler.py` + `start-cascade-heartbeat.sh`; ACTIVE/IDLE/TERMINATED state machine; 180s active / 300s idle cadence) that poked the manager with a no-op heartbeat DM via the now-deprecated `commons_send_to`. It was preferred over the `/schedule` skill on per-tick cost. **Retired** once the arbiter shipped as standing infra (Rick GO 2026-06-29); preserved here only as the record of how the cascade stayed live pre-arbiter.
 
-**Launch invocation** (one-liner; canonical Lupin path):
-
-```bash
-nohup python /mnt/DATA01/include/www.deepily.ai/projects/lupin/src/scripts/cascade_heartbeat_scheduler.py \
-  --manager <manager_persona> \
-  --cadence-active 180 \
-  --cadence-idle 300 \
-  --strikes 3 \
-  --input-plan-topic <input-plan-topic-name> \
-  > /tmp/cascade-heartbeat.log 2>&1 &
-```
-
-Or via the ergonomic wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager_persona>` (uses defaults for the other args).
-
-**State machine**:
-- `ACTIVE` (default at launch): daemon ticks at `--cadence-active` (default 180s); each tick fires `commons_send_to(recipient=<manager>, body="heartbeat", expect_reply=False)` then disk-reads `io/commons/<input-plan-topic>.md` to check for cascade-complete signal
-- `IDLE` (set when cascade in user-pause): daemon ticks at `--cadence-idle` (default 300s) — same action, lower frequency
-- `TERMINATED` (set when cascade-complete signal found): daemon exits cleanly
-
-**Cascade-complete signal**: the manager posts an entry with `metadata.kind == "cascade_complete"` to the input-plan topic at end-of-pipeline summary (per §8). Daemon detects this on its next tick's disk-read and exits.
+**Cascade-complete signal**: the manager posts an entry with `metadata.kind == "cascade_complete"` to the input-plan topic at end-of-pipeline summary (per §8) — the arbiter reads this and stops poking for the completed cascade.
 - **On each heartbeat received**: manager applies the §Manager Behavior universal-step-zero discipline — disk-read every active topic (section topics + DM topics + briefing topic), check for new worker posts that arrived since the last wake, check for any worker whose last activity is past `stall_threshold_minutes`
 - **Phantom detection**: if a worker who was expected to post (per current pipeline state) hasn't posted within `stall_threshold_minutes = 10`, the manager:
   - First sends a targeted DM probe to that worker ("are you available?")
@@ -380,7 +372,7 @@ Or via the ergonomic wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <m
 
 **Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
 
-**See also**: §Heartbeat Handling in the detailed Manager Behavior section below for the integration pattern with the external scheduler.
+**See also**: §Heartbeat Handling in the detailed Manager Behavior section below — for the manager's **on-poke response discipline**, which is still live. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
 
 ### 6.5 Status pushes
 
@@ -390,6 +382,8 @@ Per `manager_push_frequency = per_section_complete`, manager `notify()`s the use
 - Wall-clock elapsed
 - Per-section message count vs. budget
 - Any over-budget flags or escalations summary
+
+**Proactive decision-delivery (added 2026-07-01, Rick post-game — mux cascade)**: when a section closes with one or more *user-destined* decisions/OQs, the per-section status push is NOT sufficient — the Manager MUST additionally drive those decisions to the user via a proactive `/plan-decide` walkthrough (per-batch, no permission-ask). The status push reports progress; the walkthrough delivers the decisions. Do not let a user-destined decision live only as a line in a status push or as buried plan prose. (The attention-filter is unchanged — only decisions that genuinely need the user's judgment are walked through; see Manager System Prompt meta-rule 6.)
 
 ---
 
@@ -406,6 +400,8 @@ Per `escalation_form = notify_immediate`, the manager escalates by calling `mcp_
 7. **Pipeline stall** — phantom session detected (per §6.4)
 
 After escalation, the manager pauses the affected work (re-opens the section, parks the pipeline, etc.) and waits for the user's direction.
+
+**Escalation vs. proactive delivery (added 2026-07-01, Rick post-game — mux cascade)**: the 7 triggers above are the *synchronous, pipeline-blocking* subset — they are NOT the only things that reach the user. Per Manager System Prompt meta-rule 6, **any** user-destined decision (not only a blocking trigger) is delivered proactively to the user per-batch — as its section closes and at cascade-complete — via a `/plan-decide` walkthrough, never silently deferred. A non-blocking preference (e.g. a drop-vs-build OQ) does not fire a Trigger, but it is still driven to the user proactively; it is not parked into a buried end-of-run batch.
 
 ---
 
@@ -427,6 +423,8 @@ For the prototype phase (Phase D), this summary feeds into the telemetry analysi
 
 **Step 8 is NOT cascade-done**: per Step 9 workflow (added 2026-05-19), the cascade is not handoff-ready until Step 9 (Revision-Handoff Synthesis) artifact lands + cold-context test passes + light-review gate clears. `cascade_complete` is the Step 8 closure state; `implementation_handoff_ready` is the Step 9 closure state.
 
+**Ledger close (added 2026-07-12)**: by Step 8, every **section-tier** item is `done` with `receipt_refs` (cite the stage-close / `manager_classification` posts). The Step 9 item stays open until the synthesis artifact lands — then it closes with the doc path as its receipt, and the run's ledger is fully terminal. **A cascade with a green summary and a half-open ledger is not done** — the summary is a narrative the Manager composed; the ledger is what actually happened. See `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger.
+
 ---
 
 ## Step 9: Revision-Handoff Synthesis (NEW — added 2026-05-19 post-Run-3)
@@ -435,7 +433,7 @@ For the prototype phase (Phase D), this summary feeds into the telemetry analysi
 
 **Trigger**: fires AFTER Step 8 cascade-complete signal, BEFORE handing back to original-author (or implementer) for revision-application.
 
-**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (5-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap).
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (6-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap).
 
 **Full requirements anchor**: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (§3 covers the review-cascade flavor specifically).
 
@@ -462,6 +460,8 @@ Single canonical handoff doc consolidating the cascade's revision package. Requi
 
 **Acceptance**: cold-context test — original author or implementer can read this doc and know exactly what to revise / implement without back-referencing the cascade topic files.
 
+**Proactive-decision-delivery note (added 2026-07-01, Rick post-game — mux cascade)**: the handoff's user-facing decisions/OQs are a **backstop + consolidation**, NOT the first time the user sees a decision. Per Manager System Prompt meta-rule 6, any user-destined decision that firmed up mid-cascade must ALREADY have been walked through to the user at its section boundary (per-batch `/plan-decide`). Step 9 confirms + records residuals; it does not originate the ask. A user-destined decision appearing for the first time at Step 9 is a proactive-delivery miss.
+
 ### 9.2 Authorship + Step 9 closure flow
 
 Same as authoring-cascade (see `plan-authoring-cascaded.md` §9.2 + §9.3): Manager-default authorship; Manager self-administers cold-context test; Manager DMs cascade-participant reviewer with the 1 artifact + light-review rubric; reviewer responds within ~10-15 min; thumbs-up flips state to `implementation_handoff_ready`; gaps trigger 1-revision-turn cap then re-test.
@@ -482,6 +482,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Identity**: You are NOT a reviewer. You do NOT write or rewrite plan content. You do NOT vote on substantive issues. You are an orchestrator and facilitator. Your authority is procedural, not substantive.
 >
+> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) You MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) You MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
+>
 > **Meta-rules** (apply at every decision point):
 >
 > 1. **Default to autonomy**: if you can resolve something within the group, do so. Escalate only when the situation matches one of the 7 escalation triggers (see Escalation Template below).
@@ -489,6 +491,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 > 3. **Default to bounded scope**: when re-litigating a finding, pull in only the upstream personas whose decisions are actually affected, not the whole chain.
 > 4. **Default to honest classification**: if you're uncertain whether a finding is inconsistency-severity or foundational-severity, treat it as foundational and escalate. The cost of one extra interruption is low; the cost of a silent foundational miss is high.
 > 5. **Default to neutrality on votes**: you arbitrate, you don't vote. Your only voting role is breaking ties on cosmetic/inconsistency severity per `vote_tiebreaker_policy = severity_dependent`.
+>
+> 6. **Default to proactive decision-delivery** (added 2026-07-01, Rick post-game — mux cascade): the moment a batch of *user-destined* decisions firms up — per section as it closes, and at cascade-complete — you MUST **drive them to the user proactively** via a guided decision-walkthrough (`/plan-decide`: one at a time, pros/cons/explicit recommendation, descending priority). You do NOT ask "do you want to review?"; you do NOT defer them into a buried Step-9 batch; you put them in front of the user directly. This does NOT relax meta-rule 1 (the filter): only decisions that genuinely need the user's judgment are driven to them — manager-resolvable findings (cosmetic / within-group inconsistency / factual-simplification) stay resolved within the group and OFF the user's desk. Burying a user-destined decision behind a "nothing needs you now" framing, or gating it behind a permission-ask, is a **redline** — the inverse of driving the process to completion.
 >
 > **Operating envelope**: you operate within the resolved configuration values (loaded at Step 1). Do not improvise overrides; if a config value seems wrong for the situation, escalate the question to the user.
 >
@@ -764,11 +768,17 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 **Quorum**: 3 of 4 substantive personas must vote within the window. Fewer = manager extends window once by 5 minutes; if still under quorum, escalate via Trigger 7 (pipeline stall — at least one persona is phantom).
 
-### Heartbeat Handling (external-scheduler integration)
+### Heartbeat Handling (arbiter-driven)
 
-**Rewritten 2026.05.18 after Run 1 postmortem.** The original draft (manager-fires-its-own-pings) was fundamentally incompatible with Claude Code's turn-based runtime model — sessions cannot autonomously tick. The workflow now centers on an **external scheduler** that pokes the manager on a cadence, and the **manager's response discipline** on each poke.
+> ⛔ **THE PER-CASCADE EXTERNAL SCHEDULER IS RETIRED (Rick GO 2026-06-29). DO NOT STAND ONE UP.**
+> **The live waker is the standing arbiter daemon + the per-session Stop-hook** — verify it is up (`lupin_arbiter_app` on `:8001`); do not launch anything. See §6.4, which is the authority for this subsection.
+> **The manager's on-poke *behaviour* below is unchanged and still live** — universal-step-zero disk-read, phantom detection, suppression-during-user-pause. Only the *waker* changed: it now runs on the arbiter's poke, not a self-launched daemon's. **The "Scheduler shape" spec that follows is preserved as historical record, not as instruction.**
+>
+> *Fenced 2026-07-20 (found by Clayton 😎, cascade manager). This subsection sat unfenced and present-tense in the **Manager Behavior** section — the one the Manager System Prompt tells a Manager to load — while §6.4 five hundred lines away carried the retirement. A Manager entering here read live instruction to stand up the forbidden daemon and never reached the banner.*
 
-**Scheduler shape** (lives outside CC; integration spec only here):
+**Rewritten 2026.05.18 after Run 1 postmortem** *(⚠️ historical per the banner above — superseded 2026-06-29)*. The original draft (manager-fires-its-own-pings) was fundamentally incompatible with Claude Code's turn-based runtime model — sessions cannot autonomously tick. That is *why* an external waker is needed at all; the waker is now the standing arbiter.
+
+**Scheduler shape** (🗄️ HISTORICAL — the retired interim daemon's spec, preserved as record; do NOT implement):
 
 - Implementation: cron, scheduled remote agent via the `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
 - Per-tick action: `commons_send_to(recipient=<manager_persona>, body="heartbeat", expect_reply=False)`
@@ -791,16 +801,11 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 **Logging**: the manager keeps a topic-indexed log of heartbeat-handling events for the end-of-pipeline summary. Useful for the per-stage detection-delay telemetry metric (added in Run-2-prep §7.8 of the postmortem) — how long between worker post and manager detection.
 
-**Why this works in turn-based CC**: the scheduler is the only autonomous-clock component; the manager is purely reactive. As long as the scheduler keeps firing, the manager keeps waking. The scheduler dead-man's-switch covers the failure case where the manager itself is dormant beyond push-mode recovery.
+**Why this works in turn-based CC**: the **standing arbiter** is the autonomous-clock component; the manager is purely reactive. As long as the arbiter keeps poking, the manager keeps waking. The arbiter also re-surfaces aged gates and covers the dark-session case where the manager itself is dormant — the dead-man's-switch role the interim scheduler used to play (`manager-autonomy.md §9.2`).
 
 **Cross-reference**: postmortem at `src/rnd/2026.05.18-cascaded-prototype-postmortem.md` §4.2 (turn-based-CC limitation as load-bearing finding) and §6.B (full scheduler spec with cadence + scope + failure handling).
 
-**Reference implementation** (lives in Lupin per 2026-05-18 design decision):
-- Daemon: `<lupin>/src/scripts/cascade_heartbeat_scheduler.py`
-- Wrapper: `<lupin>/src/scripts/start-cascade-heartbeat.sh <manager>`
-- Launch invocation: see §6.4 above for the full one-liner with all args
-- Rationale for Python-daemon over `/schedule` skill: per-tick cost (sleep loop is ~free; `/schedule` is fresh CC session per tick = ~$0.50 over a 30-min cascade). See §6.4 above for full reasoning.
-- Spec adherence: zero divergence from postmortem §6.B (manager-only scope, 2-3 min active / 5+ min idle, 3-strikes dead-man's-switch → `notify()` user)
+> 🗄️ **HISTORICAL — interim scheduler reference implementation, RETIRED (Rick GO 2026-06-29).** Before the arbiter was a standing daemon, the reference implementation was a Lupin Python daemon (`cascade_heartbeat_scheduler.py` + `start-cascade-heartbeat.sh`; manager-only scope, 2-3 min active / 5+ min idle, 3-strikes dead-man's-switch → `notify()` user; preferred over `/schedule` on per-tick cost). **Retired** — the standing arbiter is the waker now (§6.4). Do NOT launch the daemon. Preserved as record only.
 
 ---
 
@@ -816,6 +821,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) **crutch-retirement** — §6.4 rewritten arbiter-driven + the daemon reference-impl fenced HISTORICAL (task `d0cffe5c`); (b) **manager floor obligations** — injected MUST manage-never-build + MUST staff-proactively into the cascade Manager preamble (task `c6af7fca`; mirrors `role-goals.md` v1.1, Rick-locked imperative wording). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
   - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Workflow Steward, optional)
@@ -845,4 +851,4 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 - **2026.05.20 (Step 0 — Cascade Preparation workflow, review-cascade flavor)** — NEW §Step 0: Cascade Preparation section added before §Step 1. Lighter than authoring-cascade's Step 0 (review-cascade input is already a parent input plan; no slicing manifest authoring + no per-slice design doc authoring + no Q-decision matrix extraction). 3 sub-steps: 0.1 input-plan intake + reviewability assessment + 0.2 pre-cascade Recon checklist verification + 0.3 cascade-readiness gate (state flip to `cascade_input_ready`). Shares the common.md acceptance criteria with authoring-cascade Step 0 (cold-context test + light-review gate with 6-criterion focused rubric + pre-cascade Recon checklist REQUIRED for state-flip). Manager-default authorship. Full requirements at `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md`. Step 0 + Step 9 together close the cascade workflow's end-to-end shape for both modes.
 
-- **2026.05.19 (Step 9 — Revision-Handoff Synthesis workflow)** — NEW §Step 9: Revision-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 workflow omitted (Rick's broadcast `d3a89a21` catch). Review-cascade flavor: single-artifact spec (revision-handoff doc with 7 required sections including REQUIRED §6 workflow-guidance candidates index); Manager-default authorship; cold-context-test (~5-10 min) + light-review gate (~10-15 min, 5-criterion focused rubric) + 1-revision-turn cap; cascade state flips from `cascade_complete` → `implementation_handoff_ready` on Step 9 close. Step 8 explicitly NOT cascade-done. Shared acceptance criteria in `plan-review-cascaded-common.md` §Step 9; sister 3-artifact spec for authoring-cascade in `plan-authoring-cascaded.md` §Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.
+- **2026.05.19 (Step 9 — Revision-Handoff Synthesis workflow)** — NEW §Step 9: Revision-Handoff Synthesis section added between Step 8 and Manager Behavior. Codifies the implementation-handoff phase that v1 workflow omitted (Rick's broadcast `d3a89a21` catch). Review-cascade flavor: single-artifact spec (revision-handoff doc with 7 required sections including REQUIRED §6 workflow-guidance candidates index); Manager-default authorship; cold-context-test (~5-10 min) + light-review gate (~10-15 min, 5-criterion focused rubric — **extended to 6 criteria later the same day**; see `plan-review-cascaded-common.md` version history 2026.05.19 criterion-6 addition) + 1-revision-turn cap; cascade state flips from `cascade_complete` → `implementation_handoff_ready` on Step 9 close. Step 8 explicitly NOT cascade-done. Shared acceptance criteria in `plan-review-cascaded-common.md` §Step 9; sister 3-artifact spec for authoring-cascade in `plan-authoring-cascaded.md` §Step 9. Full requirements at `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.

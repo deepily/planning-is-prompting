@@ -11,6 +11,60 @@
 
 **Key Behavior**: By invoking session-checkpoint, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
 
+**Glyph**: **📷** is the one-character form of this workflow. 🫡, then the checkpoint — report only when it is **done**, with what was committed and the sha. See `brevity-mandate.md` § the glyph exchange.
+
+---
+
+## ⚠️ VOCABULARY — "HELD" MEANS **COMMITTED, NOT PUSHED**
+
+**This is a definition, not a preference.** It cost a near-miss on 2026-07-19 and the ambiguity is invisible until it bites.
+
+| Term | Means | Does NOT mean |
+|---|---|---|
+| **HELD** | **Committed** to the local branch, **not pushed** to origin | *"not pushed"* alone · *"finished but sitting in the worktree"* |
+| **Pushed** | On origin. **The user's call, always** | — |
+| **Dirty / untracked** | Not committed. **Not held. Not safe.** | anything durable |
+| **On a SHARED branch** | Committed where **peers can already build on top** | ⚠️ **"held" says NOTHING about this** — see below |
+
+🔴 **THE FOURTH ROW, ADDED 2026-09-03 — THE DEFINITION IS SATISFIED BY MORE THAN ONE STATE OF THE
+WORLD, AND THE LISTENER SUPPLIES THE ONE THEY NEED.** Measured: a worker reported a piece of work as
+*"held for the reviewer"* three times. It was **committed and not pushed**, so under the table above
+the word was **TRUE** — and it was on the **shared branch** with peers already building on top, so it
+conveyed the exact opposite of what the manager took from it. The manager made merge and review
+decisions believing the work was withheld. No harm resulted, **and that is a property of the luck,
+not of the error**.
+
+⇒ **The definition covers commit-versus-push and says nothing about ISOLATION or about who may build
+on top.** It was not violated; it was **under-specified**, which is harder to catch because the
+speaker is being accurate.
+
+⚠️ **AND THE SPEAKER NARROWED IT FURTHER THAN HIS REVIEWERS DID.** His first diagnosis was that the
+word had gone **stale** — true of an earlier setup and carried forward. It had not: it was **true by
+this table in both setups**, and he said *"not pushed"* in the same breath each time. **Nothing went
+stale; an unstated implication changed.** ⇒ The remedy is therefore not *"re-check the word against
+your setup"* but **"this table does not cover what your reader will infer, so say the uncovered
+part."**
+
+⇒ **So when you say HELD, name what is holding it.** If the honest answer is *"nothing — it is
+already on the shared branch"*, say that instead. A term that is right about one axis and silent
+about the one your listener cares about is not a shared vocabulary, it is two people agreeing on a
+word.
+
+⚠️ **Found by retracting an absence claim rather than by hitting the bug again** — Rachel 🕊️ had
+called this vocabulary *unwritten*, then searched (56 workflow docs plus Lupin `CLAUDE.md`, positive
+control first), found **this section**, and reported that her own correction made the finding
+**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md`.
+
+**Why the distinction is load-bearing — an uncommitted green is a rumor:**
+
+- A `shasum` of a **worktree file** describes whatever exists this second. `git show HEAD:<path> | shasum` re-derives **forever**. Report the second one.
+- An **untracked** file plus an applied effect is the worst pairing available: a container rebuild or `git clean` keeps the effect and **loses the source**. (2026-07-19: an alembic migration was untracked on disk while already stamped into the live dev DB.)
+- Test counts, benchmarks, and review verdicts all reference a tree. **If that tree was never committed, no one can reproduce the claim** — including the author, an hour later.
+
+> ⇒ **Before reporting any work as HELD**: `git status --porcelain` returns **zero** lines, and the sha you quote came out of `git show HEAD:…`, not the file.
+
+**Staging**: commit **selectively by path**. Never `git add -A` / `git add .` — other sessions' work lives in the same tree (see § Parallel Session Safety).
+
 ---
 
 ## Overview
@@ -228,6 +282,27 @@ INFO: No related TODO items found (no action needed)
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
 - [ ] TaskUpdate updated
+
+---
+
+## 😘 Step 3.9: BREVITY GATE — before you write a word into history.md or TODO.md
+
+**KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH.** `workflow/brevity-mandate.md` governs written artifacts, **not just replies**.
+
+| Artifact | HARD CAP |
+|---|---|
+| `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+| `history.md` Checkpoint line | **one line**, semicolon-separated |
+| `history.md` Files line | **paths only**, no per-file commentary |
+| Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
+
+**`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
+
+**Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop — it is long enough.**
+
+> ⚠️ **This gate exists because it was violated by the session that wrote the mandate.** S139 (2026-07-19) landed the brevity mandate and then filed an ~1,100-word history entry; Rick caught it. The first draft of `brevity-mandate.md` had exempted history/retro docs as "content-shaped" — **a self-assessed exception, the exact thing the mandate forbids.** Do not restore that exemption.
+
+**A 😘 from anyone at this step means: cut the entry, then commit.**
 
 ---
 

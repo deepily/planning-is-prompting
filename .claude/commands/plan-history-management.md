@@ -3,7 +3,8 @@
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
 **Mode Parameter**: Accepts mode=check (default), mode=archive, mode=analyze, mode=dry-run
-**Version**: 1.0
+**Optional Parameter**: `pending_entry=<path>` — a drafted-but-unwritten history entry whose size is added before thresholding (see canonical workflow → *Threshold the PROJECTED total*)
+**Version**: 1.1
 
 ---
 
@@ -15,9 +16,11 @@
    - **[SHORT_PROJECT_PREFIX]**: [PLAN]
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Archive directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history/
-   - **Token thresholds**: 20k warning, 22k critical, 25k limit (defaults)
+   - **Token thresholds**: **17k warning, 19k critical**, 25k limit (canonical defaults — corrected 2026-08-15; this file had claimed 20k/22k, which contradicted workflow/history-management.md and would have thresholded 3k late)
+   - **Thresholds are applied to the PROJECTED total** — on-disk + `pending_entry`, never the bare file measurement
    - **Retention targets**: 8-12k tokens, 7-14 days (defaults)
    - **Mode parameter**: mode=check (default), mode=archive, mode=analyze, mode=dry-run
+   - **Optional**: `pending_entry=<path>` (drafted entry, counted before thresholding)
    - Do NOT proceed without these parameters
 
 2. **MUST read the canonical workflow document**:
@@ -38,7 +41,9 @@
 
 ```bash
 /plan-history-management                    # Health check (default)
-/plan-history-management mode=check         # Explicit health check
+/plan-history-management mode=check         # Explicit health check (file as it stands)
+/plan-history-management mode=check pending_entry=/tmp/history-entry-draft.md
+                                            # Session-end form: counts the drafted entry BEFORE thresholding
 /plan-history-management mode=dry-run       # Preview archive without changes
 /plan-history-management mode=analyze       # Trend analysis and recommendations
 /plan-history-management mode=archive       # Execute archival (when needed)

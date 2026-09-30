@@ -50,12 +50,23 @@ COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>
 
 ### Example shell-rc setup
 
+⚠️ **Do not hand-export these — as of 2026-08-18 they are DERIVED.** The one
+place a repo's manager is named is `~/.claude/fleet-roster.env`
+(`COSA_VOICE_MANAGERS__<PROJECT>="<names>"`); `start-cc-with-tmux.sh` builds
+each `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` chain from it as `<roster>,*`.
+A hand-export in your shell OVERRIDES that derivation and re-creates the split
+this consolidated: the roster decides who APPEARS to be a manager, the chain
+decides who may WRITE to the task store, and a stale copy-paste puts a retired
+name back on one side only. Lupin's SessionStart hook now compares the two and
+prints a drift block into the session's boot context when they disagree.
+
 ```bash
-# cosa-voice per-repo default personas — add to ~/.bashrc or ~/.zshrc
-export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
-export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
-export COSA_VOICE_PREFERRED_PERSONA__COSA_VOICE=Rio
-# Add more as new repos are added to the workflow
+# ~/.claude/fleet-roster.env — the ONE place a repo's manager is named.
+# Plain KEY="value" (the bash-source ∩ systemd EnvironmentFile intersection).
+COSA_VOICE_MANAGERS__PLAN="María"
+COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
+# Order matters: the roster HEAD is the declared fallback manager.
+# Add a line per repo; the persona chain follows automatically.
 ```
 
 ### Conflict behavior
@@ -100,8 +111,8 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 ### Reference
 
 - **Plan document**: `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`
-- **Server allocator**: `src/cosa/rest/voice_persona_helpers.py` — function `pick_preferred_persona_from_env(project)` + extended `allocate_persona_for_session()`
-- **Server tests**: `src/tests/unit/test_voice_persona_request.py` — class `TestPreferredPersonaFromEnv` (7 tests)
+- **Server allocator**: `src/cosa/rest/voice_persona_helpers.py` — function `pick_persona_chain_from_env( project )` + extended `allocate_persona_for_session()`
+- **Server tests**: `src/tests/unit/test_voice_persona_request.py` — class `TestPickPersonaChainFromEnv` (run the file for the count; do not read one off this page)
 - **Workflow defaults rationale**: memory entry `feedback_workflow_defaults_travel_with_workflow.md` — *why* the prefix is `COSA_VOICE_*` and not `P_IS_P_*`
 
 ---
@@ -131,6 +142,30 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 - ❌ Assuming a default persona name when `voice_persona` is missing (must `converse()` and ask the user)
 
 **Reference**: `~/.claude/CLAUDE.md` § MCP SESSION STARTUP PROTOCOL Phase A; `planning-is-prompting → workflow/cosa-voice-integration.md` § TTS Response Brevity Mandate; recovery plan at `src/rnd/2026.05.15-tts-brevity-mandate-self-violation-recovery.md`.
+
+---
+
+## Preliminary 0.1: Provisional Session Topic (MANDATORY — operator visibility)
+
+**Purpose**: Render this session on the operator's focus bar (name + color + icon) from the very first minutes of life. The focus-bar roster is **notification-derived** — a session that has pushed nothing is INVISIBLE to the operator regardless of how alive it is. `set_session_topic()` pushes, and is therefore the session's birth certificate on the operator's side of the glass.
+
+**Timing**: IMMEDIATELY after Preliminary 0's `get_session_info()` succeeds — BEFORE the first user-facing acknowledgment, BEFORE the topic is genuinely knowable. Do not wait.
+
+**Command**:
+```python
+set_session_topic( "Session initializing — <repo-name>" )   # provisional; refine later
+```
+
+**Then refine at Phase B**: when the real focus of the session becomes knowable (user's first message, history/TODO review, approved plan), call `set_session_topic()` again with the true 3-8 word topic — the provisional topic is a placeholder, not a substitute for Phase B.
+
+**Why the provisional call is load-bearing (2026-07-15 incident)**: the SessionStart hook's hello-world TTS is supposed to auto-announce every new session, but it depends on pane environment (`LUPIN_DEV_EMAIL`) that can silently vanish — after the 2026-07-13 tmux-server restart, the new server's global env froze without it, every hello-world no-oped **silently**, and the operator had to manually ask each session to set a topic before it appeared on the focus bar. The MCP `set_session_topic()` path uses server-side credentials and does NOT depend on pane env — making it the reliable visibility push. Rule of record (Rick, 2026-07-15, voice): **every MCP-connected session calls `set_session_topic` once at boot, unconditionally.**
+
+**Spawned workers**: this obligation travels INTO spawn briefs — a manager spawning reviewers/implementers MUST include the topic-set-at-boot instruction in every worker's brief (see `workflow/swe-team-spin-up.md`). An invisible worker defeats the VISIBLE CAST rule from the operator's side.
+
+**Anti-patterns**:
+- ❌ Deferring the first `set_session_topic()` until the topic is "knowable" (visibility waits on nothing)
+- ❌ Relying on the SessionStart hook's TTS to announce the session (env-dependent; fails silently)
+- ❌ A spawn brief that omits the topic-set instruction (the worker boots invisible)
 
 ---
 
@@ -255,7 +290,7 @@ Persona name and voice ID are **bound by design** — they are a 5-tuple `(name,
 
 - **Server endpoint**: `POST /api/cosa-voice/voice-persona/{session_id}/allocate?requested_persona_name=<name>&previous_persona_name=<optional>` (Lupin)
 - **Server helpers**: `src/cosa/rest/voice_persona_helpers.py` — `pick_requested_persona`, `allocate_requested_persona_for_session`, `_find_persona_in_pool`
-- **Tests**: `src/tests/unit/test_voice_persona_request.py` (42 tests covering helpers + route paths + Pydantic validation + bridge-write failures + push tolerance)
+- **Tests**: `src/tests/unit/test_voice_persona_request.py` — covers helpers + route paths + Pydantic validation + bridge-write failures + push tolerance. **Run it for the count.** A number written here was 42 when authored and 58 the next time anyone checked; a count in prose ages the moment the suite grows, and nothing goes red when it does.
 - **Slash-command shim**: `.claude/commands/plan-session-start.md` (project-scope) — passes `$ARGS` through to this Preliminary
 
 ---
@@ -749,6 +784,34 @@ Example with checkpoints:
 - Use relative paths from project root
 - Always update **YOUR** Last Activity timestamp (not another session's)
 
+### 🔴 The line format is a machine contract, not a style — and the fleet has already drifted off it
+
+**A guard parses these lines.** In Lupin, `src/lupin_cli/claude_code/hooks/lib/commit_scope_guard.py` refuses a commit naming a path your section does not claim. It matches exactly two shapes, and both are the ones documented above:
+
+| It parses | It does NOT parse |
+|---|---|
+| `## Session: 5c8a3081` — the id **alone** | `## Session: 5c8a3081 (María 🌸 — manager)` — the whole section goes invisible |
+| `- 2026-01-31T09:15:00 \| src/auth.py` | `` - `src/auth.py` `` — the line claims **nothing** |
+
+⚠️ **Measured 2026-09-17** (María 🌸, Lupin commit `8629857b`): both live manifests had drifted to the backtick-bullet style, and a new section copied from the ones above it inherited the drift. Three commits were refused before the format was read off this document. **The drift is the ordinary outcome**: the bullets are prose to a human writer and a contract to the parser, and nothing in the file says which it is — so this table exists to say it.
+
+🔴 **AND THE FAILURE IS SILENT IN THE DIRECTION THAT MATTERS.** The guard fails **open** on a section it cannot parse, because a seat with no section at all must not be blocked. So an unparseable section and an absent one are indistinguishable to it: the drifted seat is never refused, never warned, and its commits go **unexamined** while the manifest above them looks diligent. A refusal means your section parsed and the path was missing — that is the guard working. **Silence is not evidence that it is.**
+
+⇒ **Verify, do not assume**: after writing your section, a commit naming one of your claimed paths should be *allowed*; if you have never seen this guard say anything at all, check the format before concluding you are conformant.
+
+### Committing into ANOTHER repo: claim it in YOUR OWN repo's manifest
+
+The guard reads `.claude-session.md` **at the session's working directory**, not at the repo receiving the commit. A seat resident in repo A that commits a file in repo B must add that file to its section in **A's** manifest — the section in B's manifest is never consulted, and in some repos (Lupin) the manifest is gitignored, so it is not even committed.
+
+Record it under a clearly labelled heading so a reader is not misled about which tree the path lives in:
+
+```markdown
+### Touched in ANOTHER repo (lupin) — claimed here because the guard reads THIS tree's manifest
+- 2026-09-17T16:12 | src/rnd/v0.2.1/2026.09.15-multiplexer-parity-build-plan.md
+```
+
+**Still name what is NOT yours.** A pathspec commit takes each named path's *working-tree* content, so a peer's uncommitted edit inside a file you legitimately claim rides along with your commit. Check `git diff HEAD -- <path>` before committing, and keep a `### NOT MINE — deliberately left uncommitted` list for files you are stepping around.
+
 ---
 
 ### ⚠️ SESSION ISOLATION (CRITICAL)
@@ -858,6 +921,109 @@ echo ".claude-session.md" >> .gitignore
 ```
 
 This prevents accidentally committing the session manifest.
+
+---
+
+## Step 3.6: Seat Staleness Check (before you read one line of source)
+
+**Purpose**: find out whether the tree you were placed in is behind the branch the fleet
+merges into — **and whether that behind-ness touches anything you are about to work on** —
+at the one moment the answer is still cheap to act on.
+
+**Why HERE and not at session end** (row `d2dd3ee3`, 2026-09-05). A stale tree is a
+*premise*, not a result. At session start the remedy is one fast-forward and costs nothing.
+At session end the work is already written against the wrong source, and the same finding
+buys you a rebase, a re-review, or the discovery that somebody else wrote your fix while
+you were writing it. **The end of the ritual is where you learn it was too late.**
+
+🔴 **THIS IS NOT A DUPLICATE OF SESSION-END §7, AND THE TWO MUST NOT BE COPIED INTO EACH
+OTHER.** They ask different questions of different populations:
+
+| | §7, session END | **Step 3.6, session START** |
+|---|---|---|
+| asks | is anyone else standing on the files **I** touched? | is **my own tree** behind, on files I am about to touch? |
+| population | other branches' undelivered commits | the delivery target's commits **my tree lacks** |
+| when it helps | before you strand work | **before you write it against the wrong source** |
+
+⚠️ **THE SEAT DID NOT CHOOSE ITS TREE.** A spawn places you, and nothing in the placement
+promises the tree is current. Two receipts from one seat on one day: a census found **7 of 8
+live-occupied worktrees behind the working branch**, its own among them; and that same seat
+came back from a context clear **30 commits behind**, having written the census three hours
+earlier. **Nothing warned it either time.** On that evidence a stale seat is the default,
+not the exception — which is exactly why this cannot be left to "check if you suspect it."
+
+**When**: immediately after Step 3.5, before Step 4 loads history. You have a repo and a
+manifest by now, and you have not yet read a source file.
+
+### MANDATE — three obligations, and the first one is the unusual one
+
+1. 🔴 **ASSERT THE CONTROL EXISTS BEFORE YOU REPORT WHAT IT FOUND.** Say out loud whether a
+   scan is installed in *this* repo **before** any sentence about staleness. A missing
+   scanner and a clean tree produce the same silence, and the flattering reading of silence
+   is "nothing is wrong." State which one you are in, in that order — control, then finding.
+2. **MUST FIRE, including when it finds nothing.** "10 occupied trees, 0 overlapping" and
+   "nothing was scanned" are different facts and only one is safe to build on.
+3. **MUST REACH THE USER** — the finding goes in Step 6's context presentation, not only
+   into the terminal. Terminal-only delivery means invisible delivery.
+
+### 3.6.1) Preflight — repo-agnostic, and this file is not lupin's
+
+🔴 **THIS DOCUMENT IS THE CROSS-REPO RITUAL.** It runs in `planning-is-prompting`,
+`lupin-mobile`, and every other repo that installs the workflow, so a hardcoded
+`$LUPIN_ROOT` would make this step either do nothing or **point at another repo's tree from
+inside yours** — the wrong-tree family the step exists to detect, committed by the step
+itself. Resolve everything from the repo you are standing in.
+
+```bash
+REPO="$( git rev-parse --show-toplevel 2>/dev/null )" || REPO=""
+[ -n "$REPO" ] || echo "seat-staleness: skipped — not a git repo"
+```
+
+### 3.6.2) Assert the control, THEN run it
+
+```bash
+SCAN="$REPO/src/scripts/stale-seat-scan.py"
+PY="$REPO/.venv/bin/python"; [ -x "$PY" ] || PY="$( command -v python3 )"
+
+if [ ! -f "$SCAN" ]; then
+    # NOT a clean result. Say so in these words, or the next reader hears "up to date".
+    echo "seat-staleness: NO SCAN INSTALLED in $( basename "$REPO" ) — this tree was NOT checked"
+else
+    "$PY" "$SCAN" --mine "$REPO"; echo "seat-staleness exit: $?"
+fi
+```
+
+**Read the exit code, never the absence of output:**
+
+| exit | meaning | what to do |
+|---|---|---|
+| **0** | scanned; your tree carries no overlap | proceed |
+| **1** | **your tree is behind ON A FILE YOU HAVE TOUCHED** | see 3.6.3 |
+| **2** | **REFUSED — nothing was scanned** | say so; do NOT record a clean start |
+
+⚠️ `--mine "$REPO"` narrows **exit 1** to *your* tree; other seats' hits still print, and
+they are worth reading — they name who else is standing where you are about to work.
+
+### 3.6.3) On a hit — the remedy is a sentence, not a project
+
+A hit means the delivery target moved a file you have dirty or committed-and-undelivered.
+
+1. **Read the other version before you finish yours.** That is the whole point: the four
+   engineers who wrote the same fix in one day each had a clean tree and no reason to look.
+2. **Fast-forward if you can** — `git merge --ff-only <target>`. A tree with local commits
+   may refuse, and that refusal is information, not an obstacle to route around.
+3. **Never fast-forward somebody else's tree.** Another seat's hit is theirs to act on; DM
+   them. A tree being edited while it moves under its occupant is the defect, not the fix.
+
+⚠️ **BEHIND IS NOT HARMED, AND AN OVERLAP IS EXPOSURE, NOT DAMAGE.** Two parties touching
+one file is not a wrong result. Say "exposure" when you report it — a step that announces
+damage it has not measured is the cry-wolf instrument that gets switched off in a week.
+
+### 3.6.4) Cost, and why it is not optional on that ground
+
+~15 seconds, measured 2026-09-05 across 191 worktrees. It is the cheapest step in this
+document and the only one whose finding expires: every minute you work makes the same
+finding more expensive to act on.
 
 ---
 
@@ -994,6 +1160,34 @@ This prevents accidentally committing the session manifest.
    - Display combined list in Step 5
 
 **Key Principle**: TODO.md is the single source of truth for pending work. If it exists, use it. If not, fall back to history.md TODO sections (legacy pattern).
+
+---
+
+## Step 4.6: Install Your Context-Pressure Tick (MANAGER-ROLE SESSIONS — no permission needed)
+
+**Purpose**: guarantee that every manager-role session is watched by a timer that **outlives the
+session**. An in-session scheduler dies at exactly the moment it was meant to matter.
+
+**Rick, 2026-08-16**: *"I don't want to have to remind everybody manually on a daily basis."*
+
+**Do this without being asked**, as a reflex — it sits inside the standing spawn/harvest envelope
+and is not a gate:
+
+1. `crontab -l | grep context-pressure-tick` — is **your persona's** line there?
+2. If not, add one on your own stagger slot, tagged so entries stay attributable:
+   ```cron
+   3,13,23,33,43,53 * * * * $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/context-pressure-tick.sh >> /tmp/context-pressure-tick-<persona>.log 2>&1 # slot-<persona>-<session8>
+   ```
+3. Read the log after the next slot time. **An entry that exists and never fires reads as covered
+   and is not.**
+
+**Why this is a session-start step and not a note in a policy doc**: on 2026-08-16 four managers had
+entries — all laid down by *earlier* sessions of those personas — and **Rio, the one seat over the
+line, had none and no owner**. He was found only because a different manager's tick printed the
+whole roster. A rule that depends on remembering had already been forgotten.
+
+**Full rationale, the null-handling requirement, and the ownership trap**:
+`workflow/manager-context-monitoring.md`.
 
 ---
 
@@ -1142,7 +1336,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    **Example with real TODO**:
    ```python
    options = [
-       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Finish the drift check", "description": "Regenerate workflow/MANIFEST.json and clear reported drift"},
        {"label": "Start fresh", "description": "Work on something else"},
        {"label": "Modify list", "description": "Add/remove items before starting"}
    ]
@@ -1174,7 +1368,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    ```python
    options = [
        {"label": "Migrate genie-in-t...", "description": "Consider migrating genie-in-the-box to cosa-voice MCP tools"},
-       {"label": "Populate commit-ma...", "description": "Populate workflow/commit-management.md stub"},
+       {"label": "Finish the drift check", "description": "Regenerate workflow/MANIFEST.json and clear reported drift"},
        {"label": "Start fresh", "description": "Work on something else"},
        {"label": "Modify list", "description": "Add/remove items before starting"}
    ]
@@ -1769,6 +1963,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
 - **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
 - **2026.06.16 (María + Mr Radio)**: **Added Step 4.7 — Rebuild the Harness TODO List (MANDATORY on rehydrate)** — the READ side of the memento↔harness-list contract (Rick broadcast `beaaaa2c`: a session with no visible harness to-do list has nothing driving it forward; rebuilding is "an absolute no-no" to skip). Documents the store-authoritative reconciliation algorithm (memento skeleton → verify each vs `task_query(owner=self)` → drop done, add store-missed, store-status wins → deduped union; VERIFY-don't-manufacture; FAIL-LOUD-if-empty only when owed work exists), the env-priority flip (lupin = store-primary, plan/non-lupin = memento-primary until mirror bug `9bf1dc4a` lands), and the `9b23d5bc` caveat (rebuild is VISIBILITY-only until the `/clear` correlation-key collision lands; trust MCP `task_create`/`task_query` for auditable truth). Added the rebuild item to the Step 0 init checklist. Companion WRITE side in `workflow/memento-management.md`. Joint design with Mr Radio 🦉 (lupin).
 - **2026.05.19 (Session 93)**: **Added Preliminary -1 (Preferred-Persona Env Var) + Preliminary 0.5 (Persona-Request Swap)** — two complementary conditional sections for persona selection at session start. Preliminary -1 documents the declarative env-var path (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` read by cosa-voice's SessionStart hook); Preliminary 0.5 documents the interactive slash-command swap path (`$ARGS` arg routed to `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` with atomic-swap flow + 200/409/422/500 response handling + ask_multiple_choice conflict resolution capped at 3 alternatives). Both paths preserve narrative continuity across days/sessions/`/clear` (Path A locked: allocation is immutable after first claim; only fresh allocation re-reads the env var). Updated the existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality. ~220 lines added across both Preliminaries. Paired with cosa-voice's server-side env-var allocator + `requested_persona_name` route handler.

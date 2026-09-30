@@ -357,8 +357,8 @@ Without this variable, the command will show local versions only (no comparison)
 
 | Work Type | Duration | Pattern (Step 1) | Need Step 2? | Workflow Path |
 |-----------|----------|------------------|--------------|---------------|
-| Small feature | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **Step 1** only → history.md |
-| Bug investigation | 3-5 days | Pattern 4: Investigation | ✗ No | → **Step 1** only → history.md |
+| Small feature | 1-2 weeks | Pattern 3: Feature Dev | ✗ No | → **Step 1** only → history.md · **plan doc? → `/plan-review`** |
+| Bug investigation | 3-5 days | Pattern 4: Investigation | ✗ No | → **Step 1** only → history.md · **plan doc? → `/plan-review`** |
 | Architecture design | 4-6 weeks | Pattern 5: Architecture | ✓ Yes | → **Step 1** → **Step 2** (Pattern B) |
 | Technology research | 2-3 weeks | Pattern 2: Research | ✓ Yes | → **Step 1** → **Step 2** (Pattern C) |
 | Large implementation | 8-12 weeks | Pattern 1: Multi-Phase | ✓ Yes | → **Step 1** → **Step 2** (Pattern A) |
@@ -827,7 +827,13 @@ Git operation workflows including:
 - Handling pre-commit hooks
 - Creating pull requests
 
-**Canonical Workflow**: planning-is-prompting → workflow/commit-management.md
+**Canonical Workflows**: planning-is-prompting → workflow/session-end.md (§3–§4: selective
+staging, message drafting, the autonomous commit, the retained push gate) and
+planning-is-prompting → workflow/branch-pr-and-merge.md (pull requests, merge, release tagging).
+
+> ⚠️ **There is no `commit-management.md`.** It was a stub, deleted in Session 42 (`5aaae5d`), and
+> this guide went on citing it — telling installers to reference a file that has not existed since.
+> The content above lives in the two workflows named here.
 
 ### Install as Direct Reference
 
@@ -836,7 +842,8 @@ Add to your project's `.claude/CLAUDE.md`:
 ```markdown
 ## Git Workflow
 
-See planning-is-prompting → workflow/commit-management.md for commit protocols.
+See planning-is-prompting → workflow/session-end.md for commit protocols, and
+planning-is-prompting → workflow/branch-pr-and-merge.md for pull requests and merges.
 
 **Project specifics:**
 - Main branch: main (or master)
@@ -862,12 +869,20 @@ Session initialization routine:
 
 The cosa-voice MCP server's SessionStart hook honors a per-project preferred-persona environment variable, so each repo lands on its canonical persona automatically (no `/plan-session-start <name>` arg needed every session). Add to `~/.bashrc` / `~/.zshrc`:
 
+⚠️ **Declare the roster; do NOT hand-export the chain (changed 2026-08-18).**
+`start-cc-with-tmux.sh` derives every `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>`
+chain from the roster line as `<roster>,*`, so a shell export creates a SECOND
+answer to "who is a manager here" — and the two answers feed different consumers
+(roster → fleet status, escalation, reserve-from-random; chain → the task-store
+write gate). Edit one file instead:
+
 ```bash
-# cosa-voice per-repo default personas (read by SessionStart hook)
-export COSA_VOICE_PREFERRED_PERSONA__PLAN=María
-export COSA_VOICE_PREFERRED_PERSONA__LUPIN=Tiberius
-# Pattern: COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER> (hyphens → underscores)
-# Conflict (held by another session, invalid name): falls back to random + notify
+# ~/.claude/fleet-roster.env  (also read by the arbiter's systemd EnvironmentFile)
+COSA_VOICE_MANAGERS__PLAN="María"
+COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
+# Pattern: COSA_VOICE_MANAGERS__<PROJECT_UPPER> (hyphens → underscores)
+# Order matters: the roster HEAD is the declared fallback manager.
+# Conflict (name held by another session, invalid name): falls back to random + notify
 ```
 
 Details: planning-is-prompting → workflow/session-start.md § Preliminary -1, plan doc `src/rnd/2026.05.19-cosa-voice-preferred-persona-env-var.md`.
@@ -2100,7 +2115,7 @@ The gate fires **between `/p-is-p-02-documentation` and code writing** — it is
 
 **Canonical Workflow**: planning-is-prompting → workflow/plan-review.md
 
-**Slash Commands**: `/plan-review` (full pipeline), `/plan-review-reuse` (standalone REUSE pre-pass for Pattern 3 plans)
+**Slash Commands**: `/plan-review` (full pipeline; the REUSE pre-pass runs inside the gate)
 
 ### Pass Ordering: Fitness Before Ownership-Audit
 
@@ -2114,8 +2129,8 @@ The order is deliberate: REUSE → Pass 1 (Fitness) → Pass 2 (Ownership-Langua
 - `/plan-review --from=fitness` — skip REUSE; resume after REUSE fixes already applied
 - `/plan-review --from=ownership` — skip REUSE and Pass 1; resume after Fitness fixes already applied. **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired with no backward-compat alias.
 - `/plan-review --doc-set=<path>` — target a specific milestone doc-set
-- `/plan-review --skip-with-reason "<reason>"` — Pattern 3 escape hatch
-- `/plan-review-reuse` — standalone REUSE pre-pass for Pattern 3 single-doc plans
+
+> **Hard-break retirement 2026-07-18**: `--skip-with-reason` is **RETIRED — there is no bypass flag.** Every plan document enters the gate. **No backward-compat alias**; stale invocations fail loudly.
 
 ### Install as Slash Command
 
@@ -2162,12 +2177,6 @@ The wizard or installer may ask:
 
 # Target a specific milestone
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-async-multi-lane
-
-# Pattern 3 escape hatch (research-only plan)
-/plan-review --skip-with-reason "research-only plan, no executable work"
-
-# Standalone REUSE pre-pass on a Pattern 3 single-doc plan
-/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md
 ```
 
 ### Key Features
@@ -2192,7 +2201,7 @@ If a convention is missing, the review's greps return clean and report false con
 
 ### Integration with Planning is Prompting Workflows
 
-Pattern 1, 2, 5, or 6 plans (the patterns that fire `/p-is-p-02-documentation`) **must** invoke `/plan-review` before code begins. Pattern 3 plans **may** invoke `/plan-review-reuse` standalone (REUSE pre-pass only). Pattern 4 (Investigation) plans **skip** the gate entirely — the doc-set shape isn't there.
+**Every plan document must invoke `/plan-review` before code begins**, whatever pattern produced it. The gate dispatches internally: **≥ 2 reviewable sections → the cascade; otherwise → the critique branch**, which spawns one critic seat. Work that produces **no plan document** has nothing to gate — out of scope by construction, not by exemption.
 
 The flow:
 
@@ -2222,7 +2231,9 @@ Add this section to your project's CLAUDE.md (after HISTORY DOCUMENT MANAGEMENT,
 
 **The Problem**: Claude Code generates random plan names (`dreamy-wiggling-pretzel.md`) with zero correlation to content. At 5+ plans/day, `~/.claude/plans/` becomes unsearchable.
 
-**MANDATE**: After plan mode produces a non-trivial plan (>1KB, involves architectural decisions, or will need future recall), serialize it to the project's `src/rnd/` directory:
+**MANDATE**: After plan mode produces a non-trivial plan that has **passed Gate 0** (below), serialize it to the project's `src/rnd/` directory:
+
+> ⚠️ **GATE 0 — AUTHORIZATION COMES FIRST.** "Non-trivial" is judged by the author and therefore gates nothing on its own: >1KB, "architectural", and "will need future recall" are all things an author believes about their own work by default. Before any of that, the plan must carry frontmatter naming a live authorization **someone else granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. No authorization ⇒ it goes to the worktree-local scratch dir; a real finding inside it becomes a store row. **Canonical**: `workflow/rnd-directory-policy.md`.
 
 \```
 ~/.claude/plans/dreamy-wiggling-pretzel.md

@@ -2,7 +2,7 @@
 
 **Purpose**: the day-to-day practice for using the unified task-store — when to create items, how to transition them, what stays in markdown, and what every session owes the store. This is the PIP-side Phase-2 companion to the Lupin-side service build.
 
-**Status**: v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
+**Status**: v1.8 (2026-09-07, Tiffany 💍 — §1 gains the **priority ceiling**: a worker files `P5` and only `P5`; `P4`–`P1` is an operator-or-manager raise and `P0` is the operator's alone. Removes a live contradiction — §1 told every session to file freely with no ceiling, which Rick's 2026-09-07 declarations forbid. **Unenforced in code; flagged as such.** Companion: `priority-pull-policy.md` §7) · v1.7 (2026-07-07, María — §6 query-hygiene MANDATE: never pull the unfiltered board — scope `owner_persona`+`status`+`terse=True`; 90→2 collapse proof; §11-D any-open gap flagged as an OPTIONAL lupin enhancement; Rick directive after a 90-row full-board pull) · v1.6 (2026-06-29, María — §3 title-hygiene HARDENED: ~60-char target + ratified client-truncation/store-guard enforcement, task-list redesign `3b85863e`) · v1.5 (2026-06-23, María — title-hygiene convention §3 [`47ba26fd`] + non-repo receipt form §4/§10.1 [`18eebb46`], Rick board-completion push) · v1.4 (2026-06-17, María — store-only body-sweep) · v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
 
 **When to use**: any session in a repo where the task-store is live. Store-only is **LIVE fleet-wide as of the 2026-06-17 cutover** (§0) — this doc is operative practice, not forward-guidance.
 
@@ -20,6 +20,8 @@
 1. You **MUST** write every unit of owed work (your tasks, work you assign, decisions, bugs, gates) to the unified store (`task_*` / `:7999`). One and only system of record.
 2. You **MUST NOT** use the native harness list to track owed work — jettisoned; not a mirror source, not a fallback, not a parallel ledger.
 3. **NEVER** let owed work live only in your context/head — invisible to the poke, the arbiter, the fleet.
+
+> **Companion — why you keep the list honest.** This doc is the *mechanics* of owed work; `workflow/role-goals.md` is the *goal* those mechanics serve. "Done" in both role goals is defined against this store: a Manager is done when `task_query` over their + their workers' scope returns zero open (each closed with a receipt); a Worker transitions each assigned item to `done` with a receipt as they finish. The store is the scoreboard the goals are measured on.
 4. The store **ALWAYS** wins (single source: the poke and the arbiter both read it, so they cannot diverge). To *see* your list, **query the store on demand** (a terse/projection query — cascade rev G) — never keep a second copy.
 5. Keep status current with evidence: `→blocked` carries typed `blocked_by` + `next_chase_ts`; `→done` carries a receipt. No receipt → not done.
 6. The human-visible list is a **UI card rendered from the store** (like the fleet-status card), **NEVER** the native widget.
@@ -33,6 +35,18 @@
 ## 1. The one-sentence practice
 
 **MANDATE — open a STORE task item for every unit of work, without being asked.** Before you start a unit of work, create a store item for it (`task_create`) and keep its status current as you go. This is a **standing, always-on reflex** — not a thing you wait to be told to do each session, and not bookkeeping for its own sake: the item IS the sign-of-life the work-owed oracle and the manager-tick loop read. A unit of work that exists only in your head — **or only in the native harness list** — is invisible to the fleet. **Scope (store-only, LIVE 2026-06-17)**: binding on ALL sessions — every persona writes its own owed work to the store (F4 "managers-first" RETIRED, §2).
+
+**PRIORITY CEILING — a worker files `P5`, and only `P5` (2026-09-07, Rick).** The mandate above says file
+freely; it does **not** say file at whatever priority you like. **A worker sets `P5` on every row it creates.**
+A raise into `P4`–`P1` is an **operator or manager** act, and **`P0` is the operator's alone** — not a
+manager's, and not a manager's "on the operator's behalf." So a worker who believes a row outranks `P5`
+**files it at `P5` and petitions its manager**, naming the reason in the row; the manager petitions the
+operator for `P0`. This is a ceiling on the *value you set*, never on the *filing itself* — filing stays
+unconditional, because an unfiled unit of work is invisible and that is the failure this whole section
+exists to prevent. ⚠️ **Nothing enforces this in code today** — the ceiling is practice-bound, so the
+authorization for any raise above `P5` belongs **in the row**, where it can be audited. Full rule, the
+`P0`-as-firewall framing, and the measured enforcement gap: planning-is-prompting →
+`workflow/priority-pull-policy.md`, *The value space and who may set it*.
 
 **Write to the store, not the harness list.** Post-cutover the native harness list is **no longer a liveness source** and the harness→store mirror is **retired** — so the lever for your own work is the MCP `task_create` verb. To *see* your list, **query the store** (`task_query`), never keep a second copy in the harness list. *(🗄️ HISTORICAL — pre-cutover, the harness `TaskCreate` auto-mirrored to the store and was the recommended first lever; that mirror is now retired. The dual-write material below is preserved as a record, NOT a live instruction.)*
 
@@ -65,6 +79,8 @@
 
 Both methods write to the **same store** — the hook POSTs to the **same `/api/tasks` endpoint** the MCP verb uses; they differ ONLY in *expressiveness*, not destination. **The MCP verb is NOT a "more durable" or "more proper" way to create your own stub** — for your own work it is strictly redundant with, and costlier than, the harness tool (schema tool-search + call + confirm-query vs. one native call). *(Forward note: an experiment to teach the harness mirror to read `metadata.item_class` / `owner_persona` / `gate_class` may later let the harness express the typed/assigned cases too — at which point the MCP verb is revisited. Until that lands and proves out, the verb stays as the only path for the right-hand column.)*
 
+**Title hygiene (MANDATE — title = one imperative line ≤ ~60 chars; detail → `body`).** A task's `title` is a short, one-line imperative LABEL (~one phrase, **target ≤ ~60 characters**), NOT a description field. All descriptive / context text — provenance, options, rationale, repro steps — goes in `body`. Paragraph-length titles are an anti-pattern: they wreck the terse board glance (`task_query(terse=True)`) and the `/plan-decide` framing (both surface the title alone), and — per the 2026-06-29 task-list row redesign — the notifications + multiplexer clients now render the title in a fixed row beside an 8-char `id_hash` ID column and a 📄 detail affordance. **Rollout is convention-forward, not a big-bang re-cut**: write new rows short; backfill an over-long title opportunistically when its row is next touched (a wholesale re-titling pass is just churn). **Enforcement is ratified + landing, no longer deferred** (task-list redesign, lupin `3b85863e`): the clients **truncate the title to ~60 + ellipsis** (full text on hover), and `task_create` will **soft-trim** an over-long title to ~60 and move the overflow into `body` when `body` is empty (**non-rejecting** — your write never fails, but a paragraph-title silently loses its tail from the visible label). So write a short title, or the system shortens it for you. (This very doc's rows model it: e.g. `47ba26fd` carries a short title with all detail in its body.)
+
 The hook covers your own harness task list. Create EXPLICITLY via the MCP verb when the obligation is **cross-session or durable beyond your list**:
 
 | Situation | item_class | Notes |
@@ -77,14 +93,69 @@ The hook covers your own harness task list. Create EXPLICITLY via the MCP verb w
 
 Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never spoofable.
 
+### 3.1 Filing hygiene — INLINE THE DECISIVE EXCERPT (binding on every seat)
+
+> **When a row's NEXT STEP depends on an artifact, paste the decisive excerpt INTO the row body at filing time.** A path is not evidence. `/tmp` paths, session scratchpads, worktrees and `--bg` log files are all EPHEMERAL by construction: the row outlives them, and a NEXT STEP pointing at a vanished file is a row that expired without saying so.
+
+Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
+
+**THE REASON IS AN ASYMMETRY, NOT TIDINESS** — and the asymmetry is the whole argument:
+
+| | cost |
+|---|---|
+| the FILER, artifact in hand | **seconds** — one paste |
+| the PICKER-UPPER, artifact gone | **hours**, PLUS a scheduling dependency to regenerate it (in the founding case, a manager-gated quiet-tree window — a scarce resource) |
+
+⇒ **The cost lands on the person with the least context and the least ability to pay it.** That is what makes it a rule rather than a preference.
+
+**Rejected alternatives, recorded so they are not re-proposed:** moving artifacts to a durable path only MOVES the rot (something still has to survive, and nothing guarantees it); building machinery to snapshot artifacts buys tooling for a problem that does not recur often enough to earn it; and "just regenerate it later" has already cost the fleet once.
+
+⚠️ **THE RULE APPLIES TO ITS OWN RULING.** Row `644313b9` was deliberately NOT closed when this was ruled, because at that moment the ruling existed only in a DM and in outgoing spawn briefs — *an unwritten convention, which is precisely the failure mode the row was filed about, one level up.* Closing on "it was ruled" would have made the doctrine the next artifact to expire silently. **This section IS the close condition.** A seat that never saw the DM now files correctly.
+
 ## 4. Transitions — the receipts discipline
 
 - **`→done` REQUIRES `receipt_refs`** — key-whitelisted + shape-validated server-side (`commit` 7–40 hex · `qid` uuid · `test_run` id · `doc_path` exists · `log_line` `<path>:<lineno>` exists). A bare "trust me" completion is REJECTED with the server's errors verbatim. This is the no-confabulation rule, mechanized: if you can't cite a receipt, the work isn't done.
 - **Receipt path SHAPE is enforced** (VERIFIED 2026-06-15, Krishna E2E): `doc_path`/`log_line` must be `<registered-scope>/<rel-path>` — a bare `src/rnd/…` → `422` *"receipt path scope 'src' is not a registered repo scope"*; `log_line` must end `:<lineno>`. Cite receipts as `lupin/src/…:NN`, never bare `src/…`. (Worked example: §10.1 Rejection B.)
+- **Non-repo artifacts have NO repo-relative path — cite `qid` or `commit`, never a path key.** A `~/.claude` task (e.g. a MEMORY.md compaction, file at `~/.claude/projects/<slug>/memory/MEMORY.md`) lives outside every registered repo tree, so it has no `<scope>/<rel-path>` form — a `doc_path`/`log_line` for it is REJECTED (`422` *"scope 'memory' is not a registered repo scope"*). The **sanctioned receipt for a non-repo completion is a non-path key — `qid`** (a DM / question correlation id, e.g. the done-ping that announced the work) **or `commit`** — neither is scope-validated. This is the standing answer today; a dedicated abs-path / synthetic `home`-scope receipt form is a deferred lupin-side follow-on (do NOT block a non-repo `→done` waiting on it). (Worked example: §10.1.)
 - **`→blocked` REQUIRES BOTH** ≥1 typed `blocked_by` ref (`{kind: item|persona|user, id}`) AND `next_chase_ts` — a blocked item says what it waits ON and when it will be chased. No "pending X" graves. `{kind:user}` ⇒ the oracle treats it as not-owed (STALL ≠ QUIET).
 - **`done` and `dropped` are TERMINAL** — no transitions out; corrections are a new item linking the old id.
 - **`→dropped` REQUIRES a reason — ENFORCED** (C12 pulled forward, Tiberius-ruled 2026-06-12 after Tiffany's wire-gap flag): `task_events` carries a nullable `reason` column; the server rejects a reasonless drop. The escape hatch around the receipts rule is closed.
 - **`authority` rides every write** (`standing` | `user_direct` | `manager_relay`) — the blast-radius model joins the audit trail.
+
+### 4.1 A DEPENDENCY WORTH BLOCKING ON GETS A ROW (binding on every seat)
+
+**If you would not file it, you may not block on it.** A precondition named only in prose — *"until the demos ship"*, *"blocked on Cheech's Phase-1 probe"*, *"pending Rick's ruling"* — cannot be scheduled, chased, transitioned, or resolved by anything. It is a wait with no counterparty.
+
+⇒ **Mint the precondition as an item and point `blocked_by` at it.** That is the whole rule.
+
+**Why it is a rule and not a check.** Lupin row `00a6bde2` split the problem in two, and only one half is machine-detectable:
+
+| arm | shape | detectable? |
+|---|---|---|
+| **(A)** body cites an **id** — *"waiting on `86ce4c43`"* | resolvable | ✅ scanner shipped (`scan-prose-task-refs.py`) |
+| **(B)** body cites a **premise** — *"until the demos ship"* | no token to resolve | ❌ **nothing can find it, ever** |
+
+**(B) is not a detection problem. It is an authoring one.** No oracle can be built for it, because the dependency was never written as anything a machine can follow. The only instrument is this rule, applied when the row is written.
+
+⚠️ **AND A CLEAN (A) SCAN IS NOT A CLEAN BOARD.** The scanner reports what it examined precisely because a green result over the id-citing arm reads as *"no dangling preconditions"* while the entire unscannable (B) half sits underneath it. Measured on one live board: **5 canonical citations against 531 abbreviated 8-hex tokens** the tier deliberately refuses to resolve. The examined surface was two orders of magnitude smaller than the unexamined one.
+
+**The worked instance.** `31f6d447` was blocked on a precondition that existed only as a sentence in its own body. The remedy was to mint it as `e919d895` and re-point the edge — and **that mint is the fix for the class, not merely for that row.**
+
+**Corollaries, each earned by a live failure:**
+
+- **A premise-scoped instruction has an expiry nothing reads.** *"Do not chase Rick on it"* was true when written and false eight minutes later — the order had been scoped (*"until we get our demos ready for Monday"*) and the clause that bounded it was dropped in the retelling. **Carry the bound with the instruction or the instruction outlives its reason.**
+- **A `{kind:persona}` edge should carry `session_id`** (lupin `70b354a0`, 2026-07-27). Overflow persona names are re-granted after a reap, so a bare-name edge can silently re-point at a different session and be "satisfied" by someone who never had the context — a false GREEN, not a false wait.
+- **Prefer `dropped`-with-a-reason over hard deletion.** A dropped row reads as DEAD; a deleted one reads as UNRESOLVED, which is indistinguishable from a typo. **Only one of those is a finding.**
+
+### 4.2 CLAIMS COME FROM INSTRUMENTS (binding on every seat)
+
+*Graduated by Rick, 2026-09-14 ~22:50 (R1 + R2 of the `cascade-spoken-ask-door` post-game). Before writing, the draft went back to its sources to be refuted: Sam agreed, and Tiffany and John each added a clause, both folded in below.*
+
+**(1) A timestamp is a reading, not an estimate.** Write a time only from `date` or a server timestamp taken in the same step, and cite the server timestamp when one exists. That includes an estimate made by **adding elapsed time to an earlier reading**. A guessed stamp drifts in either direction, and waiting makes it worse, because **the clock never pushes its reading to you**: nothing arrives unless you fetch it.
+
+**(2) A write is claimed only from its tool's reply.** Never write the claim before the reply returns. **Never put the claim in the same parallel batch as the write it cites**, and that includes a claim carried in another call's arguments: a reap or transition `reason`, an amendment, a commit message. A refused write turns a claim written early into a false one, and a same-batch claim has no reply it could have waited for.
+
+**Evidence (one run, five seats, 2026-09-14):** at least 9 guessed stamps drifting both ways, among them a manager's "~15:48" in an amendment written at 15:44:56, a verifier's "~16:30" header on a file written by 16:15, a reviewer 5–11 min ahead from adding a guessed duration, and a Steward's "16:25" for a 22:20 event. Three writes were claimed before their tools confirmed: a memento the guard refused, a bug row that returned 422, and a reap whose `reason` cited a memento addendum sent in the same batch and refused. Full account: `io/post-games/2026.09.14-cascade-spoken-ask-door-post-game.md` §3 T1–T2 (local corpus).
 
 ## 5. The truth boundary (F3 — what stays markdown)
 
@@ -98,16 +169,115 @@ Identity (`created_by`/`actor`) is bridge-stamped — never a parameter, never s
 
 ## 6. Query patterns (R4 — determinism is the point)
 
-- Manager board glance: `task_query()` (everything, newest first)
-- My owed work: `task_query(owner_persona=me, status="in_progress")` (+ `queued`)
-- Rick's court: `task_query(gate_class="ricks_court")`
-- Fleet owed-work (arbiter/oracle): same queries via REST — the oracle consumes the SAME store (T7), fail-open on store-down (I1: the Stop-hook path never blocks on the store).
+**MANDATE — NEVER pull the unfiltered board; scope every read.** A bare `task_query()` returns the ENTIRE store — every persona, every status, all history (`done`/`dropped` included) — and it grows without bound. Using it to answer "what do I owe" is a token-burn anti-pattern: it dumps hundreds of terminal rows to surface one open handful. **Always scope by `owner_persona` + `status`, and always pass `terse=True`** unless you specifically need a row's `body`. *(Live 2026-07-07, the case that prompted this hardening: a manager asked for his open items pulled ~90 rows; `owner_persona=<self>` returned 89, of which **only 2 were non-terminal** — `status`-scoping collapses the wall ~45×, and `terse=True` further shrinks each surviving row to the id/title/status/priority projection — the terse flag's whole purpose.)*
+
+- **My owed work — the daily reflex:** `task_query(owner_persona=me, status="in_progress", terse=True)`, then a second `status="queued"` pass (+ `blocked` if you hold blocked items). This is the ONLY read you need to see your list — do NOT glance the whole board to find your own rows.
+- **Manager board glance:** `task_query(terse=True)` — terse ALWAYS; add `accountable_manager=me` to scope to your lane and `status=` to drop terminal rows. Reserve the unfiltered, non-terse form for a **deliberate audit**, never a routine glance.
+- **Rick's court:** `task_query(gate_class="ricks_court")` (naturally small).
+- **Fleet owed-work (arbiter/oracle):** same queries via REST — the oracle consumes the SAME store (T7), fail-open on store-down (I1: the Stop-hook path never blocks on the store).
+
+**Known filter gap (§11-D) — no one-shot "any-open" set.** `status` is single-value exact-match, so there is no single filter for "all non-terminal." To see ALL your open work, either run the cheap terse passes above (`in_progress` → `queued` → `blocked`) or query `owner_persona=me, terse=True` and drop the terminal rows client-side. A native `status__in` / `any_open` filter is an OPTIONAL lupin-side enhancement (logged §11-D) — a convenience, NOT a blocker; the scoped two-pass already collapses the board.
+
+### 6.1 STEP 0 — a scoped NON-terse read before the first action in a domain
+
+> **`terse=True` is right about tokens and SILENT about load-bearing bodies. This subsection is the mechanism that covers the gap — not a reminder to be careful.**
+
+**THE TENSION, stated plainly.** §6 mandates `terse=True` for every board glance and says to reach for the full shape *"only when you actually need a row's body."* **You cannot know a body is load-bearing from its title. That is the entire failure mode** — a scoped instrument (`terse=True`) sitting beside an unscoped obligation (know what you owe · know what has already been done · know who holds the seat).
+
+**WHAT IT COST, once, measurably** (store row `5a8aa45b`, filed by Sam against himself 2026-07-16). A terse glance returned the title *"gpt-oss STREAMS ITS CHAIN-OF-THOUGHT — a naive judge harness"*. He read it as a parked warning for a future builder. The body he did not open carried **an already-completed live probe of both judges** and **a standing order naming who may make GCP spend calls.** He re-ran the finished experiment, and violated an order he had never read — *in the sentence the order forbids* (*"don't reason your way to 'this one's cheap and safe'"*). **A standing order lives in a BODY. It is invisible to the query the doctrine tells you to run.**
+
+**⚠️ AND A TITLE CAN BE FALSE, NOT MERELY LOSSY — PERMANENTLY.** Row `8fc44a98`'s 60-char title asserts *"3 already sent outsi[de]"*. Nothing was ever sent anywhere; the full retraction is in the body. That row is now `done` — **terminal, so it cannot transition; `task_amend` appends to body only; there is no title-edit verb; and the prescribed repair was drop-and-recreate, which a `done` row cannot accept.** Every mandated terse glance shows the falsehood and nothing shows the correction, and **no mechanism this store has can now fix it.** Three correct rules — terminal means terminal, amend appends, titles are capped — compose into a remedy nobody can reach.
+
+### ⇒ THE MECHANISM
+
+> **Before the first build / probe / spend action in a domain, run ONE `task_query` scoped to that domain with `terse=False`, and read the bodies. Write it into the plan document AS A NUMBERED STEP.**
+
+```python
+# Step 0 of the plan — narrow filter, full bodies. NOT the unfiltered board.
+task_query( project="<domain>", status="queued", terse=False )
+```
+
+**Three properties, and each is doing work:**
+
+1. **SCOPED, so it is affordable.** The filter is narrow — this does NOT re-open the unfiltered board §6 rightly forbids. The anti-pattern §6 kills is the *unscoped* read, not the *un-terse* one, and conflating those is what left this gap open.
+2. **NUMBERED, so it is a step and not a virtue.** An obligation that lives only in a seat's judgment is discharged by the seat that feels prepared — which is exactly the seat that skips it.
+3. **IN THE PLAN DOC, so someone ELSE can see whether it ran.** This is the load-bearing property. The failure it prevents is *"I did not know what was already known,"* and **a seat cannot audit itself for what it never saw.** Putting the step in a reviewed artifact moves the check to a reader who can compare the plan against the board — the same structure as any reporting-honesty control (see cross-session-communication.md §4.6).
+
+**WHEN IT APPLIES:** any plan that will spend, probe a metered or shared surface, touch another seat's lane, or build in a domain where prior work may exist. **NOT** every conversational turn — the daily owed-work reflex in §6 stays terse.
+
+---
 
 ## 7. Correlation — what sessions must know
 
 - Same-subject rewrites UPSERT (no duplicates); a changed subject supersedes (old item `→dropped` reason `superseded-by-rewrite`). On Task\*-tool harnesses the hook payload carries the stable harness task id, so derivation precedence (a) applies universally and the (b) content-hash fallback is dormant (Tiffany flag #2).
 - `/clear` re-correlates via the STABLE session id — your list survives rehydration.
 - **Cross-SESSION respawn does NOT auto-correlate** (successor hashes to its own sid): at session-start seed, ADOPT inherited items via the audited `POST /api/tasks/{id}/correlate` endpoint (ruled 2026-06-12 — re-registers your harness task id onto the item's `correlation_key`, with the adoption on the event trail). A respawned session that skips adoption forks items — fail-visible by design.
+
+### 7.1 The epic layer — `correlation_key` also groups rows into stories (2026-08-18)
+
+**Why it exists.** Rick, 2026-08-18: *"Because the task list is largely opaque to me… I can't keep track of our larger high level endeavors… I think I'm missing something like the epic that described a higher level use case while the bug reports tied in to it."* A flat list of 37 rows hides which ones are one story. Grouping them puts the answer in a field, so a roll-up is a **render** instead of an act of memory.
+
+**The rules, five of them:**
+
+| # | Rule | Why |
+|---|---|---|
+| 1 | Every row names its epic at `task_create` — the verb already takes `correlation_key` | Costs one argument; retrofitting costs an evening |
+| 2 | Format is `epic:<short-kebab-slug>` | **The prefix is load-bearing** — it is the only thing that distinguishes an epic key from an adoption key |
+| 3 | No blanks. Work belonging to no epic gets `epic:unassigned` | **A blank is indistinguishable from forgetting**, and a rule you cannot audit is a preference |
+| 4 | Only a **manager** mints a new epic; workers pick an existing one or use `epic:unassigned` and say so | An epic layer with forty epics is the flat list again |
+| 5 | The page is regenerated from the field, never hand-edited | Two answers is worse than none |
+
+⚠️ **THIS FIELD NOW HAS TWO WRITERS, AND §7 ABOVE IS THE OTHER ONE.** Cross-session respawn adoption stamps `cc-task:<sid>:<harness-id>` into the same `correlation_key`. **A successor that adopts an inherited row destroys that row's epic key.** Adoption is existing, correct practice — this is a genuine collision, not a hypothetical. The `epic:` prefix is what turns it from silent data loss into something the audit below names.
+
+⇒ **The real fix is a dedicated `epic` column plus `epic` in `VALID_ITEM_CLASSES`**, so an epic can be a row carrying its own story and adoption cannot clobber it. Until then the audit is the control.
+
+#### The audit — a SET DIFFERENCE, not a filter
+
+**The obvious query does not work, and knowing why saves the next reader an hour:**
+- `terse=True` does **not** return `correlation_key` (the projection is id / title / status / blocked_by / next_chase_ts / priority / park_reason_stale), so a terse read cannot see the field at all.
+- `task_query(correlation_key=…)` is **exact-match only**. There is no `NOT LIKE 'epic:%'`, so drift cannot be queried for directly.
+- Reading non-terse to see the field returns every row's full body — tens of thousands of tokens. Impractical as a routine check.
+
+**So invert it.** Take the full non-terminal list terse (cheap), take each known epic terse (cheap), and difference the id sets:
+
+```python
+all_rows = task_query( unscoped_audit=True, terse=True, include_parked=True, limit=300 )
+grouped  = set()
+for key in KNOWN_EPIC_KEYS:                      # keep this list in the roll-up doc
+    grouped |= { t["id"] for t in task_query( correlation_key=key, terse=True,
+                                              include_parked=True )["tasks"] }
+drift = { t["id"] for t in all_rows["tasks"] } - grouped
+```
+
+Anything in `drift` either was minted without an epic or had its epic key overwritten by an adoption. Both are the failure this catches.
+
+🔴 **`include_parked=True` IS MANDATORY ON BOTH SIDES.** Park-active rows are hidden by default, and a parked row **rejoins the owed count automatically** when its chase passes — arriving epic-less if the audit never saw it. Measured 2026-08-18: the default-scoped read returned **28** rows and the parked-inclusive read returned **37**. Nine rows, including a P1, were invisible to an audit that would otherwise have certified the board clean.
+
+#### 🔴 RETIRED 2026-08-28 — the generated board is gone, use the live client
+
+`workflow/scripts/generate_epic_board.py`, `docs/epic-board.md`, `workflow/epic-stories.json` and `/plan-board` **have been deleted**, on Rick's ruling: *"We only want one source of truth, and if that is the API endpoint then this document deserves to be deleted."*
+
+**The Epic Board in the notifications client is the board.** It renders off the same live `/api/tasks` composite the task list already fetched, and its epic story text comes from `GET /api/epic-stories` (served from `lupin/src/conf/epic-stories.json`). Nothing in that path ever read the markdown file.
+
+**Why the snapshot had to go rather than be kept in sync**: a generated file is a *second surface* over the same store, and a second surface can only ever be as fresh as its last run. Measured the day it was deleted: the committed board read **33 open rows** while the store held **5** — six days stale, sitting in the repo looking authoritative. The cron that was meant to prevent exactly that had been writing to an uncommitted working copy, so the freshness was real on disk and invisible in git.
+
+The set-difference check below still stands for an **in-context** audit of epic drift. What is gone is the file, not the discipline.
+
+
+#### Falsify it before trusting it — ✅ BOTH CONTROLS RUN, 2026-08-18
+
+**An audit nobody has watched fire is a comment with a green tick.** So it was watched, both ways, on the live store:
+
+| # | Control | Result |
+|---|---|---|
+| 1 | Mint a row with **no** `correlation_key` (`8b6b05be`) | ✅ named in `drift` |
+| 2 | `task_correlate` a `cc-task:…` key over a live epic key (`697a85fe`) — a **simulated §7 adoption** | ✅ named in `drift`; its epic went 3 rows → 2 |
+
+**The arithmetic**: full non-terminal list = **38**, the twelve epic queries summed to **36**, `drift` = exactly those two ids and nothing else. No false positives.
+
+Both restored in the same turn — `697a85fe` re-stamped (event 7940), the probe row `→dropped` with its reason (event 7941). Control-2 is the important one: it is the **only** proof that an adoption silently eating an epic key is detectable rather than invisible.
+
+⇒ **Re-run both after any change to the audit.** A set difference that stops naming a planted row has stopped working, and it will fail silently — the same shape as the block-mode guard that recorded 88 outbound connections and passed everything.
 
 ## 8. Failure modes
 
@@ -200,6 +370,10 @@ Daily-use friction + known gaps live in a separate, living inventory Krishna aut
 - **v0.3 WIP (2026-06-15, María — owner, S110-cont-2)** — ownership confirmed (Rick tapped María to own the daily-use conventions doc; Krishna coordinates + feeds verified semantics from the live Phase-2.1 E2E). Stood up two scaffolds for the v0.2→v1.0 evolution — §9 legal-transition-graph (server-enforced; mermaid pending) + §10 Worked Examples (4 placeholder subsections matching Krishna's 4 receipts) — both held as **visibly-empty PENDING-RECEIPT placeholders** (no-confab). Added the venue-agnostic note (`:7999` hand-demo == `:8000`; same server code, only the backing Postgres differs — Krishna). **The provenance shift is the point of v1.0**: §4/§7's design/spec-derived rules become VERIFIED behavior when Krishna's green receipts (accepted `receipt_refs` shapes + verbatim `422` + transition matrix + correlate sequence) fold in. Pending: those receipts → v1.0 bump.
 - **v1.0 (2026-06-15, María — owner, S110-cont-2)** — Krishna's GREEN E2E receipts FOLDED (probe `c5ba4603` on `:7999`, audit events 58–62; venue-agnostic to `:8000`). §9 transition graph → verified mermaid (live-observed path + `done` terminal-lockout `422` + the `task_store_rules` GATE#1 enum rule). §10 Worked Examples filled verbatim: receipt-on-done gate with TWO real `422`s (empty + path-scope shape), `→blocked` required-fields, `task_correlate` cross-session adoption — with Krishna's mechanism-distinction (cite-to-commit = `receipt_refs`; `task_correlate` = adopt-across-sessions) split into separate subsections. §4 gained the receipt path-scope shape rule (`<scope>/<rel>:<lineno>`, never bare `src/…` — bonus finding, not in the build-plan prose). NEW §11 Known gaps & friction pointer → Krishna's living adoption-gaps inventory. Provenance shift COMPLETE: design-derived → verified. Open (→ v1.1): Krishna's exhaustive per-edge probe (upgrades §9 to edge-verified) + the §11 gap go/no-gos (Rick).
 - **v1.1 (2026-06-15, María — owner, S110-cont-2)** — Krishna's EXHAUSTIVE edge matrix folded (37 probe tasks, self-cleaning on `:7999`): §9 verification-scope upgraded from rule-derived to **edge-verified** — 5 non-terminals = fully-connected digraph (30/30 `200`), no-op + terminal-source edges `422`, the 3 payload-gated edges (`→done`/`→blocked`/`→dropped`). Added the append-only probe-row dev-hygiene note. §9 is now ground-truth, not enum-cited. Remaining open: §11 gap go/no-gos (Rick).
+- **v1.8 (2026-09-14, María — owner)** — **§4.2 CLAIMS COME FROM INSTRUMENTS** added. Rick graduated it by keypress (~22:50) from rulings R1 and R2 of the `cascade-spoken-ask-door` post-game: (1) a timestamp is a reading, never an estimate; (2) a write is claimed only from its tool's reply, never in the same batch, including a claim inside another call's arguments. Before writing, the draft went back to its sources on the commons `post-game` topic: Sam agreed, Tiffany added the in-arguments clause, and John added the elapsed-time-estimate clause. R3 ("N of M" plus the tool-side discriminator) and R5 (a row keypress counts as Rick's word) were offered and not taken.
+- **v1.7 (2026-07-07, María — owner)** — **§6 query-hygiene MANDATE** (Rick directive, voice, 2026-07-07). Root cause: a manager asked for his open items and `task_query()` returned the whole board (~90 rows) — because the read was unfiltered, not because the API can't filter. Confirmed the capacity already exists (`owner_persona` + `status` + `terse=True`) and proved the collapse live: `owner_persona=<self>` → 89 rows, **only 2 non-terminal**. Hardened §6 from a thin patterns list into a **narrow-filter MANDATE**: never pull the unfiltered board; scope every read by owner+status and always pass `terse=True`; the "my owed work" reflex is two cheap terse passes (`in_progress`→`queued`), not a board glance. Documented the §11-D gap (single-value `status`, no one-shot "any-open" set) as an OPTIONAL lupin enhancement, explicitly NOT a blocker. Discoverability pointer (global CLAUDE.md, closing §11-A) + a possible task-query-hygiene skill are drafted as RECOMMENDATIONS for Rick (global-config blast radius; held for his nod). Surfaced in the same session as model-field bug `35bdd68f` (done, lupin `c3144d18`).
+- **v1.6 (2026-06-29, María — owner)** — **§3 title-hygiene hardened for the task-list row redesign** (design `e22c78ba`, lupin impl `3b85863e`; Rick-ratified via guided walkthrough). Added the concrete **≤ ~60-char title target**, and replaced v1.5's "optional/deferred soft-enforcement" note with the now-**ratified + landing** enforcement: both clients truncate the title to ~60 + ellipsis (full text on hover) beside an 8-char `id_hash` ID column + 📄 body-overlay, and `task_create` will soft-trim an over-long title to ~60 + move overflow into `body` when empty (non-rejecting). The net rule is unchanged (short imperative title; detail → `body`) — the teeth are now real. Plan: `src/rnd/2026.06.29-task-list-row-redesign-id-title-limit-body-overlay.md`. HELD for commit.
+- **v1.5 (2026-06-23, María — owner)** — **Task-store conventions pass (Rick's board-completion push).** Landed the two governance items in one coherent edit. **§3: title-hygiene MANDATE** (`47ba26fd`) — `title` = one short imperative line (~one phrase); all descriptive/context text → `body`. Paragraph-titles wreck the terse board glance + `/plan-decide` framing (both surface the title alone). Rollout is convention-forward (write new rows short; backfill an over-long title opportunistically when next touched — no big-bang re-cut = churn); optional write-seam length-warning (flag-not-block) is a deferred lupin-side follow-on. **§4 + §10.1: non-repo receipt form** (`18eebb46`) — `~/.claude` artifacts (e.g. MEMORY.md compaction) have no `<scope>/<rel-path>`, so a `doc_path`/`log_line` is `422`-rejected ("scope 'memory' is not a registered repo scope"); the sanctioned receipt is a non-path key — `qid` or `commit` — neither scope-validated. A dedicated abs-path / synthetic `home`-scope form is a deferred lupin-side follow-on; do NOT block a non-repo `→done` on it. Both items deconflicted with Mr Radio's crew under Rick's board push (governance lane = María; mux/arbiter = his crew / Tiberius). No prior content altered.
 - **v1.4 (2026-06-17, María — owner)** — **Store-only body-sweep (Rick GO, post-cutover).** v1.3's §0 LIVE banner was accurate but §1/§2/§5 bodies still read harness-first + dual-write in live voice (flagged by the 2026-06-17 fresh-eyes review, Finding 2 — `src/rnd/2026.06.17-store-only-fresh-eyes-review-findings.md`). Swept: §1 mandate → store `task_create` for ALL sessions (F4 retired); myth-buster → store-only with the retired harness-mirror lever fenced 🗄️ HISTORICAL; the `9bf1dc4a` Known-Limitation dual-write block fenced HISTORICAL (mirror retired → moot by construction); §2 interim/dual-write bullets fenced HISTORICAL; §5 Harness-TaskList row → RETIRED as a liveness/seed surface; When-to-use → operative, not forward-guidance. No bug-history deleted — preserved under explicit HISTORICAL fences. Part of the cross-surface doctrine sweep (task `0a63a384`): siblings session-start.md, claude-config-global.md + live `~/.claude/CLAUDE.md`, manager-autonomy.md, README.md, memento-management.md.
 - **v1.3 (2026-06-17, María — owner)** — **Store-only transition landed (doctrine-first, not-live-until-cutover).** Added **§0 TRANSITION banner**: the ratified store-only target (Rick GO `42c3e814` + unanimous cascade), the 6-rule target mandate, the 🚧 not-live-until-cutover caveat (cascade rev A — keep dual-writing; do NOT stop `TaskCreate` before the seam ships or a session goes dark), and the 5-step cutover order. **§2 F4 RETIRED** — all workers write their own owed work via `task_create` (Rick reversed his 2026-06-16 managers-first ratification; `POST /api/tasks` was never manager-gated). §1/§3's harness-first + dual-write guidance is PRESERVED as the operative interim until cutover; it sheds the harness-first framing only when Lane A ships. Build tracking: plan `src/rnd/2026.06.16-store-canonical-task-management.md` (v3), cascade synthesis `lupin/src/rnd/v0.1.8/2026.06.16-store-canonical-task-mgmt-cascade-review.md`.
 - **v1.2 (2026-06-16, María — owner)** — ⚠️ Write-gate Known-Limitation added to §1 (after the myth-kill) + §2: the harness auto-mirror SILENTLY DROPS writes from non-lupin-manager / non-lupin-project sessions because `manager_figure.py derive_project_name()` resolves project from `LUPIN_ROOT` (always `"lupin"`) and `is_manager_figure()` checks only the LUPIN persona chain → fail-closed `not_manager` → zero POST (VERIFIED: `task_query(project="plan")` → 0; bug `9bf1dc4a`). Documents the dual-write workaround (harness for heartbeat-pickup + MCP `task_create` for auditability) until the lupin fix lands (derive project from the session bridge, not `LUPIN_ROOT`). Surfaced by Rick's 2026-06-16 SWE-team pop-quiz engagement (María + Mr Radio). NOTE: the harness-completion→`review`-never-`done` limit (§1, already documented) is a SEPARATE, by-design mechanism, not this defect.

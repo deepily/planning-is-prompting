@@ -105,7 +105,9 @@ for entry in recent:
 
 ### §3.4 Heartbeat scheduler registration (decision: spawn does NOT auto-register reviewers)
 
-`spawn_sessions` does NOT auto-register reviewers with `cascade_heartbeat_scheduler.py` in v1. The scheduler pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no scheduler entry. Reviewer-liveness heartbeats are deferred to v1.1.
+> 🗄️ **HISTORICAL framing (Rick GO 2026-06-29)**: the `cascade_heartbeat_scheduler.py` daemon is RETIRED — the standing arbiter is the waker now (see `plan-review-cascaded-common.md §Heartbeat Handling` banner). The decision below still holds in spirit (spawned reviewers need no per-session waker entry — they self-signal readiness via commons-post), but read "the scheduler pokes the Manager" as "the **arbiter** pokes the Manager."
+
+`spawn_sessions` does NOT auto-register reviewers with any heartbeat waker. The waker (formerly `cascade_heartbeat_scheduler.py`, now the arbiter) pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no waker entry. Reviewer-liveness heartbeats are deferred to v1.1.
 
 **Operator implication**: the Manager's own heartbeat is unchanged; the Manager does not need to call any scheduler-register API for spawned reviewers; the spawned reviewers' liveness is observed via the `ready, [role]` ack + later commons-post activity on `dm-{manager_persona}`.
 
@@ -273,15 +275,15 @@ dismiss_sessions(session_ids=[author_session_id], write_memento=True)
 
 Before the tmux kill, the dismissed Author session writes its memento — capturing the cascade's outcome + open loops + lessons-learned. This memento is then the seed for the NEXT spawn of an Author resuming work on the same plan.
 
-**Archive convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation): the dismissed session writes to `io/mementos/<persona-slug>-<YYYY.MM.DD-at-HHMM>.md` (per-persona-per-cycle archive; no clobber). This lets multiple personas have parallel continuity threads — Tiffany's Round-1 Author memento does NOT clobber Mr. Radio's Manager-rehydration memento. See `workflow/memento-management.md` §3.2 for the full convention.
+**Location convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation; revised 2026-06-27 to stable slots): the dismissed session writes to its **stable per-persona slot** `io/mementos/<persona-slug>.md` (one slot per persona, no timestamp, derivable from the persona name). This lets multiple personas have parallel continuity threads — Tiffany's `io/mementos/tiffany.md` does NOT clobber Mr. Radio's `io/mementos/mr-radio.md` — while keeping every path predictable so nobody hands a path to the user or the Manager. A fresh memento overwrites the slot by default; a still-load-bearing predecessor is moved to `io/mementos/archive/` (timestamp on the copy only). See `workflow/memento-management.md` §3.2 for the full convention.
 
-**Re-spawn selection — Manager owns the choice**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the Manager picks the right archived memento path from `io/mementos/`. The MCP doesn't auto-select; the path is explicit. See `workflow/memento-management.md` §3.4.
+**Re-spawn selection — Manager DERIVES the path**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the seed path is computed from the persona being re-spawned — `io/mementos/<persona-slug>.md`, the stable single slot. No archive-picking and no path hand-off; the slug IS the answer. See `workflow/memento-management.md` §3.4.
 
 ### §8.3 The continuity loop in narrative
 
-> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to `io/mementos/tiffany-2026.05.28-at-2350.md` naming the Stage-3 ownership-language pattern she just learned.
+> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
 >
-> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany-2026.05.28-at-2350.md")`. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
+> Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany.md")` — the seed path derived straight from the persona, no file-picking. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
 
 ### §8.4 Prepend vs append — append wins (Rick directive 2026-05-29)
 
@@ -346,4 +348,5 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).

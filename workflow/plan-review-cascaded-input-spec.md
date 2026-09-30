@@ -279,9 +279,9 @@ Estimated implementation hours: §A 3h / §B 3h / §C 4h / §D 2h. Largest-small
 ### Empirical anchors
 
 - **`src/rnd/2026.05.22-cascade-readiness-in-p-is-p-docs.md` §4** — the original Mr Radio-ratified spec from which this doc is promoted
-- **`src/rnd/2026.05.22-cascade-notif-sync-post-game.md`** — the cascade-notif-sync Run that anchors §6 worked example
+- **`io/post-games/2026.05.22-cascade-notif-sync-post-game.md`** — the cascade-notif-sync Run that anchors §6 worked example
 - **`src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`** — the PG-5 root-cause analysis that informs the Recon scope-applicability lesson in §4 criterion 3
-- **`src/rnd/2026.05.22-cascade-run-5-observer-log-post-game.md`** — the Run 5 observer log + post-game
+- **`io/post-games/2026.05.22-cascade-run-5-observer-log-post-game.md`** — the Run 5 observer log + post-game
 
 ---
 

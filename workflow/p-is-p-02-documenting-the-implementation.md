@@ -1082,6 +1082,7 @@ src/rnd/jwt-oauth/
 3. **If no to dedicated docs**:
    - Use history.md for session summaries
    - Skip to execution phase
+   - **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` ([`plan-review.md`](plan-review.md) §4a). The gate is keyed to the **document**, not to the pattern.
 
 **Phase 3: Execution**
 1. Work through TodoWrite tasks
@@ -1098,6 +1099,8 @@ src/rnd/jwt-oauth/
 | Bug investigation | 3-5 days | Hypothesis tests | Pattern 4 | No - use history.md |
 | Microservices design | 4-6 weeks | Architecture phases | Pattern 5 | Yes - Pattern B structure |
 | Technology research | 2-3 weeks | Evaluation phases | Pattern 2 | Yes - Pattern C structure |
+
+> **This column answers "do you need implementation docs?" — it does not answer "is there a review gate?"** *"No - use history.md"* is true as written. **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` ([`plan-review.md`](plan-review.md) §4a). The gate is keyed to the **document**, not to the pattern.
 | JWT authentication | 8-12 weeks | 8 phases | Pattern 1 | Yes - Pattern A structure |
 
 ---

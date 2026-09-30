@@ -2,6 +2,23 @@
 
 This document contains the comprehensive end-of-session workflow extracted from the global and local Claude.MD configuration files. This prompt should be executed when wrapping up work sessions.
 
+> ## 😘 BREVITY GATE — applies to every document this ritual writes
+> **KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH** govern **written artifacts**, not just replies. Canonical: `workflow/brevity-mandate.md`.
+>
+> | Artifact | HARD CAP |
+> |---|---|
+> | `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+> | `history.md` Checkpoint line | **one line**, semicolon-separated |
+> | `history.md` Files line | **paths only**, no per-file commentary |
+> | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
+> | Commit message body | the WHY and what it FALSIFIED — not a file-by-file tour |
+>
+> **`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. Duplicating the retro into the one file with a hard 25k ceiling (`history-management.md`) just accelerates the next forced archive.
+>
+> **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
+>
+> ⚠️ **This gate exists because the session that WROTE the brevity mandate violated it** — S139 (2026-07-19) filed an ~1,100-word history entry the same hour; Rick caught it. The mandate's first draft had exempted history/retro docs as "content-shaped," **a self-assessed exception — the exact move the mandate forbids.** Do not restore it.
+
 ## Overview
 
 At the end of our work sessions, perform the following wrapup ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress:
@@ -96,6 +113,59 @@ ask_yes_no(
 )
 ```
 
+## 0.3) Harvest Crew Before Wrap-Up (manager-role sessions only)
+
+**Applies to**: manager-role sessions (fleet Manager or cascade Manager, and the repo's standing manager-figure) that have **live spawned crew workers**. Solo sessions with no crew skip this step entirely.
+
+**Rule (Rick, 2026-07-06)**: the **end-of-session ritual is itself a teardown trigger**. When the user calls *"end of session ritual"* / *"session-end"*, the manager **harvests the crew (memento each) as the FIRST wrap-up action — BEFORE** updating history, committing, or pushing. The user should **not** have to also say *"stand down the SWE team"*; the two are coupled. Leaving a worker running across the session boundary is a zombie (the no-zombies hygiene rule already forbids it).
+
+**Process**:
+
+1. **Enumerate live crew** — `list_spawned_sessions()` for this manager's workers (verify actual personas, never the requested `persona_preference`).
+2. **Classify each worker**:
+   - **Idle / done / no-owed-work** → reap **immediately** (memento each, to the stable slot `io/mementos/<persona-slug>.md`).
+   - **Genuinely about to finish a substantial unit** → **let it run to completion / its next commit-checkpoint**, then memento + reap. **Hold the manager's own session-end for that worker.** *(This is Rick's "let them finish, then harvest" exception — harvesting near-complete work would waste it.)*
+   - **Guard against a harvest-dodge loophole**: "about to finish" requires an **imminent-commit / verifiable-checkpoint receipt** (an artifact-delta per the §9.1 receipts-of-progress contract, e.g. a growing diff / advancing pane counter / next commit landing), **never** a vague *"still working."* If you can't cite the receipt, it does not qualify — memento-and-reap or wait for a genuine checkpoint.
+3. **Confirm the sweep** — post the reap events (per `manager-autonomy.md §5` visibility) and `notify()` the user that the crew is harvested before continuing the ritual.
+
+**Canonical cross-refs**: `workflow/swe-team-spin-up.md` §6 (Teardown) · `workflow/swe-team-roles.md` §7 (per-role Teardown) · `workflow/manager-autonomy.md` §6 (the harvest side) + §9.1 (receipts-of-progress, the "genuinely about to finish" evidence bar).
+
+---
+
+## 0.35) Re-own the Holding Area (manager-role sessions only, every shift end)
+
+**Applies to**: every manager-role session, at every end of shift, **after** §0.3's harvest. A manager with no crew still runs it, because rows can be left behind by seats reaped earlier in the day, or by another manager's crew.
+
+**Rule (Rick, 2026-09-26, row `57486c03`)**: *"Anything that sits in the holding area should be re-owned at the end of every shift. That is the end of every day, as part of the end-of-session ritual."* **A held row belongs to a manager, never to a temporary worker.** Workers are reaped and respawned under new names, so a row left with a worker's name has an owner who no longer exists, and nobody reviews it in the next triage.
+
+**Why it happens**: a worker files a row and it lands in the holding area (`not_approved`) under the worker's name. A reap that keeps the persona (`respin_personas`) keeps the row there too. Measured 2026-09-26 11:52 EDT: 60 held rows, and 24 of them were owned by workers (Krishna, Rio, Maya, Sam, Tiberius, Rachel) or by nobody.
+
+**Process**:
+
+1. **List your share of the held rows**, with scoped queries (no bare `task_query()`):
+   - `task_query( status="not_approved", accountable_manager=<me>, terse=True )`
+   - `task_query( status="not_approved", owner_persona=<each worker I spawned today>, terse=True )`, which catches rows filed under a worker's name with no manager set.
+2. **Re-own every row whose `owner_persona` is not a manager**: `task_reassign( <id>, new_owner_persona=<me>, new_manager=<me>, reason="end-of-shift holding-area re-own (row 57486c03)" )`. A row whose `accountable_manager` is another manager goes to **that** manager, not to you.
+3. **Fill any empty `accountable_manager`** on a held row you own, in the same call. A row with no manager can't be found by a manager's own query.
+4. **Leave the status alone.** This step changes **owners only**. Admitting or dropping a held row is Rick's decision.
+5. **Run the check, and make its exit code the receipt** (Rick, 2026-09-28, row `3dead4cb`, after asking three times in two days):
+   ```bash
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/orphan_row_check.py     # needs LUPIN_ROOT for the API key
+   ```
+   It reads **the whole board, the holding area included** (the ordinary query hides held rows), and fails on four things: a held row owned by a non-manager, an open row owned by a worker whose seat is gone, any open row with no `accountable_manager`, and **a blocked row past its `next_chase_ts`**. The last one exists because a chase date is a field, not a trigger: nothing fires when it passes, so rows stayed blocked on Rick long after he answered (broadcast `2f417cd7`). For an overdue block, re-check the blocker, then unblock the row or set a new chase. Each finding names who should act.
+
+   | Exit | Meaning | Do |
+   |---|---|---|
+   | 0 | clean | report it |
+   | 1 | orphans listed | adopt each (steps 2–3), then **re-run until 0** |
+   | 2 | the store or the live roster could not be read | say so. **Never report a 2 as clean** |
+
+   **Receipt**: one line in the session-end notify, quoting the check's last line: *"Holding area re-owned: N rows moved to managers. Orphan check: exit 0, M open rows read."* Say it even when N is 0.
+
+⚠️ **Skip it and you break the next triage.** The rows filed today are exactly the ones whose worker is reaped tonight.
+
+---
+
 ## 0.4) Quick Token Count Check (Manual)
 
 **Purpose**: Quick spot-check of history.md token count using pre-approved script
@@ -146,18 +216,38 @@ Health: ✅ HEALTHY
 
 **When**: After creating TODO list (Step 0), before updating history (Step 1)
 
+> ### 🔴 Draft the entry FIRST, then threshold `on-disk + drafted`
+>
+> The severity ladder below must read the **projected** total — the file **plus this session's entry**, which is not on disk yet. So the entry is **drafted to a scratch file before the check runs**, and its size is handed to the check. Full rule: workflow/history-management.md → *Threshold the PROJECTED total*.
+>
+> **Receipt, 2026-08-14 → 08-15.** This step reported 18.1k and offered deferral; the same file measured **24.1k** the next morning with nothing having written to it overnight — the 6k gap was that session's own entry, appended after the check ran. 18.1k is WARNING, where *"Next session"* is on the menu; 24.1k is CRITICAL, where it is not. **The stale number was the smaller half of the defect — it routed the decision to a gentler branch.**
+>
+> ⚠️ Reporting the projection *beside* the file size does not fix this. The comparison itself has to use it.
+
 **Process**:
 
-1. **Invoke Health Check**:
+0. **Draft this session's history entry to a scratch file** (do not append it yet):
    ```bash
-   /history-management mode=check
+   DRAFT="${SCRATCH:-/tmp}/history-entry-draft.md"
+   # ... write the entry you intend to add to history.md into $DRAFT ...
+   wc -c "$DRAFT" | awk '{ print "pending entry ~", int( $1 / 4 ), "tokens" }'
+   ```
+   The draft is reused verbatim in Step 1 — this is reordered work, not duplicated work.
+
+1. **Invoke Health Check, passing the draft**:
+   ```bash
+   /history-management mode=check pending_entry="$DRAFT"
    ```
 
 2. **Review Health Report**:
-   - Current token count
+   - On-disk token count
+   - **Pending-entry token count**
+   - **Projected total (on-disk + pending) — the number the severity is read from**
    - 7-day velocity trend
    - Forecast to breach (days until 17k/25k limit)
    - Severity status (HEALTHY, MONITOR, WARNING, CRITICAL)
+
+   ✅ **Before acting on the severity, check what produced it**: if the report shows a single "Current Size" line and no projected total, it is the pre-2026-08-15 shape — re-run with `pending_entry=`.
 
 3. **Take Action Based on Severity**:
 
@@ -170,7 +260,7 @@ Health: ✅ HEALTHY
    - Continue to Step 1
    - Consider archiving within next few sessions
 
-   **If ⚠️ WARNING** (≥17k tokens OR breach <7 days):
+   **If ⚠️ WARNING** (projected ≥17k tokens OR breach <7 days):
    - **PAUSE session-end workflow**
    - **Send blocking notification**:
      ```python
@@ -218,7 +308,7 @@ Health: ✅ HEALTHY
      * Send notification: `notify( "Archive deferred - added to TODO for next session", notification_type="progress", priority="low" )`
      * Resume session-end workflow (continue to Step 1)
 
-   **If 🚨 CRITICAL** (≥19k tokens OR breach <3 days):
+   **If 🚨 CRITICAL** (projected ≥19k tokens OR breach <3 days):
    - **BLOCK session-end workflow**
    - **Require immediate archival**:
      ```
@@ -233,7 +323,7 @@ Health: ✅ HEALTHY
    - Send urgent notification: `notify( "Critical: History archived to prevent limit breach", notification_type="alert", priority="urgent" )`
    - After completion, resume session-end workflow (continue to Step 1)
 
-**Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit.
+**Rationale**: Checking BEFORE adding new content prevents situations where updating history pushes file over 25k limit — **which only works if the check counts the content it is checking against.** A pre-write check that measures only the file is blind to the one thing that makes it necessary.
 
 **Notification**: Health check results are automatically sent via `notify()` if severity >= MONITOR.
 
@@ -445,6 +535,92 @@ notify( "TODO.md updated", notification_type="progress", priority="low" )
 
 ---
 
+## 1.6) Harvest Gate-Refused Findings from Your Memento
+
+**Purpose**: Move findings the ticket gate REFUSED out of your memento and into TODO.md, so a
+refused finding stops being a private note and becomes visible backlog.
+
+**When this applies**: any session running while the flow-ratio gate is enforcing. Skip it when
+you recorded no refused findings — it is a no-op, not a ceremony.
+
+**Rick's ruling, 2026-09-02** (voice, on the holding-area design), verbatim:
+
+> "If the worker can't amend a current existing row that's related, the finding goes into a given
+> user's memento and at the end of the day goes into the to-do file."
+
+**The three-tier fallback**, in order — you only reach a tier when the one above it is unavailable:
+
+| Tier | Destination | When |
+|---|---|---|
+| 1 | `task_amend` onto a related row | a row already covers the subject |
+| 2 | your memento, **element 8** | no related row exists |
+| 3 | **TODO.md** — this step | end of session |
+
+**Process**:
+
+1. **Read element 8 of your own memento** (the Verbatim Pending TODO List). Element 8 is the
+   store-unavailable fallback and *the intent the store does not carry* — which is exactly what a
+   gate-refused finding is: pending work the store **refused to hold**.
+2. **For each refused finding, add a Pending item to TODO.md**, carrying the finding's own words
+   rather than a summary. A finding compressed into four words is a reminder that something
+   happened, not a record of what.
+3. **Note that it was gate-refused**, so the next reader knows it is unfiled by policy rather than
+   by oversight — and so it is a candidate for the holding area the moment the gate opens.
+4. **Leave element 8 intact.** The memento is an immutable record; TODO.md is the live list. A
+   finding correctly appears in both, and deleting it from the memento to avoid duplication
+   destroys the provenance that says where it came from.
+
+⚠️ **This step is the whole reason tier 2 is safe.** Without it a refused finding sits in a memento
+nobody re-reads, which is the invisible-backlog problem the task-store was built to end. **A rule
+that depends on remembering is not installed** — that is why this is a numbered step rather than a
+sentence in a design document.
+
+**Notification**:
+```python
+notify( "N gate-refused finding(s) harvested into TODO.md",
+        notification_type="progress", priority="low" )
+```
+
+---
+
+## 1.7) Memento Sweep — Summarize the Last Two Days, Then Trash
+
+**Purpose**: stop mementos piling up in repo roots long after anyone reads them.
+
+**Rick's rulings, row `5b29a807` (2026-09-23, keypresses)**: add this step; keep each live seat's
+newest memento; and *"do not summarize 99% of the old mementos, only those from the last 2 days.
+Everything else is dead and unimportant."*
+
+**Runs after 1.6**, because 1.6 still reads your memento's element 8. Run it for every repo the
+session touched.
+
+**The mechanism**: `workflow/scripts/memento_sweep.py`. It searches the repo's root slot
+(`.claude-memento*`) and its io slot (`io/mementos/`), and nothing else: not worktrees,
+`~/.claude/mementos/` or `/tmp`.
+
+1. **Name the live seats RESIDENT IN THIS REPO.** Use `commons_who( retention_hours=24 )` plus
+   your own persona, and pass each seat as `--keep <slug>` only in the repo it runs in, including
+   alternate spellings on disk (`mar-a` for María, `mr-radio`). The sweep spares each one's newest
+   record per slot, plus the persona-less `.claude-memento.md` pointer, so a live seat can still
+   re-spin. ⚠️ A keep list applied to every repo spares stale records. Measured 2026-09-23: a
+   fleet-wide list kept a July Tiffany memento in planning-is-prompting and a June Cheech one in
+   lupin-mobile.
+2. **Dry run**: `python3 memento_sweep.py --repo <root> --keep <slug> …` and read the keep list.
+3. **Digest**: add `--digest`. It reads only files from the last two days (`--digest-days 2`);
+   older files are counted and swept unread.
+4. **Summarize into today's `history.md` entry** as a few terse bullets: lessons and rulings, not
+   the story.
+5. **Trash**: `--trash` moves the files with `gio trash`, which can be undone. It never calls
+   `rm`, and it stops on the first failure instead of falling back to deleting.
+
+**Notification**:
+```python
+notify( "Memento sweep: N summarized, M trashed, K kept for live seats",
+        notification_type="progress", priority="low" )
+```
+
+---
+
 ## 2) Update Planning and Tracking Documents
 
 **Target**: Documents in the repo's `src/rnd` directory
@@ -542,6 +718,8 @@ git ls-files --others --exclude-standard | tree --fromfile -a
    **Find section `## Session: {my_session_id}`**:
    - Extract `### Touched Files` entries from that section
    - Parse lines matching pattern: `- [timestamp] | [file_path]`
+
+   > ⚠️ **That pattern is a machine contract, and both live manifests have drifted off it** — measured 2026-09-17. A commit guard parses these same two shapes and **fails open** on a section it cannot read, so a drifted section is indistinguishable from no section at all: silence is not proof the check ran. The parses / does-not-parse table, the fail-open warning, and the rule for a seat committing into ANOTHER repo are in `workflow/session-start.md` § Step 3.5 — *"The line format is a machine contract, not a style"*. Read it there rather than re-deriving it here.
    - Extract unique file paths (deduplicate if same file edited multiple times)
    - Store as `my_files` list
 
@@ -852,7 +1030,36 @@ Per the 2026-06-16 D1 ruling, an autonomous commit **announces itself** with a b
    ```
 
    - **If this is the ONLY section** (no other active sessions): delete `.claude-session.md` entirely (clean slate).
-   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it).
+   - **If other active sessions exist**: keep the manifest with updated status (other sessions still need it) — **then run the reclaim pass below.**
+
+4. **Reclaim terminal sections (v2.1, 2026-08-15)** — the manifest is read at every session start, so it must not grow without bound.
+
+   **Why this step exists — receipt.** In this repo the manifest reached **193KB / 2,325 lines / 79 sections**. Measured: **47 sections were `committed` and accounted for 65% of the bytes**; touched-file lines were 68% of the file. Nothing in v2.0 ever removed a section — a `committed` section was kept forever whenever any other session was live, which with overlapping sessions is always. The file grew monotonically and every boot paid for it.
+
+   **Use the script** — it implements the rule below and dry-runs by default:
+   ```bash
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/reclaim-session-manifest.py --keep <your-session-id>
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/reclaim-session-manifest.py --keep <your-session-id> --apply
+   ```
+
+   **A section is RECLAIMABLE when any of these holds:**
+   | # | condition | why it is safe |
+   |---|---|---|
+   | 1 | terminal status **and** its `**Commit**` hash **resolves** (`git cat-file -e <sha>^{commit}`) | the work is provably in git; nothing is lost by forgetting who typed it |
+   | 2 | terminal status, no commit recorded, **and** none of its touched files is dirty | nothing outstanding to attribute |
+   | 3 | non-terminal but idle past 24h **and** none of its touched files is dirty | an abandoned session that left no trace |
+
+   🔴 **Verify the commit; do not trust the status.** `**Status**: committed` is a *claim* a session wrote about itself. A resolvable commit hash is *evidence*. A section claiming `committed` with **no verifiable hash and dirty files** is kept and flagged — dropping it would erase the only record of who touched those files, and the next session's conflict detection would then stage them as unattributed.
+
+   ⚠️ **Do NOT reclaim on dirtiness alone** — that was the first cut of this rule and it was wrong. Every historical section that ever touched a file *anyone* is editing right now looks dirty, so the pass kept 7 sections when 4 was correct. **The dirty check only matters when there is no commit to verify.**
+
+   **Then**: the script rewrites `.claude-session.md` with survivors only and bumps `**Last Updated**`. Report it:
+   ```python
+   notify( "Session manifest reclaimed: 79 → 4 sections, 193KB → 4KB",
+           notification_type="task", priority="low" )
+   ```
+
+   **Never** reclaim a section that is `active` with recent activity — that is a live parallel session, and its file list is what protects it from you.
 
 ### 4.5) PUSH Decision (the one retained user gate)
 
@@ -912,6 +1119,20 @@ Then continue to Final Verification.
 - NEVER force push to main/master - warn user if they request it
 - Avoid `git commit --amend` except for pre-commit hook edits (see above)
 
+
+## 4.7) Nightly Deploy (repos with a remote host, manager-role sessions only)
+
+**Applies to**: a repo that has `<repo>/.claude/nightly-deploy.env`. No config means the step does not apply, and you say so in one line.
+
+**Rule** (Rick, 2026-09-28, row `6eaad077`): the day's merged work goes to the remote host every night, under **standing authority**, **only if the merge worked**. If it didn't, nothing deploys and a row is filed for the next morning. The host goes back to the state it was in.
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/nightly_deploy.py --repo <checkout>
+```
+
+Quote its last line in the session-end notify: the parity receipt on exit 0, or the reason plus the follow-up row id on exit 3 or 4. Exit codes and config keys: `workflow/last-call.md` § 11, "The `deploy` slot".
+
+---
 
 ## 5) Backup Prompt (Conditional)
 
@@ -1058,22 +1279,73 @@ If commit count is `0`: skip Step 6 with the line *"LoC Delta Summary: nothing t
 
 **Module**: `cosa.repo.git_loc_delta` (sister to `branch_analyzer` — same `cosa.repo` package). Where `branch_analyzer` answers "what does this whole branch change vs main", `git_loc_delta` answers **"what changed when"** with a per-day temporal axis. Critically, it writes a **stable per-branch CSV** that grows day-by-day across sessions, giving you a persistent artifact of the branch's progress.
 
-**Prerequisite**: `LUPIN_ROOT` environment variable points to a valid lupin checkout. The CLI lives at `$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py`.
+**Prerequisite**: the `run_git_loc_delta` CLI, which lives in a **lupin** checkout at
+`src/cosa/repo/run_git_loc_delta.py`. It is resolved from **the repo you are standing in first**
+and from `$LUPIN_ROOT` only as a fallback — see the note below, which is the whole reason this
+section was rewritten.
+
+🔴 **THIS SECTION USED TO READ `LUPIN_ROOT` AND NOTHING ELSE, AND THIS FILE IS THE CROSS-REPO
+RITUAL.** Measured 2026-09-05, four states, one variable:
+
+| standing in | `LUPIN_ROOT` | old block |
+|---|---|---|
+| a lupin worktree | set | ✅ status 0 |
+| planning-is-prompting | set | ✅ status 0 |
+| planning-is-prompting | **unset** | 🔴 `skip_to_fallback: command not found`, **status 127** |
+| **a lupin worktree** | **unset** | 🔴 same — **and the analyzer is RIGHT THERE, in the tree you are standing in** |
+
+⇒ The fourth row is the defect: the step failed in the very repo that carries the tool, because
+it consulted an environment variable instead of its own location. And `skip_to_fallback` was
+**pseudocode that has never existed anywhere in this repository** — so the documented failure
+path was a `command not found`, which is the stack trace §6.2 is now required not to produce.
 
 **Invocation** (two-pass — one for the persistent CSV, one for the renderer's structured data):
 
 ```bash
-# Verify LUPIN_ROOT and the module
-[ -n "$LUPIN_ROOT" ] && [ -f "$LUPIN_ROOT/src/cosa/repo/run_git_loc_delta.py" ] || skip_to_fallback
+# The TARGET repo is the one you are standing in — never an environment variable.
+PROJECT_ROOT="$( git rev-parse --show-toplevel 2>/dev/null )"
+
+# The ANALYZER is a lupin tool. Look in THIS repo first (a lupin checkout or any of
+# its worktrees carries it), and consult $LUPIN_ROOT only as the cross-repo fallback.
+# The old order was env-var-only, which failed inside lupin worktrees whose shell had
+# no LUPIN_ROOT — the tool present, and the step declining to find it.
+ANALYZER=""
+for CAND in "$PROJECT_ROOT" "$LUPIN_ROOT"; do
+    [ -n "$CAND" ] && [ -f "$CAND/src/cosa/repo/run_git_loc_delta.py" ] && { ANALYZER="$CAND"; break; }
+done
+
+# 🔴 DEGRADE LOUDLY, AND NAME WHAT IS MISSING. A skip and a zero delta are different
+# facts and only one of them is safe to report. Say which paths were tried, so the
+# reader can fix it rather than guess — and say plainly that nothing was measured.
+# ONE skip line per state, never two. The not-a-repo case must not also report a
+# missing analyzer under a path that reads "<not a git repo>/src/..." — a second,
+# less true sentence dilutes the first and is the reason this is an elif chain.
+if   [ -z "$PROJECT_ROOT" ]; then
+    echo "loc-delta: SKIPPED — not a git repository. Nothing was measured."
+elif [ -z "$ANALYZER" ]; then
+    echo "loc-delta: SKIPPED — no run_git_loc_delta found. Looked in:"
+    echo "    ${PROJECT_ROOT:-<not a git repo>}/src/cosa/repo/run_git_loc_delta.py   (this repo)"
+    echo "    ${LUPIN_ROOT:-<LUPIN_ROOT unset>}/src/cosa/repo/run_git_loc_delta.py   (\$LUPIN_ROOT)"
+    echo "  This is NOT a zero LoC delta. Nothing was measured."
+else
+
+# 🔴 EVERYTHING BELOW RUNS ONLY IN THE `else`. Printing a skip line is not the same
+# as SKIPPING: measured 2026-09-05, an earlier cut of this fix printed the skip and
+# then fell through into the lines below, producing `fatal: not a git repository`
+# and `mkdir: cannot create directory '/io'` immediately after it. That is the stack
+# trace this section is required not to emit, arriving one line after the sentence
+# that says it was skipped. The refusal has to STOP the step, not narrate it.
+#
+# It was found by extracting this block VERBATIM from the doc and running it. A
+# hand-retyped probe stopped at the preflight and showed a clean skip — the fixture
+# was tidier than the thing it stood in for.
 
 # Pick the Python interpreter. git_loc_delta itself has no PyYAML dep, but the
 # --rich opt-in (§6.2.alt) does, so the same PYBIN selection serves both paths.
-# Post-COSA-merge: $LUPIN_ROOT/.venv is the canonical Lupin venv (carries cosa +
-# PyYAML); fall back to system python.
-PYBIN="$LUPIN_ROOT/.venv/bin/python"
-[ -x "$PYBIN" ] || PYBIN="python3"
+# The venv travels with the ANALYZER, not with LUPIN_ROOT, now that the two can differ.
+PYBIN="$ANALYZER/.venv/bin/python"
+[ -x "$PYBIN" ] || PYBIN="$( command -v python3 )"
 
-PROJECT_ROOT="$(git -C . rev-parse --show-toplevel)"
 REPO_NAME="$(basename "$PROJECT_ROOT")"
 BRANCH_SLUG="$(git -C "$PROJECT_ROOT" symbolic-ref --short HEAD)"
 CSV_PATH="$PROJECT_ROOT/io/git-loc-delta/${REPO_NAME}-${BRANCH_SLUG}-loc-delta.csv"
@@ -1081,10 +1353,10 @@ mkdir -p "$PROJECT_ROOT/io/git-loc-delta"
 
 # Pass 1 — write the persistent per-branch CSV into the TARGET project's io/.
 # We must use --save-output explicitly because git_loc_delta's default path is
-# computed relative to cu.get_project_root() (i.e. LUPIN_ROOT), not relative to
+# computed relative to cu.get_project_root(), not relative to
 # --repo-path. Without --save-output, the CSV lands in $LUPIN_ROOT/io/, which
 # is wrong for the cross-repo "every session, every repo" use case.
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_git_loc_delta \
     --repo-path "$PROJECT_ROOT" \
     --branch \
@@ -1092,11 +1364,13 @@ cd "$LUPIN_ROOT/src" && \
     --save-output "$CSV_PATH"
 
 # Pass 2 — emit JSON to stdout for §6.4 renderer (no disk side-effect)
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_git_loc_delta \
     --repo-path "$PROJECT_ROOT" \
     --branch \
     --output json
+
+fi
 ```
 
 **Outputs**:
@@ -1151,7 +1425,7 @@ cd "$LUPIN_ROOT/src" && \
 **Invocation**:
 
 ```bash
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_branch_analyzer \
     --repo-path "$PROJECT_ROOT" \
     --base main \
@@ -1310,7 +1584,7 @@ Anti-patterns (DO NOT do any of these):
 
 ```bash
 # Reuse the same $PYBIN selection from §6.2
-cd "$LUPIN_ROOT/src" && \
+cd "$ANALYZER/src" && \
   "$PYBIN" -m cosa.repo.run_directory_analyzer \
     --path /absolute/path/to/current/project \
     --output json
@@ -1351,15 +1625,234 @@ In all skip/fallback paths, **continue to Final Verification**. Step 6 is inform
 
 ---
 
+## 7) Delivery Collision Check (Day's Work, second half)
+
+**Purpose**: name the files where *somebody else's* undelivered work overlaps yours, at the
+one moment every seat is already stopped. §6 answers "what did I write". This answers
+**"is anyone else standing on it"** — and unlike §6, its answer is about other people's
+branches, not yours.
+
+**Why it lives HERE and not in a janitor, a dashboard or a merge gate** (row `d2dd3ee3`,
+2026-09-05): the fleet wrote the same gister fix four times in twenty-four hours, each
+author looking at a clean tree. The one delivery-chain surface that already existed —
+`disk-hygiene-report.sh` — was dead and silent for an unknown period and nobody noticed,
+*because it was a thing you had to remember to open*. A janitor beside the ritual would
+have been a second thing to ignore. This fires without being asked, on the channel §6
+already proves reaches the user.
+
+**When**: immediately after Step 6, before Final Verification.
+
+### MANDATE — Step 7 carries §6's three obligations
+
+1. **MUST FIRE** — including, and especially, when it finds nothing. "Scanned 192
+   branches, 0 collisions" and "scanned nothing" are different facts and only one of them
+   is safe to act on. A clean run that prints no denominator is indistinguishable from a
+   run that never happened.
+2. **MUST SURFACE** — the collision list lands in the closing `notify()`'s `abstract`,
+   beside §6's table. Terminal-only delivery means invisible delivery.
+3. **MUST SPEAK** — one line, stating the count, in the same 8-15 word shape §6 uses:
+   *"Three files carry undelivered work from other branches"* · *"No collisions across
+   192 branches"*.
+
+### 7.1) Preflight — INDEPENDENT of §6's diff scope
+
+🔴 **Do NOT reuse §6.1's preflight.** §6 skips when this branch has **no commits since
+merge-base**, which is correct for a LoC delta and wrong here: a collision is about
+*other* branches' undelivered edits to files you are standing on, and has nothing to do
+with whether **you** have committed yet. A seat with zero commits is precisely the seat
+that can still decide not to write the duplicate at all — which is what happened on
+`d2dd3ee3`, where the fourth copy of the gister fix was written before its author
+committed anything.
+
+```bash
+# The only precondition: a repo with branches to compare.
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "delivery-collision: skipped — not a git repo"; }
+```
+
+### 7.2) Run it — REPO-AGNOSTIC, and this file is not lupin's
+
+🔴 **THIS DOCUMENT IS THE CROSS-REPO RITUAL.** It runs in `planning-is-prompting`,
+`lupin-mobile`, and every other repo that installs the workflow — so a hardcoded
+`$LUPIN_ROOT` here would make Step 7 either silently do nothing or point at another
+repo's tree from inside yours. That is the wrong-tree family this very step exists to
+detect, committed by the step itself.
+
+Resolve the interpreter and the script **from the repo you are standing in**, and skip
+loudly when it is not installed there:
+
+```bash
+# The repo you are IN, never an inherited env var naming somebody else's checkout.
+repo_root="$( git rev-parse --show-toplevel )"
+scan="$repo_root/src/scripts/delivery-collision-scan.py"
+py="$repo_root/.venv/bin/python"; [ -x "$py" ] || py="$( command -v python3 )"
+
+if [ -f "$scan" ]; then
+    "$py" "$scan" --quiet
+else
+    echo "delivery-collision: skipped \u2014 no scan installed in $( basename "$repo_root" )"
+fi
+```
+
+⚠️ **THE SCAN CURRENTLY SHIPS IN LUPIN ONLY.** In every other repo the `else` branch
+fires and prints its line. That is the correct behaviour and not a gap to paper over:
+an absent tool must announce itself, exactly like the two skips in §7.3. Porting the scan
+to another repo is a separate piece of work, and until it happens those repos get an
+honest one-line "not installed" rather than a silent nothing.
+
+**Cost**: ~14s measured 2026-09-05 in lupin, across 192 branches / 9,105 candidate commits.
+Re-derive it in your own repo rather than quoting this figure — it scales with branch count.
+**Exit codes** — three, so two failure modes wanting opposite remedies never share one:
+`0` clean · `1` collisions found · `2` REFUSED, nothing scanned.
+
+⚠️ **`1` IS NOT A FAILURE AND MUST NOT BLOCK ANYTHING.** 222 collisions existed on the
+day this shipped. A step that fails the ritual on exit 1 fails for every seat on its
+first run and gets switched off — which is the not-installed failure the whole row is
+about. **Report and name. Never block.**
+
+⚠️ **`2` IS THE ONE THAT MEANS SOMETHING IS WRONG** — the scan could not see its
+population. Surface it as loudly as a collision, never as a clean run.
+
+### 7.3) Failure handling
+
+| Failure | Behavior |
+|---------|----------|
+| exit `0` | Report the denominator anyway: "scanned N branches, no collisions". |
+| exit `1` | List the contested files with the other branch names. **Non-blocking.** |
+| exit `2` | Surface "REFUSED — nothing was scanned" verbatim. **Never render as clean.** |
+| the scan is not installed in this repo | Print `delivery-collision: skipped — no scan installed in <repo>`. **Non-fatal**, and the expected case outside lupin. |
+| not a git repo, or `git rev-parse` fails | Print `delivery-collision: skipped — not a git repo`. **Non-fatal.** |
+| scan exceeds ~60s | Print `delivery-collision: skipped — scan exceeded budget`. **Non-fatal.** |
+
+🔴 **THE NEXT SKIP ANYONE ADDS TO THIS TABLE MUST PRINT A LINE.** That is the whole
+discipline of this step and it is written here, in the place someone would add one,
+rather than in a paragraph they will not re-read. §6.2.alt and §6.5 both skip
+*"silently"* — that idiom is house style two sections up and it is **forbidden here**. A
+silently-skipped collision report is the dead dashboard arriving through the back door
+of a surface that otherwise works, and it is exactly how `disk-hygiene-report.sh` came to
+print nothing at all for an unknown period.
+
+**Skip condition** (the only one): `--no-summary`. It silences Step 6 and Step 7
+together — **one flag, not two**. A seat that has opted out of the day's summary has
+opted out of both halves of it, and a second flag is a second thing to remember.
+
+In all skip/fallback paths, **continue to Final Verification**. Step 7 is informational;
+like Step 6 it must never block session-end.
+
+---
+
+## 8) Orphaned-Work Sweep (Day's Work, third half — the work no LIVE SEAT is behind)
+
+### MANDATE — Step 8 carries §7's three obligations
+
+A THIRD SIBLING of §6 and §7, inheriting them verbatim: **MUST FIRE**
+(including and especially on a clean run), **MUST SURFACE** into the closing notify's
+abstract, **MUST SPEAK** one line stating the counts.
+
+🔴 **WHY IT IS NOT §7 AND NOT THE CONTEXT TICK'S COLUMN.** Three surfaces now watch
+delivery and they partition the space rather than overlapping:
+
+| surface | keyed on | asks |
+|---|---|---|
+| the tick's undelivered COLUMN | a **LIVE SEAT** (`tmux_session`) | is *this seat's* work delivered? |
+| §7 delivery-collision | **FILES** | is somebody else's undelivered edit on a file I am standing on? |
+| **§8, this step** | the **REPO** | is there work no live seat is behind at all? |
+
+The column is seat-keyed by design — a persona outlives its seats, so keying on a name
+misattributes. **That same correctness is why it is blind here**: reap a seat, remove its
+worktree, and its commits leave every surface a manager reads. Measured 2026-09-05: seven
+detached worktrees held commits **no branch contained**, one `git worktree remove` from
+being collected, and **0 of those 7 seats were live** — so the column had no quiet line
+for them, it had no line. Nothing was watching.
+
+### 8.1) Preflight — the same one as §7, and for the same reason
+
+A seat with zero commits is not exempt: this step is about *other* people's stranded
+work, not yours.
+
+```bash
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "orphaned-sweep: skipped — not a git repo"; }
+```
+
+### 8.2) Run it — REPO-AGNOSTIC, resolved from where you are standing
+
+🔴 Same rule as §7.2: **no `$LUPIN_ROOT`, no inherited env var naming somebody else's
+checkout.** This ritual runs in every repo that installs the workflow.
+
+```bash
+repo_root="$( git rev-parse --show-toplevel )"
+sweep="$repo_root/workflow/scripts/orphaned_head_sweep.py"
+py="$repo_root/.venv/bin/python"; [ -x "$py" ] || py="$( command -v python3 )"
+
+if [ -f "$sweep" ]; then
+    "$py" "$sweep" "$repo_root" "$( git rev-parse --abbrev-ref HEAD )"
+else
+    echo "orphaned-sweep: skipped — no sweep installed in $( basename "$repo_root" )"
+fi
+```
+
+**Exit codes** — three, so two failure modes wanting opposite remedies never share one:
+`0` clean · `1` findings · `2` REFUSED, a category could not be computed.
+
+⚠️ **`1` IS THE ORDINARY CASE AND MUST NOT BLOCK ANYTHING.** Sixty-seven abandoned
+branches existed on the day this shipped. A step that fails the ritual on exit 1 fails
+for every seat on its first run and gets switched off — the not-installed failure this
+whole line of work is about. **Report and name. Never block.**
+
+⚠️ **`2` MEANS PART OF THE REPORT IS MISSING** — most often no live-seat roster, without
+which *every* branch reads as abandoned. Surface it as loudly as a finding.
+
+### 8.3) The two categories carry DIFFERENT urgency — do not merge them
+
+| category | meaning | how to report |
+|---|---|---|
+| **(i) UNREACHABLE** | no branch contains it — **gc takes it when the worktree goes** | **Loud.** Act now. The fix is one `git branch` command the report prints. Normally zero; it was seven on 2026-09-05. |
+| **(ii) ABANDONED** | ahead of the target, no live seat behind it — safe, but nobody owns it | A **LIST a human reads once**, oldest first. Never an alarm. |
+
+⚠️ **(ii) IS LARGE BY CONSTRUCTION AND MUST NEVER BECOME AN ALERT.** Sixty-seven on
+lupin. Twenty-three of thirty-one branches fired on an earlier ≥6h threshold, and that
+wall of corpses is exactly what killed the alert version of the tick's column: a wall
+trains its reader to stop looking inside a day.
+
+⚠️ **A RESCUE MOVES AN ITEM FROM (i) TO (ii). IT DELIVERS NOTHING.** The work stops being
+one command from destruction and is still absent from the target. Do not read a quiet (i)
+as delivery — the report says so itself, in its own closing line.
+
+### 8.4) Failure handling
+
+| Failure | Behavior |
+|---------|----------|
+| exit `0` | Report the denominators anyway: "0 of N detached worktrees, 0 abandoned branches". |
+| exit `1` | List category (i) in full; category (ii) as a count plus its oldest few. **Non-blocking.** |
+| exit `2` | Surface "REFUSED — a category could not be computed" verbatim. **Never render as clean.** |
+| the sweep is not installed in this repo | Print `orphaned-sweep: skipped — no sweep installed in <repo>`. **Non-fatal.** |
+| not a git repo | Print `orphaned-sweep: skipped — not a git repo`. **Non-fatal.** |
+| sweep exceeds ~60s | Print `orphaned-sweep: skipped — sweep exceeded budget`. **Non-fatal.** |
+
+🔴 **EVERY SKIP IN THIS TABLE PRINTS A LINE, AND SO MUST THE NEXT ONE ANYONE ADDS.** §7
+says this in the same place and for the same reason; it is repeated here rather than
+cross-referenced because a reader adding a row to *this* table will not go and read that
+one. A silently-skipped sweep is a dead dashboard, and the seven stranded worktrees are
+what a dead dashboard costs.
+
+**Skip condition** (the only one): `--no-summary`, which silences Steps 6, 7 and 8
+together — **one flag, not three.**
+
+In all skip/fallback paths, **continue to Final Verification**. Step 8 is informational;
+like Steps 6 and 7 it must never block session-end.
+
+---
+
 ## Final Verification
 
 At the end of every session when user says goodbye, verify completion of the mandatory end-of-session summarization documentation.
 
-### Step-6 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
+### Step-6 and Step-7 Accountability Checklist (MANDATORY — clear before declaring session-end complete)
 
 Before sending the final close-out notification, audit:
 
 - [ ] **Did Step 6 fire?** — unless `--no-summary` was explicit OR §6.1 preflight failed with an explicit skip line, Step 6 MUST have run. Silent omission is a violation.
+- [ ] **Did Step 7 fire, INCLUDING on a clean run?** — the delivery-collision check reports its denominator whether or not it found anything. A closing notification with no collision line at all means either the step was skipped silently (a violation) or the scan refused and that was rendered as clean (worse). Only `--no-summary`, which silences Steps 6 and 7 together, or an explicit printed skip line, excuses its absence.
+- [ ] **Did Step 8 fire, INCLUDING on a clean run?** — the orphaned-work sweep reports its denominators whether or not it found anything. No sweep line at all means either a silent skip (a violation) or a REFUSED category rendered as clean (worse). Only `--no-summary` or an explicit printed skip line excuses its absence.
 - [ ] **Did the LoC table land in the closing `notify()` abstract?** — not just terminal scrollback. The abstract is the user-visible artifact when listening at a distance.
 - [ ] **Did the spoken `message` parameter include a one-line LoC verdict?** — generic "session ended" without the LoC headline means the user has no aural signal Step 6 fired.
 - [ ] **Does the abstract's CSV doc-link use the canonical path-only URL form?** — `[Open: …](/app/docs?path={project}/...)` with `{project}` from `get_session_info().project`. No `&scope=` query param (dead syntax per `workflow/doc-viewer-links.md`).
@@ -1389,6 +1882,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
 - **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now parses current session's section from multi-section manifest, detects conflicts with other active sessions, prompts user for conflict resolution. Step 4.4 updates session status to `committed` with commit hash instead of deleting manifest (preserves tracking for other active sessions). Added conflict detection UI with ask_multiple_choice(). (~180 lines rewritten).
 - **2026.01.29 (Session 53)**: Added parallel session safety with `.claude-session.md` manifest (v1.0). Step 3.5 reads manifest file, verifies files against git status, handles missing/empty manifest. Step 4.4 uses selective staging and deletes manifest after successful commit. NEVER use `git add .` or `git add -A`. (~150 lines added, ~30 modified)

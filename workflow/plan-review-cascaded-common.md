@@ -8,6 +8,26 @@
 
 ---
 
+## 🛑 §Brevity — binds every cascade seat [SHARED]
+
+**KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH. Verbosity is a defect, not a style.**
+
+| Artifact | Shape |
+|---|---|
+| **A finding** | `headline / failure scenario / fix` — three parts, not three paragraphs |
+| **A stage report** | verdict line, then the findings table. No preamble, no recap of the stage's own purpose. |
+| **An escalation abstract** | the ask first, evidence second, stop |
+| **A concurrence / declination** | one line + the reason. "I concur" needs no paragraph. |
+| **Manager routing** | who / what / by when. Nothing else. |
+
+**Go longer ONLY WHEN ASKED** — a seat does not authorize its own length. Detail goes in the `abstract` card or the structured body, never in prose or speech.
+
+**Reviewers specifically**: the temptation is to prove rigor by volume. **Rigor is proven by the failure scenario, not by the word count.** A three-line finding with a concrete repro beats a page of qualified prose.
+
+Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
+
+---
+
 ## §Step 0 — Cascade Preparation (Shared Acceptance Criteria) [SHARED]
 
 **Canonical input spec**: see `workflow/plan-review-cascaded-input-spec.md` for the full 4-property spec a planning doc must satisfy + the 6-criterion Step 0 light-review rubric + the remediation flowchart for non-compliance. This §Step 0 carries the shared acceptance criteria; the input-spec doc reframes the same material for planner-side audience and adds the Mr-Radio-ratified 4a/4b split (planner-pre-satisfiable vs intrinsically-Step-0).
@@ -57,6 +77,14 @@ Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "cons
 **Output**: thumbs-up OR list of specific Step 0 gaps to address before cascade Stage 0 fires. Posted as `kind: "step_0_light_review"` to the cascade's parent topic.
 
 **Cost**: ~15-20 min reviewer-time.
+
+> **⛔ RAN-NOT-READ — BINDS THIS GATE AND EVERY CASCADE STAGE HANDOFF.** *An account whose only method is reading is not an account. State what you RAN, not what you considered. A receipt shows the work happened; it does not show the work bore on the claim. The reader is the check on relevance.*
+>
+> **This tier as of Rick's 2026-07-21 ruling** (`79cf5c2c`), which widened the bar from `plan-review.md` §4a to every tier that accepts an account.
+>
+> ⇒ **A thumbs-up is a VERDICT, and this gate's output as specified above is a verdict.** It does not satisfy the bar on its own. Each of the six criteria is a **checkable claim about the input**, not an impression of it — criterion 1 is answered by tracing the dependency in both directions, criterion 4 by opening the cited source, criterion 5 by walking the order. **Say which you ran.**
+>
+> **Handoff corollary — the reason this matters more in a cascade than anywhere else**: a stage hands its conclusion to the next stage, which builds on it without re-deriving it. **An unexamined verdict does not stay one stage wide.** The measured shape: a figure was relayed to four seats and a hold, a ruling, a build gate and a commit sequence were built on it before anyone re-derived it — **and it was wrong.** Carry what you RAN across the handoff, not only what you concluded.
 
 ### Manager response to light-review findings (1-revision-turn cap)
 
@@ -160,6 +188,51 @@ The manager session reads three sources at workflow launch:
 
 ---
 
+## §Stepwise Task-Item Ledger (Manager MANDATE — added 2026-07-12) [SHARED]
+
+**The rule**: before the cascade fires, the Manager MUST mint **one task-store item per cascade step**, and — at Step 2 close — **one item per section**. The Manager keeps every item's status current as the cascade advances. This ledger is the cascade's **external progress surface**: the one place a user (or an arbiter, or a Steward, or a rehydrating Manager) can look and answer *"where is this cascade RIGHT NOW?"* without interrupting anyone.
+
+**Why this exists**: a cascade is the most opaque thing the fleet runs. It spans hours, five-plus sessions, and a DM/topic trail nobody outside it reads. Before this mandate, the user's only windows into a running cascade were (a) the Manager's `notify()` pushes — which fire at *section* close, i.e. very rarely — and (b) asking. Between pushes the cascade is a black box, and "no news" is indistinguishable from "the Manager is a phantom." The ledger makes cascade progress **pull-able** instead of push-only.
+
+### Ledger shape (two tiers)
+
+| Tier | When minted | Granularity | Purpose |
+|---|---|---|---|
+| **Step items** | Step 0 (before the cascade fires) | One per cascade step: 0, 1, 2, 3, 4, 5–6, 8, 9 | *Which step* the cascade is on. Step 7 (Escalation) is a policy, not a work unit — it correctly gets **no** item; its triggers live in the Steps 5–6 item's body. |
+| **Section items** | Step 2 close (once the decomposition is ratified) | One per section (A, B, C, …) | *The pipeline advancing.* Transition each as its section moves Stage 1 → 2 → 3 → closed. |
+
+Both tiers are REQUIRED. Step items alone are a **checklist**; section items are what make it a **live board**. A cascade that reports only "on Step 5" for three hours has told the user nothing — the whole value of a pipelined cascade is that sections move independently, and the ledger must show that motion.
+
+### Required fields on every ledger item
+
+| Field | Value | Why it's load-bearing |
+|---|---|---|
+| `correlation_key` | `cascade-<slug>` (e.g. `cascade-eval-first`) — **identical across every item in the run** | Without it, nobody can pull the run **as a unit**. This is the single query that answers "how is the cascade going": `task_query(correlation_key="cascade-<slug>", terse=True)`. An item without it is invisible as cascade progress. |
+| `accountable_manager` | the Manager's persona key | A null manager is an **unchaseable item** — the arbiter has nobody to poke when it stalls. |
+| `owner_persona` | the Manager (step items); the Manager (section items — she owns pipeline motion, not the reviewers) | Keeps the cascade's owed work on one board. Reviewer/author work is tracked by the cascade's own DM/topic mechanics, not by fragmenting the ledger across five personas. |
+| `project` | the consuming project's key | Scopes the board. |
+| `body` | what the step/section actually requires — the step's acceptance criteria in one paragraph | The ledger doubles as the Manager's **rehydration crib** after a `/clear` (see §Manager Rehydration). |
+
+### Status discipline
+
+- `queued` → `in_progress` when the Manager *starts* the step/section — not when she finishes it. A cascade where every item flips straight to `done` has no observable middle, which defeats the point.
+- `blocked` when waiting on a reviewer, the author, or the user — with a typed `blocked_by` ref and a `next_chase_ts`. **A blocked ledger item is how a stalled cascade announces itself.** This is the mechanical version of the `blocked_waiting_on_user` post.
+- `done` with `receipt_refs` — cite the stage-close post, the `manager_classification` post, the commit, or the synthesis doc. A step closed with no receipt is a rubber-stamp.
+
+### Interaction with the existing `notify()` push
+
+The ledger **does not replace** `manager_push_frequency` pushes — it complements them. Pushes are the cascade speaking; the ledger is the cascade being **inspectable while silent**. Where they conflict, the ledger is authoritative: it is derived from state transitions, whereas a push is a narrative the Manager composed.
+
+### Steward enforcement
+
+Where a Workflow Steward is attached, verifying the ledger exists (both tiers, all required fields) is part of the Steward's Step-0 check, and a missing/stale ledger is flagged **in real time** via DM to the Manager — same class as the other synchronous workflow-violation flags (it is a workflow deviation, not a content finding).
+
+### Empirical anchor (2026-07-12, `cascade-eval-first`)
+
+Manager Tiffany 💍, running the review cascade over the skills-distillation evaluation-first roadmap, minted 8 step items **unprompted** — the practice was already latent. But every one carried `correlation_key: null` and `accountable_manager: null`, so the run could be neither pulled as a unit nor chased when stalled, and there were no section items — so the board could show *which step* but never *the pipeline moving*. The user's directive (USER BROADCAST `255b682f`) was explicitly for a ledger *"we can track externally and see the Manager's progress as she runs the cascaded review through all of its stages"* — which the coarse step-tier alone does not deliver. Hence: two tiers, three required fields, status discipline.
+
+---
+
 ## §Step 3: User Approval Gate Pattern [SHARED]
 
 Per `decomposition_review_policy = manager_proposes_user_approves`, the manager sends a `mcp__cosa-voice__ask_yes_no` or `ask_multiple_choice` to the user with the proposal in the abstract.
@@ -180,6 +253,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Identity**: You are NOT a reviewer. You do NOT write or rewrite plan content. You do NOT vote on substantive issues. You are an orchestrator and facilitator. Your authority is procedural, not substantive.
 >
+> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) You MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) You MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
+>
 > **Meta-rules** (apply at every decision point):
 >
 > 1. **Default to autonomy**: if you can resolve something within the group, do so. Escalate only when the situation matches one of the 7 escalation triggers (see §Escalation Taxonomy below).
@@ -187,6 +262,8 @@ The manager session loads this preamble at workflow launch (before reading the r
 > 3. **Default to bounded scope**: when re-litigating a finding, pull in only the upstream personas whose decisions are actually affected, not the whole chain.
 > 4. **Default to honest classification**: if you're uncertain whether a finding is inconsistency-severity or foundational-severity, treat it as foundational and escalate. The cost of one extra interruption is low; the cost of a silent foundational miss is high.
 > 5. **Default to neutrality on votes**: you arbitrate, you don't vote. Your only voting role is breaking ties on cosmetic/inconsistency severity per `vote_tiebreaker_policy = severity_dependent`.
+>
+> 6. **Default to proactive decision-delivery** (added 2026-07-01, Rick post-game — mux cascade): the moment a batch of *user-destined* decisions firms up — per section as it closes, and at cascade-complete — you MUST **drive them to the user proactively** via a guided decision-walkthrough (`/plan-decide`: one at a time, pros/cons/explicit recommendation, descending priority). You do NOT ask "do you want to review?"; you do NOT defer them into a buried Step-9 batch; you put them in front of the user directly. This does NOT relax meta-rule 1 (the filter): only decisions that genuinely need the user's judgment are driven to them — manager-resolvable findings (cosmetic / within-group inconsistency / factual-simplification) stay resolved within the group and OFF the user's desk. Burying a user-destined decision behind a "nothing needs you now" framing, or gating it behind a permission-ask, is a **redline** — the inverse of driving the process to completion. (Binds review-cascade AND authoring-cascade managers identically.)
 >
 > **Universal step zero** (mandatory post-Run-1): on **every** wake event — whether triggered by a worker DM, a scheduler heartbeat, a user response, or anything else — your first action is to **disk-read every active topic** (section topics, DM topics, the briefing topic). The read-side `commons_read` API can truncate long entries (FIXED post-2026-05-18 by Rio's commit, but disk-read remains defense-in-depth); disk-read first, then act.
 >
@@ -275,6 +352,18 @@ Every finding posted to a stage-handoff topic must be classified into one of thr
 Per `escalation_form = notify_immediate`, manager escalates by calling `mcp__cosa-voice__notify()` or `ask_*` blocking tool with `priority="high"` (no `suppress_ding` — escalations are attention-demanding).
 
 **Spoken-headline contract applies to ALL 7 triggers**: spoken `message` / `question` leads with recommendation; abstract carries rationale + options + worked examples.
+
+### Capability-claim receipt rule (MANDATE — added 2026-07-12)
+
+**An escalation abstract that asserts a CAPABILITY must cite the receipt proving that capability RUNS.** Not that it is designed, specified, illustrated in a doc, or "plugs in uniformly" — that it **runs, here, now**. A port that answers, a process in `ps`, an env var that resolves, a container's actual model list, a green test.
+
+**Why**: the user answers escalations *cold*, from a phone, on the strength of the abstract alone. A recommendation resting on a phantom capability doesn't just waste the answer — it **spends the user's scarce attention to ratify a decision built on something that doesn't exist**, and the error is invisible to them by construction. This is the escalation-surface instance of the standing `no-confabulated-results` rule.
+
+**The specific trap**: a design document's *illustrative example* ("e.g. a locally served Qwen/DeepSeek judge alongside API judges") reads exactly like an *inventory*. Prose that describes a desirable configuration and prose that describes an available one are indistinguishable at a glance — and a reviewer under time pressure will read intent as fact.
+
+**Enforcement**: the Manager checks the receipt before the abstract goes out. Where a Workflow Steward is attached, an unreceipted capability claim in an escalation is a **synchronous real-time flag** (same class as the other workflow-violation flags) — because once the user answers, the damage is done.
+
+**Empirical anchor** (`cascade-eval-first`, 2026-07-12): a Stage-2 reviewer's remediation proposal — *"add a local Qwen/DeepSeek judge, so N≥3 survives"* — was escalated to the user citing the design doc's §9. The Steward checked the box: **no local LLM existed on it** (ollama not listening; the only local model server ran embeddings + ASR, no generative model). The design doc's line was an illustration, never a deployment. The user was ~1 chase-cycle from ratifying a fix built on a capability that did not exist. Cost of the catch: one port check.
 
 **7 escalation triggers**:
 
@@ -531,7 +620,7 @@ The cascade workflow now formally recognizes **5 distinct failure modes** (4 doc
 
 1. **Worker dormancy** (Run 1 carry): peer session stops posting; addressed by `stall_threshold_minutes` + universal-step-zero disk-read
 2. **Read-side truncation** (Run 1 NEW): `commons_read` API truncates long entries; addressed by disk-read defense-in-depth + Rio's fix in Lupin
-3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by external scheduler daemon
+3. **Turn-based-CC limitation** (Run 1 LOAD-BEARING): CC sessions can't autonomously tick; addressed by the **standing arbiter + per-session Stop-hook** (the external scheduler daemon that originally addressed it was retired 2026-06-29 — do not launch one)
 4. **Write-side commons truncation** (Run 1 carry): long `commons_post` bodies truncated on disk; addressed by Rio's fix
 5. **Anthropic rate-limit on reviewer** (Run 3 NEW): single-account hits per-Anthropic-account quota; reviewer stuck >78 min; addressed by Manager Reassignment Latitude rule above — reassign to peer rather than partial-close
 
@@ -569,7 +658,13 @@ The architectural answer to failure mode #5 is **reassignment, not partial-close
 
 ## §Heartbeat Handling — External Scheduler Integration [SHARED]
 
-**Architectural premise** (post-Run-1 workflow update): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first. The heartbeat protocol is **external-scheduler-driven**.
+> 🗄️ **SUPERSEDED — interim external-scheduler apparatus RETIRED (Rick GO 2026-06-29).** Everything in this section below this banner — the external scheduler / Python daemon (`cascade_heartbeat_scheduler.py`), the `start-cascade-heartbeat.sh` launch, the dual-independent daemon kickoff, the `ScheduleWakeup` self-paced fallback, and the poke-body envelope — was the **interim crutch** that kept cascades alive *before the arbiter was a standing daemon*. It is **no longer the mechanism**. **Do NOT launch any daemon / cron / systemd timer / `/loop` / `ScheduleWakeup` loop to keep a cascade session alive.**
+>
+> **The live mechanism (current):** the **standing arbiter daemon** pokes the manager (and observer) on stall and re-surfaces aged gates; the **per-session Stop-hook** handles each session's owed-work self-check (folded debounce, no brute-force tick). See `manager-autonomy.md §9.2` + §9.1. The Manager's on-poke *behaviour* below (universal-step-zero, phantom detection, suppression-during-user-pause) is unchanged — it now runs on the arbiter's poke, not a self-launched daemon's.
+>
+> The material below is preserved as the **historical record** (it carries the PG-2 / PG-5 / PG-6 empirical run-anchors). Read it as "how cascades stayed live pre-arbiter," not as live instruction.
+
+**Architectural premise** (post-Run-1 workflow update; ⚠️ historical per banner above): Claude Code sessions are **turn-based**, not autonomously-ticking. The manager cannot fire a periodic heartbeat without itself being woken first — which is *why* an external waker is needed at all. That waker is now the **standing arbiter** (the interim external scheduler described below is retired).
 
 **Scheduler shape** (lives outside CC):
 - Implementation: cron, scheduled remote agent via `/schedule` skill, systemd timer, or a small daemon — whichever the consuming project ships
@@ -670,6 +765,15 @@ This makes the Manager-mode discipline above and the Observer-mode Probe Protoco
 
 ## §Observer-mode Probe Protocol [SHARED]
 
+> ✅ **STATUS: LIVE** (as of 2026-07-25). Stated here deliberately, and the reason generalises —
+> row `8f64b2cb`. A `[SHARED]` section inherits its live/retired status from the documents that
+> REFERENCE it (`plan-review-cascaded-personas.md:551` cross-references this as *the* probe action),
+> not from its own text. So a fencing pass reading this file top-to-bottom sees a `[SHARED]` block
+> with no banner of its own and cannot tell whether it is current. That is how one live
+> prescription of a deprecated verb survived a retirement sweep that fenced 19 of 20 mentions
+> correctly. **Every `[SHARED]` section should carry its own status marker**, precisely because it
+> is the kind that gets read out of its home document.
+
 **Added 2026-05-20 post-Run-4** based on the Run-4 Stage-2 minute-13 phantom-lag mitigation event — María's parallel probe surfaced an unread peer-DM that Manager attention had buried, clearing a 13-min Manager phantom-lag (the empirical anchor for new failure mode #6: `signal-density-obscures-needle`). This section codifies the Observer's role into the formal playbook + designs the dual-channel safety property as an explicit architectural goal.
 
 **The role**: An Observer (the Workflow Steward variant of the cascade cast) runs as a separate CC session alongside the Manager throughout the cascade. The Observer does NOT participate in reviews — does not produce findings, does not arbitrate, does not take Manager decisions. The Observer's value is two-fold:
@@ -697,7 +801,7 @@ On each scheduled probe tick (M-th heartbeat tick), the Observer performs:
 
 1. **`commons_who()`** — verify all expected personas are still active (no phantom sessions). This is a cheap presence check; phantom detection complements §Manager System Prompt self-audit item 2.
 2. **`commons_read('coordination')`** — read the coordination topic (or equivalent cross-stage signal topic for the consuming project) and check for posts the Manager hasn't yet acknowledged.
-3. **For each unacknowledged peer-DM signal that's older than `stall_threshold_minutes`**: DM the Manager directly (`commons_send_to`) with a short pointer — *"DM from [persona] on [topic] at [timestamp] still unread; you may want to disk-read."* This is information-only — Manager keeps decision authority.
+3. **For each unacknowledged peer-DM signal that's older than `stall_threshold_minutes`**: DM the Manager directly (**`dm_send`** — `commons_send_to` is DEPRECATED and was prescribed here until 2026-07-25, row `8f64b2cb`) with a short pointer — *"DM from [persona] on [topic] at [timestamp] still unread; you may want to disk-read."* This is information-only — Manager keeps decision authority.
 4. **Post `kind: observer_probe_unblocked` to cascade's parent topic** if the probe surfaced a real mitigation event (vs. routine probes that find nothing — those don't need posts; Observer keeps a quiet log).
 
 **Cost per probe**: ~30 seconds Observer-time. Cumulative cost over a 90-min cascade with M=4 default: ~22 probe events × ~30 sec = ~11 min Observer-time. This is materially cheaper than recovering from a phantom-lag mid-cascade (Run 4's 13-min Stage-2 lag = ~3× the entire probe budget for that cascade in a single failure event).
@@ -821,9 +925,14 @@ The Manager-as-synthesizer has a blind spot: after a long cascade, their cogniti
 
 - **Default**: one of the 4 cascade reviewers (Persona 3 / 4 / 5), preferably the reviewer with **freshest context on the most-impacted section** (section with most findings, longest revision trail, or most cross-section dependencies)
 - **Alternative**: the Workflow Steward if a 6th cascade participant ran in that role; workflow-aware-fresh-eyes is a useful synthesis check even though the persona isn't section-anchored
-- **Escape hatch**: if no cascade participant has bandwidth, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit; quality risk is real but bounded
+- **Fresh independent reviewer** (added 2026-08-29, `cascade-quick-ask`): a newly spawned reviewer who was NOT in the cascade. It satisfies neither rung above — rung 1's criterion is "freshest context on the most-impacted section", a participant property a new seat cannot have, and rung 2 is workflow-awareness rather than mere externality. But it is **strictly better than the escape hatch**, because the hatch leaves the synthesis's own author as its only reader, and the gate exists precisely because the Manager-as-synthesizer's frame is *compile-what-was-ratified* rather than *challenge-the-assumptions*. A stranger has that second frame by construction. **Cost**: one spawn plus ~15 min. **Record it as what it is** — a non-participant pass — so telemetry does not read it as a rung-1 review.
+- **Escape hatch**: if no cascade participant has bandwidth AND the Steward cannot take it AND a fresh seat cannot be spawned, Manager declares self-administered cold-context-test sufficient AND files a TODO for v2 to revisit; quality risk is real but bounded
 
-**Light-review rubric** (NOT a full Persona-3/4/5 review — 5-criterion focused pass):
+> **THE HATCH IS THE LAST RUNG, NOT THE SECOND.** Measured on `cascade-quick-ask` (2026-08-29): the user ordered the review crew stood down so implementation could start, all four reviewers were reaped **including the one holding this gate**, and the Manager invoked the hatch — correctly by the ladder as it then read, because the Steward (rung 2) had **twice refused the gate on the wrong grounds.** That refusal was right about the Step 0 *input* gate, which Persona 6 must not hold, and wrong about this one, which is **a named Persona 6 function**. The run came within one call of shipping a synthesis nobody but its author had read. When the Steward finally ran the pass it returned **three gaps**, one of them criterion 6 failing outright — no cross-component matrix in the synthesis at all.
+>
+> **Two things follow.** A reviewer reaped mid-gate **takes the gate with them**: check `list_spawned_sessions`, never `commons_who`, before concluding a seat is available — a reaped seat's posts do not vanish, so a stale roster reads exactly like a live one. And **the Steward's boundary is real but narrow**: not producing findings on plan *sections* is the rule; the Step 9 synthesis pass is expressly theirs.
+
+**Light-review rubric** (NOT a full Persona-3/4/5 review — 6-criterion focused pass):
 
 1. **External-system assumptions check**: any Recon item still unresolved that touches an external system (server wire, infra, third-party API) is either (a) resolved before Step 9 closes, (b) explicitly escalation-worthy AT Step 9 (synthesizer surfaces as "this needs user ratification before implementer pre-flight"), or (c) explicitly tagged as conditional-executability with documented branches
 2. **AC conditionality check**: any AC that's conditionally-executable on something the synthesis didn't pin down — synthesis explicitly lists the condition + the resolution path (per Persona 2 point 9 + Persona 5 §Convention 6 rule)
@@ -952,6 +1061,11 @@ For design doc + findings memo + §10.14 cognitive-workload prediction for Run 3
 
 ## Version History
 
+- **2026.07.12 (María 🌸 — DRAFT, awaiting Rick's approval)** — NEW **§Capability-claim receipt rule** [SHARED] in §Escalation Taxonomy: an escalation abstract asserting a capability must cite the receipt proving it RUNS (a port that answers, a process, a resolved env var — not a design doc's illustrative example). Steward flags an unreceipted capability claim synchronously, because once the user answers, the damage is done. Empirical anchor: `cascade-eval-first` — a reviewer's remediation ("add a local Qwen/DeepSeek judge") was escalated to Rick citing the design doc's §9; **no local LLM existed on the box** (ollama dead; the only local server ran embeddings + ASR). He was ~1 chase-cycle from ratifying a fix built on a phantom. Adopted mid-run by the Manager as run-rule **R7**.
+
+- **2026.07.12 (María 🌸 — DRAFT, awaiting Rick's approval)** — NEW **§Stepwise Task-Item Ledger (Manager MANDATE)** [SHARED], inserted between §Step 1 and §Step 3. The Manager must mint one store item per cascade step (Step 0, before the cascade fires) AND one per section (at Step 2 close), all carrying a shared `correlation_key` + a non-null `accountable_manager`, with status kept current (`in_progress` on start, `blocked` + `next_chase_ts` on stall, `done` + `receipt_refs` on close). Makes cascade progress **pull-able** rather than push-only — one query (`task_query(correlation_key=...)`) answers "where is this cascade right now?" without interrupting anyone. Companion edits: `plan-review-cascaded.md` (Step 0.4 mint · Step 2 section-tier mint · Steps 8/9 close-with-receipts), `plan-authoring-cascaded.md` (§Step 1 pointer), `plan-review-cascaded-defaults.md` (§Task-item ledger config block + `task_ledger_ready` kind). Empirical anchor: `cascade-eval-first` (2026-07-12) — Manager minted the step tier unprompted but with null correlation-key/manager and no section tier, so the run was neither pullable-as-a-unit nor chaseable-when-stalled. User directive: USER BROADCAST `255b682f`.
+
+- **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) §Heartbeat Handling [SHARED] capped with a **SUPERSEDED banner** — the external-scheduler / daemon / `ScheduleWakeup`-fallback apparatus is retired; the standing arbiter + per-session Stop-hook are the mechanism (task `d0cffe5c`); (b) **manager floor obligations** injected into the Manager preamble (MUST manage-never-build + MUST staff-proactively; task `c6af7fca`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Seven extensions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
   1. **§Manager System Prompt self-audit checklist** — new item 7: post-cascade close-out self-audit sweep (Step 9 cold-context rubric Q#6). Codifies the "Manager ad-hoc'd what should be codified" diagnostic as a routine Manager activity. 3 validated empirical anchors: Step 9 omission post-Run-3, Step 0 omission post-Mr-Radio-onboarding, failure mode #6 + observer-probe candidate post-Run-4.
   2. **NEW §Clarification Tier Vocabulary (T1/T2/T3/T4)** — foundational shared vocabulary for autonomy-level routing. T1 = silent in-cascade; T2 = cross-persona Manager-arbitrated; T3 = user-escalation deferrable; T4 = urgent halt. Tier inflation explicitly flagged as anti-pattern. Empirical anchor: Run 4's 100% T1/T2 silent execution = 0 user touches.

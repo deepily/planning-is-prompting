@@ -1,5 +1,5 @@
 #!/bin/bash
-# rsync-backup.sh v1.0 from planning-is-prompting
+# rsync-backup.sh v1.1 from planning-is-prompting
 #
 # Generic rsync backup script with version checking capability.
 # This is a CANONICAL REFERENCE - copy to your project's src/scripts/ and customize.
@@ -20,7 +20,7 @@ PROJECT_NAME="Your Project Name"
 # === CONFIG END ===
 
 # Version information
-SCRIPT_VERSION="1.0"
+SCRIPT_VERSION="1.1"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -136,6 +136,43 @@ DEST_PARENT="$( dirname "$DEST_DIR" )"
 if [[ ! -d "$DEST_PARENT" ]]; then
     echo -e "${RED}ERROR: Destination parent directory does not exist: ${DEST_PARENT}${NC}"
     exit 1
+fi
+
+# Validate SOURCE_DIR belongs to the project this script lives in
+#
+# WHY THIS EXISTS. This file is a TEMPLATE that gets copied into a project's
+# src/scripts/. Lines 15-16 must be edited after the copy, and "remember to edit
+# two lines" is a rule -- so it gets missed. Measured 2026-09-01: two deployed
+# copies still named a DIFFERENT project on both lines. Neither ever failed.
+# par-pacific's copy printed a green banner and "0 deleted, 0 created" while the
+# project it lives in had no backup at all; weil-nda's would have created 1,046
+# files and DELETED 101 in a third project's mirror. A GREEN RUN IS NOT EVIDENCE
+# THE RIGHT THING WAS BACKED UP -- nothing in the output names the mistake,
+# because SOURCE and DEST agree with each other. They just agree about the wrong
+# project.
+#
+# The check is cheap and was always available: SCRIPT_DIR is computed at line 17,
+# and a deployed copy sits at <project>/src/scripts/, so the project root is two
+# levels up. Comparing that to SOURCE_DIR turns the rule into a mechanism.
+#
+# ESCAPE HATCH: a genuinely cross-project backup is legal -- set
+# ALLOW_FOREIGN_SOURCE=1 to proceed. It is deliberate, visible, and per-invocation.
+if [[ "${ALLOW_FOREIGN_SOURCE:-0}" != "1" ]]; then
+    PROJECT_ROOT="$( cd "$SCRIPT_DIR/../.." 2>/dev/null && pwd )"
+    SOURCE_REAL="$( cd "$SOURCE_DIR" 2>/dev/null && pwd )"
+
+    if [[ -n "$PROJECT_ROOT" && -n "$SOURCE_REAL" && "$SOURCE_REAL" != "$PROJECT_ROOT" ]]; then
+        echo -e "${RED}ERROR: SOURCE_DIR is not this script's own project.${NC}"
+        echo -e "${RED}  This script lives in: ${PROJECT_ROOT}${NC}"
+        echo -e "${RED}  But SOURCE_DIR names:  ${SOURCE_REAL}${NC}"
+        echo ""
+        echo -e "${YELLOW}  This is what an unedited copy looks like. Fix SOURCE_DIR and${NC}"
+        echo -e "${YELLOW}  DEST_DIR (lines 15-16) to name this project, then re-run.${NC}"
+        echo ""
+        echo -e "${YELLOW}  Backing up a different project ON PURPOSE? Re-run with:${NC}"
+        echo -e "${YELLOW}      ALLOW_FOREIGN_SOURCE=1 $0 $*${NC}"
+        exit 1
+    fi
 fi
 
 # Show what will be excluded

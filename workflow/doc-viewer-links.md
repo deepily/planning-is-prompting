@@ -75,6 +75,10 @@ The two channels are **structurally complementary, not duplicates**: voice carri
 
 Whenever an abstract references a project file — audit findings, R&D-doc citations, file:line callouts, before/after diffs naming files, any structured payload that names a path — the abstract MUST contain a markdown viewer link to that file. A bare path or filename in the abstract without a viewer link is a violation. Doc-links flow INTO the abstract from any file reference; they MUST NOT flow into the spoken channel.
 
+### Don't write a file just to have something to link (added 2026-09-26)
+
+**Needing a link is not a reason to create a file.** A report the operator reads once belongs in the abstract itself. If it is too long for a card, write it to `io/tmp/` — served, and swept after 7 days — never to `io/write-ups/` or any other path that keeps it forever. Full rule: `workflow/rnd-directory-policy.md § Where Ephemeral Work Goes Instead`.
+
 ---
 
 ## Discovering Your Scope at Runtime
@@ -185,4 +189,5 @@ If a doc-link 404s when you expected a 200:
 
 ## Version History
 
+- **2026-09-26**: Added *Don't write a file just to have something to link*: one-off reports go in the abstract, or in the 7-day-swept `io/tmp/`. Operator ruling, broadcast `355f708f`.
 - **2026-05-21**: Initial canonical hub document. Consolidates the doc-link guidance previously scattered across `claude-config-global.md`, `INSTALLATION-GUIDE.md`, and `cosa-voice-integration.md`. Reconciles the URL form to path-only (canonical post-2026-05-15 unification); flags form-(a) two-param URLs, `docs`/`io` shorthand scopes, and the `doc_scope` dict envelope as retired dead syntax. Drafted by María (PIP session `d66169f2`) with authoritative confirmation from Tiberius (Lupin session); plan-of-attack ratified by Rick.

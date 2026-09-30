@@ -65,9 +65,35 @@ When `conversation_mode_active=true`:
 
 ### USER-ONLY INITIATION (HARD RULE)
 
-Claude must NEVER call `enter_conversation_mode()` or `exit_conversation_mode()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
+Claude must NEVER call `enable_speakerphone()` or `disable_speakerphone()` on its own initiative. The user owns the toggle; Claude responds to it, never drives it. User-spoken phrases like "enter conversation mode" / "exit conversation mode" (or close paraphrases) are pattern-matched and acted on. Direct typed/voice request only — never inferred from context, never auto-toggled at session boundaries.
 
 When the user toggles back to notification mode, Claude is explicitly informed via system message; subsequent turns revert to default behavior.
+
+### 🛑 KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH — the mandate now covers the TERMINAL too (2026-07-19)
+
+**Verbosity is a defect, not a style.** The TTS brevity mandate below has always governed the **spoken** channel. Rick's 2026-07-19 directive extends brevity to the **terminal reply** as well — the channel this doc previously left deliberately rich.
+
+**What changed, precisely** — do not read this as a contradiction of the two-channel asymmetry below:
+
+| Channel | Before | Now |
+|---|---|---|
+| Spoken `message` | 3 sentences, stripped | **unchanged** — 3 sentences, stripped |
+| `abstract` card | richly formatted, uncapped | **unchanged** — still the detail valve |
+| **Terminal reply** | "stays markdown-rich" | **Say 3LoL: 3 sentences of PROSE** — headline + two supporting. A line is one sentence that makes a claim; tables, code and **file paths are free** |
+
+**The asymmetry survives.** `abstract` is still where detail belongs. What is now capped is **terminal prose** — the paragraphs of narration, hedging, and recap that surround the useful content.
+
+**Tables, code blocks, and structured output are CONTENT, not prose** — they do not count against the 3-line budget. A reply of one headline plus a findings table is compliant. Three paragraphs explaining that table is not.
+
+**Go longer ONLY WHEN ASKED.** Not when you judge the content warrants it — you do not hold that discretion, the reader does. A brevity rule whose exception is self-assessed is not a control, it is a receipt.
+
+**😘 is the carrier glyph**: 😘 alone, with no other text, fires the ENTIRE mandate — never ask what it refers to. **🫡 is the complete reply** — salute, then the tightened output.
+
+**When the user sends 😘 or says "KISS" / "3LoL" / "NoMC" / "C2C" / "STFU GB2W"**: 🫡, then tighten and continue. Do **not** apologize, explain, or promise to improve — that reply is itself the defect.
+
+**Canonical**: `workflow/brevity-mandate.md` · fleet-wide reminder: `/plan-kiss`
+
+---
 
 ### TTS Response Brevity Mandate
 
@@ -142,7 +168,7 @@ What was cut: the two drifted terms ("phone mode" / "quiet mode"), the file loca
 **When it is NOT (default path — leave the flag off):**
 - Routine status closes, summaries, numeric/file inventories, audit findings, decision-support — these go to `abstract` + doc-links with a capped, headline spoken line. No override.
 
-**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented + 11/11 unit tests green (Tiberius, DM `14f9e3c8`).
+**Activation:** goes live on Rick's **one-time** cosa-voice MCP restart (per-session stdio subprocess); after that, all re-tuning is INI-only (no restart). Implemented; unit-tested at `lupin/src/tests/unit/lupin_mcp/test_spoken_brevity_cap.py` — **run that file for the count.** *(This line previously read "11/11 unit tests green (Tiberius, DM `14f9e3c8`)" — a count whose only receipt was a DM, naming no suite anyone could re-derive it from. The suite it turned out to mean is above, and it does not hold 11 tests.)* <!-- claim-is-historical -->
 
 ### Priority="high" Mandate Intensified
 
@@ -211,9 +237,20 @@ When an action is **blocked on the user's go** — deploy · put-into-service ·
 
 **One gate = one ask.** Don't bundle several gated decisions into one status wall; each deploy / activate / put-into-service decision gets its own targeted question (or a single `ask_multiple_choice` resolving exactly one). The Framing Contract still applies — recommended option first, `(Recommended)` in the label, pros/cons + rationale in the `abstract`. Pair with `notify()` for visibility only AFTER (never INSTEAD of) the ask.
 
-**Re-ask until answered — a pending gate is owed work, not a parked wait (MANDATE, 2026-06-22, Rick broadcast `cd610b8a`).** Firing the ask once is necessary but NOT sufficient. While a user-gate remains unanswered, you OWE re-surfacing it: on every self-tick (default every 10 min — set a `ScheduleWakeup` / `/loop` timer for exactly this) **RE-FIRE the dedicated `ask_*`** until the user answers. An `awaiting: user:<name>` hold is the *trigger to re-ask*, NEVER a license to go silent — a hold suppresses peer/arbiter nagging, but never the re-ask to the user. Going quiet on an open gate is the same violation as a manager who sits on unverified workers (receipts-of-progress, `manager-autonomy.md §9.1` / task `6929f4ac`): *owed ⇒ act, don't sit*. **The user must always be pinged when they are needed** — a decision only they can make stays on their screen, re-asked, until cleared.
+**Re-ask until answered — a pending gate is owed work, not a parked wait (MANDATE, 2026-06-22, Rick broadcast `cd610b8a`).** Firing the ask once is necessary but NOT sufficient. While a user-gate remains unanswered, you OWE re-surfacing it: on every Stop-hook self-tick (the stock heartbeat hook keeps your session alive and NAMES the due gate on its ~10-min debounced cadence — **no manual `/loop` or `ScheduleWakeup` timer; that interim crutch is retired, Rick GO 2026-06-29**, see the stamp-obligation note below) **RE-FIRE the dedicated `ask_*`** until the user answers. An `awaiting: user:<name>` hold is the *trigger to re-ask*, NEVER a license to go silent — a hold suppresses peer/arbiter nagging, but never the re-ask to the user. Going quiet on an open gate is the same violation as a manager who sits on unverified workers (receipts-of-progress, `manager-autonomy.md §9.1` / task `6929f4ac`): *owed ⇒ act, don't sit*. **The user must always be pinged when they are needed** — a decision only they can make stays on their screen, re-asked, until cleared.
 
 **The stamp is your obligation (built 2026-06-22, task `6929f4ac`).** The structural enforcement is **built and merged; it takes effect on the arbiter + listener restart** that loads it: session state carries structured `pending_user_gates` rows; the heartbeat Stop-hook owed-oracle counts any OPEN gate as `work_owed` (new `outstanding_user_gate` signal) and that obligation **overrides a declared hold** (a `work_owed:false` / fresh-reasoned hold no longer silences the re-ask — the §9 inversion enforced in code); and the arbiter re-surfaces an aged gate to the user if the owning session goes dark. But the explicit half depends on YOU: **when you re-fire the ask, stamp `last_asked_ts` on that gate row** (this resets the 10-min cadence so you re-ask at the interval, not every turn) and **when the user answers, mark the gate `answered`** (this clears the obligation so the poke stops). A gate you never stamp/answer keeps poking until the per-session poke-cap, then the arbiter backstop carries it — the cadence discipline is the stamp. Mechanism + design: lupin `src/rnd/2026.06.22-receipts-of-progress-heartbeat-owed-calc.md §9`; the heartbeat Stop hook can't call `ask_*` itself (SSE-blocking) — it keeps your session alive and NAMES the due gates; YOU re-fire the `ask_*` on the poke.
+
+**Offline user ⇒ defer to a SCHEDULED CHASE, don't storm (MANDATE, 2026-07-07, relief valve `ecae99a0` + doctrine task `2d8b6d1c`).** "Re-ask until answered" (above) is bounded by one nuance: when a targeted `ask_*` returns the **offline/timeout DEFAULT** (its configured `response_default` on the 600 s timeout, i.e. the user is provably unreachable *right now*), do NOT keep re-firing every cadence tick — that pokes a sleeping user forever. Instead, **defer the gate to a scheduled chase**:
+1. Pick a future `next_chase_ts` (next reasonable window to bother the user — a morning window, or a fixed backoff).
+2. **Block the STORE gate with that chase** — `task_transition( <gate_id>, "blocked", next_chase_ts=<ts>, blocked_by=[{"kind":"user","id":"<name>"}] )`. **This IS the deferral.** The store row is what the Stop-hook owed-oracle, the human UI card, and the arbiter chase-clock all read, and it is the only surface an agent can write. It survives turns and `/clear` by construction.
+3. Say so where the work lives — amend the affected item (`task_amend`) with WHY it deferred and to WHEN, so a successor rehydrating from the store sees the deferral, not a mysteriously quiet row.
+
+Effect: the every-turn storm is gone AND the decision is not buried — it is durably queued with a scheduled resurface. **Post-chase RE-DEFER rule (load-bearing):** when the chase arrives, re-fire the `ask_*` ONCE; if it times out AGAIN (still offline), you MUST **re-defer** — set a NEW future `next_chase_ts` on the row. A resumed-but-unanswered gate storms every tick again unless the reflex re-applies.
+
+> ⚠️ **At the chase, `blocked → blocked` is rejected 422 ("not a legal edge").** Four moves are available and three corrupt the record: drop-and-recreate destroys the audit chain; bouncing through `in_progress` writes a FALSE state into the record the owed-oracle reads; leaving it un-chased violates the chase obligation. **STEWARD RULING (interim, María 2026-07-16, still in force): leave it stale** — it is the only option that does not corrupt the oracle's input. Re-blocking with a fresh chase is legal only via a legal intermediate state; prefer `parked` with a `park_reason` when the row is genuinely not-now.
+
+> 🔧 **HOST-SIDE ONLY — NOT AGENT-CALLABLE.** The hook layer implements its own half of this in `defer_to_chase` / `make_gate` / `bump_reask_count` / `is_chase_deferred` / `is_reask_capped` (lupin `src/lupin_cli/claude_code/hooks/lib/heartbeat_user_gates.py:62`, `:395`). **Do NOT try to call them.** They are absent from the MCP surface, and their signatures are host-shaped — `defer_to_chase( gates, … )` needs the `gates` list that lives inside the hold file the Stop hook owns; an agent holds no such handle. As of 2026-07-21 they also have **zero production call sites** (every use outside the defs is a unit test or the module's own smoke test), so this is documentation of a host mechanism, not an instruction to you. Design background: lupin `src/rnd/v0.1.9/2026.07.03-notify-turn-hold-fix-design.md §8`. Corrected 2026-07-21 (row `74a3ff4d`): this block previously told agents to call these verbs directly — a rule that was READ and treated as satisfied is indistinguishable from a rule that WORKS, until someone tries to execute it.
 
 ---
 
@@ -1017,6 +1054,7 @@ response = ask_multiple_choice( questions=[
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)**: §Re-ask-until-answered — replaced the manual `/loop` / `ScheduleWakeup` self-tick timer with the stock Stop-hook (names the due gate on its debounced cadence) + arbiter re-surface; the interim timer crutch is retired (task `d0cffe5c`). HELD for commit.
 - **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)
   - Updated version from v0.2.1 to v0.3.0
   - Added `ask_open_ended_batch()` row to Available MCP Tools table (now 6 tools)

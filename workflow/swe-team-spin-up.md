@@ -4,7 +4,21 @@
 
 **When to use**: any build-shaped engagement (implement → review → test a feature/fix) that warrants more than a solo session — i.e. work that benefits from a dedicated implementer, an adversarial reviewer, and an integration tester under a manager, with a steward watching for drift.
 
-**Status**: ✅ Ratified 2026-06-06 (Rick, via guided walkthrough — all 7 design decisions) · 🛡️ **BATTLE-TESTED 2026-06-06** — first real run (Heartbeat Arbiter v2.1, Thread B) shipped: committed `7973376`, live-apply 88 tests green. Design record + ruling table: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6; first-run post-game: `src/rnd/2026.06.06-swe-team-first-run-postgame.md`. Authored by María 🌸 (Workflow Steward).
+**Status**: ✅ Ratified 2026-06-06 (Rick, via guided walkthrough — all 7 design decisions) · 🛡️ **BATTLE-TESTED 2026-06-06** — first real run (Heartbeat Arbiter v2.1, Thread B) shipped: committed `7973376`, live-apply 88 tests green **as of that commit** — a dated run record, not a standing coverage claim; re-derive from `7973376` rather than quoting this line forward. <!-- claim-is-historical --> Design record + ruling table: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6; first-run post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md`. Authored by María 🌸 (Workflow Steward).
+
+> ## 🛑 EVERY SPAWN BRIEF CARRIES THE BREVITY RIDER — non-negotiable
+> Workers inherit habits at birth; a worker that never grew the verbose habit is cheaper than one that must unlearn it. **Paste this into every member's brief, verbatim:**
+> ```
+> BREVITY (non-negotiable): KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH.
+> Verdict first, evidence second, stop. Three sentences
+> (headline + two supporting). Go longer ONLY WHEN ASKED.
+> A line is one sentence that makes a claim — tables, headings, code blocks
+> and file paths are structure and cost nothing. FILE PATHS ARE FREE: when
+> the detail lives somewhere, send the path instead of the detail.
+> Detail goes in the abstract card, never in prose or speech.
+> A 😘 from anyone fires this entire rule; reply 🫡 and nothing else.
+> ```
+> Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 **Relationship to other workflows**:
 - **Manager Spawn/Harvest Autonomy** (`src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md`) is the *can-spawn* **mechanics** half ("spawn freely; edit carefully"; the standing/gated/hygiene envelope). **This workflow is the composition** — "spawn THIS roster with THESE roles." They compose: autonomy *authorizes*; this workflow *specifies the shape*.
@@ -84,14 +98,15 @@ flowchart LR
 - **Hard commit gate (non-negotiable):** **green AND adversarially-reviewed** before any commit. No silent skips. This is the Test-Ownership mandate + adversarial-review discipline made mechanical — the Manager holds it.
 - **Always post-game, scaled:** the Steward runs a retrospective **every cycle** — a *full* retro for substantive runs, a *lightweight note* for trivial ones. Always-on (never "on-demand") because the standing post-game is how the Steward catches drift/confabulation — the role's whole point.
 - **Commit + merge are the Manager's call** (standing authority, once green AND reviewed) — **NO per-commit/per-merge user gate** (Rick 2026-06-16). The quality gate makes work commit-ready; the Manager then commits + merges. **PUSH to origin stays the user's session-end call** — the Manager executes the push on the user's word (never punts the git op to the user).
-- **Standing-pair keep-alive (2026-06-06 lesson):** during an autonomous build the Manager + Steward must NOT both go dark — a re-loop/handoff with no one awake to actuate stalls silently (proven live: a ~90-min unactioned re-loop verdict). The fleet-stall keep-alive belongs to the **arbiter layer** (the closed-loop poker taps the Manager on stall), NOT the per-session stop-hook (which correctly won't poke a *legitimate* wait). Until the arbiter is deployed as a standing daemon, use an interim poker + the Steward actively watches for stalls. **Layering:** stop-hook = per-session lazy-stop guard · arbiter = fleet-stall poker · interim poker = stopgap until the arbiter ships.
+- **Standing-pair keep-alive (2026-06-06 lesson):** during an autonomous build the Manager + Steward must NOT both go dark — a re-loop/handoff with no one awake to actuate stalls silently (proven live: a ~90-min unactioned re-loop verdict). The fleet-stall keep-alive belongs to the **arbiter layer** (the standing arbiter daemon taps the Manager on stall), NOT the per-session Stop-hook (which correctly won't poke a *legitimate* wait). **Layering (no interim crutch — Rick GO 2026-06-29):** Stop-hook = per-session lazy-stop + owed-work self-check (folded debounce, no brute-force tick) · arbiter = fleet-stall poker + dark-session backstop. The standing arbiter now covers fleet-stall detection directly; the old interim poker / `/loop` timer stopgap is **retired** — do NOT stand up a manual timer to keep a session alive. The Steward still actively watches for stalls as a human-judgment backstop (see `swe-team-roles.md` §Steward), but is no longer the *mechanism*.
 
 ---
 
 ## 6. Teardown (ratified Q7)
 
 - **Symmetric, one directive:** *"stand down the SWE team"* reaps **all crew workers** in one directive — mirroring spin-up.
-- **Mementos on by default:** each worker writes a memento (`io/mementos/<persona>-<timestamp>.md`) before reap, so its role specialization survives for a **warm re-spawn** via `seed_memento`.
+- **The end-of-session ritual IS a teardown trigger (Rick, 2026-07-06).** When the user calls the *"end of session ritual"* (or *"session-end"*), the Manager **harvests the crew (memento each) as an early step of that ritual — BEFORE the Manager's own commit/push** — without a separate *"stand down"* directive. No crew worker is left running across the session boundary (that would be a zombie; the no-zombies hygiene rule already forbids it). **The one exception (Rick's ruling — "let them finish, then harvest"):** a worker **genuinely about to finish a substantial unit** is **let run to its completion / next commit-checkpoint**, and the Manager **holds their own session-end for that worker**, then mementos + reaps it — harvesting it prematurely would waste near-complete work. **Guard against a harvest-dodge loophole:** "about to finish" means an **imminent commit / verifiable checkpoint** (cite the artifact-delta / next_chase evidence per §9.1 receipts-of-progress), never a vague *"still working."* An idle / done / no-owed-work worker is reaped immediately — the exception protects only the near-done case.
+- **Mementos on by default:** each worker writes a memento to its stable, derivable slot (`io/mementos/<persona-slug>.md` — one per persona, no timestamp) before reap, so its role specialization survives for a **warm re-spawn** via `seed_memento`. The Manager derives the seed path from the persona; nobody hands a path around (see `memento-management.md` §3.2).
 - **Standing pair persists** — only the crew is reaped.
 - **Composes with** the Manager's ad-hoc harvest autonomy: the Manager can still reap individual workers mid-run; *"stand down the SWE team"* is the clean end-of-engagement sweep.
 
@@ -116,6 +131,26 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 **Content source for the charters:** the ratified rulings in `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (esp. Q5 gates) + the standing mandates in global `~/.claude/CLAUDE.md` (Test Ownership · no-confabulation · cross-session communication).
 
+### 7.1 Provisional mandates — appended to EVERY brief, by construction
+
+**A member receives ONLY its own `##` section.** Therefore a directive that governs *the whole run* — a deadline, a scope bar, a quality ceiling — **cannot live at the top of the load document. It would be sliced away and reach nobody.**
+
+**THE RULE:** if **the TARGET PROJECT's repo root** holds a `MANDATE.md`, **the spawn appends its Directive block VERBATIM to every brief, for every role, without exception.** If it does not, **the slot is empty and nothing is appended.**
+
+> ⚠️ **THE MANDATE LIVES IN THE TARGET REPO — NEVER HERE.** `<target-repo>/MANDATE.md`, and **its existence is the in-force flag** (present ⇒ governs; `rm` ⇒ gone). **Scoping is by construction**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, inherits nothing — it is *structurally incapable* of being bound by another project's deadline. **Full mechanism: `workflow/provisional-mandates.md`.**
+
+**Placement: in the Expectations & gates position — the done-section. NOT the preamble.** *A mandate at the top gets skimmed; a mandate in the acceptance criteria gets executed.*
+
+**Why the seam is here and the mandate is not**: **the seam is permanent and content-free; a mandate is neither.** Putting a project's time-boxed directive in this fleet-wide repo would push one project's deadline into every crew in every repo. **Anchor (2026-07-16): the Steward did exactly that** — wrote a 3-day, one-project POC mandate into `workflow/` and wired it here — **and Rick caught it.** *"This is really only relevant to Sam's work… how do we make a time sensitive mandate only relative to Sam's project?"* **A scoped obligation in an unscoped surface, authored by the seat that spent that night filing that exact defect against others.** *(And the sibling trap it also avoids: a provisional rule in a permanent doc becomes the field nobody flips — the 2026-07-16 line-5 anchor, a plan reading "DRAFT — NOT YET REVIEWED, not approved for build" while four builders worked against it, stale in **both** directions.)*
+
+**Why the append and not "the Manager tells them"**: 2026-07-16 — a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist; **the bounce reported itself with the live roster attached and was read and moved past.** Three of four briefs carried a defect. ⇒ **Two hops, both lossy. In the append, the brief IS the delivery — a manager cannot omit what a manager does not assemble.**
+
+### 7.2 A command never defines an obligation — state the obligation in its own scope
+
+**A brief MUST state each obligation in the obligation's own scope, and may give a command only as an ILLUSTRATION of it — never as its definition.** If the obligation is *"do not regress the tree,"* the baseline command in the brief must run the TREE; if a narrower command is given for speed, the brief says explicitly that it is a subset and names the full scope.
+
+**Anchor (2026-07-16, store `74c16374`):** all five Session-14 briefs carried *"Baseline 392 passed (`pytest src/tests/unit`) — do not regress"* — **a unit-scoped command beside a whole-tree obligation. The command silently redefined the obligation.** One seat never ran the integration tier all session and reported "no regressions" — a claim about 414 tests — off a 392-test run. His words: *"My 'no regressions' was true by luck."* <!-- claim-is-historical: the counts here are the QUOTED defect, not a live coverage claim --> Corollary: **do not rely on one role's charter to compensate for a brief that under-scopes every other role** — that is luck wearing the costume of design. Companion mechanism: the R-5 adversarial brief review (store `978b27ac`) — hand the Reviewer the brief before the work begins with one instruction: *"find the obligation whose scope is narrower than the noun beside it."*
+
 ---
 
 ## 8. Build & install status
@@ -124,7 +159,7 @@ The **load document** is the per-role charter artifact each spawned member auto-
 1. ✅ This workflow doc — `workflow/swe-team-spin-up.md`.
 2. ✅ The **load document** — `workflow/swe-team-roles.md` (per §7).
 3. ⏳ The `/spin-up-swe-team [task]` slash command + intent wrapper (§3); add the README link. *(Manager's lane.)*
-4. ✅ First real spin-up (Heartbeat Arbiter v2.1, Thread B) — **APPROVED** (green + reviewed + tested) 2026-06-06; commit held for Rick's word. Post-game: `src/rnd/2026.06.06-swe-team-first-run-postgame.md`.
+4. ✅ First real spin-up (Heartbeat Arbiter v2.1, Thread B) — **APPROVED** (green + reviewed + tested) 2026-06-06; commit held for Rick's word. Post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md`.
 
 **Installer note:** this doc is **not** part of the `/plan-install-wizard` package automatically. It joins the installer only when registered in the wizard catalog (`workflow/INSTALLATION-GUIDE.md` + the wizard) + README — a deliberate follow-up step.
 
@@ -132,4 +167,5 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 ## Version history
 
+- **1.1 (2026-06-29, María 🌸 — Rick GO)** — §5 standing-pair keep-alive: **retired the interim-poker / `/loop` stopgap language.** The standing arbiter is now the fleet-stall *mechanism* + the per-session Stop-hook is the owed-work self-check (folded debounce, no brute-force tick); the Steward is the human-judgment backstop, not the mechanism. Part of the fleet-wide crutch-retirement (task `d0cffe5c`). HELD for review.
 - **1.0 (2026-06-06)** — Initial canonical workflow, authored by María 🌸 (Workflow Steward) from the ratified seed `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (Rick ruled all 7 decisions via guided walkthrough; Tiberius 👑 manager-rec). Composes with the Manager Spawn/Harvest Autonomy workflow.

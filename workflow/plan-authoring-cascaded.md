@@ -15,13 +15,13 @@
 | **Pure authoring** | Intent statement + must-reuse list + immutable constraints + target deliverables | Full implementation plan with sections, ACs, EXECUTOR tags | Greenfield projects, design-from-scratch work |
 | **Hybrid** (design-to-implementation) | Ratified design doc + sub-feature partitioning + outstanding Q-decisions | Implementation plan with Q-decisions cascade-resolved + ACs derived | Phase-shaped projects (e.g., Lupin Phase 6C), design-doc-stalled-at-Q-decisions cases |
 
-**Status**: v1 — markdown-driven, no orchestration code beyond the heartbeat daemon (inherited from `/plan-review-cascaded`). Ships 2026-05-19 post-Run-2 workflow ratification.
+**Status**: v1 — markdown-driven, **no orchestration code at all** (the heartbeat daemon this line once named was RETIRED 2026-06-29; the standing arbiter is the waker). Ships 2026-05-19 post-Run-2 workflow ratification.
 
 ---
 
 ## Prerequisites
 
-All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, heartbeat daemon, dual-delivery briefing pattern when a Workflow Steward participates). PLUS:
+All `/plan-review-cascaded` Prerequisites apply (5 CC sessions, manager designation, **a running waker — the standing arbiter, ⛔ NOT a per-cascade heartbeat daemon, which is retired**, dual-delivery briefing pattern when a Workflow Steward participates). PLUS:
 
 - **One of**:
   - **(Pure authoring mode)**: intent statement, must-reuse list, immutable constraints, target deliverables
@@ -171,6 +171,8 @@ See `plan-review-cascaded-common.md` §Step 1. The procedure is identical (workf
 | `goal_coverage_matrix_required` | `true` | Manager maintains throughout cascade; surfaces uncovered goals at section-close. |
 | `convention_6_active` | detected | Set `true` if consuming project's CLAUDE.md has `## Coverage` section or equivalent ratification; otherwise `false` (Convention 6 dormant). |
 
+**Stepwise task-item ledger (MANDATE — added 2026-07-12; applies to authoring-mode identically)**: the Manager mints one task-store item per cascade step at Step 0, and one per section at Step 2 close, all sharing the run's `correlation_key` with a non-null `accountable_manager`, statuses kept current throughout. This is the cascade's external progress surface — the one place a user can see where an authoring cascade stands without interrupting it. Canonical spec + required fields + status discipline: `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger. Config knobs: `plan-review-cascaded-defaults.md` §Task-item ledger.
+
 ---
 
 ## Step 2: Decompose / Confirm Sections
@@ -269,7 +271,7 @@ All `/plan-review-cascaded` Step 8 fields apply (telemetry, finding count, escal
 
 **Trigger**: fires AFTER Step 8 cascade-complete signal, BEFORE any implementer is dispatched.
 
-**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (5-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap on Manager response).
+**Acceptance criteria**: see `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test (5-question rubric, Manager self-administered) + light-review gate (6-criterion focused rubric, cascade-participant reviewer, ~10-15 min cost, 1-revision-turn cap on Manager response).
 
 **Full requirements anchor**: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md`.
 
@@ -356,6 +358,8 @@ Step 9 authorship is the **Manager's** responsibility by default. Rationale:
 The Manager System Prompt, Severity Classification Heuristics, Escalation Taxonomy Template, DM-Subset Selection Heuristics, Vote Mechanics Spec, and Heartbeat Handling (external-scheduler integration) are all in `plan-review-cascaded-common.md`. **Authoring-mode addendum to the System Prompt**:
 
 > **Authoring-mode addendum** (added 2026-05-19): in addition to your shared manager-system-prompt duties, you maintain TWO new artifacts throughout the cascade: (a) the dependency map (DAG of section-to-section contract surfaces); (b) the goal-coverage matrix (rows = goal-promised behaviors; columns = sections; cells = owned/partial/uncovered). Both initialize at Step 0/0.5; both update on section-close events; both are checked at end-of-pipeline. Goal-coverage matrix uncovered cells at cascade-end escalate as Trigger 2 (cross-section conflict).
+>
+> **Proactive decision-delivery (added 2026-07-01, Rick post-game — mux cascade)**: shared Manager System Prompt meta-rule 6 (common.md) binds you identically — user-destined decisions (ratified Q-decisions revisited, scope/design forks, preference OQs) are driven to the user PROACTIVELY per-batch via a `/plan-decide` walkthrough (no permission-ask, no buried end-of-run batch), while the attention-filter keeps manager-resolvable items off the user's desk.
 
 ---
 
@@ -416,12 +420,13 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 - `plan-review-cascaded-defaults.md` — shared configuration defaults table
 - `plan-review-cascaded-personas.md` — persona briefs + rubrics (Persona 2.A authoring author here)
 - `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md` — design doc with §10 memo (Run 1 + Run 2 + cognitive-workload prediction for Run 3)
-- `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` — external heartbeat daemon (same one as review-cascade)
+- 🗄️ `<lupin>/src/scripts/cascade_heartbeat_scheduler.py` — external heartbeat daemon (same one as review-cascade); **RETIRED Rick GO 2026-06-29** — the standing arbiter is the waker now (see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Do NOT launch it.
 
 ---
 
 ## Version History
 
+- **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
   - `plan-review-cascaded-personas.md`: Persona 1 (Manager) Outputs extended with `kind: manager_self_audit_sweep` artifact; Persona 2.A point 14 AC-table-sweep extended with Run-4 anchors #2 (Krishna Q-1..Q-4) + #3 (Tiberius Tiffany-rename); NEW Persona 6 (Workflow Steward, optional)

@@ -32,7 +32,7 @@
    - `--from=fitness` — skip REUSE; start at Pass 1 (Fitness)
    - `--from=ownership` — skip REUSE and Pass 1 (Fitness); start at Pass 2 (Ownership-Language Audit). **Hard-break rename 2026-05-15**: the old `--from=adversarial` flag was retired — there is NO backward-compat alias. Old scripts/aliases referencing `--from=adversarial` will fail loudly.
    - `--doc-set=<path>` — target doc directory; defaults to most-recent `src/rnd/<project>/` containing a `00-index.md`
-   - `--skip-with-reason "<reason>"` — Pattern 3 escape hatch; logs reason to `00-index.md` "Open follow-ups" and exits without running the gate
+   - **Hard-break retirement 2026-07-18 (Rick)**: `--skip-with-reason` is **RETIRED — there is no bypass flag.** Every plan document enters the gate; the gate dispatches internally (`workflow/plan-review.md` §4a). There is **NO backward-compat alias** — a stale invocation passing `--skip-with-reason` **fails loudly** rather than silently skipping the gate. *(Not to be confused with the unrelated bare-string `skip-with-reason` per-convention and cascade-decomposition exemptions logged in `00-index.md` — see `workflow/plan-review.md` §2 and `p-is-p-02-documenting-the-implementation.md`; those are live mechanisms and are untouched by this retirement.)*
 
 4. **Auto-discovery**:
    - If `--doc-set` not given: list `src/rnd/*/00-index.md`, pick most recent, confirm with user via `ask_yes_no()` before proceeding. **On `neither`**: re-prompt with `ask_multiple_choice()` listing the available doc-sets so the user can pick explicitly. See `workflow/cosa-voice-integration.md` → "Handling Neither".
@@ -56,19 +56,6 @@
 
 ---
 
-## Sub-command: `/plan-review-reuse`
-
-Standalone REUSE pre-pass for Pattern 3 plans (single-doc `src/rnd/yyyy.mm.dd-slug.md` files) or any pre-doc-creation reuse audit.
-
-- Skips Pass 1 (Fitness) and Pass 2 (Ownership-Language Audit) entirely.
-- Runs the REUSE prompt from §4 of the canonical workflow against the target doc and codebase.
-- Output: prior-art findings table, no gate (since there's only one pass).
-- User decides which findings to apply; appends "Prior art referenced" section to the target doc.
-
-Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), on a Pattern 3 plan after serialization, or as an ad-hoc audit before adding a new helper to the codebase.
-
----
-
 ## Usage
 
 ```bash
@@ -76,19 +63,15 @@ Useful invocation contexts: during `/p-is-p-01-planning` (before doc-creation), 
 /plan-review --from=fitness                          # resume after REUSE fixes already applied
 /plan-review --from=ownership                        # resume after Pass 1 (Fitness) fixes already applied (renamed from --from=adversarial 2026-05-15)
 /plan-review --doc-set=src/rnd/v0.1.7/cj-flow-...    # target a specific milestone
-/plan-review --skip-with-reason "research-only plan, no executable work"
-
-/plan-review-reuse                                   # standalone REUSE pre-pass on auto-detected plan
-/plan-review-reuse --doc=src/rnd/2026.04.27-foo.md   # standalone REUSE on a specific Pattern 3 plan
 ```
 
 ---
 
 ## When to Use
 
-- **Mandatory**: After `/p-is-p-02-documentation` produces a Pattern A/B/C doc-set for Pattern 1/2/5/6 plans, **before any code is written**.
-- **Optional (REUSE only)**: For Pattern 3 plans, after serialization to `src/rnd/`, before code begins.
-- **Skip**: Pattern 4 (Investigation) plans skip entirely — the doc-set shape isn't there.
+- **Mandatory**: **Every plan document enters this gate before any code is written**, whatever pattern produced it — whether it is a Pattern A/B/C doc-set from `/p-is-p-02-documentation` or a single plan doc serialized to `src/rnd/`.
+- **The dispatch is internal** (`workflow/plan-review.md` §4a): **≥ 2 independently-reviewable sections → `/plan-review-cascaded`; otherwise → the critique branch**, which **spawns one critic seat** (self-critique does not satisfy it).
+- **Nothing to gate**: work that produces **no plan document** (e.g. an investigation that never serializes one) has nothing to enter — **out of scope by construction, not by exemption.**
 
 ---
 
