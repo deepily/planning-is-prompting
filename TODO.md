@@ -4,6 +4,17 @@ Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — wo
 
 ## 📍 Resume Here
 
+> ### **S212 — PR cut: pick up here on `wip-v0.2.2-2026.09.30-tracking-lupin`** (María 🌸 stable `fd3235a1`, 2026-09-30)
+>
+> Rick's broadcast `0375db54`: all three managers prepare their repos for PR; he merges on the repo server. **Do not create the new branch until he says the merge is done and `main` is pulled.**
+>
+> 1. **This repo at the cut**: `wip-v0.1.9-2026.06.23-tracking-lupin` was even with origin before this commit (fetched 2026-09-30, 0 ahead / 0 behind). My own board (`owner_persona=maria`) was empty.
+> 2. **After the merge**: `git checkout main && git pull`, then `git checkout -b wip-v0.2.2-2026.09.30-tracking-lupin`. Wait for Rick's marching orders before starting new work.
+> 3. **Rows I am accountable manager for** (both `lupin`, owned by Mr. Radio): stale-MCP delivery `97c5bd94` (`in_progress`; re-landed as `99845008f`, one DM per pid live) and approval-settings boundary `80513825` (`blocked` on Rick; merged `2e732e4cc` + `43d8990cc`).
+> 4. **Open lupin threads from S211** (see `history.md` S211): pixel comparators `4f5301ad` reverted, re-bless vs count tolerance is Rick's call · null prediction hint `759250e4` closes on `ts-9729a7ab` · door 18 retirement `a3c59f2d` approved at `9be8d5e49`.
+> 5. **Nightly VM deploy `6eaad077`**: still waits on Mr. Radio's first parity receipt (S210 item 2 below).
+> 6. **Untracked `io/memento-archive/`** (one 2026-09-22 pointer file) was left out of the PR; not mine to rule on.
+
 > ### **S210 — pick up here on 2026-09-29** (María 🌸 stable `87601812`, re-spun into `bab07bd3`)
 >
 > 1. **`bb1dcbfc` memento slug (P3), SPAWN FIRST**: the store chases at 13:00Z. The spawn brief is in memento §7.3: NFKD transliteration, refuse an unknown persona, a planted-bug proof, and no merge by the worker.
