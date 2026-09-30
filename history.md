@@ -22,7 +22,19 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 210 (2026-09-28, María 🌸 stable `87601812`, self-respun at 21:27 as `bab07bd3`, manager beside Mr. Radio and Tiffany)**: three workflow tools shipped, four lupin reviews, and the first Last Call filed from a live broadcast.
+**RESUME HERE**: **Session 211 (2026-09-29, María 🌸 stable `7cead4a3`, self-respun twice, manager beside Mr. Radio and Tiffany)**: branch lockdown and Last Call hardening shipped, then an evening of lupin reviews in which two merges were reverted the same night.
+
+1. **Shipped (plan), pushed 20:15**: branch lock `0a9b1d68` (`f820593`, `12b08ee`); Last Call reply address `8ad0a402` (`7c7f1e1`); skip a re-spin within 60 min of close `6380199b` + `b134feb9` (`bd596ce`, `d7e609c`); memento slugs strip accents `bb1dcbfc` (`1c70dd6`); plan-serialization Gate 0 (`011d8ad`).
+2. **Door 18 retirement `a3c59f2d`**: sent back at `e478e2c6c`. A refused suite name fell through to the receptionist, which the queued executor queued, so the reply said "waiting". The unit tests were green only because the harness's fake receptionist had no `id_hash`. Approved at `9be8d5e49` (builder `ValueError` → `SubmitRefused`).
+3. **Approval settings `80513825`**: Sam's `c9b7a02ae` approved (an unverified legacy file imports nothing; values logged); merged `2e732e4cc` + `43d8990cc`.
+4. **Stale-MCP delivery `97c5bd94`**: three rounds. (a) One raising seat lookup starved every other record. (b) The arbiter's DM payload had no `sender_project`, so **every** arbiter DM push, `manager_stale_poke` included, got a 422. (c) The dedup key `start_epoch` drifts a few ms per run (now − uptime), which re-DMed every pid each tick; merged as `cbef2f30a`, reverted as `f56990abb`, re-landed as `99845008f` keyed on `start_ticks`. Live: one DM per pid, none repeated in 150 s.
+5. **Pixel comparators `4f5301ad`**: code approved; the merge was gated on a real run. e2e_b added a 9 px red at threshold 0, so it was reverted the same evening (`cb06df64f`). A re-bless vs a count tolerance is Rick's call.
+6. **Null prediction hint `759250e4`** (Sam, `acb480a21`): approved; it closes on `ts-9729a7ab`.
+7. **Lesson**: my harness probe for (c) reused the same records every tick, so it could not see a drifting key. Probe with the real producer when the key comes from outside.
+
+**Files**: history.md
+
+**Previous RESUME HERE**: **Session 210 (2026-09-28, María 🌸 stable `87601812`, self-respun at 21:27 as `bab07bd3`, manager beside Mr. Radio and Tiffany)**: three workflow tools shipped, four lupin reviews, and the first Last Call filed from a live broadcast.
 
 1. **Shipped (plan)**: orphan/overdue session-end check `3dead4cb` (`b23a579`, `2fe11fb`; Tiffany PASS); nightly VM deploy `6eaad077` (`71cd76c`, `70e62b6`, `069d205`), still blocked until Mr. Radio's first parity receipt; memento sweep keeps a kept pointer's record `cb8f7757` (`1fa8655`).
 2. **Doc-link P0 `47759aa3` DONE** (`831a5a289`, ts-8e25e914 4/4). The "where's my button" report was fixed by a hard refresh.
