@@ -4,6 +4,29 @@ Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — wo
 
 ## 📍 Resume Here
 
+> ### **S213 — Rick's return list, 2026-10-01 evening** (María 🌸 stable `588ff255`)
+>
+> Everything below waits on Rick. Nothing here is live owed work for a seat; the rows are in the store.
+>
+> **Pending decisions, in the order I would take them**
+>
+> 1. **Reuse check design** (`src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §6, five decisions). Recommended: adopt the evidence row now; a missing receipt is a finding, not a block; author and reviewer both check; hold the live Jev sweep until the exclusion list is wired and approved; ask lupin to serve non-lupin repositories.
+> 2. **MCP server** (`src/rnd/2026.10.01-cosa-voice-mcp-split-evaluation.md` §7, four decisions). Recommended: refactor inside one service; role-based mounting is his call; keep the 2026-09-30 ruling that lookup tools stay in the voice server until a live lookup time is measured.
+> 3. **The other TodoWrite mandates** (decision row "Decide: retire TodoWrite checklists in the other ~20 workflow and command files", `efa0a4cf`). Is a workflow's step checklist owed work? And `task-store-discipline.md` §3 contradicts its own store-only rule.
+> 4. **Title length**: the 60-character title target and the stamped `Plan N · Phase X of Y · Step X of Y` prefix disagree. The planning docs now say the target is for hand-written titles only; `task-store-discipline.md` line 82 does not say so yet.
+>
+> **Approve clicks in the holding area**
+>
+> - Tiffany: 19 rows under `epic:v0.2.2-documentation-update` to approve; 5 titled "DROP, DO NOT APPROVE" to drop (made on my wrong advice before his ruling).
+> - "Holding area: one-click approve of every held row under one story key" (lupin, `eb235858`, mine until a lupin seat takes it).
+> - "Adopt the hand-made v0.2.2 plan rows into stub manifests" (lupin, Cheech, `0d4039e0`); Cheech starts on the admit.
+>
+> **Landed today on `wip-v0.2.2-2026.09.30-tracking-lupin`, not pushed**: stub-manifest workflow `968a21f` → `c32d5ea`; importer merge `5f32231`; two documents `034c9ce`; p-is-p rewrite merge `9d49ec7`.
+>
+> **Waiting on others**: Jev gate `8f70cbac` closes when Cheech cites the merge and a live verdict from the dev run (chase 2026-10-02 11:00 EDT).
+>
+> **Calls I made while he was away** (for the post-game): the fleet cap refused Rachel's re-spin three times, so in-process helpers applied the review fixes and ran the re-check; both documents cite his spoken instruction as their authorization.
+
 > ### **S212 — PR cut: pick up here on `wip-v0.2.2-2026.09.30-tracking-lupin`** (María 🌸 stable `fd3235a1`, 2026-09-30)
 >
 > Rick's broadcast `0375db54`: all three managers prepare their repos for PR; he merges on the repo server. **Do not create the new branch until he says the merge is done and `main` is pulled.**
