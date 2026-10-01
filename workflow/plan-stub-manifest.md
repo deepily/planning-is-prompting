@@ -16,6 +16,7 @@
 2. **Nobody types plan rows by hand.** Rows come from the importer reading the manifest. A hand-made row has no stable key and the importer cannot keep it in step with the plan.
 3. **Everything the plan details goes in at once.** A phase the plan has not broken down yet goes in as a single row marked `STUB`, with the event that triggers its expansion.
 4. **The operator approves; the importer never does.** Rows land in the holding area (`not_approved`).
+5. **Finished work gets no row.** A plan adopted mid-flight starts at its first unfinished phase. The finished phases and steps stay in the manifest, marked with `done_receipt`, so the totals stay true: the first row on the board reads `Phase 3 of 7`, not `Phase 1 of 5`. Nobody creates a row in order to close it. (Rick, 2026-10-01: *"You can start at phase 3 of 7 and completely skip phases 0, 1 and 2 because they're already done. I do not want her to create stubs just so that we can turn around and cancel."*)
 
 ## 2. Title grammar
 
@@ -34,7 +35,9 @@ The importer writes every title. Authors supply only the short name.
 
 ## 3. The manifest file
 
-A JSON sidecar next to the plan: `<plan-file-basename>.stubs.json`. JSON, because the importer is standard-library Python and an agent writes this file, not a person.
+A JSON file named `<plan-name>.stubs.json`. JSON, because the importer is standard-library Python and an agent writes this file, not a person.
+
+**Where it lives**: anywhere the repo allows a `.json` — the importer takes a path. **Not in `src/rnd/`**, which accepts only `.md` (the write guard refuses it, measured 2026-10-01 in lupin-mobile). `src/docs/plan-stubs/` is the working convention. `plan_ref` points back at the plan.
 
 ```json
 {
@@ -79,6 +82,7 @@ A JSON sidecar next to the plan: `<plan-file-basename>.stubs.json`. JSON, becaus
 | `item_class` | `task`, `decision`, or `gate`. An operator decision inside a phase is a step like any other, so it is counted and visible |
 | `depends_on` | Keys in this manifest. Becomes `blocked_by` on the row. A phase row is blocked by the previous phase's row unless stated otherwise |
 | `steps: []` | Means "not broken down yet" and **requires** `expand_trigger`. An empty list with no trigger fails validation |
+| `done_receipt` | Optional, on a step: the commit or other receipt showing it was finished before the import. A step that carries it is **counted in the totals and never becomes a row**; a phase whose steps all carry it gets no phase row |
 | `owner_persona` | The build manager who will own the rows. Roles go in `owner_role`; the manager assigns people |
 
 ## 4. The importer
@@ -107,7 +111,7 @@ Expanding a `STUB` phase, or adding a step, is **an edit to the manifest followe
 
 Added to the handoff light-review as criterion 7. Each is a checkable claim; say which you ran.
 
-1. The manifest exists next to the plan and `validate` exits clean.
+1. The manifest exists, its `plan_ref` points at this plan, and `validate` exits clean.
 2. Every phase in the plan appears in the manifest, and the phase count in the manifest equals the phase count in the plan.
 3. Every step the plan describes for an expanded phase appears as a step; no step exists that the plan does not describe.
 4. Every operator decision the plan names is a `decision` or `gate` step, not prose.
