@@ -38,6 +38,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -64,7 +65,7 @@ TOP_FIELDS    = ( "plan_ref", "project", "prefix", "plan_number", "plan_name", "
                   "owner_persona", "phases" )
 PHASE_FIELDS  = ( "phase", "name", "steps", "expand_trigger", "depends_on" )
 STEP_FIELDS   = ( "key", "name", "item_class", "priority", "acceptance", "owner_role", "depends_on",
-                  "gate_class" )
+                  "gate_class", "done_receipt" )
 
 
 class ManifestError( Exception ):
@@ -121,14 +122,48 @@ def load_manifest( path ):
         raise ManifestError( f"{path} is not valid JSON: {e}" )
 
 
-def plan_file_for( manifest_path ):
+def resolve_repo_root( manifest_path, repo_root=None ):
     """
+    The repository `plan_ref` is relative to.
+
+    Requires:
+        - manifest_path names the manifest file
+        - repo_root is the --repo-root value, or None
+
     Ensures:
-        - returns the plan file that sits next to `<basename>.stubs.json`, i.e. `<basename>.md`
+        - returns repo_root as a Path when given
+        - otherwise returns the git top level of the manifest's own directory
+
+    Raises:
+        - ManifestError when no root was given and the manifest is not inside a git repository
     """
-    name = Path( manifest_path ).name
-    stem = name[ : -len( ".stubs.json" ) ] if name.endswith( ".stubs.json" ) else Path( name ).stem
-    return Path( manifest_path ).with_name( stem + ".md" )
+    if repo_root: return Path( repo_root )
+    here = Path( manifest_path ).resolve().parent
+    try:
+        proc = subprocess.run( [ "git", "-C", str( here ), "rev-parse", "--show-toplevel" ],
+                               capture_output=True, text=True )
+    except OSError as e:
+        raise ManifestError( f"cannot run git to find the repo root ({e}); pass --repo-root" )
+    if proc.returncode != 0:
+        raise ManifestError( f"{here} is not inside a git repository; pass --repo-root" )
+    return Path( proc.stdout.strip() )
+
+
+def plan_file_for( m, root ):
+    """
+    Requires:
+        - m is a manifest whose plan_ref may be absent or malformed
+        - root is the repo root
+
+    Ensures:
+        - returns the plan file Path, root / plan_ref, or None when plan_ref is not a usable
+          repo-relative path (absolute, or climbing out with "..")
+    """
+    ref = m.get( "plan_ref" ) if isinstance( m, dict ) else None
+    if not _is_str( ref ): return None
+    path = Path( ref )
+    if path.is_absolute() or ".." in path.parts: return None
+    return Path( root ) / path
 
 
 def plan_phase_numbers( plan_text ):
@@ -261,6 +296,8 @@ def validate_manifest( m, plan_text=None ):
                 errs.append( f"{swhere}: gate_class must be one of {GATE_CLASSES}" )
             if "owner_role" in st and not _is_str( st[ "owner_role" ] ):
                 errs.append( f"{swhere}: owner_role must be a non-empty string" )
+            if "done_receipt" in st and not _is_str( st[ "done_receipt" ] ):
+                errs.append( f"{swhere}: done_receipt must be a non-empty string (the commit or receipt)" )
             deps = st.get( "depends_on", [] )
             if not isinstance( deps, list ) or not all( isinstance( x, str ) for x in deps ):
                 errs.append( f"{swhere}: depends_on must be a list of keys" )
@@ -319,31 +356,60 @@ def _find_cycle( graph ):
     return None
 
 
-def validate_file( manifest_path ):
+def validate_file( manifest_path, repo_root=None ):
     """
     Requires:
         - manifest_path names a manifest file
+        - repo_root is the --repo-root value, or None for the manifest directory's git top level
 
     Ensures:
-        - returns ( manifest, errors ); the plan-heading check runs when the plan file sits next to
-          the manifest, and its absence is itself an error
+        - returns ( manifest, errors ); the plan-heading check runs against root / plan_ref, and a
+          plan file that cannot be found is itself an error
 
     Raises:
-        - ManifestError when the file cannot be read as JSON
+        - ManifestError when the file cannot be read as JSON, or no repo root can be found
     """
     m      = load_manifest( manifest_path )
-    plan   = plan_file_for( manifest_path )
+    root   = resolve_repo_root( manifest_path, repo_root )
+    plan   = plan_file_for( m, root )
     errors = []
-    try:
-        text = plan.read_text( encoding="utf-8" )
-    except OSError:
-        text = None
-        errors.append( f"plan file not found next to the manifest: {plan.name}" )
-    errors = validate_manifest( m, text ) + errors
-    return m, errors
+    text   = None
+    if plan is None:
+        errors.append( "plan_ref must be a path relative to the repo root (no leading / and no ..)" )
+    else:
+        try:
+            text = plan.read_text( encoding="utf-8" )
+        except OSError:
+            errors.append( f"plan file not found: {plan} (plan_ref is resolved from {root})" )
+    return m, validate_manifest( m, text ) + errors
 
 
 # ── titles and rows ──────────────────────────────────────────────────────────────────────────────
+
+def phase_is_finished( ph ):
+    """
+    Requires:
+        - ph is a phase dict from a valid manifest
+
+    Ensures:
+        - returns True when the phase has steps and every one carries done_receipt. Such a phase
+          gets no phase row (finished work gets no row; spec section 1 rule 5)
+    """
+    return bool( ph[ "steps" ] ) and all( "done_receipt" in st for st in ph[ "steps" ] )
+
+
+def finished_keys( m ):
+    """
+    Ensures:
+        - returns the set of manifest keys that carry no row because the work was finished before
+          the import: every step with done_receipt, and the row of every finished phase
+    """
+    out = set()
+    for ph in m[ "phases" ]:
+        if phase_is_finished( ph ): out.add( phase_key( ph[ "phase" ] ) )
+        out.update( st[ "key" ] for st in ph[ "steps" ] if "done_receipt" in st )
+    return out
+
 
 def build_rows( m ):
     """
@@ -360,7 +426,9 @@ def build_rows( m ):
             [PREFIX] Plan N · Phase P of T · STUB · <phase name> (expand when <trigger>)
         - "Plan N" is spelled out, and "of N" is computed here from the manifest, never typed
         - a row's depends_on holds keys; a phase row depends on the previous phase unless it names
-          its own
+          its own. Keys that carry no row (finished before the import) are left out of it
+        - a step with done_receipt gets NO row but still counts: it keeps its place in "Step S of M",
+          so the totals stay true. A phase whose steps all carry done_receipt gets no phase row
     """
     prefix  = m[ "prefix" ]
     plan_n  = m[ "plan_number" ]
@@ -369,6 +437,7 @@ def build_rows( m ):
     ck      = m[ "correlation_key" ]
     head    = f"[{prefix}] Plan {plan_n}"
     rows    = []
+    gone    = finished_keys( m )
 
     for ph in phases:
         n     = ph[ "phase" ]
@@ -379,7 +448,8 @@ def build_rows( m ):
             title = f"{head} · Phase {n} of {total} · {ph[ 'name' ]}"
         else:
             title = f"{head} · Phase {n} of {total} · STUB · {ph[ 'name' ]} (expand when {ph[ 'expand_trigger' ]})"
-        rows.append( {
+        deps  = [ d for d in deps if d not in gone ]
+        if not phase_is_finished( ph ): rows.append( {
             "key"        : pk,
             "kind"       : "phase",
             "title"      : title,
@@ -392,6 +462,7 @@ def build_rows( m ):
             "stub_key"   : f"{ck}#{pk}",
         } )
         for si, st in enumerate( steps, start=1 ):
+            if "done_receipt" in st: continue
             rows.append( {
                 "key"        : st[ "key" ],
                 "kind"       : "step",
@@ -399,7 +470,7 @@ def build_rows( m ):
                 "item_class" : st[ "item_class" ],
                 "priority"   : st.get( "priority", "P5" ),
                 "gate_class" : st.get( "gate_class", "none" ),
-                "depends_on" : st.get( "depends_on", [] ),
+                "depends_on" : [ d for d in st.get( "depends_on", [] ) if d not in gone ],
                 "acceptance" : st[ "acceptance" ],
                 "owner_role" : st.get( "owner_role" ),
                 "stub_key"   : f"{ck}#{st[ 'key' ]}",
@@ -499,7 +570,8 @@ def plan_actions( m, existing ):
         - action is { row, do, title, store_title, trims, id } with do in create | present | restamp
         - a row whose stored title already equals the stamped title as the store would keep it is
           `present`, so an over-cap title does not re-stamp on every run
-        - removed lists existing stub_keys that left the manifest; they are reported, never deleted
+        - removed lists existing stub_keys that left the manifest, or that now carry done_receipt;
+          they are reported, never deleted
     """
     rows, actions, wanted = build_rows( m ), [], set()
     for r in rows:
@@ -512,7 +584,10 @@ def plan_actions( m, existing ):
         else:                            do = "present"
         actions.append( { "row": r, "do": do, "title": r[ "title" ], "store_title": kept,
                           "trims": trims, "id": have[ "id" ] if have else None } )
-    removed = [ { "stub_key": k, "id": t[ "id" ], "title": t[ "title" ], "status": t[ "status" ] }
+    ck      = m[ "correlation_key" ]
+    done    = { f"{ck}#{k}" for k in finished_keys( m ) }
+    removed = [ { "stub_key": k, "id": t[ "id" ], "title": t[ "title" ], "status": t[ "status" ],
+                  "why": "now marked done_receipt" if k in done else "no longer in the manifest" }
                 for k, t in existing.items() if k not in wanted ]
     return actions, removed
 
@@ -576,7 +651,7 @@ def run_import( m, write, actor, offline=False, out=print ):
     if unkeyed:
         out( f"  NOTE: {unkeyed} row(s) under this key have no stub_key line (hand-made) and were left alone." )
     for r in removed:
-        out( f"  REMOVED FROM MANIFEST, NOT DELETED: {r[ 'stub_key' ]} · {r[ 'status' ]} · {r[ 'title' ]} · {r[ 'id' ]}" )
+        out( f"  REMOVED FROM MANIFEST, NOT DELETED ({r[ 'why' ]}): {r[ 'stub_key' ]} · {r[ 'status' ]} · {r[ 'title' ]} · {r[ 'id' ]}" )
 
     for a in actions:
         if a[ "do" ] == "present": report[ "present" ].append( a[ "row" ][ "key" ] )
@@ -628,23 +703,28 @@ def compute_status( m, existing ):
     Ensures:
         - returns { phases_done, phases_total, live_phase, steps_done, steps_total, blocked,
           held, missing, dropped }
-        - a phase is done when its own row and every one of its step rows are `done`
+        - work finished before the import (done_receipt) counts as done and is never "missing"
+        - a phase is done when its own row (if it has one) and every one of its step rows are `done`
         - the live phase is the first phase that is not done, or None when all are
         - `blocked` lists { key, on } for every row in status `blocked`, naming kind:id
         - `held` counts rows still awaiting approval (`not_approved`)
-        - `missing` lists manifest keys with no row on the board
+        - `missing` lists manifest keys that should have a row and have none on the board
     """
-    ck = m[ "correlation_key" ]
+    ck     = m[ "correlation_key" ]
     phases = sorted( m[ "phases" ], key=lambda p: p[ "phase" ] )
+    gone   = finished_keys( m )
     done_phases, live, missing, blocked, held, dropped = 0, None, [], [], 0, 0
     steps_done = steps_total = 0
 
-    def row_of( key ): return existing.get( f"{ck}#{key}" )
+    def is_done( k ):
+        r = existing.get( f"{ck}#{k}" )
+        return k in gone or ( r is not None and r[ "status" ] == "done" )
 
     for ph in phases:
-        keys   = [ phase_key( ph[ "phase" ] ) ] + [ s[ "key" ] for s in ph[ "steps" ] ]
-        rows   = [ row_of( k ) for k in keys ]
-        for k, r in zip( keys, rows ):
+        keys = [ phase_key( ph[ "phase" ] ) ] + [ s[ "key" ] for s in ph[ "steps" ] ]
+        for k in keys:
+            if k in gone: continue
+            r = existing.get( f"{ck}#{k}" )
             if r is None:
                 missing.append( k )
                 continue
@@ -653,14 +733,12 @@ def compute_status( m, existing ):
             if r[ "status" ] == "blocked":
                 on = ", ".join( f"{b.get( 'kind' )}:{b.get( 'id' )}" for b in ( r.get( "blocked_by" ) or [] ) ) or "unspecified"
                 blocked.append( { "key": k, "on": on } )
-        is_done = all( r is not None and r[ "status" ] == "done" for r in rows )
-        if is_done:
+        if all( is_done( k ) for k in keys ):
             done_phases += 1
         elif live is None:
-            live = ph
-            step_rows   = rows[ 1: ]
+            live        = ph
             steps_total = len( ph[ "steps" ] )
-            steps_done  = sum( 1 for r in step_rows if r is not None and r[ "status" ] == "done" )
+            steps_done  = sum( 1 for st in ph[ "steps" ] if is_done( st[ "key" ] ) )
 
     return { "phases_done": done_phases, "phases_total": len( phases ), "live_phase": live,
              "steps_done": steps_done, "steps_total": steps_total, "blocked": blocked,
@@ -711,6 +789,8 @@ def main( argv=None ):
                             ( "status",   "read-only progress report" ) ):
         p = sub.add_parser( name, help=helptext )
         p.add_argument( "manifest" )
+        p.add_argument( "--repo-root", default=None,
+                        help="the repo plan_ref is relative to; default: the git top level of the manifest's directory" )
         if name == "import":
             p.add_argument( "--write",   action="store_true", help="actually create and re-stamp rows" )
             p.add_argument( "--actor",   default=os.environ.get( "PLAN_STUB_ACTOR" ),
@@ -720,7 +800,7 @@ def main( argv=None ):
     args = parser.parse_args( argv )
 
     try:
-        m, errors = validate_file( args.manifest )
+        m, errors = validate_file( args.manifest, args.repo_root )
     except ManifestError as e:
         print( f"PLAN STUB: {e}", file=sys.stderr )
         return 3

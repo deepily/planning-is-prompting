@@ -43,7 +43,7 @@ def step( key, name, **kw ):
 def good_manifest():
     """Two phases, both expanded: three steps, then two."""
     return {
-        "plan_ref"        : "src/rnd/plan.md",
+        "plan_ref"        : "src/plans/plan.md",
         "project"         : "plan",
         "prefix"          : "TST",
         "plan_number"     : 2,
@@ -151,9 +151,13 @@ def store( tmp_path, monkeypatch ):
 
 
 def write_manifest( tmp_path, m, plan=PLAN_MD ):
-    path = tmp_path / "plan.stubs.json"
+    """The manifest lives in manifests/, NOT beside the plan; plan_ref is repo-relative to tmp_path."""
+    path = tmp_path / "manifests" / "plan.stubs.json"
+    path.parent.mkdir( parents=True, exist_ok=True )
     path.write_text( json.dumps( m ), encoding="utf-8" )
-    if plan is not None: ( tmp_path / "plan.md" ).write_text( plan, encoding="utf-8" )
+    if plan is not None:
+        ( tmp_path / "src" / "plans" ).mkdir( parents=True, exist_ok=True )
+        ( tmp_path / "src" / "plans" / "plan.md" ).write_text( plan, encoding="utf-8" )
     return path
 
 
@@ -180,8 +184,8 @@ def test_a_good_manifest_is_clean():
 
 
 def test_the_shipped_sample_manifest_is_clean():
-    sample = Path( __file__ ).resolve().parent.parent / "plan-stub-sample.stubs.json"
-    m, errs = pi.validate_file( sample )
+    sample = Path( __file__ ).resolve().parent.parent.parent / "src" / "docs" / "plan-stubs" / "plan-stub-sample.stubs.json"
+    m, errs = pi.validate_file( sample )      # no --repo-root: the git top level of the manifest's directory
     assert errs == []
     assert len( pi.build_rows( m ) ) == 5
 
@@ -298,26 +302,26 @@ def test_a_prose_mention_of_a_phase_is_not_a_heading():
 def test_validate_exits_3_on_a_bad_manifest_and_touches_no_store( tmp_path, store, capsys ):
     m = good_manifest()
     m[ "phases" ][ 0 ][ "steps" ][ 0 ].pop( "acceptance" )
-    assert pi.main( [ "validate", str( write_manifest( tmp_path, m ) ) ] ) == 3
+    assert pi.main( [ "validate", str( write_manifest( tmp_path, m ) ) , "--repo-root", str( tmp_path ) ] ) == 3
     assert store.calls == []
     assert "acceptance is required" in capsys.readouterr().err
 
 
 def test_validate_exits_0_on_a_good_manifest_and_touches_no_store( tmp_path, store ):
-    assert pi.main( [ "validate", str( write_manifest( tmp_path, good_manifest() ) ) ] ) == 0
+    assert pi.main( [ "validate", str( write_manifest( tmp_path, good_manifest() ) ) , "--repo-root", str( tmp_path ) ] ) == 0
     assert store.calls == []
 
 
 def test_a_missing_plan_file_fails_validation( tmp_path, store, capsys ):
     path = write_manifest( tmp_path, good_manifest(), plan=None )
-    assert pi.main( [ "validate", str( path ) ] ) == 3
+    assert pi.main( [ "validate", str( path ) , "--repo-root", str( tmp_path ) ] ) == 3
     assert "plan file not found" in capsys.readouterr().err
 
 
 def test_invalid_json_exits_3( tmp_path, capsys ):
-    bad = tmp_path / "plan.stubs.json"
+    bad = tmp_path / "bad.stubs.json"
     bad.write_text( "{ not json", encoding="utf-8" )
-    assert pi.main( [ "validate", str( bad ) ] ) == 3
+    assert pi.main( [ "validate", str( bad ) , "--repo-root", str( tmp_path ) ] ) == 3
 
 
 # ── title stamping ───────────────────────────────────────────────────────────────────────────────
@@ -384,7 +388,7 @@ def test_a_dry_run_prints_the_titles_and_writes_nothing( store ):
 
 def test_the_dry_run_is_the_default_from_the_command_line( tmp_path, store ):
     path = write_manifest( tmp_path, good_manifest() )
-    assert pi.main( [ "import", str( path ) ] ) == 0
+    assert pi.main( [ "import", str( path ) , "--repo-root", str( tmp_path ) ] ) == 0
     assert writes( store ) == []
 
 
@@ -442,13 +446,13 @@ def test_a_hand_made_row_without_a_stub_key_is_left_alone( store ):
 
 def test_write_needs_an_actor( tmp_path, store ):
     path = write_manifest( tmp_path, good_manifest() )
-    assert pi.main( [ "import", str( path ), "--write" ] ) == 3
+    assert pi.main( [ "import", str( path ), "--write" , "--repo-root", str( tmp_path ) ] ) == 3
     assert writes( store ) == []
 
 
 def test_write_refuses_a_malformed_actor( tmp_path, store ):
     path = write_manifest( tmp_path, good_manifest() )
-    assert pi.main( [ "import", str( path ), "--write", "--actor", "cheech" ] ) == 3
+    assert pi.main( [ "import", str( path ), "--write", "--actor", "cheech" , "--repo-root", str( tmp_path ) ] ) == 3
 
 
 def test_an_unreadable_board_is_exit_1_not_an_empty_board( tmp_path, monkeypatch ):
@@ -621,7 +625,7 @@ def test_status_is_read_only_and_prints_the_summary( tmp_path, store, capsys ):
     run( good_manifest(), True, store )
     store.calls.clear()
     path = write_manifest( tmp_path, good_manifest() )
-    assert pi.main( [ "status", str( path ) ] ) == 0
+    assert pi.main( [ "status", str( path ) , "--repo-root", str( tmp_path ) ] ) == 0
     assert writes( store ) == []
     out = capsys.readouterr().out
     assert "phases done: 0 of 2" in out and "steps done: 0 of 3" in out
@@ -632,4 +636,133 @@ def test_status_on_an_unreadable_board_exits_1( tmp_path, monkeypatch ):
     key = tmp_path / "key"
     key.write_text( "k", encoding="utf-8" )
     monkeypatch.setenv( "PLAN_STUB_API_KEY_FILE", str( key ) )
-    assert pi.main( [ "status", str( write_manifest( tmp_path, good_manifest() ) ) ] ) == 1
+    assert pi.main( [ "status", str( write_manifest( tmp_path, good_manifest() ) ) , "--repo-root", str( tmp_path ) ] ) == 1
+
+
+# ── finished work gets no row (done_receipt) ─────────────────────────────────────────────────────
+
+PLAN_MD_4 = "".join( f"## Phase {n} — P{n}\n\n" for n in ( 1, 2, 3, 4 ) )
+
+
+def adopted_manifest():
+    """A plan adopted mid-flight: phases 1 and 2 finished, phase 3 half done, phase 4 not broken down."""
+    m = good_manifest()
+    m[ "phases" ] = [
+        { "phase": 1, "name": "Done one", "steps": [ step( "d1", "Old one", done_receipt="abc1234" ),
+                                                       step( "d2", "Old two", done_receipt="abc1235" ) ] },
+        { "phase": 2, "name": "Done two", "steps": [ step( "d3", "Old three", done_receipt="abc1236" ) ] },
+        { "phase": 3, "name": "Live",     "steps": [ step( "l1", "Finished early", done_receipt="def5678" ),
+                                                       step( "l2", "Open one", depends_on=[ "l1", "d3" ] ),
+                                                       step( "l3", "Open two", depends_on=[ "l2" ] ) ] },
+        { "phase": 4, "name": "Later",    "steps": [], "expand_trigger": "Phase 3 closes" },
+    ]
+    return m
+
+
+def test_a_done_receipt_step_is_valid_and_a_blank_one_is_not():
+    assert pi.validate_manifest( adopted_manifest(), PLAN_MD_4 ) == []
+    m = adopted_manifest()
+    m[ "phases" ][ 0 ][ "steps" ][ 0 ][ "done_receipt" ] = "  "
+    assert any( "done_receipt must be" in e for e in pi.validate_manifest( m, PLAN_MD_4 ) )
+
+
+def test_finished_phases_and_steps_get_no_row_and_the_first_row_reads_phase_3_of_4():
+    titles = [ r[ "title" ] for r in pi.build_rows( adopted_manifest() ) ]
+    assert titles == [
+        "[TST] Plan 2 · Phase 3 of 4 · Live",
+        "[TST] Plan 2 · Phase 3 of 4 · Step 2 of 3 · Open one",
+        "[TST] Plan 2 · Phase 3 of 4 · Step 3 of 3 · Open two",
+        "[TST] Plan 2 · Phase 4 of 4 · STUB · Later (expand when Phase 3 closes)",
+    ]
+
+
+def test_a_phase_with_one_finished_step_still_has_its_phase_row():
+    keys = [ r[ "key" ] for r in pi.build_rows( adopted_manifest() ) ]
+    assert "ph3" in keys and "ph1" not in keys and "ph2" not in keys
+    assert not any( k in keys for k in ( "d1", "d2", "d3", "l1" ) )
+
+
+def test_a_dependency_on_finished_work_is_left_out_of_the_body_but_still_validates():
+    rows = { r[ "key" ]: r for r in pi.build_rows( adopted_manifest() ) }
+    assert rows[ "l2" ][ "depends_on" ] == []
+    assert rows[ "l3" ][ "depends_on" ] == [ "l2" ]
+    assert "depends_on: ph3" in pi.row_body( adopted_manifest(), rows[ "ph4" ] )
+    assert rows[ "ph3" ][ "depends_on" ] == []                       # its only dependency, ph2, was finished
+    m = adopted_manifest()
+    m[ "phases" ][ 2 ][ "steps" ][ 1 ][ "depends_on" ] = [ "ghost" ]
+    assert any( "'ghost' does not resolve" in e for e in pi.validate_manifest( m, PLAN_MD_4 ) )
+
+
+def test_importing_an_adopted_plan_posts_only_the_open_rows( store ):
+    code, report, text = run( adopted_manifest(), True, store )
+    assert code == 0 and report[ "created" ] == [ "ph3", "l2", "l3", "ph4" ]
+    assert len( [ c for c in store.calls if c[ 0 ] == "POST" ] ) == 4
+    assert "Phase 1 of 4" not in text
+
+
+def test_status_counts_finished_work_as_done_and_never_as_missing( store ):
+    run( adopted_manifest(), True, store )
+    existing, _, _ = pi.fetch_existing( adopted_manifest() )
+    s = pi.compute_status( adopted_manifest(), existing )
+    assert s[ "missing" ] == []
+    assert ( s[ "phases_done" ], s[ "phases_total" ] ) == ( 2, 4 )
+    assert s[ "live_phase" ][ "phase" ] == 3
+    assert ( s[ "steps_done" ], s[ "steps_total" ] ) == ( 1, 3 )      # l1 finished before the import
+
+
+def test_a_row_that_already_exists_for_work_now_marked_finished_is_reported_not_deleted( store ):
+    base = good_manifest()
+    run( base, True, store )
+    marked = copy.deepcopy( base )
+    marked[ "phases" ][ 0 ][ "steps" ][ 0 ][ "done_receipt" ] = "abc1234"      # a1 was finished after all
+    store.calls.clear()
+    code, report, text = run( marked, True, store )
+    assert [ r[ "stub_key" ] for r in report[ "removed" ] ] == [ f"{CK}#a1" ]
+    assert report[ "removed" ][ 0 ][ "why" ] == "now marked done_receipt"
+    assert "DELETE" not in [ c[ 0 ] for c in store.calls ] and len( store.rows ) == 7
+
+
+# ── plan_ref and --repo-root ─────────────────────────────────────────────────────────────────────
+
+def test_plan_ref_resolves_from_repo_root_not_from_the_manifests_directory( tmp_path, store ):
+    path = write_manifest( tmp_path, good_manifest() )
+    assert not ( path.parent / "plan.md" ).exists()                  # nothing beside the manifest
+    m, errs = pi.validate_file( path, repo_root=tmp_path )
+    assert errs == []
+
+
+def test_a_wrong_repo_root_names_the_file_it_looked_for( tmp_path ):
+    path = write_manifest( tmp_path, good_manifest() )
+    other = tmp_path / "elsewhere"
+    other.mkdir()
+    m, errs = pi.validate_file( path, repo_root=other )
+    assert any( "plan file not found" in e and "elsewhere" in e for e in errs )
+
+
+@pytest.mark.parametrize( "ref", [ "/etc/passwd", "../outside/plan.md", "src/../../plan.md" ] )
+def test_a_plan_ref_that_is_not_repo_relative_is_rejected( tmp_path, ref ):
+    m = good_manifest()
+    m[ "plan_ref" ] = ref
+    path = write_manifest( tmp_path, m )
+    _, errs = pi.validate_file( path, repo_root=tmp_path )
+    assert any( "relative to the repo root" in e for e in errs )
+
+
+def test_without_a_repo_root_the_default_is_the_git_top_level_of_the_manifests_directory( tmp_path ):
+    import subprocess
+    repo = tmp_path / "repo"
+    ( repo / "docs" / "stubs" ).mkdir( parents=True )
+    subprocess.run( [ "git", "init", "-q", str( repo ) ], check=True )
+    ( repo / "src" / "plans" ).mkdir( parents=True )
+    ( repo / "src" / "plans" / "plan.md" ).write_text( PLAN_MD, encoding="utf-8" )
+    manifest = repo / "docs" / "stubs" / "plan.stubs.json"
+    manifest.write_text( json.dumps( good_manifest() ), encoding="utf-8" )
+    assert pi.resolve_repo_root( manifest ).resolve() == repo.resolve()
+    _, errs = pi.validate_file( manifest )
+    assert errs == []
+
+
+def test_a_manifest_outside_any_git_repo_with_no_repo_root_exits_3( tmp_path, capsys ):
+    path = write_manifest( tmp_path, good_manifest() )
+    assert pi.main( [ "validate", str( path ) ] ) == 3
+    assert "pass --repo-root" in capsys.readouterr().err
