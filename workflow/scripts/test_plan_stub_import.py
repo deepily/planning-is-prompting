@@ -125,6 +125,11 @@ def make_handler( store ):
             row = next( ( r for r in store.rows if r[ "id" ] == tid ), None )
             if row is None: return self._send( 404, {} )
             if len( body[ "title" ] ) > pi.TITLE_CAP: return self._send( 422, { "detail": "title too long" } )
+            # the real store (routers/tasks.py ~2852, validate_terminal_edit_fields): a closed row accepts
+            # only a title that keeps the old title intact behind a marker, never a re-stamp
+            if row[ "status" ] in pi.TERMINAL and not ( body[ "title" ].endswith( row[ "title" ] )
+                                                       and body[ "title" ] != row[ "title" ] ):
+                return self._send( 422, { "detail": f"item is terminal ('{row[ 'status' ]}') — no edits to closed history" } )
             row[ "title" ] = body[ "title" ]
             self._send( 200, row )
 
@@ -184,7 +189,8 @@ def test_a_good_manifest_is_clean():
 
 
 def test_the_shipped_sample_manifest_is_clean():
-    sample = Path( __file__ ).resolve().parent.parent.parent / "src" / "docs" / "plan-stubs" / "plan-stub-sample.stubs.json"
+    root   = pi.resolve_repo_root( __file__ )              # the git top level of this test's directory
+    sample = root / "src" / "docs" / "plan-stubs" / "plan-stub-sample.stubs.json"
     m, errs = pi.validate_file( sample )      # no --repo-root: the git top level of the manifest's directory
     assert errs == []
     assert len( pi.build_rows( m ) ) == 5
@@ -280,9 +286,21 @@ def test_a_bad_item_class_and_priority_are_rejected():
     assert any( "item_class" in e for e in errs ) and any( "priority" in e for e in errs )
 
 
-def test_phase_numbers_must_run_one_to_n():
+def test_phase_numbers_must_run_without_gaps():
     errs = errors_for( lambda m: m[ "phases" ][ 1 ].update( phase=4 ) )
-    assert any( "numbered 1 to 2" in e for e in errs )
+    assert any( "no gaps" in e for e in errs )
+
+
+@pytest.mark.parametrize( "first", [ 2, 5 ] )
+def test_phases_may_not_start_above_one( first ):
+    def mutate( m ):
+        m[ "phases" ][ 0 ][ "phase" ] = first
+        m[ "phases" ][ 1 ][ "phase" ] = first + 1
+    assert any( "no gaps" in e for e in errors_for( mutate ) )
+
+
+def test_a_negative_phase_is_rejected():
+    assert any( "integer >= 0" in e for e in errors_for( lambda m: m[ "phases" ][ 0 ].update( phase=-1 ) ) )
 
 
 def test_a_plan_with_more_phase_headings_than_the_manifest_is_rejected():
@@ -766,3 +784,106 @@ def test_a_manifest_outside_any_git_repo_with_no_repo_root_exits_3( tmp_path, ca
     path = write_manifest( tmp_path, good_manifest() )
     assert pi.main( [ "validate", str( path ) ] ) == 3
     assert "pass --repo-root" in capsys.readouterr().err
+
+
+# ── closed rows are never re-stamped ─────────────────────────────────────────────────────────────
+
+def close( store, key, status="done" ):
+    for r in store.rows:
+        if r[ "body" ].startswith( f"stub_key: {CK}#{key}" ):
+            r[ "status" ] = status
+            return
+    raise AssertionError( key )
+
+
+def grown_with_phase_3():
+    grown = good_manifest()
+    grown[ "phases" ].append( { "phase": 3, "name": "Gamma", "steps": [ step( "c1", "Sixth" ) ] } )
+    return grown
+
+
+def test_the_fake_refuses_a_restamp_of_a_closed_row_like_the_real_store( store ):
+    run( good_manifest(), True, store )
+    close( store, "a1" )
+    row = next( r for r in store.rows if r[ "body" ].startswith( f"stub_key: {CK}#a1" ) )
+    code, _ = pi.call( "PATCH", f"/api/tasks/{row[ 'id' ]}", payload={ "title": "x", "actor": ACTOR } )
+    assert code == 422
+
+
+def test_a_plan_that_grows_after_steps_close_exits_0_and_leaves_the_closed_rows_alone( store ):
+    run( good_manifest(), True, store )
+    close( store, "ph1" )
+    close( store, "a1" )
+    close( store, "a2", "dropped" )
+    store.calls.clear()
+    code, report, text = run( grown_with_phase_3(), True, store )
+    assert code == 0 and report[ "failed" ] == []
+    assert sorted( report[ "left_closed" ] ) == [ "a1", "a2", "ph1" ]
+    patched = [ c[ 1 ] for c in store.calls if c[ 0 ] == "PATCH" ]
+    closed_ids = { r[ "id" ] for r in store.rows if r[ "status" ] in pi.TERMINAL }
+    assert not any( pid.rsplit( "/", 1 )[ -1 ] in closed_ids for pid in patched )
+    assert "closed, left as is 3" in text
+    # the open rows were still re-stamped
+    assert "a3" in report[ "restamped" ] and "ph2" in report[ "restamped" ]
+
+
+def test_every_run_after_that_is_also_exit_0( store ):
+    run( good_manifest(), True, store )
+    close( store, "a1" )
+    run( grown_with_phase_3(), True, store )
+    code, report, _ = run( grown_with_phase_3(), True, store )
+    assert code == 0 and report[ "created" ] == [] and report[ "restamped" ] == []
+
+
+def test_a_closed_row_is_flagged_in_the_dry_run_table( store ):
+    run( good_manifest(), True, store )
+    close( store, "a1", "wont_fix" )
+    _, _, text = run( grown_with_phase_3(), False, store )
+    assert "closed row: title left as it is" in text
+
+
+# ── phases may start at 0 ────────────────────────────────────────────────────────────────────────
+
+PLAN_MD_0 = "".join( f"## Phase {n} — P{n}\n\n" for n in ( 0, 1, 2 ) )
+
+
+def zero_based_manifest():
+    m = good_manifest()
+    m[ "phases" ] = [
+        { "phase": 0, "name": "Setup", "steps": [ step( "z1", "Prepare" ), step( "z2", "Check", depends_on=[ "z1" ] ) ] },
+        { "phase": 1, "name": "Build", "steps": [ step( "z3", "Build it" ) ] },
+        { "phase": 2, "name": "Ship",  "steps": [], "expand_trigger": "Phase 1 closes" },
+    ]
+    return m
+
+
+def test_a_plan_numbered_from_zero_validates_against_a_phase_0_heading():
+    assert pi.validate_manifest( zero_based_manifest(), PLAN_MD_0 ) == []
+
+
+def test_of_n_is_the_highest_phase_number_so_0_to_2_ends_at_phase_2_of_2():
+    titles = [ r[ "title" ] for r in pi.build_rows( zero_based_manifest() ) ]
+    assert titles == [
+        "[TST] Plan 2 · Phase 0 of 2 · Setup",
+        "[TST] Plan 2 · Phase 0 of 2 · Step 1 of 2 · Prepare",
+        "[TST] Plan 2 · Phase 0 of 2 · Step 2 of 2 · Check",
+        "[TST] Plan 2 · Phase 1 of 2 · Build",
+        "[TST] Plan 2 · Phase 1 of 2 · Step 1 of 1 · Build it",
+        "[TST] Plan 2 · Phase 2 of 2 · STUB · Ship (expand when Phase 1 closes)",
+    ]
+
+
+def test_phase_1_depends_on_phase_0_and_phase_0_depends_on_nothing():
+    rows = { r[ "key" ]: r for r in pi.build_rows( zero_based_manifest() ) }
+    assert rows[ "ph0" ][ "depends_on" ] == [] and rows[ "ph1" ][ "depends_on" ] == [ "ph0" ]
+
+
+def test_a_one_based_plan_still_ends_at_its_phase_count():
+    assert all( "of 2" in r[ "title" ] for r in pi.build_rows( good_manifest() ) if r[ "kind" ] == "phase" )
+
+
+def test_status_names_the_zero_to_n_span( tmp_path, store, capsys ):
+    path = write_manifest( tmp_path, zero_based_manifest(), plan=PLAN_MD_0 )
+    run( zero_based_manifest(), True, store )
+    assert pi.main( [ "status", str( path ), "--repo-root", str( tmp_path ) ] ) == 0
+    assert "phases done: 0 of 3 (numbered 0 to 2)" in capsys.readouterr().out

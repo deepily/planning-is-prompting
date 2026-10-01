@@ -50,6 +50,7 @@ from pathlib import Path
 TITLE_CAP        = 120
 API_KEY_RELATIVE = "src/conf/keys/notification-api-claude-code-dev"
 
+TERMINAL      = ( "done", "dropped", "wont_fix" )   # lupin task_store_rules.TERMINAL_STATUSES
 ITEM_CLASSES  = ( "task", "decision", "gate" )
 GATE_CLASSES  = ( "none", "manager", "operator" )
 PRIORITY_RE   = re.compile( r"^P[0-5]$" )
@@ -230,6 +231,7 @@ def validate_manifest( m, plan_text=None ):
     if phases is None:
         return errs
 
+    numbers       = { ph.get( "phase" ) for ph in phases if isinstance( ph, dict ) }
     seen_keys     = {}        # key -> description
     phase_numbers = []
     graph         = {}        # key -> list of keys it depends on
@@ -242,8 +244,8 @@ def validate_manifest( m, plan_text=None ):
         for f in ph:
             if f not in PHASE_FIELDS: errs.append( f"{where}: unknown field: {f}" )
         n = ph.get( "phase" )
-        if not isinstance( n, int ) or isinstance( n, bool ) or n < 1:
-            errs.append( f"{where}: phase must be an integer >= 1" )
+        if not isinstance( n, int ) or isinstance( n, bool ) or n < 0:
+            errs.append( f"{where}: phase must be an integer >= 0" )
             continue
         where = f"phase {n}"
         phase_numbers.append( n )
@@ -252,7 +254,7 @@ def validate_manifest( m, plan_text=None ):
         pk = phase_key( n )
         if pk in seen_keys: errs.append( f"duplicate phase number: {n}" )
         seen_keys[ pk ] = where
-        graph[ pk ]     = [ phase_key( n - 1 ) ] if n > 1 else []
+        graph[ pk ]     = [ phase_key( n - 1 ) ] if n - 1 in numbers else []
 
         steps = ph.get( "steps" )
         if not isinstance( steps, list ):
@@ -312,8 +314,9 @@ def validate_manifest( m, plan_text=None ):
     if cycle: errs.append( "dependency cycle: " + " -> ".join( cycle ) )
 
     if phase_numbers:
-        if sorted( phase_numbers ) != list( range( 1, len( phase_numbers ) + 1 ) ):
-            errs.append( f"phases must be numbered 1 to {len( phase_numbers )} with no gaps; found {sorted( phase_numbers )}" )
+        first = min( phase_numbers )
+        if first not in ( 0, 1 ) or sorted( phase_numbers ) != list( range( first, first + len( phase_numbers ) ) ):
+            errs.append( f"phases must be numbered from 0 or 1 with no gaps; found {sorted( phase_numbers )}" )
 
     if plan_text is not None:
         heads = plan_phase_numbers( plan_text )
@@ -424,7 +427,8 @@ def build_rows( m ):
             [PREFIX] Plan N · Phase P of T · <phase name>
             [PREFIX] Plan N · Phase P of T · Step S of M · <step name>
             [PREFIX] Plan N · Phase P of T · STUB · <phase name> (expand when <trigger>)
-        - "Plan N" is spelled out, and "of N" is computed here from the manifest, never typed
+        - "Plan N" is spelled out, and "of N" is computed here from the manifest, never typed:
+          the highest phase number (phases may start at 0 or 1; steps always start at 1)
         - a row's depends_on holds keys; a phase row depends on the previous phase unless it names
           its own. Keys that carry no row (finished before the import) are left out of it
         - a step with done_receipt gets NO row but still counts: it keeps its place in "Step S of M",
@@ -433,7 +437,9 @@ def build_rows( m ):
     prefix  = m[ "prefix" ]
     plan_n  = m[ "plan_number" ]
     phases  = sorted( m[ "phases" ], key=lambda p: p[ "phase" ] )
-    total   = len( phases )
+    # "of N" is the HIGHEST phase number, so a plan numbered 0 to 7 ends at "Phase 7 of 7"
+    total   = max( p[ "phase" ] for p in phases )
+    numbers = { p[ "phase" ] for p in phases }
     ck      = m[ "correlation_key" ]
     head    = f"[{prefix}] Plan {plan_n}"
     rows    = []
@@ -443,7 +449,7 @@ def build_rows( m ):
         n     = ph[ "phase" ]
         steps = ph[ "steps" ]
         pk    = phase_key( n )
-        deps  = ph.get( "depends_on", [ phase_key( n - 1 ) ] if n > 1 else [] )
+        deps  = ph.get( "depends_on", [ phase_key( n - 1 ) ] if n - 1 in numbers else [] )
         if steps:
             title = f"{head} · Phase {n} of {total} · {ph[ 'name' ]}"
         else:
@@ -567,7 +573,11 @@ def plan_actions( m, existing ):
 
     Ensures:
         - returns ( actions, removed )
-        - action is { row, do, title, store_title, trims, id } with do in create | present | restamp
+        - action is { row, do, title, store_title, trims, id } with do in
+          create | present | restamp | terminal
+        - a row that is done, dropped or wont_fix is NEVER re-stamped: the store refuses an edit to a
+          closed row unless the new title only adds a marker in front of the old one, so a re-stamp
+          would fail on every run. It is `terminal`: reported, left as it is, and not a failure
         - a row whose stored title already equals the stamped title as the store would keep it is
           `present`, so an over-cap title does not re-stamp on every run
         - removed lists existing stub_keys that left the manifest, or that now carry done_receipt;
@@ -579,9 +589,10 @@ def plan_actions( m, existing ):
         have  = existing.get( r[ "stub_key" ] )
         kept  = stored_title( r[ "title" ] )
         trims = len( r[ "title" ] ) > TITLE_CAP
-        if have is None:                 do = "create"
-        elif have[ "title" ] != kept:    do = "restamp"
-        else:                            do = "present"
+        if have is None:                      do = "create"
+        elif have[ "title" ] == kept:         do = "present"
+        elif have[ "status" ] in TERMINAL:    do = "terminal"      # the store refuses this edit; see below
+        else:                                 do = "restamp"
         actions.append( { "row": r, "do": do, "title": r[ "title" ], "store_title": kept,
                           "trims": trims, "id": have[ "id" ] if have else None } )
     ck      = m[ "correlation_key" ]
@@ -630,7 +641,7 @@ def run_import( m, write, actor, offline=False, out=print ):
           unattempted is named
         - exit 2 when any attempted write did not land, so a half-imported plan never reports success
     """
-    report = { "created": [], "present": [], "restamped": [], "failed": [], "not_attempted": [], "removed": [] }
+    report = { "created": [], "present": [], "left_closed": [], "restamped": [], "failed": [], "not_attempted": [], "removed": [] }
 
     if offline:
         existing, unkeyed = {}, 0
@@ -643,10 +654,11 @@ def run_import( m, write, actor, offline=False, out=print ):
 
     actions, removed = plan_actions( m, existing )
     report[ "removed" ] = removed
-    verbs = { "create": "CREATE", "present": "present", "restamp": "RESTAMP" }
+    verbs = { "create": "CREATE", "present": "present", "restamp": "RESTAMP", "terminal": "closed" }
     out( f"{'WRITE' if write else 'DRY RUN'} · {m[ 'correlation_key' ]} · {len( actions )} rows in the manifest" )
     for a in actions:
         flag = "  ⚠ title is over the store's cap of 120 characters — it would be trimmed" if a[ "trims" ] else ""
+        if a[ "do" ] == "terminal": flag += "  (closed row: title left as it is, the store refuses that edit)"
         out( f"  {verbs[ a[ 'do' ] ]:<8} {a[ 'row' ][ 'key' ]:<14} {a[ 'title' ]}{flag}" )
     if unkeyed:
         out( f"  NOTE: {unkeyed} row(s) under this key have no stub_key line (hand-made) and were left alone." )
@@ -654,14 +666,15 @@ def run_import( m, write, actor, offline=False, out=print ):
         out( f"  REMOVED FROM MANIFEST, NOT DELETED ({r[ 'why' ]}): {r[ 'stub_key' ]} · {r[ 'status' ]} · {r[ 'title' ]} · {r[ 'id' ]}" )
 
     for a in actions:
-        if a[ "do" ] == "present": report[ "present" ].append( a[ "row" ][ "key" ] )
+        if a[ "do" ] == "present":  report[ "present" ].append( a[ "row" ][ "key" ] )
+        if a[ "do" ] == "terminal": report[ "left_closed" ].append( a[ "row" ][ "key" ] )
 
     if not write:
-        todo = sum( 1 for a in actions if a[ "do" ] != "present" )
+        todo = sum( 1 for a in actions if a[ "do" ] in ( "create", "restamp" ) )
         out( f"dry run: nothing written. {todo} row(s) would change. Re-run with --write." )
         return 0, report
 
-    todo = [ a for a in actions if a[ "do" ] != "present" ]
+    todo = [ a for a in actions if a[ "do" ] in ( "create", "restamp" ) ]
     for i, a in enumerate( todo ):
         key = a[ "row" ][ "key" ]
         if a[ "do" ] == "create":
@@ -680,7 +693,7 @@ def run_import( m, write, actor, offline=False, out=print ):
                 break
 
     out( f"landed: created {len( report[ 'created' ] )} · re-stamped {len( report[ 'restamped' ] )} · "
-         f"already present {len( report[ 'present' ] )}" )
+         f"already present {len( report[ 'present' ] )} · closed, left as is {len( report[ 'left_closed' ] )}" )
     if report[ "failed" ] or report[ "not_attempted" ]:
         out( "🔴 PARTIAL IMPORT — the plan is NOT fully on the board." )
         for f in report[ "failed" ]:
@@ -757,7 +770,9 @@ def run_status( m, out=print ):
         return 1
     s = compute_status( m, existing )
     out( f"Plan {m[ 'plan_number' ]} · {m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
-    out( f"phases done: {s[ 'phases_done' ]} of {s[ 'phases_total' ]}" )
+    nums  = sorted( p[ "phase" ] for p in m[ "phases" ] )
+    span  = f" (numbered {nums[ 0 ]} to {nums[ -1 ]})" if nums[ 0 ] == 0 else ""
+    out( f"phases done: {s[ 'phases_done' ]} of {s[ 'phases_total' ]}{span}" )
     if s[ "live_phase" ] is None:
         out( "live phase: none — every phase is done" )
     else:
