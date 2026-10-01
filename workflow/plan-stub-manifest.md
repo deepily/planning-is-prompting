@@ -1,0 +1,135 @@
+# Plan Stub Manifest
+
+**Purpose**: every multi-phase plan ships a machine-readable list of its task stubs, so the whole plan lands on the task board in one import and the operator approves it in one batch. "Where are we?" is then answered by the board, not by asking.
+
+**When to use**: any plan with two or more phases — every cascaded plan (authoring or review), and every Pattern 1 or Pattern 5 plan from `p-is-p-01-planning-the-work.md`. Single-phase work keeps using ordinary task items.
+
+**Key activities**: the plan author writes the manifest → the review checks it → one importer run creates every row in the holding area → the operator bulk-approves → the same importer re-stamps the rows when the plan grows.
+
+**Origin**: Rick, 2026-10-01, after building stubs by hand with two managers on two hosts: *"I do not want to do this manually after the fact. As a part of planning and reviewing I want to make sure that these task stubs be created all in one shot. That way I can bulk import them. All I would have to do is bulk approve a set of steps."*
+
+---
+
+## 1. The rule
+
+1. **A plan is not handoff-ready without a stub manifest.** It is a required handoff artifact, checked by the handoff light-review (`plan-review-cascaded-common.md` §Step 9, criterion 7).
+2. **Nobody types plan rows by hand.** Rows come from the importer reading the manifest. A hand-made row has no stable key and the importer cannot keep it in step with the plan.
+3. **Everything the plan details goes in at once.** A phase the plan has not broken down yet goes in as a single row marked `STUB`, with the event that triggers its expansion.
+4. **The operator approves; the importer never does.** Rows land in the holding area (`not_approved`).
+
+## 2. Title grammar
+
+The importer writes every title. Authors supply only the short name.
+
+| Row | Title |
+|---|---|
+| Phase | `[PREFIX] Plan 1 · Phase 3 of 7 · <phase name>` |
+| Step | `[PREFIX] Plan 1 · Phase 3 of 7 · Step 2 of 5 · <step name>` |
+| Unexpanded phase | `[PREFIX] Plan 1 · Phase 6 of 7 · STUB · <phase name> (expand when Phase 5 closes)` |
+
+- **"Plan N", spelled out.** Never `P1`: the board already uses `P1`–`P5` for priority, and a title reading `P1 Ph4` was misread as a priority on the first hand-built set.
+- **Plan numbers are per initiative**, assigned in the plan folder's own order. The `[PREFIX]` keeps two repos' "Plan 1" apart.
+- **"of N" comes from the manifest**, so it cannot be mistyped, and the importer re-stamps it when N changes (§5).
+- **Keep names short.** The board trims long titles; the progress prefix must survive the trim, so it comes first and the name comes last.
+
+## 3. The manifest file
+
+A JSON sidecar next to the plan: `<plan-file-basename>.stubs.json`. JSON, because the importer is standard-library Python and an agent writes this file, not a person.
+
+```json
+{
+    "plan_ref"        : "src/rnd/v0.2.2/plan-1-docs-rewrite/01-plan.md",
+    "project"         : "lupin",
+    "prefix"          : "LUPIN",
+    "plan_number"     : 1,
+    "plan_name"       : "Docs rewrite",
+    "correlation_key" : "epic:lupin-v0.2.2-docs-rewrite",
+    "owner_persona"   : "cheech",
+    "phases"          : [
+        {
+            "phase" : 3,
+            "name"  : "Pilot",
+            "steps" : [
+                {
+                    "key"        : "ph3-s1",
+                    "name"       : "Rewrite the task-store docstrings",
+                    "item_class" : "task",
+                    "priority"   : "P2",
+                    "acceptance" : "Six checks pass on src/cosa/rest/task_store_*.py",
+                    "owner_role" : "implementer",
+                    "depends_on" : [ "ph2-s4" ]
+                }
+            ]
+        },
+        {
+            "phase"          : 6,
+            "name"           : "R&D extract-then-archive",
+            "steps"          : [],
+            "expand_trigger" : "Phase 5 closes"
+        }
+    ]
+}
+```
+
+| Field | Rule |
+|---|---|
+| `correlation_key` | One per plan, in the board's `epic:<slug>` form (the board refuses a row without one). Every row carries it; it is the handle for the progress query and for bulk approval |
+| `key` | Stable for the life of the plan and unique inside it. **Never renumber a key** — reorder by editing `depends_on`. The importer matches rows on it |
+| `acceptance` | One line saying what "done" looks like. Required on every step; a step without it fails validation |
+| `item_class` | `task`, `decision`, or `gate`. An operator decision inside a phase is a step like any other, so it is counted and visible |
+| `depends_on` | Keys in this manifest. Becomes `blocked_by` on the row. A phase row is blocked by the previous phase's row unless stated otherwise |
+| `steps: []` | Means "not broken down yet" and **requires** `expand_trigger`. An empty list with no trigger fails validation |
+| `owner_persona` | The build manager who will own the rows. Roles go in `owner_role`; the manager assigns people |
+
+## 4. The importer
+
+`workflow/scripts/plan_stub_import.py` (**to be built; separate ticket, with tests**). Contract:
+
+| Verb | Does |
+|---|---|
+| `validate <manifest>` | Schema, unique keys, every `depends_on` resolves, no dependency cycle, every step has `acceptance`, every empty phase has `expand_trigger`, every phase heading in the plan has a phase in the manifest. Writes nothing |
+| `import <manifest>` | Runs `validate`, then creates every missing row in the holding area, stamped per §2, each body opening with `stub_key: <correlation_key>#<key>`. Prints one table: created / already present / re-stamped |
+| `status <manifest>` | Read-only. Phases done of total, steps done of total in the live phase, and what is blocked on whom |
+
+- **Safe to re-run.** Rows are matched on `stub_key`, so a second run creates only what is new.
+- **Dry run is the default**; `import --write` creates rows. Same convention as `/plan-backup`.
+- **It fails loudly on a partial import.** If the board refuses any row, it reports which rows landed and which did not, and exits non-zero. A half-imported plan that reports success is the failure this file exists to prevent.
+
+## 5. When the plan grows
+
+Expanding a `STUB` phase, or adding a step, is **an edit to the manifest followed by a re-run** — never a hand-made row.
+
+1. Edit the manifest; keep every existing `key`.
+2. `import --write`: new rows are created in the holding area; rows whose "of N" changed are re-titled; a row whose step was removed from the manifest is **reported, not deleted** (dropping a row is the manager's call, with a reason).
+3. The operator bulk-approves the new rows.
+
+## 6. What the reviewer checks
+
+Added to the handoff light-review as criterion 7. Each is a checkable claim; say which you ran.
+
+1. The manifest exists next to the plan and `validate` exits clean.
+2. Every phase in the plan appears in the manifest, and the phase count in the manifest equals the phase count in the plan.
+3. Every step the plan describes for an expanded phase appears as a step; no step exists that the plan does not describe.
+4. Every operator decision the plan names is a `decision` or `gate` step, not prose.
+5. Every unexpanded phase names its `expand_trigger`.
+
+## 7. Open points — not established
+
+| Point | State |
+|---|---|
+| Whether the board's create gate and ticket ratio will refuse a bulk import | **Not tested.** They refused nine legitimate rows in one night (2026-09-03). An approved plan may need its own exemption; that code lives in the board's repo, not here |
+| Whether the holding area can bulk-approve by `correlation_key` today | **Not checked.** If it cannot, that is a ticket for the board's repo |
+| The board's title length limit | **Not measured.** §2 puts the progress prefix first so a trim costs the name, not the position |
+| Rows already hand-built for the two v0.2.2 plans | Need a one-time adoption: write the manifest, add `stub_key` to the existing rows, then let the importer re-stamp titles |
+
+## Integration points
+
+- `plan-authoring-cascaded.md` §Step 9 — the manifest is Artifact 4 of the handoff package.
+- `plan-review-cascaded.md` §Step 9 — the manifest accompanies the revision-handoff doc.
+- `plan-review-cascaded-common.md` §Step 9 — light-review criterion 7.
+- `p-is-p-01-planning-the-work.md` Phase 3 Step 5 — multi-phase plans write a manifest instead of a hand-made list.
+- `task-store-discipline.md` — the rows the importer creates are ordinary store rows and follow its transition and receipt rules.
+
+## Version history
+
+- **2026.10.01** — Initial version, approved by Rick the same day ("Approve, then build the importer"). Rick's voice ruling of 2026-10-01 (stubs in one shot, bulk import, bulk approve, "Plan N · Phase X of Y · Step X of Y", no `P1` as a plan tag).

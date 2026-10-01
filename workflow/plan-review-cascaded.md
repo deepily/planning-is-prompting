@@ -460,6 +460,8 @@ Single canonical handoff doc consolidating the cascade's revision package. Requi
 
 **Acceptance**: cold-context test — original author or implementer can read this doc and know exactly what to revise / implement without back-referencing the cascade topic files.
 
+**Companion — Task-stub manifest (`<plan-file-basename>.stubs.json`)** *(added 2026-10-01)*: the revised plan's phases and steps in machine-readable form, imported onto the task board in one run and bulk-approved by the operator. If the input plan arrived with a manifest, the handoff updates it to match the ratified revisions; if it arrived without one, the handoff writes it. See `plan-stub-manifest.md`.
+
 **Proactive-decision-delivery note (added 2026-07-01, Rick post-game — mux cascade)**: the handoff's user-facing decisions/OQs are a **backstop + consolidation**, NOT the first time the user sees a decision. Per Manager System Prompt meta-rule 6, any user-destined decision that firmed up mid-cascade must ALREADY have been walked through to the user at its section boundary (per-batch `/plan-decide`). Step 9 confirms + records residuals; it does not originate the ask. A user-destined decision appearing for the first time at Step 9 is a proactive-delivery miss.
 
 ### 9.2 Authorship + Step 9 closure flow

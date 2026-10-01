@@ -332,6 +332,10 @@ Implementer's handoff doc. Anyone picking this up cold ships section-by-section 
 - §6 Post-cascade fold bundle items (cosmetic-polish; mostly already folded by synthesis or amendments)
 - §7 Implementer coordination surface (escalation paths, manager/synthesizer contact, parallel-track owners)
 
+**Artifact 4 — Task-stub manifest (`<plan-file-basename>.stubs.json`)** — the "where are we" *(added 2026-10-01)*
+
+Every phase and every known step of the execution plan, in machine-readable form, so the whole plan is imported onto the task board in one run and bulk-approved by the operator. Titles are stamped `Plan N · Phase X of Y · Step X of Y`. Format, title grammar, importer contract and the reviewer's checks: `plan-stub-manifest.md`. The cascade is not `implementation_handoff_ready` without it.
+
 ### 9.2 Authorship — Manager-default (escape hatch documented)
 
 Step 9 authorship is the **Manager's** responsibility by default. Rationale:

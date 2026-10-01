@@ -1071,6 +1071,8 @@ Convert your breakdown into TodoWrite format:
 [PROJECT] Write unit tests for core logic
 ```
 
+> **Multi-phase plans write a stub manifest instead** *(added 2026-10-01)*: a plan with two or more phases does not hand-make this list. It ships a machine-readable manifest of every phase and step, imported onto the task board in one run and titled `Plan N · Phase X of Y · Step X of Y`. See `plan-stub-manifest.md`.
+
 #### Task Granularity Guidelines
 
 **Too Large** (needs splitting):
