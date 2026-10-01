@@ -1063,7 +1063,7 @@ src/rnd/jwt-oauth/
 1. Answer discovery questions
 2. Select pattern (Pattern 1, 2, 3, 4, or 5)
 3. Break down into phases and tasks
-4. Create TodoWrite list
+4. Record the breakdown on the task board: store rows for one phase, a stub manifest imported by `plan_stub_import.py` for two or more (planning-is-prompting → workflow/plan-stub-manifest.md)
 
 **Phase 2: Implementation Documentation** (this document)
 1. **Decision point**: Does pattern require dedicated docs?
@@ -1085,7 +1085,7 @@ src/rnd/jwt-oauth/
    - **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` ([`plan-review.md`](plan-review.md) §4a). The gate is keyed to the **document**, not to the pattern.
 
 **Phase 3: Execution**
-1. Work through TodoWrite tasks
+1. Work through your store rows (`task_query` shows what you owe; close each with a receipt; planning-is-prompting → workflow/task-store-discipline.md)
 2. Update implementation docs as you progress
 3. Monitor token budgets
 4. Archive completed phases when needed
@@ -1212,6 +1212,7 @@ grep -o '](.*\.md' 01-implementation-current.md | \
 
 ## Version History
 
+- **2026.10.01**: "The Complete Flow" no longer tells the reader to keep owed work in a TodoWrite list. Planning Step 4 now records the breakdown as task-store rows or a stub manifest; Execution Step 1 works through store rows. No documentation pattern (A, B, C) changed.
 - **2026.05.22**: Added "Structuring for Cascaded Review" section — sibling of the plan-review-compatibility conventions; guidance for shaping the documentation set so it decomposes cleanly into independently-reviewable `/plan-review-cascaded` sections
 - **2025.10.14**: Added context-aware decision section that analyzes pattern from p-is-p-01 and suggests appropriate documentation structure (Pattern A/B/C)
 - **2025.10.04**: Renamed from implementation-documentation.md to p-is-p-02-documenting-the-implementation.md for "Planning is Prompting" grouping

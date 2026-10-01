@@ -8,9 +8,28 @@
 - Classifying work type through discovery questions
 - Selecting appropriate planning pattern
 - Breaking down work into manageable tasks
-- Creating TODO lists with TodoWrite tool
-- Tracking progress with task states (pending, in_progress, completed)
+- Recording the breakdown as task-store rows (a stub manifest when the plan has two or more phases)
+- Tracking progress with store statuses (queued, in_progress, blocked, done) and receipts
 - Archiving completed work and capturing learnings
+
+---
+
+## Where Owed Work Lives
+
+**The task store is the only home of owed work.** Every task this workflow produces is a row in the unified task store, never an item in a native TodoWrite-style list. The store is what the stop-hook, the arbiter and your manager read; a list kept anywhere else is invisible to them. The mechanics (statuses, transitions, receipts, query hygiene) live in `task-store-discipline.md`. This document only says *when each tracking form applies*.
+
+| The plan has | Track it with | Where the rows come from |
+|---|---|---|
+| **One phase** (Patterns 2, 3 and 4 as a rule) | Ordinary store rows, one per task | You create them with `task_create` |
+| **Two or more phases** (Patterns 1, 5 and 6 always; any other pattern once its breakdown names two or more phases) | A stub manifest | `plan_stub_import.py` creates every row from the manifest in one run (see `plan-stub-manifest.md`). Nobody types these rows by hand |
+
+Rules that hold for both forms:
+
+- **Titles** are one imperative line of about 60 characters or fewer; detail goes in the row `body` (`task-store-discipline.md` §3). Manifest rows get their titles from the importer: `Plan N · Phase X of Y · Step X of Y`.
+- **Every row carries a `correlation_key`** in the form `epic:<slug>`. Workers pick an existing epic or use `epic:unassigned`; only a manager mints a new epic (`task-store-discipline.md` §7.1).
+- **Priority.** A worker files `P5`; a raise is a manager or operator act (`task-store-discipline.md` §1).
+- **Finished work gets no row.** If you adopt a plan mid-flight, start at the first unfinished task. Nobody creates a row in order to close it.
+- **A row is done only with a receipt.** No receipt, not done.
 
 ---
 
@@ -32,7 +51,7 @@ When you create a structured plan, it continuously asks questions:
 1. **Shared Mental Model**: Human and AI align on goals, approach, and progress
 2. **Reduced Cognitive Load**: Structure handles "what's next" so you can focus on "how to do it"
 3. **Better Decision Making**: Patterns provide decision frameworks
-4. **Progress Visibility**: TodoWrite creates real-time progress tracking
+4. **Progress Visibility**: store rows give real-time progress tracking that the whole fleet can read
 5. **Knowledge Capture**: Archival preserves learnings for future reference
 
 ---
@@ -99,7 +118,7 @@ Context detected:
 
 These defaults look correct? [y/n]: y ✓
 
-*Creating TodoWrite list for Pattern 3...*
+*Creating task-store rows for Pattern 3...*
 ```
 
 **User only engaged for ~5 seconds instead of ~5 minutes.**
@@ -293,24 +312,23 @@ With research synthesis complete, proceed to:
 4. **GATE** (`/plan-review`): every plan document produced above enters the gate before code is written — it dispatches to the cascade (≥ 2 sections) or the critique branch
 ```
 
-**Step 4: Create TodoWrite Checklist for Synthesis**
+**Step 4: Record the Synthesis Steps as Store Rows**
 
-Track your research synthesis progress:
+Track your research synthesis progress with one store row per step. If the research is Phase 0 of a Pattern 6 plan, these rows come from the plan's stub manifest (see Pattern 6 below) rather than from `task_create`. A standalone synthesis is one phase of work, so you create the rows yourself:
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Gather all research source materials", status: "completed", activeForm: "Gathering research materials" },
-    { content: "[PROJECT] Extract capabilities from {Source 1}", status: "in_progress", activeForm: "Extracting capabilities from {Source 1}" },
-    { content: "[PROJECT] Extract capabilities from {Source 2}", status: "pending", activeForm: "Extracting capabilities from {Source 2}" },
-    { content: "[PROJECT] Document constraints and requirements", status: "pending", activeForm: "Documenting constraints" },
-    { content: "[PROJECT] Identify recommended patterns", status: "pending", activeForm: "Identifying patterns" },
-    { content: "[PROJECT] Map use cases to capabilities", status: "pending", activeForm: "Mapping use cases" },
-    { content: "[PROJECT] Create research synthesis document", status: "pending", activeForm: "Creating synthesis doc" },
-    { content: "[PROJECT] Transition to Phase 1 (Discovery)", status: "pending", activeForm: "Transitioning to Phase 1" }
-  ]
-})
 ```
+correlation_key: epic:<research-slug>
+[SHORT_PROJECT_PREFIX] Gather all research source materials        done        (receipt on close)
+[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 1}        in_progress
+[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 2}        queued
+[SHORT_PROJECT_PREFIX] Document constraints and requirements       queued
+[SHORT_PROJECT_PREFIX] Identify recommended patterns               queued
+[SHORT_PROJECT_PREFIX] Map use cases to capabilities               queued
+[SHORT_PROJECT_PREFIX] Create research synthesis document          queued
+[SHORT_PROJECT_PREFIX] Transition to Phase 1 (Discovery)           queued
+```
+
+Create each row with `task_create` (`item_class="task"`, `priority="P5"`, `project=[PROJECT]`) the moment you know the step exists, and move it with `task_transition`. The first row above is shown as it looks after you have started on the second: closed, with its receipt.
 
 **Step 5: Transition to Planning**
 
@@ -594,13 +612,36 @@ mindmap
     Phase 4: Deployment & Documentation ⏳
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: stub manifest** (two or more phases, so the plan ships a manifest and the importer creates the rows). Excerpt of the `phases` array, as it would stand with Phase 1 already finished; top-level fields are as in `plan-stub-manifest.md` §3:
+
+```json
+"phases" : [
+    {
+        "phase" : 1,
+        "name"  : "Design and planning",
+        "steps" : [
+            { "key": "ph1-s1", "name": "Write the design note", "item_class": "task", "priority": "P5",
+              "acceptance": "Design note reviewed", "depends_on": [], "done_receipt": "a1b2c3d" }
+        ]
+    },
+    {
+        "phase" : 2,
+        "name"  : "Core implementation",
+        "steps" : [
+            { "key": "ph2-s1", "name": "Set up infrastructure", "item_class": "task", "priority": "P5",
+              "acceptance": "Project builds from a clean checkout", "depends_on": [ "ph1-s1" ] },
+            { "key": "ph2-s2", "name": "Implement core logic", "item_class": "task", "priority": "P5",
+              "acceptance": "Core functions pass their unit tests", "depends_on": [ "ph2-s1" ] },
+            { "key": "ph2-s3", "name": "Add error handling", "item_class": "task", "priority": "P5",
+              "acceptance": "Every error path in the design note has a test", "depends_on": [ "ph2-s2" ] }
+        ]
+    },
+    { "phase": 3, "name": "Testing and validation",       "steps": [], "expand_trigger": "Phase 2 closes" },
+    { "phase": 4, "name": "Deployment and documentation", "steps": [], "expand_trigger": "Phase 3 closes" }
+]
 ```
-[PROJECT] Phase 2: Core Implementation
-  [PROJECT] Set up infrastructure
-  [PROJECT] Implement core logic
-  [PROJECT] Add error handling
-```
+
+The importer turns this into rows titled `[SHORT_PROJECT_PREFIX] Plan 1 · Phase 2 of 4 · Step 1 of 3 · Set up infrastructure` and so on. Phase 1 gets no row because its step carries `done_receipt`; Phases 3 and 4 are single `STUB` rows until their trigger fires.
 
 **Example**: Building JWT authentication system with phases for token generation, validation, OAuth integration, session management, and security hardening.
 
@@ -629,13 +670,13 @@ mindmap
     4. Findings & Recommendations
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (one phase of work; one `task_create` row each, all under one `epic:<slug>` key):
 ```
-[PROJECT] Define research questions and scope
-[PROJECT] Evaluate Option A: [Technology Name]
-[PROJECT] Evaluate Option B: [Technology Name]
-[PROJECT] Build proof-of-concept for top option
-[PROJECT] Document findings and recommendations
+[SHORT_PROJECT_PREFIX] Define research questions and scope
+[SHORT_PROJECT_PREFIX] Evaluate Option A: [Technology Name]
+[SHORT_PROJECT_PREFIX] Evaluate Option B: [Technology Name]
+[SHORT_PROJECT_PREFIX] Build proof-of-concept for top option
+[SHORT_PROJECT_PREFIX] Document findings and recommendations
 ```
 
 **Example**: Evaluating WebSocket architectures (polling vs. long-polling vs. WebSockets vs. Server-Sent Events) with PoC implementations and performance comparisons.
@@ -666,15 +707,16 @@ mindmap
     5. Documentation & Deployment
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (one phase of work; one `task_create` row each, all under one `epic:<slug>` key):
 ```
-[PROJECT] Define requirements and acceptance criteria
-[PROJECT] Design technical approach
-[PROJECT] Implement backend changes
-[PROJECT] Implement frontend changes
-[PROJECT] Integration and testing
-[PROJECT] Documentation and deployment
+[SHORT_PROJECT_PREFIX] Define requirements and acceptance criteria
+[SHORT_PROJECT_PREFIX] Design technical approach
+[SHORT_PROJECT_PREFIX] Implement backend changes
+[SHORT_PROJECT_PREFIX] Implement frontend changes
+[SHORT_PROJECT_PREFIX] Integration and testing
+[SHORT_PROJECT_PREFIX] Documentation and deployment
 ```
+If you plan and report these as two or more phases of their own, write a stub manifest instead.
 
 **Example**: Adding email notification feature to existing application with SMTP configuration, template system, queue management, and user preferences.
 
@@ -704,14 +746,14 @@ mindmap
     5. Validation & Prevention
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (one phase of work; one `task_create` row each, all under one `epic:<slug>` key; a durable bug also gets its own `item_class="bug"` row, see `task-store-discipline.md` §3):
 ```
-[PROJECT] Document problem statement and reproduction steps
-[PROJECT] Test hypothesis: [Description]
-[PROJECT] Test hypothesis: [Description]
-[PROJECT] Identify root cause
-[PROJECT] Implement solution
-[PROJECT] Validate fix and add prevention measures
+[SHORT_PROJECT_PREFIX] Document problem statement and reproduction steps
+[SHORT_PROJECT_PREFIX] Test hypothesis: [Description]
+[SHORT_PROJECT_PREFIX] Test hypothesis: [Description]
+[SHORT_PROJECT_PREFIX] Identify root cause
+[SHORT_PROJECT_PREFIX] Implement solution
+[SHORT_PROJECT_PREFIX] Validate fix and add prevention measures
 ```
 
 **Example**: Investigating WebSocket event routing bug with hypotheses about race conditions, state management, event ordering, and connection lifecycle.
@@ -743,15 +785,29 @@ mindmap
     6. Implementation Roadmap
 ```
 
-**TodoWrite Pattern**:
-```
-[PROJECT] Define system context and requirements
-[PROJECT] Analyze architecture options
-[PROJECT] Design Component A
-[PROJECT] Design Component B
-[PROJECT] Define integration patterns
-[PROJECT] Document key decisions
-[PROJECT] Create implementation roadmap
+**Tracking form: stub manifest** (the six stages are phases, so the plan ships a manifest). Excerpt of the `phases` array with Phases 1 and 2 already finished; top-level fields are as in `plan-stub-manifest.md` §3. An operator ruling on the component split is a `decision` step, so it is counted and visible:
+
+```json
+"phases" : [
+    { "phase": 1, "name": "System context and requirements",
+      "steps": [ { "key": "ph1-s1", "name": "Define context and requirements", "item_class": "task", "priority": "P5",
+                   "acceptance": "Requirements list reviewed", "depends_on": [], "done_receipt": "a1b2c3d" } ] },
+    { "phase": 2, "name": "Architecture options",
+      "steps": [ { "key": "ph2-s1", "name": "Analyze architecture options", "item_class": "task", "priority": "P5",
+                   "acceptance": "Options compared in one table", "depends_on": [ "ph1-s1" ], "done_receipt": "b2c3d4e" } ] },
+    { "phase": 3, "name": "Component design",
+      "steps": [
+          { "key": "ph3-s1", "name": "Design component A", "item_class": "task", "priority": "P5",
+            "acceptance": "Interfaces and failure modes written down", "depends_on": [] },
+          { "key": "ph3-s2", "name": "Design component B", "item_class": "task", "priority": "P5",
+            "acceptance": "Interfaces and failure modes written down", "depends_on": [] },
+          { "key": "ph3-s3", "name": "Rule on the component split", "item_class": "decision", "priority": "P5",
+            "acceptance": "The operator has said which split to build", "depends_on": [ "ph3-s1", "ph3-s2" ] }
+      ] },
+    { "phase": 4, "name": "Integration patterns",     "steps": [], "expand_trigger": "Phase 3 closes" },
+    { "phase": 5, "name": "Decision documentation",   "steps": [], "expand_trigger": "Phase 4 closes" },
+    { "phase": 6, "name": "Implementation roadmap",   "steps": [], "expand_trigger": "Phase 5 closes" }
+]
 ```
 
 **Example**: Designing microservices architecture with API gateway, authentication service, business logic services, database strategy, and inter-service communication patterns.
@@ -796,51 +852,38 @@ gantt
         Break down into tasks            :p2b, after p1d, 1w
         Create tracking docs             :p2c, after p1d, 1w
     section Phase 3-N: Execution
-        Execute phases with TodoWrite    :p3a, after p2c, 4w
+        Execute phases from manifest rows :p3a, after p2c, 4w
         Archive completed phases         :p3b, after p2c, 4w
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: stub manifest** (always multi-phase). Write the manifest when the plan is written. Detail what the plan details, and enter each phase it has not broken down yet as one `STUB` row with its trigger. Excerpt of the `phases` array; top-level fields are as in `plan-stub-manifest.md` §3:
 
-*Phase 0 (Research Synthesis):*
-```
-[PROJECT] Gather research source materials (e.g., SDK docs, use cases, specs)
-[PROJECT] Extract capabilities and constraints from documentation
-[PROJECT] Identify recommended patterns and best practices
-[PROJECT] Map use cases to technology capabilities
-[PROJECT] Create research synthesis summary document
-[PROJECT] Transition to Phase 1 (Architecture Design)
-```
-
-*Phase 1 (Architecture Design):*
-```
-[PROJECT] Design system architecture based on research patterns
-[PROJECT] Define components using researched capabilities
-[PROJECT] Document design decisions with research rationale
-[PROJECT] Create architecture diagrams and component specs
-[PROJECT] Review architecture against use case requirements
-```
-
-*Phase 2 (Implementation Planning):*
-```
-[PROJECT] Derive implementation phases from architecture
-[PROJECT] Break down Phase 1 tasks (e.g., ADK integration)
-[PROJECT] Break down Phase 2 tasks (e.g., Tool registry)
-[PROJECT] Identify cross-phase dependencies
-[PROJECT] Create implementation tracking document
-[PROJECT] Estimate timeline and resource needs
+```json
+"phases" : [
+    { "phase": 0, "name": "Research synthesis",
+      "steps": [
+          { "key": "ph0-s1", "name": "Gather research source materials", "item_class": "task", "priority": "P5",
+            "acceptance": "Every source is listed with its location", "depends_on": [] },
+          { "key": "ph0-s2", "name": "Extract capabilities and constraints", "item_class": "task", "priority": "P5",
+            "acceptance": "Capabilities and constraints are written down per source", "depends_on": [ "ph0-s1" ] },
+          { "key": "ph0-s3", "name": "Write the research synthesis", "item_class": "task", "priority": "P5",
+            "acceptance": "Synthesis document exists and cites every source", "depends_on": [ "ph0-s2" ] }
+      ] },
+    { "phase": 1, "name": "Architecture design",
+      "steps": [
+          { "key": "ph1-s1", "name": "Design the architecture from the research", "item_class": "task", "priority": "P5",
+            "acceptance": "Each component traces to a research finding", "depends_on": [ "ph0-s3" ] },
+          { "key": "ph1-s2", "name": "Review the architecture against the use cases", "item_class": "task", "priority": "P5",
+            "acceptance": "Every use case maps to a component", "depends_on": [ "ph1-s1" ] }
+      ] },
+    { "phase": 2, "name": "Implementation planning", "steps": [], "expand_trigger": "Phase 1 closes" },
+    { "phase": 3, "name": "Execution",               "steps": [], "expand_trigger": "Phase 2 closes" }
+]
 ```
 
-*Phase 3+ (Execution):*
-```
-[PROJECT] Phase 3.1: Set up SDK and dependencies
-[PROJECT] Phase 3.2: Implement base framework
-[PROJECT] Phase 3.3: Build component X following researched pattern
-[PROJECT] Phase 3.4: Integrate components
-... (continue through all implementation phases)
-```
+Phases are numbered from 0, so "of N" is the highest phase number (here `Phase 3 of 3`). The steps a real plan lists for each phase (for example the six Phase 0 tasks: gather sources, extract capabilities, identify patterns, map use cases, write the synthesis, transition) each become a step. When Phase 2 closes, expand the `Execution` stub by editing the manifest (keep every existing `key`) and re-running the importer; never add the rows by hand.
 
-**Example**: Building agent system with Google ADK - synthesize ADK documentation and 2 use case recommendations, design agent architecture based on ADK's Agent-Tool-Memory pattern, derive implementation phases (ADK integration, tool registry, context management, use case 1 implementation, use case 2 implementation), execute with TodoWrite tracking.
+**Example**: Building agent system with Google ADK - synthesize ADK documentation and 2 use case recommendations, design agent architecture based on ADK's Agent-Tool-Memory pattern, derive implementation phases (ADK integration, tool registry, context management, use case 1 implementation, use case 2 implementation), execute with the manifest rows as the tracking surface.
 
 **Integration with p-is-p-02**:
 - Phase 0 creates: `src/rnd/YYYY.MM.DD-{topic}-research-synthesis.md` — **only once Gate 0 is passed**: the synthesis carries `authorized_by:` frontmatter naming the task, broadcast or plan that asked for this work. A synthesis nobody asked for is a working note; it goes to scratch and its findings become store rows. Canonical: `workflow/rnd-directory-policy.md`
@@ -855,7 +898,7 @@ gantt
 - Research synthesis doc becomes key reference throughout project
 - Design decisions explicitly trace back to research findings
 - Implementation phases align with use case requirements
-- TodoWrite discipline maintains focus through long project
+- Keeping the manifest and the board in step maintains focus through a long project
 
 ---
 
@@ -947,7 +990,7 @@ Once you've selected a pattern, break down the work into concrete tasks.
 
 **Estimated Tasks**: ~12-15 tasks across 5 phases (fits Medium scale)
 
-**TodoWrite Preview**:
+**Store Rows Preview** (Pattern 3: one phase of work, one `task_create` row each, all under one `epic:<slug>` key):
 ```
 [EMAIL] Define notification triggers and template requirements
 [EMAIL] Set up SendGrid account and configuration
@@ -963,6 +1006,8 @@ Once you've selected a pattern, break down the work into concrete tasks.
 [EMAIL] Documentation and deployment
 ```
 
+The five groups above are stages of one feature, so they are rows, not phases. If you would instead report progress against them as "Phase X of 5", write a stub manifest.
+
 **Accept this breakdown?** [y/n or describe modifications]:
 
 **If modifying**: Describe which tasks to add/remove/change, and I'll update the breakdown accordingly.
@@ -975,7 +1020,7 @@ Once you've selected a pattern, break down the work into concrete tasks.
 2. **Clear Completion Criteria**: Know when a task is done
 3. **Logical Ordering**: Dependencies clear, tasks flow naturally
 4. **Testable Outcomes**: Each task produces verifiable output
-5. **One Active Task**: Only one task in_progress at a time
+5. **One Active Task**: Only one of your rows in_progress at a time
 
 #### Cascade-Readiness (When the Plan Will Be Cascade-Reviewed)
 
@@ -1059,19 +1104,29 @@ Task 2.3 (Business logic) must complete before Task 2.6 (Unit tests)
 Task 2.5 (API endpoints) can run parallel to Task 2.6 (Unit tests)
 ```
 
-**Step 5: Create TodoWrite List**
+**Step 5: Record the Breakdown on the Task Board**
 
-Convert your breakdown into TodoWrite format:
-```
-[PROJECT] Set up project structure and dependencies
-[PROJECT] Implement data models and schemas
-[PROJECT] Build core business logic
-[PROJECT] Add error handling and logging
-[PROJECT] Create API endpoints
-[PROJECT] Write unit tests for core logic
-```
+How you record it depends on the number of phases in the breakdown (see *Where Owed Work Lives* at the top).
 
-> **Multi-phase plans write a stub manifest instead** *(added 2026-10-01)*: a plan with two or more phases does not hand-make this list. It ships a machine-readable manifest of every phase and step, imported onto the task board in one run and titled `Plan N · Phase X of Y · Step X of Y`. See `plan-stub-manifest.md`.
+*One phase.* Create one store row per task with `task_create`, all under one `epic:<slug>` key:
+```
+[SHORT_PROJECT_PREFIX] Set up project structure and dependencies
+[SHORT_PROJECT_PREFIX] Implement data models and schemas
+[SHORT_PROJECT_PREFIX] Build core business logic
+[SHORT_PROJECT_PREFIX] Add error handling and logging
+[SHORT_PROJECT_PREFIX] Create API endpoints
+[SHORT_PROJECT_PREFIX] Write unit tests for core logic
+```
+Put each task's completion criteria from Step 3 in the row `body`, and each dependency from Step 4 in `blocked_by` (a precondition worth blocking on gets its own row; `task-store-discipline.md` §4.1).
+
+*Two or more phases.* Write a stub manifest of every phase and step instead of hand-making rows, then run the importer:
+
+1. Write `<plan-name>.stubs.json` per `plan-stub-manifest.md` §3. Each step carries its completion criteria as `acceptance` and its Step 4 dependencies as `depends_on`. A phase you have not broken down yet is one `STUB` entry with the event that expands it.
+2. `python3 workflow/scripts/plan_stub_import.py validate <manifest>` until it is clean.
+3. `python3 workflow/scripts/plan_stub_import.py import <manifest>` is a dry run. Read it, then re-run with `--write`. The rows land in the holding area; the operator approves them, the importer never does.
+4. When the plan grows, edit the manifest and re-run the importer. Never add a row by hand.
+
+If the plan is handed to a review gate, the manifest is part of the handoff package (`plan-stub-manifest.md` §6).
 
 #### Task Granularity Guidelines
 
@@ -1094,103 +1149,68 @@ Convert your breakdown into TodoWrite format:
 
 ### Phase 4: Execution & Tracking
 
-Now execute the plan using TodoWrite for real-time progress tracking.
+Now execute the plan, keeping the task store current as you go. The store is the only record of owed work; the rules are in `task-store-discipline.md`, and this phase only applies them to a plan.
 
-#### TodoWrite Best Practices
+#### Task Store Best Practices
 
-##### 1. Create Initial TODO List
+##### 1. Create the Rows Up Front
 
-At the start of work, create your complete TODO list:
+At the start of work, every task in your breakdown is already a row: created by you with `task_create` (one phase), or created by the importer from your stub manifest (two or more phases). Check what you owe with a scoped query, never the whole board:
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Set up project structure", status: "pending", activeForm: "Setting up project structure" },
-    { content: "[PROJECT] Implement data models", status: "pending", activeForm: "Implementing data models" },
-    { content: "[PROJECT] Build core business logic", status: "pending", activeForm: "Building core business logic" },
-    { content: "[PROJECT] Add error handling", status: "pending", activeForm: "Adding error handling" },
-    { content: "[PROJECT] Create API endpoints", status: "pending", activeForm: "Creating API endpoints" },
-    { content: "[PROJECT] Write unit tests", status: "pending", activeForm: "Writing unit tests" }
-  ]
-})
+```python
+task_query( owner_persona="<me>", status="in_progress", terse=True )   # then a second pass with status="queued"
 ```
 
-##### 2. Mark Tasks In Progress (One at a Time)
+For a manifest plan, `python3 workflow/scripts/plan_stub_import.py status <manifest>` is read-only and reports phases done of total, steps done of total in the live phase, and what is blocked on whom.
 
-Before starting a task, mark it as in_progress:
+##### 2. Mark Rows In Progress (One at a Time)
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Set up project structure", status: "in_progress", activeForm: "Setting up project structure" },
-    { content: "[PROJECT] Implement data models", status: "pending", activeForm: "Implementing data models" },
-    // ... rest remain pending
-  ]
-})
+Before starting a task, move its row to `in_progress`:
+
+```python
+task_transition( task_id="<row id>", to_status="in_progress" )
 ```
 
-**IMPORTANT**: Only ONE task should be in_progress at any time. This enforces focus and prevents context-switching.
+**IMPORTANT**: Only ONE of your rows should be `in_progress` at any time. This enforces focus and prevents context-switching.
 
-##### 3. Mark Tasks Completed Immediately
+##### 3. Close Rows Immediately, With a Receipt
 
-As soon as you finish a task, mark it completed and move to the next:
+As soon as you finish a task, close it and move to the next. The server refuses `done` without a receipt (a commit sha for most work; see `task-store-discipline.md` §4 for the keys and who may supply which):
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Set up project structure", status: "completed", activeForm: "Setting up project structure" },
-    { content: "[PROJECT] Implement data models", status: "in_progress", activeForm: "Implementing data models" },
-    // ... rest remain pending
-  ]
-})
+```python
+task_transition( task_id="<row id>", to_status="done", receipt_refs={ "commit": "<sha>" } )
 ```
 
-**Don't batch completions!** Update the TODO list immediately after each task.
+**Don't batch completions!** Close each row right after its task finishes. If you cannot cite a receipt, the work is not done.
 
 ##### 4. Add New Tasks as Discovered
 
-As you work, you'll discover new tasks. Add them to the list:
+As you work, you'll discover new tasks.
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Set up project structure", status: "completed", activeForm: "Setting up project structure" },
-    { content: "[PROJECT] Implement data models", status: "completed", activeForm: "Implementing data models" },
-    { content: "[PROJECT] Build core business logic", status: "in_progress", activeForm: "Building core business logic" },
-    { content: "[PROJECT] Add input validation (discovered during implementation)", status: "pending", activeForm: "Adding input validation" },
-    { content: "[PROJECT] Add error handling", status: "pending", activeForm: "Adding error handling" },
-    // ... rest of tasks
-  ]
-})
+- **One phase**: create a new row with `task_create`, titled as a short imperative line, with the context in `body`.
+- **Two or more phases**: edit the manifest (add the step, keep every existing `key`) and re-run `plan_stub_import.py import`, then `--write`. A hand-made row has no stable key, and the importer cannot keep it in step with the plan.
+
+##### 5. Close Obsolete Tasks Honestly
+
+If a task becomes irrelevant, do not delete it; the store has no delete, and `done` and `dropped` are terminal. Move it to `dropped` with a reason:
+
+```python
+task_transition( task_id="<row id>", to_status="dropped", reason="superseded: the old API is gone" )
 ```
 
-##### 5. Remove or Update Obsolete Tasks
-
-If tasks become irrelevant, remove them entirely (don't just mark them as skipped):
-
-```javascript
-// Before: Had a task that's no longer needed
-{ content: "[PROJECT] Integrate with old API", status: "pending", activeForm: "Integrating with old API" }
-
-// After: Remove it entirely, don't keep it in the list
-// (Simply omit it from the todos array)
-```
+In a manifest plan, a step removed from the manifest is reported by the importer, never deleted by it; dropping the row is the manager's call, with a reason.
 
 ##### 6. Handle Blockers and Errors
 
-If you encounter blockers or errors, keep the task in_progress and create a new task for resolution:
+If you hit a blocker you cannot clear yourself, move the row to `blocked` and say what it waits on and when it will be chased:
 
-```javascript
-TodoWrite({
-  todos: [
-    { content: "[PROJECT] Build core business logic", status: "in_progress", activeForm: "Building core business logic" },
-    { content: "[PROJECT] Debug missing dependency error (blocking core logic)", status: "pending", activeForm: "Debugging missing dependency" },
-    // ... rest of tasks
-  ]
-})
+```python
+task_transition( task_id="<row id>", to_status="blocked",
+                 blocked_by=[ { "kind": "item", "id": "<blocker row id>" } ],
+                 next_chase_ts="<ISO timestamp>" )
 ```
 
-Then switch to the blocker task and resolve it before continuing.
+If clearing the blocker is itself work (for example, "Debug missing dependency error"), give it its own row and point `blocked_by` at that row, because a dependency worth blocking on gets a row (`task-store-discipline.md` §4.1). Then work the blocker row and return to the original once it is closed.
 
 #### Progress Monitoring
 
@@ -1202,17 +1222,18 @@ Then switch to the blocker task and resolve it before continuing.
 
 **Adaptive Replanning**:
 - If tasks are taking 2x longer than expected → Split into smaller tasks
-- If new requirements emerge → Add new phase or tasks
-- If dependencies change → Reorder tasks
+- If new requirements emerge → Add new phase or tasks (new rows, or a manifest edit and an importer re-run)
+- If dependencies change → Reorder tasks (edit `blocked_by`, or `depends_on` in the manifest)
 - If scope expands → Reassess timeline and communicate
 
 **Completion Criteria**:
 
-Never mark a task completed unless:
+Never move a row to `done` unless:
 - You have FULLY accomplished what the task described
 - Any tests are passing
 - No unresolved errors or blockers remain
 - The work meets the defined completion criteria
+- You can cite a receipt for it
 
 ### Phase 5: Archival & Knowledge Capture
 
@@ -1309,55 +1330,21 @@ If using documentation patterns (from planning-is-prompting → workflow/history
 
 ---
 
-## TodoWrite Task State Management
+## Task Status and Transitions
 
-### State Transitions
+The status model, the legal transitions, the receipts each close needs, and the query patterns are defined once, in `task-store-discipline.md` (§4 transitions and receipts, §6 query hygiene, §9 the transition graph). Do not restate them in a plan; point at them.
 
-```mermaid
-stateDiagram-v2
-    [*] --> pending
-    pending --> in_progress
-    in_progress --> completed
-    in_progress --> pending : blocked (create new task)
-    completed --> [*]
-```
+If you are used to a TodoWrite-style list, the nearest equivalents are:
 
-### State Definitions
+| Old list state | Store status |
+|---|---|
+| `pending` | `queued` |
+| `in_progress` | `in_progress` |
+| `completed` | `done` (with a receipt) |
+| "paused" or "blocked" (a new task was created instead) | `blocked`, with `blocked_by` and `next_chase_ts` |
+| removed as obsolete | `dropped` (with a reason) |
 
-**pending**: Task not yet started
-- Task is identified and defined
-- Waiting to be picked up
-- May have dependencies that aren't met yet
-
-**in_progress**: Currently working on this task
-- Exactly ONE task should have this status at any time
-- Active work is happening on this task
-- Task is not blocked or waiting
-
-**completed**: Task finished successfully
-- All work for this task is done
-- Completion criteria met
-- Tests passing (if applicable)
-- No unresolved errors or blockers
-
-### State Management Rules
-
-1. **One in_progress at a time**: Never have multiple tasks in_progress simultaneously
-2. **Mark completed immediately**: Update status as soon as task finishes
-3. **No "paused" or "blocked" states**: Create new tasks to resolve blockers instead
-4. **Remove obsolete tasks**: Delete tasks that are no longer relevant rather than marking them skipped
-
-### Content vs. ActiveForm
-
-**content**: Imperative form - what needs to be done
-- "Run tests"
-- "Build the project"
-- "Fix authentication bug"
-
-**activeForm**: Present continuous - what's happening now
-- "Running tests"
-- "Building the project"
-- "Fixing authentication bug"
+Task titles follow `task-store-discipline.md` §3: one short imperative line, detail in the `body`.
 
 ---
 
@@ -1397,11 +1384,36 @@ Phase 5: Security Hardening [PLANNED]
 ...
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: stub manifest.** This plan is adopted mid-flight, so it starts at Phase 3, its first unfinished phase. Phases 1 and 2 stay in the manifest with every step marked `done_receipt`, so the totals stay true, and they get no rows. Within Phase 3 the first two steps carry `done_receipt` as well. Excerpt of the `phases` array (top-level fields as in `plan-stub-manifest.md` §3; Phases 6 to 8 are further `STUB` entries like Phase 5):
+
+```json
+"phases" : [
+    { "phase": 3, "name": "OAuth integration",
+      "steps": [
+          { "key": "ph3-s1", "name": "Set up OAuth provider configuration", "item_class": "task", "priority": "P5",
+            "acceptance": "Provider settings load from config", "depends_on": [], "done_receipt": "3c4d5e6" },
+          { "key": "ph3-s2", "name": "Implement OAuth flow for Google", "item_class": "task", "priority": "P5",
+            "acceptance": "Google login round-trips in a test", "depends_on": [ "ph3-s1" ], "done_receipt": "4d5e6f7" },
+          { "key": "ph3-s3", "name": "Implement OAuth flow for GitHub", "item_class": "task", "priority": "P5",
+            "acceptance": "GitHub login round-trips in a test", "depends_on": [ "ph3-s2" ] },
+          { "key": "ph3-s4", "name": "Add OAuth error handling", "item_class": "task", "priority": "P5",
+            "acceptance": "Each provider error has a test", "depends_on": [ "ph3-s3" ] },
+          { "key": "ph3-s5", "name": "Write OAuth integration tests", "item_class": "task", "priority": "P5",
+            "acceptance": "Integration suite passes", "depends_on": [ "ph3-s4" ] }
+      ] },
+    { "phase": 4, "name": "Session management", "steps": [], "expand_trigger": "Phase 3 closes" },
+    { "phase": 5, "name": "Security hardening", "steps": [], "expand_trigger": "Phase 4 closes" }
+]
 ```
-[JWT] Implement OAuth flow for GitHub (current task)
-[JWT] Add OAuth error handling
-[JWT] Write integration tests for OAuth
+
+The importer's dry run for this plan lists the Phase 3 row, the three open Phase 3 steps and one `STUB` row per later phase, so the first row on the board reads `Phase 3 of 8`, not `Phase 1 of 8`:
+
+```
+CREATE   ph3      [JWT] Plan 1 · Phase 3 of 8 · OAuth integration
+CREATE   ph3-s3   [JWT] Plan 1 · Phase 3 of 8 · Step 3 of 5 · Implement OAuth flow for GitHub
+CREATE   ph3-s4   [JWT] Plan 1 · Phase 3 of 8 · Step 4 of 5 · Add OAuth error handling
+CREATE   ph3-s5   [JWT] Plan 1 · Phase 3 of 8 · Step 5 of 5 · Write OAuth integration tests
+CREATE   ph4      [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (expand when Phase 3 closes)
 ```
 
 ---
@@ -1435,13 +1447,13 @@ Phase 5: Security Hardening [PLANNED]
 4. Findings & Recommendations [PLANNED]
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:ws-architecture-research`):
 ```
-[WS] Evaluate Server-Sent Events architecture (current task)
-[WS] Evaluate Long Polling architecture
-[WS] Build PoC for top 2 options
-[WS] Run performance benchmarks
-[WS] Document findings and recommendations
+[WS] Evaluate Server-Sent Events architecture      in_progress
+[WS] Evaluate Long Polling architecture            queued
+[WS] Build PoC for top 2 options                   queued
+[WS] Run performance benchmarks                    queued
+[WS] Document findings and recommendations         queued
 ```
 
 ---
@@ -1477,13 +1489,13 @@ Phase 5: Security Hardening [PLANNED]
 5. Documentation & Deployment [PLANNED]
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:email-notifications`):
 ```
-[EMAIL] Implement notification queue system (current task)
-[EMAIL] Add user preferences management
-[EMAIL] Create email notification triggers
-[EMAIL] Write integration tests
-[EMAIL] Deploy and monitor
+[EMAIL] Implement notification queue system        in_progress
+[EMAIL] Add user preferences management            queued
+[EMAIL] Create email notification triggers         queued
+[EMAIL] Write integration tests                    queued
+[EMAIL] Deploy and monitor                         queued
 ```
 
 ---
@@ -1514,14 +1526,14 @@ Phase 5: Security Hardening [PLANNED]
 5. Validation & Prevention [PLANNED]
 ```
 
-**TodoWrite Pattern**:
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:websocket-event-routing`). The rejected hypotheses are findings, so they go in the `body` of the open rows or in history.md, not in rows of their own:
 ```
-[BUG] Test hypothesis: Event ordering problem (current task)
-[BUG] Test hypothesis: Connection lifecycle issue
-[BUG] Identify root cause from findings
-[BUG] Implement solution
-[BUG] Validate fix across all scenarios
-[BUG] Add prevention measures (tests, monitoring)
+[BUG] Test hypothesis: Event ordering problem       in_progress
+[BUG] Test hypothesis: Connection lifecycle issue   queued
+[BUG] Identify root cause from findings             queued
+[BUG] Implement solution                            queued
+[BUG] Validate fix across all scenarios             queued
+[BUG] Add prevention measures (tests, monitoring)   queued
 ```
 
 ---
@@ -1587,25 +1599,25 @@ Phase 2: Feature Implementation (Pattern 3)
 
 ### "I keep discovering new tasks mid-work"
 
-**Solution**: This is normal! Add them to your TODO list as you discover them. This is adaptive planning - your initial plan was a hypothesis, and you're learning as you go.
+**Solution**: This is normal! Add a row for each as you discover it (a manifest edit and importer re-run for a multi-phase plan). This is adaptive planning - your initial plan was a hypothesis, and you're learning as you go.
 
 ### "I have multiple tasks in_progress"
 
 **Solution**: Stop and refocus:
-1. Pick ONE task to complete
-2. Mark all other tasks as pending
-3. Finish the one in_progress task completely
-4. Then move to the next task
+1. Pick ONE row to complete
+2. Move all your other `in_progress` rows back to `queued`
+3. Finish the one `in_progress` row completely, and close it with a receipt
+4. Then move to the next row
 
 Context-switching is expensive. Single-task focus is more efficient.
 
 ### "I'm stuck and don't know how to proceed"
 
 **Solution**:
-1. Mark current task as still in_progress
-2. Create a new task: "Research solution for [problem]" or "Get help with [issue]"
-3. Work on that research/help task
-4. Once unblocked, return to original task
+1. Create a row for the help you need: "Research solution for [problem]" or "Get help with [issue]"
+2. Move the stuck row to `blocked`, with `blocked_by` pointing at that new row and a `next_chase_ts`
+3. Work on that research/help row
+4. Once unblocked, move the original row back to `in_progress`
 
 ---
 
@@ -1613,7 +1625,9 @@ Context-switching is expensive. Single-task focus is more efficient.
 
 This work planning workflow integrates with other planning-is-prompting workflows:
 
-- **Session Start** (planning-is-prompting → workflow/session-start.md): Read history.md to understand previous work and TODO lists
+- **Task Store** (planning-is-prompting → workflow/task-store-discipline.md): the home of owed work: statuses, transitions, receipts and query hygiene for every row this workflow creates
+- **Plan Stub Manifest** (planning-is-prompting → workflow/plan-stub-manifest.md): how a plan with two or more phases becomes board rows in one importer run
+- **Session Start** (planning-is-prompting → workflow/session-start.md): Read history.md to understand previous work, and query the store for what you owe
 - **Session End** (planning-is-prompting → workflow/session-end.md): Update history.md with completed work, learnings, and next steps
 - **History Management** (planning-is-prompting → workflow/history-management.md): Archive completed phases to maintain token budgets
 - **Commit Management** (planning-is-prompting → workflow/session-end.md §3–§4): Commit completed phases with descriptive messages
@@ -1623,6 +1637,7 @@ This work planning workflow integrates with other planning-is-prompting workflow
 
 ## Version History
 
+- **2026.10.01**: Replaced TodoWrite tracking with task-store rows and the stub manifest. New "Where Owed Work Lives" section (one phase: ordinary `task_create` rows; two or more phases: a stub manifest imported by `plan_stub_import.py`; finished work gets no row). Every "TodoWrite Pattern" block (Patterns 1-6, the Phase 3 preview, Examples 1-4) became a store-rows or manifest-excerpt block. Phase 3 Step 5 is now "Record the Breakdown on the Task Board". Phase 4 "TodoWrite Best Practices" became "Task Store Best Practices" (rows, `task_transition`, receipts, `blocked_by`, `dropped` with a reason). "TodoWrite Task State Management" shrank to a pointer at `task-store-discipline.md` plus a status mapping. Troubleshooting and Integration entries updated. The planning method (discovery, patterns, breakdown, cascade-readiness, archival) is unchanged.
 - **2026.05.22**: Added "Cascade-Readiness" subsection to Phase 3 (Work Breakdown) — guidance for shaping a plan's work breakdown into ≥ 2 independently-reviewable, acyclically-dependent sections so the plan is born ready for `/plan-review-cascaded`; plus a cross-reference under "Integration with Other Workflows"
 - **2025.10.14**: Added interactive discovery with context-aware defaults - Phase 1 discovery questions now infer smart defaults from user description, git state, and history; Phase 2 suggests recommended pattern with rationale; Phase 3 provides suggested task breakdown based on pattern and context
 - **2025.10.04**: Renamed from work-planning.md to p-is-p-01-planning-the-work.md for "Planning is Prompting" grouping
