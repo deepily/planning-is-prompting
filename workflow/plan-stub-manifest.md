@@ -97,6 +97,7 @@ A JSON file named `<plan-name>.stubs.json`. JSON, because the importer is standa
 
 - **Safe to re-run.** Rows are matched on `stub_key`, so a second run creates only what is new.
 - **Dry run is the default**; `import --write` creates rows. Same convention as `/plan-backup`.
+- **Read the dry run before `--write`: a mistaken held row can only be removed by the operator.** A manager cannot drop a row in the holding area (403), so every wrong row costs the operator a click. Measured 2026-10-01: five rows made for finished steps had to be retitled "DROP, DO NOT APPROVE" and left for him.
 - **It fails loudly on a partial import.** If the board refuses any row, it reports which rows landed and which did not, and exits non-zero. A half-imported plan that reports success is the failure this file exists to prevent.
 
 ## 5. When the plan grows
