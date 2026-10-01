@@ -84,8 +84,8 @@ These defaults look correct? [y/n]:
 You: "y"
 
 Workflow: ✓ Creating 5-stage breakdown for email notifications...
-          ✓ Creating 12 task-store rows for the suggested tasks...
-          Ready to begin implementation!
+          ✓ Creating 12 task-store rows in the holding area for the suggested tasks...
+          Implementation begins once the rows are admitted to the board.
 ```
 
 **Time Savings**:

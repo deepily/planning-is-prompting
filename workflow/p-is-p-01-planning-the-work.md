@@ -28,7 +28,7 @@
 Rules that hold for both forms:
 
 - **Titles.** A title you write by hand (single-phase rows) is one imperative line of about 60 characters or fewer; detail goes in the row `body` (`task-store-discipline.md` §3). That target is for hand-written titles only. A manifest row's title is stamped by the importer (`[PREFIX] Plan N · Phase X of Y · Step X of Y · <name>`) and its progress prefix is exempt from the 60: the plan author keeps the *name* short (aim for 40 characters or fewer) and the whole stamped title under the store's cap of 120 characters. The importer warns before a title would be trimmed.
-- **A new row lands in the holding area, not on the board.** The store mints a row a seat creates as `not_approved`, and refuses a create that asks for `queued`. The row becomes `queued`, and workable, only when the operator approves it; the importer never approves and neither do you. Ask your manager to request admission for rows you need to start on. This holds for hand-made rows and importer rows alike (`plan-stub-manifest.md` §1 rule 4). `task-store-discipline.md` does not describe this step yet: its §9 graph draws a row's life from `queued` onward, which is the state a row is in *after* admission.
+- **A new row lands in the holding area, not on the board.** This applies when the board is configured to hold new rows, which is the default on the fleet's board. The store then mints a row a seat creates as `not_approved`, and refuses a create that asks for `queued`. The row becomes `queued`, and workable, only when the operator approves it; the importer never approves and neither do you. Ask your manager to request admission for rows you need to start on. This holds for hand-made rows and importer rows alike (`plan-stub-manifest.md` §1 rule 4). `task-store-discipline.md` does not describe this step yet: its §9 graph draws a row's life from `queued` onward, which is the state a row is in *after* admission.
 - **Every row carries a `correlation_key`** in the form `epic:<slug>`. Workers pick an existing epic or use `epic:unassigned`; only a manager mints a new epic (`task-store-discipline.md` §7.1).
 - **Priority.** A worker files `P5`; a raise is a manager or operator act (`task-store-discipline.md` §1).
 - **Finished work gets no row.** If you adopt a plan mid-flight, start at the first unfinished task. Nobody creates a row in order to close it.
@@ -1174,7 +1174,7 @@ Put each task's completion criteria from Step 3 in the row `body`, and each depe
 3. `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/plan_stub_import.py import <manifest>` is a dry run. Read it, then re-run with `--write`. The rows land in the holding area; the operator approves them, the importer never does.
 4. When the plan grows, edit the manifest and re-run the importer. Never add a row by hand.
 
-The importer is planning-is-prompting → workflow/scripts/plan_stub_import.py. It lives in the planning-is-prompting repository, not in your project, so run it from that checkout (`$PLANNING_IS_PROMPTING_ROOT`) and give it the path to your manifest.
+The importer is planning-is-prompting → workflow/scripts/plan_stub_import.py. It lives in the planning-is-prompting repository, not in your project, so the commands name it by its full path under `$PLANNING_IS_PROMPTING_ROOT`. They work from any directory; give the importer the path to your manifest.
 
 If the plan is handed to a review gate, the manifest is part of the handoff package (`plan-stub-manifest.md` §6).
 
@@ -1215,10 +1215,10 @@ For a manifest plan, `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/plan_
 
 ##### 2. Mark Rows In Progress (One at a Time)
 
-Before starting a task, move its admitted (`queued`) row to `in_progress`:
+Before starting a task, move its admitted (`queued`) row to `in_progress`; the store asks for a non-blank `reason` when a row is started:
 
 ```python
-task_transition( task_id="<row id>", to_status="in_progress" )
+task_transition( task_id="<row id>", to_status="in_progress", reason="starting: previous row closed" )
 ```
 
 **IMPORTANT**: Only ONE of your rows should be `in_progress` at any time. This enforces focus and prevents context-switching.
@@ -1708,7 +1708,7 @@ Context-switching is expensive. Single-task focus is more efficient.
 1. Create a row for the help you need: "Research solution for [problem]" or "Get help with [issue]"
 2. Move the stuck row to `blocked`, with `blocked_by` pointing at that new row and a `next_chase_ts`
 3. Work on that research/help row
-4. Once unblocked, move the original row back to `in_progress`
+4. Once unblocked, move the original row back to `in_progress`, with a `reason` (the store asks for one whenever a row is started), for example `reason="unblocked: help row closed"`
 
 ---
 
