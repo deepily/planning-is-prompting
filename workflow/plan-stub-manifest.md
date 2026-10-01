@@ -89,7 +89,7 @@ A JSON file named `<plan-name>.stubs.json`. JSON, because the importer is standa
 
 ## 4. The importer
 
-`workflow/scripts/plan_stub_import.py`, with `test_plan_stub_import.py` (86 tests) and a sample manifest at `src/docs/plan-stubs/plan-stub-sample.stubs.json`. Contract:
+`workflow/scripts/plan_stub_import.py`, with its tests in `test_plan_stub_import.py` (run `python3 -m pytest workflow/scripts/test_plan_stub_import.py`) and a sample manifest at `src/docs/plan-stubs/plan-stub-sample.stubs.json`. Contract:
 
 | Verb | Does |
 |---|---|
