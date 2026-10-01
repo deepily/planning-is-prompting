@@ -30,7 +30,7 @@ When you create a structured plan, it continuously asks questions:
 1. **Shared Mental Model**: Human and AI align on goals, approach, and progress
 2. **Reduced Cognitive Load**: Structure handles "what's next" so you can focus on "how to do it"
 3. **Better Decision Making**: Patterns provide decision frameworks
-4. **Progress Visibility**: TodoWrite creates real-time progress tracking
+4. **Progress Visibility**: task-store rows give real-time progress tracking that the whole fleet can read
 5. **Knowledge Capture**: Archival preserves learnings for future reference
 
 ---
@@ -83,9 +83,9 @@ These defaults look correct? [y/n]:
 
 You: "y"
 
-Workflow: ✓ Creating Phase 1-5 breakdown for email notifications...
-          ✓ Generating TodoWrite list with 12 suggested tasks...
-          Ready to begin implementation!
+Workflow: ✓ Creating 5-stage breakdown for email notifications...
+          ✓ Creating 12 task-store rows in the holding area for the suggested tasks...
+          Implementation begins once the rows are admitted to the board.
 ```
 
 **Time Savings**:
@@ -260,7 +260,7 @@ Pre-planning is optional but recommended when starting with ambiguity.
 ```mermaid
 flowchart TD
     Start["p-is-p-00-start-here.md (YOU ARE HERE)<br><i>I have work to do, where do I start?</i>"]
-    Step1["STEP 1: Planning the Work<br>p-is-p-01-planning-the-work.md<br>• Answer discovery questions<br>• Select pattern 1-6<br>• Break down into tasks<br>• Create TodoWrite list"]
+    Step1["STEP 1: Planning the Work<br>p-is-p-01-planning-the-work.md<br>• Answer discovery questions<br>• Select pattern 1-6<br>• Break down into tasks<br>• Record tasks on the task board<br>(store rows; stub manifest if 2+ phases)"]
     Start --> Step1
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
@@ -285,7 +285,7 @@ flowchart TD
 - Classifies your work type through discovery questions
 - Recommends one of 5 planning patterns
 - Breaks down work into manageable tasks
-- Creates TodoWrite list for progress tracking
+- Records the tasks on the task board for progress tracking (store rows; a stub manifest when the plan has two or more phases)
 
 **Patterns**:
 1. **Multi-Phase Implementation**: Complex projects with 3+ distinct phases (8+ weeks)
@@ -294,8 +294,10 @@ flowchart TD
 4. **Problem Investigation**: Systematic debugging with hypothesis testing
 5. **Architecture & Design**: System-level design and decision documentation
 
+**Pattern and tracking form are separate choices.** The "3+ distinct phases" above picks the pattern only. The tracking form follows one rule: a plan with two or more phases ships a stub manifest, whatever its pattern; single-phase work is tracked as ordinary store rows. In single-phase work the numbered groups of a breakdown are *stages*, not phases, and the examples below label them that way.
+
 **Time investment**: 15-30 minutes
-**Output**: Clear plan with tasks, pattern selection, TodoWrite list
+**Output**: Clear plan with tasks, pattern selection, task-board rows (or a stub manifest)
 
 ### Step 2: Documenting the Implementation (Conditional)
 
@@ -422,7 +424,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
    - Pattern 1, 2, or 5? → Also use `p-is-p-02-documenting-the-implementation.md`
    - Pattern 3 or 4? → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
 5. Break down work into tasks (Phase 3 of workflow 01)
-6. Create TodoWrite list (Phase 4 of workflow 01)
+6. Record the breakdown on the task board (Phase 3 Step 5 of workflow 01): store rows, or a stub manifest if the plan has two or more phases
 7. Begin execution
 
 **Time**: 15-30 minutes for Step 1, plus 20-40 minutes for Step 2 if needed
@@ -438,7 +440,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
    - Hypothesis testing
    - Root cause analysis
    - Solution implementation
-5. Track progress with TodoWrite
+5. Track progress with store rows (move each as you go, close with a receipt)
 6. Update history.md at session end
 
 **Time**: 10-15 minutes planning, then execute
@@ -452,7 +454,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 4. Open `p-is-p-02-documenting-the-implementation.md`
 5. Create Pattern B structure (architecture docs)
 6. Populate with design decisions, component specs, etc.
-7. Track progress with TodoWrite
+7. Track progress with the plan's stub manifest rows (Pattern 5 plans are multi-phase)
 8. Update docs as design evolves
 
 **Time**: 30 minutes planning, 30 minutes doc setup, then execute
@@ -468,7 +470,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
    - Design & technical planning
    - Implementation
    - Testing & validation
-5. Track with TodoWrite
+5. Track with store rows
 6. Update history.md at session end
 
 **Time**: 15 minutes planning, then execute
@@ -489,12 +491,12 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 2. DECISION MATRIX: Pattern 3 → Skip Step 2
 
 3. BREAKDOWN (from Step 1):
-   Phase 1: Requirements (define triggers, templates)
-   Phase 2: Design (email service, queue system)
-   Phase 3: Implementation (SendGrid integration, templates, triggers)
-   Phase 4: Testing (integration tests)
+   Stage 1: Requirements (define triggers, templates)
+   Stage 2: Design (email service, queue system)
+   Stage 3: Implementation (SendGrid integration, templates, triggers)
+   Stage 4: Testing (integration tests)
 
-4. TODOWRITE:
+4. TASK ROWS (one store row each):
    [EMAIL] Define notification triggers and templates
    [EMAIL] Design email service and queue system
    [EMAIL] Implement SendGrid integration
@@ -542,7 +544,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
    Phase 7: Testing & Documentation
    Phase 8: Deployment
 
-5. TODOWRITE (per phase):
+5. STUB MANIFEST (every phase; one step per task):
    [JWT] Set up JWT library and configuration
    [JWT] Implement token generation function
    [JWT] Add token signing and verification
@@ -567,7 +569,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 
 ```
 1. START: p-is-p-01-planning-the-work.md
-   - Discovery: Research, 2-3 weeks, evaluation phases
+   - Discovery: Research, 2-3 weeks, single phase with evaluation stages
    - Pattern: Pattern 2 (Research & Exploration)
 
 2. DECISION MATRIX: Pattern 2 (medium) → Use Step 2
@@ -582,12 +584,12 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
      └── proof-of-concept/
 
 4. BREAKDOWN (from Step 1):
-   Phase 1: Define research questions
-   Phase 2: Technology evaluation (Socket.IO, native WS, SSE, long polling)
-   Phase 3: Proof-of-concept testing
-   Phase 4: Findings & recommendations
+   Stage 1: Define research questions
+   Stage 2: Technology evaluation (Socket.IO, native WS, SSE, long polling)
+   Stage 3: Proof-of-concept testing
+   Stage 4: Findings & recommendations
 
-5. TODOWRITE:
+5. TASK ROWS (one store row each):
    [WS] Define research questions and requirements
    [WS] Evaluate Socket.IO architecture
    [WS] Evaluate native WebSockets
@@ -621,13 +623,13 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 2. DECISION MATRIX: Pattern 4 → Skip Step 2
 
 3. BREAKDOWN (from Step 1):
-   Phase 1: Problem statement & reproduction
-   Phase 2: Hypothesis testing
-   Phase 3: Root cause analysis
-   Phase 4: Solution implementation
-   Phase 5: Validation & prevention
+   Stage 1: Problem statement & reproduction
+   Stage 2: Hypothesis testing
+   Stage 3: Root cause analysis
+   Stage 4: Solution implementation
+   Stage 5: Validation & prevention
 
-4. TODOWRITE:
+4. TASK ROWS (one store row each):
    [BUG] Document problem statement and create reproduction case
    [BUG] Test hypothesis: Race condition in connection handler
    [BUG] Test hypothesis: State management issue
@@ -662,7 +664,7 @@ WEEK 1: Research Synthesis (Phase 0)
 2. START: p-is-p-01 Phase 0 (Research Synthesis)
    Create: src/rnd/2025.10.14-adk-agent-research-synthesis.md
 
-   TODOWRITE (Phase 0):
+   MANIFEST STEPS (Phase 0):
    [AGENT] Read and understand Google ADK documentation
    [AGENT] Extract ADK capabilities (agent framework, tool integration, memory)
    [AGENT] Extract ADK constraints (async-only, 100K token limit, API quotas)
@@ -701,7 +703,7 @@ WEEK 2-3: Architecture Design (Phase 1)
    ├── 05-integration-patterns.md (tool calling protocol, ReAct prompting)
    └── 07-decision-rationale.md (all decisions trace to research findings)
 
-   TODOWRITE (Phase 1):
+   MANIFEST STEPS (Phase 1):
    [AGENT] Design system architecture using Agent-Tool-Memory pattern
    [AGENT] Design Agent Engine component (based on ADK framework)
    [AGENT] Design Tool Registry component (based on ADK tool integration)
@@ -737,7 +739,7 @@ WEEK 3: Implementation Planning (Phase 2)
    Phase 5: Data Analysis Agent Implementation (Use Case 2)
    Phase 6: Testing, Validation & Documentation
 
-   TODOWRITE (Phase 2):
+   MANIFEST STEPS (Phase 2):
    [AGENT] Break down Phase 1 into tasks (ADK SDK setup, base agent class, etc.)
    [AGENT] Break down Phase 2 into tasks (tool interface, registry, plugin loading)
    [AGENT] Break down Phase 3 into tasks (context store, windowing, persistence)
@@ -752,7 +754,7 @@ WEEK 4-10: Implementation Execution (Phases 3-N)
 
 8. EXECUTE: Work through implementation phases using Pattern 1 flow
 
-   Phase 1 TodoWrite (example):
+   Phase 1 steps, added to the manifest when its stub expands (example):
    [AGENT] Install Google ADK SDK and dependencies
    [AGENT] Create base agent class implementing ADK interface
    [AGENT] Implement ADK tool integration hooks
@@ -760,7 +762,7 @@ WEEK 4-10: Implementation Execution (Phases 3-N)
    [AGENT] Write unit tests for base agent
    [AGENT] Archive Phase 1 when complete
 
-   Phase 2 TodoWrite (example):
+   Phase 2 steps, added the same way (example):
    [AGENT] Define tool interface following ADK protocol
    [AGENT] Implement tool registry with discovery
    [AGENT] Create plugin loading system
@@ -791,7 +793,7 @@ WEEK 4-10: Implementation Execution (Phases 3-N)
 - **Research traceability**: Every design decision traces to research findings
 - **Pattern application**: ADK's Agent-Tool-Memory pattern adopted directly
 - **Use case alignment**: Both use cases validated against architecture
-- **TodoWrite discipline**: One phase in_progress, complete before moving on
+- **Board discipline**: One phase in progress, close it with receipts before moving on
 - **Document integration**: Research → Architecture → Implementation chain clear
 
 **Dedicated docs required**:
@@ -808,11 +810,11 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ### Session Start
 **File**: `session-start.md`
-**Integration**: Read history.md to understand previous work, review TodoWrite lists from p-is-p-01
+**Integration**: Read history.md to understand previous work, query the task store for your open rows (`task-store-discipline.md` §6)
 
 ### Session End
 **File**: `session-end.md`
-**Integration**: Update history.md with completed tasks from TodoWrite, capture decisions and learnings
+**Integration**: Update history.md with completed tasks (closed store rows), capture decisions and learnings
 
 ### History Management
 **File**: `history-management.md`
@@ -842,12 +844,12 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 4. Check decision matrix in this document
 5. If Pattern 1, 2, or 5 → Also use `p-is-p-02-documenting-the-implementation.md`
 6. If Pattern 3 or 4 → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
-7. Create TodoWrite list
+7. Record the breakdown on the task board (store rows, or a stub manifest for two or more phases)
 8. Begin work
 
 **If you're continuing existing work**:
 1. Check history.md for previous session summary
-2. Review TodoWrite list from last session
+2. Query the task store for your open rows (`task_query`, scoped by owner and status)
 3. Continue where you left off
 4. Update implementation docs (if using p-is-p-02)
 5. Update history.md at session end
@@ -867,12 +869,13 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 3. **Adaptive**: Plans can evolve as you learn more about the work
 4. **Progressive detail**: Start high-level (p-is-p-01), add detail as needed (p-is-p-02)
 5. **Knowledge capture**: Archive learnings for future reference
-6. **TodoWrite discipline**: One task in_progress at a time, mark completed immediately
+6. **Task-store discipline**: One row in_progress at a time, close it with a receipt immediately
 
 ---
 
 ## Version History
 
+- **2026.10.01**: Replaced TodoWrite tracking wording with task-store rows and the stub manifest (see `p-is-p-01-planning-the-work.md` *Where Owed Work Lives*, `task-store-discipline.md`, `plan-stub-manifest.md`): benefits line, interactive-flow sample, visual flow, Step 1 summary, scenarios, Examples 1-5, integration notes, summary and principles. The decision matrix and pattern routing are unchanged. Review fixes, same day: the numbered groups in the single-phase examples (Examples 1, 3 and 4, and the interactive-flow sample) are now called stages, and the Step 1 summary says that "3+ distinct phases" picks the pattern while "two or more phases" picks the stub manifest.
 - **2026.05.22**: Added a `/plan-review-cascaded` pointer to the Two-Step Process gate section, directing cascade-bound plans to the p-is-p-01 Cascade-Readiness guidance; companion note added to the Decision Matrix
 - **2025.10.14**: Added interactive workflow selection section explaining context-aware defaults; enhanced First Decision section with context-aware routing for Pattern 6 detection
 - **2025.10.04**: Initial creation as meta wrapper for "Planning is Prompting" core workflows
