@@ -22,7 +22,18 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 211 (2026-09-29, María 🌸 stable `7cead4a3`, self-respun twice, manager beside Mr. Radio and Tiffany)**: branch lockdown and Last Call hardening shipped, then an evening of lupin reviews in which two merges were reverted the same night.
+**RESUME HERE**: **Session 212 (2026-09-30, María 🌸 stable `829ca25f`, self-respun once mid-cascade, Manager of `cascade-v022-docs-and-reuse`)**: reviewed and ruled the two lupin v0.2.2 plans (docs rewrite, code wiki + Jev reuse review), then handed the builds to Cheech (lupin) and Tiffany (mobile).
+
+1. **Cascade complete**: five sections, three stages each, 101 findings (0 foundational, 0 votes, 0 escalations), 1 h 31 min. Step 9 handoff doc passed Rachel's light review after one revision turn. Cast reaped with verified mementos. Self-audit: 9 candidates filed to TODO.md.
+2. **Rick's walkthrough**: about 30 rulings, folded into a "Rulings of 2026-09-30" section at the top of each plan. Biggest: sweep before capability pages (his expert's order), daily merge train, Sonnet writes, R&D history denied to agents by default, Dart indexed now. D3 (judge model) waits on his Jev expert; problem statement written.
+3. **Committed in lupin** on Rick's word: `06f30bc1a` (6 plan docs). Planning tickets `53a62b4c`, `972653b3` closed on it.
+4. **Shipped (plan)**: `workflow/swe-team-roles.md` v1.10, the optional Counter-reviewer charter (E8). Heartbeat `poke_cap` raised 1 → 3 in `~/.claude/settings.json` on Rick's word; the design said 3, and the code default of 1 had no recorded reason.
+5. **Open, on my board, Rick's**: Jev account and key `8f70cbac`, archive deepily/cosa `4dd922cc`, D3.
+6. **Lesson**: I wrote "about 3.5 hours" into a pipeline summary before measuring; it was 1 h 31 min. Corrected the same minute.
+
+**Files**: history.md, TODO.md, workflow/swe-team-roles.md · lupin: the plan 1 and plan 2 folders under `src/rnd/v0.2.2/`
+
+**Previous RESUME HERE**: **Session 211 (2026-09-29, María 🌸 stable `7cead4a3`, self-respun twice, manager beside Mr. Radio and Tiffany)**: branch lockdown and Last Call hardening shipped, then an evening of lupin reviews in which two merges were reverted the same night.
 
 1. **Shipped (plan), pushed 20:15**: branch lock `0a9b1d68` (`f820593`, `12b08ee`); Last Call reply address `8ad0a402` (`7c7f1e1`); skip a re-spin within 60 min of close `6380199b` + `b134feb9` (`bd596ce`, `d7e609c`); memento slugs strip accents `bb1dcbfc` (`1c70dd6`); plan-serialization Gate 0 (`011d8ad`).
 2. **Door 18 retirement `a3c59f2d`**: sent back at `e478e2c6c`. A refused suite name fell through to the receptionist, which the queued executor queued, so the reply said "waiting". The unit tests were green only because the harness's fake receptionist had no `id_hash`. Approved at `9be8d5e49` (builder `ValueError` → `SubmitRefused`).
