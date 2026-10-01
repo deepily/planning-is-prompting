@@ -83,7 +83,7 @@ These defaults look correct? [y/n]:
 
 You: "y"
 
-Workflow: ✓ Creating Phase 1-5 breakdown for email notifications...
+Workflow: ✓ Creating 5-stage breakdown for email notifications...
           ✓ Creating 12 task-store rows for the suggested tasks...
           Ready to begin implementation!
 ```
@@ -294,6 +294,8 @@ flowchart TD
 4. **Problem Investigation**: Systematic debugging with hypothesis testing
 5. **Architecture & Design**: System-level design and decision documentation
 
+**Pattern and tracking form are separate choices.** The "3+ distinct phases" above picks the pattern only. The tracking form follows one rule: a plan with two or more phases ships a stub manifest, whatever its pattern; single-phase work is tracked as ordinary store rows. In single-phase work the numbered groups of a breakdown are *stages*, not phases, and the examples below label them that way.
+
 **Time investment**: 15-30 minutes
 **Output**: Clear plan with tasks, pattern selection, task-board rows (or a stub manifest)
 
@@ -489,10 +491,10 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 2. DECISION MATRIX: Pattern 3 → Skip Step 2
 
 3. BREAKDOWN (from Step 1):
-   Phase 1: Requirements (define triggers, templates)
-   Phase 2: Design (email service, queue system)
-   Phase 3: Implementation (SendGrid integration, templates, triggers)
-   Phase 4: Testing (integration tests)
+   Stage 1: Requirements (define triggers, templates)
+   Stage 2: Design (email service, queue system)
+   Stage 3: Implementation (SendGrid integration, templates, triggers)
+   Stage 4: Testing (integration tests)
 
 4. TASK ROWS (one store row each):
    [EMAIL] Define notification triggers and templates
@@ -567,7 +569,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 
 ```
 1. START: p-is-p-01-planning-the-work.md
-   - Discovery: Research, 2-3 weeks, evaluation phases
+   - Discovery: Research, 2-3 weeks, single phase with evaluation stages
    - Pattern: Pattern 2 (Research & Exploration)
 
 2. DECISION MATRIX: Pattern 2 (medium) → Use Step 2
@@ -582,10 +584,10 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
      └── proof-of-concept/
 
 4. BREAKDOWN (from Step 1):
-   Phase 1: Define research questions
-   Phase 2: Technology evaluation (Socket.IO, native WS, SSE, long polling)
-   Phase 3: Proof-of-concept testing
-   Phase 4: Findings & recommendations
+   Stage 1: Define research questions
+   Stage 2: Technology evaluation (Socket.IO, native WS, SSE, long polling)
+   Stage 3: Proof-of-concept testing
+   Stage 4: Findings & recommendations
 
 5. TASK ROWS (one store row each):
    [WS] Define research questions and requirements
@@ -621,11 +623,11 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 2. DECISION MATRIX: Pattern 4 → Skip Step 2
 
 3. BREAKDOWN (from Step 1):
-   Phase 1: Problem statement & reproduction
-   Phase 2: Hypothesis testing
-   Phase 3: Root cause analysis
-   Phase 4: Solution implementation
-   Phase 5: Validation & prevention
+   Stage 1: Problem statement & reproduction
+   Stage 2: Hypothesis testing
+   Stage 3: Root cause analysis
+   Stage 4: Solution implementation
+   Stage 5: Validation & prevention
 
 4. TASK ROWS (one store row each):
    [BUG] Document problem statement and create reproduction case
@@ -873,7 +875,7 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ## Version History
 
-- **2026.10.01**: Replaced TodoWrite tracking wording with task-store rows and the stub manifest (see `p-is-p-01-planning-the-work.md` *Where Owed Work Lives*, `task-store-discipline.md`, `plan-stub-manifest.md`): benefits line, interactive-flow sample, visual flow, Step 1 summary, scenarios, Examples 1-5, integration notes, summary and principles. The decision matrix and pattern routing are unchanged.
+- **2026.10.01**: Replaced TodoWrite tracking wording with task-store rows and the stub manifest (see `p-is-p-01-planning-the-work.md` *Where Owed Work Lives*, `task-store-discipline.md`, `plan-stub-manifest.md`): benefits line, interactive-flow sample, visual flow, Step 1 summary, scenarios, Examples 1-5, integration notes, summary and principles. The decision matrix and pattern routing are unchanged. Review fixes, same day: the numbered groups in the single-phase examples (Examples 1, 3 and 4, and the interactive-flow sample) are now called stages, and the Step 1 summary says that "3+ distinct phases" picks the pattern while "two or more phases" picks the stub manifest.
 - **2026.05.22**: Added a `/plan-review-cascaded` pointer to the Two-Step Process gate section, directing cascade-bound plans to the p-is-p-01 Cascade-Readiness guidance; companion note added to the Decision Matrix
 - **2025.10.14**: Added interactive workflow selection section explaining context-aware defaults; enhanced First Decision section with context-aware routing for Pattern 6 detection
 - **2025.10.04**: Initial creation as meta wrapper for "Planning is Prompting" core workflows

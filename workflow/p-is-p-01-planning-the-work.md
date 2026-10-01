@@ -21,11 +21,14 @@
 | The plan has | Track it with | Where the rows come from |
 |---|---|---|
 | **One phase** (Patterns 2, 3 and 4 as a rule) | Ordinary store rows, one per task | You create them with `task_create` |
-| **Two or more phases** (Patterns 1, 5 and 6 always; any other pattern once its breakdown names two or more phases) | A stub manifest | `plan_stub_import.py` creates every row from the manifest in one run (see `plan-stub-manifest.md`). Nobody types these rows by hand |
+| **Two or more phases** (Patterns 1, 5 and 6 always; any other pattern once its breakdown names two or more phases) | A stub manifest | The importer (planning-is-prompting → workflow/scripts/plan_stub_import.py) creates every row from the manifest in one run (see `plan-stub-manifest.md`). Nobody types these rows by hand |
+
+**Two or more phases means a stub manifest, whatever the pattern.** The phase count decides the tracking form, and nothing else does. The "3+ distinct phases" test in the Pattern Selection Decision Tree chooses the *pattern* only (Pattern 1 or Pattern 3); it does not choose the tracking form, so a two-phase plan lands in Pattern 3 and still writes a manifest. In single-phase work the numbered groups of a breakdown are called *stages*, not phases: stages are rows under one epic, phases are manifest entries.
 
 Rules that hold for both forms:
 
-- **Titles** are one imperative line of about 60 characters or fewer; detail goes in the row `body` (`task-store-discipline.md` §3). Manifest rows get their titles from the importer: `Plan N · Phase X of Y · Step X of Y`.
+- **Titles.** A title you write by hand (single-phase rows) is one imperative line of about 60 characters or fewer; detail goes in the row `body` (`task-store-discipline.md` §3). That target is for hand-written titles only. A manifest row's title is stamped by the importer (`[PREFIX] Plan N · Phase X of Y · Step X of Y · <name>`) and its progress prefix is exempt from the 60: the plan author keeps the *name* short (aim for 40 characters or fewer) and the whole stamped title under the store's cap of 120 characters. The importer warns before a title would be trimmed.
+- **A new row lands in the holding area, not on the board.** The store mints a row a seat creates as `not_approved`, and refuses a create that asks for `queued`. The row becomes `queued`, and workable, only when the operator approves it; the importer never approves and neither do you. Ask your manager to request admission for rows you need to start on. This holds for hand-made rows and importer rows alike (`plan-stub-manifest.md` §1 rule 4). `task-store-discipline.md` does not describe this step yet: its §9 graph draws a row's life from `queued` onward, which is the state a row is in *after* admission.
 - **Every row carries a `correlation_key`** in the form `epic:<slug>`. Workers pick an existing epic or use `epic:unassigned`; only a manager mints a new epic (`task-store-discipline.md` §7.1).
 - **Priority.** A worker files `P5`; a raise is a manager or operator act (`task-store-discipline.md` §1).
 - **Finished work gets no row.** If you adopt a plan mid-flight, start at the first unfinished task. Nobody creates a row in order to close it.
@@ -318,17 +321,17 @@ Track your research synthesis progress with one store row per step. If the resea
 
 ```
 correlation_key: epic:<research-slug>
-[SHORT_PROJECT_PREFIX] Gather all research source materials        done        (receipt on close)
-[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 1}        in_progress
-[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 2}        queued
-[SHORT_PROJECT_PREFIX] Document constraints and requirements       queued
-[SHORT_PROJECT_PREFIX] Identify recommended patterns               queued
-[SHORT_PROJECT_PREFIX] Map use cases to capabilities               queued
-[SHORT_PROJECT_PREFIX] Create research synthesis document          queued
-[SHORT_PROJECT_PREFIX] Transition to Phase 1 (Discovery)           queued
+[SHORT_PROJECT_PREFIX] Gather all research source materials        not_approved
+[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 1}        not_approved
+[SHORT_PROJECT_PREFIX] Extract capabilities from {Source 2}        not_approved
+[SHORT_PROJECT_PREFIX] Document constraints and requirements       not_approved
+[SHORT_PROJECT_PREFIX] Identify recommended patterns               not_approved
+[SHORT_PROJECT_PREFIX] Map use cases to capabilities               not_approved
+[SHORT_PROJECT_PREFIX] Create research synthesis document          not_approved
+[SHORT_PROJECT_PREFIX] Transition to Phase 1 (Discovery)           not_approved
 ```
 
-Create each row with `task_create` (`item_class="task"`, `priority="P5"`, `project=[PROJECT]`) the moment you know the step exists, and move it with `task_transition`. The first row above is shown as it looks after you have started on the second: closed, with its receipt.
+Create each row with `task_create` (`item_class="task"`, `priority="P5"`, `project=[PROJECT]`) the moment you know the step exists. The rows are shown as they stand right after you create them: held in the holding area (`not_approved`) until the operator admits them to `queued` (see *Where Owed Work Lives*). Once a row is admitted, move it with `task_transition`: to `in_progress` when you start it, and to `done`, with its receipt, when you finish.
 
 **Step 5: Transition to Planning**
 
@@ -801,13 +804,23 @@ mindmap
             "acceptance": "Interfaces and failure modes written down", "depends_on": [] },
           { "key": "ph3-s2", "name": "Design component B", "item_class": "task", "priority": "P5",
             "acceptance": "Interfaces and failure modes written down", "depends_on": [] },
-          { "key": "ph3-s3", "name": "Rule on the component split", "item_class": "decision", "priority": "P5",
-            "acceptance": "The operator has said which split to build", "depends_on": [ "ph3-s1", "ph3-s2" ] }
+          { "key": "ph3-s3", "name": "Design component C", "item_class": "task", "priority": "P5",
+            "acceptance": "Interfaces and failure modes written down", "depends_on": [] },
+          { "key": "ph3-s4", "name": "Rule on the component split", "item_class": "decision", "priority": "P5",
+            "acceptance": "The operator has said which split to build", "depends_on": [ "ph3-s1", "ph3-s2", "ph3-s3" ] }
       ] },
     { "phase": 4, "name": "Integration patterns",     "steps": [], "expand_trigger": "Phase 3 closes" },
     { "phase": 5, "name": "Decision documentation",   "steps": [], "expand_trigger": "Phase 4 closes" },
     { "phase": 6, "name": "Implementation roadmap",   "steps": [], "expand_trigger": "Phase 5 closes" }
 ]
+```
+
+Phases 4 to 6 are `STUB` rows until their trigger fires. When each one expands, the work it carries becomes its steps:
+
+```
+Phase 4: Define integration patterns
+Phase 5: Document key decisions
+Phase 6: Create implementation roadmap
 ```
 
 **Example**: Designing microservices architecture with API gateway, authentication service, business logic services, database strategy, and inter-service communication patterns.
@@ -863,25 +876,58 @@ gantt
     { "phase": 0, "name": "Research synthesis",
       "steps": [
           { "key": "ph0-s1", "name": "Gather research source materials", "item_class": "task", "priority": "P5",
-            "acceptance": "Every source is listed with its location", "depends_on": [] },
+            "acceptance": "Every source (SDK docs, use cases, specs) is listed with its location", "depends_on": [] },
           { "key": "ph0-s2", "name": "Extract capabilities and constraints", "item_class": "task", "priority": "P5",
             "acceptance": "Capabilities and constraints are written down per source", "depends_on": [ "ph0-s1" ] },
-          { "key": "ph0-s3", "name": "Write the research synthesis", "item_class": "task", "priority": "P5",
-            "acceptance": "Synthesis document exists and cites every source", "depends_on": [ "ph0-s2" ] }
+          { "key": "ph0-s3", "name": "Identify recommended patterns", "item_class": "task", "priority": "P5",
+            "acceptance": "Recommended patterns and best practices are listed per source", "depends_on": [ "ph0-s1" ] },
+          { "key": "ph0-s4", "name": "Map use cases to capabilities", "item_class": "task", "priority": "P5",
+            "acceptance": "Every use case names the capabilities it needs", "depends_on": [ "ph0-s2" ] },
+          { "key": "ph0-s5", "name": "Write the research synthesis summary", "item_class": "task", "priority": "P5",
+            "acceptance": "Synthesis document exists and cites every source", "depends_on": [ "ph0-s2", "ph0-s3", "ph0-s4" ] },
+          { "key": "ph0-s6", "name": "Transition to Phase 1", "item_class": "task", "priority": "P5",
+            "acceptance": "Synthesis is accepted as the input to architecture design", "depends_on": [ "ph0-s5" ] }
       ] },
     { "phase": 1, "name": "Architecture design",
       "steps": [
-          { "key": "ph1-s1", "name": "Design the architecture from the research", "item_class": "task", "priority": "P5",
-            "acceptance": "Each component traces to a research finding", "depends_on": [ "ph0-s3" ] },
-          { "key": "ph1-s2", "name": "Review the architecture against the use cases", "item_class": "task", "priority": "P5",
-            "acceptance": "Every use case maps to a component", "depends_on": [ "ph1-s1" ] }
+          { "key": "ph1-s1", "name": "Design architecture from research", "item_class": "task", "priority": "P5",
+            "acceptance": "Each component traces to a research finding", "depends_on": [ "ph0-s6" ] },
+          { "key": "ph1-s2", "name": "Define components from capabilities", "item_class": "task", "priority": "P5",
+            "acceptance": "Each component names the researched capabilities it uses", "depends_on": [ "ph1-s1" ] },
+          { "key": "ph1-s3", "name": "Document decisions with rationale", "item_class": "task", "priority": "P5",
+            "acceptance": "Each design decision cites its research rationale", "depends_on": [ "ph1-s1" ] },
+          { "key": "ph1-s4", "name": "Create diagrams and component specs", "item_class": "task", "priority": "P5",
+            "acceptance": "Architecture diagrams and a spec per component exist", "depends_on": [ "ph1-s2" ] },
+          { "key": "ph1-s5", "name": "Review architecture against use cases", "item_class": "task", "priority": "P5",
+            "acceptance": "Every use case maps to a component", "depends_on": [ "ph1-s3", "ph1-s4" ] }
       ] },
     { "phase": 2, "name": "Implementation planning", "steps": [], "expand_trigger": "Phase 1 closes" },
     { "phase": 3, "name": "Execution",               "steps": [], "expand_trigger": "Phase 2 closes" }
 ]
 ```
 
-Phases are numbered from 0, so "of N" is the highest phase number (here `Phase 3 of 3`). The steps a real plan lists for each phase (for example the six Phase 0 tasks: gather sources, extract capabilities, identify patterns, map use cases, write the synthesis, transition) each become a step. When Phase 2 closes, expand the `Execution` stub by editing the manifest (keep every existing `key`) and re-running the importer; never add the rows by hand.
+Phases are numbered from 0, so "of N" is the highest phase number (here `Phase 3 of 3`). Phases 0 and 1 are broken down in full above, one step per task. Phases 2 and 3 are `STUB` rows until their trigger fires; when each one expands, the tasks below become its steps:
+
+*Phase 2 (Implementation Planning):*
+```
+Derive implementation phases from architecture
+Break down Phase 1 tasks (e.g., ADK integration)
+Break down Phase 2 tasks (e.g., Tool registry)
+Identify cross-phase dependencies
+Create implementation tracking document
+Estimate timeline and resource needs
+```
+
+*Phase 3+ (Execution):*
+```
+Phase 3.1: Set up SDK and dependencies
+Phase 3.2: Implement base framework
+Phase 3.3: Build component X following researched pattern
+Phase 3.4: Integrate components
+... (continue through all implementation phases)
+```
+
+Expand a stub by editing the manifest (keep every existing `key`) and re-running the importer; never add the rows by hand.
 
 **Example**: Building agent system with Google ADK - synthesize ADK documentation and 2 use case recommendations, design agent architecture based on ADK's Agent-Tool-Memory pattern, derive implementation phases (ADK integration, tool registry, context management, use case 1 implementation, use case 2 implementation), execute with the manifest rows as the tracking surface.
 
@@ -931,6 +977,8 @@ flowchart TD
     Review --> Code
 ```
 
+> **The "3+ distinct phases?" question chooses the pattern, not the tracking form.** It sends a plan to Pattern 1 or Pattern 3 and that is all it decides. The tracking form has its own rule, stated in *Where Owed Work Lives*: two or more phases means a stub manifest, whatever the pattern. A plan with exactly two phases therefore comes out of this tree as Pattern 3 and still ships a manifest.
+
 > **⚠️ THE PATTERN IS NOT THE TERMINAL DESTINATION.** Selecting a pattern is not the end of planning — **every pattern above can produce a plan document, and every plan document enters `/plan-review` before code is written** ([`plan-review.md`](plan-review.md) §4a). The gate is keyed on the **existence of the document**, not on the pattern that produced it. Work that produces no plan document has nothing to gate — out of scope by construction, not by exemption.
 
 **Hybrid Patterns**: You can combine patterns for complex work. For example:
@@ -954,7 +1002,7 @@ Once you've selected a pattern, break down the work into concrete tasks.
 - Components mentioned: SendGrid, templates, queue, user preferences
 - Integration: Existing app + user system
 
-**Proposed Phases**:
+**Proposed Stages**:
 
 ```
 1. Requirements & Acceptance Criteria
@@ -988,7 +1036,7 @@ Once you've selected a pattern, break down the work into concrete tasks.
    - Monitoring setup
 ```
 
-**Estimated Tasks**: ~12-15 tasks across 5 phases (fits Medium scale)
+**Estimated Tasks**: ~12-15 tasks across 5 stages (fits Medium scale)
 
 **Store Rows Preview** (Pattern 3: one phase of work, one `task_create` row each, all under one `epic:<slug>` key):
 ```
@@ -1122,9 +1170,11 @@ Put each task's completion criteria from Step 3 in the row `body`, and each depe
 *Two or more phases.* Write a stub manifest of every phase and step instead of hand-making rows, then run the importer:
 
 1. Write `<plan-name>.stubs.json` per `plan-stub-manifest.md` §3. Each step carries its completion criteria as `acceptance` and its Step 4 dependencies as `depends_on`. A phase you have not broken down yet is one `STUB` entry with the event that expands it.
-2. `python3 workflow/scripts/plan_stub_import.py validate <manifest>` until it is clean.
-3. `python3 workflow/scripts/plan_stub_import.py import <manifest>` is a dry run. Read it, then re-run with `--write`. The rows land in the holding area; the operator approves them, the importer never does.
+2. `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/plan_stub_import.py validate <manifest>` until it is clean.
+3. `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/plan_stub_import.py import <manifest>` is a dry run. Read it, then re-run with `--write`. The rows land in the holding area; the operator approves them, the importer never does.
 4. When the plan grows, edit the manifest and re-run the importer. Never add a row by hand.
+
+The importer is planning-is-prompting → workflow/scripts/plan_stub_import.py. It lives in the planning-is-prompting repository, not in your project, so run it from that checkout (`$PLANNING_IS_PROMPTING_ROOT`) and give it the path to your manifest.
 
 If the plan is handed to a review gate, the manifest is part of the handoff package (`plan-stub-manifest.md` §6).
 
@@ -1155,17 +1205,17 @@ Now execute the plan, keeping the task store current as you go. The store is the
 
 ##### 1. Create the Rows Up Front
 
-At the start of work, every task in your breakdown is already a row: created by you with `task_create` (one phase), or created by the importer from your stub manifest (two or more phases). Check what you owe with a scoped query, never the whole board:
+At the start of work, every task in your breakdown is already a row: created by you with `task_create` (one phase), or created by the importer from your stub manifest (two or more phases). Either way the rows start in the holding area (`not_approved`) and you can work them only after the operator admits them to `queued`; ask your manager to request admission. Check what you owe with a scoped query, never the whole board:
 
 ```python
 task_query( owner_persona="<me>", status="in_progress", terse=True )   # then a second pass with status="queued"
 ```
 
-For a manifest plan, `python3 workflow/scripts/plan_stub_import.py status <manifest>` is read-only and reports phases done of total, steps done of total in the live phase, and what is blocked on whom.
+For a manifest plan, `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/plan_stub_import.py status <manifest>` (planning-is-prompting → workflow/scripts/plan_stub_import.py) is read-only and reports phases done of total, steps done of total in the live phase, and what is blocked on whom.
 
 ##### 2. Mark Rows In Progress (One at a Time)
 
-Before starting a task, move its row to `in_progress`:
+Before starting a task, move its admitted (`queued`) row to `in_progress`:
 
 ```python
 task_transition( task_id="<row id>", to_status="in_progress" )
@@ -1175,7 +1225,7 @@ task_transition( task_id="<row id>", to_status="in_progress" )
 
 ##### 3. Close Rows Immediately, With a Receipt
 
-As soon as you finish a task, close it and move to the next. The server refuses `done` without a receipt (a commit sha for most work; see `task-store-discipline.md` §4 for the keys and who may supply which):
+As soon as you finish a task, close it and move to the next. The server refuses `done` without a receipt (a commit sha for most work; see `task-store-discipline.md` §4 for the receipt keys):
 
 ```python
 task_transition( task_id="<row id>", to_status="done", receipt_refs={ "commit": "<sha>" } )
@@ -1187,8 +1237,8 @@ task_transition( task_id="<row id>", to_status="done", receipt_refs={ "commit": 
 
 As you work, you'll discover new tasks.
 
-- **One phase**: create a new row with `task_create`, titled as a short imperative line, with the context in `body`.
-- **Two or more phases**: edit the manifest (add the step, keep every existing `key`) and re-run `plan_stub_import.py import`, then `--write`. A hand-made row has no stable key, and the importer cannot keep it in step with the plan.
+- **One phase**: create a new row with `task_create`, titled as a short imperative line, with the context in `body`. It lands in the holding area like any other new row.
+- **Two or more phases**: edit the manifest (add the step, keep every existing `key`) and re-run the importer's `import` (planning-is-prompting → workflow/scripts/plan_stub_import.py), then `--write`. A hand-made row has no stable key, and the importer cannot keep it in step with the plan.
 
 ##### 5. Close Obsolete Tasks Honestly
 
@@ -1338,13 +1388,51 @@ If you are used to a TodoWrite-style list, the nearest equivalents are:
 
 | Old list state | Store status |
 |---|---|
-| `pending` | `queued` |
+| (no equivalent: a new row waiting for approval) | `not_approved` (the holding area) |
+| `pending` | `queued` (after the operator admits the row) |
 | `in_progress` | `in_progress` |
 | `completed` | `done` (with a receipt) |
 | "paused" or "blocked" (a new task was created instead) | `blocked`, with `blocked_by` and `next_chase_ts` |
 | removed as obsolete | `dropped` (with a reason) |
 
-Task titles follow `task-store-discipline.md` §3: one short imperative line, detail in the `body`.
+Hand-written task titles follow `task-store-discipline.md` §3: one short imperative line of about 60 characters or fewer, detail in the `body`. Manifest rows are titled by the importer; their progress prefix is exempt from the 60, the name stays short (aim for 40 characters or fewer) and the whole title stays under the store's cap of 120 (see *Where Owed Work Lives*).
+
+### State Definitions
+
+**not_approved**: Row created, not yet admitted to the board
+- Every new row starts here, whether you made it or the importer did
+- Only the operator's approval moves it to `queued`
+- You cannot start work on it yet
+
+**queued**: Task not yet started
+- Task is identified and defined
+- Waiting to be picked up
+- May have dependencies that aren't met yet
+
+**in_progress**: Currently working on this task
+- Exactly ONE of your rows should have this status at any time
+- Active work is happening on this task
+- Task is not blocked or waiting (a row that is waiting moves to `blocked`)
+
+**blocked**: Waiting on something you cannot clear yourself
+- Names what it waits on (`blocked_by`) and when it will be chased (`next_chase_ts`)
+
+**done**: Task finished successfully
+- All work for this task is done
+- Completion criteria met
+- Tests passing (if applicable)
+- No unresolved errors or blockers
+- A receipt is cited
+
+**dropped**: Task no longer relevant
+- Closed with a reason; nothing is deleted
+
+### State Management Rules
+
+1. **One in_progress at a time**: Never have multiple rows `in_progress` simultaneously
+2. **Close immediately**: Move a row to `done` as soon as its task finishes, with its receipt
+3. **Blocked is a real status**: Move a waiting row to `blocked` with `blocked_by` and `next_chase_ts`; if clearing the blocker is itself work, give that work its own row
+4. **Drop obsolete rows, with a reason**: Move a row that is no longer relevant to `dropped`; the store has no delete
 
 ---
 
@@ -1406,15 +1494,18 @@ Phase 5: Security Hardening [PLANNED]
 ]
 ```
 
-The importer's dry run for this plan lists the Phase 3 row, the three open Phase 3 steps and one `STUB` row per later phase, so the first row on the board reads `Phase 3 of 8`, not `Phase 1 of 8`:
+The importer's dry run for this plan lists the Phase 3 row, the three open Phase 3 steps and one `STUB` row per later phase, so the first row on the board reads `Phase 3 of 8`, not `Phase 1 of 8`. The lines for the phases printed in the excerpt above, exactly as the dry run prints them (it goes on to print one more `STUB` line each for Phases 6 to 8):
 
 ```
-CREATE   ph3      [JWT] Plan 1 · Phase 3 of 8 · OAuth integration
-CREATE   ph3-s3   [JWT] Plan 1 · Phase 3 of 8 · Step 3 of 5 · Implement OAuth flow for GitHub
-CREATE   ph3-s4   [JWT] Plan 1 · Phase 3 of 8 · Step 4 of 5 · Add OAuth error handling
-CREATE   ph3-s5   [JWT] Plan 1 · Phase 3 of 8 · Step 5 of 5 · Write OAuth integration tests
-CREATE   ph4      [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (expand when Phase 3 closes)
+  CREATE   ph3            [JWT] Plan 1 · Phase 3 of 8 · OAuth integration
+  CREATE   ph3-s3         [JWT] Plan 1 · Phase 3 of 8 · Step 3 of 5 · Implement OAuth flow for GitHub
+  CREATE   ph3-s4         [JWT] Plan 1 · Phase 3 of 8 · Step 4 of 5 · Add OAuth error handling
+  CREATE   ph3-s5         [JWT] Plan 1 · Phase 3 of 8 · Step 5 of 5 · Write OAuth integration tests
+  CREATE   ph4            [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (expand when Phase 3 closes)
+  CREATE   ph5            [JWT] Plan 1 · Phase 5 of 8 · STUB · Security hardening (expand when Phase 4 closes)
 ```
+
+These stamped titles run from 47 to 84 characters. That is within the rule: the progress prefix is exempt from the 60-character target for hand-written titles, every step name is under 40 characters, and every whole title is under the cap of 120.
 
 ---
 
@@ -1447,7 +1538,7 @@ CREATE   ph4      [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (ex
 4. Findings & Recommendations [PLANNED]
 ```
 
-**Tracking form: store rows** (the open work only; finished work gets no row; `epic:ws-architecture-research`):
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:ws-architecture-research`). Shown after admission: each row was created in the holding area (`not_approved`) and the operator admitted it to `queued` before work started:
 ```
 [WS] Evaluate Server-Sent Events architecture      in_progress
 [WS] Evaluate Long Polling architecture            queued
@@ -1489,7 +1580,7 @@ CREATE   ph4      [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (ex
 5. Documentation & Deployment [PLANNED]
 ```
 
-**Tracking form: store rows** (the open work only; finished work gets no row; `epic:email-notifications`):
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:email-notifications`). Shown after admission: each row was created in the holding area (`not_approved`) and the operator admitted it to `queued` before work started:
 ```
 [EMAIL] Implement notification queue system        in_progress
 [EMAIL] Add user preferences management            queued
@@ -1526,7 +1617,7 @@ CREATE   ph4      [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (ex
 5. Validation & Prevention [PLANNED]
 ```
 
-**Tracking form: store rows** (the open work only; finished work gets no row; `epic:websocket-event-routing`). The rejected hypotheses are findings, so they go in the `body` of the open rows or in history.md, not in rows of their own:
+**Tracking form: store rows** (the open work only; finished work gets no row; `epic:websocket-event-routing`). Shown after admission: each row was created in the holding area (`not_approved`) and the operator admitted it to `queued` before work started. By convention (this workflow's own, not a store rule), the rejected hypotheses are treated as findings, so they go in the `body` of the open rows or in history.md, not in rows of their own:
 ```
 [BUG] Test hypothesis: Event ordering problem       in_progress
 [BUG] Test hypothesis: Connection lifecycle issue   queued
@@ -1637,7 +1728,7 @@ This work planning workflow integrates with other planning-is-prompting workflow
 
 ## Version History
 
-- **2026.10.01**: Replaced TodoWrite tracking with task-store rows and the stub manifest. New "Where Owed Work Lives" section (one phase: ordinary `task_create` rows; two or more phases: a stub manifest imported by `plan_stub_import.py`; finished work gets no row). Every "TodoWrite Pattern" block (Patterns 1-6, the Phase 3 preview, Examples 1-4) became a store-rows or manifest-excerpt block. Phase 3 Step 5 is now "Record the Breakdown on the Task Board". Phase 4 "TodoWrite Best Practices" became "Task Store Best Practices" (rows, `task_transition`, receipts, `blocked_by`, `dropped` with a reason). "TodoWrite Task State Management" shrank to a pointer at `task-store-discipline.md` plus a status mapping. Troubleshooting and Integration entries updated. The planning method (discovery, patterns, breakdown, cascade-readiness, archival) is unchanged.
+- **2026.10.01**: Replaced TodoWrite tracking with task-store rows and the stub manifest. New "Where Owed Work Lives" section (one phase: ordinary `task_create` rows; two or more phases: a stub manifest imported by `plan_stub_import.py`; finished work gets no row). Every "TodoWrite Pattern" block (Patterns 1-6, the Phase 3 preview, Examples 1-4) became a store-rows or manifest-excerpt block. Phase 3 Step 5 is now "Record the Breakdown on the Task Board". Phase 4 "TodoWrite Best Practices" became "Task Store Best Practices" (rows, `task_transition`, receipts, `blocked_by`, `dropped` with a reason). "TodoWrite Task State Management" shrank to a pointer at `task-store-discipline.md` plus a status mapping. Troubleshooting and Integration entries updated. The planning method (discovery, patterns, breakdown, cascade-readiness, archival) is unchanged. Review fixes, same day: the title rule now separates hand-written titles (about 60 characters) from importer-stamped ones (name of 40 or fewer, whole title under the cap of 120); new rows are shown landing in the holding area (`not_approved`) until the operator admits them; "two or more phases means a manifest, whatever the pattern" is stated once and repeated at the decision tree, and single-phase groups are called stages; State Definitions, the state rules and the Pattern 5 and Pattern 6 step lists are restored in task-store terms; the importer is cited as planning-is-prompting → workflow/scripts/plan_stub_import.py; the rejected-hypotheses note is labelled a convention.
 - **2026.05.22**: Added "Cascade-Readiness" subsection to Phase 3 (Work Breakdown) — guidance for shaping a plan's work breakdown into ≥ 2 independently-reviewable, acyclically-dependent sections so the plan is born ready for `/plan-review-cascaded`; plus a cross-reference under "Integration with Other Workflows"
 - **2025.10.14**: Added interactive discovery with context-aware defaults - Phase 1 discovery questions now infer smart defaults from user description, git state, and history; Phase 2 suggests recommended pattern with rationale; Phase 3 provides suggested task breakdown based on pattern and context
 - **2025.10.04**: Renamed from work-planning.md to p-is-p-01-planning-the-work.md for "Planning is Prompting" grouping
