@@ -31,6 +31,8 @@ The importer writes every title. Authors supply only the short name.
 - **"Plan N", spelled out.** Never `P1`: the board already uses `P1`–`P5` for priority, and a title reading `P1 Ph4` was misread as a priority on the first hand-built set.
 - **Plan numbers are per initiative**, assigned in the plan folder's own order. The `[PREFIX]` keeps two repos' "Plan 1" apart.
 - **"of N" comes from the manifest**, so it cannot be mistyped, and the importer re-stamps it when N changes (§5).
+- **Phases keep the plan's own numbers and may start at 0.** "of N" is the highest phase number, so a plan with phases 0 to 7 ends at `Phase 7 of 7`. Steps always start at 1.
+- **A closed row is never re-stamped.** The board refuses a title edit on a done or dropped row, so when N changes the importer re-titles open rows only and reports the closed ones as left unchanged.
 - **Keep names short.** The board trims long titles; the progress prefix must survive the trim, so it comes first and the name comes last.
 
 ## 3. The manifest file
