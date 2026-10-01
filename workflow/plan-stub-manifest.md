@@ -89,7 +89,7 @@ A JSON file named `<plan-name>.stubs.json`. JSON, because the importer is standa
 
 ## 4. The importer
 
-`workflow/scripts/plan_stub_import.py` (**to be built; separate ticket, with tests**). Contract:
+`workflow/scripts/plan_stub_import.py`, with `test_plan_stub_import.py` (86 tests) and a sample manifest at `src/docs/plan-stubs/plan-stub-sample.stubs.json`. Contract:
 
 | Verb | Does |
 |---|---|
@@ -120,13 +120,13 @@ Added to the handoff light-review as criterion 7. Each is a checkable claim; say
 4. Every operator decision the plan names is a `decision` or `gate` step, not prose.
 5. Every unexpanded phase names its `expand_trigger`.
 
-## 7. Open points — not established
+## 7. Open points
 
 | Point | State |
 |---|---|
-| Whether the board's create gate and ticket ratio will refuse a bulk import | **Not tested.** They refused nine legitimate rows in one night (2026-09-03). An approved plan may need its own exemption; that code lives in the board's repo, not here |
-| Whether the holding area can bulk-approve by `correlation_key` today | **Not checked.** If it cannot, that is a ticket for the board's repo |
-| The board's title length limit | **Not measured.** §2 puts the progress prefix first so a trim costs the name, not the position |
+| Whether the board's create gate and ticket ratio will refuse a bulk import | **Measured 2026-10-01, read-only: not that day.** Ratio 1.16 against a 1.4 limit, room for about 45 rows. A snapshot, not a promise: `epic:` rows are not exempt, so a large import on a busy day can still be refused. Never proven by a real write |
+| Whether the holding area can bulk-approve by `correlation_key` today | **Measured 2026-10-01: no.** Batch approve is a client-side loop and operator-only. A one-click approve by story key is a ticket for the board's repo |
+| The board's title length limit | **Measured 2026-10-01: 120 characters.** A create trims the tail into the body; an edit over 120 is refused. The importer warns before a trim |
 | Rows already hand-built for the two v0.2.2 plans | Need a one-time adoption: write the manifest, add `stub_key` to the existing rows, then let the importer re-stamp titles |
 
 ## Integration points
