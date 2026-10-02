@@ -196,14 +196,14 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 
 | Event | Priority | Requirement |
 |-------|----------|-------------|
-| TodoWrite item completed | low | **MUST** notify after EVERY item |
+| task item completed | low | **MUST** notify after EVERY item |
 | Phase/milestone complete | medium | **MUST** notify at phase boundaries |
 | Error encountered | urgent | **MUST** notify immediately |
 | Test suite finished | medium | **MUST** notify pass or fail |
 | Long process finished (>30s) | low | **MUST** notify completion |
 | Workflow step completed | low | **MUST** notify each step |
 
-**Rule**: After marking ANY TodoWrite item as `completed`, you MUST immediately call `notify()`.
+**Rule**: After marking ANY task item as `completed`, you MUST immediately call `notify()`.
 
 ### Required Blocking Tool Events
 
@@ -224,7 +224,7 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 2. **NEVER** finish work and "wait" for user to check back
 3. **NEVER** make architectural decisions without `ask_multiple_choice()`
 4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
-5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+5. **NEVER** mark >3 task items complete without at least one `notify()`
 6. **NEVER** bury a gate. If an action needs the user's go to proceed, do NOT append "standing by for your approval" / "waiting on your word" to a multi-sentence status `notify()` and then sit. That is **burying the lead** — fire a dedicated targeted ask instead (see below).
 
 ### Gate = a Direct Targeted Ask, Never a Buried "Standing By" (MANDATE, 2026-06-22)
@@ -261,7 +261,7 @@ Effect: the every-turn storm is gone AND the decision is not buried — it is du
 ```
 NOTIFICATION VERIFICATION:
 □ Did I notify when I started significant work?
-□ Did I notify for each TodoWrite item completed?
+□ Did I notify for each task item completed?
 □ Did I use blocking tools when I needed decisions?
 □ Did I notify about any errors encountered?
 □ Will the user know I'm finished?
@@ -275,17 +275,17 @@ NOTIFICATION VERIFICATION:
 
 ---
 
-## Integration with TodoWrite
+## Integration with Task Items
 
-**MANDATE**: Notifications are TIED to TodoWrite status changes.
+**MANDATE**: Notifications are TIED to task-item status changes (rows in the task store; a private step checklist does not count).
 
 **Protocol**:
-1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
-2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
+1. Mark task item `in_progress` → `notify( "Starting: [item]", priority="low" )`
+2. Mark task item `completed` → `notify( "[Item] complete", priority="low" )`
 3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
 
 **CRITICAL**: A task is NOT complete until BOTH:
-- TodoWrite status is updated
+- Task item status is updated
 - Notification is sent
 
 ---
@@ -334,7 +334,7 @@ Priority determines **how the user is alerted**, not workflow importance:
 | `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures | "Build failed", "Blocked: cannot proceed" |
 | `high` | Prominent ping + TTS read aloud | Decisions requiring response | Blocking tools (ask_yes_no, ask_multiple_choice, converse) |
 | `medium` | Gentle ping | Informational updates user should notice | "Ready to work", "Phase complete", "CLAUDE.md acknowledged" |
-| `low` | Silent (no sound) | Background info, minor completions | "File saved", "TodoWrite item complete" |
+| `low` | Silent (no sound) | Background info, minor completions | "File saved", "task item complete" |
 
 **Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
 
@@ -1054,6 +1054,7 @@ response = ask_multiple_choice( questions=[
 
 ## Version History
 
+- **2026.10.02 (María 🌸)**: notifications are tied to task-item status changes in the task store, not to a TodoWrite list (Rick, row `efa0a4cf`). Wording only; the notify rules are unchanged.
 - **2026.06.29 (María 🌸 — Rick GO)**: §Re-ask-until-answered — replaced the manual `/loop` / `ScheduleWakeup` self-tick timer with the stock Stop-hook (names the due gate on its debounced cadence) + arbiter re-surface; the interim timer crutch is retired (task `d0cffe5c`). HELD for commit.
 - **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)
   - Updated version from v0.2.1 to v0.3.0

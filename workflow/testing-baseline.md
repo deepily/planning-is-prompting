@@ -166,7 +166,7 @@ Before executing this workflow, the thin wrapper slash command must provide:
 ```yaml
 project_config:
   # Identity
-  short_prefix: "[PROJECT]"              # For TodoWrite and notifications
+  short_prefix: "[PROJECT]"              # For task titles and notifications
   project_name: "Project Name"           # Human-readable
 
   # Paths
@@ -219,9 +219,9 @@ project_config:
 
 ## Workflow Steps
 
-### Step 0: Initialize TodoWrite Tracking
+### Step 0: Step Checklist (optional)
 
-Create a comprehensive todo list to track baseline collection progress:
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3).
 
 ```
 [{PREFIX}] Establish pre-change baseline - STARTED at [TIMESTAMP]
@@ -832,9 +832,9 @@ else:
 
 ---
 
-### Step 7: Final TodoWrite Update
+### Step 7: Final Summary
 
-Mark all baseline collection tasks as completed and provide summary:
+Provide the summary (and close your checklist, if you kept one):
 
 ```
 ✅ [{PREFIX}] Establish pre-change baseline - COMPLETE
@@ -1055,13 +1055,16 @@ fi
 
 ## Version History
 
+**Version 1.1** (2026.10.02)
+- A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
+
 **Version 1.0** (2025.10.11)
 - Initial canonical workflow
 - Parameterized configuration system
 - Support for smoke, unit, and integration tests
 - Scope parameter for multi-suite projects
 - Comprehensive reporting with multiple test types
-- TodoWrite and notification integration
+- Notification integration
 - Health check flexibility
 
 ---

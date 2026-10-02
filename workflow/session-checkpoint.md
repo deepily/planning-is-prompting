@@ -113,7 +113,7 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TaskCreate-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | Start and completion only |
 | **Estimated duration** | 15-25 seconds (minimal prompting path) |
 | **Context clear safe** | Yes (manifest persists) |
@@ -133,12 +133,12 @@ notify( "Creating checkpoint commit...", notification_type="progress", priority=
 
 ---
 
-## Step 0: TaskCreate Initialization
+## Step 0: Step Checklist (optional)
 
-**MUST create task tracking list immediately on invocation.**
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The `TaskUpdate` lines in later steps apply only if you keep one.
 
 ```
-TaskCreate items:
+Checklist items:
 
 1. [PREFIX] Validate preconditions (manifest, files)
 2. [PREFIX] Get checkpoint description
@@ -151,7 +151,7 @@ TaskCreate items:
 ```
 
 **Verification**:
-- [ ] TaskCreate tool invoked with items listed above
+- [ ] If a checklist is kept: created with the items listed above
 - [ ] Items have project prefix
 - [ ] First item marked `in_progress`
 
@@ -262,7 +262,7 @@ converse(
 ## Step 3: Update TODO.md (if applicable)
 
 **Process**:
-1. Check if any TaskCreate items were marked `completed` since last commit
+1. Check the task store for rows of yours that reached `done` since the last commit
 2. Search TODO.md for related items (by description keywords, file names)
 3. If matching items found, mark as complete with session attribution
 
@@ -560,7 +560,7 @@ notify(
 
 **Verification**:
 - [ ] Completion notification sent
-- [ ] All TaskCreate items complete
+- [ ] All steps complete
 - [ ] Session remains active for continued work
 
 ---
@@ -679,6 +679,8 @@ After checkpoint completes:
 ---
 
 ## Version History
+
+**v1.1** (2026.10.02) - Step 0's checklist is optional. A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
 
 **v1.0** (2026.02.03) - Initial workflow
 - 8-step checkpoint process

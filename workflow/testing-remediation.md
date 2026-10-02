@@ -198,9 +198,9 @@ echo "Remediation session timestamp: ${SESSION_TIMESTAMP}"
 
 ---
 
-### Step 1: Initialize TodoWrite Tracking
+### Step 1: Step Checklist (optional)
 
-Create comprehensive task list based on remediation scope:
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The lists below are sized to the remediation scope:
 
 **For FULL scope**:
 ```
@@ -911,7 +911,7 @@ fi
 
 #### 5.4 Progress Tracking Table
 
-**Maintain real-time progress** (update TodoWrite and/or create tracking file):
+**Maintain real-time progress** (update your checklist, if you keep one, and/or create a tracking file):
 
 ```markdown
 ## Remediation Progress Tracker
@@ -1216,9 +1216,9 @@ notify( "Remediation COMPLETE ({scope}) - {final_rate}% final pass rate (baselin
 
 ---
 
-### Step 10: Final TodoWrite Update
+### Step 10: Final Summary
 
-Mark all remediation tasks as completed with detailed summary:
+Provide the detailed summary (and close your checklist, if you kept one):
 
 ```
 ✅ [{PREFIX}] Post-change verification & remediation COMPLETE
@@ -1371,6 +1371,9 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 ---
 
 ## Version History
+
+**Version 1.2** (2026.10.02)
+- A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
 
 **Version 1.1** (2026.02.23)
 - Added Step 3.0: Change-Scoped Test Selection (optional optimization)

@@ -38,7 +38,7 @@ This workflow handles the full lifecycle of completing a feature branch:
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TaskCreate-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | After each major step |
 | **Estimated duration** | 5-15 minutes (depending on review wait time) |
 | **Context clear safe** | Partially (can resume from any step) |
@@ -58,12 +58,12 @@ notify( "Starting branch PR and merge workflow...", notification_type="progress"
 
 ---
 
-## Step 0: TaskCreate Initialization
+## Step 0: Step Checklist (optional)
 
-**MUST create task tracking list immediately on invocation.**
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The `TaskUpdate` lines in later steps apply only if you keep one.
 
 ```
-TaskCreate items:
+Checklist items:
 
 1. [PREFIX] Session documentation check
 2. [PREFIX] Documentation surface check
@@ -83,7 +83,7 @@ TaskCreate items:
 ```
 
 **Verification**:
-- [ ] TaskCreate tool invoked with items listed above
+- [ ] If a checklist is kept: created with the items listed above
 - [ ] Items have project prefix
 - [ ] First item marked `in_progress`
 
@@ -1216,7 +1216,7 @@ Current state:
 
 **Verification**:
 - [ ] Final notification sent
-- [ ] All TaskCreate items complete
+- [ ] All steps complete
 - [ ] User informed of final state
 
 ---
@@ -1253,6 +1253,8 @@ At session start, detect if on main and prompt:
 ---
 
 ## Version History
+
+**v1.3** (2026.10.02, María) - **Step 0's checklist is optional.** A step checklist is scratch, not owed work (Rick, row `efa0a4cf`); the "MUST create task tracking list" mandate is removed.
 
 **v1.2** (2026.10.02, María) - **Step 8.5 added: retire the old line after a squash merge.** A squash merge breaks ancestry, so the merged `wip` branch and every branch forked from it read as unmerged forever and nothing removed them. The new step checks each by content (`git diff --quiet`, `git cherry`), deletes what holds no work of its own, and archives the rest to `refs/archive/<day>/` with a store row and 14-day retention. Part of the worktree and branch cleanup, lupin row `aec2319f`.
 

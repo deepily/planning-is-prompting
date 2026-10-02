@@ -190,7 +190,9 @@ echo "Modified files: ${MODIFIED_COUNT}"
 
 ---
 
-### Step 1: Initialize TodoWrite Tracking
+### Step 1: Step Checklist (optional)
+
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3).
 
 ```
 [{PREFIX}] Test harness update analysis - STARTED at [TIMESTAMP]
@@ -898,7 +900,9 @@ notify( "Test harness analysis COMPLETE - {changed_count} changes analyzed, {tot
 
 ---
 
-### Step 10: Final TodoWrite Update
+### Step 10: Final Summary
+
+Provide the summary (and close your checklist, if you kept one):
 
 ```
 ✅ [{PREFIX}] Test harness update analysis COMPLETE
@@ -979,6 +983,9 @@ source_files:
 ---
 
 ## Version History
+
+**Version 1.1** (2026.10.02)
+- A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
 
 **Version 1.0** (2025.10.11)
 - Initial canonical workflow
