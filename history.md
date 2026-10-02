@@ -22,7 +22,19 @@
 >
 > 🗄️ *Previous banner (2026-09-02 late):* **17,156 tokens** — over the warning line, archive deferred to this session and executed here. The banner before it predicted that exact miss.
 
-**RESUME HERE**: **Session 212 (2026-09-30, María 🌸 stable `829ca25f`, self-respun once mid-cascade, Manager of `cascade-v022-docs-and-reuse`)**: reviewed and ruled the two lupin v0.2.2 plans (docs rewrite, code wiki + Jev reuse review), then handed the builds to Cheech (lupin) and Tiffany (mobile).
+**RESUME HERE**: **Session 213 (2026-10-01, María 🌸 stable `588ff255`, manager beside Cheech and Tiffany)**: plan stubs became a workflow with its own importer, the planning workflow dropped TodoWrite, and two documents were written for Rick while he was away.
+
+1. **Stub manifest (Rick's rulings by voice and keypress)**: `workflow/plan-stub-manifest.md` plus pointers in both cascade workflows, the shared rubric and p-is-p-01 (`968a21f`). Titles read `Plan N · Phase X of Y · Step X of Y`; finished work gets no row (`0266bf8`); phases may start at 0 and closed rows are never retitled (`a09124e`).
+2. **Importer**: `workflow/scripts/plan_stub_import.py` (validate, import with dry run by default, status), built by Rachel, sent back once by Rio (it retitled closed rows, which the board refuses), merged `5f32231`.
+3. **p-is-p-00/01/02 rewrite**: TodoWrite tracking replaced by store rows and the manifest. Rachel `e069eb0`; Rio's five findings and a re-check's four follow-ups applied by in-process helpers because the fleet cap refused her re-spin three times; merged `9d49ec7`.
+4. **For Rick**: reuse-check design and cosa-voice MCP split evaluation in `src/rnd/` (`034c9ce`). Findings: the live Jev sweep is a stub; the exclusion list Rick conditioned his approval on is not wired (Cheech recorded the hold); 27 of 37 MCP tools share one identity block, so only the four lookup tools split cleanly.
+5. **Closed**: both 09-30 Last Call rows, the cosa archive gate (GitHub: archived), four of today's rows. **Open**: Jev gate `8f70cbac` (waits on Cheech's dev run), decision `efa0a4cf` (about 20 other files still mandate TodoWrite), one-click approve `eb235858`.
+6. **Mine, wrong**: told Tiffany to create and close rows for finished work before asking Rick; he ruled the opposite and five rows were left for him to drop. Wrote "(86 tests)" into a workflow doc and broke the test-count guard; I had run only the importer's tests after the merge (`c32d5ea`).
+7. **Carried**: this file is past the 19k archive line (19,244 tokens by `tiktoken` before this entry). Archive first thing next session.
+
+**Files**: workflow/plan-stub-manifest.md, workflow/scripts/plan_stub_import.py and its test, workflow/p-is-p-0{0,1,2}-*.md, both cascade workflows and the common rubric, two src/rnd documents, README.md, TODO.md, history.md
+
+**Previous RESUME HERE**: **Session 212 (2026-09-30, María 🌸 stable `829ca25f`, self-respun once mid-cascade, Manager of `cascade-v022-docs-and-reuse`)**: reviewed and ruled the two lupin v0.2.2 plans (docs rewrite, code wiki + Jev reuse review), then handed the builds to Cheech (lupin) and Tiffany (mobile).
 
 1. **Cascade complete**: five sections, three stages each, 101 findings (0 foundational, 0 votes, 0 escalations), 1 h 31 min. Step 9 handoff doc passed Rachel's light review after one revision turn. Cast reaped with verified mementos. Self-audit: 9 candidates filed to TODO.md.
 2. **Rick's walkthrough**: about 30 rulings, folded into a "Rulings of 2026-09-30" section at the top of each plan. Biggest: sweep before capability pages (his expert's order), daily merge train, Sonnet writes, R&D history denied to agents by default, Dart indexed now. D3 (judge model) waits on his Jev expert; problem statement written.
