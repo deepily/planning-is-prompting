@@ -101,7 +101,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Validate updates
    - Step 8: Present update summary
 
-3. Use TodoWrite to track update progress
+3. Track update progress (a step checklist is optional)
 
 4. Send notifications after each major step (see workflow document for details)
 
@@ -123,7 +123,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Present summary and next steps
    - Step 7.5: Remind about future additions
 
-3. Use TodoWrite to track installation progress
+3. Track installation progress (a step checklist is optional)
 
 4. Send notifications after each major step (see workflow document for details)
 
@@ -340,7 +340,7 @@ Without this variable, the command will show local versions only (no comparison)
 - Classifies work type through discovery questions
 - Selects optimal pattern (1-5) for your work
 - Breaks down work into manageable tasks
-- Creates TodoWrite list for progress tracking
+- Records the breakdown as task-store rows
 
 **Step 2: Document Implementation** (conditional - only for large/complex work)
 - Creates structured documentation (multiple markdown files)
@@ -764,7 +764,7 @@ After installation, you can customize thresholds, retention targets, archive nam
 
 Task planning and TODO management strategies:
 - Breaking down complex tasks into steps
-- Using TodoWrite tool effectively
+- Using the task store effectively
 - Tracking progress with task states
 - Maintaining one in_progress task at a time
 
@@ -1599,7 +1599,7 @@ I need you to install the testing workflow commands from the planning-is-prompti
    - Target: .claude/commands/ (keep filenames as-is)
 
 3. **Customize for this project** (ask me for these values):
-   - [SHORT_PROJECT_PREFIX] - For TodoWrite and notifications
+   - [SHORT_PROJECT_PREFIX] - For task titles and notifications
    - Working directory - Full path to project root
    - Test types - Which types exist: smoke, unit, integration
    - Test script paths - Relative paths to test runners
@@ -1654,7 +1654,7 @@ Each template includes a **Customization Guide** at the bottom with examples for
 
 Claude will ask you to provide:
 
-1. **[SHORT_PROJECT_PREFIX]** - For notifications and TodoWrite tracking
+1. **[SHORT_PROJECT_PREFIX]** - For notifications and task titles
    - Examples: `[AUTH]`, `[LUPIN]`, `[API]`
 
 2. **Test Infrastructure Details**:
@@ -1804,7 +1804,6 @@ coverage_requirements:
 ```
 
 Verify:
-- TodoWrite tracking appears
 - Test scripts execute correctly
 - Log files created in correct directory
 - Report generated with metrics
@@ -2686,7 +2685,7 @@ If you're creating new workflows and need to create slash command wrappers for t
 
 **Before deterministic pattern**:
 - Claude would read wrapper's Step 4 (short task list) instead of canonical workflow
-- Steps like notifications, TodoWrite tracking, and user prompts were skipped
+- Steps like notifications and user prompts were skipped
 - Inconsistent execution across sessions
 
 **After deterministic pattern**:
@@ -2711,6 +2710,8 @@ If you're creating new workflows and need to create slash command wrappers for t
 ---
 
 ## Version History
+
+**v1.2** (2026.10.02) - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist. The Workflow Execution Audit section still describes the old rubric; see the banner in `workflow-execution-audit.md`.
 
 **v1.1** (2025.10.08) - Updated naming convention
 - Changed slash command naming from target project prefix to source repository prefix

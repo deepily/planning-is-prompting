@@ -1,5 +1,7 @@
 # Workflow Execution Audit
 
+> ⚠️ **This rubric is out of date as of 2026-10-02, and its remediation must not be applied as written.** It scores a workflow on whether it mandates a TodoWrite checklist and a TodoWrite update after every step. Rick ruled on 2026-10-02 (row `efa0a4cf`) that a step checklist is optional scratch and that owed work goes in the task store, and the mandates were removed from the workflows this audit would check. Running the automatic remediation would put them back. Until the rubric is rewritten, use only its verification-checkpoint and language-strength dimensions.
+
 **Purpose**: Analyze workflows for execution protocol compliance and offer automatic remediation
 
 **When to use**: Ad-hoc quality checks on workflow files to ensure deterministic execution standards

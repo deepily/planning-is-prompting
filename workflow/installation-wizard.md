@@ -510,9 +510,9 @@ This metadata drives the interactive menu generation in Step 2.
 
 ### Step 0: Create Installation TODO List
 
-**Purpose**: Track installation progress visually using TodoWrite
+**Purpose**: Track installation progress, if a visible checklist helps
 
-**Mandate**: ALWAYS create a TodoWrite list at the start of installation
+**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
 
 **Template TODO Items**:
 ```
@@ -529,7 +529,7 @@ This metadata drives the interactive menu generation in Step 2.
 ```
 
 **Instructions**:
-1. Use TodoWrite tool to create installation checklist
+1. If you keep one, create the installation checklist with the harness's native list tool
 2. Mark first item as `in_progress`
 3. Update status after completing each step
 4. Mark as `completed` when step finishes
@@ -863,7 +863,7 @@ Wait for user response. Proceed to Section 0.5.5.
 
 #### Section 0.5.5: Completion and Error Handling
 
-**Update TodoWrite**: Mark "Configure permissions" as completed
+**If you keep a step checklist**: Mark "Configure permissions" as completed
 
 **Send Notification**:
 ```python
@@ -1010,7 +1010,7 @@ Found:
 Ready for fresh installation.
 ```
 
-**Update TodoWrite**: Mark "Detect project state" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Detect project state" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1199,7 +1199,7 @@ What would you like to do? [1/2/3/4]
 
 3. **Wait for User Selection**
 
-**Update TodoWrite**: Mark "Present workflow catalog" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
 **Send Blocking Notification and Await Selection**:
 ```python
@@ -1425,7 +1425,7 @@ This will create:
 Ready to proceed with configuration.
 ```
 
-**Update TodoWrite**: Mark "Validate selection" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1655,7 +1655,7 @@ Is this correct?
 [3] Cancel installation
 ```
 
-**Update TodoWrite**: Mark "Collect configuration" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Collect configuration" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1899,7 +1899,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
 
    **Rationale**: The `!.claude/commands/` negation pattern ensures slash commands are tracked by git while excluding user-specific settings like `settings.local.json`.
 
-7. **Track Installation Progress** (update TodoWrite as each file created):
+7. **Track Installation Progress** (update your checklist, if kept, as each file is created):
 
    ```
    ✅ [MYPROJ] Create .claude/commands/ directory
@@ -1911,7 +1911,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    ⏳ [MYPROJ] Create archive directory
    ```
 
-**Update TodoWrite**: Mark "Install workflows" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Install workflows" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2017,7 +2017,7 @@ Installation validated successfully!
    ├──────────────────────────┼──────────────────────────────┤
    │ File integrity checking  │ Compliance checking          │
    │ Files created correctly  │ Follows execution standards  │
-   │ Paths configured right   │ TodoWrite mandates present   │
+   │ Paths configured right   │ Step lists present           │
    │ No placeholders left     │ Language strength analysis   │
    │ Fast (1-2 minutes)       │ Slow (10-15 min per file)    │
    │ Run after installation   │ Skip for fresh installations │
@@ -2046,7 +2046,7 @@ Installation validated successfully!
    only when checking existing installations for drift.
    ```
 
-**Update TodoWrite**: Mark "Validate installation" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Validate installation" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2152,7 +2152,7 @@ notify( "Installation validated - all checks passed", notification_type="progres
    section (not "Untracked files").
    ```
 
-**Update TodoWrite**: Mark "Verify git tracking" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Verify git tracking" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2222,7 +2222,7 @@ Next Steps:
 
 2️⃣ Do some work on your project:
    - Fix bugs, add features, write code
-   - Use TodoWrite to track progress
+   - Put owed work in the task store
    - Reference your [MYPROJ] prefix in all TODOs
 
 3️⃣ Wrap up when you're done:
@@ -2279,7 +2279,7 @@ Planning is Prompting Workflows Installed:
    → Use when: Starting new feature, research, or architecture work
 
 ✅ /p-is-p-01-planning
-   → Work planning: Classify → Pattern → Breakdown → TodoWrite
+   → Work planning: Classify → Pattern → Breakdown → task-store rows
    → Use when: Any new work (always required)
 
 ✅ /p-is-p-02-documentation
@@ -2359,7 +2359,7 @@ Testing Workflow Pattern:
 
 2. Make Your Changes:
    • Implement features, fix bugs, refactor code
-   • Use TodoWrite to track progress
+   • Put owed work in the task store
 
 3. After Changes:
    /plan-test-remediation scope=FULL
@@ -2382,7 +2382,7 @@ For detailed workflow documentation, see:
 • planning-is-prompting → workflow/testing-harness-update.md
 ```
 
-**Update TodoWrite**: Mark "Present summary" as completed
+**If you keep a step checklist**: Mark "Present summary" as completed
 
 **Send Notification**:
 ```bash
@@ -2498,7 +2498,7 @@ The wizard works the same way whether you have the slash
 command installed or not.
 ```
 
-**Update TodoWrite**: Add and complete "Install wizard slash command (optional)" item
+**If you keep a step checklist**: Add and complete "Install wizard slash command (optional)" item
 
 **Send Notification** (if installed):
 ```bash
@@ -2618,7 +2618,7 @@ What would you like to do? [1/2]
    **Rationale**: Only offer session-end if user installed Session Management
    workflows. Don't confuse users who only installed Planning or Backup workflows.
 
-**Update TodoWrite**: Mark "Offer session-end workflow" as completed
+**If you keep a step checklist**: Mark "Offer session-end workflow" as completed
 
 **Send Notification** (if user ran session-end):
 ```bash
@@ -2840,9 +2840,9 @@ notify( "Installation session recorded via /plan-session-end", notification_type
 
 #### Step 0: Create Update TODO List
 
-**Purpose**: Track update progress visually using TodoWrite
+**Purpose**: Track update progress, if a visible checklist helps
 
-**Mandate**: ALWAYS create a TodoWrite list at the start of update mode
+**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
 
 **Template TODO Items**:
 ```
@@ -2857,7 +2857,7 @@ notify( "Installation session recorded via /plan-session-end", notification_type
 ```
 
 **Instructions**:
-1. Use TodoWrite tool to create update checklist
+1. If you keep one, create the update checklist with the harness's native list tool
 2. Mark first item as `in_progress`
 3. Update status after completing each step
 4. Mark as `completed` when step finishes
@@ -2959,7 +2959,7 @@ Version Summary:
    Treating as version 0.0 for comparison purposes.
    ```
 
-**Update TodoWrite**: Mark "Scan local installation" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Scan local installation" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3066,7 +3066,7 @@ Affected Files (6):
   → p-is-p-01-planning.md, p-is-p-02-documentation.md
 ```
 
-**Update TodoWrite**: Mark "Compare versions" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Compare versions" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3208,7 +3208,7 @@ What will happen:
 Ready to proceed.
 ```
 
-**Update TodoWrite**: Mark "Present update UI" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Present update UI" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3331,7 +3331,7 @@ All configurations extracted successfully.
    - Planning workflows: PREFIX (+ argument support preserved)
    - Testing workflows: PREFIX (+ argument support preserved)
 
-**Update TodoWrite**: Mark "Extract config" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Extract config" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3441,7 +3441,7 @@ Detailed Diff: plan-session-start.md
 +   - Location: planning-is-prompting → workflow/session-start.md
 +   - This is the ONLY authoritative source for ALL session initialization steps
 +   - Do NOT proceed without reading this document in full
-+   - The canonical workflow contains: Preliminary notification, TodoWrite initialization, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
++   - The canonical workflow contains: Preliminary notification, an optional step checklist, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
 
 -4. Execute the following:
 -   - Load configuration files
@@ -3451,7 +3451,7 @@ Detailed Diff: plan-session-start.md
 -   - Present session context and await direction
 +3. **MUST execute the complete session initialization routine**:
 +   - Execute ALL steps exactly as described in the canonical workflow document
-+   - Do NOT skip any steps (including notifications, TodoWrite tracking, or user prompts)
++   - Do NOT skip any steps (including notifications or user prompts)
 +   - Do NOT substitute a shortened or summarized version
 +   - Do NOT bypass the [1/2/3] user choice prompt in Step 5
 +   - Follow the workflow exactly as documented using the configuration parameters from Step 1
@@ -3502,7 +3502,7 @@ This operation is reversible (backups will be available).
 What would you like to do? [1/2]
 ```
 
-**Update TodoWrite**: Mark "Show diff preview" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Show diff preview" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3563,7 +3563,7 @@ ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=
    fi
    ```
 
-2. **Track Progress** with TodoWrite sub-items:
+2. **Track Progress** (optional checklist sub-items):
 
 ```
 [UPDATE] Apply updates:
@@ -3648,7 +3648,7 @@ Update Application Complete
 All files updated. Proceeding to validation...
 ```
 
-**Update TodoWrite**: Mark "Apply updates" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Apply updates" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3832,7 +3832,7 @@ Update validation complete!
    What would you like to do? [1/2]
    ```
 
-**Update TodoWrite**: Mark "Validate updates" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Validate updates" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -4015,7 +4015,7 @@ Would you like to run /plan-session-end to:
 What would you like to do? [1/2]
 ```
 
-**Update TodoWrite**: Mark "Present summary" as completed
+**If you keep a step checklist**: Mark "Present summary" as completed
 
 **Send Notification**:
 ```bash
@@ -4585,6 +4585,8 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ---
 
 ## Version History
+
+**v1.2** (2026.10.02) - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 
 **v1.1** (2025.10.24) - Update Mode Implementation
 - **NEW**: Complete update mode workflow (Steps 0-8, ~1,728 lines)

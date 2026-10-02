@@ -87,9 +87,9 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 
 ### Step 0: Create Uninstall TODO List
 
-**Purpose**: Track uninstallation progress visually using TodoWrite
+**Purpose**: Track uninstallation progress, if a visible checklist helps
 
-**Mandate**: ALWAYS create a TodoWrite list at the start of uninstallation
+**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
 
 **Template TODO Items**:
 ```
@@ -105,7 +105,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 ```
 
 **Instructions**:
-1. Use TodoWrite tool to create uninstallation checklist
+1. If you keep one, create the uninstallation checklist with the harness's native list tool
 2. Mark first item as `in_progress`
 3. Update status after completing each step
 4. Mark as `completed` when step finishes
@@ -221,7 +221,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    Nothing to uninstall. Exiting wizard.
    ```
 
-**Update TodoWrite**: Mark "Detect installed workflows" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Detect installed workflows" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -323,7 +323,7 @@ What would you like to do? [1/2/3]
 
 3. **Wait for User Selection**
 
-**Update TodoWrite**: Mark "Present catalog" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Present catalog" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -400,7 +400,7 @@ Manual cleanup will be suggested for:
 Ready to proceed with deletion preview.
 ```
 
-**Update TodoWrite**: Mark "Validate selection" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -499,7 +499,7 @@ Proceed with deletion of these 5 files? [y/n]
    **If user responds 'y'**:
    Proceed to Step 5 (deletion).
 
-**Update TodoWrite**: Mark "Show deletion candidates" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Show deletion candidates" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -561,7 +561,7 @@ Deletion Complete: 5 files removed
      rm .claude/commands/plan-session-start.md
    ```
 
-**Update TodoWrite**: Mark "Delete files" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Delete files" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -681,7 +681,7 @@ What would you like to do? [1/2/3]
    Remove these sections? [y/n]
    ```
 
-**Update TodoWrite**: Mark "Offer CLAUDE.md cleanup" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Offer CLAUDE.md cleanup" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -768,7 +768,7 @@ What would you like to do? [1/2]
    the directory is empty.
    ```
 
-**Update TodoWrite**: Mark "Offer .gitignore cleanup" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Offer .gitignore cleanup" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -859,7 +859,7 @@ What would you like to do? [1/2]
    This is fine - you can install workflows again anytime.
    ```
 
-**Update TodoWrite**: Mark "Handle empty directory" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Handle empty directory" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -948,7 +948,7 @@ planning-is-prompting workflows!
 
    Make it clear they can easily reinstall anytime.
 
-**Update TodoWrite**: Mark "Present summary" as completed (all tasks done!)
+**If you keep a step checklist**: Mark "Present summary" as completed (all tasks done!)
 
 **Send Notification**:
 ```bash
@@ -1023,4 +1023,5 @@ This section provides detailed guidance on cleaning up related files that were n
 
 ## Version History
 
+- **2026.10.02**: A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 - **2025.10.21**: Initial creation - uninstall wizard for planning-is-prompting workflows

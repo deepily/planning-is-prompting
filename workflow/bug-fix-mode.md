@@ -115,7 +115,7 @@ Before EVERY edit to `.claude-session.md`, mentally verify:
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TodoWrite-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | After each fix cycle complete |
 | **Estimated duration** | Variable (depends on number of bugs) |
 | **Context clear safe** | Yes (recovery via `continue` mode) |
@@ -127,7 +127,7 @@ Before EVERY edit to `.claude-session.md`, mentally verify:
 
 **Purpose**: Immediately notify user that bug fix mode initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
+**Timing**: Execute BEFORE any step checklist (before Step 0)
 
 **Command**:
 ```python
@@ -144,14 +144,14 @@ notify( "Initializing bug fix mode, loading queue and history...", notification_
 
 ---
 
-## Step 0: TodoWrite Initialization
+## Step 0: Step Checklist (optional)
 
-**MUST create TodoWrite tracking list immediately on invocation.**
+**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3). The bug queue itself is tracked in `bug-fix-queue.md` and the store, not here.
 
 This step is MANDATORY for all executions. Do not skip.
 
 ```
-TodoWrite items (adjust based on mode):
+Checklist items (adjust based on mode):
 
 For START mode:
 1. [PLAN] Check/create bug-fix-queue.md
@@ -181,7 +181,7 @@ For WRAP mode:
 ```
 
 **Verification**:
-- [ ] TodoWrite tool invoked with items listed above
+- [ ] If a checklist is kept: created with the items listed above
 - [ ] Items have [PLAN] prefix
 - [ ] First item marked `in_progress`
 
@@ -246,13 +246,13 @@ For WRAP mode:
    - Auto-migrate to v2.0 format (see Migration section)
    - Preserve all existing data
 
-**TodoWrite Update**: Mark Step 1 complete.
+**If you keep a step checklist**: Mark Step 1 complete.
 
 **Verification**:
 - [ ] bug-fix-queue.md exists in project root
 - [ ] File has valid v2.0 structure (Active Sessions, Queued, In Progress, Completed)
 - [ ] v1.0 auto-migration performed (if applicable)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -274,12 +274,12 @@ For WRAP mode:
 
 **If session EXISTS**, verify it's a bug fix session and continue appending.
 
-**TodoWrite Update**: Mark Step 2 complete.
+**If you keep a step checklist**: Mark Step 2 complete.
 
 **Verification**:
 - [ ] history.md has session header for today
 - [ ] Session is marked as Bug Fix Mode
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -388,7 +388,7 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
    ══════════════════════════════════════════════════════════
    ```
 
-**TodoWrite Update**: Mark Step 3 complete.
+**If you keep a step checklist**: Mark Step 3 complete.
 
 **Verification**:
 - [ ] Session ID retrieved via get_session_info()
@@ -397,7 +397,7 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
 - [ ] Parallel sessions noted (if applicable)
 - [ ] Session manifest initialized/resumed (`.claude-session.md`)
 - [ ] Manifest section created or found for this session
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -442,13 +442,13 @@ ask_multiple_choice(
 
 **If user selects their in-progress bug**: Resume work (skip claiming in Step 5).
 
-**TodoWrite Update**: Mark Step 4 complete, add bug fix cycle items.
+**If you keep a step checklist**: Mark Step 4 complete, add bug fix cycle items.
 
 **Verification**:
 - [ ] ask_multiple_choice sent with current queue (excluding other sessions' in-progress)
 - [ ] User response received
 - [ ] Next action determined (fix bug / add new bug / close session)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -520,7 +520,7 @@ ask_multiple_choice(
 
 **Note**: File tracking continues in your manifest section (`.claude-session.md`). All files modified during bug-fix-mode are tracked continuously - no reset needed between bugs. The manifest section captures all modifications for the entire session.
 
-**TodoWrite Update**: Add items for current bug fix.
+**If you keep a step checklist**: Add items for current bug fix.
 
 **Verification**:
 - [ ] Bug added to Queued (if new)
@@ -528,7 +528,7 @@ ask_multiple_choice(
 - [ ] No ownership conflict (or conflict resolved)
 - [ ] GitHub issue details fetched (if applicable)
 - [ ] Manifest section active (tracking continues)
-- [ ] TodoWrite updated with bug-specific items
+- [ ] Checklist updated (if kept) with bug-specific items
 
 ---
 
@@ -579,15 +579,15 @@ Files to track include:
 - Configuration files changed
 - Any other files touched during fix
 
-**Use TodoWrite for sub-tasks if the fix is complex.**
+**A scratch checklist for sub-tasks is fine if the fix is complex.**
 
-**TodoWrite Update**: Update progress as you work.
+**If you keep a step checklist**: Update progress as you work.
 
 **Verification**:
 - [ ] Fix implemented
 - [ ] All modified files recorded in manifest section
 - [ ] Last Activity timestamp updated
-- [ ] TodoWrite reflects implementation progress
+- [ ] Checklist reflects implementation progress (if kept)
 
 ---
 
@@ -625,7 +625,7 @@ Files to track include:
 
 **Record test results for history entry.**
 
-**TodoWrite Update**: Mark testing complete.
+**If you keep a step checklist**: Mark testing complete.
 
 **Verification**:
 - [ ] Smoke test executed
@@ -633,7 +633,7 @@ Files to track include:
 - [ ] All applicable tiers executed by Claude (not deferred to human)
 - [ ] Results reported in pass/fail table
 - [ ] Test results recorded (for history entry)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -649,14 +649,14 @@ Files to track include:
 - **Commit**: [pending]
 ```
 
-**TodoWrite Update**: Mark documentation complete.
+**If you keep a step checklist**: Mark documentation complete.
 
 **Verification**:
 - [ ] Fix entry added to history.md
 - [ ] All touched files listed
 - [ ] Test results recorded
 - [ ] Commit marked as pending
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -719,7 +719,7 @@ git rev-parse --short HEAD
 gh issue close #123 --comment "Fixed in commit abc1234"
 ```
 
-**TodoWrite Update**: Mark commit complete.
+**If you keep a step checklist**: Mark commit complete.
 
 **Verification**:
 - [ ] Manifest section read and files extracted
@@ -729,7 +729,7 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
 - [ ] GitHub issue closed (if applicable)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -759,7 +759,7 @@ Add to Completed with attribution:
 **Update Active Sessions table**:
 Update your row's `Last Activity` timestamp.
 
-**TodoWrite Update**: Mark queue update complete.
+**If you keep a step checklist**: Mark queue update complete.
 
 **Verification**:
 - [ ] Bug removed from In Progress section
@@ -767,7 +767,7 @@ Update your row's `Last Activity` timestamp.
 - [ ] Active Sessions Last Activity updated
 - [ ] Commit hash recorded
 - [ ] GitHub issue reference included (if applicable)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -792,14 +792,14 @@ ask_yes_no(
 
 **If neither** (`response.startswith("neither")`): Re-frame — typical concerns: "I want to clear but pick a specific next bug", "keep context but pause for a break", "clear and switch to a different repo". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual options. Do NOT default to either branch. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TodoWrite Update**: Mark cycle complete.
+**If you keep a step checklist**: Mark cycle complete.
 
 **Verification**:
 - [ ] Manifest persists (no reset needed)
 - [ ] User prompted about context clear
 - [ ] Response received
 - [ ] Next action determined
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -848,7 +848,7 @@ ask_yes_no(
 
 **Key Benefit**: If you made edits before context cleared, the manifest still has your file list. You can continue where you left off.
 
-**TodoWrite Update**: Mark queue read complete.
+**If you keep a step checklist**: Mark queue read complete.
 
 **Verification**:
 - [ ] bug-fix-queue.md read
@@ -856,7 +856,7 @@ ask_yes_no(
 - [ ] Queued count known
 - [ ] Manifest resumed or created
 - [ ] Session tracking active
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -868,13 +868,13 @@ ask_yes_no(
 - Note current fix number
 - Identify any pending work
 
-**TodoWrite Update**: Mark history read complete.
+**If you keep a step checklist**: Mark history read complete.
 
 **Verification**:
 - [ ] history.md session section read
 - [ ] Fix history understood
 - [ ] Ready to continue
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -903,13 +903,13 @@ ask_multiple_choice(
 
 **Process response and proceed appropriately.**
 
-**TodoWrite Update**: Mark continuation setup complete.
+**If you keep a step checklist**: Mark continuation setup complete.
 
 **Verification**:
 - [ ] ask_multiple_choice sent
 - [ ] User response received
 - [ ] Next action determined
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -929,13 +929,13 @@ ask_multiple_choice(
 **Status**: Session closed YYYY.MM.DD
 ```
 
-**TodoWrite Update**: Mark history finalization complete.
+**If you keep a step checklist**: Mark history finalization complete.
 
 **Verification**:
 - [ ] Session summary added
 - [ ] All metrics accurate
 - [ ] Session marked as closed
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1011,7 +1011,7 @@ Mark these as `stale` and optionally release their In Progress bugs:
 
 **User preference determines which options.**
 
-**TodoWrite Update**: Mark archive complete.
+**If you keep a step checklist**: Mark archive complete.
 
 **Verification**:
 - [ ] Your session status updated to `closed` in Active Sessions
@@ -1019,7 +1019,7 @@ Mark these as `stale` and optionally release their In Progress bugs:
 - [ ] Completed bugs archived (if user chose Option B)
 - [ ] Stale sessions marked (if any)
 - [ ] Remaining bugs preserved if any
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1036,11 +1036,11 @@ notify(
 )
 ```
 
-**TodoWrite Update**: Mark all items complete.
+**If you keep a step checklist**: Mark all items complete.
 
 **Verification**:
 - [ ] Summary notification sent
-- [ ] All TodoWrite items complete
+- [ ] All steps complete
 - [ ] Session properly closed
 
 ---
@@ -1161,7 +1161,7 @@ ask_multiple_choice(
 )
 ```
 
-**TodoWrite Update**: Mark Step 18 complete.
+**If you keep a step checklist**: Mark Step 18 complete.
 
 **Verification**:
 - [ ] bug-fix-queue.md exists
@@ -1169,7 +1169,7 @@ ask_multiple_choice(
 - [ ] Manifest section found and parsed
 - [ ] File list extracted from manifest (or fallback mode chosen)
 - [ ] Current bug identified
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1187,14 +1187,14 @@ ask_multiple_choice(
 
 **Note**: Commit hash will be updated in Step 22 after commit succeeds.
 
-**TodoWrite Update**: Mark Step 19 complete.
+**If you keep a step checklist**: Mark Step 19 complete.
 
 **Verification**:
 - [ ] Fix entry added to history.md
 - [ ] All touched files listed
 - [ ] Test results recorded (or "Not run")
 - [ ] Commit marked as [pending]
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1220,7 +1220,7 @@ Add to Completed with attribution:
 
 **Also update Active Sessions table**: Update your `Last Activity` timestamp.
 
-**TodoWrite Update**: Mark Step 20 complete.
+**If you keep a step checklist**: Mark Step 20 complete.
 
 **Verification**:
 - [ ] Bug removed from In Progress section
@@ -1228,7 +1228,7 @@ Add to Completed with attribution:
 - [ ] Commit hash marked as [pending]
 - [ ] Your session's Last Activity updated
 - [ ] GitHub issue reference included (if applicable)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1249,12 +1249,12 @@ Add to Completed with attribution:
 INFO: Bug not found in TODO.md (no action needed)
 ```
 
-**TodoWrite Update**: Mark Step 21 complete.
+**If you keep a step checklist**: Mark Step 21 complete.
 
 **Verification**:
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1384,7 +1384,7 @@ notify(
 ```
 Present retry option.
 
-**TodoWrite Update**: Mark Step 22 complete.
+**If you keep a step checklist**: Mark Step 22 complete.
 
 **Verification**:
 - [ ] Pre-commit verification performed (git status compared to manifest section)
@@ -1396,7 +1396,7 @@ Present retry option.
 - [ ] history.md and bug-fix-queue.md staged
 - [ ] TODO.md staged (if modified)
 - [ ] Commit created successfully
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1465,7 +1465,7 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 WARN: GitHub issue #123 not found. Continuing without closure.
 ```
 
-**TodoWrite Update**: Mark Step 23 complete.
+**If you keep a step checklist**: Mark Step 23 complete.
 
 **Verification**:
 - [ ] Commit hash captured
@@ -1475,7 +1475,7 @@ WARN: GitHub issue #123 not found. Continuing without closure.
 - [ ] Manifest cleaned up (deleted if only section, kept if others active)
 - [ ] Commit amended with final document state
 - [ ] GitHub issue closed (if applicable)
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1492,12 +1492,12 @@ notify(
 )
 ```
 
-**TodoWrite Update**: Mark Step 24 complete.
+**If you keep a step checklist**: Mark Step 24 complete.
 
 **Verification**:
 - [ ] Completion notification sent
 - [ ] All fix details included in abstract
-- [ ] TodoWrite updated
+- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1535,14 +1535,14 @@ ask_multiple_choice(
 
 **If "Close session"**: Execute Session Closure (Steps 15-17).
 
-**TodoWrite Update**: Mark Step 25 complete.
+**If you keep a step checklist**: Mark Step 25 complete.
 
 **Verification**:
 - [ ] Manifest state understood (committed section exists)
 - [ ] Next action options presented
 - [ ] User response received
 - [ ] Appropriate follow-up action initiated
-- [ ] All TodoWrite items complete
+- [ ] All steps complete
 
 ---
 
@@ -1804,6 +1804,8 @@ else:
 ---
 
 ## Version History
+
+**v1.6** (2026.10.02, María) - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 
 **v1.5** (2026.06.16, María) - **Commit-gate sweep (D1 guided-walkthrough ruling) — reviewed, already aligned.** Per-bug commits here were already autonomous (Step 9 stages selectively + commits with no approval gate; wrap mode states "Automatic commit without approval — user invocation IS approval"). This matches the 2026-06-16 ruling that committing is standing manager/session authority once green AND reviewed; the user is not the commit gate. No behavioral change required. Bug-fix commits are local + atomic per-bug; pushing remains out of scope here (handled by `branch-pr-and-merge.md` / `session-end.md`, where push stays the user's call).
 
