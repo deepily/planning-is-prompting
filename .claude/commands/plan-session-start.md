@@ -28,11 +28,11 @@
    - Location: planning-is-prompting → workflow/session-start.md
    - This is the ONLY authoritative source for ALL session initialization steps
    - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: Preliminary 0 (Phase A MCP startup), Preliminary 0.5 (persona-request swap, conditional), Preliminary notification, TodoWrite initialization, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
+   - The canonical workflow contains: Preliminary 0 (Phase A MCP startup), Preliminary 0.5 (persona-request swap, conditional), Preliminary notification, an optional step checklist, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
 
 4. **MUST execute the complete session initialization routine**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, or user prompts)
+   - Do NOT skip any steps (including notifications or user prompts)
    - Do NOT substitute a shortened or summarized version
    - Do NOT bypass the [1/2/3] user choice prompt in Step 5
    - Follow the workflow exactly as documented using the configuration parameters from Step 1

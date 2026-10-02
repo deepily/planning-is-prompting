@@ -40,7 +40,7 @@
 -->
 ---
 description: Analyze code changes and plan test coverage updates for {{PROJECT_NAME}}
-allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit, Grep, Glob
+allowed-tools: Bash(.*), Read, Write, Edit, Grep, Glob
 arguments:
   - name: date_range
     description: Date range for git log analysis (auto-detects last 7 days if not provided)
@@ -93,7 +93,7 @@ arguments:
 
 3. **MUST execute the complete test harness update workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or analysis)
+   - Do NOT skip any steps (including notifications or analysis)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
    - {{COVERAGE_NOTE}}

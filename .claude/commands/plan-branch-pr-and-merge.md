@@ -31,7 +31,7 @@
 
 3. **MUST execute the complete branch PR and merge workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document (Steps 0-11)
-   - Do NOT skip any steps (including notifications, TaskCreate tracking, or verification checks)
+   - Do NOT skip any steps (including notifications or verification checks)
    - Do NOT substitute a shortened or summarized version
    - Do NOT merge without user confirmation
    - Follow the workflow exactly as documented using the configuration parameters from Step 1

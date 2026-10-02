@@ -1,6 +1,6 @@
 ---
 description: Run baseline test collection for Planning is Prompting project
-allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit
+allowed-tools: Bash(.*), Read, Write, Edit
 ---
 
 # Baseline Testing for Planning is Prompting
@@ -58,7 +58,7 @@ allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit
 
 3. **MUST execute the complete baseline testing workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or test execution)
+   - Do NOT skip any steps (including notifications or test execution)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
    - For this documentation project, "smoke tests" means: verify workflow documents exist and are readable, check referenced paths are valid, validate markdown formatting, ensure cross-references work

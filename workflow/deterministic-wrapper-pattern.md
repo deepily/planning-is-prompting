@@ -253,7 +253,7 @@ Invoke the slash command and observe Claude's behavior:
 **Red flags**:
 - Claude skips reading the canonical workflow
 - Claude provides a summary instead of executing steps
-- Claude omits notifications, TodoWrite, or user prompts
+- Claude omits notifications or user prompts
 
 ### 2. Step Completeness Test
 
@@ -261,7 +261,6 @@ Check that Claude executes all steps:
 
 **For session-start**:
 - ✅ Preliminary notification sent
-- ✅ TodoWrite initialization list created
 - ✅ Configuration loaded and reported
 - ✅ Workflows discovered and categorized
 - ✅ History loaded and summarized
@@ -270,7 +269,6 @@ Check that Claude executes all steps:
 - ✅ Waits for user response
 
 **For session-end**:
-- ✅ TodoWrite tracking list created
 - ✅ Token count check performed
 - ✅ History health check performed
 - ✅ History updated
@@ -311,13 +309,13 @@ Review the wrapper text:
    - Location: planning-is-prompting → workflow/session-start.md
    - This is the ONLY authoritative source for ALL session initialization steps
    - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: Preliminary notification, TodoWrite initialization,
+   - The canonical workflow contains: Preliminary notification, an optional step checklist,
      configuration loading, workflow discovery, history loading, ready notification,
      outstanding work identification with [1/2/3] options, and context presentation
 
 3. **MUST execute the complete session initialization routine**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, or user prompts)
+   - Do NOT skip any steps (including notifications or user prompts)
    - Do NOT substitute a shortened or summarized version
    - Do NOT bypass the [1/2/3] user choice prompt in Step 5
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
@@ -474,4 +472,5 @@ Clear expectations make testing straightforward:
 
 ## Version History
 
+- **2026.10.02**: TodoWrite removed from the wrapper's "do not skip" list and from the step-completeness checks. A workflow's step checklist is optional scratch; owed work goes in the task store (Rick, row `efa0a4cf`).
 - **2025.10.23**: Initial creation - Documented pattern after fixing 5 slash command wrappers

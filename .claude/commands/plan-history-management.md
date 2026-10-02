@@ -30,7 +30,7 @@
 
 3. **MUST execute the complete history management workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or mode-specific operations)
+   - Do NOT skip any steps (including notifications or mode-specific operations)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
    - Parse and apply the mode parameter as described in the canonical workflow

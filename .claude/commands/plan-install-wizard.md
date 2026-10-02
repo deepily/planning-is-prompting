@@ -45,7 +45,7 @@
 
 3. **MUST execute the complete workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, or user prompts)
+   - Do NOT skip any steps (including notifications or user prompts)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented
 

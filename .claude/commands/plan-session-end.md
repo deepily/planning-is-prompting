@@ -25,11 +25,11 @@
    - Location: planning-is-prompting → workflow/session-end.md
    - This is the ONLY authoritative source for ALL session-end steps
    - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: TodoWrite tracking list, token count check, history health check, history update, planning document updates, uncommitted changes summary, commit message proposal, and commit execution (with notifications throughout)
+   - The canonical workflow contains: token count check, history health check, history update, planning document updates, uncommitted changes summary, commit message proposal, and commit execution (with notifications throughout)
 
 3. **MUST execute the complete session-end ritual**:
    - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-6)
-   - Do NOT skip any steps (including notifications, TodoWrite tracking, health checks, or the **LoC Delta Summary** — canonical §6)
+   - Do NOT skip any steps (including notifications, health checks, or the **LoC Delta Summary** — canonical §6)
    - Do NOT substitute a shortened or summarized version
    - Do NOT commit without user approval
    - Follow the workflow exactly as documented using the configuration parameters from Step 1

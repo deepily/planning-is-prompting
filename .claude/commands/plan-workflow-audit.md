@@ -21,7 +21,7 @@
 
 3. **MUST execute the complete workflow audit process**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or user prompts)
+   - Do NOT skip any steps (including notifications or user prompts)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 

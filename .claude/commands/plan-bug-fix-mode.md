@@ -47,7 +47,7 @@ This command supports all four modes via arguments. For discoverability in the s
 
 4. **MUST execute the complete workflow for the selected mode**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, file tracking)
+   - Do NOT skip any steps (including notifications, file tracking)
    - Do NOT commit without following the selective staging protocol
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 

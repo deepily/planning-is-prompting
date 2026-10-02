@@ -28,7 +28,7 @@
 -->
 ---
 description: Run baseline test collection for {{PROJECT_NAME}} project
-allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit
+allowed-tools: Bash(.*), Read, Write, Edit
 arguments:
   - name: scope
     description: Test scope (full|quick)
@@ -92,7 +92,7 @@ arguments:
 
 3. **MUST execute the complete baseline testing workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or test execution)
+   - Do NOT skip any steps (including notifications or test execution)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
    - {{SMOKE_TEST_NOTE}}

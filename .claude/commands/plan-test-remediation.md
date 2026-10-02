@@ -1,6 +1,6 @@
 ---
 description: Run post-change verification for Planning is Prompting project
-allowed-tools: Bash(.*), TodoWrite, Read, Write, Edit, Grep, Glob
+allowed-tools: Bash(.*), Read, Write, Edit, Grep, Glob
 arguments:
   - name: baseline_report
     description: Path to baseline report (auto-detects if not provided)
@@ -71,7 +71,7 @@ arguments:
 
 3. **MUST execute the complete remediation workflow**:
    - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including TodoWrite tracking, notifications, or comparison analysis)
+   - Do NOT skip any steps (including notifications or comparison analysis)
    - Do NOT substitute a shortened or summarized version
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
    - For this documentation project, ANALYSIS_ONLY scope is recommended (generates comparison report, no code fixes needed)
