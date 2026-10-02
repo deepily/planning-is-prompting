@@ -76,9 +76,10 @@ TaskCreate items:
 9. [PREFIX] Wait for PR merge
 10. [PREFIX] Post-merge sync
 11. [PREFIX] Branch cleanup
-12. [PREFIX] Release tagging (optional)
-13. [PREFIX] Create next development branch
-14. [PREFIX] Send completion notification
+12. [PREFIX] Retire the old line (squash merges only)
+13. [PREFIX] Release tagging (optional)
+14. [PREFIX] Create next development branch
+15. [PREFIX] Send completion notification
 ```
 
 **Verification**:
@@ -959,6 +960,8 @@ ask_yes_no(
 ```
 Warn and abort deletion unless user confirms force.
 
+**If the PR was squash-merged**: `git branch -d` refuses the merged branch every time, because a squash merge breaks ancestry. That refusal is not unmerged work. Leave the local branch and go to Step 8.5, which checks it by content and removes it.
+
 **If remote branch already deleted** (GitHub auto-delete):
 Skip remote deletion, log as already deleted.
 
@@ -980,6 +983,75 @@ Remote branch: [Deleted ✓ / Already deleted / Kept]
 - [ ] Local branch deleted (if confirmed)
 - [ ] Remote branch deleted (if exists and confirmed)
 - [ ] TaskUpdate updated
+
+---
+
+## Step 8.5: Retire the Old Line (after a squash merge)
+
+**Purpose**: After a squash merge, remove every local branch that forked from the merged branch, including the merged `wip` branch itself. Skip this step when the PR was merged with a merge commit; Step 8 covers that case.
+
+**Why this step exists**: a squash merge puts the work on `main` as one new commit. The merged branch and everything forked from it are then no longer ancestors of `main`, so `git branch -d` refuses them and every ancestry check reads them as unmerged, forever. Measured 2026-10-02: after one squash merge in lupin, four leftover branches read 2,540 to 2,600 commits ahead while carrying 0 to 3 commits of their own. planning-is-prompting held five merged `wip` branches going back a year, because nothing in this workflow removed them.
+
+**Names used below**: `[old]` is the branch the PR merged. `[base]` is `main` after Step 7.
+
+### Process
+
+1. **Confirm the merged branch landed, by content**:
+   ```bash
+   git diff --quiet [old] [base] && echo "same tree"
+   ```
+   "same tree" means `[old]` holds nothing `[base]` lacks. If it does not print, stop: commits reached `[old]` after the PR merged. Report them and ask.
+
+2. **List the branches forked from the old line**:
+   ```bash
+   git for-each-ref --format='%(refname:short)' --no-merged [base] refs/heads/
+   ```
+   Drop from the list any branch checked out in a worktree (`git worktree list`); a live seat owns it.
+
+3. **Check each one for work of its own**:
+   ```bash
+   git cherry [base] [branch] [old]
+   ```
+   This lists only the commits `[branch]` added beyond `[old]`. A `-` line is already on `[base]` by patch; a `+` line is not.
+
+4. **Act on the result**:
+
+   | Result | Action |
+   |---|---|
+   | No lines, or only `-` lines | Delete: `git branch -D [branch]` |
+   | Any `+` line | Archive, never delete: `git update-ref refs/archive/$(date -u +%F)/[branch] [branch]`, confirm the two shas match, then `git branch -D [branch]`. Open one task-store row for the branch's accountable manager naming the archived ref |
+
+   `[old]` itself, once step 1 printed "same tree": `git branch -D [old]`.
+
+5. **Remote**: delete the remote copy of `[old]` only under the Step 8 confirmation. This step asks no second question for it.
+
+### Rules
+
+- **`-D` is correct here and only here.** `-d` checks ancestry, which a squash merge breaks by design. The content checks in steps 1 and 3 are what make the delete safe; never run `-D` without the check on the line above it.
+- **Archived refs live 14 days** (Rick, 2026-10-02). They are outside `refs/heads`, so `git branch` does not show them and the branch guard does not judge them. `workflow/scripts/worktree_hygiene_report.py` counts them and reports any past retention.
+- **Restore an archived branch** with `git update-ref refs/heads/[branch] [sha]`.
+- **A `wip` name protects nothing in this step.** The old `wip` branch is the first thing it removes.
+
+### Display
+
+```
+══════════════════════════════════════════════════════════
+Old Line Retired
+══════════════════════════════════════════════════════════
+Merged branch: [old] — [Deleted ✓ / Kept: commits after merge]
+Forked branches: [N] found
+  Deleted (no work of their own): [list]
+  Archived (work not on [base]): [list] → refs/archive/[day]/
+  Skipped (checked out in a worktree): [list]
+══════════════════════════════════════════════════════════
+```
+
+**Verification**:
+- [ ] Step 1 printed "same tree" before `[old]` was deleted
+- [ ] Every deleted branch showed no `+` line
+- [ ] Every archived ref's sha matches the branch it replaced
+- [ ] One store row exists per archived branch
+- [ ] `git for-each-ref --no-merged [base] refs/heads/` lists only branches checked out in a worktree
 
 ---
 
@@ -1181,6 +1253,8 @@ At session start, detect if on main and prompt:
 ---
 
 ## Version History
+
+**v1.2** (2026.10.02, María) - **Step 8.5 added: retire the old line after a squash merge.** A squash merge breaks ancestry, so the merged `wip` branch and every branch forked from it read as unmerged forever and nothing removed them. The new step checks each by content (`git diff --quiet`, `git cherry`), deletes what holds no work of its own, and archives the rest to `refs/archive/<day>/` with a store row and 14-day retention. Part of the worktree and branch cleanup, lupin row `aec2319f`.
 
 **v1.1** (2026.06.16, María) - **Commit gate removed (D1 guided-walkthrough ruling).** Committing outstanding work is now standing manager/session authority once green AND reviewed — only push / PR / merge-to-main / tag remain user gates. The two "commit before PR" blocking gates now **commit autonomously + post a receipt** (prompting the user only when the changes are ambiguous/unexpected — not on the session's Step 3.5 touched-files list). Conversation-mode gate list updated to match. Test gates, PR-description approval, push, merge confirmation, and tag prompt are unchanged.
 

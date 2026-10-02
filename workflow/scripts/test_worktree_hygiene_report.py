@@ -70,7 +70,7 @@ def _snapshot( repo ):
 def test_a_clean_repo_has_no_findings_and_names_its_denominator( repo ):
     c = whr.census( str( repo ) )
     assert not whr.has_findings( c )
-    assert "clean (0 worktrees, 2 branches looked at)" in whr.render( [ c ] )
+    assert "clean (0 worktrees, 2 branches, 0 archived refs looked at)" in whr.render( [ c ] )
 
 
 def test_an_old_unlocked_worktree_IS_a_finding_and_a_fresh_one_is_not( repo, tmp_path ):
@@ -210,3 +210,77 @@ def test_a_branch_made_around_the_branch_guard_is_reported_even_with_a_wip_name(
     assert c[ "unledgered" ] == [ "wip-v9.9.9-forged" ]
     assert whr.has_findings( c )
     assert "branch guard never saw" in whr.render( [ c ] )
+
+
+# ── Count ceilings and archived refs (lupin row aec2319f, 2026-10-02) ─────────────────
+
+def _archive( repo, day, name ):
+    """Create refs/archive/<day>/<name> at HEAD, the way the janitor archives a branch."""
+    _run( "git", "update-ref", f"refs/archive/{day}/{name}", "HEAD", cwd=repo )
+
+
+def _day( days_ago ):
+    return time.strftime( "%Y-%m-%d", time.gmtime( time.time() - days_ago * 86400 ) )
+
+
+def _crowded( repo, tmp_path ):
+    """A repo holding 4 branches, 2 locked worktrees and 3 fresh archived refs."""
+    _run( "git", "branch", "wip-v0.0.1-old-release", cwd=repo )
+    _run( "git", "branch", "wip-v0.0.2-old-release", cwd=repo )
+    for n in ( 1, 2 ):
+        wt = tmp_path / f"wt-seat-{n}"
+        _run( "git", "worktree", "add", "-q", "--detach", str( wt ), cwd=repo )
+        _run( "git", "worktree", "lock", str( wt ), cwd=repo )
+    for n in ( 1, 2, 3 ):
+        _archive( repo, _day( 1 ), f"rescued-{n}" )
+
+
+def test_the_three_counts_are_separate_and_skip_nothing( repo, tmp_path ):
+    _crowded( repo, tmp_path )
+    c = whr.census( str( repo ) )
+    assert c[ "counted" ] == { "worktrees": 2, "branches": 4, "archived": 3 }
+    assert c[ "over_ceiling" ] == {} and not whr.has_findings( c )
+    assert "clean (2 worktrees, 4 branches, 3 archived refs looked at)" in whr.render( [ c ] )
+
+
+@pytest.mark.parametrize( "kind,count", [ ( "branches", 4 ), ( "worktrees", 2 ), ( "archived", 3 ) ] )
+def test_each_kind_trips_its_own_ceiling_and_only_its_own( repo, tmp_path, kind, count ):
+    _crowded( repo, tmp_path )
+    at    = dict( whr.DEFAULT_CEILINGS, **{ kind: count } )
+    below = dict( whr.DEFAULT_CEILINGS, **{ kind: count - 1 } )
+    assert whr.census( str( repo ), ceilings=at )[ "over_ceiling" ] == {}        # AT the ceiling is fine
+    c = whr.census( str( repo ), ceilings=below )
+    assert c[ "over_ceiling" ] == { kind: { "count": count, "ceiling": count - 1 } }
+    assert whr.has_findings( c )
+    assert f"{count} {kind} (ceiling {count - 1})" in whr.render( [ c ] )
+
+
+def test_an_archive_that_grows_while_branches_stay_low_is_still_caught( repo ):
+    for n in range( 5 ):
+        _archive( repo, _day( 1 ), f"rescued-{n}" )
+    assert whr.main( [ "--repo", str( repo ), "--max-archived", "4" ] ) == 1
+    assert whr.main( [ "--repo", str( repo ), "--max-archived", "5" ] ) == 0
+
+
+def test_an_archived_ref_is_a_finding_only_once_past_retention( repo ):
+    _archive( repo, _day( 20 ), "old-rescue" )
+    _archive( repo, _day( 3 ), "new-rescue" )
+    c = whr.census( str( repo ) )
+    assert [ a[ "ref" ].rsplit( "/", 1 )[ 1 ] for a in c[ "expired_archived" ] ] == [ "old-rescue" ]
+    assert 19 < c[ "expired_archived" ][ 0 ][ "age_days" ] < 21
+    assert "1 archived refs past 14 days" in whr.render( [ c ] )
+    assert whr.census( str( repo ), archive_days=30 )[ "expired_archived" ] == []
+
+
+def test_an_archived_ref_with_no_readable_date_is_reported_never_assumed_fresh( repo ):
+    _run( "git", "update-ref", "refs/archive/no-date-here/rescued", "HEAD", cwd=repo )
+    c = whr.census( str( repo ) )
+    assert c[ "expired_archived" ] == [ { "ref": "refs/archive/no-date-here/rescued", "age_days": None } ]
+    assert "- undated `refs/archive/no-date-here/rescued`" in whr.render( [ c ] )
+
+
+def test_the_census_changes_no_archived_ref( repo ):
+    _archive( repo, _day( 20 ), "old-rescue" )
+    before = _snapshot( repo )
+    assert whr.main( [ "--repo", str( repo ) ] ) == 1
+    assert _snapshot( repo ) == before

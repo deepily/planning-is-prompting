@@ -14,8 +14,18 @@ What it looks for, per repo:
   - STALE UNMERGED    local branches NOT merged whose last commit is older than
                       --stale-branch-days (default 7). Someone has to rule on each one.
 
-Skipped everywhere: the current branch, `main`, anything with "wip" in its name (Rick's
-numbered release branches), and branches checked out in a worktree.
+  - OVER THE CEILING  more local branches, worktrees or archived refs than the ceiling
+                      allows. Counted separately (lupin row aec2319f, 2026-10-02): the
+                      janitor now moves unmerged rescued work to refs/archive/*, which
+                      the branch guard and `git branch` never show, so a ceiling on
+                      branches alone would pass while the archive grows. This count
+                      skips NOTHING: wip, main and locked seats all count.
+  - EXPIRED ARCHIVE   refs under refs/archive/<yyyy-mm-dd>/ older than --archive-days
+                      (default 14, Rick's ruling 2026-10-02), or with no readable date.
+
+Skipped by the four per-item checks above the ceiling: the current branch, `main`, anything
+with "wip" in its name (Rick's numbered release branches), and branches checked out in a
+worktree.
 
 SILENT WHEN CLEAN. With --notify it sends ONE card, and only when something is found.
 A card on a clean week is the noise this fleet has already been corrected for.
@@ -35,6 +45,7 @@ siblings of $PLANNING_IS_PROMPTING_ROOT.
 """
 
 import argparse
+import calendar
 import json
 import os
 import subprocess
@@ -46,6 +57,17 @@ import urllib.request
 import branch_guard
 
 FLEET_REPOS = [ "lupin", "lupin-mobile", "planning-is-prompting" ]
+
+ARCHIVE_PREFIX = "refs/archive/"
+
+# Starting ceilings, chosen 2026-10-02 against that day's counts (lupin 4 branches and
+# 6 trees after cleanup, planning-is-prompting 7 branches). Not a ruling: override per
+# run with --max-branches / --max-worktrees / --max-archived.
+DEFAULT_CEILINGS = {
+    "branches"  : 10,
+    "worktrees" : 10,
+    "archived"  : 25,
+}
 
 
 class CensusError( Exception ):
@@ -128,15 +150,36 @@ def is_skipped_branch( name, current ):
     return name == current or name == "main" or "wip" in name
 
 
-def census( repo, now=None, stale_hours=48, stale_branch_days=7 ):
+def archive_age_days( ref, now ):
     """
-    Census one repo's worktrees and local branches.
+    Days since an archived ref was archived, read from its `refs/archive/<yyyy-mm-dd>/` day.
+
+    Requires:
+        - ref is a full refname under refs/archive/
+    Ensures:
+        - returns a float, measured from 00:00 UTC of the day in the ref's name
+        - returns None when the segment after refs/archive/ is not a yyyy-mm-dd date
+    """
+    day = ref[ len( ARCHIVE_PREFIX ): ].split( "/", 1 )[ 0 ]
+    try:
+        archived_at = calendar.timegm( time.strptime( day, "%Y-%m-%d" ) )
+    except ValueError:
+        return None
+    return ( now - archived_at ) / 86400.0
+
+
+def census( repo, now=None, stale_hours=48, stale_branch_days=7, archive_days=14, ceilings=None ):
+    """
+    Census one repo's worktrees, local branches and archived refs.
 
     Requires:
         - repo is the main checkout of a git repository
+        - ceilings is None or a dict with "branches", "worktrees" and "archived"
     Ensures:
         - returns a dict: repo, current, stale_worktrees, prunable, merged_leftovers,
-          stale_unmerged, counted (the denominator: worktrees and branches looked at)
+          stale_unmerged, unledgered, expired_archived, over_ceiling, counted (the
+          denominator: worktrees, branches and archived refs looked at)
+        - over_ceiling names each kind whose count is ABOVE its ceiling, never at it
         - changes nothing in the repo
     Raises:
         - CensusError if the repo is missing or git fails
@@ -187,8 +230,24 @@ def census( repo, now=None, stale_hours=48, stale_branch_days=7 ):
     if os.path.exists( branch_guard.ledger_path( repo ) ):
         unledgered = branch_guard.census( repo )[ "unledgered" ]
 
+    # Archived refs (lupin row aec2319f): invisible to `git branch` and to the branch guard.
+    archived         = git( repo, "for-each-ref", "--format=%(refname)", ARCHIVE_PREFIX ).splitlines()
+    expired_archived = []
+    for ref in archived:
+        days = archive_age_days( ref, now )
+        if days is None:
+            expired_archived.append( { "ref": ref, "age_days": None } )
+        elif days > archive_days:
+            expired_archived.append( { "ref": ref, "age_days": round( days, 1 ) } )
+
+    ceilings     = DEFAULT_CEILINGS if ceilings is None else ceilings
+    counted      = { "worktrees": len( trees ) - 1, "branches": len( names ), "archived": len( archived ) }
+    over_ceiling = { kind: { "count": counted[ kind ], "ceiling": ceilings[ kind ] }
+                     for kind in ( "branches", "worktrees", "archived" ) if counted[ kind ] > ceilings[ kind ] }
+
     stale_worktrees.sort( key=lambda w: -w[ "age_hours" ] )
     stale_unmerged.sort( key=lambda b: -b[ "age_days" ] )
+    expired_archived.sort( key=lambda a: a[ "ref" ] )
     return {
         "unledgered"       : unledgered,
         "repo"             : repo,
@@ -197,16 +256,18 @@ def census( repo, now=None, stale_hours=48, stale_branch_days=7 ):
         "prunable"         : prunable,
         "merged_leftovers" : sorted( merged_leftovers ),
         "stale_unmerged"   : stale_unmerged,
-        "counted"          : { "worktrees": len( trees ) - 1, "branches": len( names ) },
+        "expired_archived" : expired_archived,
+        "over_ceiling"     : over_ceiling,
+        "counted"          : counted,
     }
 
 
 def has_findings( c ):
     return bool( c[ "stale_worktrees" ] or c[ "prunable" ] or c[ "merged_leftovers" ] or c[ "stale_unmerged" ]
-                 or c[ "unledgered" ] )
+                 or c[ "unledgered" ] or c[ "expired_archived" ] or c[ "over_ceiling" ] )
 
 
-def render( results, stale_hours=48, stale_branch_days=7 ):
+def render( results, stale_hours=48, stale_branch_days=7, archive_days=14 ):
     """
     Render the census as markdown, one section per repo with findings.
 
@@ -218,10 +279,24 @@ def render( results, stale_hours=48, stale_branch_days=7 ):
     for c in results:
         name = os.path.basename( c[ "repo" ].rstrip( "/" ) )
         n    = c[ "counted" ]
+        looked = f"{n[ 'worktrees' ]} worktrees, {n[ 'branches' ]} branches, {n[ 'archived' ]} archived refs"
         if not has_findings( c ):
-            out.append( f"✅ **{name}**: clean ({n[ 'worktrees' ]} worktrees, {n[ 'branches' ]} branches looked at)" )
+            out.append( f"✅ **{name}**: clean ({looked} looked at)" )
             continue
         out.append( f"### {name} (current `{c[ 'current' ]}`)" )
+        out.append( f"Counts: {looked}." )
+        if c[ "over_ceiling" ]:
+            over = ", ".join( f"{v[ 'count' ]} {kind} (ceiling {v[ 'ceiling' ]})" for kind, v in c[ "over_ceiling" ].items() )
+            out.append( f"**Over the ceiling**: {over}" )
+        if c[ "expired_archived" ]:
+            # The janitor expires these on age (lupin worktree_reaper, ARCHIVE_RETENTION_DAYS);
+            # any still here are its misses, or refs it cannot date.
+            out.append( f"**{len( c[ 'expired_archived' ] )} archived refs past {archive_days} days** (or undated), "
+                        "which the janitor should have expired:" )
+            for a in c[ "expired_archived" ][ :10 ]:
+                age = "undated" if a[ "age_days" ] is None else f"{a[ 'age_days' ]:.0f}d"
+                out.append( f"- {age} `{a[ 'ref' ]}`" )
+            out.append( f"  fix: `git -C {c[ 'repo' ]} update-ref -d <ref>`" )
         if c[ "stale_worktrees" ]:
             out.append( f"**{len( c[ 'stale_worktrees' ] )} worktrees older than {stale_hours}h**, not locked:" )
             for w in c[ "stale_worktrees" ][ :10 ]:
@@ -307,13 +382,19 @@ def main( argv=None ):
     ap.add_argument( "--repo", action="append", help="repo to census (repeatable); default: the three fleet repos" )
     ap.add_argument( "--stale-hours", type=float, default=48 )
     ap.add_argument( "--stale-branch-days", type=float, default=7 )
+    ap.add_argument( "--archive-days", type=float, default=14, help="retention for refs/archive/* (Rick, 2026-10-02)" )
+    ap.add_argument( "--max-branches", type=int, default=DEFAULT_CEILINGS[ "branches" ] )
+    ap.add_argument( "--max-worktrees", type=int, default=DEFAULT_CEILINGS[ "worktrees" ] )
+    ap.add_argument( "--max-archived", type=int, default=DEFAULT_CEILINGS[ "archived" ] )
     ap.add_argument( "--notify", action="store_true", help="send one card, only when something is found" )
     ap.add_argument( "--json", action="store_true" )
     a = ap.parse_args( argv )
 
+    ceilings = { "branches": a.max_branches, "worktrees": a.max_worktrees, "archived": a.max_archived }
     try:
         repos   = a.repo or default_repos()
-        results = [ census( r, stale_hours=a.stale_hours, stale_branch_days=a.stale_branch_days ) for r in repos ]
+        results = [ census( r, stale_hours=a.stale_hours, stale_branch_days=a.stale_branch_days,
+                            archive_days=a.archive_days, ceilings=ceilings ) for r in repos ]
     except CensusError as e:
         print( f"COULD NOT LOOK: {e}" )
         return 2
@@ -321,14 +402,14 @@ def main( argv=None ):
     if a.json:
         print( json.dumps( results, indent=2 ) )
     else:
-        print( render( results, a.stale_hours, a.stale_branch_days ) )
+        print( render( results, a.stale_hours, a.stale_branch_days, a.archive_days ) )
 
     dirty = [ c for c in results if has_findings( c ) ]
     if not dirty:
         return 0
     if a.notify:
         names = ", ".join( os.path.basename( c[ "repo" ].rstrip( "/" ) ) for c in dirty )
-        ok, detail = deliver( "🧹 **Weekly worktree and branch census**\n\n" + render( results, a.stale_hours, a.stale_branch_days ),
+        ok, detail = deliver( "🧹 **Weekly worktree and branch census**\n\n" + render( results, a.stale_hours, a.stale_branch_days, a.archive_days ),
                               f"Worktree cleanup needed in {names}. Details are on the card." )
         print( f"notify: {detail}" )
         if not ok:
