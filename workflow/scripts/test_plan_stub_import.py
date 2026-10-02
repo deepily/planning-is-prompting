@@ -887,3 +887,76 @@ def test_status_names_the_zero_to_n_span( tmp_path, store, capsys ):
     run( zero_based_manifest(), True, store )
     assert pi.main( [ "status", str( path ), "--repo-root", str( tmp_path ) ] ) == 0
     assert "phases done: 0 of 3 (numbered 0 to 2)" in capsys.readouterr().out
+
+
+# ── numbered section headings and labelled phases (row 3ad36dc9, asked by Cheech 2026-10-02) ─────
+
+NUMBERED_MD = "# Plan\n\n## 2. Phases\n\n## 3. Phase 1: Alpha\n\n### R.8 Phase 9 exit-gate audit\n\n## 4. Phase 2: Beta\n"
+LABELLED_MD = "# Plan\n\n## 2. Phases\n\n## 3. Phase W-A: Alpha\n\n## 4. Phase W-B (optional): Beta\n\n## Phase overview\n"
+
+
+def labelled_manifest():
+    m = good_manifest()
+    m[ "phases" ][ 0 ][ "label" ] = "W-A"
+    m[ "phases" ][ 1 ][ "label" ] = "W-B"
+    return m
+
+
+def test_a_heading_with_a_section_number_in_front_is_a_phase_heading():
+    assert pi.plan_phase_ids( NUMBERED_MD ) == [ "1", "2" ]
+    assert pi.plan_phase_numbers( NUMBERED_MD ) == [ 1, 2 ]
+    assert pi.validate_manifest( good_manifest(), NUMBERED_MD ) == []
+
+
+def test_the_section_number_is_never_read_as_the_phase_number():
+    # section 7 holds phase 4: the id is 4
+    assert pi.plan_phase_ids( "## 7. Phase 4: reference docs\n## 8. Phase 5: sweep\n" ) == [ "4", "5" ]
+
+
+def test_a_heading_that_only_mentions_a_phase_is_still_not_a_phase_heading():
+    assert "9" not in pi.plan_phase_ids( NUMBERED_MD )
+    assert pi.plan_phase_ids( "## Phases\n## Phase overview\n## 2. Phases\n" ) == []
+
+
+def test_labelled_phase_headings_are_found_and_match_a_labelled_manifest():
+    assert pi.plan_phase_ids( LABELLED_MD ) == [ "W-A", "W-B" ]
+    assert pi.validate_manifest( labelled_manifest(), LABELLED_MD ) == []
+
+
+def test_a_labelled_plan_against_an_unlabelled_manifest_is_a_mismatch_and_the_reverse():
+    assert any( "phase count mismatch" in e for e in pi.validate_manifest( good_manifest(), LABELLED_MD ) )
+    assert any( "phase count mismatch" in e for e in pi.validate_manifest( labelled_manifest(), PLAN_MD ) )
+
+
+def test_a_label_missing_from_the_plan_is_a_mismatch():
+    m = labelled_manifest()
+    m[ "phases" ][ 1 ][ "label" ] = "W-C"
+    assert any( "phase count mismatch" in e for e in pi.validate_manifest( m, LABELLED_MD ) )
+
+
+@pytest.mark.parametrize( "bad", [ "overview", "A", "9-A", "W_A", "W-", "", 3 ] )
+def test_a_label_that_is_not_a_hyphenated_id_is_rejected( bad ):
+    m = labelled_manifest()
+    m[ "phases" ][ 0 ][ "label" ] = bad
+    assert any( "label must be a hyphenated id" in e for e in pi.validate_manifest( m ) )
+
+
+def test_two_phases_cannot_share_a_label():
+    m = labelled_manifest()
+    m[ "phases" ][ 1 ][ "label" ] = "W-A"
+    assert any( "duplicate phase label: W-A" in e for e in pi.validate_manifest( m ) )
+
+
+def test_a_labelled_phase_keeps_its_number_and_shows_its_label_in_every_title():
+    rows   = pi.build_rows( labelled_manifest() )
+    titles = { r[ "key" ]: r[ "title" ] for r in rows }
+    assert titles[ "ph1" ] == "[TST] Plan 2 · Phase 1 of 2 (W-A) · Alpha"
+    assert titles[ "ph2" ] == "[TST] Plan 2 · Phase 2 of 2 (W-B) · Beta"
+    assert titles[ "a2" ]  == "[TST] Plan 2 · Phase 1 of 2 (W-A) · Step 2 of 3 · Second"
+    assert titles[ "b1" ]  == "[TST] Plan 2 · Phase 2 of 2 (W-B) · Step 1 of 2 · Fourth"
+
+
+def test_an_unlabelled_manifest_builds_the_same_titles_as_before():
+    titles = { r[ "key" ]: r[ "title" ] for r in pi.build_rows( good_manifest() ) }
+    assert titles[ "ph1" ] == "[TST] Plan 2 · Phase 1 of 2 · Alpha"
+    assert titles[ "a2" ]  == "[TST] Plan 2 · Phase 1 of 2 · Step 2 of 3 · Second"

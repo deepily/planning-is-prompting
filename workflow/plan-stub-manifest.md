@@ -86,6 +86,10 @@ A JSON file named `<plan-name>.stubs.json`. JSON, because the importer is standa
 | `steps: []` | Means "not broken down yet" and **requires** `expand_trigger`. An empty list with no trigger fails validation |
 | `done_receipt` | Optional, on a step: the commit or other receipt showing it was finished before the import. A step that carries it is **counted in the totals and never becomes a row**; a phase whose steps all carry it gets no phase row |
 | `owner_persona` | The build manager who will own the rows. Roles go in `owner_role`; the manager assigns people |
+| `phase` | An integer, numbered from 0 or 1 with no gaps. It sets the order and the "Phase P of T" in every title |
+| `label` | Optional, on a phase: the id the plan's own heading uses when it is not a number, such as `W-A`. Must be hyphenated (letters, digits, at least one hyphen). The phase keeps its integer `phase`; the title shows both: `Phase 1 of 8 (W-A)` |
+
+**Which plan headings count as phase headings.** `## Phase 3 …`, and the same with the plan's section number in front: `## 5. Phase 2: …`, `## 3. Phase W-A: …`. The section number is skipped, never read as the phase. A heading that only mentions a phase (`### R.8 Phase 1 exit-gate audit`, `## Phases`, `## Phase overview`) is not one. `validate` compares the set of ids in the headings with the manifest's: each phase's `label` when it has one, else its number.
 
 ## 4. The importer
 
@@ -139,4 +143,5 @@ Added to the handoff light-review as criterion 7. Each is a checkable claim; say
 
 ## Version history
 
+- **2026.10.02** — The importer accepts a section number in front of a phase heading and an optional hyphenated phase `label` (row `3ad36dc9`, asked by Cheech: plan 1's headings read `## 3. Phase 0: …` and plan 2's phases are `W-A` to `W-H`).
 - **2026.10.01** — Initial version, approved by Rick the same day ("Approve, then build the importer"). Rick's voice ruling of 2026-10-01 (stubs in one shot, bulk import, bulk approve, "Plan N · Phase X of Y · Step X of Y", no `P1` as a plan tag).

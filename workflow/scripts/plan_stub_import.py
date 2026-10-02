@@ -59,12 +59,17 @@ STEP_KEY_RE   = re.compile( r"^[a-z0-9][a-z0-9_-]*$" )
 PHASE_KEY_RE  = re.compile( r"^ph\d+$" )
 PERSONA_RE    = re.compile( r"^[a-z][a-z0-9 ._-]*$" )
 ACTOR_RE      = re.compile( r"^[a-z][a-z0-9 ._-]* [0-9a-f]{6,}$" )
-PLAN_HEAD_RE  = re.compile( r"^#{1,6}\s+Phase\s+(\d+)\b", re.IGNORECASE | re.MULTILINE )
+# A phase heading: "## Phase 3 ...", or with the plan's own section number in front,
+# "## 5. Phase 2: ..." / "## 3. Phase W-A: ...". The id is digits, or a hyphenated label such as
+# W-A. The hyphen is required so that "## Phase overview" is not read as a phase called "overview".
+# A heading that only mentions a phase ("### R.8 Phase 1 exit-gate audit") is not one.
+PLAN_HEAD_RE  = re.compile( r"^#{1,6}\s+(?:\d+(?:\.\d+)*\.?\s+)?Phase\s+(\d+|[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+)(?![A-Za-z0-9-])", re.IGNORECASE | re.MULTILINE )
+PHASE_LABEL_RE = re.compile( r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+$" )
 STUB_KEY_RE   = re.compile( r"^stub_key:\s*(\S+)", re.MULTILINE )
 
 TOP_FIELDS    = ( "plan_ref", "project", "prefix", "plan_number", "plan_name", "correlation_key",
                   "owner_persona", "phases" )
-PHASE_FIELDS  = ( "phase", "name", "steps", "expand_trigger", "depends_on" )
+PHASE_FIELDS  = ( "phase", "label", "name", "steps", "expand_trigger", "depends_on" )
 STEP_FIELDS   = ( "key", "name", "item_class", "priority", "acceptance", "owner_role", "depends_on",
                   "gate_class", "done_receipt" )
 
@@ -173,9 +178,34 @@ def plan_phase_numbers( plan_text ):
         - plan_text is the plan file's text
 
     Ensures:
-        - returns the sorted set of N for every heading that begins "Phase N"
+        - returns the sorted set of N for every heading that begins "Phase N", N an integer
+        - a heading whose phase id is a label ("Phase W-A") is not in this list; see plan_phase_ids
     """
-    return sorted( { int( n ) for n in PLAN_HEAD_RE.findall( plan_text ) } )
+    return sorted( { int( n ) for n in PLAN_HEAD_RE.findall( plan_text ) if n.isdigit() } )
+
+
+def plan_phase_ids( plan_text ):
+    """
+    Requires:
+        - plan_text is the plan file's text
+
+    Ensures:
+        - returns the sorted set of phase ids, as strings, for every phase heading: "3" for
+          "## Phase 3", "W-A" for "## 3. Phase W-A: ..."
+        - a section number in front of "Phase" is skipped, never read as the id
+    """
+    return sorted( set( PLAN_HEAD_RE.findall( plan_text ) ) )
+
+
+def phase_id( ph ):
+    """
+    Requires:
+        - ph is a phase dict whose "phase" is an integer
+
+    Ensures:
+        - returns the id the plan's heading carries: the phase's label when it has one, else its number
+    """
+    return ph[ "label" ] if "label" in ph else str( ph[ "phase" ] )
 
 
 def _is_str( v ):
@@ -234,6 +264,8 @@ def validate_manifest( m, plan_text=None ):
     numbers       = { ph.get( "phase" ) for ph in phases if isinstance( ph, dict ) }
     seen_keys     = {}        # key -> description
     phase_numbers = []
+    phase_ids     = []        # what each phase's plan heading carries: its label, else its number
+    seen_labels   = set()
     graph         = {}        # key -> list of keys it depends on
 
     for pi, ph in enumerate( phases ):
@@ -249,6 +281,17 @@ def validate_manifest( m, plan_text=None ):
             continue
         where = f"phase {n}"
         phase_numbers.append( n )
+        if "label" in ph:
+            label = ph[ "label" ]
+            if not isinstance( label, str ) or not PHASE_LABEL_RE.match( label ):
+                errs.append( f"{where}: label must be a hyphenated id such as W-A (letters, digits, at least one hyphen, starting with a letter)" )
+            elif label in seen_labels:
+                errs.append( f"duplicate phase label: {label}" )
+            else:
+                seen_labels.add( label )
+                phase_ids.append( label )
+        else:
+            phase_ids.append( str( n ) )
         if not _is_str( ph.get( "name" ) ): errs.append( f"{where}: name must be a non-empty string" )
 
         pk = phase_key( n )
@@ -319,11 +362,11 @@ def validate_manifest( m, plan_text=None ):
             errs.append( f"phases must be numbered from 0 or 1 with no gaps; found {sorted( phase_numbers )}" )
 
     if plan_text is not None:
-        heads = plan_phase_numbers( plan_text )
+        heads = plan_phase_ids( plan_text )
         if not heads:
             errs.append( "the plan file has no 'Phase N' headings to check the manifest against" )
-        elif heads != sorted( set( phase_numbers ) ):
-            errs.append( f"phase count mismatch: the plan has phases {heads}, the manifest has {sorted( set( phase_numbers ) )}" )
+        elif heads != sorted( set( phase_ids ) ):
+            errs.append( f"phase count mismatch: the plan has phases {heads}, the manifest has {sorted( set( phase_ids ) )}" )
 
     return errs
 
@@ -450,10 +493,12 @@ def build_rows( m ):
         steps = ph[ "steps" ]
         pk    = phase_key( n )
         deps  = ph.get( "depends_on", [ phase_key( n - 1 ) ] if n - 1 in numbers else [] )
+        # A labelled phase keeps its number for order and "of T", and shows its label beside it.
+        ptag  = f"Phase {n} of {total}" + ( f" ({ph[ 'label' ]})" if "label" in ph else "" )
         if steps:
-            title = f"{head} · Phase {n} of {total} · {ph[ 'name' ]}"
+            title = f"{head} · {ptag} · {ph[ 'name' ]}"
         else:
-            title = f"{head} · Phase {n} of {total} · STUB · {ph[ 'name' ]} (expand when {ph[ 'expand_trigger' ]})"
+            title = f"{head} · {ptag} · STUB · {ph[ 'name' ]} (expand when {ph[ 'expand_trigger' ]})"
         deps  = [ d for d in deps if d not in gone ]
         if not phase_is_finished( ph ): rows.append( {
             "key"        : pk,
@@ -472,7 +517,7 @@ def build_rows( m ):
             rows.append( {
                 "key"        : st[ "key" ],
                 "kind"       : "step",
-                "title"      : f"{head} · Phase {n} of {total} · Step {si} of {len( steps )} · {st[ 'name' ]}",
+                "title"      : f"{head} · {ptag} · Step {si} of {len( steps )} · {st[ 'name' ]}",
                 "item_class" : st[ "item_class" ],
                 "priority"   : st.get( "priority", "P5" ),
                 "gate_class" : st.get( "gate_class", "none" ),
