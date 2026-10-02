@@ -6,7 +6,7 @@ This document contains the comprehensive start-of-session workflow for initializ
 
 At the start of work sessions, perform the following initialization ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress.
 
-**Key Principle**: The initialization steps themselves form a TodoWrite checklist for visual progress tracking.
+**Key Principle**: The initialization steps can be tracked as an optional checklist. Owed work goes in the task store.
 
 ---
 
@@ -121,7 +121,7 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 
 **Purpose**: Resolve session identity (persona) and link-building primitives (doc-scope envelope) BEFORE composing any user-facing text, including the first acknowledgment and the start-notification ping below.
 
-**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before TodoWrite creation, before reading any history/config files.
+**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before any step checklist, before reading any history/config files.
 
 **Steps (all MANDATORY, in order)**:
 
@@ -299,7 +299,7 @@ Persona name and voice ID are **bound by design** — they are a 5-tuple `(name,
 
 **Purpose**: Immediately notify user that session initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
+**Timing**: Execute BEFORE any step checklist (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
 
 **Command**:
 ```python
@@ -318,9 +318,9 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ## Step 0: Create Session Start TODO List
 
-**Purpose**: Track initialization progress visually using TodoWrite
+**Purpose**: Track initialization progress, if a visible checklist helps you
 
-**Mandate**: ALWAYS create a TodoWrite list at the start of session initialization
+**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one in the harness list, or keep none; nothing reads it. Work you **owe** goes in the task store (`workflow/task-store-discipline.md` §3), never only here.
 
 **Template TODO Items**:
 ```
@@ -332,8 +332,8 @@ notify( "Starting session initialization, loading config and history...", notifi
 [SHORT_PROJECT_PREFIX] Present session context and await direction
 ```
 
-**Instructions**:
-1. Use TodoWrite tool to create initialization checklist
+**Instructions** (if you keep the checklist):
+1. Create it with the harness's native list tool
 2. Mark first item as `in_progress`
 3. Update status after completing each step
 4. Mark as `completed` when step finishes
@@ -458,7 +458,7 @@ notify( "Starting session initialization, loading config and history...", notifi
    - Notifications: Configured (cosa-voice MCP)
    ```
 
-**Update TodoWrite**: Mark "Load configuration files" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Load configuration files" as completed, mark next item as in_progress
 
 ---
 
@@ -509,7 +509,7 @@ notify( "Starting session initialization, loading config and history...", notifi
      • /p-is-p-02-documentation
    ```
 
-**Update TodoWrite**: Mark "Discover available workflows" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Discover available workflows" as completed, mark next item as in_progress
 
 ---
 
@@ -1108,7 +1108,7 @@ finding more expensive to act on.
 
    **Note**: This is a progress update only. The actual question asking what to work on comes in Step 5, AFTER outstanding work has been identified and options are known.
 
-**Update TodoWrite**: Mark "Load session history" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Load session history" as completed, mark next item as in_progress
 
 ---
 
@@ -1544,7 +1544,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    | User Selection | Action |
    |----------------|--------|
-   | [Specific TODO] | Create TodoWrite with that item as `in_progress`, others as `pending` |
+   | [Specific TODO] | File it in the task store (`task_create`, or `task_transition` an existing row to `in_progress`) |
    | "Start fresh" | Clear old TODOs, wait for user to describe today's work |
    | "Modify list" | Show all TODOs, ask what to add/remove/change |
    | "Other..." | Parse user's custom text: may be "start fresh", "modify list", or custom direction |
@@ -1555,12 +1555,12 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    | "Browse history" | Show recent session summaries for context |
 
    **After selection is resolved**:
-   - Create new TodoWrite list with selected TODO as `in_progress`
-   - Apply [SHORT_PROJECT_PREFIX] to each item
+   - Put the selected work in the task store as `in_progress`: it is owed work, so it does not live in a harness list
+   - Apply [SHORT_PROJECT_PREFIX] to each item's title
    - Read implementation docs if referenced
    - Proceed to Step 6
 
-**Update TodoWrite**: Mark "Identify outstanding work" as completed, mark next item as in_progress
+**If you keep a step checklist**: Mark "Identify outstanding work" as completed, mark next item as in_progress
 
 ---
 
@@ -1619,7 +1619,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    **If continuing existing work**:
    ```
    📋 Continuing from last session:
-   → TodoWrite list created with outstanding items
+   → outstanding items filed in the task store
    → First task marked as in_progress
    → Ready to execute
    ```
@@ -1634,7 +1634,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    - Question about project state ("What's the status of feature X?")
    - Workflow invocation ("/p-is-p-01-planning to plan this work")
 
-**Update TodoWrite**: Mark "Present session context" as completed
+**If you keep a step checklist**: Mark "Present session context" as completed
 
 ---
 
@@ -1687,7 +1687,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 **Typical Session Start Flow**:
 ```mermaid
 flowchart TD
-    P["Preliminary: Send start notification (low)"] --> S0["0. Create TodoWrite checklist"]
+    P["Preliminary: Send start notification (low)"] --> S0["0. Optional step checklist"]
     S0 --> S1["1. Notification System Overview (ref only)"]
     S1 --> S2["2. Load configs → Extract PREFIX"]
     S2 --> S3["3. Discover workflows → List slash commands"]
@@ -1963,6 +1963,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.02 (María 🌸)**: **Step 0's TodoWrite checklist is optional, and selected work goes to the task store.** Rick's "yes" on a direct ask, row `efa0a4cf`: a workflow's step checklist is scratch, not owed work. The "ALWAYS create a TodoWrite list" mandate is removed; Step 5 now files the chosen work in the store instead of a harness list.
 - **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
 - **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
 - **2026.06.16 (María + Mr Radio)**: **Added Step 4.7 — Rebuild the Harness TODO List (MANDATORY on rehydrate)** — the READ side of the memento↔harness-list contract (Rick broadcast `beaaaa2c`: a session with no visible harness to-do list has nothing driving it forward; rebuilding is "an absolute no-no" to skip). Documents the store-authoritative reconciliation algorithm (memento skeleton → verify each vs `task_query(owner=self)` → drop done, add store-missed, store-status wins → deduped union; VERIFY-don't-manufacture; FAIL-LOUD-if-empty only when owed work exists), the env-priority flip (lupin = store-primary, plan/non-lupin = memento-primary until mirror bug `9bf1dc4a` lands), and the `9b23d5bc` caveat (rebuild is VISIBILITY-only until the `/clear` correlation-key collision lands; trust MCP `task_create`/`task_query` for auditable truth). Added the rebuild item to the Step 0 init checklist. Companion WRITE side in `workflow/memento-management.md`. Joint design with Mr Radio 🦉 (lupin).
