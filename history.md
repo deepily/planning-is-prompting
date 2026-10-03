@@ -2,7 +2,22 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 213 (2026-10-01, María 🌸 stable `588ff255`, manager beside Cheech and Tiffany)**: plan stubs became a workflow with its own importer, the planning workflow dropped TodoWrite, and two documents were written for Rick while he was away.
+**RESUME HERE**: **Session 214 (2026-10-02, María 🌸 stable `397d8678`, self-respun once at 12:43 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: worktree cleanup pieces, the TodoWrite sweep and one-click story approve shipped; entry updated at 21:35 EDT with the session still open.
+
+1. **Cleanup P5 + P6** (`81af01f`): `branch-pr-and-merge.md` Step 8.5 (retire the old line after a squash merge) and count ceilings in the worktree hygiene report. History archived, 19,859 → 6,268 tokens (`60505ff`).
+2. **TodoWrite sweep, four parts** (`7b54f16`, `eb75fe6`, `6ac3f49`, `ba2a11a`, 28 files): step checklists are optional and the store is the liveness source. The audit rubric carries a warning banner; its rewrite row was given up for an admit.
+3. **Stub importer** (`86cbda5`): numbered section headings and labelled phases. Cheech's plan 1 validates clean (19 rows, 8 phases).
+4. **One-click story approve** (lupin row `eb235858`, built by Rachel, merged by me as `ced08ca19`): typescript 5,672 passed; the browser test 4 passed in the shared pyramid; whole unit tier 28,676 passed on the host (Cheech's run). Still `review`: it closes when Rick uses it in both clients. The stdio no-starvation test bug `797a2dc3` closed on the same merge.
+5. **Parity red fixed** (`dd5a6e8`, row `f35340c9`): `global/CLAUDE.md` was 223 lines longer than the deployed file. Rick ruled the deployed file wins. `workflow/scripts`: 1144 passed, 0 failed.
+6. **Evening, Rick's blocker walkthrough**: the gcloud login was already done (the P0 block was stale; Mr. Radio has the test VM resolving Sonnet 5.5 for all four roles). Rick admitted three held rows. The `task_create` description fix (`a8a2651d`) was built by Mr. Radio, reviewed by me, merged in lupin.
+7. **Holding-pen labels (Rick's P0 `451fd70e`)**: five held rows re-keyed from non-persona epic labels to `epic:unassigned`; all managers now file held rows that way. Rick's words when I offered UI options instead: "make the data right and you don't have to worry about the UI."
+8. **Docstring rule** (`7fb35af`, lupin row `360427a1`): new `workflow/docstring-content.md`, reviewed by Tiffany. Cheech's claim check builds its history class from it. The gate's strictness got no ruling (ask timed out); re-ask.
+9. **Open**: two-click story approve (`eb235858`) waits on Rick using it; the P0 test-VM row waits on one real spawn (Cheech); post-game `c4b795d8` at session end.
+10. **Mine, wrong**: said "nothing owed" three times from memory with five rows on my board; the owner-only query then hid a P0 I manage. Wrote "same failure as before my changes" about a suite I had not run beforehand. Submitted a unit tier to the `:8000` container, where it is not a gate (no `.venv`, no Dart, 30-minute kill). Twice answered Rick's data fix with a menu of UI options.
+
+**Files**: workflow/branch-pr-and-merge.md, workflow/scripts/worktree_hygiene_report.py, plan_stub_import.py and their tests, 28 workflow and command files (sweep), global/CLAUDE.md, global/README.md, workflow/docstring-content.md, workflow/claude-config-global.md, README.md, TODO.md, history.md · lupin: `2cbbfc0e3`, `ced08ca19`
+
+**Previous RESUME HERE**: **Session 213 (2026-10-01, María 🌸 stable `588ff255`, manager beside Cheech and Tiffany)**: plan stubs became a workflow with its own importer, the planning workflow dropped TodoWrite, and two documents were written for Rick while he was away.
 
 1. **Stub manifest (Rick's rulings by voice and keypress)**: `workflow/plan-stub-manifest.md` plus pointers in both cascade workflows, the shared rubric and p-is-p-01 (`968a21f`). Titles read `Plan N · Phase X of Y · Step X of Y`; finished work gets no row (`0266bf8`); phases may start at 0 and closed rows are never retitled (`a09124e`).
 2. **Importer**: `workflow/scripts/plan_stub_import.py` (validate, import with dry run by default, status), built by Rachel, sent back once by Rio (it retitled closed rows, which the board refuses), merged `5f32231`.

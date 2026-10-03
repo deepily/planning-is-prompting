@@ -1117,6 +1117,20 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### 2026-10-02 — Cleanup, TodoWrite sweep and snapshot rulings (Session 214)
+
+The first four are carried from my memento of 12:43 EDT (written before a self-respin); the last two I received as direct answers after it.
+- **Heartbeat poke toggle:** "The operator knows best… Just make it a simple on-off toggle." Admin only. No timers or expiry windows on operator switches.
+- **Cleanup retention:** archived refs are kept 14 days, then swept.
+- **TodoWrite checklists:** optional in the workflows; the store is the liveness source (sweep commits `7b54f16`, `eb75fe6`, `6ac3f49`, `ba2a11a`).
+- **Worker split** (Mr. Radio's relay of Rick's approval): Mr. Radio 2, Cheech 2, María 1, Tiffany 1.
+- **Global CLAUDE.md snapshot:** the deployed `~/.claude/CLAUDE.md` wins; the repo copy `global/CLAUDE.md` is re-captured from it, not the other way round (commit `dd5a6e8`, row `f35340c9`).
+- **Admit of the stdio no-starvation test bug** (lupin row `797a2dc3`): approved; closed on lupin merge `ced08ca19`.
+- 2026-10-02 — Blocker walkthrough, about 20:52–21:04 EDT, direct asks:
+  - gcloud login for the test-VM P0 (`c9252819`) → already done before he left; the block was stale. Why: the access token printed fine on the host.
+  - Docstring rules row (`360427a1`), `task_create` description bug (`a8a2651d`), Session 214 post-game (`c4b795d8`) → all admitted.
+  - Epic label in the holding pen (P0 `451fd70e`) → fix the data, not the UI: no held row may carry a non-persona label. Why: rows filed under a persona open and close; a stray label does not. Tiffany's two rows re-keyed to `epic:unassigned`.
+
 ### 2026-09-30 — lupin v0.2.2 docs-rewrite + code-wiki/Jev rulings (Session 212)
 
 Full text: the "Rulings of 2026-09-30" section at the top of each plan in lupin `src/rnd/v0.2.2/` (committed `06f30bc1a`, R.5b added after). Headlines:
