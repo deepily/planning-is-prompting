@@ -196,7 +196,7 @@ Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notif
 - **Indentation**: 4 spaces (not tabs)
 - **Naming for Python**: snake_case for functions/methods, PascalCase for classes, UPPER_SNAKE_CASE for constants
 - **Naming for JavaScript/TypeScript**: camelCase for variables, functions/methods, PascalCase for classes, UPPER_SNAKE_CASE for constants
-- **Documentation**: Use Design by Contract docstrings for all functions and methods
+- **Documentation**: Use Design by Contract docstrings for all functions and methods. A docstring says what the code does and why, as it is now; dates, ids, incidents and "was previously" go to the commit, the task row or the decisions log (see planning-is-prompting → workflow/docstring-content.md)
   ```python
   def process_input(text, max_length=100):
       """

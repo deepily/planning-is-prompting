@@ -29,6 +29,7 @@ Run them from `workflow/scripts/`; each carries its own tests alongside.
 
 ### New workflows
 
+- **[docstring-content.md](workflow/docstring-content.md)** — a docstring says what the code does and why, as it is now; history goes to the commit, the task row or the decisions log, with a lint for the mechanical kinds
 - **[rnd-directory-policy.md](workflow/rnd-directory-policy.md)** — `src/rnd/` holds **authorized deliverables, not a notebook**: three creation tests (class · authorization · durability), plus **Rule 0** — a document cited by code or a test is load-bearing and is never bare-deleted. Guard: `workflow/scripts/rnd_write_guard.py`
 - **[brevity-mandate.md](workflow/brevity-mandate.md)** — KISS · Say 3LoL · NoMC C2C · NoAA · NoDrama · WaHH, and the glyph palette (😘 🏆 📷 ☕ 🫡) that fires them in one character. Command: `/plan-kiss`
 - **[push-to-completion.md](workflow/push-to-completion.md)** — the Riot Act: drive every open board item to a terminal state **with proof of work**. Command: `/plan-push`
@@ -241,6 +242,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 ### Configuration
 - [**claude-config-global.md**](workflow/claude-config-global.md) - Global Claude Code configuration template ( copy to `~/.claude/CLAUDE.md` )
 - [**claude-config-local.md**](workflow/claude-config-local.md) - Project-specific Claude Code configuration template ( copy to `<project>/.claude/CLAUDE.md` )
+- [**docstring-content.md**](workflow/docstring-content.md) - What a docstring or code comment keeps (what the code does and why, as it is now) and what may leave it (dates, ids, provenance, incident figures, "was previously", rejected-alternative stories); one home per kind of history (commit message, task row, decisions log, post-game, design doc); which kinds a lint can enforce and which need a reviewer. Also the history class for a claim check over rewritten docstrings
 
 ### Session Management
 - [**session-start.md**](workflow/session-start.md) - Prompts for initializing sessions and loading context
