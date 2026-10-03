@@ -267,7 +267,8 @@ def test_an_archived_ref_is_a_finding_only_once_past_retention( repo ):
     _archive( repo, _day( 3 ), "new-rescue" )
     c = whr.census( str( repo ) )
     assert [ a[ "ref" ].rsplit( "/", 1 )[ 1 ] for a in c[ "expired_archived" ] ] == [ "old-rescue" ]
-    assert 19 < c[ "expired_archived" ][ 0 ][ "age_days" ] < 21
+    # The ref carries a DAY, so its age runs from 20.0 (midnight UTC) to 21.0 (rounded, late in the UTC day).
+    assert 20 <= c[ "expired_archived" ][ 0 ][ "age_days" ] <= 21
     assert "1 archived refs past 14 days" in whr.render( [ c ] )
     assert whr.census( str( repo ), archive_days=30 )[ "expired_archived" ] == []
 

@@ -2,7 +2,22 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 214 (2026-10-02, María 🌸 stable `397d8678`, self-respun once at 12:43 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: worktree cleanup pieces, the TodoWrite sweep and one-click story approve shipped; entry updated at 21:35 EDT with the session still open.
+**RESUME HERE**: **Session 215 (2026-10-03, María 🌸 stable `1c688e87`, self-respun once at 17:22 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: post-games moved to a tracked per-version folder, the docstring gate was ruled, and the holding pen P0 closed on Rick's yes. Session still open at this checkpoint.
+
+1. **Post-games home** (`7a17919`, `11417fa`): retros live in `src/docs/post-games/<version>/`, tracked; the old `io/post-games` corpus is deleted. The global file's `src/rnd` bullet and lupin's wrapper (`461838b19`) now agree; older retros in `src/rnd` stay (policy doc).
+2. **Docstring gate** (`dcae5a2`): the history gate refuses on every line.
+3. **Holding pen P0 `451fd70e`, closed**: plans are sub-groups under each filer (lupin `77f5e626d`, test fix `db44a5058`, browser test `ts-fbfb697f` 6 passed). Rick confirmed the notifications client after a reload; the multiplexer was not separately confirmed, and disarm-on-close is not built.
+4. **Open, not mine to move**: two rows I am accountable for, owned by Mr. Radio, wait on Rick's `gcloud auth login` (`c9252819`, P0) and a sudo-created password file (`80513825`).
+5. **Mine, wrong**: told Rick the pen change was live before the browser test came back (it came back red on a test defect); told him I would move the old retros, then found the policy already keeps them; carded him for an edit that was mine to make.
+
+**Files**: workflow/post-game.md, workflow/rnd-directory-policy.md, workflow/docstring-content.md, workflow/scripts/memento_io.py and two tests, eleven workflow docs (citations), global/CLAUDE.md, src/docs/post-games/, README.md, .docview.yml, TODO.md, history.md · lupin: `77f5e626d`, `db44a5058`, `461838b19`
+
+#### Checkpoint | 2026.10.03 19:16 | Session 215 history entry and Decisions Log
+
+**Files**: history.md, TODO.md, workflow/scripts/test_worktree_hygiene_report.py (age bound failed late in the UTC day; suite 1148 passed)
+**Commit**: [pending]
+
+**Previous RESUME HERE**: **Session 214 (2026-10-02, María 🌸 stable `397d8678`, self-respun once at 12:43 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: worktree cleanup pieces, the TodoWrite sweep and one-click story approve shipped; entry updated at 21:35 EDT with the session still open.
 
 1. **Cleanup P5 + P6** (`81af01f`): `branch-pr-and-merge.md` Step 8.5 (retire the old line after a squash merge) and count ceilings in the worktree hygiene report. History archived, 19,859 → 6,268 tokens (`60505ff`).
 2. **TodoWrite sweep, four parts** (`7b54f16`, `eb75fe6`, `6ac3f49`, `ba2a11a`, 28 files): step checklists are optional and the store is the liveness source. The audit rubric carries a warning banner; its rewrite row was given up for an admit.

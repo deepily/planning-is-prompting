@@ -1117,6 +1117,18 @@ whole reason that prefix exists.
 
 ## Decisions Log
 
+### 2026-10-03 — Holding pen, post-games home and docstring gate rulings (Session 215)
+
+The first four are carried from my memento of 17:22 EDT (written before a self-respin); the last three I received as keypresses or voice after it.
+- **Holding pen grouping** (direct ask, about 16:20 EDT): plans are sub-groups under each filer, with a toggle, visible rows and their own Approve all; label "Plan: <title>". Built by Rachel, lupin merges `77f5e626d` and `db44a5058`.
+- **Docstring history gate:** refuses on every line (`workflow/docstring-content.md` section 4, commit `dcae5a2`).
+- **Post-games home:** tracked, one folder per version under `src/docs/post-games/<version>/`; the old untracked `io/post-games` corpus was deleted on his order (commit `7a17919`).
+- **`epic:unassigned` for held rows:** practice withdrawn with all three managers; held rows carry their real epic key.
+- **Holding pen P0 closed** (keypress "yes", about 19:11 EDT): he saw the plan group under Cheech in the notifications client after a reload. His first answer was "no", with "I don't see it in the notifications client"; the multiplexer was not separately confirmed.
+- **Global file bullet** (keypress "yes"): `post-game` leaves the `src/rnd` `doc_kind` list in `~/.claude/CLAUDE.md` and the bullet points at the new folder (commit `11417fa`; lupin wrapper `461838b19`).
+- **Manager's discretion** (voice, right after that card): "that last ask María seems odd. You have a manager's discretion to make those kind of decisions don't you?" A small reversible edit that carries out his own first-hand ruling needs no card.
+- **Mine, not his:** the older retros tracked under `src/rnd` stay there; `workflow/rnd-directory-policy.md` already keeps `post-game` as a kind for retros filed before 2026-10-03.
+
 ### 2026-10-02 — Cleanup, TodoWrite sweep and snapshot rulings (Session 214)
 
 The first four are carried from my memento of 12:43 EDT (written before a self-respin); the last two I received as direct answers after it.
