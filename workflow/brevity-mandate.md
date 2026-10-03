@@ -244,7 +244,7 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 
 | Content | Destination |
 |---|---|
-| Full narrative, receipts, cross-examination, provenance | `io/post-games/` retro (uncapped — this is the archive) |
+| Full narrative, receipts, cross-examination, provenance | `src/docs/post-games/<version>/` retro (uncapped; kept while its version is current work, `post-game.md` §5.6) |
 | Design reasoning, measurements, option analysis | `src/rnd/<date>-<slug>.md` |
 | Owed work, status, ownership | the task-store (`task_create` / `task_amend`) |
 | **A pointer to each of the above** | `history.md` — **the index, not the archive** |

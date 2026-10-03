@@ -53,7 +53,7 @@ word.
 ⚠️ **Found by retracting an absence claim rather than by hitting the bug again** — Rachel 🕊️ had
 called this vocabulary *unwritten*, then searched (56 workflow docs plus Lupin `CLAUDE.md`, positive
 control first), found **this section**, and reported that her own correction made the finding
-**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md`.
+**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md` (deleted 2026-10-03 with the old corpus).
 
 **Why the distinction is load-bearing — an uncommitted green is a rumor:**
 
@@ -296,7 +296,7 @@ INFO: No related TODO items found (no action needed)
 | `history.md` Files line | **paths only**, no per-file commentary |
 | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
 
-**`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
+**`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
 
 **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop — it is long enough.**
 

@@ -13,7 +13,7 @@ is about carelessness, and treating them that way is what makes the pattern invi
 case the person had **just finished a larger, more careful piece of work**, and in two of them
 they had **just written down the very rule they then broke**.
 
-Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md` §3.1, §3.3, §4 (Lupin;
+Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md` (deleted 2026-10-03 with the old corpus) §3.1, §3.3, §4 (Lupin;
 gitignored corpus). Crew: Tiberius 👑, Rachel 🕊️, Mr. Radio 🦉.
 
 ---

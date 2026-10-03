@@ -198,6 +198,28 @@ def test_a_many_lined_but_tiny_file_is_not_a_post_game( repo ):
     assert r.returncode == 6, "12 bytes across 6 lines is not a retrospective"
 
 
+def test_a_retro_in_the_tracked_per_version_corpus_satisfies_the_gate( repo ):
+    """
+    `src/docs/post-games/<version>/` is the corpus since 2026-10-03 (post-game.md section 5.6).
+
+    The retro sits one folder down, under the work branch's version, so only a `**/` glob can
+    see it. Without the two `src/docs/post-games` entries in POST_GAME_GLOBS the gate refuses
+    a seat that wrote its retro exactly where the workflow says to.
+    """
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "src" / "docs" / "post-games" / "v0.2.2" / "2026.10.03-a-run-post-game.md" )
+    r = write_memento( repo )
+    assert r.returncode == 0, f"a fresh retro in the new corpus must satisfy the gate: {r.stderr}"
+
+
+def test_the_new_corpus_index_is_not_a_post_game( repo ):
+    """`src/docs/post-games/README.md` is the tagged index. Registering a retro is not writing one."""
+    plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )
+    plant( repo / "src" / "docs" / "post-games" / "README.md" )
+    r = write_memento( repo )
+    assert r.returncode == 6, "the index is the directory's furniture, not a retrospective"
+
+
 def test_a_readme_is_not_a_post_game( repo ):
     """`io/post-games/*.md` matches the directory's own README. Editing it is not a retro."""
     plant( repo / "io" / "mementos" / "cheech-1af4b598.md" )

@@ -13,7 +13,7 @@ This document contains the comprehensive end-of-session workflow extracted from 
 > | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
 > | Commit message body | the WHY and what it FALSIFIED — not a file-by-file tour |
 >
-> **`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. Duplicating the retro into the one file with a hard 25k ceiling (`history-management.md`) just accelerates the next forced archive.
+> **`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. Duplicating the retro into the one file with a hard 25k ceiling (`history-management.md`) just accelerates the next forced archive.
 >
 > **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
 >

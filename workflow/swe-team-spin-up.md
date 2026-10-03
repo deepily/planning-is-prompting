@@ -4,7 +4,7 @@
 
 **When to use**: any build-shaped engagement (implement → review → test a feature/fix) that warrants more than a solo session — i.e. work that benefits from a dedicated implementer, an adversarial reviewer, and an integration tester under a manager, with a steward watching for drift.
 
-**Status**: ✅ Ratified 2026-06-06 (Rick, via guided walkthrough — all 7 design decisions) · 🛡️ **BATTLE-TESTED 2026-06-06** — first real run (Heartbeat Arbiter v2.1, Thread B) shipped: committed `7973376`, live-apply 88 tests green **as of that commit** — a dated run record, not a standing coverage claim; re-derive from `7973376` rather than quoting this line forward. <!-- claim-is-historical --> Design record + ruling table: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6; first-run post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md`. Authored by María 🌸 (Workflow Steward).
+**Status**: ✅ Ratified 2026-06-06 (Rick, via guided walkthrough — all 7 design decisions) · 🛡️ **BATTLE-TESTED 2026-06-06** — first real run (Heartbeat Arbiter v2.1, Thread B) shipped: committed `7973376`, live-apply 88 tests green **as of that commit** — a dated run record, not a standing coverage claim; re-derive from `7973376` rather than quoting this line forward. <!-- claim-is-historical --> Design record + ruling table: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6; first-run post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md` (deleted 2026-10-03 with the old corpus). Authored by María 🌸 (Workflow Steward).
 
 > ## 🛑 EVERY SPAWN BRIEF CARRIES THE BREVITY RIDER — non-negotiable
 > Workers inherit habits at birth; a worker that never grew the verbose habit is cheaper than one that must unlearn it. **Paste this into every member's brief, verbatim:**
@@ -159,7 +159,7 @@ The **load document** is the per-role charter artifact each spawned member auto-
 1. ✅ This workflow doc — `workflow/swe-team-spin-up.md`.
 2. ✅ The **load document** — `workflow/swe-team-roles.md` (per §7).
 3. ⏳ The `/spin-up-swe-team [task]` slash command + intent wrapper (§3); add the README link. *(Manager's lane.)*
-4. ✅ First real spin-up (Heartbeat Arbiter v2.1, Thread B) — **APPROVED** (green + reviewed + tested) 2026-06-06; commit held for Rick's word. Post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md`.
+4. ✅ First real spin-up (Heartbeat Arbiter v2.1, Thread B) — **APPROVED** (green + reviewed + tested) 2026-06-06; commit held for Rick's word. Post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md` (deleted 2026-10-03 with the old corpus).
 
 **Installer note:** this doc is **not** part of the `/plan-install-wizard` package automatically. It joins the installer only when registered in the wizard catalog (`workflow/INSTALLATION-GUIDE.md` + the wizard) + README — a deliberate follow-up step.
 

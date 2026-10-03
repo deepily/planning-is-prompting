@@ -19,11 +19,8 @@ allowed_prefixes:
   # LoC-delta CSVs from the session-end Step 6 summary live here; the workflow
   # mandates a doc-link to them, so this prefix must be served (else 404).
   - io/git-loc-delta/
-  # Post-game corpus — gitignored, local-only retrospectives (io/post-games/).
-  # The post-game workflow's after-collection digest sends doc-links to these
-  # transcripts, so the prefix must be served. NOTE: requires a lupin-rest-dev
-  # bounce to take effect. (workflow/post-game.md §5.6)
-  - io/post-games/
+  # The post-game corpus is src/docs/post-games/<version>/ (workflow/post-game.md §5.6),
+  # served by the src/ prefix above. The old io/post-games/ entry went with that folder.
 
 allowed_root_files:
   # Always part of PIP doctrine surface

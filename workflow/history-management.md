@@ -11,7 +11,7 @@
 > | Checkpoint line | **one line**, semicolon-separated |
 > | Files line | **paths only**, no per-file commentary |
 >
-> **`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/` (the real archive, uncapped), `src/rnd/<date>-<slug>.md`, or the task-store. The entry carries a **pointer** — an entry that reproduces the retro has not preserved it, it has duplicated it into the one file with a hard token budget.
+> **`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/` (the retro, uncapped), `src/rnd/<date>-<slug>.md`, or the task-store. The entry carries a **pointer** — an entry that reproduces the retro has not preserved it, it has duplicated it into the one file with a hard token budget.
 >
 > **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
 >
