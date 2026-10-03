@@ -15,7 +15,7 @@
 #### Checkpoint | 2026.10.03 19:16 | Session 215 history entry and Decisions Log
 
 **Files**: history.md, TODO.md, workflow/scripts/test_worktree_hygiene_report.py (age bound failed late in the UTC day; suite 1148 passed)
-**Commit**: [pending]
+**Commit**: 5825854
 
 **Previous RESUME HERE**: **Session 214 (2026-10-02, María 🌸 stable `397d8678`, self-respun once at 12:43 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: worktree cleanup pieces, the TodoWrite sweep and one-click story approve shipped; entry updated at 21:35 EDT with the session still open.
 
