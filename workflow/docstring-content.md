@@ -62,11 +62,13 @@ One home per kind. The docstring may point by path to a live design section or t
 | "was previously", "used to", "no longer", "earlier text" | phrase list | **not yet caught**: candidate for the lint |
 | Provenance, incident figures, rejected-alternative stories | none reliable; these need judgement | reviewer, and a claim check's history class |
 
-**Recommended policy**, pending the owner's ruling:
+**The policy** (owner's ruling on a direct ask, 2026-10-03: *"Refuse on every line"*):
 
-1. The mechanical kinds (dates, banners, model-addressed text, bare ids) fail the docs gate on changed lines only, so old files are not failed for text nobody touched. The "was previously" phrase list is the one mechanical kind no lint checks yet.
-2. The judgement kinds are advisory for the lint and are decided by the reviewer.
-3. A claim check that compares old and new docstrings treats the "may go" column of section 2 as its history class: a claim in that class that disappears is not a loss; any other claim that disappears is.
+1. The mechanical kinds (dates, banners, model-addressed text, bare ids) **fail the docs gate on every line of a file, changed or not.** The alternative put to the owner was "changed lines only", which stops new history and leaves old files alone; he chose the whole file, so existing history has to be cleaned and cannot wait for someone to touch the line.
+2. **Switching it on is sequenced** (the steward's sequencing, told to the owner the same day; it is not part of his ruling, and he can overrule it), **because the first commit after the switch fails on history written long ago.** Either the cleanup lands first, or the gate goes on package by package as a rewrite sweep finishes each one. Turning it on for a whole repo with the old history still in place stops every seat from committing.
+3. The "was previously" phrase list is the one mechanical kind no lint checks yet; until it does, the reviewer catches it.
+4. The judgement kinds are advisory for the lint and are decided by the reviewer.
+5. A claim check that compares old and new docstrings treats the "may go" column of section 2 as its history class: a claim in that class that disappears is not a loss; any other claim that disappears is.
 
 ## 5. For rewriters
 
@@ -80,4 +82,5 @@ A rewrite pass that shortens docstrings must:
 
 ## Version history
 
+- 2026-10-03 — Section 4: the gate is ruled. The mechanical kinds fail on every line, not only on changed lines (owner, direct ask). Switch-on is sequenced so a repo's old history does not stop every commit (María 🌸, lupin row `360427a1`).
 - 2026-10-02 — Created (María 🌸, lupin row `360427a1`), on the owner's ruling that history may leave a docstring and reasons stay. Examples drawn from a sample of 48 claims dropped by a docstring rewrite pilot.
