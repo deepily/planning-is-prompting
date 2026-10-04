@@ -2,7 +2,19 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 215 (2026-10-03, María 🌸 stable `1c688e87`, self-respun once at 17:22 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: post-games moved to a tracked per-version folder, the docstring gate was ruled, and the holding pen P0 closed on Rick's yes. Closed at Rick's Last Call (row `ec774e93`, closing 23:15 EDT); next steps are in `TODO.md` § Resume Here.
+**RESUME HERE**: **Session 216 (2026-10-04, María 🌸 stable `8d705a6c`, skeleton crew, solo)**: a docs-rewrite status page and the marker history for Rick, then the Dart markup rule built in lupin on his word. Next steps are in `TODO.md` § Resume Here.
+
+1. **Docs-rewrite status, three repos** (row `a2af4355`, closed): lupin-mobile 45 of 47 steps, lupin 30 of 34 written steps with phases 4 to 7 unopened. The page with its bar charts is in lupin `io/tmp` (swept after 7 days); planning-is-prompting has no rewrite track and measures as marked as the other two.
+2. **Verbal markers by release** (lupin `65ccfeca4`, `e9ca3316d`, `27652713f`): a census of 1,381 R&D docs over 15 releases, table and charts, in the lupin docs-rewrite plan folder. The doc viewer does not draw Mermaid, so the charts are embedded PNG images.
+3. **Dart markup rule, raised to P0 by Rick** (lupin row `9d3f4562`, closed): seeder rule 8 built by me, Sam PASS, Mr. Radio's check in Cheech's place, merged as lupin `b5dfb3225`. The follow-on work is held row `4cc9cd81` for Cheech.
+4. **Mine, wrong**: read the stale root memento at start (the live one is `.claude-memento-maria.md`); told Rick no seat can raise a row to P0 without testing it; ran a whole unit tier in a hand-made worktree with no compiler link, which gave 3 false reds.
+5. **Open**: the post-game for Session 215 (row `a06fda49`) is still queued.
+
+**Files**: history.md, TODO.md · lupin: `65ccfeca4`, `e9ca3316d`, `27652713f`, `22fb8d3df`, `431ce82cb`, `3a0b3a7b8` (merged by Mr. Radio as `b5dfb3225`)
+
+**Memento sweep**: 4 found, 4 kept, 0 swept; nothing new to digest.
+
+**Previous RESUME HERE**: **Session 215 (2026-10-03, María 🌸 stable `1c688e87`, self-respun once at 17:22 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: post-games moved to a tracked per-version folder, the docstring gate was ruled, and the holding pen P0 closed on Rick's yes. Closed at Rick's Last Call (row `ec774e93`, closing 23:15 EDT); next steps are in `TODO.md` § Resume Here.
 
 1. **Post-games home** (`7a17919`, `11417fa`): retros live in `src/docs/post-games/<version>/`, tracked; the old `io/post-games` corpus is deleted. The global file's `src/rnd` bullet and lupin's wrapper (`461838b19`) now agree; older retros in `src/rnd` stay (policy doc).
 2. **Docstring gate** (`dcae5a2`): the history gate refuses on every line.
