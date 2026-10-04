@@ -2,7 +2,7 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 215 (2026-10-03, María 🌸 stable `1c688e87`, self-respun once at 17:22 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: post-games moved to a tracked per-version folder, the docstring gate was ruled, and the holding pen P0 closed on Rick's yes. Session still open at this checkpoint.
+**RESUME HERE**: **Session 215 (2026-10-03, María 🌸 stable `1c688e87`, self-respun once at 17:22 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: post-games moved to a tracked per-version folder, the docstring gate was ruled, and the holding pen P0 closed on Rick's yes. Closed at Rick's Last Call (row `ec774e93`, closing 23:15 EDT); next steps are in `TODO.md` § Resume Here.
 
 1. **Post-games home** (`7a17919`, `11417fa`): retros live in `src/docs/post-games/<version>/`, tracked; the old `io/post-games` corpus is deleted. The global file's `src/rnd` bullet and lupin's wrapper (`461838b19`) now agree; older retros in `src/rnd` stay (policy doc).
 2. **Docstring gate** (`dcae5a2`): the history gate refuses on every line.
@@ -11,6 +11,8 @@
 5. **Mine, wrong**: told Rick the pen change was live before the browser test came back (it came back red on a test defect); told him I would move the old retros, then found the policy already keeps them; carded him for an edit that was mine to make.
 
 **Files**: workflow/post-game.md, workflow/rnd-directory-policy.md, workflow/docstring-content.md, workflow/scripts/memento_io.py and two tests, eleven workflow docs (citations), global/CLAUDE.md, src/docs/post-games/, README.md, .docview.yml, TODO.md, history.md · lupin: `77f5e626d`, `db44a5058`, `461838b19`
+
+**Memento sweep**: one record from the last two days digested (2026-10-02, María's self-respin; its content is the Session 214 entry below, nothing new); 14 older or dead records moved to the trash, 4 kept for my live seat.
 
 #### Checkpoint | 2026.10.03 19:16 | Session 215 history entry and Decisions Log
 

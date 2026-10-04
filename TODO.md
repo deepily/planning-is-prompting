@@ -4,6 +4,14 @@ Last updated: 2026-09-18 (**Session 204** (María 🌸 stable `bbad68e9`) — wo
 
 ## 📍 Resume Here
 
+> ### **S215 — pick up here** (María 🌸 stable `1c688e87`, closed 2026-10-03 at Rick's Last Call, row `ec774e93`)
+>
+> 1. **Waiting on Rick, in the holding pen**: my row "Holding pen: closing a plan while its Approve all is armed leaves it armed" (lupin, `e848467a`), and four tooling findings filed for Mr. Radio under `epic:fleet-tooling-findings-2026.10.03` (`cc86889e`, `631a812e`, `9dde52ef`, `a798d296`).
+> 2. **Post-game owed for Session 215's crew** (Rachel, Rio; the reader test): not written at the close. Material is in my memento's retro deposit. Output: `src/docs/post-games/v0.2.2/`.
+> 3. **Reader test, not built, no rows yet** (lupin `src/cosa/repo/doc_lint/reader_rig_run.py`): per-question scores in the report; a grader prompt that returns the score alone (lives in `reader_rig.py`, which the permission layer refused a seat edit of); keep the tail, not the head, of a long raw reply in the records.
+> 4. **This file is far past its horizon** (about 415 KB): run `/plan-todo archive` first thing next session. Carried from the close, where it would have needed a blocking ask.
+> 5. **Rows I am accountable for, owned by Mr. Radio**: `c9252819` (P0) waits on Rick's `gcloud auth login`; `80513825` waits on a sudo-created password file.
+
 > ### **S213 — Rick's return list, 2026-10-01 evening** (María 🌸 stable `588ff255`)
 >
 > Everything below waits on Rick. Nothing here is live owed work for a seat; the rows are in the store.
