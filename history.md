@@ -7,7 +7,7 @@
 1. **Post-games home** (`7a17919`, `11417fa`): retros live in `src/docs/post-games/<version>/`, tracked; the old `io/post-games` corpus is deleted. The global file's `src/rnd` bullet and lupin's wrapper (`461838b19`) now agree; older retros in `src/rnd` stay (policy doc).
 2. **Docstring gate** (`dcae5a2`): the history gate refuses on every line.
 3. **Holding pen P0 `451fd70e`, closed**: plans are sub-groups under each filer (lupin `77f5e626d`, test fix `db44a5058`, browser test `ts-fbfb697f` 6 passed). Rick confirmed the notifications client after a reload; the multiplexer was not separately confirmed, and disarm-on-close is not built.
-4. **Open, not mine to move**: two rows I am accountable for, owned by Mr. Radio, wait on Rick's `gcloud auth login` (`c9252819`, P0) and a sudo-created password file (`80513825`).
+4. **Reader test for the lupin docs-rewrite pilot (row `f91afa46`, from Cheech, closed)**: Rachel built the runner, Rio reviewed every delta, merged in lupin as `56d60fc43` and `7f3730abe`. Scores are on the row: strict 29 and 29 on 31 of 78 pairs (incomplete), with salvage 58 old and 61 new on 78 of 78. Five lupin tooling findings filed, held for Rick (one plan group under María).
 5. **Mine, wrong**: told Rick the pen change was live before the browser test came back (it came back red on a test defect); told him I would move the old retros, then found the policy already keeps them; carded him for an edit that was mine to make.
 
 **Files**: workflow/post-game.md, workflow/rnd-directory-policy.md, workflow/docstring-content.md, workflow/scripts/memento_io.py and two tests, eleven workflow docs (citations), global/CLAUDE.md, src/docs/post-games/, README.md, .docview.yml, TODO.md, history.md · lupin: `77f5e626d`, `db44a5058`, `461838b19`
@@ -16,6 +16,12 @@
 
 **Files**: history.md, TODO.md, workflow/scripts/test_worktree_hygiene_report.py (age bound failed late in the UTC day; suite 1148 passed)
 **Commit**: 5825854
+
+#### Checkpoint | 2026.10.03 22:48 | Evening: reader test run and scored, seats released
+
+**Files**: history.md
+**Commit**: this entry's own commit (see `git log -1 -- history.md`)
+**Open**: two rows I am accountable for, owned by Mr. Radio, wait on Rick's `gcloud auth login` (`c9252819`, P0) and a sudo-created password file (`80513825`); my held row "Holding pen: closing a plan while its Approve all is armed leaves it armed" (`e848467a`) waits on his admit.
 
 **Previous RESUME HERE**: **Session 214 (2026-10-02, María 🌸 stable `397d8678`, self-respun once at 12:43 EDT, manager beside Mr. Radio, Cheech and Tiffany)**: worktree cleanup pieces, the TodoWrite sweep and one-click story approve shipped; entry updated at 21:35 EDT with the session still open.
 
