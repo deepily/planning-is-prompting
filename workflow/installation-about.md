@@ -200,7 +200,6 @@ categories = {
     "Planning is Prompting Core": ["p-is-p-00-start-here", "p-is-p-01-planning", "p-is-p-02-documentation"],
     "Testing Workflows": ["plan-test-baseline", "plan-test-remediation", "plan-test-harness-update"],
     "Backup Management": ["plan-backup", "plan-backup-check", "plan-backup-write"],
-    "Workflow Development": ["plan-workflow-audit"],
     "Other": []  # Catch-all for unrecognized workflows
 }
 

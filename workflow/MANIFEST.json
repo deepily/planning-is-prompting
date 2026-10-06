@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-10-06T14:27:03-04:00",
+  "generated_at": "2026-10-06T14:35:02-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
-  "command_count": 41,
+  "command_count": 40,
   "commands": {
     "p-is-p-00-start-here.md": {
       "sha256": "4bb75aaa44f98a50495df1cbc04c59d5563a416e0d905dc1ac1d828c7cae426d",
@@ -161,10 +161,6 @@
     },
     "plan-uninstall-wizard.md": {
       "sha256": "85c6111a2720a3ab2216da98fd1290607752b4298e7e600c6d95959db6b96c0c",
-      "version": "1.0"
-    },
-    "plan-workflow-audit.md": {
-      "sha256": "4a9273a8b0a96b162f121b1083a5c07846160837d6b31172b2100553e0ac35ef",
       "version": "1.0"
     }
   }

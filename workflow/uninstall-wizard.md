@@ -79,7 +79,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 **[G] Workflow Execution Audit**
 - Commands: `/plan-workflow-audit`
 - Related files: None
-- Note: Meta-tool for auditing workflow compliance (no dependencies, no cleanup needed)
+- Note: Retired 2026-10-06 and no longer installable. Listed so an older installation can still remove it (no dependencies, no cleanup needed)
 
 ---
 

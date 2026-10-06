@@ -42,12 +42,11 @@ Run them from `workflow/scripts/`; each carries its own tests alongside.
 - **[neutral-execution.md](workflow/neutral-execution.md)** — why a green suite can be green because the harness helped, and where to run it instead
 - **[verify-the-subject.md](workflow/verify-the-subject.md)** — check *what* you are looking at before reporting what it says
 - **[plan-authoring-cascaded.md](workflow/plan-authoring-cascaded.md)** — the authoring counterpart to cascaded review
-- **[workflow-execution-audit.md](workflow/workflow-execution-audit.md)** — audit whether a workflow was actually followed. Command: `/plan-workflow-audit`
 - **[deterministic-wrapper-pattern.md](workflow/deterministic-wrapper-pattern.md)** — wrapping a non-deterministic step so its result can be checked
 
 ### New commands
 
-`/plan-kiss` · `/plan-push` · `/plan-post-game` · `/plan-last-call` · `/plan-mandate` · `/plan-workflow-audit` · `/plan-authoring-cascaded`
+`/plan-kiss` · `/plan-push` · `/plan-post-game` · `/plan-last-call` · `/plan-mandate` · `/plan-authoring-cascaded`
 
 ---
 
@@ -321,7 +320,6 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**plan-authoring-cascaded.md**](workflow/plan-authoring-cascaded.md) - The authoring counterpart: draft a plan through the same multi-persona shape. `/plan-authoring-cascaded`
 - [**plan-stub-manifest.md**](workflow/plan-stub-manifest.md) - Every multi-phase plan ships a machine-readable list of its task stubs, imported onto the board in one run and bulk-approved by the operator. Titles read `Plan N · Phase X of Y · Step X of Y`. A required handoff artifact, checked by the handoff light-review. Importer: `workflow/scripts/plan_stub_import.py` (`validate` · `import`, dry run by default · `status`).
 - [**post-game.md**](workflow/post-game.md) - The scaled retrospective that turns a finished run into receipt-backed learning and produces *movement* — rulings into the Decisions Log, lessons graduated into `workflow/`, open threads minted as store items. Distinct from `/plan-review` (that reviews the artifact; this reviews the run). `/plan-post-game`
-- [**workflow-execution-audit.md**](workflow/workflow-execution-audit.md) - Audit whether a workflow was actually followed, rather than assumed. `/plan-workflow-audit`
 - [**provisional-mandates.md**](workflow/provisional-mandates.md) - How a directive becomes binding and how it stops being provisional. `/plan-mandate`
 - [**verify-the-subject.md**](workflow/verify-the-subject.md) - Check *what* you are looking at before reporting what it says. A fresh, correct read of the wrong thing is not a stale read — it is a misplaced one
 - [**neutral-execution.md**](workflow/neutral-execution.md) - Why a green suite can be green because the harness helped, and where to run it so it isn't

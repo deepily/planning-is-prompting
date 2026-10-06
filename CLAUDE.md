@@ -64,7 +64,7 @@ planning-is-prompting/
 
 **Modifying workflow templates**: keep them portable (no hardcoded project paths), update the version history at the bottom, test in at least one consuming project, update `README.md` if adding a file.
 
-**Adding a new workflow**: `workflow/<topic>-<action>.md`, follow the Purpose → When to use → Content structure, add a README entry, include examples and integration points.
+**Adding a new workflow**: `workflow/<topic>-<action>.md`, follow the Purpose → When to use → Content structure, add a README entry, include examples and integration points. End each step by naming what must be true before the next one starts: a result you can point at, not "step done".
 
 **Installing in other projects**: `/plan-install-wizard`, or share `workflow/INSTALLATION-GUIDE.md`.
 

@@ -582,6 +582,7 @@ whole reason that prefix exists.
 
 - 2026-10-06 — Reviewer for Part A during skeleton hours → **spawn one reviewer seat now** (Rick, keypress on the walkthrough card). Why: it is the 2026-10-05 ruling as given, and it keeps the commit gate (green and reviewed) the same afternoon.
 - 2026-10-06 — When the files under `~/.claude/` change → **after the reviewer passes the repo diff** (Rick, keypress on the walkthrough card). Why: those files load into every seat that starts and are not reversible by `git revert`; no seat should load unreviewed wording.
+- 2026-10-06 — `workflow-execution-audit` and `/plan-workflow-audit` → **retire both; keep one sentence in the project guide under "Adding a new workflow"** (Rick, keypress on the card, after asking what the per-step verification check is and where it would live). Why: 80 of the audit's 100 points scored a workflow on rules since ruled out, and no run is recorded in this repo's history; the one sound idea is that a step ends by naming a result you can point at.
 
 ### 2026-10-05 — Prompt audit plan (Session 217, row `6f84493a`)
 
