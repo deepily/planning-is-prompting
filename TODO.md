@@ -1,18 +1,18 @@
 # TODO
 
-Last updated: 2026-10-04 (**Session 216** (María 🌸 stable `8d705a6c`): docs-rewrite status and marker history for Rick; the Dart markup rule built in lupin; this file recut from 421 KB to 164 KB on his two keypresses.)
+Last updated: 2026-10-06 (**Session 218** (María 🌸 stable `60fd6851`): prompt audit Part A and phase 5 applied; Session 215 post-game written.)
 
 ## 📍 Resume Here
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
 
-> ### **S217 — pick up here** (María 🌸 stable `9603fb73`, closed 2026-10-05 at Rick's Last Call, row `0fd8d257`)
+> ### **S218 — pick up here** (María 🌸 stable `60fd6851`, closed 2026-10-06 on Rick's word)
 >
-> 1. **First thing, P0: apply the prompt audit edits** (row `dd896810`, queued, mine). Plan and rulings: `src/rnd/2026.10.05-prompt-audit-action-plan.md` § 2. Spawn one reviewer seat first; the reviewer also reads the sweep fix from 2026-10-05 (`memento_sweep.py`, `pointer_target`), which shipped unreviewed.
-> 2. **Before choosing retire or rewrite for `workflow-execution-audit`**: read `workflow/workflow-execution-audit.md` end to end and bring Rick the evidence. He is fine with lower-case "must" wording; all-caps is the defect.
-> 3. **Held for Rick's promotion**: the pruning pass over `workflow/` (row `681745a9`), to start only after item 1 lands. Scope (five-doc pilot or all 65) is not ruled.
-> 4. **Two pointers name records that are not in their folder**: lupin-mobile `io/mementos/tiffany.md` and the shared root pointer there (Tiffany found both records in the mirror), and this repo's `io/mementos/maria.md` (names `maria-11aa861f.md`; mirror not checked). Likely casualties of the sweep defect on earlier nights; not verified.
-> 5. **Post-game for Session 215's crew** (row `a06fda49`) is still queued.
+> 1. **Held for Rick's promotion**: the pruning pass over `workflow/` (row `681745a9`). The prompt audit edits it waited on have landed. Scope (five-doc pilot or all the workflow docs) is not ruled.
+> 2. **Held, mine, three new**: graduate the friendly-fake lesson into `workflow/testing-baseline.md` (`cfdf8822`; take the drafted rule to a seat and to Rick first); the memento sweep can double a folder when the repo string is empty (`8d8f7dbc`; Pocholo's finding, not verified by me); hand Tiffany the backup allow rule and the two notices for lupin-mobile (`d041e229`), once the docstring trains finish and she is online.
+> 3. **Seats load the new global file only at a re-spin.** Cheech and Mr. Radio are told. Not checked: whether an allow rule really clears the auto-mode refusal of the nightly backup (docs say yes; untested).
+> 4. **Two pointers name records that are not in their folder** (carried from S217, not looked at today): lupin-mobile `io/mementos/tiffany.md` and the shared root pointer there, and this repo's `io/mementos/maria.md`.
+> 5. **Queued on my board, lupin, not started**: an archived unmerged branch (`591ccd1f`) and the holding pen disarm bug (`e848467a`).
 >
 > ### **S216 — pick up here** (María 🌸 stable `8d705a6c`, closed 2026-10-04 on Rick's word)
 >
@@ -585,6 +585,8 @@ whole reason that prefix exists.
 - 2026-10-06 — `workflow-execution-audit` and `/plan-workflow-audit` → **retire both; keep one sentence in the project guide under "Adding a new workflow"** (Rick, keypress on the card, after asking what the per-step verification check is and where it would live). Why: 80 of the audit's 100 points scored a workflow on rules since ruled out, and no run is recorded in this repo's history; the one sound idea is that a step ends by naming a result you can point at.
 
 ### 2026-10-05 — Prompt audit plan (Session 217, row `6f84493a`)
+
+**Applied 2026-10-06** (commits `beb418c`, `872cf77`, `c9133aa`). Where an entry below says "not yet applied", that was true when it was written.
 
 - 2026-10-05 — "CLAUDE.md read and understood" line and the key-points summary at the end of the global file → **remove both** (Rick, keypress on the walkthrough card). Why: the first ack already names the persona and MCP status. Not yet applied.
 - 2026-10-05 — All-caps sentences in the global file → **sentence-case the nine body lines and the two sentence-length headings** (Rick, keypress on the walkthrough card); label headings and single capitalised words stay. Why: it fixes what the NoYell rule names without touching negation emphasis untested. Not yet applied.
