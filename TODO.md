@@ -578,6 +578,11 @@ whole reason that prefix exists.
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
 
+### 2026-10-06 — Prompt audit plan, before the go (Session 218, row `dd896810`)
+
+- 2026-10-06 — Reviewer for Part A during skeleton hours → **spawn one reviewer seat now** (Rick, keypress on the walkthrough card). Why: it is the 2026-10-05 ruling as given, and it keeps the commit gate (green and reviewed) the same afternoon.
+- 2026-10-06 — When the files under `~/.claude/` change → **after the reviewer passes the repo diff** (Rick, keypress on the walkthrough card). Why: those files load into every seat that starts and are not reversible by `git revert`; no seat should load unreviewed wording.
+
 ### 2026-10-05 — Prompt audit plan (Session 217, row `6f84493a`)
 
 - 2026-10-05 — "CLAUDE.md read and understood" line and the key-points summary at the end of the global file → **remove both** (Rick, keypress on the walkthrough card). Why: the first ack already names the persona and MCP status. Not yet applied.
