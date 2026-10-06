@@ -77,7 +77,7 @@ argument against it.
 ⇒ So the cost of breaking the rule above is not a wasted turn. It is that you ask a seat for a
 number **its environment cannot produce**, and the only honest reply it can give is a labelled
 ESTIMATE — a coordinate manufactured rather than read, which is exactly what the global mandate's
-*"a context reading is a COORDINATE, not a reference"* forbids (`~/.claude/CLAUDE.md` § MANAGER
+*"a context reading is a coordinate, not a reference"* forbids (`~/.claude/CLAUDE.md` § MANAGER
 CONTEXT MONITORING). **The manager holds the roster; the worker does not hold its own number.**
 
 ⚠️ **This is a WORKTREE constraint, not general blindness.** The same manager reads the full roster

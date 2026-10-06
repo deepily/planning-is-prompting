@@ -113,7 +113,7 @@ This wording is load-bearing and must not be softened. It is **not** "go longer 
 
 | ❌ | Instead |
 |---|---|
-| Narrating what you're about to do | Do it — tool calls are already visible |
+| Narrating each step | One line before the first tool call is enough, and one more if a long run goes quiet |
 | Restating the request back | Act |
 | "Great question" / "Let me think" / any preamble | Start at the answer |
 | Thanking or praising peers | ≤1 clause, or nothing |

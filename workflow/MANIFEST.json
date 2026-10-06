@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T11:51:01-04:00",
+  "generated_at": "2026-10-06T14:27:03-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 41,
   "commands": {
@@ -72,7 +72,7 @@
       "version": "1.0"
     },
     "plan-kiss.md": {
-      "sha256": "35ae06e1888c72ecaef7626daf2b029c8d32e983b48b2751f21445104a3f7f6b",
+      "sha256": "32db10ab935b57e5f6f7836e9d99627bda869a55146a0770debbc38f4eb853c7",
       "version": "1.0"
     },
     "plan-last-call.md": {
@@ -92,7 +92,7 @@
       "version": "2.0"
     },
     "plan-post-game.md": {
-      "sha256": "2a0b8f9981dff885263512194e0a7e19e70ffd1722eb39a403e87436105135d9",
+      "sha256": "1e61671e41db462516a0ceb065f93b38ea893c49d4ac03da323925f9c9d2d5fc",
       "version": "0.1 (draft \u2014 held for Rick's review)"
     },
     "plan-push.md": {

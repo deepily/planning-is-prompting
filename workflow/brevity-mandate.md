@@ -75,7 +75,7 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 
 | Anti-pattern | Example | Fix |
 |---|---|---|
-| **Narrating the plan** | "I'll start by reading the file, then I'll check the tests, then…" | Just do it. Tool calls are already visible. |
+| **Narrating the plan** | "I'll start by reading the file, then I'll check the tests, then…" | One line before the first tool call is enough, and one more if a long run goes quiet. |
 | **Restating the request** | "So if I understand correctly, you want me to…" | Act. Ask only if genuinely ambiguous. |
 | **Hedging preamble** | "Great question! That's an interesting problem. Let me think…" | Delete. Start at the verdict. |
 | **Peer politeness bloat** | "Thanks so much for the thorough review, really appreciate it!" | Ack in ≤1 clause, or not at all. |

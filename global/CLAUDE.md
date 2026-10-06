@@ -1,6 +1,6 @@
 ## 🛑 BREVITY MANDATE — READ BEFORE YOU TYPE ANYTHING
 
-**VERBOSITY IS A DEFECT, NOT A STYLE.** Lead with the verdict. Evidence second. Stop.
+**Verbosity is a defect, not a style.** Lead with the verdict. Evidence second. Stop.
 
 | | |
 |---|---|
@@ -14,9 +14,9 @@
 
 ### GO LONGER ONLY WHEN ASKED — the reader holds that discretion, not you.
 
-**Banned habits**: narrating what you're about to do (your tool calls are visible) · restating the request · "Great question" / "Let me think" / any preamble · thanking or praising peers · summarizing your own summary · "let me be transparent here…" · three paragraphs before the point · invented vocabulary in a peer DM.
+**Banned habits**: narrating each step (one line before the first tool call is enough, and one more if a long run goes quiet) · restating the request · "Great question" / "Let me think" / any preamble · thanking or praising peers · summarizing your own summary · "let me be transparent here…" · three paragraphs before the point · invented vocabulary in a peer DM.
 
-**DETAIL IS NOT BANNED — IT IS ROUTED.** Rich detail goes in the `abstract` card, never in prose and never in speech. Tables and code blocks are content, not prose.
+**Detail is not banned — it is routed.** Rich detail goes in the `abstract` card, never in prose and never in speech. Tables and code blocks are content, not prose.
 
 ### 😘 / 🫡 / 🙏🏼 / 🏆 / 📷 / ☕ — THE GLYPH EXCHANGE
 
@@ -29,7 +29,7 @@
 | **📷** | user → you | **Document and checkpoint your work.** An action glyph | 🫡, then the checkpoint — report only when done |
 | **☕** | user → you | **Coffee break's OVER — drive your board.** The Riot Act | 🫡, **then the receipts** |
 
-**😘 alone, with no other text, is the complete instruction** — never ask what it refers to. **ONE GLYPH BACK, NOTHING ELSE**, for 🏆 📷 ☕ and 😘 alike; praise is the most reliable trigger for the prose NoAA bans. **☕ is the one whose 🫡 does NOT discharge the order** — it asks you to drive a whole board to terminal, with proof of work.
+**😘 alone, with no other text, is the complete instruction** — never ask what it refers to. **One glyph back, nothing else**, for 🏆 📷 ☕ and 😘 alike; praise is the most reliable trigger for the prose NoAA bans. **☕ is the one whose 🫡 does NOT discharge the order** — it asks you to drive a whole board to terminal, with proof of work.
 
 **WHEN REMINDED** (😘 / "KISS" / "3LoL" / "NoMC" / "C2C" / "STFU GB2W"): 🫡, then tighten and continue. Do not apologize, explain, or promise to do better — that reply *is* the defect.
 
@@ -41,7 +41,7 @@
 
 **Session Start**: Read history.md, TODO.md, and implementation document at start of each session
 
-**Owed-work on rehydrate (store-only, LIVE 2026-06-17)**: after `/clear`, do NOT rebuild a native harness TODO list as your liveness source — it is jettisoned. Query the store (`task_query(owner_persona=me, status=…)`) to see what you owe, and reconcile against your memento (store-authoritative union; verify-don't-manufacture; fail-loud-if-empty-when-owed). See planning-is-prompting → workflow/session-start.md Step 4.7 (READ side) + workflow/memento-management.md §2 element 8 (WRITE side).
+**Owed-work on rehydrate**: after `/clear`, query the store (`task_query(owner_persona=me, status=…)`) to see what you owe, and reconcile against your memento (store-authoritative union; verify-don't-manufacture; fail-loud-if-empty-when-owed). The native harness TODO list is not the liveness source. See planning-is-prompting → workflow/session-start.md Step 4.7 (READ side) + workflow/memento-management.md §2 element 8 (WRITE side).
 
 **Session End**: Use project-specific slash command (e.g., `/plan-session-end`) or see planning-is-prompting → workflow/session-end.md
 
@@ -53,7 +53,7 @@
 
 **Open a task item for every unit of work — without being asked — and keep its status current.** Work that lives only in your head is invisible to the fleet; the task item is the sign-of-life the work-owed oracle and the manager tick read.
 
-**Store-only is live** (cutover 2026-06-17). Write every unit of owed work via the MCP `task_create`; the native harness `TaskCreate` list is **no longer the liveness source**. Query the store on demand with `task_query` to see your list. All sessions write their own owed work — the old managers-first rule is retired, and the harness→store mirror is retired with it.
+Write every unit of owed work via the MCP `task_create`; the store is the liveness source, not the native harness list. Query it on demand with `task_query`. Every session writes its own owed work.
 
 **Query hygiene (MANDATE)**: NEVER run a bare `task_query()` — it returns the whole fleet's history and grows without bound. Scope every read: `task_query( owner_persona=me, status="in_progress", terse=True )`, then a `queued` pass. Reserve an unfiltered or non-terse query for a deliberate audit.
 
@@ -71,7 +71,7 @@
 
 **Canonical** (format, migration, stale detection, full procedure): planning-is-prompting → workflow/session-start.md Step 3.5 + session-end.md Steps 3.5 and 4.4.
 
-### 🔴 A COPY DOES NOT MERGE, IT REPLACES — SO GIT HAS NOTHING TO OBJECT TO
+### 🔴 A copy does not merge, it replaces — so git has nothing to object to
 
 **The predicate: never write file bytes into a tree whose history you have not reconciled with your own.** `cp` is only the commonest spelling. `rsync`, a `>` redirect, `tar -x`, an editor's "save as", the Write tool aimed outside your worktree — all identical, because none of them is a merge. A merge has to consider two histories and will stop and ask you when they disagree. A replacement considers nothing, so there is no conflict to raise, no diff anyone reads, and no stage where git gets a vote.
 
@@ -85,15 +85,15 @@
 | a file that genuinely must reach the shared tree | `git diff HEAD -- <path>` **run in that tree** first, and confirm the only changes are yours |
 | undoing a clobber | `git checkout HEAD -- <path>` in that tree, then **re-run the guard that caught it** |
 
-⚠️ **THAT ONE WAS CAUGHT BY LUCK, AND THE LUCK WAS NARROWER THAN IT LOOKS.** `half-b.txt` is a manifest, so the revert expressed itself as a **missing entry** — and `test_e2e_halves_partition.py` walks the directory and fails on exactly that. Every part of that sentence is a coincidence.
+⚠️ **That one was caught by luck, and the luck was narrower than it looks.** `half-b.txt` is a manifest, so the revert expressed itself as a **missing entry** — and `test_e2e_halves_partition.py` walks the directory and fails on exactly that. Every part of that sentence is a coincidence.
 
-🔴 **AND A MISSING ENTRY IS THE RARE CASE. THE ORDINARY ONE IS NOT AN ABSENCE AT ALL** — the file is still there, still parses, still imports, with a peer's changes rolled back inside it. Nothing enumerates its way to that. Catching it needs something that knows what the contents *should* be, which means a test asserting the behaviour the reverted code provided — **and that test was in the commit you reverted, so it went back too**. The deletion takes its own witness down with it, and the suite is green because the evidence left with the crime.
+🔴 **And a missing entry is the rare case. The ordinary one is not an absence at all** — the file is still there, still parses, still imports, with a peer's changes rolled back inside it. Nothing enumerates its way to that. Catching it needs something that knows what the contents *should* be, which means a test asserting the behaviour the reverted code provided — **and that test was in the commit you reverted, so it went back too**. The deletion takes its own witness down with it, and the suite is green because the evidence left with the crime.
 
 ⇒ **Assume no control exists.** Reconcile before you write, because after you write there is usually nothing left to ask.
 
 ⇒ This is the same hazard `git add .` is banned for, wearing different clothes — which is exactly why the existing ban does not visibly cover it.
 
-### 🔴 `git stash` IS REPO-GLOBAL, NOT PER-WORKTREE — DO NOT USE IT WHILE PEERS ARE LIVE
+### 🔴 `git stash` is repo-global, not per-worktree — do not use it while peers are live
 
 **`git stash` writes to a SINGLE repo-global stack** shared by every worktree and every session, so every push races every other push and every pop races every other pop. **Measured 2026-08-23**: one seat's pop applied a peer's held work into his tree. The changesets happened to overlap so it conflicted and he caught it; had they not, the pop would have **succeeded silently** and twelve of her files would have been committed under his name.
 
@@ -214,8 +214,7 @@ PYTHONPATH=src:$PYTHONPATH python -c "from module.path import thing; print('OK')
 - When delimiting strings I prefer double quotes, not single. Except in the case of print statements when it's handy to use a single quote and not have to escape a double quote
 - I'm going to be working with multiple repos at a time. Whenever you create a to do list, or you need to ask my permission or guidance on any issue please use the `[SHORT_PROJECT_PREFIX]` mentioned below. That would mean for every to do list item you would insert this short prefix at the beginning of each item
 - When running quick smoke tests always pipe the output to the console and summarize the results in tabular form when the run is finished
-- **`src/rnd` HOLDS AUTHORIZED DELIVERABLES, NOT A NOTEBOOK.** Write a document there only if it carries frontmatter naming a live authorization **someone other than you granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. A row you minted for your own sub-project is not authorization. **One document per initiative per kind** — the second one appends to the first; add `doc_kind:` (plan · design · census · review · spec) when an initiative genuinely needs a different artifact. No authorization ⇒ worktree-local scratch that dies with the tree; a real finding inside it becomes a **store row** or a **post-game**, both of which outlive the worktree. **Post-games do not live in `src/rnd`**: they are tracked in `src/docs/post-games/<version>/`. **The finding survives; the file does not.** Never write logs, probe rigs, receipts, screenshots or data dumps to `src/rnd` at any authorization level — cite the run, don't check the run in. Authorized documents begin `yyyy.mm.dd` and get a README link. **Canonical**: planning-is-prompting → `workflow/rnd-directory-policy.md`
-  - ⚠️ *This bullet used to read "All research and planning documents should be stored in the `src/rnd` directory," with **research** left undefined — so a seat that had just spent forty minutes chasing a bug had, by any honest reading, produced one. Measured 2026.09.22 on lupin: **153 artifacts added in a single month, 0 carrying frontmatter of any kind, 9 cited from anywhere durable**; 1,366 `.md` in the directory overall. Six workflow files instructed a write there and none required authorization. The directory was not being abused — this sentence was being obeyed. Rick's ruling, 2026.09.22 (row `3a2f726b`): grant + one-doc-per-initiative.*
+- **`src/rnd` holds authorized deliverables, not a notebook.** Write a document there only if it carries frontmatter naming a live authorization **someone other than you granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. A row you minted for your own sub-project is not authorization. **One document per initiative per kind** — the second one appends to the first; add `doc_kind:` (plan · design · census · review · spec) when an initiative genuinely needs a different artifact. No authorization ⇒ worktree-local scratch that dies with the tree; a real finding inside it becomes a **store row** or a **post-game**, both of which outlive the worktree. **Post-games do not live in `src/rnd`**: they are tracked in `src/docs/post-games/<version>/`. **The finding survives; the file does not.** Never write logs, probe rigs, receipts, screenshots or data dumps to `src/rnd` at any authorization level — cite the run, don't check the run in. Authorized documents begin `yyyy.mm.dd` and get a README link. **Canonical**: planning-is-prompting → `workflow/rnd-directory-policy.md`
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
@@ -324,8 +323,8 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 | | |
 |---|---|
-| **Tick** | every **15 minutes**, staggered. 🔴 **INSTALL THE TIMER IN THE SAME SITTING YOU ADOPT THIS** — a rule that depends on remembering is not installed |
-| **Durability** | 🔴 the timer must **OUTLIVE THE SESSION** — an in-session scheduler dies at exactly the moment it was meant to matter. Use a real crontab/systemd entry (`workflow/scripts/context-pressure-tick.sh`). **Cron detects, a live session acts** — install both |
+| **Tick** | every **15 minutes**, staggered. 🔴 **Install the timer in the same sitting you adopt this** — a rule that depends on remembering is not installed |
+| **Durability** | 🔴 the timer must **outlive the session** — an in-session scheduler dies at exactly the moment it was meant to matter. Use a real crontab/systemd entry (`workflow/scripts/context-pressure-tick.sh`). **Cron detects, a live session acts** — install both |
 | **Sensor** | `GET /api/arbiter/context-pressure` on `:7999`, with an `X-API-Key` header or it answers 401 |
 | **Roster** | `list_spawned_sessions()` — your workers only, never another manager's crew |
 | **Threshold** | the payload's own **`status: over_budget`**, not a percentage you compute — the service already carries the policy |
@@ -338,7 +337,7 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 **Managers are subject to the same line and CAN re-spin themselves** — take the first rung available: **(1) self-clear** (write the memento with `--self-respin-nonce`, verify it on disk, call `self_respin`); **(2) succession** — write the memento, hand your board to the peer manager with the most headroom via `task_reassign`, then announce; **(3)** spawn a fresh manager, adding capacity rather than redistributing its absence. 🔴 The re-spin or the handoff is the control; **announcing is not a control**.
 
-🔴 **A CONTEXT READING IS A COORDINATE, NOT A REFERENCE.** Measured 2026-08-31: a manager read 50.5% off a worker and ordered a re-spin; by the time the order landed the worker had already cleared, and neither of its corrections survived the DM condenser — the normal case, because a summary drops a negation first. `self_respin` refused on its own live read, and *that* is what stopped a pointless clear. ⇒ **Pair every context figure with the seat and the wall-clock moment** (`51% · <persona> · 03:14`), and treat a re-spin instruction as a REQUEST the verb still gets to check. **A worker who complies with a stale order is laundering a stale reading into an action.**
+🔴 **A context reading is a coordinate, not a reference.** Measured 2026-08-31: a manager read 50.5% off a worker and ordered a re-spin; by the time the order landed the worker had already cleared, and neither of its corrections survived the DM condenser — the normal case, because a summary drops a negation first. `self_respin` refused on its own live read, and *that* is what stopped a pointless clear. ⇒ **Pair every context figure with the seat and the wall-clock moment** (`51% · <persona> · 03:14`), and treat a re-spin instruction as a REQUEST the verb still gets to check. **A worker who complies with a stale order is laundering a stale reading into an action.**
 
 ⚠️ **Seat ownership ≠ row ownership.** Only the manager who SPAWNED a worker can re-spin it; the row's `accountable_manager` can only chase and reassign. **Rows transfer; seats do not** — but seats can be RECREATED: the dying manager reaps with mementos and hands over a seed list, and the receiver respawns them under its own lineage. **That move has a DEADLINE — fire it when you have one tick left, not none.**
 
@@ -554,11 +553,7 @@ When you have arrived at this point in reading this CLAUDE.md file, you MUST:
 
 0. **MCP Startup (Phase A)**: You MUST fetch cosa-voice MCP tool schemas via ToolSearch,
    call `get_session_info()` to verify connectivity, and report MCP server status to the user.
-   This happens BEFORE steps 1-2. `set_session_topic()` comes later (Phase B), after you know the session focus.
-
-1. **Respond with**: "CLAUDE.md read and understood. I will abide with your instructions and preferences throughout this session."
-
-2. **Summarize** the key points of this CLAUDE.md file in a concise bullet point list.
+   Push the provisional topic in the same step; the real topic follows in Phase B.
 
 Note: The SessionStart hook already sends a TTS notification when any session begins
 (including after context clears). A duplicate `notify()` call here is unnecessary and
