@@ -2,7 +2,16 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 216 (2026-10-04, María 🌸 stable `8d705a6c`, skeleton crew, solo)**: a docs-rewrite status page and the marker history for Rick, then the Dart markup rule built in lupin on his word. Next steps are in `TODO.md` § Resume Here.
+**RESUME HERE**: **Session 217 (2026-10-05, María 🌸 stable `9603fb73`, evening, solo beside Tiffany)**: a memento sweep defect fixed for Tiffany, Claude Code's prompt audit run and turned into a plan, and Rick's decisions on it walked through. Closed at Rick's Last Call (row `0fd8d257`, closing 23:05 EDT). Next steps are in `TODO.md` § Resume Here.
+
+1. **Memento sweep kept io pointers but not their records** (found by Tiffany in lupin-mobile, her ticket `e5610916`): `pointer_target` resolved an io pointer against `io/mementos/`, but `memento_io` writes it relative to the repo root, so the folder doubled and the record was listed for trashing. Fixed in `workflow/scripts/memento_sweep.py`; her Chloé case is a test that failed before and passes now; scripts suite 1149 passed. Her re-run kept 15 where it had kept 10, and she trashed 36 of 56 (her counts). No reviewer has read the fix.
+2. **Prompt audit** (Rick's row `6f84493a`): ran Claude Code's `/doctor prompt-audit` over the configuration that loads into sessions; 14 findings, none applied. The 42 command bodies were scanned by pattern, not read in full.
+3. **Plan**: `src/rnd/2026.10.05-prompt-audit-action-plan.md`, about 20 exact edits in six phases plus a pilot for pruning workflow rules Claude Code now covers. Rick ruled all eight decisions on walkthrough cards; they are in its § 2 and the Decisions Log. Applying the edits is row `dd896810` (P0, first thing 2026-10-06, with one reviewer seat); the pruning pass over `workflow/` is held row `681745a9`, to start after that lands.
+4. **Mine, wrong**: told Rick the sweep defect "looks already fixed" before Tiffany's report showed it was fixed for root pointers only; the plan listed seven all-caps lines where a count found nine.
+
+**Files**: workflow/scripts/memento_sweep.py, workflow/scripts/test_memento_sweep.py, src/rnd/2026.10.05-prompt-audit-action-plan.md, README.md, TODO.md, history.md
+
+**Previous RESUME HERE**: **Session 216 (2026-10-04, María 🌸 stable `8d705a6c`, skeleton crew, solo)**: a docs-rewrite status page and the marker history for Rick, then the Dart markup rule built in lupin on his word. Next steps are in `TODO.md` § Resume Here.
 
 1. **Docs-rewrite status, three repos** (row `a2af4355`, closed): lupin-mobile 45 of 47 steps, lupin 30 of 34 written steps with phases 4 to 7 unopened. The page with its bar charts is in lupin `io/tmp` (swept after 7 days); planning-is-prompting has no rewrite track and measures as marked as the other two.
 2. **Verbal markers by release** (lupin `65ccfeca4`, `e9ca3316d`, `27652713f`): a census of 1,381 R&D docs over 15 releases, table and charts, in the lupin docs-rewrite plan folder. The doc viewer does not draw Mermaid, so the charts are embedded PNG images.

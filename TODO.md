@@ -6,6 +6,14 @@ Last updated: 2026-10-04 (**Session 216** (María 🌸 stable `8d705a6c`): docs-
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
 
+> ### **S217 — pick up here** (María 🌸 stable `9603fb73`, closed 2026-10-05 at Rick's Last Call, row `0fd8d257`)
+>
+> 1. **First thing, P0: apply the prompt audit edits** (row `dd896810`, queued, mine). Plan and rulings: `src/rnd/2026.10.05-prompt-audit-action-plan.md` § 2. Spawn one reviewer seat first; the reviewer also reads the sweep fix from 2026-10-05 (`memento_sweep.py`, `pointer_target`), which shipped unreviewed.
+> 2. **Before choosing retire or rewrite for `workflow-execution-audit`**: read `workflow/workflow-execution-audit.md` end to end and bring Rick the evidence. He is fine with lower-case "must" wording; all-caps is the defect.
+> 3. **Held for Rick's promotion**: the pruning pass over `workflow/` (row `681745a9`), to start only after item 1 lands. Scope (five-doc pilot or all 65) is not ruled.
+> 4. **Two pointers name records that are not in their folder**: lupin-mobile `io/mementos/tiffany.md` and the shared root pointer there (Tiffany found both records in the mirror), and this repo's `io/mementos/maria.md` (names `maria-11aa861f.md`; mirror not checked). Likely casualties of the sweep defect on earlier nights; not verified.
+> 5. **Post-game for Session 215's crew** (row `a06fda49`) is still queued.
+>
 > ### **S216 — pick up here** (María 🌸 stable `8d705a6c`, closed 2026-10-04 on Rick's word)
 >
 > 1. **Post-game for Session 215's crew** (row `a06fda49`, queued, mine): still not written. Material is in `.claude-memento-maria.md`, the live memento; the bare `.claude-memento.md` at the root is from 2026-09-09 and is stale.
@@ -569,6 +577,17 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-10-05 — Prompt audit plan (Session 217, row `6f84493a`)
+
+- 2026-10-05 — "CLAUDE.md read and understood" line and the key-points summary at the end of the global file → **remove both** (Rick, keypress on the walkthrough card). Why: the first ack already names the persona and MCP status. Not yet applied.
+- 2026-10-05 — All-caps sentences in the global file → **sentence-case the nine body lines and the two sentence-length headings** (Rick, keypress on the walkthrough card); label headings and single capitalised words stay. Why: it fixes what the NoYell rule names without touching negation emphasis untested. Not yet applied.
+- 2026-10-05 — Narration rule in the brevity block → **"narrating each step (one line before the first tool call is enough, and one more if a long run goes quiet)"** (Rick, keypress on the walkthrough card). Why: it agrees with the voice rider and covers long runs. Not yet applied.
+- 2026-10-05 — Incident stories in the global file → **trim only the "used to read" phrasing; every measured incident stays** (Rick, keypress, after seeing three examples side by side). Why: where the story is the reason, it stays in the file every seat reads.
+- 2026-10-05 — `workflow-execution-audit` → **read the documents first, then choose retire or rewrite on evidence** (Rick, typed): "I have no problem with the use of the words like must or must not But I do agree that we want to avoid setting the bad example of using all caps". Lower-case "must" is acceptable; all-caps is the defect.
+- 2026-10-05 — Trigger-phrase lists in five skill descriptions → **leave them** (Rick, keypress). Why: the glyphs fire today and no test would catch a missed trigger.
+- 2026-10-05 — Who applies Part A → **María, plus one reviewer seat; not tonight; P0 first thing in the morning** (Rick, typed). Row `dd896810`; Rick approved the P0 by keypress and the row is queued at P0.
+- 2026-10-05 — Pruning pass over the workflow docs (Part B) → **not now; wait until Part A lands; a separate ticket that refers to the plan, which Rick will promote** (Rick, typed). Row `681745a9`, held. Pilot-or-all scope was not ruled.
 
 ### 2026-10-04 — Dart markup rule and the docs-rewrite status (Session 216)
 

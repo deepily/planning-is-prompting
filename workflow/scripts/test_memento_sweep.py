@@ -125,7 +125,22 @@ def test_a_kept_pointer_keeps_the_older_record_it_names( tmp_path ):
     assert stale not in kept                                   # a record nobody names still sweeps
 
 
-def test_an_io_pointer_resolves_against_the_io_base( tmp_path ):
+def test_an_io_pointer_as_memento_io_writes_it_keeps_its_record( tmp_path ):
+    # Tiffany, 2026-10-05, lupin-mobile: memento_io writes an io pointer's `current:` line
+    # relative to the REPO ROOT (`io/mementos/<persona>-<sid>.md`). Resolving it against the io
+    # base doubled the folder, the record was never found, and the sweep listed it for trashing.
+    r = str( tmp_path )
+    record  = _write( os.path.join( r, "io", "mementos", "chloe-d9b856bf.md" ), age=500 )
+    stale   = _write( os.path.join( r, "io", "mementos", "chloe-00000000.md" ), age=900 )
+    pointer = _write( os.path.join( r, "io", "mementos", "chloe.md" ),
+                      POINTER_OF.format( rel="io/mementos/chloe-d9b856bf.md" ), age=1 )
+    assert ms.pointer_target( "io", pointer ) == record
+    kept = ms.select_kept( ms.find_mementos( r ), [ "chloe" ] )
+    assert pointer in kept and record in kept
+    assert stale not in kept
+
+
+def test_an_io_pointer_written_against_the_io_base_still_resolves( tmp_path ):
     r = str( tmp_path )
     record  = _write( os.path.join( r, "io", "mementos", "sam", "sam-abcd1234.md" ), age=500 )
     pointer = _write( os.path.join( r, "io", "mementos", "sam.md" ),

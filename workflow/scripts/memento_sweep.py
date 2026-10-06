@@ -95,9 +95,12 @@ def pointer_target( slot, path ):
 
     Ensures:
         - returns the absolute path named by a `<!-- current: … -->` line in the first five
-          lines, resolved against the slot's base (memento_io writes it relative to that
-          base: the repo root for "root", io/mementos for "io"), or None when the file
-          names nothing or cannot be read
+          lines, resolved against the REPO ROOT, which is what memento_io writes it relative
+          to in both slots (an io pointer reads `io/mementos/<persona>-<sid>.md`), or None
+          when the file names nothing or cannot be read
+        - an io pointer whose value only resolves against io/mementos still resolves there
+          (Tiffany, 2026-10-05: resolving io pointers against io/mementos first doubled the
+          folder, so no io record was ever kept)
     """
     try:
         with open( path, encoding="utf-8", errors="replace" ) as f:
@@ -108,12 +111,15 @@ def pointer_target( slot, path ):
         match = CURRENT_LINE.search( line )
         if match is None: continue
         rel = match.group( 1 )
-        if slot == "io":
-            marker = os.sep + IO_DIR + os.sep
-            base   = path[ : path.index( marker ) + len( marker ) ] if marker in path else os.path.dirname( path )
-        else:
-            base = os.path.dirname( path )
-        return os.path.normpath( os.path.join( base, rel ) )
+        if slot != "io": return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        marker = os.sep + IO_DIR + os.sep
+        if marker not in path: return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        repo_root = path[ : path.index( marker ) ]
+        io_base   = path[ : path.index( marker ) + len( marker ) ]
+        from_root = os.path.normpath( os.path.join( repo_root, rel ) )
+        from_io   = os.path.normpath( os.path.join( io_base, rel ) )
+        if not os.path.isfile( from_root ) and os.path.isfile( from_io ): return from_io
+        return from_root
     return None
 
 
