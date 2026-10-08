@@ -69,6 +69,7 @@ class FakeStore:
         self.create_status = 201
         self.refuse_titles = set()       # a create whose title contains one of these answers 403
         self.page_size     = 500
+        self.refuse_transition = False   # a transition answers 403, as the store does for a worker seat
         self.lock          = threading.Lock()
 
     def seed( self, title, body, status="not_approved", ck=CK ):
@@ -110,6 +111,17 @@ def make_handler( store ):
         def do_POST( self ):
             body = self._body()
             with store.lock: store.calls.append( ( "POST", urlparse( self.path ).path, body ) )
+            if urlparse( self.path ).path.endswith( "/transition" ):
+                # POST /api/tasks/<id>/transition (lupin routers/tasks.py): a ->done needs receipt_refs,
+                # and a worker seat holding no manager attestation is refused
+                tid = urlparse( self.path ).path.split( "/" )[ -2 ]
+                row = next( ( r for r in store.rows if r[ "id" ] == tid ), None )
+                if row is None:                 return self._send( 404, {} )
+                if store.refuse_transition:     return self._send( 403, { "detail": "a manager attestation is required" } )
+                if body.get( "to_status" ) == "done" and not body.get( "receipt_refs" ):
+                    return self._send( 422, { "detail": "->done requires receipt_refs" } )
+                row[ "status" ] = body[ "to_status" ]
+                return self._send( 200, row )
             if any( t in body[ "title" ] for t in store.refuse_titles ):
                 return self._send( 403, { "detail": "refused by the fake" } )
             row = { "id": str( uuid.uuid4() ), "title": body[ "title" ][ :pi.TITLE_CAP ], "body": body[ "body" ],
@@ -1088,3 +1100,118 @@ def test_the_eligible_entry_carries_each_done_steps_time( store ):
             if r[ "body" ].startswith( f"stub_key: {CK}#{k}" ): r[ "updated_ts" ] = stamp
     e = reconcile_of( good_manifest(), store )[ "eligible" ][ 0 ]
     assert e[ "step_times" ] == { "a1": "2026-10-05T10:00:00+00:00", "a2": None, "a3": "2026-10-06T11:00:00+00:00" }
+
+
+# ── reconcile --close: a manager seat closes the headings the report names (row bb92a34a) ────────
+
+MANAGER = "cheech 4d376217"
+
+
+def transitions( store ):
+    return [ c for c in store.calls if c[ 0 ] == "POST" and c[ 1 ].endswith( "/transition" ) ]
+
+
+def heading_row( store, key ):
+    return next( r for r in store.rows if r[ "body" ].startswith( f"stub_key: {CK}#{key}" ) )
+
+
+def close_args( tmp_path, *extra, actor=MANAGER ):
+    path = write_manifest( tmp_path, good_manifest() )
+    args = [ "reconcile", str( path ), "--repo-root", str( tmp_path ), "--close", *extra ]
+    return args + ( [ "--actor", actor ] if actor else [] )
+
+
+def test_close_moves_each_eligible_heading_to_done_with_the_manager_attestation( tmp_path, store, capsys ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    assert pi.main( close_args( tmp_path ) ) == 0
+    ( call, ) = transitions( store )
+    body = call[ 2 ]
+    assert call[ 1 ] == f"/api/tasks/{heading_row( store, 'ph1' )[ 'id' ]}/transition"
+    assert body[ "to_status" ] == "done" and body[ "actor" ] == MANAGER and body[ "authority" ] == "standing"
+    assert list( body[ "receipt_refs" ] ) == [ "manager_attestation" ]
+    assert heading_row( store, "ph1" )[ "status" ] == "done"
+    assert "ph1" in capsys.readouterr().out
+
+
+def test_the_close_reason_names_the_steps_and_their_done_times( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    for r in store.rows:
+        if r[ "body" ].startswith( f"stub_key: {CK}#a2" ): r[ "updated_ts" ] = "2026-10-06T14:01:00+00:00"
+    pi.main( close_args( tmp_path ) )
+    reason = transitions( store )[ 0 ][ 2 ][ "reason" ]
+    assert "a1" in reason and "a2" in reason and "a3" in reason and "2026-10-06T14:01:00+00:00" in reason
+
+
+def test_close_touches_only_the_eligible_headings( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    before = { r[ "id" ]: r[ "status" ] for r in store.rows }
+    pi.main( close_args( tmp_path ) )
+    after = { r[ "id" ]: r[ "status" ] for r in store.rows }
+    assert [ i for i in before if before[ i ] != after[ i ] ] == [ heading_row( store, "ph1" )[ "id" ] ]
+
+
+def test_close_never_reopens_or_closes_a_terminal_heading_with_an_open_step( tmp_path, store ):
+    run( good_manifest(), True, store )
+    mark( store, "ph1", "dropped" ); mark( store, "a1", "done" ); mark( store, "a2", "done" )
+    assert pi.main( close_args( tmp_path ) ) == 0
+    assert transitions( store ) == [] and heading_row( store, "ph1" )[ "status" ] == "dropped"
+
+
+def test_a_second_close_finds_nothing_to_do( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    pi.main( close_args( tmp_path ) )
+    store.calls.clear()
+    assert pi.main( close_args( tmp_path ) ) == 0
+    assert transitions( store ) == []
+
+
+@pytest.mark.parametrize( "actor", [ None, "cheech", "Cheech 4d376217", "cheech xyz" ] )
+def test_close_without_a_valid_actor_exits_3_and_writes_nothing( tmp_path, store, actor ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    store.calls.clear()
+    assert pi.main( close_args( tmp_path, actor=actor ) ) == 3
+    assert writes( store ) == []
+
+
+def test_close_together_with_check_exits_3_and_writes_nothing( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    store.calls.clear()
+    assert pi.main( close_args( tmp_path, "--check" ) ) == 3
+    assert writes( store ) == []
+
+
+def test_a_refused_close_is_reported_and_exits_1_and_the_row_is_unchanged( tmp_path, store, capsys ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    store.refuse_transition = True
+    assert pi.main( close_args( tmp_path ) ) == 1
+    out = capsys.readouterr().out
+    assert "ph1" in out and "refused" in out and "403" in out
+    assert heading_row( store, "ph1" )[ "status" ] != "done"
+
+
+def test_close_attempts_every_eligible_heading_even_after_a_refusal( tmp_path, store ):
+    m = good_manifest()
+    m[ "phases" ][ 1 ][ "steps" ] = [ s for s in m[ "phases" ][ 1 ][ "steps" ] if s[ "key" ] == "b1" ]
+    for s_ in m[ "phases" ][ 1 ][ "steps" ]: s_[ "depends_on" ] = []
+    run( m, True, store )
+    for k in ( "a1", "a2", "a3", "b1" ): mark( store, k, "done" )
+    store.refuse_transition = True
+    path = write_manifest( tmp_path, m )
+    assert pi.main( [ "reconcile", str( path ), "--repo-root", str( tmp_path ), "--close", "--actor", MANAGER ] ) == 1
+    assert len( transitions( store ) ) == 2
+
+
+def test_reconcile_without_close_writes_nothing_even_with_an_actor( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    store.calls.clear()
+    path = write_manifest( tmp_path, good_manifest() )
+    assert pi.main( [ "reconcile", str(path), "--repo-root", str( tmp_path ), "--actor", MANAGER ] ) == 0
+    assert writes( store ) == []
