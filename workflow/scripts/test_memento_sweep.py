@@ -209,3 +209,11 @@ def test_an_older_suffixed_copy_still_sweeps_beside_the_kept_root_file( tmp_path
     newest = _write( os.path.join( r, ".claude-memento-sam-new00000.md" ), age=60 )
     kept   = ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
     assert root in kept and newest in kept and older not in kept
+
+
+def test_the_exact_root_file_is_matched_without_regard_to_case( tmp_path ):
+    r        = str( tmp_path )
+    root     = _write( os.path.join( r, ".claude-memento-Sam.md" ), age=62 )
+    suffixed = _write( os.path.join( r, ".claude-memento-sam-aaaa0000.md" ), age=60 )
+    kept     = ms.select_kept( ms.find_mementos( r ), [ "SAM" ] )
+    assert root in kept and suffixed in kept
