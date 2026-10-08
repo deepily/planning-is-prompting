@@ -960,3 +960,112 @@ def test_an_unlabelled_manifest_builds_the_same_titles_as_before():
     titles = { r[ "key" ]: r[ "title" ] for r in pi.build_rows( good_manifest() ) }
     assert titles[ "ph1" ] == "[TST] Plan 2 · Phase 1 of 2 · Alpha"
     assert titles[ "a2" ]  == "[TST] Plan 2 · Phase 1 of 2 · Step 2 of 3 · Second"
+
+
+# ── reconcile: a phase heading follows its steps (row bb92a34a) ──────────────────────────────────
+# Report only. The verb names every heading that should read done and does not; it closes nothing.
+
+def reconcile_of( m, store ):
+    existing, _, err = pi.fetch_existing( m )
+    assert err is None
+    return pi.compute_reconcile( m, existing )
+
+
+def phase_row( report, phase ):
+    return next( p for p in report[ "phases" ] if p[ "phase" ] == phase )
+
+
+def test_a_heading_is_eligible_when_every_step_under_it_is_done( store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    r = reconcile_of( good_manifest(), store )
+    assert [ e[ "key" ] for e in r[ "eligible" ] ] == [ "ph1" ]
+    assert phase_row( r, 1 )[ "verdict" ] == "eligible" and phase_row( r, 2 )[ "verdict" ] == "not complete"
+
+
+def test_a_heading_with_one_step_still_open_is_not_eligible( store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2" ): mark( store, k, "done" )
+    r = reconcile_of( good_manifest(), store )
+    assert r[ "eligible" ] == [] and phase_row( r, 1 )[ "open" ] == 1 and phase_row( r, 1 )[ "done" ] == 2
+
+
+def test_a_dropped_step_does_not_count_as_done( store ):
+    run( good_manifest(), True, store )
+    mark( store, "a1", "done" ); mark( store, "a2", "done" ); mark( store, "a3", "dropped" )
+    assert reconcile_of( good_manifest(), store )[ "eligible" ] == []
+
+
+def test_a_step_finished_before_the_import_counts_as_done( store ):
+    m = good_manifest()
+    m[ "phases" ][ 0 ][ "steps" ][ 0 ][ "done_receipt" ] = "abc1234"
+    run( m, True, store )
+    for k in ( "a2", "a3" ): mark( store, k, "done" )
+    r = reconcile_of( m, store )
+    assert [ e[ "key" ] for e in r[ "eligible" ] ] == [ "ph1" ] and phase_row( r, 1 )[ "receipts" ] == 1
+
+
+def test_a_heading_that_already_reads_done_is_not_eligible_again( store ):
+    run( good_manifest(), True, store )
+    for k in ( "ph1", "a1", "a2", "a3" ): mark( store, k, "done" )
+    r = reconcile_of( good_manifest(), store )
+    assert r[ "eligible" ] == [] and phase_row( r, 1 )[ "verdict" ] == "closed"
+
+
+def test_a_stub_phase_with_no_steps_is_never_eligible( store ):
+    m = good_manifest()
+    m[ "phases" ].append( { "phase": 3, "name": "Gamma", "steps": [], "expand_trigger": "when beta ships" } )
+    run( m, True, store )
+    r = reconcile_of( m, store )
+    assert phase_row( r, 3 )[ "verdict" ] == "stub" and "ph3" not in [ e[ "key" ] for e in r[ "eligible" ] ]
+
+
+def test_a_terminal_heading_with_a_step_still_open_is_reported_and_not_eligible( store ):
+    run( good_manifest(), True, store )
+    mark( store, "ph1", "dropped"); mark( store, "a1", "done" ); mark( store, "a2", "done" )
+    r = reconcile_of( good_manifest(), store )
+    assert r[ "eligible" ] == [] and phase_row( r, 1 )[ "verdict" ] == "closed with open steps"
+
+
+def test_a_phase_with_no_heading_row_is_not_eligible( store ):
+    run( good_manifest(), True, store )
+    store.rows = [ r for r in store.rows if not r[ "body" ].startswith( f"stub_key: {CK}#ph1" ) ]
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    r = reconcile_of( good_manifest(), store )
+    assert r[ "eligible" ] == [] and phase_row( r, 1 )[ "verdict" ] == "no heading row"
+
+
+def test_the_eligible_entry_carries_the_row_id_and_the_steps_it_rests_on( store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    e = reconcile_of( good_manifest(), store )[ "eligible" ][ 0 ]
+    heading = next( r for r in store.rows if r[ "body" ].startswith( f"stub_key: {CK}#ph1" ) )
+    assert e[ "id" ] == heading[ "id" ] and sorted( e[ "steps" ] ) == [ "a1", "a2", "a3" ]
+
+
+def test_the_reconcile_command_prints_one_line_per_phase_and_writes_nothing( tmp_path, store, capsys ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    store.calls.clear()
+    path = write_manifest( tmp_path, good_manifest() )
+    assert pi.main( [ "reconcile", str( path ), "--repo-root", str( tmp_path ) ] ) == 0
+    assert writes( store ) == []
+    out = capsys.readouterr().out
+    assert "Phase 1" in out and "eligible" in out and "Phase 2" in out and "not complete" in out
+
+
+def test_check_exits_3_when_a_heading_is_eligible_and_0_when_none_is( tmp_path, store ):
+    run( good_manifest(), True, store )
+    path = write_manifest( tmp_path, good_manifest() )
+    args = [ "reconcile", str( path ), "--repo-root", str( tmp_path ), "--check" ]
+    assert pi.main( args ) == 0
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    assert pi.main( args ) == 3
+
+
+def test_reconcile_on_an_unreadable_board_exits_1( tmp_path, monkeypatch ):
+    monkeypatch.setenv( "PLAN_STUB_API_BASE", "http://127.0.0.1:1" )
+    key = tmp_path / "key"
+    key.write_text( "k", encoding="utf-8" )
+    monkeypatch.setenv( "PLAN_STUB_API_KEY_FILE", str( key ) )
+    assert pi.main( [ "reconcile", str( write_manifest( tmp_path, good_manifest() ) ), "--repo-root", str( tmp_path ) ] ) == 1
