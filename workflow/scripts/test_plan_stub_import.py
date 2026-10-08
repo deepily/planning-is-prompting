@@ -1069,3 +1069,22 @@ def test_reconcile_on_an_unreadable_board_exits_1( tmp_path, monkeypatch ):
     key.write_text( "k", encoding="utf-8" )
     monkeypatch.setenv( "PLAN_STUB_API_KEY_FILE", str( key ) )
     assert pi.main( [ "reconcile", str( write_manifest( tmp_path, good_manifest() ) ), "--repo-root", str( tmp_path ) ] ) == 1
+
+
+def test_a_phase_finished_before_the_import_has_no_heading_and_says_so( store ):
+    m = good_manifest()
+    for st in m[ "phases" ][ 0 ][ "steps" ]: st[ "done_receipt" ] = "abc1234"
+    run( m, True, store )
+    r = reconcile_of( m, store )
+    assert phase_row( r, 1 )[ "verdict" ] == "finished before import" and phase_row( r, 1 )[ "receipts" ] == 3
+    assert r[ "eligible" ] == []
+
+
+def test_the_eligible_entry_carries_each_done_steps_time( store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    for r in store.rows:
+        for k, stamp in ( ( "a1", "2026-10-05T10:00:00+00:00" ), ( "a3", "2026-10-06T11:00:00+00:00" ) ):
+            if r[ "body" ].startswith( f"stub_key: {CK}#{k}" ): r[ "updated_ts" ] = stamp
+    e = reconcile_of( good_manifest(), store )[ "eligible" ][ 0 ]
+    assert e[ "step_times" ] == { "a1": "2026-10-05T10:00:00+00:00", "a2": None, "a3": "2026-10-06T11:00:00+00:00" }

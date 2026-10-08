@@ -838,6 +838,76 @@ def run_status( m, out=print ):
     return 0
 
 
+def compute_reconcile( m, existing ):
+    """
+    Say which phase headings should read done and do not, from the rows on the board. Pure.
+
+    Requires:
+        - existing maps stub_key to the store row, terminal rows included
+
+    Ensures:
+        - returns { phases, eligible }; phases has one entry per manifest phase, in phase order,
+          with { phase, name, heading_key, heading_status, steps, receipts, done, open, verdict }
+        - a step with done_receipt counts as done; a dropped or missing step row does not
+        - verdict is one of: eligible, not complete, closed, closed with open steps, stub,
+          no heading row, finished before import
+        - a heading is eligible only when it is not terminal, its phase lists at least one step and
+          every step is done; a stub phase and a phase without a heading row never are
+        - eligible lists { key, id, phase, steps, step_times } for the eligible headings; step_times
+          holds each done row's updated_ts, or None where the store row carries none
+        - the opposite shape (a terminal heading with an open step) is reported, never an action
+    """
+    ck, phases, eligible = m[ "correlation_key" ], [], []
+    for ph in sorted( m[ "phases" ], key=lambda p: p[ "phase" ] ):
+        hk      = phase_key( ph[ "phase" ] )
+        heading = existing.get( f"{ck}#{hk}" )
+        steps   = ph[ "steps" ]
+        receipts = sum( 1 for st in steps if "done_receipt" in st )
+        rows     = { st[ "key" ]: existing.get( f"{ck}#{st[ 'key' ]}" ) for st in steps if "done_receipt" not in st }
+        done_rows = [ k for k, r in rows.items() if r is not None and r[ "status" ] == "done" ]
+        open_n   = len( steps ) - receipts - len( done_rows )
+        all_done = bool( steps ) and open_n == 0
+        if not steps:                           verdict = "stub"
+        elif heading is None:                   verdict = "finished before import" if phase_is_finished( ph ) else "no heading row"
+        elif heading[ "status" ] in TERMINAL:   verdict = "closed" if all_done else "closed with open steps"
+        elif all_done:                          verdict = "eligible"
+        else:                                   verdict = "not complete"
+        phases.append( { "phase": ph[ "phase" ], "name": ph[ "name" ], "heading_key": hk,
+                         "heading_status": heading[ "status" ] if heading else None,
+                         "steps": len( steps ), "receipts": receipts, "done": len( done_rows ),
+                         "open": open_n, "verdict": verdict } )
+        if verdict == "eligible":
+            eligible.append( { "key": hk, "id": heading[ "id" ], "phase": ph[ "phase" ],
+                               "steps": [ st[ "key" ] for st in steps ],
+                               "step_times": { k: rows[ k ].get( "updated_ts" ) for k in done_rows } } )
+    return { "phases": phases, "eligible": eligible }
+
+
+def run_reconcile( m, check=False, out=print ):
+    """
+    Print one line per phase and name the headings that should read done. Changes nothing.
+
+    Ensures:
+        - read-only: performs GETs only
+        - returns 1 when the board could not be read
+        - returns 3 when check is set and at least one heading is eligible, else 0
+    """
+    existing, _unkeyed, err = fetch_existing( m )
+    if err:
+        out( f"PLAN STUB RECONCILE: cannot read the board — {err}" )
+        return 1
+    r = compute_reconcile( m, existing )
+    out( f"Plan {m[ 'plan_number' ]} · {m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
+    for p in r[ "phases" ]:
+        out( f"Phase {p[ 'phase' ]} · {p[ 'name' ]}: {p[ 'verdict' ]} — steps {p[ 'steps' ]}, receipts {p[ 'receipts' ]}, "
+             f"done {p[ 'done' ]}, open {p[ 'open' ]}; heading {p[ 'heading_status' ] or 'none'}" )
+    if r[ "eligible" ]:
+        out( f"{len( r[ 'eligible' ] )} heading(s) should read done: " + ", ".join( e[ "key" ] for e in r[ "eligible" ] ) )
+    else:
+        out( "no heading is waiting to be closed" )
+    return 3 if ( check and r[ "eligible" ] ) else 0
+
+
 # ── CLI ──────────────────────────────────────────────────────────────────────────────────────────
 
 def main( argv=None ):
@@ -846,11 +916,14 @@ def main( argv=None ):
 
     for name, helptext in ( ( "validate", "check the manifest; writes nothing" ),
                             ( "import",   "dry run by default; --write creates rows in the holding area" ),
-                            ( "status",   "read-only progress report" ) ):
+                            ( "status",   "read-only progress report" ),
+                            ( "reconcile", "read-only: name the phase headings that should read done" ) ):
         p = sub.add_parser( name, help=helptext )
         p.add_argument( "manifest" )
         p.add_argument( "--repo-root", default=None,
                         help="the repo plan_ref is relative to; default: the git top level of the manifest's directory" )
+        if name == "reconcile":
+            p.add_argument( "--check", action="store_true", help="exit 3 when any heading should read done" )
         if name == "import":
             p.add_argument( "--write",   action="store_true", help="actually create and re-stamp rows" )
             p.add_argument( "--actor",   default=os.environ.get( "PLAN_STUB_ACTOR" ),
@@ -875,6 +948,9 @@ def main( argv=None ):
 
     if args.action == "status":
         return run_status( m )
+
+    if args.action == "reconcile":
+        return run_reconcile( m, check=args.check )
 
     if args.write and args.offline:
         print( "PLAN STUB: --offline is for a dry run; a write needs the board read first", file=sys.stderr )
