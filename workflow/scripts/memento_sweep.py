@@ -134,6 +134,9 @@ def select_kept( mementos, keep_personas ):
     Ensures:
         - returns a set of paths: the newest file per ( persona, slot ), plus the
           persona-less pointer when keep_personas is non-empty
+        - 🔴 plus the exact root file .claude-memento-<persona>.md when it exists, whatever its
+          age (row 0214c6eb). self_respin reads that file, and a suffixed copy written seconds
+          later is the newest, so "newest per slot" alone swept the one file the seat reads
         - 🔴 plus every record a kept POINTER names, followed transitively (row cb8f7757).
           A pointer is rewritten on every save, so it is usually the NEWEST file for its
           persona, and "newest per slot" kept it while trashing the older record it names.
@@ -147,6 +150,9 @@ def select_kept( mementos, keep_personas ):
         for want_slot in ( "root", "io" ):
             owned = [ p for s, p in mementos if s == want_slot and persona_matches( s, p, persona ) ]
             if owned: kept.add( max( owned, key=os.path.getmtime ) )
+        exact_root = f"{ROOT_PREFIX}-{persona.lower()}.md"
+        for slot, path in mementos:
+            if slot == "root" and os.path.basename( path ).lower() == exact_root: kept.add( path )
 
     # Compare NORMALIZED paths: with `--repo .` the found paths read `./.claude-memento-…`,
     # while a resolved target reads `.claude-memento-…`, and the two never matched on a live run.
