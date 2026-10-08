@@ -1241,3 +1241,17 @@ def test_a_close_the_store_cannot_be_reached_for_counts_as_refused( tmp_path, st
     monkeypatch.setattr( pi, "call", lambda method, *a, **kw: ( 0, "connection refused" ) if method == "POST" else real_call( method, *a, **kw ) )
     assert pi.main( close_args( tmp_path ) ) == 1
     assert "ph1: refused (HTTP 0)" in capsys.readouterr().out
+
+
+def test_a_successful_close_prints_the_closed_line_for_the_heading( tmp_path, store, capsys ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    pi.main( close_args( tmp_path ) )
+    assert "closed ph1 -> done" in capsys.readouterr().out.splitlines()
+
+
+def test_the_close_reason_opens_by_naming_the_phase_whose_steps_are_done( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    pi.main( close_args( tmp_path ) )
+    assert transitions( store )[ 0 ][ 2 ][ "reason" ].startswith( "Every step of phase 1 is done: a1 (" )
