@@ -883,13 +883,48 @@ def compute_reconcile( m, existing ):
     return { "phases": phases, "eligible": eligible }
 
 
-def run_reconcile( m, check=False, out=print ):
+def close_reason( e ):
     """
-    Print one line per phase and name the headings that should read done. Changes nothing.
+    Ensures:
+        - returns the reason text for closing one eligible heading: every step key, each with its done time
+    """
+    parts = [ f"{k} (done {e[ 'step_times' ].get( k ) or 'time not on the row'})" for k in e[ "steps" ] if k in e[ "step_times" ] ]
+    return f"Every step of phase {e[ 'phase' ]} is done: " + ", ".join( parts ) + ". Reconciled by plan_stub_import reconcile --close."
+
+
+def close_headings( eligible, actor, out=print ):
+    """
+    Move each eligible heading to done through the store's transition door.
 
     Ensures:
-        - read-only: performs GETs only
-        - returns 1 when the board could not be read
+        - attempts every heading, whatever an earlier one answered
+        - returns the number of headings the store refused or could not be reached for
+        - the receipt carries a placeholder attestation; the store replaces it with the login identity
+    """
+    failed = 0
+    for e in eligible:
+        code, _body = call( "POST", f"/api/tasks/{e[ 'id' ]}/transition", payload={
+            "to_status": "done", "actor": actor, "authority": "standing",
+            "receipt_refs": { "manager_attestation": "plan_stub_import reconcile --close" },
+            "reason": close_reason( e ) } )
+        if 200 <= code < 300:
+            out( f"closed {e[ 'key' ]} -> done" )
+        else:
+            failed += 1
+            out( f"{e[ 'key' ]}: refused (HTTP {code})" )
+    return failed
+
+
+def run_reconcile( m, check=False, close=False, actor=None, out=print ):
+    """
+    Print one line per phase and name the headings that should read done; with close, move them to done.
+
+    Requires:
+        - close is set only with a well-formed actor and without check
+
+    Ensures:
+        - without close it is read-only: performs GETs only
+        - returns 1 when the board could not be read, or when the store refused any close
         - returns 3 when check is set and at least one heading is eligible, else 0
     """
     existing, _unkeyed, err = fetch_existing( m )
@@ -905,6 +940,7 @@ def run_reconcile( m, check=False, out=print ):
         out( f"{len( r[ 'eligible' ] )} heading(s) should read done: " + ", ".join( e[ "key" ] for e in r[ "eligible" ] ) )
     else:
         out( "no heading is waiting to be closed" )
+    if close and close_headings( r[ "eligible" ], actor, out ): return 1
     return 3 if ( check and r[ "eligible" ] ) else 0
 
 
@@ -924,6 +960,8 @@ def main( argv=None ):
                         help="the repo plan_ref is relative to; default: the git top level of the manifest's directory" )
         if name == "reconcile":
             p.add_argument( "--check", action="store_true", help="exit 3 when any heading should read done" )
+            p.add_argument( "--close", action="store_true", help="move each eligible heading to done; a manager seat only" )
+            p.add_argument( "--actor", default=None, help='with --close: "<manager> <session8>", e.g. "cheech 4d376217"' )
         if name == "import":
             p.add_argument( "--write",   action="store_true", help="actually create and re-stamp rows" )
             p.add_argument( "--actor",   default=os.environ.get( "PLAN_STUB_ACTOR" ),
@@ -950,7 +988,13 @@ def main( argv=None ):
         return run_status( m )
 
     if args.action == "reconcile":
-        return run_reconcile( m, check=args.check )
+        if args.close and args.check:
+            print( "PLAN STUB: --close and --check do not go together", file=sys.stderr )
+            return 3
+        if args.close and not ( args.actor and ACTOR_RE.match( args.actor ) ):
+            print( 'PLAN STUB: --close needs --actor "<persona> <hex session id>"', file=sys.stderr )
+            return 3
+        return run_reconcile( m, check=args.check, close=args.close, actor=args.actor )
 
     if args.write and args.offline:
         print( "PLAN STUB: --offline is for a dry run; a write needs the board read first", file=sys.stderr )

@@ -1215,3 +1215,29 @@ def test_reconcile_without_close_writes_nothing_even_with_an_actor( tmp_path, st
     path = write_manifest( tmp_path, good_manifest() )
     assert pi.main( [ "reconcile", str(path), "--repo-root", str( tmp_path ), "--actor", MANAGER ] ) == 0
     assert writes( store ) == []
+
+
+def test_a_done_step_with_no_time_on_its_row_is_named_as_such_in_the_reason( tmp_path, store ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    pi.main( close_args( tmp_path ) )
+    assert "a1 (done time not on the row)" in transitions( store )[ 0 ][ 2 ][ "reason" ]
+
+
+def test_a_step_finished_before_import_is_not_given_a_done_time_in_the_reason( tmp_path, store ):
+    m = good_manifest()
+    m[ "phases" ][ 0 ][ "steps" ][ 0 ][ "done_receipt" ] = "abc1234"
+    run( m, True, store )
+    for k in ( "a2", "a3" ): mark( store, k, "done" )
+    path = write_manifest( tmp_path, m )
+    assert pi.main( [ "reconcile", str( path ), "--repo-root", str( tmp_path ), "--close", "--actor", MANAGER ] ) == 0
+    assert "a1" not in transitions( store )[ 0 ][ 2 ][ "reason" ]
+
+
+def test_a_close_the_store_cannot_be_reached_for_counts_as_refused( tmp_path, store, capsys, monkeypatch ):
+    run( good_manifest(), True, store )
+    for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
+    real_call = pi.call
+    monkeypatch.setattr( pi, "call", lambda method, *a, **kw: ( 0, "connection refused" ) if method == "POST" else real_call( method, *a, **kw ) )
+    assert pi.main( close_args( tmp_path ) ) == 1
+    assert "ph1: refused (HTTP 0)" in capsys.readouterr().out
