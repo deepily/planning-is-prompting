@@ -427,19 +427,13 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 6. Record the breakdown on the task board (Phase 3 Step 5 of workflow 01): store rows, or a stub manifest if the plan has two or more phases
 7. Begin execution
 
-**Time**: 15-30 minutes for Step 1, plus 20-40 minutes for Step 2 if needed
-
 ### Scenario 2: "I have a bug to fix"
 
 **Path**:
 1. Open `p-is-p-01-planning-the-work.md`
 2. You'll likely get Pattern 4 (Problem Investigation)
 3. Skip Step 2 (use history.md for tracking)
-4. Follow Pattern 4 structure:
-   - Problem statement & reproduction
-   - Hypothesis testing
-   - Root cause analysis
-   - Solution implementation
+4. Follow Pattern 4 structure (its first four stages are the breakdown in Example 4 below)
 5. Track progress with store rows (move each as you go, close with a receipt)
 6. Update history.md at session end
 
@@ -797,9 +791,6 @@ WEEK 4-10: Implementation Execution (Phases 3-N)
 - **Document integration**: Research → Architecture → Implementation chain clear
 
 **Dedicated docs required**:
-- Research synthesis (Phase 0 output)
-- Architecture design (Pattern B docs)
-- Implementation tracking (Pattern A docs)
 - Total: ~40,000 tokens across multiple files, all under 25K individually
 
 ---
@@ -837,15 +828,7 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ## Summary: Your Next Steps
 
-**If you're starting new work**:
-1. Open `p-is-p-01-planning-the-work.md`
-2. Answer discovery questions
-3. Get pattern recommendation
-4. Check decision matrix in this document
-5. If Pattern 1, 2, or 5 → Also use `p-is-p-02-documenting-the-implementation.md`
-6. If Pattern 3 or 4 → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
-7. Record the breakdown on the task board (store rows, or a stub manifest for two or more phases)
-8. Begin work
+**If you're starting new work**: follow Scenario 1 above.
 
 **If you're continuing existing work**:
 1. Check history.md for previous session summary
