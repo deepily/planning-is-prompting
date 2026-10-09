@@ -59,7 +59,7 @@
 - Target: Keep 8-12k tokens in main history.md
 - Analyze token density per day to determine retention period
 - Typical: 7-14 days of recent history
-- Minimum: 5 days for context
+- Minimum: 7 days for context
 
 ---
 
