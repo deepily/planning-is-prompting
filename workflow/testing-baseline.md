@@ -219,33 +219,6 @@ project_config:
 
 ## Workflow Steps
 
-**Example for multi-suite project**:
-```
-[LUPIN] Establish pre-change baseline (FULL) - STARTED at 2025-10-11 14:30:00
-[LUPIN] Create logs directory and generate timestamp
-[LUPIN] Check FastAPI server health (port 7999)
-[LUPIN] Execute Lupin smoke test suite
-[LUPIN] Execute Lupin unit test suite
-[LUPIN] Execute Lupin integration test suite
-[LUPIN] Execute COSA framework smoke tests (if scope=full)
-[LUPIN] Execute COSA framework unit tests (if scope=full)
-[LUPIN] Generate comprehensive baseline report
-[LUPIN] Document baseline in session history
-[LUPIN] Send baseline completion notification
-```
-
-**Example for simple project**:
-```
-[MYPROJECT] Establish pre-change baseline - STARTED at 2025-10-11 14:30:00
-[MYPROJECT] Create test directories
-[MYPROJECT] Execute smoke tests
-[MYPROJECT] Generate baseline report
-[MYPROJECT] Update history
-[MYPROJECT] Send completion notification
-```
-
----
-
 ### Step 1: Send Start Notification
 
 **If notification system is available**:
@@ -773,7 +746,7 @@ else:
 
 ### Step 7: Final Summary
 
-Provide the summary (and close your checklist, if you kept one):
+Provide the summary:
 
 ```
 ✅ [{PREFIX}] Establish pre-change baseline - COMPLETE
@@ -993,6 +966,9 @@ fi
 ---
 
 ## Version History
+
+**Version 1.2.1** (2026.10.09)
+- Follow-through on the Step 0 cut (María's ruling): removed the two orphaned checklist examples and the "close your checklist" clause in the final summary step.
 
 **Version 1.2** (2026.10.09)
 - Pruning pilot (row `681745a9`, Rick: "All of it, 122 lines"): removed Step 0 (the optional step checklist), the §4.3 "use the Write tool" pseudo-code, and the "use Edit tool" line in §5.2. Trials showed Claude Code writes the files the same way without them. The two checklist examples that followed Step 0 are left in place, pending Rick's word.
