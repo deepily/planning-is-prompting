@@ -290,6 +290,8 @@ cd "$LUPIN_ROOT/src" && \
 | `--plot` | Writes `<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png` |
 | `--output` | `json` for the §3 renderer; also `console` / `csv` / `markdown` |
 
+What each flag does beyond this table, and what the aggregator computes: the module docstring and `--help`.
+
 > **⚠️ `--prefer-branch-csv` was REMOVED** in the rewrite. Any wrapper still passing it will **hard-error at argparse**. Grep the slash wrapper before the next run.
 
 **Bucket on committer date, not author date.** `--since`/`--until` filter on **committer** date, so day-buckets key on `%cd` to match. Bucketing on `%ad` (author date) would let a **rebased or cherry-picked** commit land in a day-bucket *outside the very window that selected it* — and would then make the coverage guard **false-warn**. Filter-basis and bucket-basis must be the same field.

@@ -240,7 +240,7 @@ has left the fleet unwatched.**
 
 ### The tick script must survive a null
 
-**An IDLE persona returns `consumption_pct_of_window` as `null`**, and a monitor that dies on it partway prints a shorter roster than exists and exits non-zero; the script header (lines 20-22) states the rule.
+**An IDLE persona returns `consumption_pct_of_window` as `null`**, and a monitor that dies on it partway prints a shorter roster than exists and exits non-zero; the script header (lines 22-25) states the rule.
 
 Handle the null **explicitly** — treat it as "unknown, still listed," never as zero and never as a
 row to skip. Read `status` for the decision (§1) and let the percentage be decoration; a null

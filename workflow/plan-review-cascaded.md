@@ -351,7 +351,7 @@ When manager calls a vote per §5 turn cap, run Vote Mechanics Spec below, then:
 
 **Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
 
-**See also**: §Heartbeat Handling in the detailed Manager Behavior section below, which carries only the suppression-during-user-pause rule here and the retired scheduler's spec as historical record; the on-poke response steps are the ones above. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
+**See also**: §Heartbeat Handling in the detailed Manager Behavior section below, which carries the steps that come after the ones above (advance the pipeline on new posts, return idle silently), the suppression-during-user-pause rule, the Logging paragraph and the retired scheduler's spec as historical record. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
 
 ### 6.5 Status pushes
 
