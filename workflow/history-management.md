@@ -530,16 +530,18 @@ START=499
 END=1553
 ARCHIVE=history/YYYY-MM-DD-to-DD-history.md   # name per Intelligent Naming
 
-# 1. Write the archive header from the Archive File Template into $ARCHIVE first,
-#    then append the archived block
-sed -n "${START},${END}p" history.md >> "${ARCHIVE}"
+# 1. Write the archive header from the Archive File Template into $ARCHIVE first
 
 # 2. Build the trimmed file beside history.md (same directory, not /tmp):
 #    everything before the block, then everything after it
 { head -n $(( START - 1 )) history.md ; tail -n +$(( END + 1 )) history.md ; } > history.md.new
 
-# 3. Replace history.md only if kept lines + archived lines == original lines
-test $(( $( wc -l < history.md.new ) + END - START + 1 )) -eq $( wc -l < history.md ) && mv history.md.new history.md
+# 3. Only if kept lines + archived lines == original lines: append the block to the
+#    archive, then replace history.md. A refused run changes nothing.
+test $(( $( wc -l < history.md.new ) + END - START + 1 )) -eq $( wc -l < history.md ) \
+  && sed -n "${START},${END}p" history.md >> "${ARCHIVE}" \
+  && mv history.md.new history.md \
+  || rm -f history.md.new
 ```
 
 ### Verify Archive Structure
