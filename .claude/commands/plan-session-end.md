@@ -31,7 +31,7 @@
    - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-6)
    - Do NOT skip any steps (including notifications, health checks, or the **LoC Delta Summary** — canonical §6)
    - Do NOT substitute a shortened or summarized version
-   - Do NOT commit without user approval
+   - Commit without asking once the quality gate is met (canonical Step 4.3); only the push waits for the user's word (Step 4.5)
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
 4. **MUST honor the LoC Delta Summary MANDATE** (canonical §6 — renamed from "Day's Work Summary" 2026-05-21; the three obligations are non-optional):
