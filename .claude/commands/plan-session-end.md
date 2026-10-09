@@ -40,7 +40,7 @@
    - **MUST speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter includes a single short LoC verdict (≈8-15 words) replacing the generic "session ended" sign-off.
    - Parse `--summary` / `--no-summary` and `--baseline` / `--no-baseline` from the invocation arguments.
    - **Defaults**: `--summary` ON, `--baseline` ON.
-   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection and print `loc-delta: repo baseline skipped — LUPIN_ROOT unset` (cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
+   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection and print `loc-delta: SKIPPED — repo baseline (LUPIN_ROOT unset)` (cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
    - The CSV doc-link in `abstract` MUST use canonical path-only URL form (`/app/docs?path={project}/io/git-loc-delta/...`); the legacy `&scope=` two-param form is dead syntax per `workflow/doc-viewer-links.md`.
 
 5. **MUST clear the Step-6 Accountability Checklist** before declaring session-end complete:
