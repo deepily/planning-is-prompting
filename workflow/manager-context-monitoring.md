@@ -951,3 +951,4 @@ predictable event can have.
   so *if* the pre-clear read had gone through the gated door, a worktree seat could never
   self-respin. It does not. **The false version was louder, more publishable, and would have shipped
   off a source read.** Row: `f4f43c25`.
+- **2026.10.09 (Sam)**: Pruning pilot batch two, shortlist rows 1-3 (store row `681745a9`): §6 anti-patterns keep only the one rule stated nowhere else (the tick is a trigger, not a deadline); the prose that retold the installer's docstring, the tick script's header, `should_send` docstring, drill-label and nameless-seat comments and the `last_call_window.py` docstring became one-line pointers. Net 62 non-blank lines.

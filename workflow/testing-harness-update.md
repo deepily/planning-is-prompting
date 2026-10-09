@@ -5,8 +5,8 @@
 **Purpose**: Systematic test harness maintenance after code changes
 **Target**: Claude Code for automated test analysis and planning
 **Principle**: Discover, Analyze, Plan, Template
-**Version**: 1.0
-**Last Updated**: 2025.10.11
+**Version**: 1.2
+**Last Updated**: 2026.10.09
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for harness update decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Coverage gap analysis goes to `abstract`; speak the headline only ("3 modules need new tests, biggest gap is in dispatcher").
 
@@ -964,6 +964,9 @@ source_files:
 ---
 
 ## Version History
+
+**Version 1.2** (2026.10.09)
+- Pruning pilot batch two, shortlist rows 4-6 (store row `681745a9`), Sam: the MODIFIED_FILES command is stated as the NEW_FILES pipeline with its two differences, the Benefits list under the inline smoke test is removed (the same points are at 318-321), and the four phase bullets became one mapping line. Net 18 non-blank lines.
 
 **Version 1.1** (2026.10.02)
 - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.

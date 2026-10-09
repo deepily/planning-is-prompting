@@ -819,6 +819,8 @@ ask_multiple_choice( questions=[{
 
 ## Version History
 
+**v1.2** (2026.10.09) - Pruning pilot batch two, shortlist rows 7-14 (store row `681745a9`), Sam: removed the five When-to-use bullets, three Key-capabilities bullets, three token bullets, the repeated trigger-description wrap, two scan-order bullets, two Delete Step 3 bullets, the bodies of five anti-patterns (Duplicating CLAUDE.md keeps its body) and two Complementary-Usage bullets; the labels they hung from are reworded. Net 30 non-blank lines.
+
 **v1.1** (2026.01.28) - Enhanced discovery and usability
 - Expanded discover mode scanning scope:
   - Added README.md scanning

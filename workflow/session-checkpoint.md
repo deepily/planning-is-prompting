@@ -603,6 +603,8 @@ After checkpoint completes:
 
 ## Version History
 
+**v1.2** (2026.10.09) - Pruning pilot batch two, shortlist rows 25-27 and 44-46 (store row `681745a9`), Sam: the Step 7c manifest example, the repeated history entry format and the Before-every-commit list point to Manifest Format Enhancement, Step 4 and Steps 1, 5, 6a-6b; the step-checklist class Rick cut from three other files is removed here too (eight Mark Step N complete lines, seven TaskUpdate updated boxes, the Step 0 list and Step 0's own Verification, the other per-step Verification lists staying). Net 58 non-blank lines.
+
 **v1.1** (2026.10.02) - Step 0's checklist is optional. A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
 
 **v1.0** (2026.02.03) - Initial workflow
