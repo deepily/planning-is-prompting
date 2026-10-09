@@ -381,7 +381,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ## Step 2: Load Configuration
 
-**Purpose**: Load global and project-specific configuration to understand preferences, workflows, and project context
+**Purpose**: Use the global and project-specific configuration (Claude Code has already loaded both `CLAUDE.md` files into context) to understand preferences, workflows, and project context
 
 **Process**:
 
@@ -419,7 +419,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 1. **Categorize Workflows**:
 
-   Group discovered slash commands by category:
+   Group the slash commands already listed in your context by category:
 
    **Session Management**:
    - `/plan-session-start` - Initialize new session
@@ -1625,7 +1625,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 flowchart TD
     P["Preliminary: Send start notification (low)"] --> S1["1. Notification System Overview (ref only)"]
     S1 --> S2["2. Load configs → Extract PREFIX"]
-    S2 --> S3["3. Discover workflows → List slash commands"]
+    S2 --> S3["3. Discover workflows → Group slash commands by category"]
     S3 --> S4["4. Load history → Read last 3-7 days<br>Send progress notification (low)"]
     S4 --> S5["5. Find TODOs → ask_multiple_choice()<br>HIGH priority, BLOCKING"]
     S5 -->|WAIT for response| S6["6. Present context → Await work direction"]
@@ -1898,6 +1898,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Leftovers from the pruning review (Pocholo's F2 and F3)**: Step 2's purpose now says both `CLAUDE.md` files are already in context, Step 3 groups the commands already listed in context, and the Quick Reference node reads "Group slash commands by category". Also dropped "an optional step checklist" from the description of this file in `deterministic-wrapper-pattern.md`.
 - **2026.10.09 (Sam)**: **Follow-through on the Step 0 cut (María's ruling)**: removed the five "If you keep a step checklist" lines, the Step 0 node in the Quick Reference flowchart, and the "before Step 0" and "before any step checklist" mentions (the Preliminary steps now say "before Step 1"); renumbered Step 2 and Step 3 so each list opens on item 1.
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed Step 0 (the optional step checklist) and its summary line in the Overview, the `cat` of the global and project `CLAUDE.md` in Step 2, and the `ls` of `.claude/commands/` in Step 3. Trials showed Claude Code behaves the same without them. The "If you keep a step checklist" lines, the Step 0 mermaid node and the "before Step 0" mentions are left in place, pending Rick's word; Step 2 and Step 3 keep their original item numbers (3 and 2 now open their lists).
 - **2026.10.02 (María 🌸)**: **Step 0's TodoWrite checklist is optional, and selected work goes to the task store.** Rick's "yes" on a direct ask, row `efa0a4cf`: a workflow's step checklist is scratch, not owed work. The "ALWAYS create a TodoWrite list" mandate is removed; Step 5 now files the chosen work in the store instead of a harness list.

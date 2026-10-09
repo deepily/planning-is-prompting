@@ -309,7 +309,7 @@ Review the wrapper text:
    - Location: planning-is-prompting → workflow/session-start.md
    - This is the ONLY authoritative source for ALL session initialization steps
    - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: Preliminary notification, an optional step checklist,
+   - The canonical workflow contains: Preliminary notification,
      configuration loading, workflow discovery, history loading, ready notification,
      outstanding work identification with [1/2/3] options, and context presentation
 
