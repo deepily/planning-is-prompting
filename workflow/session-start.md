@@ -119,7 +119,7 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 
 **Purpose**: Resolve session identity (persona) and link-building primitives (doc-scope envelope) BEFORE composing any user-facing text, including the first acknowledgment and the start-notification ping below.
 
-**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before any step checklist, before reading any history/config files.
+**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before reading any history/config files.
 
 **Steps (all MANDATORY, in order)**:
 
@@ -297,7 +297,7 @@ Persona name and voice ID are **bound by design** — they are a 5-tuple `(name,
 
 **Purpose**: Immediately notify user that session initialization has begun
 
-**Timing**: Execute BEFORE any step checklist (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
+**Timing**: Execute AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
 
 **Command**:
 ```python
@@ -328,7 +328,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 - `ask_open_ended_batch()` - Batch open-ended questions (single screen, blocking)
 
 **When to Send Notifications**:
-1. **Start Notification** (Preliminary step, before Step 0):
+1. **Start Notification** (Preliminary step, before Step 1):
    - Low-priority progress notification
    - Signals initialization has begun
    - Command: `notify( "Starting session initialization...", notification_type="progress", priority="low" )`
@@ -385,7 +385,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Process**:
 
-3. **Extract Key Information**:
+1. **Extract Key Information**:
    - **[SHORT_PROJECT_PREFIX]**: Project identifier for TODOs and notifications
    - **Project name**: Full project name
    - **Notification settings**: Email, API key, priorities
@@ -394,12 +394,12 @@ notify( "Starting session initialization, loading config and history...", notifi
    - **Testing preferences**: Smoke tests, unit tests, integration tests
    - **Code style preferences**: Formatting, naming conventions
 
-4. **Validate Configuration**:
+2. **Validate Configuration**:
    - Confirm [SHORT_PROJECT_PREFIX] is defined
    - Check that history.md path exists
    - Verify notification system is configured
 
-5. **Report Summary**:
+3. **Report Summary**:
    ```
    Configuration Loaded:
    - Project: Planning is Prompting
@@ -409,8 +409,6 @@ notify( "Starting session initialization, loading config and history...", notifi
    - Notifications: Configured (cosa-voice MCP)
    ```
 
-**If you keep a step checklist**: Mark "Load configuration files" as completed, mark next item as in_progress
-
 ---
 
 ## Step 3: Discover Available Workflows
@@ -419,7 +417,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Process**:
 
-2. **Categorize Workflows**:
+1. **Categorize Workflows**:
 
    Group discovered slash commands by category:
 
@@ -438,7 +436,7 @@ notify( "Starting session initialization, loading config and history...", notifi
    **Other Workflows**:
    - (List any additional project-specific workflows)
 
-3. **Report Summary**:
+2. **Report Summary**:
    ```
    Available Workflows:
 
@@ -454,8 +452,6 @@ notify( "Starting session initialization, loading config and history...", notifi
      • /p-is-p-01-planning
      • /p-is-p-02-documentation
    ```
-
-**If you keep a step checklist**: Mark "Discover available workflows" as completed, mark next item as in_progress
 
 ---
 
@@ -1054,8 +1050,6 @@ finding more expensive to act on.
 
    **Note**: This is a progress update only. The actual question asking what to work on comes in Step 5, AFTER outstanding work has been identified and options are known.
 
-**If you keep a step checklist**: Mark "Load session history" as completed, mark next item as in_progress
-
 ---
 
 ## Step 4.5: Review TODO.md
@@ -1506,8 +1500,6 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    - Read implementation docs if referenced
    - Proceed to Step 6
 
-**If you keep a step checklist**: Mark "Identify outstanding work" as completed, mark next item as in_progress
-
 ---
 
 ## Step 6: Present Context & Await Direction
@@ -1580,8 +1572,6 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    - Question about project state ("What's the status of feature X?")
    - Workflow invocation ("/p-is-p-01-planning to plan this work")
 
-**If you keep a step checklist**: Mark "Present session context" as completed
-
 ---
 
 ## Project-Specific Context
@@ -1633,8 +1623,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 **Typical Session Start Flow**:
 ```mermaid
 flowchart TD
-    P["Preliminary: Send start notification (low)"] --> S0["0. Optional step checklist"]
-    S0 --> S1["1. Notification System Overview (ref only)"]
+    P["Preliminary: Send start notification (low)"] --> S1["1. Notification System Overview (ref only)"]
     S1 --> S2["2. Load configs → Extract PREFIX"]
     S2 --> S3["3. Discover workflows → List slash commands"]
     S3 --> S4["4. Load history → Read last 3-7 days<br>Send progress notification (low)"]
@@ -1643,7 +1632,7 @@ flowchart TD
 ```
 
 **Notification Timing**:
-- **Preliminary (before Step 0)**: "Starting session initialization..." (low priority, type=progress)
+- **Preliminary (before Step 1)**: "Starting session initialization..." (low priority, type=progress)
 - **Step 4 (after loading history)**: "History loaded, analyzing outstanding work..." (low priority, type=progress)
 - **Step 5 (after identifying work)**: `ask_multiple_choice()` with actual options (HIGH priority, BLOCKING)
   - **Key Insight**: Only ask "what do you want to work on?" AFTER you know what the options are
@@ -1909,6 +1898,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Follow-through on the Step 0 cut (María's ruling)**: removed the five "If you keep a step checklist" lines, the Step 0 node in the Quick Reference flowchart, and the "before Step 0" and "before any step checklist" mentions (the Preliminary steps now say "before Step 1"); renumbered Step 2 and Step 3 so each list opens on item 1.
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed Step 0 (the optional step checklist) and its summary line in the Overview, the `cat` of the global and project `CLAUDE.md` in Step 2, and the `ls` of `.claude/commands/` in Step 3. Trials showed Claude Code behaves the same without them. The "If you keep a step checklist" lines, the Step 0 mermaid node and the "before Step 0" mentions are left in place, pending Rick's word; Step 2 and Step 3 keep their original item numbers (3 and 2 now open their lists).
 - **2026.10.02 (María 🌸)**: **Step 0's TodoWrite checklist is optional, and selected work goes to the task store.** Rick's "yes" on a direct ask, row `efa0a4cf`: a workflow's step checklist is scratch, not owed work. The "ALWAYS create a TodoWrite list" mandate is removed; Step 5 now files the chosen work in the store instead of a harness list.
 - **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
