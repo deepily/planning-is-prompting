@@ -650,7 +650,7 @@ Claude will ask you to provide:
 **Session-Start**: Step 4.5 reads TODO.md for pending items
 **Session-End**: Step 1.5 updates TODO.md with completions and new items
 
-**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+**Key Principle**: the task store is the single source of truth for owed work; TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). History.md documents what happened.
 
 ### File Format
 
