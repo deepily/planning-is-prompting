@@ -189,7 +189,7 @@ Priority order for boundary detection:
 
 Validation:
 - Split must leave 7-14 days in main file
-- If <5 days would remain: Keep 10 days instead
+- If <7 days would remain: Keep 10 days instead
 - Ensure logical cohesion (don't split mid-feature)
 
 **Step 3: Preview & Confirm**
