@@ -935,12 +935,6 @@ This step drafts the commit message, **commits autonomously** (no user approval 
 - Concise summary line
 - Bullet points listing main changes (parent repo only)
 - Focus on "why" rather than just "what"
-- Include Claude Code attribution footer:
-  ```
-  🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-  Co-Authored-By: Claude <noreply@anthropic.com>
-  ```
 
 ### 4.3) Commit Autonomously (no approval gate)
 
@@ -974,10 +968,6 @@ git reset HEAD <unexpected_file>   # if anything unexpected appears
 ```bash
 git commit -m "$(cat <<'EOF'
 [Your drafted commit message here]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
@@ -1113,11 +1103,6 @@ Then continue to Final Verification.
 - Inform user: "No remote repository configured. Commit succeeded but cannot push."
 - The commit stands (already saved); skip the push, no data loss
 
-**Git Safety Protocol** (applies to all operations):
-- NEVER run destructive/irreversible git commands (push --force, hard reset, etc.) unless user explicitly requests
-- NEVER skip hooks (--no-verify, --no-gpg-sign, etc.) unless user explicitly requests
-- NEVER force push to main/master - warn user if they request it
-- Avoid `git commit --amend` except for pre-commit hook edits (see above)
 
 
 ## 4.7) Nightly Deploy (repos with a remote host, manager-role sessions only)
@@ -1882,6 +1867,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed the Claude Code attribution footer from the commit-message guidance and the commit template, and the Git Safety Protocol block (15 lines). Trials showed no change in behavior without them.
 - **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
 - **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
 - **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now parses current session's section from multi-section manifest, detects conflicts with other active sessions, prompts user for conflict resolution. Step 4.4 updates session status to `committed` with commit hash instead of deleting manifest (preserves tracking for other active sessions). Added conflict detection UI with ask_multiple_choice(). (~180 lines rewritten).
