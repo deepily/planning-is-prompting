@@ -168,18 +168,8 @@ NEW_FILES=$(git log \
     grep -v -E "test|spec" | \
     sort -u)
 
-MODIFIED_FILES=$(git log \
-    --since="${SINCE_DATE} 00:00:00" \
-    --until="${UNTIL_DATE} 23:59:59" \
-    --name-status \
-    --pretty=format:"" \
-    --diff-filter=M \
-    {source_directories} | \
-    grep "^M" | \
-    awk '{print $2}' | \
-    grep -E "\.(py|js|ts|java|go)$" | \
-    grep -v -E "test|spec" | \
-    sort -u)
+# MODIFIED_FILES: the NEW_FILES pipeline above, with --diff-filter=M and grep "^M"
+MODIFIED_FILES=$( <NEW_FILES pipeline with --diff-filter=M and grep "^M"> )
 
 NEW_COUNT=$(echo "$NEW_FILES" | grep -c . || echo 0)
 MODIFIED_COUNT=$(echo "$MODIFIED_FILES" | grep -c . || echo 0)
@@ -589,10 +579,7 @@ priorities:
 
 ## Recommended Implementation Order
 
-1. **Phase 1 (Today)**: Address all Critical (P1) updates
-2. **Phase 2 (This Week)**: Address High (P2) updates
-3. **Phase 3 (Next Sprint)**: Address Medium (P3) updates
-4. **Phase 4 (Future)**: Address Low (P4) updates as time permits
+Work the priorities in order: P1 today, P2 this week, P3 next sprint, P4 in the future as time permits.
 ```
 
 ---
@@ -710,12 +697,6 @@ The inline smoke test serves a **dual purpose**:
    - Test runner finds all modules with `quick_smoke_test()`
    - Comprehensive suite execution
    - No manual test registration needed
-
-**Benefits**:
-- Co-located with implementation (easier maintenance)
-- Fast developer feedback loop
-- Automatically included in test suite
-- Single source of truth
 
 **Template**:
 
