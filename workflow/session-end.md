@@ -531,7 +531,7 @@ Last updated: YYYY-MM-DD (Session N)
 notify( "TODO.md updated", notification_type="progress", priority="low" )
 ```
 
-**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+**Key Principle**: the task store is the single source of truth for owed work; TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). History.md documents what happened.
 
 ---
 
@@ -647,7 +647,7 @@ When the user says "update all tracking documents", distinguish between these do
 
 **C) TODO.md** (Pending work items):
 - **Location**: Project root (`TODO.md`)
-- **Purpose**: Single source of truth for pending work
+- **Purpose**: Durable narrative for pending work (Decisions Log, Pending-Decisions queue, not-yet-owed backlog); owed work lives in the task store
 - **Updates**: See Step 1.5 (dedicated workflow)
 - **Note**: Do NOT put TODO items in implementation docs or history.md
 

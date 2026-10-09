@@ -1050,7 +1050,7 @@ finding more expensive to act on.
    - history.md TODOs may exist in older repos not yet migrated
    - Display combined list in Step 5
 
-**Key Principle**: TODO.md is the single source of truth for pending work. If it exists, use it. If not, fall back to history.md TODO sections (legacy pattern).
+**Key Principle**: the task store is the single source of truth for owed work (`task_query`); TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). If TODO.md exists, use it for that narrative. If not, fall back to history.md TODO sections (legacy pattern).
 
 ---
 
@@ -1130,7 +1130,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    **Primary Source**: TODO.md (if exists from Step 4.5)
    - Use items from `## Pending` section
-   - These are the authoritative pending items
+   - These are the narrative pending items; owed work comes from the task store (Step 4.7)
 
    **Fallback Source**: history.md (legacy pattern)
    - Only if TODO.md doesn't exist
