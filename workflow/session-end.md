@@ -1563,9 +1563,9 @@ Anti-patterns (DO NOT do any of these):
 
 **Default**: ON. User can disable via `--no-baseline` slash-command flag.
 
-**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
+**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`, and print `loc-delta: SKIPPED — repo baseline (<reason>)`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
 
-**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view):
+**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view, and prints `loc-delta: SKIPPED — repo baseline (native fallback)`):
 
 ```bash
 # Reuse the same $PYBIN selection from §6.2
