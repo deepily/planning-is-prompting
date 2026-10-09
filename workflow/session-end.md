@@ -1405,7 +1405,7 @@ fi
 
 **Purpose**: Adds the language × code/comment/docstring breakdown from `cosa.repo.run_branch_analyzer` as a secondary section appended to the closing `notify()` abstract. Useful when the branch is about to be PR'd and you want the rich language summary alongside the per-day trace.
 
-**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
+**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section and print `loc-delta: branch analyzer skipped — PyYAML missing` (the per-day table still ships).
 
 **Invocation**:
 
@@ -1588,8 +1588,8 @@ Parse the same `statistics` shape from `<lupin>/src/cosa/repo/directory_analyzer
 | §6.2 Pass 1 (CSV write) exits non-zero or disk full / permission denied | Log stderr to terminal (not abstract); attempt Pass 2 anyway. If Pass 2 succeeds, render summary without the CSV doc-link. If Pass 2 also fails, fall through to §6.3. **Non-fatal**. |
 | §6.2 Pass 2 (JSON) exits non-zero or JSON parse error | Log stderr to terminal; fall through to §6.3. |
 | §6.2 `ModuleNotFoundError` | Log stderr to terminal; fall through to §6.3. |
-| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table silently; per-day summary still ships. **Non-fatal**. |
-| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table silently. **Non-fatal**. |
+| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table and print `loc-delta: rich breakdown skipped — <reason>`; per-day summary still ships. **Non-fatal**. |
+| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table and print `loc-delta: repo baseline skipped — <reason>`. **Non-fatal**. |
 | `git merge-base HEAD main` fails | Skip Step 6 with "no main branch" line. |
 | No commits since merge-base | Skip Step 6 with "nothing to summarize" line. |
 | `notify()` call fails | Terminal output still rendered; notification failure is non-fatal. |
@@ -1710,8 +1710,8 @@ population. Surface it as loudly as a collision, never as a clean run.
 
 🔴 **THE NEXT SKIP ANYONE ADDS TO THIS TABLE MUST PRINT A LINE.** That is the whole
 discipline of this step and it is written here, in the place someone would add one,
-rather than in a paragraph they will not re-read. §6.2.alt and §6.5 both skip
-*"silently"* — that idiom is house style two sections up and it is **forbidden here**. A
+rather than in a paragraph they will not re-read. §6.6 follows the same rule: every
+skip in Step 6 prints a line too, so no step in this file skips silently. A
 silently-skipped collision report is the dead dashboard arriving through the back door
 of a surface that otherwise works, and it is exactly how `disk-hygiene-report.sh` came to
 print nothing at all for an unknown period.
