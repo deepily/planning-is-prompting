@@ -687,8 +687,9 @@ git add bug-fix-queue.md
 
 **Step 9c: Create Commit**
 
-```bash
-git commit -m "$(cat <<'EOF'
+Write the message to a file first, **with the Write tool** (the session scratchpad, or the gitignored `io/`):
+
+```
 Fix: [Brief description]
 
 [Optional longer explanation]
@@ -696,9 +697,15 @@ Fix: [Brief description]
 Fixes #123
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
 ```
+
+then commit by pathspec, naming the files you staged in Step 9b:
+
+```bash
+git commit -F <message-file> -- file1.py file2.py file3.py history.md bug-fix-queue.md
+```
+
+A message that rides the commit line (`-m "$(cat <<'EOF' ... EOF)"`) is allowed unreviewed by the commit-scope guard; see `session-end.md` Step 4.3 for why. Name each path exactly as in your `### Touched Files` (repo-relative, no `./`: `./src/x` is refused), and note the review only happens when your session has a manifest section.
 
 **Step 9d: Capture Hash and Update**
 
@@ -1727,6 +1734,8 @@ else:
 ---
 
 ## Version History
+
+**v1.8** (2026.10.09, Sam) - **Step 9c's commit template no longer rides the commit line (defect 9, row `1498e58f`).** The message is written to a file and committed with `git commit -F <message-file> -- <paths>`, the shape the commit-scope guard reviews; `session-end.md` Step 4.3 carries the reasons.
 
 **v1.7** (2026.10.09, Sam) - **Pruning pilot, shortlist rows 4-5 (store row `681745a9`).** The wrap-mode parallel-session safety box and the File Tracking "At commit time" list now point at SESSION ISOLATION RULES and Steps 22a-22d (the append mandate stays); wrap Steps 19, 20, 22d and 23 now point at the fix-cycle Steps 8, 10, 9c and 9d for the history entry, the queue move, the commit message and the hash capture, keeping what differs (`[pending]` hash, "Not run" test line). `.claude/commands/plan-bug-fix-mode-wrap.md` names Steps 8-10 as well as 18-25.
 
