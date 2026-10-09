@@ -359,7 +359,7 @@ Health: ✅ HEALTHY
 
 ---
 
-## 0.6) Bug Fix Mode Integration
+## 0.7) Bug Fix Mode Integration
 
 **Purpose**: Check if bug fix mode is active and prompt for session closure if this session owns it.
 
@@ -531,7 +531,7 @@ Last updated: YYYY-MM-DD (Session N)
 notify( "TODO.md updated", notification_type="progress", priority="low" )
 ```
 
-**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+**Key Principle**: the task store is the single source of truth for owed work; TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). History.md documents what happened.
 
 ---
 
@@ -647,7 +647,7 @@ When the user says "update all tracking documents", distinguish between these do
 
 **C) TODO.md** (Pending work items):
 - **Location**: Project root (`TODO.md`)
-- **Purpose**: Single source of truth for pending work
+- **Purpose**: Durable narrative for pending work (Decisions Log, Pending-Decisions queue, not-yet-owed backlog); owed work lives in the task store
 - **Updates**: See Step 1.5 (dedicated workflow)
 - **Note**: Do NOT put TODO items in implementation docs or history.md
 
@@ -963,14 +963,19 @@ git diff --cached --name-only
 git reset HEAD <unexpected_file>   # if anything unexpected appears
 ```
 
-**Create the commit** with the drafted message (Step 4.2):
+**Create the commit** with the drafted message (Step 4.2). Write the message to a file first, **with the Write tool**, to a path outside the tree (the session scratchpad) or under the gitignored `io/`; then commit **by pathspec**, naming only the files from the Step 3.5 verified list:
 
 ```bash
-git commit -m "$(cat <<'EOF'
-[Your drafted commit message here]
-EOF
-)"
+git commit -F <message-file> -- src/auth.py history.md TODO.md
 ```
+
+Why this shape and no other: the commit-scope guard (Lupin's `commit_scope_guard.py`) parses `-F <file> -- <paths>` and reviews exactly those paths against your manifest section. It **cannot read a message that rides the commit line**: not `-m "$(cat <<'EOF' ... EOF)"`, not `-F - <<'EOF'`, and not a quoted `-m` text containing `;`, `&`, `|` or a newline (the guard cuts the command at the first of those even inside quotes). Those commits are allowed *unreviewed* with a NOT REVIEWED notice, which means the scope check you are relying on did not happen.
+
+- Name each path **exactly as it appears in your `### Touched Files`**: repo-relative, no `./`, no absolute path (`./src/auth.py` is refused as not claimed; `history.md`, `TODO.md`, `CLAUDE.md`, `CLAUDE.local.md` and `bug-fix-queue.md` match by basename and are exempt).
+- The scope review happens **only when your session has a section in `.claude-session.md`** (read from the hook's working directory). With no manifest, or no section for your session, the commit is allowed silently and nothing was reviewed, which is why the section has to stay current (Step 3.5).
+- A **new** file must be `git add`ed first (a pathspec commit only takes tracked paths).
+- A path containing `:`, `*`, `?` or `[` is read as pathspec magic and goes unreviewed; stage it and commit with `-F <message-file>` alone (the index is then reviewed).
+- If you write the message file from the shell, keep the heredoc on its own line, never on the commit line: `cat > <message-file> <<'EOF'` ... `EOF`, then `git commit -F <message-file> -- <paths>` on the next line, in the same call or a later one.
 
 **Error handling**: see Step 4.6 (pre-commit hook modifies files, etc.).
 
@@ -1405,7 +1410,7 @@ fi
 
 **Purpose**: Adds the language × code/comment/docstring breakdown from `cosa.repo.run_branch_analyzer` as a secondary section appended to the closing `notify()` abstract. Useful when the branch is about to be PR'd and you want the rich language summary alongside the per-day trace.
 
-**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section silently (the per-day table still ships).
+**Prerequisite**: Same `LUPIN_ROOT` + `PYBIN` selection as §6.2. `branch_analyzer` requires PyYAML — `$LUPIN_ROOT/.venv` carries it (verified yaml 6.0.3 post-COSA-merge). If `PYBIN` raises `ModuleNotFoundError: No module named 'yaml'`, skip this section and print `loc-delta: SKIPPED — branch analyzer (PyYAML missing)` (the per-day table still ships).
 
 **Invocation**:
 
@@ -1563,9 +1568,9 @@ Anti-patterns (DO NOT do any of these):
 
 **Default**: ON. User can disable via `--no-baseline` slash-command flag.
 
-**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
+**When skipped**: omit the "Repo Baseline" section from the rendered output and the `abstract`, and print `loc-delta: SKIPPED — repo baseline (<reason>)`. The spoken headline doesn't change either way (it never carries baseline content per the brevity mandate).
 
-**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view):
+**Invocation** (when enabled, only on the cosa path — the native fallback skips baseline since `git diff` doesn't produce a static-tree view, and prints `loc-delta: SKIPPED — repo baseline (native fallback)`):
 
 ```bash
 # Reuse the same $PYBIN selection from §6.2
@@ -1588,8 +1593,8 @@ Parse the same `statistics` shape from `<lupin>/src/cosa/repo/directory_analyzer
 | §6.2 Pass 1 (CSV write) exits non-zero or disk full / permission denied | Log stderr to terminal (not abstract); attempt Pass 2 anyway. If Pass 2 succeeds, render summary without the CSV doc-link. If Pass 2 also fails, fall through to §6.3. **Non-fatal**. |
 | §6.2 Pass 2 (JSON) exits non-zero or JSON parse error | Log stderr to terminal; fall through to §6.3. |
 | §6.2 `ModuleNotFoundError` | Log stderr to terminal; fall through to §6.3. |
-| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table silently; per-day summary still ships. **Non-fatal**. |
-| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table silently. **Non-fatal**. |
+| §6.2.alt (`--rich`) fails for any reason | Skip the Rich Language Breakdown sub-table and print `loc-delta: SKIPPED — rich breakdown (<reason>)`; per-day summary still ships. **Non-fatal**. |
+| §6.5 baseline (`run_directory_analyzer`) fails | Skip the Repo Baseline sub-table and print `loc-delta: SKIPPED — repo baseline (<reason>)`. **Non-fatal**. |
 | `git merge-base HEAD main` fails | Skip Step 6 with "no main branch" line. |
 | No commits since merge-base | Skip Step 6 with "nothing to summarize" line. |
 | `notify()` call fails | Terminal output still rendered; notification failure is non-fatal. |
@@ -1710,8 +1715,8 @@ population. Surface it as loudly as a collision, never as a clean run.
 
 🔴 **THE NEXT SKIP ANYONE ADDS TO THIS TABLE MUST PRINT A LINE.** That is the whole
 discipline of this step and it is written here, in the place someone would add one,
-rather than in a paragraph they will not re-read. §6.2.alt and §6.5 both skip
-*"silently"* — that idiom is house style two sections up and it is **forbidden here**. A
+rather than in a paragraph they will not re-read. §6.6 follows the same rule: every
+skip in Step 6 prints a line too, so no step in this file skips silently. A
 silently-skipped collision report is the dead dashboard arriving through the back door
 of a surface that otherwise works, and it is exactly how `disk-hygiene-report.sh` came to
 print nothing at all for an unknown period.
@@ -1861,12 +1866,13 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 - When working with multiple repos, always use `[SHORT_PROJECT_PREFIX]` for clarity
 - Maintain organization across all steps to demonstrate thoroughness
-- Always wait for explicit approval before committing changes
+- Commit without asking once the quality gate is met (Step 4.3); only the push waits for the user's word (Step 4.5)
 
 ---
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Step 4.3's commit template no longer rides the commit line (defect 9, row `1498e58f`, Pocholo's probe of the guard)**: `git commit -m "$(cat <<'EOF' ... EOF)"` ended in an unclosed quote once the guard cut the command at the first newline, so every commit following this document was allowed unreviewed. It is now `git commit -F <message-file> -- <paths>` with the message written first, plus the rules the guard needs (paths exactly as in Touched Files, a manifest section for the review to happen at all).
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed the Claude Code attribution footer from the commit-message guidance and the commit template, and the Git Safety Protocol block (15 lines). Trials showed no change in behavior without them.
 - **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
 - **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).

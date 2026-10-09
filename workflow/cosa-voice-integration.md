@@ -514,20 +514,20 @@ The response string can be one of six variants:
 **When checking responses**, use `startswith()` to handle plain and commented variants of all three values. See `#### Handling Neither` below for the canonical ternary parser pattern.
 
 ```python
-response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
+response = ask_yes_no( "Push to origin?", default="no", priority="high" )
 
 # ✅ CORRECT - ternary parser, handles all three values + commented variants
 if response.startswith( "yes" ):
-    proceed_with_commit()
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # Re-frame — see #### Handling Neither for the full pattern
     handle_neither( response )
 
 # ❌ WRONG - misses neither entirely and misses "yes [comment: only the docs]"
 if response == "yes":
-    proceed_with_commit()
+    proceed_with_push()
 ```
 
 #### Qualified Comments
@@ -550,9 +550,9 @@ Users can attach a qualifying comment to any of the three answers (yes / no / ne
 **Example**:
 
 ```python
-# Commit approval with comment handling
+# Push approval with comment handling
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
     priority="high"  # MANDATORY for blocking tools
@@ -563,10 +563,10 @@ if response.startswith( "yes" ):
     # Extract comment if present
     if "[comment:" in response:
         comment = response.split( "[comment: " )[1].rstrip( "]" )
-        # Use comment for commit message annotation, logging, etc.
-    proceed_with_commit()
+        # Use comment for logging, etc.
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # See #### Handling Neither below for the canonical re-frame pattern
     handle_neither( response )
@@ -580,16 +580,16 @@ elif response.startswith( "neither" ):
 
 ```python
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
     priority="high"  # MANDATORY for blocking tools
 )
 
 if response.startswith( "yes" ):
-    proceed_with_commit()
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # Extract the qualifying comment if present — it tells you what was ambiguous.
     comment = ""
@@ -683,27 +683,25 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 }
 ```
 
-**Example - Commit Workflow**:
+**Example - Push Decision**:
 
 ```python
-# Session-end commit decision
+# Session-end push decision (the commit itself is made without asking, session-end Step 4.3)
 response = ask_multiple_choice(
     questions=[
         {
-            "question": "How would you like to proceed with the commit?",
-            "header": "Commit",
+            "question": "Commit made. Push it to the remote?",
+            "header": "Push",
             "multiSelect": False,
             "options": [
-                {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
-                {"label": "Commit and push", "description": "Create commit and push to remote"},
-                {"label": "Modify message", "description": "Edit the commit message before committing"},
-                {"label": "Cancel", "description": "Skip commit for now"}
+                {"label": "Push", "description": "Push the commit to the remote"},
+                {"label": "Keep local", "description": "Leave the commit local for now"}
             ]
         }
     ],
     priority="high"  # MANDATORY for blocking tools
 )
-# Returns: {"answers": {"0": "Commit and push"}}
+# Returns: {"answers": {"0": "Push"}}
 ```
 
 **Example - History Archive Decision**:
@@ -837,10 +835,10 @@ notify( "Starting session...", notification_type="progress", priority="low" )
 **Yes/no decision**:
 ```bash
 # OLD (deprecated)
-notify-claude-sync "[PLAN] Proceed with commit?" --response-type=yes_no --response-default=no --timeout=300 --target-user=EMAIL
+notify-claude-sync "[PLAN] Push to origin?" --response-type=yes_no --response-default=no --timeout=300 --target-user=EMAIL
 
 # NEW (cosa-voice MCP)
-ask_yes_no( "Proceed with commit?", default="no", timeout_seconds=300 )
+ask_yes_no( "Push to origin?", default="no", timeout_seconds=300 )
 ```
 
 **Open-ended question**:
@@ -887,7 +885,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_open_ended_batch()` | 300s (5 min) | 180-600s | Return empty dict or timeout message |
 
 **Safe Default Principle**: When timeout occurs, choose the action that preserves data integrity and user control:
-- Commit decisions → default to "Cancel" (don't auto-commit)
+- Push decisions → default to "Keep local" (never auto-push)
 - Archive decisions → default to "Next session" (don't force archive)
 - Destructive actions → default to "No" (don't proceed)
 
@@ -901,7 +899,7 @@ The `abstract` parameter allows you to include supplementary context that is sho
 
 | Use Case | Spoken Message | Abstract Content |
 |----------|----------------|------------------|
-| Commit approval | "Ready to commit 5 files" | Staged file list, diff summary |
+| Push approval | "Ready to push 2 commits" | Commit list, diff summary |
 | Error notification | "Build failed with 3 errors" | Full error messages, stack traces |
 | Plan approval | "Plan ready for review" | Detailed task breakdown, markdown |
 | Multiple choice | "How should we proceed?" | Options context, URLs, references |
@@ -922,18 +920,15 @@ The `abstract` parameter allows you to include supplementary context that is sho
 
 ### Examples with `abstract`
 
-**Commit Approval with Diff Summary**:
+**Push Approval with Commit Summary**:
 ```python
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
-    abstract="""**Staged files**:
-- src/auth/jwt_service.py (+45/-12)
-- src/auth/password.py (+23/-8)
-- tests/test_jwt.py (+67/-0)
-- tests/test_password.py (+34/-0)
-- CHANGELOG.md (+5/-0)
+    abstract="""**Commits to push**:
+- a1b2c3d Add JWT service (+45/-12)
+- e4f5a6b Add password strength validation (+124/-8)
 
 **Summary**: Added password strength validation with tests"""
 )
@@ -1008,25 +1003,14 @@ notify( "All set! Config loaded, history reviewed. Ready to work.", notification
 ### Session End Commit Flow
 
 ```python
-# Draft commit message, then ask for approval
-response = ask_multiple_choice( questions=[
-    {
-        "question": "Commit message drafted. How would you like to proceed?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Keep changes local"},
-            {"label": "Commit and push", "description": "Sync to remote"},
-            {"label": "Modify", "description": "Edit commit message"},
-            {"label": "Cancel", "description": "Skip commit"}
-        ]
-    }
-] )
+# Commit without asking (session-end Step 4.3), post the receipt, then ask only about the push
+notify( "Committed 5 files: a1b2c3d", notification_type="task", priority="medium" )
 
-# Execute based on response
-if response["answers"]["0"] == "Commit and push":
-    # git add, commit, push
-    notify( "Changes committed and pushed", notification_type="task", priority="medium" )
+response = ask_yes_no( "Push to origin?", default="no", timeout_seconds=600, priority="high" )
+
+if response.startswith( "yes" ):
+    # git push
+    notify( "Pushed to origin", notification_type="task", priority="medium" )
 ```
 
 ### Error Handling

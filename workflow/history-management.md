@@ -59,7 +59,7 @@
 - Target: Keep 8-12k tokens in main history.md
 - Analyze token density per day to determine retention period
 - Typical: 7-14 days of recent history
-- Minimum: 5 days for context
+- Minimum: 7 days for context
 
 ---
 
@@ -188,8 +188,8 @@ Priority order for boundary detection:
 4. **Token-based split** keeping last 8-12k tokens
 
 Validation:
-- Split must leave 5-14 days in main file
-- If <5 days would remain: Keep 10 days instead
+- Split must leave 7-14 days in main file
+- If <7 days would remain: Keep 10 days instead
 - Ensure logical cohesion (don't split mid-feature)
 
 **Step 3: Preview & Confirm**
@@ -398,7 +398,7 @@ function validate_retention(split_point, target_retention):
         return false
 
     # Time validation
-    if remaining_days < 5 or remaining_days > 21:
+    if remaining_days < 7 or remaining_days > 14:
         return false
 
     return true
@@ -524,13 +524,24 @@ wc -c history.md | awk '{print int($1 / 4)}'
 
 ### Manual Archive Creation
 ```bash
-# Extract lines for archive period
-head -n 498 history.md > /tmp/history_header.md
-tail -n +1554 history.md >> /tmp/history_temp.md
-cp /tmp/history_temp.md history.md
+# START and END are the first and last line (inclusive) of the block to archive,
+# chosen in Mode 2 Step 2. The example values below are placeholders.
+START=499
+END=1553
+ARCHIVE=history/YYYY-MM-DD-to-DD-history.md   # name per Intelligent Naming
 
-# Create archive
-# (Content between line 499-1553 goes to archive file)
+# 1. Write the archive header from the Archive File Template into $ARCHIVE first
+
+# 2. Build the trimmed file beside history.md (same directory, not /tmp):
+#    everything before the block, then everything after it
+{ head -n $(( START - 1 )) history.md ; tail -n +$(( END + 1 )) history.md ; } > history.md.new
+
+# 3. Only if kept lines + archived lines == original lines: append the block to the
+#    archive, then replace history.md. A refused run changes nothing.
+test $(( $( wc -l < history.md.new ) + END - START + 1 )) -eq $( wc -l < history.md ) \
+  && sed -n "${START},${END}p" history.md >> "${ARCHIVE}" \
+  && mv history.md.new history.md \
+  || rm -f history.md.new
 ```
 
 ### Verify Archive Structure
@@ -551,7 +562,7 @@ ls history/ | grep "2025-09" | wc -l
 **Solution**: Character count ÷ 4 is approximation (~46% more accurate than word × 1.33 for markdown/technical content). Use actual token counter if available, or rely on the 15% safety margin in thresholds (17k/19k vs 25k limit).
 
 ### Issue: Split creates too-small retention
-**Solution**: Algorithm validates minimum 5 days retention. Adjust `calculate_adaptive_retention()` if needed.
+**Solution**: Algorithm validates minimum 7 days retention. Adjust `calculate_adaptive_retention()` if needed.
 
 ### Issue: Natural boundaries not found
 **Solution**: Falls back to token-based split. Consider adding more milestone markers to sessions.

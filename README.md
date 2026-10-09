@@ -116,7 +116,7 @@ A multi-persona review pipeline wrapping `/plan-review`, split across focused sp
 
 - **cosa-voice MCP Integration** - Migrated all notifications from bash scripts to native MCP tools (`notify()`, `ask_yes_no()`, `ask_multiple_choice()`, `ask_open_ended_batch()`, `converse()`). No script installation required.
 
-- **Persistent TODO.md** - Cross-session task tracking that survives history archival. Single source of truth for pending work.
+- **Persistent TODO.md** - Cross-session narrative that survives history archival: the Decisions Log, the Pending-Decisions queue and the not-yet-owed backlog. Owed work lives in the task store.
 
 - **Document Separation Rules** - Clear guidance on what goes in history.md (accomplishments) vs TODO.md (pending) vs implementation docs (phase tracking).
 

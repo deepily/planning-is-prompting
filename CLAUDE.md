@@ -58,7 +58,7 @@ planning-is-prompting/
 
 **Starting a session**: read `history.md`, then `TODO.md`, then any relevant workflow docs.
 
-**Ending a session**: follow `workflow/session-end.md` — health-check history.md, update history (accomplishments only), update TODO.md, update planning docs, summarize uncommitted changes, propose a commit message, commit after approval, notify at each step.
+**Ending a session**: follow `workflow/session-end.md` — health-check history.md, update history (accomplishments only), update TODO.md, update planning docs, summarize uncommitted changes, draft a commit message, commit without asking, ask only about the push, notify at each step.
 
 **Managing TODO.md**: read at session-start, update at session-end, or `/plan-todo`. See `workflow/todo-management.md`.
 

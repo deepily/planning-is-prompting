@@ -394,18 +394,23 @@ git diff --cached --name-only
 
 ### Step 6c: Create Commit
 
-**Create commit:**
+**Create commit:** write the message to a file first, **with the Write tool** (the session scratchpad, or the gitignored `io/`):
 
-```bash
-git commit -m "$(cat <<'EOF'
+```
 Checkpoint: [description]
 
 Files modified: [N]
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
 ```
+
+then commit by pathspec, naming the files from Step 6a-6b:
+
+```bash
+git commit -F <message-file> -- <your files, as written in ### Touched Files>
+```
+
+A message that rides the commit line (`-m "$(cat <<'EOF' ... EOF)"`) is allowed unreviewed by the commit-scope guard; see `session-end.md` Step 4.3 for why. Name each path exactly as in your `### Touched Files` (repo-relative, no `./`: `./src/x` is refused), and note the review only happens when your session has a manifest section.
 
 **If commit fails**:
 ```python
@@ -602,6 +607,7 @@ After checkpoint completes:
 ---
 
 ## Version History
+**v1.3** (2026.10.09) - Step 6c's commit template no longer rides the commit line (defect 9, row `1498e58f`, Sam): the message is written to a file and committed with `git commit -F <message-file> -- <paths>`, the shape the commit-scope guard reviews; `session-end.md` Step 4.3 carries the reasons.
 
 **v1.2** (2026.10.09) - Pruning pilot batch two, shortlist rows 25-27 and 44-46 (store row `681745a9`), Sam: the Step 7c manifest example, the repeated history entry format and the Before-every-commit list point to Manifest Format Enhancement, Step 4 and Steps 1, 5, 6a-6b; the step-checklist class Rick cut from three other files is removed here too (eight Mark Step N complete lines, seven TaskUpdate updated boxes, the Step 0 list and Step 0's own Verification, the other per-step Verification lists staying). Net 58 non-blank lines.
 

@@ -31,7 +31,7 @@
    - Execute ALL steps exactly as described in the canonical workflow document (Steps 0, 0.4, 0.5, 1-6)
    - Do NOT skip any steps (including notifications, health checks, or the **LoC Delta Summary** — canonical §6)
    - Do NOT substitute a shortened or summarized version
-   - Do NOT commit without user approval
+   - Commit without asking once the quality gate is met (canonical Step 4.3); only the push waits for the user's word (Step 4.5)
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 
 4. **MUST honor the LoC Delta Summary MANDATE** (canonical §6 — renamed from "Day's Work Summary" 2026-05-21; the three obligations are non-optional):
@@ -40,7 +40,7 @@
    - **MUST speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter includes a single short LoC verdict (≈8-15 words) replacing the generic "session ended" sign-off.
    - Parse `--summary` / `--no-summary` and `--baseline` / `--no-baseline` from the invocation arguments.
    - **Defaults**: `--summary` ON, `--baseline` ON.
-   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection silently (cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
+   - `--baseline` ON without `LUPIN_ROOT` set: skip the Repo Baseline subsection and print `loc-delta: SKIPPED — repo baseline (LUPIN_ROOT unset)` (cannot be computed via the native fallback) and append the upgrade-path note to the rendered summary.
    - The CSV doc-link in `abstract` MUST use canonical path-only URL form (`/app/docs?path={project}/io/git-loc-delta/...`); the legacy `&scope=` two-param form is dead syntax per `workflow/doc-viewer-links.md`.
 
 5. **MUST clear the Step-6 Accountability Checklist** before declaring session-end complete:
