@@ -188,7 +188,7 @@ Priority order for boundary detection:
 4. **Token-based split** keeping last 8-12k tokens
 
 Validation:
-- Split must leave 5-14 days in main file
+- Split must leave 7-14 days in main file
 - If <5 days would remain: Keep 10 days instead
 - Ensure logical cohesion (don't split mid-feature)
 
@@ -398,7 +398,7 @@ function validate_retention(split_point, target_retention):
         return false
 
     # Time validation
-    if remaining_days < 5 or remaining_days > 21:
+    if remaining_days < 7 or remaining_days > 14:
         return false
 
     return true
@@ -551,7 +551,7 @@ ls history/ | grep "2025-09" | wc -l
 **Solution**: Character count ÷ 4 is approximation (~46% more accurate than word × 1.33 for markdown/technical content). Use actual token counter if available, or rely on the 15% safety margin in thresholds (17k/19k vs 25k limit).
 
 ### Issue: Split creates too-small retention
-**Solution**: Algorithm validates minimum 5 days retention. Adjust `calculate_adaptive_retention()` if needed.
+**Solution**: Algorithm validates minimum 7 days retention. Adjust `calculate_adaptive_retention()` if needed.
 
 ### Issue: Natural boundaries not found
 **Solution**: Falls back to token-based split. Consider adding more milestone markers to sessions.
