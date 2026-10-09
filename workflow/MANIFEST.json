@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-06T14:35:02-04:00",
+  "generated_at": "2026-10-09T15:30:21-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -52,7 +52,7 @@
       "version": "1.0"
     },
     "plan-bug-fix-mode-wrap.md": {
-      "sha256": "2b81e307d4eeb574e2ec59eba57cb8b38e3790d9a36c87168b84fcdafaafb933",
+      "sha256": "78bf0810a04a78c0f5932b66c311308707225eef805888676c86b762efe16d0e",
       "version": "1.0"
     },
     "plan-bug-fix-mode.md": {

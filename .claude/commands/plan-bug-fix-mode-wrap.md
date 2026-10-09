@@ -50,7 +50,7 @@
 
 3. **MUST execute WRAP mode workflow**:
    - Execute the "Fix Wrap (`wrap` mode)" section
-   - Steps 18-25 from the canonical workflow
+   - Steps 18-25 from the canonical workflow (Steps 19, 20, 22d and 23 refer back to Steps 8, 10, 9c and 9d for the history entry, queue move, commit message and hash capture; read those steps too)
    - Continue to next action based on user choice (next bug / clear context / close session)
 
 4. **Key Actions for WRAP mode**:
