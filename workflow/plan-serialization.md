@@ -1,8 +1,8 @@
 # Plan File Serialization
 
-**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
+**Purpose**: Preserve non-trivial, authorized Claude Code plan files with semantic names for cross-session recall.
 
-**When to Use**: After plan mode produces a substantive plan (>1KB, architectural decisions, multi-step implementation).
+**When to Use**: After plan mode produces a substantive plan (>1KB, architectural decisions, multi-step implementation) that someone other than you authorized (Gate 0, below).
 
 **Entry Point**: Behavioral directive (no slash command — this is a practice, not a procedure).
 
@@ -60,7 +60,7 @@ One plan even had an explicit "Step 0: Archive This Plan to R&D" section. This w
 
 ## The Directive
 
-**MANDATE**: After plan mode produces a non-trivial plan, serialize it to the project's `src/rnd/` directory with a semantic name.
+**MANDATE**: After plan mode produces a non-trivial plan that passes Gate 0 (someone other than you authorized it), serialize it to the project's `src/rnd/` directory with a semantic name. A plan that fails Gate 0 goes to the worktree scratch dir.
 
 ### Naming Format
 
