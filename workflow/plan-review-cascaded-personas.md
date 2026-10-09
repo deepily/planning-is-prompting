@@ -453,9 +453,7 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 - Reviewer feedback (received via DM threads, bundled per Item #5 cluster-bundling default)
 
 **Outputs**:
-- A draft of the assigned section, posted to the section's handoff topic when ready for Stage 1
-- Revisions in response to inconsistency findings (manager pulls Author back via `upstream_dm_scope = manager_picks_subset`)
-- Defense or concession on substantive disagreements during consensus discussions
+- Everything Persona 2 outputs (see Persona 2 above)
 - **For hybrid mode**: explicit acknowledgment when implementation-plan draft diverges from the design doc (see "manager-divergence-check safeguard" below)
 
 **Boundaries** (same as Persona 2 Review Author).
