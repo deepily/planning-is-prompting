@@ -524,13 +524,22 @@ wc -c history.md | awk '{print int($1 / 4)}'
 
 ### Manual Archive Creation
 ```bash
-# Extract lines for archive period
-head -n 498 history.md > /tmp/history_header.md
-tail -n +1554 history.md >> /tmp/history_temp.md
-cp /tmp/history_temp.md history.md
+# START and END are the first and last line (inclusive) of the block to archive,
+# chosen in Mode 2 Step 2. The example values below are placeholders.
+START=499
+END=1553
+ARCHIVE=history/YYYY-MM-DD-to-DD-history.md   # name per Intelligent Naming
 
-# Create archive
-# (Content between line 499-1553 goes to archive file)
+# 1. Write the archive header from the Archive File Template into $ARCHIVE first,
+#    then append the archived block
+sed -n "${START},${END}p" history.md >> "${ARCHIVE}"
+
+# 2. Build the trimmed file beside history.md (same directory, not /tmp):
+#    everything before the block, then everything after it
+{ head -n $(( START - 1 )) history.md ; tail -n +$(( END + 1 )) history.md ; } > history.md.new
+
+# 3. Replace history.md only if kept lines + archived lines == original lines
+test $(( $( wc -l < history.md.new ) + END - START + 1 )) -eq $( wc -l < history.md ) && mv history.md.new history.md
 ```
 
 ### Verify Archive Structure
