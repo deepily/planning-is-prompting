@@ -1051,19 +1051,7 @@ notify(
 
 **Key Behavior**: By invoking wrap mode, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
 
-> **⚠️ PARALLEL SESSION SAFETY (v2.0)**
->
-> This workflow is designed for environments where **multiple Claude Code sessions may be working on the same repository simultaneously**. Each session works on different bugs/features and MUST NOT interfere with other sessions' work.
->
-> **CRITICAL ISOLATION RULE**: Only files in the current session's manifest section (`.claude-session.md`) may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
->
-> **Before every commit**:
-> 1. Read your session's section from `.claude-session.md`
-> 2. Run `git status` to see all modified files
-> 3. Compare against your manifest section's `### Touched Files`
-> 4. Stage ONLY files that appear in BOTH lists
-> 5. Check for conflicts with other active sessions' files
-> 6. If you see modified files NOT in your manifest section, leave them unstaged - they belong to another session
+> **⚠️ PARALLEL SESSION SAFETY (v2.0)**: only files in this session's manifest section may be staged and committed; see SESSION ISOLATION RULES at the top of this file and Step 22.
 
 ### Step 18: Validate Wrap Conditions
 
@@ -1175,15 +1163,7 @@ ask_multiple_choice(
 
 ### Step 19: Document in History
 
-**Add fix entry to history.md under current session:**
-
-```markdown
-### Fix N: [Brief description]
-- **Source**: GitHub #123 / ad-hoc
-- **Files**: file1.py, file2.py, file3.py
-- **Test**: Smoke PASS, Unit PASS (or "Not run" if skipped)
-- **Commit**: [pending]
-```
+**Add the fix entry to history.md under the current session, in the format of Step 8**, with the Test line reading "Not run" if tests were skipped and `Commit: [pending]`.
 
 **Note**: Commit hash will be updated in Step 22 after commit succeeds.
 
@@ -1200,23 +1180,7 @@ ask_multiple_choice(
 
 ### Step 20: Update Bug Fix Queue
 
-**Move bug from In Progress to Completed in bug-fix-queue.md:**
-
-Remove from In Progress (your claimed bug):
-```markdown
-### In Progress
-
-(Your bug entry removed)
-```
-
-Add to Completed with attribution:
-```markdown
-### Completed
-
-- [x] [Brief description] -> commit: [pending] | By: [your_session_id] | Closed: #123
-```
-
-**Note**: Commit hash will be updated in Step 22.
+**Move your claimed bug from In Progress to Completed in bug-fix-queue.md, with attribution, as in Step 10**, except that the commit field reads `[pending]` until Step 23 records the hash.
 
 **Also update Active Sessions table**: Update your `Last Activity` timestamp.
 
@@ -1358,20 +1322,7 @@ git diff --cached --name-only
 
 #### Step 22d: Create Commit
 
-**Create commit with issue reference (if applicable):**
-
-```bash
-git commit -m "$(cat <<'EOF'
-Fix: [Brief description]
-
-[Optional longer explanation]
-
-Fixes #123
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
-```
+**Create the commit with the message of Step 9c** (issue reference included if applicable).
 
 **If commit fails**:
 ```python
@@ -1402,19 +1353,7 @@ Present retry option.
 
 ### Step 23: Capture Hash and Update Documents
 
-**Capture commit hash:**
-
-```bash
-git rev-parse --short HEAD
-# Returns: abc1234
-```
-
-**Update history.md with commit hash:**
-
-Replace `[pending]` with actual hash:
-```markdown
-- **Commit**: abc1234
-```
+**Capture the commit hash and update history.md with it, as in Step 9d**, replacing `[pending]`.
 
 **Update bug-fix-queue.md with commit hash:**
 
@@ -1591,23 +1530,7 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions:
 - [ISO timestamp] | [relative file path]
 ```
 
-**At commit time**:
-
-1. Read your session's section from `.claude-session.md`
-2. Extract unique file paths from `### Touched Files`
-3. Compare against `git status` output
-4. Check for conflicts with other active sessions
-5. Stage ONLY files from your section:
-   ```bash
-   git add file1.py
-   git add file2.py
-   git add history.md bug-fix-queue.md
-   ```
-
-**NEVER use**:
-- `git add .`
-- `git add -A`
-- `git add --all`
+**At commit time**: follow Steps 22a-22d (read your section, compare with the repo's modified-files list, check other sessions for conflicts, stage only your own files); the prohibitions are in SESSION ISOLATION RULES.
 
 ### Benefits of v2.0 Manifest
 
@@ -1804,6 +1727,8 @@ else:
 ---
 
 ## Version History
+
+**v1.7** (2026.10.09, Sam) - **Pruning pilot, shortlist rows 4-5 (store row `681745a9`).** The wrap-mode parallel-session safety box and the File Tracking "At commit time" list now point at SESSION ISOLATION RULES and Steps 22a-22d (the append mandate stays); wrap Steps 19, 20, 22d and 23 now point at the fix-cycle Steps 8, 10, 9c and 9d for the history entry, the queue move, the commit message and the hash capture, keeping what differs (`[pending]` hash, "Not run" test line). `.claude/commands/plan-bug-fix-mode-wrap.md` names Steps 8-10 as well as 18-25.
 
 **v1.6** (2026.10.02, María) - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 
