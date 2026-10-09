@@ -97,15 +97,7 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 **Multiple Claude sessions may run on the same repository simultaneously.** This workflow uses the same `.claude-session.md` manifest as regular sessions for file tracking.
 
-**CRITICAL ISOLATION RULE**: Only files in the current session's manifest section may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
-
-**Before every commit**:
-1. Read your session's section from `.claude-session.md`
-2. Run `git status` to see all modified files
-3. Compare against your manifest section's `### Touched Files`
-4. Stage ONLY files that appear in BOTH lists
-5. Check for conflicts with other active sessions' files
-6. If you see modified files NOT in your manifest section, leave them unstaged - they belong to another session
+**Before every commit**: read your session's section (Step 1), compare `git status` with your `### Touched Files` and stage only the files in both lists, leaving other sessions' files unstaged (Steps 6a-6b), and check for conflicts with other active sessions (Step 5).
 
 ---
 
@@ -135,25 +127,7 @@ notify( "Creating checkpoint commit...", notification_type="progress", priority=
 
 ## Step 0: Step Checklist (optional)
 
-Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The `TaskUpdate` lines in later steps apply only if you keep one.
-
-```
-Checklist items:
-
-1. [PREFIX] Validate preconditions (manifest, files)
-2. [PREFIX] Get checkpoint description
-3. [PREFIX] Update TODO.md (if applicable)
-4. [PREFIX] Add checkpoint entry to history.md
-5. [PREFIX] Conflict detection
-6. [PREFIX] Stage and commit
-7. [PREFIX] Update manifest (keep active)
-8. [PREFIX] Notify completion
-```
-
-**Verification**:
-- [ ] If a checklist is kept: created with the items listed above
-- [ ] Items have project prefix
-- [ ] First item marked `in_progress`
+Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3).
 
 ---
 
@@ -203,13 +177,10 @@ If no (`response.startswith("no")`): Exit, return to work.
 If yes (`response.startswith("yes")`, may include `[comment: ...]`): Continue with documentation-only commit.
 If neither (`response.startswith("neither")`): Re-frame — typical concern is "are there files I forgot to track?" Re-prompt with options to (a) audit git status before deciding, (b) commit docs-only now, (c) exit and run session-start to repopulate the manifest. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 1 complete.
-
 **Verification**:
 - [ ] Session ID retrieved
 - [ ] Manifest section found and parsed (or fallback mode chosen)
 - [ ] File list extracted from manifest
-- [ ] TaskUpdate updated
 
 ---
 
@@ -251,11 +222,8 @@ converse(
 )
 ```
 
-**TaskUpdate**: Mark Step 2 complete.
-
 **Verification**:
 - [ ] Description obtained (auto or custom)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -276,12 +244,9 @@ converse(
 INFO: No related TODO items found (no action needed)
 ```
 
-**TaskUpdate**: Mark Step 3 complete.
-
 **Verification**:
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -323,13 +288,10 @@ INFO: No related TODO items found (no action needed)
 - Keep files list compact (show first 2-3, then "+N more" if many)
 - Commit hash will be updated in Step 7 after commit succeeds
 
-**TaskUpdate**: Mark Step 4 complete.
-
 **Verification**:
 - [ ] Checkpoint entry added to history.md
 - [ ] All touched files listed (or summarized)
 - [ ] Commit marked as [pending]
-- [ ] TaskUpdate updated
 
 ---
 
@@ -371,12 +333,9 @@ ask_multiple_choice(
 
 **If no conflicts**: Skip prompt, proceed to staging.
 
-**TaskUpdate**: Mark Step 5 complete.
-
 **Verification**:
 - [ ] Conflict detection performed
 - [ ] Conflicts resolved (if any)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -459,15 +418,12 @@ notify(
 ```
 Present retry option.
 
-**TaskUpdate**: Mark Step 6 complete.
-
 **Verification**:
 - [ ] Pre-commit verification performed
 - [ ] Files NOT in manifest section identified and skipped
 - [ ] ONLY manifest files staged
 - [ ] history.md and TODO.md staged (if modified)
 - [ ] Commit created successfully
-- [ ] TaskUpdate updated
 
 ---
 
@@ -491,29 +447,7 @@ Replace `[pending]` with actual hash:
 
 ### Step 7c: Update Manifest Section
 
-**Add checkpoint tracking to your section** (new format for checkpoints):
-
-```markdown
-## Session: [session_id]
-
-**Started**: 2026-01-31T09:00:00
-**Last Activity**: 2026-01-31T11:30:00
-**Status**: active               ← STAYS ACTIVE (session continues)
-**Checkpoints**: 1               ← NEW: Track checkpoint count
-**Project**: planning-is-prompting
-
-### Checkpoint 1 (abc1234) | 2026-01-31T11:30:00
-
-- file1.py
-- file2.py
-- file3.py
-
-### Touched Files
-
-- 2026-01-31T09:15:00 | file1.py
-- 2026-01-31T09:30:00 | file2.py
-- 2026-01-31T10:35:00 | file3.py
-```
+**Add checkpoint tracking to your section**, in the format shown under Manifest Format Enhancement below.
 
 **Key differences from session-end**:
 - Status stays `active` (NOT `committed`)
@@ -530,8 +464,6 @@ git add history.md
 git commit --amend --no-edit
 ```
 
-**TaskUpdate**: Mark Step 7 complete.
-
 **Verification**:
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
@@ -539,7 +471,6 @@ git commit --amend --no-edit
 - [ ] Status remains `active`
 - [ ] Checkpoints counter updated
 - [ ] Commit amended with final state
-- [ ] TaskUpdate updated
 
 ---
 
@@ -555,8 +486,6 @@ notify(
     abstract="**Commit**: abc1234\n**Files**: [N] modified\n**Description**: [brief]\n\nSession tracking continues. Use /plan-session-end when ready to wrap up."
 )
 ```
-
-**TaskUpdate**: Mark Step 8 complete.
 
 **Verification**:
 - [ ] Completion notification sent
@@ -586,13 +515,7 @@ After checkpoint completes:
 
 ## History.md Checkpoint Entry Format
 
-**Standard format**:
-```markdown
-#### Checkpoint | YYYY.MM.DD HH:MM | [Brief description]
-
-**Files**: file1.py, file2.py (+N more)
-**Commit**: abc1234
-```
+**Standard format**: the Step 4 history entry template, with the final hash from Step 7b.
 
 **Multiple checkpoints in one session**:
 ```markdown
