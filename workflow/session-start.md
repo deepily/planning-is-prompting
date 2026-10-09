@@ -26,26 +26,6 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ## Preliminary -1: Preferred-Persona Env Var (CONDITIONAL — fires at SessionStart hook, not in assistant turn)
 
-**Purpose**: Allow a repo to declare its canonical default persona via environment variable, so cosa-voice's SessionStart hook allocates that persona deterministically instead of choosing randomly. This is what restores cross-day and cross-repo narrative continuity: opening a fresh Claude Code session in `<project>` should consistently land on the same persona, without the user having to type a slash command.
-
-**When this applies**: When `COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>` is set in the user's shell environment AND the project the session is allocated to matches `<PROJECT_UPPER>`. If the env var is unset for the current project, skip this Preliminary entirely — random allocation stands as before, and Preliminary 0.5 (the slash-command swap path) remains the only persona-override mechanism.
-
-**Why this exists**: prior to this feature, the only way to claim a specific persona was the per-session slash-command path (`/plan-session-start María` → Preliminary 0.5 swap). That required the user to remember the command AND the arg on every fresh session — high friction, easy to forget. The env-var path makes the preference **declarative and persistent**: once exported in `~/.bashrc`, every new Claude Code session in that repo claims the preferred persona automatically.
-
-**Important**: this Preliminary describes a step performed by **cosa-voice's SessionStart hook**, not by the assistant. The hook fires before the assistant's first turn. By the time Preliminary 0 (`get_session_info()`) runs, the env-var path has already either succeeded (persona is on the bridge as the preferred one) or failed gracefully (random fallback was allocated and a conflict-notify was queued). The assistant's only obligation is to honor the persona returned by Preliminary 0 — same contract as before.
-
----
-
-### Naming pattern
-
-```
-COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>
-```
-
-- Prefix `COSA_VOICE_*` — the allocator lives in cosa-voice (the MCP server), not in any consumer project. The env var is read there, not in this workflow's slash command.
-- Suffix `__<PROJECT_UPPER>` — the cosa-voice session bridge already knows the project name from session creation (visible in `get_session_info()` → `project`). Suffixing the env var with the project lets one universal lookup pattern serve every repo.
-- Project name normalization: lowercase → UPPER, hyphens → underscores. So project `plan` → `__PLAN`, project `cosa-voice` → `__COSA_VOICE`.
-
 ### Example shell-rc setup
 
 ⚠️ **Do not hand-export these — as of 2026-08-18 they are DERIVED.** The one
@@ -58,36 +38,7 @@ decides who may WRITE to the task store, and a stale copy-paste puts a retired
 name back on one side only. Lupin's SessionStart hook now compares the two and
 prints a drift block into the session's boot context when they disagree.
 
-```bash
-# ~/.claude/fleet-roster.env — the ONE place a repo's manager is named.
-# Plain KEY="value" (the bash-source ∩ systemd EnvironmentFile intersection).
-COSA_VOICE_MANAGERS__PLAN="María"
-COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
-# Order matters: the roster HEAD is the declared fallback manager.
-# Add a line per repo; the persona chain follows automatically.
-```
-
-### Conflict behavior
-
-When the env var is set but the requested persona cannot be allocated, the SessionStart hook **does NOT block, prompt, or queue-and-wait**. Behavior:
-
-| Situation | Hook action | What the assistant sees |
-|---|---|---|
-| Preferred persona unallocated | Allocate it; no notify | `get_session_info()` returns the preferred persona |
-| Preferred persona held by another live session | Allocate a random unallocated persona; queue a `notify( priority="high" )` describing the conflict ("María is held by session abc12345 — allocated Rio instead. Kill that session to free María, restart this one.") | `get_session_info()` returns the random persona; the notify fires shortly after MCP tools surface |
-| Preferred persona name is invalid (typo, not in pool) | Allocate a random unallocated persona; queue a `notify( priority="high" )` listing the available pool | Same as above |
-| Env var unset for this project | Existing random-allocation behavior; no notify | Same as pre-feature |
-
-**Rationale for notify-only conflict UX**: the SessionStart hook fires before the assistant exists, so it cannot run an interactive prompt (no `ask_multiple_choice` surface yet). The user is expected to resolve the conflict asynchronously: kill the holding session, restart, and the next attempt will succeed cleanly. This is intentionally lower-touch than Preliminary 0.5 (which CAN prompt interactively because the assistant is alive at that point).
-
 ### Relationship to Preliminary 0.5 (slash-command swap)
-
-The two paths are **complementary, not redundant**:
-
-| Mechanism | Surface | When it fires | Conflict UX |
-|---|---|---|---|
-| **Preliminary -1** (env var) | `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` in shell rc | At SessionStart hook, before assistant turn | Notify-only, async resolution by user |
-| **Preliminary 0.5** (slash command) | `/plan-session-start María` arg | After Preliminary 0, before first ack | Interactive prompt via `ask_multiple_choice` |
 
 **Composition**: Preliminary -1 sets the per-repo declarative default. Preliminary 0.5 overrides per-session when the user wants a different persona for a specific work session (e.g., narrative-continuity reasons across days). The slash-command arg always wins over the env var; if both are absent, random allocation stands.
 
@@ -1898,6 +1849,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam)**: Pruning pilot, shortlist row 27 (store row `681745a9`): the Preliminary -1 section no longer describes what the persona-picking SessionStart hook does (its purpose paragraphs, naming pattern, rc sample, conflict table and relationship table: 34 lines). It keeps the three headings, the do-not-hand-export warning, the "slash-command arg always wins" line and the locked /clear rule (persona stays after /clear; a new value takes effect on the next fresh launch).
 - **2026.10.09 (Sam)**: **Leftovers from the pruning review (Pocholo's F2 and F3)**: Step 2's purpose now says both `CLAUDE.md` files are already in context, Step 3 groups the commands already listed in context, and the Quick Reference node reads "Group slash commands by category". Also dropped "an optional step checklist" from the description of this file in `deterministic-wrapper-pattern.md`.
 - **2026.10.09 (Sam)**: **Follow-through on the Step 0 cut (María's ruling)**: removed the five "If you keep a step checklist" lines, the Step 0 node in the Quick Reference flowchart, and the "before Step 0" and "before any step checklist" mentions (the Preliminary steps now say "before Step 1"); renumbered Step 2 and Step 3 so each list opens on item 1.
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed Step 0 (the optional step checklist) and its summary line in the Overview, the `cat` of the global and project `CLAUDE.md` in Step 2, and the `ls` of `.claude/commands/` in Step 3. Trials showed Claude Code behaves the same without them. The "If you keep a step checklist" lines, the Step 0 mermaid node and the "before Step 0" mentions are left in place, pending Rick's word; Step 2 and Step 3 keep their original item numbers (3 and 2 now open their lists).
