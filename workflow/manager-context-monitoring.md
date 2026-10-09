@@ -149,10 +149,7 @@ never the installation.
 ⇒ **The durable half raises the alarm AND puts it in front of somebody; a live session does the
 work.** Install both.
 
-**Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo prints the roster,
-handles the null, **DMs anyone over budget and their manager and fires one notify to the operator**
-(§1.5), and exits non-zero when it could not read the sensor or could not deliver. One line per
-manager, on your own slot:
+**Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo; its header says what it prints, who it DMs and when it exits non-zero. One line per manager, on your own slot:
 
 ```cron
 10,25,40,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
@@ -215,41 +212,13 @@ and reachable — see § *Seat ownership ≠ row ownership*.
 command in `~/.claude/settings.json`. It checks the crontab and adds what is missing, every boot,
 including after `/clear`. Nobody has to remember anything.
 
-**It is driven by the ROSTER, not by whoever booted** — `~/.claude/fleet-roster.env`, the same
-user-level file the launcher and the arbiter's systemd drop-in already read. Two reasons, and the
-first one is the whole point:
-
-| | |
-|---|---|
-| **coverage does not depend on who starts up** | that is precisely the Rio gap — his seat went unwatched because no session of his had ever run the install |
-| **it does not race persona allocation** | at `SessionStart` this session's own persona may not be assigned yet; a hook reading a half-written bridge would install the wrong seat's line |
-
-**What it will not do**: edit or reorder a line. A manager already carrying a tick keeps their exact
-line, suffix and all, and a line the script does not recognize as its own is never touched.
+**It is driven by the ROSTER, not by whoever booted** — `~/.claude/fleet-roster.env`, the file the launcher and the arbiter's systemd drop-in already read — and it never edits or reorders a line it did not issue; the installer's docstring gives the reasons.
 
 ### 🔁 THE ROSTER IS AUTHORITATIVE — reversal ruled by Rick, 2026-08-18
 
-This section used to read: *"Removing a manager from the roster does NOT remove their crontab line;
-pulling a monitor is a decision a person makes, not a side effect of editing a config file."* That
-reasoning was sound and is now **satisfied differently**. Rick is the person, editing the roster IS
-his decision, and he ruled that he never wants to hand-edit a crontab again: **he edits
-`~/.claude/fleet-roster.env` and everything follows.**
+Rick ruled on 2026-08-18 that he edits `~/.claude/fleet-roster.env` and everything follows: the script reconciles the tagged tick lines to the roster, adding for anyone new and removing for anyone no longer rostered, under four guards and the rule that an empty or unreadable roster removes nothing (all in the installer's docstring).
 
-So the script **reconciles**. After it runs, the tagged tick lines match the roster exactly — added
-for anyone new, **removed for anyone no longer rostered**. What the old rule protected against — a
-config edit quietly pulling a monitor — is carried by four guards instead:
-
-| Guard | What it buys |
-|---|---|
-| removes only a line ending in the exact `# slot-<persona>-<8 hex>` tag it issues | Rick's password-rotation and LoRA-review jobs carry no such tag, so they are structurally unmatched, not "carefully avoided" |
-| **at most one line per run** | a typo in the roster ("Cheeh") costs one monitor; fixing the spelling puts it back at the next session start. It can never cost the fleet |
-| every removal is announced | a `notify()` naming the persona, plus a stderr line that stands even when the notification server is down |
-| timestamped backup before any write, **and no backup means no write** | the previous crontab is always one `cp` away |
-| `--no-announce` | a rehearsal against a **copy** of the crontab cannot page the operator about a removal that did not happen to his real one |
-
-An **empty or unreadable roster removes nothing** — "I could not read who is rostered" must never be
-spelled the same way as "nobody is rostered", or a permissions hiccup would sweep the fleet one seat
-per boot.
+`--no-announce` lets a rehearsal against a **copy** of the crontab run without paging the operator about a removal that did not happen to his real one.
 
 **Receipt, 2026-08-18**: driven against a copy of the live crontab with the two known orphans
 (`slot-tiberius-99e4ce19`, `slot-rachel-9eb9253c`) planted back in, it took them out one per run —
@@ -271,12 +240,7 @@ has left the fleet unwatched.**
 
 ### The tick script must survive a null
 
-**An IDLE persona returns `consumption_pct_of_window` as `null`** (Cheech, reproduced live — his
-first version crashed on it mid-loop). A script that dies partway **prints a SHORTER roster and
-exits non-zero**, and that failure is the dangerous shape: fewer sessions than exist, rendered as a
-complete reading.
-
-> **A monitor that dies partway and reports fewer sessions than exist is a monitor that lies.**
+**An IDLE persona returns `consumption_pct_of_window` as `null`**, and a monitor that dies on it partway prints a shorter roster than exists and exits non-zero; the script header (lines 20-22) states the rule.
 
 Handle the null **explicitly** — treat it as "unknown, still listed," never as zero and never as a
 row to skip. Read `status` for the decision (§1) and let the percentage be decoration; a null
@@ -338,25 +302,11 @@ on a surface with no push* — and we built a monitor that violated it.
 
 ### Do not spam — "material change" is defined, not implied
 
-The tick fires every ten minutes and a session can sit over budget for an hour. Re-sending every
-fire trains its readers to ignore it inside two hours, which lands back at the printing defect by
-another route. So the script keeps a small send ledger
-(`~/.claude/context-pressure-tick-state.json`) and sends **once per over-budget episode**, re-sending
-only on one of exactly three material changes:
-
-| trigger | rule |
-|---|---|
-| **new episode** | no ledger row — the previous tick did not see them over budget. The first crossing always sends |
-| **new band** | the percentage climbed into a higher 5-point band since the last send (`CONTEXT_TICK_BAND_POINTS`). 54 → 57 is not news; 57 → 61 is |
-| **quiet interval** | 60 minutes since the last send (`CONTEXT_TICK_RESEND_MINUTES`). Sitting over budget for an hour with nobody acting is itself the news |
-
-An episode **ends** when the persona drops off the over-budget list; the row is pruned, so the next
-crossing sends fresh.
+Re-sending every fire trains readers to ignore it, so the tick sends once per over-budget episode and re-sends only on a new episode, a new 5-point band (`CONTEXT_TICK_BAND_POINTS`) or 60 quiet minutes (`CONTEXT_TICK_RESEND_MINUTES`); `should_send` in the script carries the rule and says when an episode ends.
 
 ### Fail loud, never silent
 
-Every POST prints its HTTP status, and a tick that detected somebody and failed to deliver **exits
-3** — distinct from 0 (read fine), 1 (sensor unreadable) and 2 (sensor returned an empty roster).
+Every POST prints its HTTP status; the exit codes (0 read fine, 1 sensor unreadable, 2 empty roster, 3 detected but failed to deliver) are in the script header.
 
 🔴 **A failed send is not a send.** The ledger row advances only on a *delivered* persona DM, and an
 episode with no successful delivery leaves **no row at all**, so the next tick retries instead of
@@ -370,17 +320,11 @@ Point `CONTEXT_PRESSURE_URL` at anything other than the production sensor and th
 a **DRILL** automatically — no flag to remember. Drill deliveries arrive from sender
 **`context tick DRILL 🧪`**, and the notify says DRILL in its message and abstract.
 
-⚠️ **The label goes in the SENDER IDENTITY, not the body.** The first drill wrote
-`[DRILL — not a real reading]` as the first words of the DM body; **the DM path condensed it away**
-and María received what read as a live alarm about a peer. Body text is rewritten in transit; sender
-metadata is not. *Anything a message must not lose in transit belongs in metadata, not in prose.*
+⚠️ **The label goes in the SENDER IDENTITY, not the body**: the DM path condenses body text, so the drill marker rides in `sender_persona` (script comment at 341-346). *Anything a message must not lose in transit belongs in metadata, not in prose.*
 
 ### Nameless seats — the seat nobody watches must still be counted, named, and warned
 
-**A live session whose persona allocation is null cannot appear in `personas`** — the payload is
-keyed by persona name, so there is no key to put it under. The server side was fixed 2026-08-16
-(lupin `2c35dfe7`, row `9c720767`): nameless seats now arrive in a separate **`unnamed_seats`** list,
-each a full record carrying `persona: null`, with **`summary.unnamed_live_seats`** counting them.
+**A live session whose persona allocation is null cannot appear in `personas`**: the server lists it in a separate `unnamed_seats` list, with `summary.unnamed_live_seats` counting them (lupin `2c35dfe7`, row `9c720767`, 2026-08-16; script comment at 196-203).
 
 **The tick read neither field until 2026-08-17**, so that fix stopped one step short of a human. It
 now:
@@ -461,7 +405,7 @@ re-check after it has taken a turn.
 
 ## 1.9 Skip the re-spin when closing time is near
 
-**A re-spin within an hour of a scheduled close is waste.** The fresh seat spends the rest of the session rebuilding what the old one knew, then closes. Measured 2026-09-28: a seat re-spun at 50.8% context 29 minutes before closing time, and Rick called it pointless (row `6380199b`).
+**A re-spin within an hour of a scheduled close is waste.** The fresh seat spends the rest of the session rebuilding what the old one knew, then closes. Measured 2026-09-28: a seat re-spun at 50.8% context 29 minutes before closing time, and Rick called it pointless (row `6380199b`). The origin, why the check keys on closing time and not last call, and the 60-minute window (set by María on 2026-09-29, going to Rick for ruling) are in the docstring of `last_call_window.py`.
 
 Before any re-spin, of a worker or of yourself, ask:
 
@@ -475,9 +419,6 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/last_call_window.py check  
 | 1 | no close in the window | re-spin as usual |
 | 2 | a row in the window could not be read | re-spin as usual, and say the check could not look |
 
-- **Keyed on closing time, not last call**: the session ends at closing time, so that is what makes a re-spin waste.
-- **A cancelled close does not count**: a row that is done, dropped or missing means the close is off.
-- **The window is 60 minutes**, one flag. It was set by María under skeleton-crew authority on 2026-09-29, from two measured cases (29 minutes out: waste; 78 minutes out: worth it), and it goes to Rick for ruling.
 - **Self-clears are enforced**: lupin's `self_respin` refuses inside the window (lupin `a5fbb4d75`, row `b134feb9`), and says it could not look when the check fails. It takes effect for a seat once that seat's MCP has restarted; a `/clear` does not reload it. Re-spinning a **worker** is still a step you run.
 
 ---
@@ -966,17 +907,7 @@ predictable event can have.
 
 ## 6. Anti-patterns
 
-- ❌ Reaping without `respin_personas` when you intend to bring the seat back (§2 step 3).
-- ❌ Killing a worker that has not checkpointed, because the tick said 50%. The tick is a trigger,
-  not a deadline.
-- ❌ Addressing a fresh seat by persona name before `persona_state` says `allocated`.
-- ❌ Polling a worker by DM to ask its context level — that spends the very thing you are protecting.
-- ❌ Notifying the user on every quiet tick. Silence is the correct output when nobody is over.
-- ❌ Monitoring workers you did not spawn. Another manager's crew is that manager's job.
-- ❌ Scheduling a self-clear and then writing the memento. Verify it on disk **first** (§4a).
-- ❌ Firing a self-clear with no external observer watching for the seat to come back — that is how a
-  seat dies silently, which is the one outcome this whole policy exists to prevent.
-- ❌ Putting the 50% threshold in the tick script. It is the sensor's number (§1).
+- ❌ Treating the tick as a deadline. It is a trigger, not a deadline.
 
 ---
 
