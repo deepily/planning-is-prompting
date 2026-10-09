@@ -1861,7 +1861,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 - When working with multiple repos, always use `[SHORT_PROJECT_PREFIX]` for clarity
 - Maintain organization across all steps to demonstrate thoroughness
-- Always wait for explicit approval before committing changes
+- Commit without asking once the quality gate is met (Step 4.3); only the push waits for the user's word (Step 4.5)
 
 ---
 
