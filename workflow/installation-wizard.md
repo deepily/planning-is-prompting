@@ -2623,116 +2623,60 @@ notify( "Installation session recorded via /plan-session-end", notification_type
 **History Management**: See planning-is-prompting → workflow/history-management.md
 ```
 
-### Template: Project CLAUDE.md (With Testing Workflows)
+### Variant: Project CLAUDE.md with Testing Workflows
 
-```markdown
-# CLAUDE.md
+Start from the minimal template above and add:
 
-**Short Prefix**: [MYPROJ] - Use this prefix in all TODO items and notifications for this project.
+- Under **Installed Workflows**, before **Configuration**:
 
-## Project Overview
+  ```markdown
+  **Testing Workflows**:
+  - `/plan-test-baseline` - Pre-change baseline collection
+  - `/plan-test-remediation` - Post-change verification
+  - `/plan-test-harness-update` - Test maintenance planning
+  ```
 
-**Project Name**: My Project
+- Under **Configuration**: `- Test results: ./tests/results/`
+- After **Session Workflows**:
 
-## Installed Workflows
+  ```markdown
+  ## Testing Workflows
 
-**Session Management**:
-- `/plan-session-start` - Initialize work session
-- `/plan-session-end` - Wrap up session
+  **Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
 
-**History Management**:
-- `/plan-history-management` - Manage history.md archival
+  **Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
 
-**Testing Workflows**:
-- `/plan-test-baseline` - Pre-change baseline collection
-- `/plan-test-remediation` - Post-change verification
-- `/plan-test-harness-update` - Test maintenance planning
+  **Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
+  ```
 
-**Configuration**:
-- History file: ./history.md
-- Archive directory: ./history/
-- Test results: ./tests/results/
+### Variant: Project CLAUDE.md with Planning Workflows
 
-## Session Workflows
+Start from the minimal template and add the testing additions above only if testing workflows are installed (label them "(if installed)"), plus:
 
-**Session Start**: Use `/plan-session-start` or see planning-is-prompting → workflow/session-start.md
+- Under **Installed Workflows**, after **History Management**:
 
-**Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
+  ```markdown
+  **Planning is Prompting**:
+  - `/p-is-p-00-start-here` - Entry point & decision matrix
+  - `/p-is-p-01-planning` - Work planning workflow
+  - `/p-is-p-02-documentation` - Implementation documentation
+  ```
 
-**History Management**: See planning-is-prompting → workflow/history-management.md
+- Under **Configuration**: `- Planning docs: ./src/rnd/`
+- Before **Session Workflows**:
 
-## Testing Workflows
+  ```markdown
+  ## Planning Workflows
 
-**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
+  **Entry Point**: See planning-is-prompting → workflow/p-is-p-00-start-here.md
 
-**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
+  **Two-Step Process**:
+  1. **Plan the Work** (planning-is-prompting → workflow/p-is-p-01-planning-the-work.md) - Always required
+  2. **Document Implementation** (planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md) - Only for Pattern 1, 2, 5
 
-**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
-```
-
-### Template: Project CLAUDE.md (With Planning Workflows)
-
-```markdown
-# CLAUDE.md
-
-**Short Prefix**: [MYPROJ] - Use this prefix in all TODO items and notifications for this project.
-
-## Project Overview
-
-**Project Name**: My Project
-
-## Installed Workflows
-
-**Session Management**:
-- `/plan-session-start` - Initialize work session
-- `/plan-session-end` - Wrap up session
-
-**History Management**:
-- `/plan-history-management` - Manage history.md archival
-
-**Planning is Prompting**:
-- `/p-is-p-00-start-here` - Entry point & decision matrix
-- `/p-is-p-01-planning` - Work planning workflow
-- `/p-is-p-02-documentation` - Implementation documentation
-
-**Testing Workflows** (if installed):
-- `/plan-test-baseline` - Pre-change baseline collection
-- `/plan-test-remediation` - Post-change verification
-- `/plan-test-harness-update` - Test maintenance planning
-
-**Configuration**:
-- History file: ./history.md
-- Archive directory: ./history/
-- Planning docs: ./src/rnd/
-- Test results: ./tests/results/ (if testing workflows installed)
-
-## Planning Workflows
-
-**Entry Point**: See planning-is-prompting → workflow/p-is-p-00-start-here.md
-
-**Two-Step Process**:
-1. **Plan the Work** (planning-is-prompting → workflow/p-is-p-01-planning-the-work.md) - Always required
-2. **Document Implementation** (planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md) - Only for Pattern 1, 2, 5
-
-**Project Configuration**:
-- Use decision matrix to determine if you need Step 2
-
-## Session Workflows
-
-**Session Start**: Use `/plan-session-start` or see planning-is-prompting → workflow/session-start.md
-
-**Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
-
-**History Management**: See planning-is-prompting → workflow/history-management.md
-
-## Testing Workflows (if installed)
-
-**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
-
-**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
-
-**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
-```
+  **Project Configuration**:
+  - Use decision matrix to determine if you need Step 2
+  ```
 
 ### Template: Initial history.md
 
@@ -4539,6 +4483,8 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ---
 
 ## Version History
+
+**v1.3** (2026.10.09) - Pruning pilot, shortlist row 9 (store row `681745a9`): the testing and planning CLAUDE.md templates, which repeated the minimal template and its identical Session Workflows sections, are now variants listing only their additions. The planning variant's own sections are kept.
 
 **v1.2** (2026.10.02) - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 
