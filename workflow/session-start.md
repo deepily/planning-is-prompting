@@ -1181,7 +1181,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    **CRITICAL**: This is when you ask the user what they want to work on - AFTER you know what the options are.
 
-   **IMPORTANT CONSTRAINT**: `ask_multiple_choice()` supports **2-4 options maximum**. The number of TODOs found determines the presentation strategy.
+   **IMPORTANT CONSTRAINT**: `ask_multiple_choice()` supports **2-4 options maximum**, and this menu never shows more than four (Rick, 2026-10-09): the rest sit under "Other...". The number of TODOs found determines the presentation strategy.
 
    ---
 
@@ -1267,134 +1267,30 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    ---
 
-   ### Case D: 3 TODOs Found (5 options, single call)
+   ### Case D: 3 or More TODOs Found (4 options, single call, the rest under Other)
 
-   Present all 3 TODOs plus fallback options:
-
-   ```python
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 3 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   ---
-
-   ### Case E: 4 TODOs Found (6 options, single call)
-
-   Present all 4 TODOs plus fallback options:
+   **Never show more than four options.** Present the first three TODOs plus one "Other..." option that carries everything else:
 
    ```python
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 4 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   ---
-
-   ### Case F: 5 TODOs Found (6 options, single call)
-
-   Present all 5 TODOs plus unified "Other..." escape hatch:
-
-   ```python
-   # All 5 TODOs + "Other" for custom input (user can type anything)
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 5 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-               {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
-               {"label": "Other...", "description": "Start fresh, modify list, or describe what you want"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   **Note**: "Other..." serves as a unified escape hatch - user can type "start fresh", "modify list", or any custom direction.
-
-   ---
-
-   ### Case G: 6+ TODOs Found (Progressive Disclosure)
-
-   When there are more TODOs than can fit in 6 options, use a **two-step approach**:
-
-   **Step 5a - Mode Selection** (first question):
-
-   ```python
+   # First 3 TODOs + "Other" for the rest and for custom input (user can type anything)
    ask_multiple_choice( questions=[
        {
            "question": f"Session ready! Found {n} outstanding TODOs.",
            "header": "Direction",
            "multiSelect": False,
            "options": [
-               {"label": f"Continue TODOs ({n})", "description": "Choose which TODO to work on first"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+               {"label": "Other...", "description": f"{n - 3} more TODOs, start fresh, modify list, or describe what you want"}
            ]
        }
    ], priority="high" )
    ```
 
-   **If user selects "Continue TODOs (N)"** → proceed to Step 5b
+   **Note**: with exactly 3 TODOs the "Other..." description reads "Start fresh, modify list, or describe what you want". "Other..." is the unified escape hatch: the user can type "start fresh", "modify list", "more", or any custom direction.
 
-   **Step 5b - TODO Selection** (second question):
-
-   Show the first 5 TODOs as individual options, plus a "See more" option if > 5:
-
-   ```python
-   # Build options from first 5 TODOs
-   options = [
-       {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-       {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-       {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-       {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-       {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
-   ]
-
-   # Add 6th option based on remaining count
-   if remaining_todos > 0:
-       options.append( {"label": f"See {remaining_todos} more...", "description": "View remaining TODOs"} )
-   else:
-       options.append( {"label": "Back", "description": "Return to previous menu"} )
-
-   ask_multiple_choice( questions=[
-       {
-           "question": "Which TODO would you like to work on first?",
-           "header": "Select TODO",
-           "multiSelect": False,
-           "options": options
-       }
-   ] )
-   ```
-
-   **If user selects "See N more..."** → repeat Step 5b with next batch of TODOs
+   **Paging**: when the user answers "Other..." by asking for the remaining TODOs ("more", "next", or a TODO's number), repeat the call with the next three TODOs and the same "Other..." option (its count lowered by three). Stop when none remain.
 
    ---
 
@@ -1438,10 +1334,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    | [Specific TODO] | File it in the task store (`task_create`, or `task_transition` an existing row to `in_progress`) |
    | "Start fresh" | Clear old TODOs, wait for user to describe today's work |
    | "Modify list" | Show all TODOs, ask what to add/remove/change |
-   | "Other..." | Parse user's custom text: may be "start fresh", "modify list", or custom direction |
-   | "Continue TODOs (N)" | Proceed to Step 5b for individual TODO selection (Case G only) |
-   | "See N more..." | Show next batch of TODOs (repeat Step 5b with offset, Case G only) |
-   | "Back" | Return to Step 5a mode selection (Case G only) |
+   | "Other..." | Parse user's custom text: may be "start fresh", "modify list", a request for the remaining TODOs (page the next three, Case D), or custom direction |
    | "New task" | Wait for user to describe new work (zero-TODO case) |
    | "Browse history" | Show recent session summaries for context |
 
@@ -1849,6 +1742,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam, row `1498e58f`, Rick's ruling)**: **The work-direction menu shows at most four options; the rest sit under "Other...".** Cases D, E, F and G (5, 6 and 6 options, then a two-step menu) are one Case D: the first three TODOs plus "Other...", paged three at a time on request. Cases A-C were already within four.
 - **2026.10.09 (Sam)**: Pruning pilot, shortlist row 27 (store row `681745a9`): the Preliminary -1 section no longer describes what the persona-picking SessionStart hook does (its purpose paragraphs, naming pattern, rc sample, conflict table and relationship table: 34 lines). It keeps the three headings, the do-not-hand-export warning, the "slash-command arg always wins" line and the locked /clear rule (persona stays after /clear; a new value takes effect on the next fresh launch).
 - **2026.10.09 (Sam)**: **Leftovers from the pruning review (Pocholo's F2 and F3)**: Step 2's purpose now says both `CLAUDE.md` files are already in context, Step 3 groups the commands already listed in context, and the Quick Reference node reads "Group slash commands by category". Also dropped "an optional step checklist" from the description of this file in `deterministic-wrapper-pattern.md`.
 - **2026.10.09 (Sam)**: **Follow-through on the Step 0 cut (María's ruling)**: removed the five "If you keep a step checklist" lines, the Step 0 node in the Quick Reference flowchart, and the "before Step 0" and "before any step checklist" mentions (the Preliminary steps now say "before Step 1"); renumbered Step 2 and Step 3 so each list opens on item 1.
