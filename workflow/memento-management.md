@@ -95,9 +95,8 @@ seat's re-spin on 2026-09-02 — see §3.2.
 
 ---
 
-**Distinct from**:
+**Distinct from** (for `.claude-session.md`, which is complementary, see §6):
 - **Auto-memory** (`~/.claude/projects/.../memory/`) — durable cross-conversation facts about the user / project / preferences. Memento is single-clear-cycle transient.
-- **`.claude-session.md`** — tracks touched files for the parallel-session commit-safety mandate. Memento captures cognitive/role state. Complementary.
 - **history.md** — long-form narrative of what happened. Memento is short-form working context for what's in flight RIGHT NOW.
 
 ---
@@ -440,11 +439,9 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py waivers --rep
 
 **Run this in the post-game.** The R-1 post-game gate has always had a reachable escape — `--no-post-game "<reason>"` — and the reason has always been *recorded*, in the record, the mirror and the pointer. Until 2026-07-26 **nothing read it**: the escape was auditable in principle and unaudited in fact, and both live waivers were taken by the gate's own authors, who were also the only people who knew where to look.
 
-An escape you can take silently is not a gate. **An escape nobody enumerates is silent in every way that matters.**
-
 > **Why this gate hangs off the memento write, and must stay there even when the memento becomes a throwaway file** (Rick's ruling, 2026-08-06; recorded here 2026-08-13 so nobody later deletes it as obvious dead weight). The gate never protected the *file*. It uses that write as a tripwire at a **moment** — the last instant before a session loses its context — and making the file ephemeral does not move the moment. The tempting "improvement" is to re-hang it on the `history.md` write, which lands too late: sessions are re-spun all day, and the end-of-day write is long past the point where the context was still there to capture. **A control guarding a disposable artifact looks like waste right up until you ask what it is timed to.**
 
-What it prints:
+What it prints (it is read-only, is not a gate, and exits 4 when it scanned nothing; the verb's docstring and comments carry the rest):
 
 | signal | meaning |
 |---|---|
@@ -452,9 +449,6 @@ What it prints:
 | **UNCORRELATED POST-GAMES** | retros that cleared the content floor while naming none of the seats that armed the gate (`547f6565` H3) |
 | **scanned N record(s)** | printed on *every* run, findings or not |
 
-- **READ-ONLY.** Writes nothing, moves nothing. Safe to run any time, twice.
-- **Not a gate, and has no opinion.** A waiver is a legitimate authorized act; finding one is not a failure and never changes the exit code. Judging them is a human's job — giving this command a red would turn a recorded decision into a standing accusation.
-- **Exit 4 means it scanned NOTHING** — not that it found nothing. `io/mementos/` is gitignored and does not survive a clone, so a wrong `--repo` or a fresh checkout would otherwise print the same reassuring zero. Likewise, *no correlation stamps* is reported as a **denominator of zero**, never as a clean bill.
 
 First real-corpus run (planning-is-prompting, 54 records) surfaced **two waivers sitting unread for 8 days** — one recording that *"a post-game for the 2026-07-16 night run remains genuinely OWED and unwritten,"* the other addressed to *"Successor Steward: write it from those deposits."* Both were instructions to a future reader that had no reader.
 
@@ -546,8 +540,6 @@ Neither would ever have reddened a test.
 | Multi-session | Supports parallel sessions (v2.0 format) | One derivable **pointer** per worker (`io/mementos/<persona-slug>.md`) + one for self-`/clear` (`.claude-memento-<persona-slug>.md`); the **records** behind them accumulate, one per session, and are immutable |
 | Gitignored | YES | YES — records, pointers and twins alike (§3.3), **plus an out-of-repo mirror** that `git clean -xdf` cannot reach |
 | Format | Multi-section manifest with timestamps | Free-form markdown structured per §2 |
-
-Both files complement each other. The session manifest tracks WHAT files you touched; the memento tracks WHY you touched them and what's next.
 
 ---
 
