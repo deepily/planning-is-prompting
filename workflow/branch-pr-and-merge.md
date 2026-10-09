@@ -50,42 +50,11 @@ This workflow handles the full lifecycle of completing a feature branch:
 
 **Purpose**: Immediate user awareness that branch completion workflow is executing
 
-**Timing**: Execute BEFORE creating task list (before Step 0)
+**Timing**: Execute as the first action of the workflow, before Step 0.25
 
 ```python
 notify( "Starting branch PR and merge workflow...", notification_type="progress", priority="low" )
 ```
-
----
-
-## Step 0: Step Checklist (optional)
-
-Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The `TaskUpdate` lines in later steps apply only if you keep one.
-
-```
-Checklist items:
-
-1. [PREFIX] Session documentation check
-2. [PREFIX] Documentation surface check
-3. [PREFIX] Branch state audit
-4. [PREFIX] Test suite verification
-5. [PREFIX] Outstanding work review
-6. [PREFIX] Generate PR description
-7. [PREFIX] Create pull request
-8. [PREFIX] Push branch (if needed)
-9. [PREFIX] Wait for PR merge
-10. [PREFIX] Post-merge sync
-11. [PREFIX] Branch cleanup
-12. [PREFIX] Retire the old line (squash merges only)
-13. [PREFIX] Release tagging (optional)
-14. [PREFIX] Create next development branch
-15. [PREFIX] Send completion notification
-```
-
-**Verification**:
-- [ ] If a checklist is kept: created with the items listed above
-- [ ] Items have project prefix
-- [ ] First item marked `in_progress`
 
 ---
 
@@ -182,14 +151,12 @@ notify(
 - Display: "All changes committed ✓"
 - Continue to Step 0.5
 
-**TaskUpdate**: Mark Step 0.25 complete.
 
 **Verification**:
 - [ ] Uncommitted changes checked
 - [ ] History.md checked for today's entry
 - [ ] User prompted if issues found
 - [ ] Issues resolved (committed/checkpointed) or user chose to skip
-- [ ] TaskUpdate updated
 
 ---
 
@@ -292,7 +259,6 @@ Display full list of missing features with source and description, then re-promp
 
 Log decision, send notification, continue to Step 1.
 
-**TaskUpdate**: Mark Step 0.5 complete.
 
 **Verification**:
 - [ ] README.md checked for "What's New" section
@@ -301,7 +267,6 @@ Log decision, send notification, continue to Step 1.
 - [ ] bug-fix-queue.md parsed (if exists)
 - [ ] User decision recorded
 - [ ] README updated (if selected)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -321,10 +286,7 @@ Log decision, send notification, continue to Step 1.
    git branch --show-current | grep -v "^main$\|^master$"
    ```
 
-3. **Check for uncommitted changes**:
-   ```bash
-   git status --porcelain
-   ```
+3. **Check for uncommitted changes** (same probe as Step 0.25)
 
 4. **Count commits ahead of base**:
    ```bash
@@ -391,7 +353,6 @@ notify(
 ```
 FAIL and exit.
 
-**TaskUpdate**: Mark Step 1 complete.
 
 **Verification**:
 - [ ] Branch name retrieved
@@ -399,7 +360,6 @@ FAIL and exit.
 - [ ] Uncommitted changes handled (if any)
 - [ ] Commit count and diff stats captured
 - [ ] Remote tracking status known
-- [ ] TaskUpdate updated
 
 ---
 
@@ -578,7 +538,6 @@ ask_yes_no(
 
 **Response handling** (ternary): `yes` → run integration tests; `no` → continue to PR creation without integration tests; `neither` → re-frame (typical: "which integration suite — db-only, full stack, smoke-integration?"). Re-prompt with `ask_multiple_choice()` over the available suites. Do NOT default to skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 1.5 complete.
 
 **Verification**:
 - [ ] Test infrastructure detection completed
@@ -586,7 +545,6 @@ ask_yes_no(
 - [ ] If doc validation: all checks passed
 - [ ] If tests exist: smoke and unit tests passed
 - [ ] Integration tests offered (if applicable)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -633,14 +591,12 @@ ask_multiple_choice(
 )
 ```
 
-**TaskUpdate**: Mark Step 2 complete.
 
 **Verification**:
 - [ ] TODO.md checked
 - [ ] history.md status verified
 - [ ] Implementation docs checked
 - [ ] User decision recorded (if TODOs exist)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -657,10 +613,7 @@ ask_multiple_choice(
 
 2. **history.md**: Parse session entries for accomplishments
 
-3. **git diff --stat**: Get change statistics
-   ```bash
-   git diff --stat main..HEAD
-   ```
+3. **git diff --stat**: Get change statistics (same probe as Step 1)
 
 4. **Branch name**: Extract version/purpose from naming convention
 
@@ -715,7 +668,6 @@ ask_multiple_choice(
 
 **If "Preview"**: Display full description, then re-prompt.
 
-**TaskUpdate**: Mark Step 3 complete.
 
 **Verification**:
 - [ ] Git log parsed
@@ -723,7 +675,6 @@ ask_multiple_choice(
 - [ ] Statistics calculated
 - [ ] PR description generated
 - [ ] User approval obtained
-- [ ] TaskUpdate updated
 
 ---
 
@@ -783,13 +734,11 @@ Base: main ← [branch-name]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 4 complete.
 
 **Verification**:
 - [ ] PR creation attempted
 - [ ] PR created successfully (or existing PR found)
 - [ ] PR URL captured
-- [ ] TaskUpdate updated
 
 ---
 
@@ -799,9 +748,7 @@ Base: main ← [branch-name]
 
 ### Check
 
-```bash
-git rev-parse --abbrev-ref @{upstream} 2>/dev/null
-```
+Same probe as Step 1 (`git rev-parse --abbrev-ref @{upstream}`).
 
 ### If Not Pushed
 
@@ -822,12 +769,10 @@ Action: [Pushed now / Already tracked]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 5 complete.
 
 **Verification**:
 - [ ] Remote tracking checked
 - [ ] Branch pushed (if needed)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -868,12 +813,10 @@ ask_yes_no(
 - **If NO** (`response.startswith("no")`): Re-prompt or offer to cancel
 - **If NEITHER** (`response.startswith("neither")`): **CRITICAL — do NOT proceed to Step 7.** Merge-confirmation is a load-bearing gate. Typical re-frames: "merged with squash vs merge commit?", "merged into main vs another branch?", "still waiting on CI". Read the `[comment: ...]` qualifier, re-prompt with the narrower question, and only continue once a definite yes is received. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 6 complete.
 
 **Verification**:
 - [ ] User prompted about merge status
 - [ ] Merge confirmed
-- [ ] TaskUpdate updated
 
 ---
 
@@ -910,13 +853,11 @@ Latest: [hash] [message]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 7 complete.
 
 **Verification**:
 - [ ] Switched to main
 - [ ] Pulled latest changes
 - [ ] Merge commit verified
-- [ ] TaskUpdate updated
 
 ---
 
@@ -976,13 +917,11 @@ Remote branch: [Deleted ✓ / Already deleted / Kept]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 8 complete.
 
 **Verification**:
 - [ ] User confirmation obtained
 - [ ] Local branch deleted (if confirmed)
 - [ ] Remote branch deleted (if exists and confirmed)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -1100,13 +1039,11 @@ Pushed: Yes
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 9 complete.
 
 **Verification**:
 - [ ] Version extracted from branch name
 - [ ] User confirmation obtained
 - [ ] Tag created and pushed (if confirmed)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -1168,13 +1105,11 @@ Ready for: Next session of development
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 10 complete.
 
 **Verification**:
 - [ ] New branch name generated
 - [ ] User decision obtained
 - [ ] Branch created and pushed (if selected)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -1204,15 +1139,11 @@ Summary:
 ✓ Old branch deleted (local + remote)
 ✓ New branch created: [new-branch-name]
 
-Current state:
-  Branch: [new-branch-name]
-  Tracking: origin/[new-branch-name]
-  Ready for: Next session of development
+Current state: branch, tracking and readiness as shown in Step 10.
 
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 11 complete and all items complete.
 
 **Verification**:
 - [ ] Final notification sent
@@ -1253,6 +1184,8 @@ At session start, detect if on main and prompt:
 ---
 
 ## Version History
+
+**v1.4** (2026.10.09, Sam) - **Pruning pilot, shortlist rows 1-3 (store row `681745a9`).** Step 0 (the optional step checklist) and the 27 `TaskUpdate` lines and boxes that belonged to it are removed; the v1.3 entry below is the record of why they were optional. Three probes that Steps 1, 3 and 5 repeated now point at their first occurrence, and Step 11's final display points at Step 10.
 
 **v1.3** (2026.10.02, María) - **Step 0's checklist is optional.** A step checklist is scratch, not owed work (Rick, row `efa0a4cf`); the "MUST create task tracking list" mandate is removed.
 
