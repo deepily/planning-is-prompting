@@ -155,36 +155,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    Nothing to uninstall. Exiting wizard.
    ```
 
-2. **Scan for installed slash commands**:
-   ```bash
-   # Session Management (A)
-   ls .claude/commands/plan-session-start.md 2>/dev/null && echo "A_installed"
-   ls .claude/commands/plan-session-end.md 2>/dev/null && echo "A_installed"
-
-   # History Management (B)
-   ls .claude/commands/plan-history-management.md 2>/dev/null && echo "B_installed"
-
-   # Planning is Prompting Core (C)
-   ls .claude/commands/p-is-p-00-start-here.md 2>/dev/null && echo "C_installed"
-   ls .claude/commands/p-is-p-01-planning.md 2>/dev/null && echo "C_installed"
-   ls .claude/commands/p-is-p-02-documentation.md 2>/dev/null && echo "C_installed"
-
-   # Backup Infrastructure (D)
-   ls .claude/commands/plan-backup-check.md 2>/dev/null && echo "D_installed"
-   ls .claude/commands/plan-backup.md 2>/dev/null && echo "D_installed"
-   ls .claude/commands/plan-backup-write.md 2>/dev/null && echo "D_installed"
-
-   # Testing Workflows (E)
-   ls .claude/commands/plan-test-baseline.md 2>/dev/null && echo "E_installed"
-   ls .claude/commands/plan-test-remediation.md 2>/dev/null && echo "E_installed"
-   ls .claude/commands/plan-test-harness-update.md 2>/dev/null && echo "E_installed"
-
-   # Installation Wizard (F)
-   ls .claude/commands/plan-install-wizard.md 2>/dev/null && echo "F_installed"
-
-   # Workflow Execution Audit (G)
-   ls .claude/commands/plan-workflow-audit.md 2>/dev/null && echo "G_installed"
-   ```
+2. **Scan for installed slash commands**: for each family in the Workflow Catalog Reference above, `ls .claude/commands/<command>.md` for each of its commands. A family counts as installed if **any** of its commands exists; record its letter.
 
 3. **Build installed workflow list**:
 
@@ -256,27 +227,17 @@ Currently Installed Workflows:
     Commands to be removed:
       • /plan-session-start
       • /plan-session-end
-    Manual cleanup needed:
-      • history.md (contains your session history)
-      • history/ (archive directory)
+    Manual cleanup: see Manual Cleanup Reference
 
 [B] History Management ✓ INSTALLED
-    Commands to be removed:
-      • /plan-history-management
-    Manual cleanup needed:
-      • history/ (archive directory, if not using Session Management)
+    (commands and manual cleanup as listed in the catalog)
 
 ┌─────────────────────────────────────────────────────────┐
 │ PLANNING WORKFLOWS                                      │
 └─────────────────────────────────────────────────────────┘
 
 [C] Planning is Prompting Core ✓ INSTALLED
-    Commands to be removed:
-      • /p-is-p-00-start-here
-      • /p-is-p-01-planning
-      • /p-is-p-02-documentation
-    Manual cleanup needed:
-      • src/rnd/ (implementation docs, if any were created)
+    (commands and manual cleanup as listed in the catalog)
 
 ┌─────────────────────────────────────────────────────────┐
 │ BACKUP WORKFLOWS                                        │
@@ -392,10 +353,7 @@ You selected to uninstall:
 
 Total slash commands to be removed: 5
 
-Manual cleanup will be suggested for:
-  • history.md (Session Management)
-  • history/ (Session Management)
-  • src/rnd/ (Planning docs, if any)
+Manual cleanup will be suggested for the items listed under these families in the Manual Cleanup Reference.
 
 Ready to proceed with deletion preview.
 ```
@@ -907,19 +865,7 @@ Directory:
 The following files were NOT automatically removed.
 Review and delete manually if no longer needed:
 
-Session Management (A):
-  • history.md - Contains your session history
-    Location: ./history.md
-    Action: Review contents, delete if no longer needed
-
-  • history/ - Archive directory with old session summaries
-    Location: ./history/
-    Action: Review archives, delete directory if no longer needed
-
-Planning is Prompting Core (C):
-  • Implementation docs (if any were created)
-    Location: ./src/rnd/*-implementation.md
-    Action: Check src/rnd/ for planning documents, archive or delete
+[List the Manual Cleanup Reference items (location and action) for the families removed, and only those]
 
 ──────────────────────────────────────────────────────────
 🔄 To Reinstall Workflows Later
@@ -1023,5 +969,6 @@ This section provides detailed guidance on cleaning up related files that were n
 
 ## Version History
 
+- **2026.10.09 (Sam)**: Pruning pilot, shortlist rows 17-18 (store row `681745a9`): the installed-command scan is a rule over the catalog (a family counts as installed if any of its commands exists), the menu entries for B and C refer to the catalog, and the confirmation and final screens refer to the Manual Cleanup Reference (the final screen lists only the removed families' items). The Installation Wizard entry keeps its "removes /plan-uninstall-wizard too" warning.
 - **2026.10.02**: A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 - **2025.10.21**: Initial creation - uninstall wizard for planning-is-prompting workflows
