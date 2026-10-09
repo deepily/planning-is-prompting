@@ -6,8 +6,6 @@ This document contains the comprehensive start-of-session workflow for initializ
 
 At the start of work sessions, perform the following initialization ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress.
 
-**Key Principle**: The initialization steps can be tracked as an optional checklist. Owed work goes in the task store.
-
 ---
 
 ## ⚠️ Conversation Mode Awareness
@@ -316,41 +314,6 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ---
 
-## Step 0: Create Session Start TODO List
-
-**Purpose**: Track initialization progress, if a visible checklist helps you
-
-**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one in the harness list, or keep none; nothing reads it. Work you **owe** goes in the task store (`workflow/task-store-discipline.md` §3), never only here.
-
-**Template TODO Items**:
-```
-[SHORT_PROJECT_PREFIX] Load configuration files
-[SHORT_PROJECT_PREFIX] Discover available workflows
-[SHORT_PROJECT_PREFIX] Load session history
-[SHORT_PROJECT_PREFIX] Reconcile owed work on rehydrate (store query + memento)
-[SHORT_PROJECT_PREFIX] Identify active work and outstanding TODOs
-[SHORT_PROJECT_PREFIX] Present session context and await direction
-```
-
-**Instructions** (if you keep the checklist):
-1. Create it with the harness's native list tool
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-
-**Example**:
-```json
-[
-  {"content": "[PLAN] Load configuration files", "status": "in_progress", "activeForm": "[PLAN] Loading configuration"},
-  {"content": "[PLAN] Discover available workflows", "status": "pending", "activeForm": "[PLAN] Discovering workflows"},
-  {"content": "[PLAN] Load session history", "status": "pending", "activeForm": "[PLAN] Loading history"},
-  {"content": "[PLAN] Identify outstanding work", "status": "pending", "activeForm": "[PLAN] Identifying work"},
-  {"content": "[PLAN] Present session context", "status": "pending", "activeForm": "[PLAN] Presenting context"}
-]
-```
-
----
-
 ## Step 1: Notification System Overview
 
 **Three-Phase Pattern**: This workflow uses progress notifications during initialization, then a blocking question once ready.
@@ -422,18 +385,6 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Process**:
 
-1. **Read Global Configuration**:
-   ```bash
-   # Read global user preferences
-   cat ~/.claude/CLAUDE.md
-   ```
-
-2. **Read Project Configuration**:
-   ```bash
-   # Read project-specific preferences
-   cat ./CLAUDE.md
-   ```
-
 3. **Extract Key Information**:
    - **[SHORT_PROJECT_PREFIX]**: Project identifier for TODOs and notifications
    - **Project name**: Full project name
@@ -467,11 +418,6 @@ notify( "Starting session initialization, loading config and history...", notifi
 **Purpose**: Identify and summarize available slash commands and workflow documents
 
 **Process**:
-
-1. **List Slash Commands**:
-   ```bash
-   ls -1 .claude/commands/
-   ```
 
 2. **Categorize Workflows**:
 
@@ -1963,6 +1909,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed Step 0 (the optional step checklist) and its summary line in the Overview, the `cat` of the global and project `CLAUDE.md` in Step 2, and the `ls` of `.claude/commands/` in Step 3. Trials showed Claude Code behaves the same without them. The "If you keep a step checklist" lines, the Step 0 mermaid node and the "before Step 0" mentions are left in place, pending Rick's word; Step 2 and Step 3 keep their original item numbers (3 and 2 now open their lists).
 - **2026.10.02 (María 🌸)**: **Step 0's TodoWrite checklist is optional, and selected work goes to the task store.** Rick's "yes" on a direct ask, row `efa0a4cf`: a workflow's step checklist is scratch, not owed work. The "ALWAYS create a TodoWrite list" mandate is removed; Step 5 now files the chosen work in the store instead of a harness list.
 - **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
 - **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
