@@ -886,6 +886,8 @@ else
 fi
 ```
 
+⚠️ **THE SCAN CURRENTLY SHIPS IN LUPIN ONLY.** In every other repo the `NO SCAN INSTALLED` line is the correct output, not a failure to fix on the spot, and it still means "this tree was NOT checked".
+
 **Read the exit code, never the absence of output:**
 
 | exit | meaning | what to do |
@@ -1742,6 +1744,7 @@ When creating new high-frequency workflows:
 
 ## Version History
 
+- **2026.10.09 (Sam, row `1498e58f`, defect 8)**: **Step 3.6.2 says the staleness scan ships in lupin only.** The step reads as repo-agnostic but `stale-seat-scan.py` exists only in lupin; one warning line (same wording as `session-end.md` §7.2) now says the `NO SCAN INSTALLED` output is correct elsewhere and still means the tree was not checked. No behaviour change.
 - **2026.10.09 (Sam, row `1498e58f`, Rick's ruling)**: **The work-direction menu shows at most four options; the rest sit under "Other...".** Cases D, E, F and G (5, 6 and 6 options, then a two-step menu) are one Case D: the first three TODOs plus "Other...", paged three at a time on request. Cases A-C were already within four.
 - **2026.10.09 (Sam)**: Pruning pilot, shortlist row 27 (store row `681745a9`): the Preliminary -1 section no longer describes what the persona-picking SessionStart hook does (its purpose paragraphs, naming pattern, rc sample, conflict table and relationship table: 34 lines). It keeps the three headings, the do-not-hand-export warning, the "slash-command arg always wins" line and the locked /clear rule (persona stays after /clear; a new value takes effect on the next fresh launch).
 - **2026.10.09 (Sam)**: **Leftovers from the pruning review (Pocholo's F2 and F3)**: Step 2's purpose now says both `CLAUDE.md` files are already in context, Step 3 groups the commands already listed in context, and the Quick Reference node reads "Group slash commands by category". Also dropped "an optional step checklist" from the description of this file in `deterministic-wrapper-pattern.md`.
