@@ -359,7 +359,7 @@ Health: ✅ HEALTHY
 
 ---
 
-## 0.6) Bug Fix Mode Integration
+## 0.7) Bug Fix Mode Integration
 
 **Purpose**: Check if bug fix mode is active and prompt for session closure if this session owns it.
 
