@@ -705,19 +705,11 @@ That is the whole rule. An exhortation to check your own work fails here for the
 · a search control written so it could not fail (`head -3 &&` swallowing the exit status)
 · **"938/957 passed"** — a pass-rate standing in for a result, with the red inside the ratio
 
-**(b) THE INSTRUMENT KNOWS MORE THAN YOU DO, and you are about to overrule it.** A guard fix implemented exactly as its row prescribed turned **nine existing tests red**. The reflex — *tests can pin a defect in place*, a TRUE rule with its own scar — would have rewritten all nine and shipped an outage into tooling every project installs. **The tests were right; the row's prescribed remedy was unimplementable as written, and only the suite knew.**
-
 ⇒ (a) is a verdict that omitted its evidence. **(b) is a verdict that SUPPLIED evidence its reader had not thought of.** *"Read the evidence before the conclusion"* is aimed squarely at (a) and says nothing about (b) — where the danger is not that you will believe too much, but that you will believe yourself.
 
 ### ⇒ THE TIE-BREAKER when two true rules point opposite ways
 
-> **A test — or a doc, or a row — that encodes WHY it permits something is a SPEC. One that encodes only THAT it permits something is a DESCRIPTION.**
->
-> **You can overrule a description. You cannot overrule a spec without answering its argument.**
-
-The nine reds carried docstrings explaining *why* a pointer write isolates a particular check. **That is what distinguished "the suite is stale" from "the suite is right."** Without the why, nine tests would have been rewritten and the outage shipped.
-
-⇒ So this rule has a WRITING obligation attached, not only a reading one: **state why you permit what you permit.** The next reader weighing their own conviction against your test has nothing else to weigh it with — and that reader may be you.
+(b), the guard fix that turned nine tests red, and the SPEC / DESCRIPTION rule that settled it (including the obligation to state why you permit what you permit) are in §4.5, "It runs in both directions".
 
 ---
 
