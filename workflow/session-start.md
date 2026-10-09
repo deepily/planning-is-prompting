@@ -1483,7 +1483,7 @@ flowchart TD
   - **Rationale**: User receives notification AND question together, with real context
 
 **Key Decision Points**:
-- Step 5: User chooses Continue TODOs / Start fresh / Modify list (via `ask_multiple_choice()`)
+- Step 5: User chooses a TODO or "Other..." (start fresh, modify list, more TODOs), or New task / Browse history when there are none (via `ask_multiple_choice()`)
 - Step 6: User provides work direction or invokes planning workflow
 
 ---
