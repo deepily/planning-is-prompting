@@ -112,10 +112,14 @@ def pointer_target( slot, path ):
         if match is None: continue
         rel = match.group( 1 )
         if slot != "io": return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        # Prefix a separator so a path with no repo part (`--repo ""` yields `io/mementos/…`)
+        # still carries the marker; `start` is then -1 and the repo root is the empty string.
         marker = os.sep + IO_DIR + os.sep
-        if marker not in path: return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
-        repo_root = path[ : path.index( marker ) ]
-        io_base   = path[ : path.index( marker ) + len( marker ) ]
+        rooted = os.sep + path
+        if marker not in rooted: return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        start     = rooted.index( marker ) - 1
+        repo_root = path[ : max( start, 0 ) ]
+        io_base   = path[ : start + len( marker ) ]
         from_root = os.path.normpath( os.path.join( repo_root, rel ) )
         from_io   = os.path.normpath( os.path.join( io_base, rel ) )
         if not os.path.isfile( from_root ) and os.path.isfile( from_io ): return from_io
