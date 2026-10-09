@@ -161,16 +161,18 @@ Serialize this plan to:
   <project>/src/rnd/yyyy.mm.dd-descriptive-slug.md
 ```
 
-**When to use**: When you know during planning that the plan is significant.
+**When to use**: When you know during planning that the plan is significant **and someone other than you has authorized it (Gate 0)**; without that authorization, leave the Step 0 out.
 
 ### Pattern B: Reactive (During Session-End)
 
 During the session-end workflow, check if plan mode was used and prompt for serialization:
 
 ```
-Session used plan mode → Was the plan non-trivial?
-  → Yes: Copy to src/rnd/ with semantic name
-  → No: Skip
+Session used plan mode → Gate 0: did someone other than you authorize it?
+  → No: worktree scratch dir, not src/rnd/ (a real finding becomes a store row)
+  → Yes: Was the plan non-trivial?
+      → Yes: Copy to src/rnd/ with semantic name
+      → No: Skip
 ```
 
 **When to use**: Default pattern for most sessions.
