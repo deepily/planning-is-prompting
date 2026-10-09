@@ -1345,81 +1345,14 @@ Claude will ask you to provide:
 5. **Additional exclusions** - Project-specific files/directories to exclude
    - Example: `*.bak`, `local_config/`, `secrets/`
 
-### Usage
+### Usage, Version Checking and Customization
 
-**Via slash command** (recommended):
-```bash
-/plan-backup                     # Dry-run (preview changes)
-/plan-backup --write             # Execute backup
-/plan-backup --check-for-update  # Check for script updates
-```
+Run `/plan-backup` for a dry run and `/plan-backup --write` to execute. The flags, the skip variable (`SKIP_VERSION_CHECK=1`) and the update options are described in `.claude/commands/plan-backup.md`, in the header of `src/scripts/backup.sh`, and in `workflow/backup-version-check.md`.
 
-**Via script directly**:
-```bash
-./src/scripts/backup.sh                     # Dry-run
-./src/scripts/backup.sh --write             # Execute
-./src/scripts/backup.sh --check-for-update  # Check version
-```
+Two things are set per project and written nowhere else:
 
-**Skip version check** (for automation):
-```bash
-SKIP_VERSION_CHECK=1 ./src/scripts/backup.sh --write
-```
-
-### Version Checking
-
-**Automatic on every run**:
-- Compares local script vs. canonical reference
-- Notifies if updates available
-- Offers smart update options
-
-**Update options when new version available**:
-- [U] Update script (preserves your config)
-- [E] Update exclusions (merges new patterns)
-- [B] Update both
-- [D] Show diff
-- [S] Skip for now
-- [C] Cancel
-
-**Manual version check**:
-```bash
-/plan-backup --check-for-update
-```
-
-**For complete update workflow**: See planning-is-prompting → workflow/backup-version-check.md
-
-### Customization Options
-
-**Add project-specific exclusions**:
-
-Edit `src/scripts/conf/rsync-exclude.txt`:
-```bash
-# Project-specific exclusions
-my_local_env/
-*.secret
-temp_data/
-```
-
-**Change backup destination**:
-
-Edit `src/scripts/backup.sh` config section:
-```bash
-# === CONFIG START ===
-DEST_DIR="/new/backup/location/"
-# === CONFIG END ===
-```
-
-**Disable version checking**:
-
-Set environment variable:
-```bash
-export SKIP_VERSION_CHECK=1
-```
-
-Or unset PLANNING_IS_PROMPTING_ROOT:
-```bash
-unset PLANNING_IS_PROMPTING_ROOT
-```
+- **Project-specific exclusions**: add patterns to `src/scripts/conf/rsync-exclude.txt`.
+- **Disable version checking for good**: `unset PLANNING_IS_PROMPTING_ROOT` (or set `SKIP_VERSION_CHECK=1` for a single run).
 
 ### Testing the Installation
 
@@ -2522,6 +2455,8 @@ If you're creating new workflows and need to create slash command wrappers for t
 ---
 
 ## Version History
+
+**v1.4** (2026.10.09, Sam) - Pruning pilot, shortlist row 7 (store row `681745a9`): the backup section's Usage, Version Checking and Customization subsections are replaced by a pointer to the plan-backup command, the script header and `backup-version-check.md`, keeping the two instructions found nowhere else (project exclusions; disabling the check).
 
 **v1.3** (2026.10.06) - The Workflow Execution Audit is retired (Rick, 2026-10-06): 80 of its 100 points scored a workflow on rules since ruled out. Its section, the `/plan-workflow-audit` command and `workflow-execution-audit.md` are removed. The uninstall wizard still lists the command so an older installation can remove it.
 
