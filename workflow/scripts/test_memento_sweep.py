@@ -217,3 +217,18 @@ def test_the_exact_root_file_is_matched_without_regard_to_case( tmp_path ):
     suffixed = _write( os.path.join( r, ".claude-memento-sam-aaaa0000.md" ), age=60 )
     kept     = ms.select_kept( ms.find_mementos( r ), [ "SAM" ] )
     assert root in kept and suffixed in kept
+
+
+def test_an_io_pointer_found_under_an_empty_repo_string_keeps_its_record( tmp_path, monkeypatch ):
+    # Row 8d8f7dbc (Pocholo): with repo "" the glob yields `io/mementos/…` with no leading
+    # separator, so the root could not be found by string search and the folder was doubled
+    # (`io/mementos/io/mementos/chloe-d9b856bf.md`), and the record was listed for trashing.
+    monkeypatch.chdir( tmp_path )
+    record  = _write( os.path.join( "io", "mementos", "chloe-d9b856bf.md" ), age=500 )
+    stale   = _write( os.path.join( "io", "mementos", "chloe-00000000.md" ), age=900 )
+    pointer = _write( os.path.join( "io", "mementos", "chloe.md" ),
+                      POINTER_OF.format( rel="io/mementos/chloe-d9b856bf.md" ), age=1 )
+    assert os.path.normpath( ms.pointer_target( "io", pointer ) ) == record
+    kept = ms.select_kept( ms.find_mementos( "" ), [ "chloe" ] )
+    assert pointer in kept and record in kept
+    assert stale not in kept
