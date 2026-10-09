@@ -963,14 +963,19 @@ git diff --cached --name-only
 git reset HEAD <unexpected_file>   # if anything unexpected appears
 ```
 
-**Create the commit** with the drafted message (Step 4.2):
+**Create the commit** with the drafted message (Step 4.2). Write the message to a file first, **with the Write tool**, to a path outside the tree (the session scratchpad) or under the gitignored `io/`; then commit **by pathspec**, naming only the files from the Step 3.5 verified list:
 
 ```bash
-git commit -m "$(cat <<'EOF'
-[Your drafted commit message here]
-EOF
-)"
+git commit -F <message-file> -- src/auth.py history.md TODO.md
 ```
+
+Why this shape and no other: the commit-scope guard (Lupin's `commit_scope_guard.py`) parses `-F <file> -- <paths>` and reviews exactly those paths against your manifest section. It **cannot read a message that rides the commit line**: not `-m "$(cat <<'EOF' ... EOF)"`, not `-F - <<'EOF'`, and not a quoted `-m` text containing `;`, `&`, `|` or a newline (the guard cuts the command at the first of those even inside quotes). Those commits are allowed *unreviewed* with a NOT REVIEWED notice, which means the scope check you are relying on did not happen.
+
+- Name each path **exactly as it appears in your `### Touched Files`**: repo-relative, no `./`, no absolute path (`./src/auth.py` is refused as not claimed; `history.md`, `TODO.md`, `CLAUDE.md`, `CLAUDE.local.md` and `bug-fix-queue.md` match by basename and are exempt).
+- The scope review happens **only when your session has a section in `.claude-session.md`** (read from the hook's working directory). With no manifest, or no section for your session, the commit is allowed silently and nothing was reviewed, which is why the section has to stay current (Step 3.5).
+- A **new** file must be `git add`ed first (a pathspec commit only takes tracked paths).
+- A path containing `:`, `*`, `?` or `[` is read as pathspec magic and goes unreviewed; stage it and commit with `-F <message-file>` alone (the index is then reviewed).
+- If you write the message file from the shell, keep the heredoc on its own line, never on the commit line: `cat > <message-file> <<'EOF'` ... `EOF`, then `git commit -F <message-file> -- <paths>` on the next line, in the same call or a later one.
 
 **Error handling**: see Step 4.6 (pre-commit hook modifies files, etc.).
 
@@ -1867,6 +1872,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.10.09 (Sam)**: **Step 4.3's commit template no longer rides the commit line (defect 9, row `1498e58f`, Pocholo's probe of the guard)**: `git commit -m "$(cat <<'EOF' ... EOF)"` ended in an unclosed quote once the guard cut the command at the first newline, so every commit following this document was allowed unreviewed. It is now `git commit -F <message-file> -- <paths>` with the message written first, plus the rules the guard needs (paths exactly as in Touched Files, a manifest section for the review to happen at all).
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed the Claude Code attribution footer from the commit-message guidance and the commit template, and the Git Safety Protocol block (15 lines). Trials showed no change in behavior without them.
 - **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
 - **2026.06.16 (María)**: **Commit gate removed (D1 guided-walkthrough ruling).** Committing to the working branch is now standing manager/session authority once the quality gate (green AND reviewed) is met — the user is no longer the commit gate (Rick: "I do not want to be the gate for commits and merges"). Step 4 restructured: 4.3 *Commit Autonomously* (no approval menu; self-held green+reviewed precondition) → 4.4 *Post the Commit Receipt* (FYI: hash + one-line summary + files; manifest status→committed) → 4.5 *PUSH Decision* (the one retained user gate; `ask_yes_no`, executed by the session on the user's word, fires only inside the end-ritual; never proactively surfaced mid-session) → 4.6 *Error Handling*. Conversation-mode gate list, the §0 example, and the backup-step condition updated to match. (~120 lines rewritten).
