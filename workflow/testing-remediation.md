@@ -623,48 +623,9 @@ def calculate_priority(test_name, error_message, category):
 
 {End if}
 
-### High Priority Regressions (Priority 2) ⚠️
+{High priority regressions: the same block as Critical, with the heading "### High Priority Regressions (Priority 2) ⚠️", the impact line "Major functionality affected, fix same session", entry ids `HP-{id}`, and no Likely Cause line. When there are none: "**No high priority regressions detected** ✅"}
 
-{If high priority regressions exist}
-**Count**: {high_count}
-**Impact**: Major functionality affected, fix same session
-
-{For each high priority regression}
-#### HP-{id}: {test_name}
-
-- **Category**: {test_category}
-- **Baseline**: PASS ✅
-- **Current**: FAIL ❌
-- **Error**: `{error_message}`
-- **Impact**: {impact_description}
-- **Time Estimate**: {estimate} minutes
-
-{End for each}
-{Else}
-**No high priority regressions detected** ✅
-
-{End if}
-
-### Medium Priority Regressions (Priority 3) 📝
-
-{If medium priority regressions exist}
-**Count**: {medium_count}
-**Impact**: Minor functionality or edge cases affected
-
-{For each medium priority regression}
-#### MP-{id}: {test_name}
-
-- **Category**: {test_category}
-- **Baseline**: PASS ✅
-- **Current**: FAIL ❌
-- **Error**: `{error_message}`
-- **Time Estimate**: {estimate} minutes
-
-{End for each}
-{Else}
-**No medium priority regressions detected** ✅
-
-{End if}
+{Medium priority regressions: the same block as Critical, with the heading "### Medium Priority Regressions (Priority 3) 📝", the impact line "Minor functionality or edge cases affected", entry ids `MP-{id}`, and neither the Impact nor the Likely Cause line. When there are none: "**No medium priority regressions detected** ✅"}
 
 ## Improvement Analysis
 
@@ -1371,6 +1332,9 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 ---
 
 ## Version History
+
+**Version 1.3** (2026.10.09)
+- Pruning pilot, shortlist row 14 (store row `681745a9`): the High and Medium priority regression blocks of the report template, which repeated the Critical block, are described by their differences (heading, impact line, id prefix, fields dropped).
 
 **Version 1.2** (2026.10.02)
 - A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite steps are renamed and no longer mandatory.
