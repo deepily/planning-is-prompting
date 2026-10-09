@@ -292,13 +292,7 @@ The downstream stage receives this summary + the original section. No raw transc
 
 ### Discussion turn cap
 
-If an author↔reviewer discussion exceeds `discussion_turn_cap = 3` rounds without consensus:
-
-1. Manager calls a vote per `vote_electorate = four_substantive_personas`
-2. Vote runs in the dedicated commons topic (see Phase B9 spec)
-3. Per `vote_tiebreaker_policy = severity_dependent`:
-   - Cosmetic/inconsistency severity ties: manager breaks the tie
-   - Foundational severity ties: escalate to user
+If an author↔reviewer discussion exceeds `discussion_turn_cap = 3` rounds without consensus, the manager calls a vote: see §6.3 and Vote Mechanics Spec below.
 
 ### Budget threshold
 
@@ -314,11 +308,7 @@ The manager performs these duties throughout pipeline execution:
 
 ### 6.1 Severity classification
 
-Every finding posted to a stage-handoff topic gets classified by the manager:
-
-- **Cosmetic** — style, naming, wording polish. Document silently or ignore.
-- **Inconsistency** (within section) — author contradicts themselves or a prior stage's decision. Pull the relevant subset of upstream chain (per `upstream_dm_scope = manager_picks_subset`) into a re-litigation DM thread.
-- **Foundational** — load-bearing assumption is invalidated, or the finding implies cross-section impact. Escalate to user immediately per `escalation_form = notify_immediate`.
+Every finding posted to a stage-handoff topic gets classified by the manager as cosmetic, inconsistency or foundational; the tier definitions, examples and one-line tests are in Severity Classification Heuristics below.
 
 **Manager-classification post requirement** (added 2026-05-18 post-Run-1 workflow update): at every stage-close (when the manager has classified all findings from a single reviewer's review), the manager MUST post a `kind: "manager_classification"` entry to the affected section topic with the following fields stamped via `metadata`:
 
@@ -333,24 +323,13 @@ This gives every worker visibility into how their findings were classified WITHO
 
 Worked examples and heuristics: see §Manager Behavior → Severity Classification Heuristics.
 
-### 6.2 DM-subset selection for re-litigation
-
-When an inconsistency-severity finding requires re-opening upstream, the manager picks which subset of the upstream chain to DM. The scope is bounded:
-
-- Phase 2 conflict → at most 1 upstream stakeholder (the author)
-- Phase 3 conflict → at most 2 upstream (author + usability reviewer)
-- Phase 4 conflict → at most 3 upstream (author + usability + viability reviewers)
-
-Rule: include the author whenever the finding touches the original design; include any prior reviewer whose decision is directly affected by the new finding. Manager picks the smallest viable subset.
+### 6.2 DM-subset selection for re-litigation (the bounds and the selection rules are in DM-Subset Selection Heuristics below)
 
 **Cluster-bundling default** (ratified 2026-05-18 post-Run-2): when multiple findings on the same author land in the same stage-close, bundle them into ONE re-litigation DM rather than firing per-finding DMs. The bundled DM enumerates all findings together; the author responds with a single bundled revision. Per-finding classification posts (§6.1) still happen one-per-finding for telemetry — the bundling applies only to the author-DM step.
 
 ### 6.3 Vote management
 
-When manager calls a vote per §5 turn cap:
-- Post to vote commons topic (see Phase B9 for format)
-- Tally responses per `vote_electorate`
-- Apply `vote_tiebreaker_policy`
+When manager calls a vote per §5 turn cap, run Vote Mechanics Spec below, then:
 - Post result back to discussion thread + handoff topic
 
 ### 6.4 Heartbeat handling (arbiter-driven — interim scheduler retired, Rick GO 2026-06-29)
@@ -372,7 +351,7 @@ When manager calls a vote per §5 turn cap:
 
 **Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
 
-**See also**: §Heartbeat Handling in the detailed Manager Behavior section below — for the manager's **on-poke response discipline**, which is still live. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
+**See also**: §Heartbeat Handling in the detailed Manager Behavior section below, which carries only the suppression-during-user-pause rule here and the retired scheduler's spec as historical record; the on-poke response steps are the ones above. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
 
 ### 6.5 Status pushes
 
@@ -774,7 +753,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 > ⛔ **THE PER-CASCADE EXTERNAL SCHEDULER IS RETIRED (Rick GO 2026-06-29). DO NOT STAND ONE UP.**
 > **The live waker is the standing arbiter daemon + the per-session Stop-hook** — verify it is up (`lupin_arbiter_app` on `:8001`); do not launch anything. See §6.4, which is the authority for this subsection.
-> **The manager's on-poke *behaviour* below is unchanged and still live** — universal-step-zero disk-read, phantom detection, suppression-during-user-pause. Only the *waker* changed: it now runs on the arbiter's poke, not a self-launched daemon's. **The "Scheduler shape" spec that follows is preserved as historical record, not as instruction.**
+> **The manager's on-poke *behaviour* is unchanged and still live** — the universal-step-zero disk-read and phantom detection are the steps in §6.4; suppression-during-user-pause is below. Only the *waker* changed: it now runs on the arbiter's poke, not a self-launched daemon's. **The "Scheduler shape" spec that follows is preserved as historical record, not as instruction.**
 >
 > *Fenced 2026-07-20 (found by Clayton 😎, cascade manager). This subsection sat unfenced and present-tense in the **Manager Behavior** section — the one the Manager System Prompt tells a Manager to load — while §6.4 five hundred lines away carried the retirement. A Manager entering here read live instruction to stand up the forbidden daemon and never reached the banner.*
 
@@ -789,15 +768,10 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 - State machine: scheduler tracks `cascade-active` vs `cascade-complete`, driven by manager posting `kind: "cascade_complete"` to the input-plan topic at end-of-pipeline
 - Failure handling: if manager produces no commons activity within 1 min of poke for **3 consecutive pokes**, scheduler fires `notify()` to user as the dead-man's-switch
 
-**Manager-side response discipline on each heartbeat received**:
+**Manager-side response discipline on each heartbeat received**: the universal-step-zero disk-read, the stall check, the DM probe and the phantom declaration are the steps in §6.4. In addition:
 
-1. Apply §Manager Behavior universal-step-zero: disk-read every active topic
-2. Check each active worker's last post timestamp against `stall_threshold_minutes`
-3. For any worker past threshold whose section is expected to be in flight:
-   - Send targeted DM probe (`"are you available?"`)
-   - If no response in 2 min, declare phantom; apply `phantom_reassignment_policy = park_and_escalate` (Trigger 7)
-4. If new worker posts arrived since last wake (a Section completion, a vote response, a re-litigation reply), advance the pipeline accordingly
-5. If nothing to do, return idle silently; the next heartbeat will wake the manager again
+1. If new worker posts arrived since last wake (a Section completion, a vote response, a re-litigation reply), advance the pipeline accordingly
+2. If nothing to do, return idle silently; the next heartbeat will wake the manager again
 
 **Suppression during user-pause states**: when cascade is in user-pause (escalation awaiting Mr. Rick's decision), workers are correctly idle. Manager still processes heartbeats but takes no advancement action — just checks no worker has gone phantom while everyone waits.
 
