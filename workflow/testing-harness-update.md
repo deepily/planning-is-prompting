@@ -5,7 +5,7 @@
 **Purpose**: Systematic test harness maintenance after code changes
 **Target**: Claude Code for automated test analysis and planning
 **Principle**: Discover, Analyze, Plan, Template
-**Version**: 1.3
+**Version**: 1.4
 **Last Updated**: 2026.10.10
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for harness update decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Coverage gap analysis goes to `abstract`; speak the headline only ("3 modules need new tests, biggest gap is in dispatcher").
@@ -164,7 +164,7 @@ NEW_FILES=$(git log \
     {source_directories} | \
     grep "^A" | \
     awk '{print $2}' | \
-    grep -E "\.(py|js|ts|java|go)$" | \
+    grep -E "\.(py|js|ts|java|go|rb|cpp|c|h)$" | \
     grep -v -E "test|spec" | \
     sort -u)
 
@@ -197,31 +197,31 @@ if [[ "$FILE" =~ ^src/core/ ]] || [[ "$FILE" =~ ^src/api/ ]]; then
     COMPONENT_TYPE="critical"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
-    PRIORITY="HIGH"
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
+    PRIORITY="CRITICAL"
 elif [[ "$FILE" =~ ^src/memory/ ]] || [[ "$FILE" =~ ^src/agents/ ]]; then
     COMPONENT_TYPE="standard"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="MEDIUM"
 elif [[ "$FILE" =~ ^src/utils/ ]]; then
     COMPONENT_TYPE="support"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=false
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="LOW"
 elif [[ "$FILE" =~ ^src/scripts/ ]]; then
     COMPONENT_TYPE="support"
     REQUIRES_UNIT=false
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="LOW"
 else
     COMPONENT_TYPE="standard"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=false
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="MEDIUM"
 fi
 
@@ -398,8 +398,8 @@ for file in changed_files:
     # Check for outdated tests (if file modified, test may need updates)
     if is_modified(file) and has_test(file):
         test_file = find_test(file)
-        test_last_modified = get_last_modified(test_file)
-        code_last_modified = get_last_modified(file)
+        test_last_modified = last_commit_time(test_file)  # git log -1 --format=%at, as in 4.2
+        code_last_modified = last_commit_time(file)
 
         if code_last_modified > test_last_modified:
             gaps["outdated_tests"].append({
@@ -946,6 +946,9 @@ source_files:
 ---
 
 ## Version History
+
+**Version 1.4** (2026.10.10)
+- Stale references (row `735e312f`, C1 to C4): the new-files list matches the changed-files list (`rb`, `cpp`, `c`, `h` included); a critical component maps to priority CRITICAL (the framework's P1); `REQUIRES_INTEGRATION` is set per component from the config instead of fixed `false`, so the integration-gap lines can fire; Step 4.1 decides "outdated" from the commit time, as 4.2 does.
 
 **Version 1.3** (2026.10.10)
 - Wider pruning batch 1 (store row `84211d12`): removed Step 1 (the optional step checklist) and the "close your checklist" clause in the final summary. Step 1 is unused; later steps keep their numbers.
