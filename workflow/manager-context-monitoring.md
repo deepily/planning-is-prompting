@@ -7,7 +7,7 @@ any worker past **50%** so the work continues in a fresh seat instead of dying i
 You monitor **your own** workers — the ones your session spawned — not the whole fleet.
 
 **Standing authority**: this is inside the existing spawn/harvest envelope
-(`workflow/manager-autonomy.md`). Re-spinning a worker you spawned needs nobody's permission.
+(`workflow/manager-autonomy.md`). Re-spinning a worker you spawned needs nobody's permission when skeleton crew is off. A re-spin is a spawn and follows the same switch (`manager-autonomy.md` §2).
 
 **Origin**: Rick, 2026-08-13 (broadcast `69e577a7`, AFK day). The goal is token economy at both
 ends — shorter DMs going in, and nobody carrying a bloated context past halfway.
@@ -913,6 +913,7 @@ predictable event can have.
 
 ## Version History
 
+- **2026.10.10 (store row `9aadd0ac`, item 2, Rick's rulings)**: Re-spinning a worker is a spawn and follows the skeleton-crew switch (`manager-autonomy.md` §2); the standing-authority line says "when skeleton crew is off". Nothing else changed.
 - **2026.08.13 (María 🌸)**: Initial version. Written on Rick's AFK-day broadcast `69e577a7` — 15-minute
   tick, 50% threshold, memento → reap → re-spin, and the manager self-re-spin limit stated as a
   verified mechanical fact rather than a preference.
