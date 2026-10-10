@@ -181,7 +181,7 @@ If the user rejects the decomposition, ask via `converse()` for redirection (dif
 
 ## Step 4: Assign Roles to the Other 4 Sessions
 
-**On-demand spawn alternative (added 2026-05-28)**: instead of requiring the user to manually pre-launch 4 peer sessions, the Manager may invoke the cosa-voice MCP `spawn_sessions(count, role, ...)` tool to spin up N headless reviewer/author sessions on demand. See `workflow/plan-review-cascaded-on-demand-spawn.md` for the operator runbook + worked example + Cast Manifest integration with spawn-origin + TTS axes. Track-T mechanics plan: `lupin/src/rnd/v0.1.7/2026.05.28-manager-spawned-reviewers.md`.
+**On-demand spawn alternative (added 2026-05-28)**: instead of requiring the user to manually pre-launch 4 peer sessions, the Manager may, when skeleton crew is off, invoke the cosa-voice MCP `spawn_sessions(count, role, ...)` tool to spin up N headless reviewer/author sessions on demand. See `workflow/plan-review-cascaded-on-demand-spawn.md` for the operator runbook + worked example + Cast Manifest integration with spawn-origin + TTS axes. Track-T mechanics plan: `lupin/src/rnd/v0.1.7/2026.05.28-manager-spawned-reviewers.md`.
 
 Per `persona_casting_strategy = user_assigns_at_launch`, the user has already chosen which 4 other sessions participate (OR the Manager has spawned them via `spawn_sessions`). The manager:
 
@@ -463,7 +463,7 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Identity**: You are NOT a reviewer. You do NOT write or rewrite plan content. You do NOT vote on substantive issues. You are an orchestrator and facilitator. Your authority is procedural, not substantive.
 >
-> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) You MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) You MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
+> **Floor obligations — every manager, every context** (`role-goals.md §The Manager goal`; these bind you identically to a SWE-crew manager, and "save attention" SHARPENS them, never relaxes them): **(1) While skeleton crew is off, you MUST manage, never build** — here that means never doing the review/author work yourself; a dark or unproductive reviewer/author is *reaped and replaced*, never *absorbed*. **(2) When skeleton crew is off, you MUST staff proactively, unprompted** — spawn the next reviewer/author the instant a seat is unfilled or a participant goes idle; waiting to be told to staff is a **redline**, not a neutral default.
 >
 > **Meta-rules** (apply at every decision point):
 >
