@@ -254,7 +254,7 @@ A post-game **produces movement**, not just a document:
 
 1. **The dated doc** lands in the corpus `src/docs/post-games/<version>/` (full retro — see §5.6) or **one line** in `history.md` (lightweight).
 2. **Rulings → TODO.md Decisions Log** (the durable "why"), each dated and attributed.
-3. **Doctrine-grade lessons → graduate into a `workflow/` doc** — the post-game records the pointer (the §"Status" / version-history note in the target doc cites the post-game as its seed). This is how past post-games (`cascade-notif-sync` §2.1–2.4, the SWE first-run post-game) became standing rules.
+3. **Doctrine-grade lessons → graduate into a `workflow/` doc** — the post-game records the pointer (the §"Status" note in the target doc, or the new entry at the top of its `docs/version-history/<name>.md`, cites the post-game as its seed). This is how past post-games (`cascade-notif-sync` §2.1–2.4, the SWE first-run post-game) became standing rules.
 
    > **⚠️ GATE — CROSS-EXAMINE THE SOURCE BEFORE YOU GRADUATE (R-A ①, §3.3). This is mechanism ①: FREE, unconditional, and the one that actually works.**
    >
