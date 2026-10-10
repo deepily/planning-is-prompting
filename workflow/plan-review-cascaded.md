@@ -232,7 +232,7 @@ Expected Manager response: ack the tap on `coordination`; DM Rachel with role + 
 
 ## Stage Progression: No mandatory inter-stage user gate (added 2026-05-28)
 
-**The rule (post-`cascade-notif-sync` post-game §2.2)**: **No mandatory user gate fires between Stages 1, 2, and 3** for any section. The Manager arbitrates inter-stage progression. The user is escalated to ONLY on the 7 documented escalation triggers (foundational findings, cross-section conflicts, hard contradictions with prior user decisions, T3/T4 events per the escalation taxonomy, reviewer reassignment-on-rate-limit, manager-as-phantom recovery, urgent-blocked-waiting-on-user >18 min).
+**The rule (post-`cascade-notif-sync` post-game §2.2)**: **No mandatory user gate fires between Stages 1, 2, and 3** for any section. The Manager arbitrates inter-stage progression. The user is escalated to ONLY on the 7 escalation triggers listed in Step 7.
 
 **Why this changed**: a mandatory user gate at every stage boundary would multiply the Step 3 waste by ~12× (3 stages × 4 sections). Codifying the principle prevents drift.
 
