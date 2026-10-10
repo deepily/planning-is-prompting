@@ -13,7 +13,7 @@ Instantiate the **spin-up crew** (Implementer · Reviewer · Tester) against a t
 
 2. **Confirm the task.** The crew needs a concrete build-shaped task (implement → review → test a feature/fix). If the trigger phrase didn't carry one, ask the user for it before spawning.
 
-3. **Become the Manager** under standing spawn/harvest autonomy. The **standing pair (Manager + Steward) pre-exists and is NOT spawned** — instantiate only the crew.
+3. **Become the Manager** under standing spawn/harvest autonomy, which applies when skeleton crew is off. The **standing pair (Manager + Steward) pre-exists and is NOT spawned** — instantiate only the crew.
 
 4. **Slice + spawn.** For each crew role (default one each; scalable to N-of-a-role), slice that role's `##` section verbatim from `swe-team-roles.md`, append THE TASK + the governing spec path + the collection-topic reporting instruction + **ANY IN-FORCE PROVISIONAL MANDATE (see 4a)**, and spawn via `spawn_sessions` (`count=1` per member; role enum Implementer→`author`, Reviewer→`reviewer`, Tester→`observer`; `persona_preference` as a preference, not a guarantee — ratified Q2 fresh-person/stable-charter).
 

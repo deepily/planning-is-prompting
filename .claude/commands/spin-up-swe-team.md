@@ -2,7 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
-**Version**: 1.0
+**Version**: 1.1
 
 ---
 
@@ -25,7 +25,7 @@
    - `planning-is-prompting/workflow/swe-team-spin-up.md` — the model, activation, lifecycle, gates, teardown, and **§7 the load-document spec**.
    - `planning-is-prompting/workflow/swe-team-roles.md` — the **load document**: one `##` section per role. This is the charter source you slice from.
 
-3. **MUST become the Manager** for this engagement (you hold the gate + commit/push authority from here forward, under standing spawn/harvest autonomy). The **standing pair (Manager + Steward) is NOT spawned** — it pre-exists. This command instantiates **only the crew**.
+3. **MUST become the Manager** for this engagement (you hold the gate + commit/push authority from here forward, under standing spawn/harvest autonomy, which applies when skeleton crew is off). The **standing pair (Manager + Steward) is NOT spawned** — it pre-exists. This command instantiates **only the crew**.
 
 4. **MUST resolve the roster** (scalable — ratified Q1; default one each, `N`-of-a-role per the overrides):
    - **Implementer** ×`--implementers` (default 1)
