@@ -171,8 +171,17 @@ def compare_versions(local_ver, canonical_ver):
         return "current"
 ```
 
+**Version strings do not track content.** `pip_drift_check.py` measured 27 of 36 installed commands differing from canonical, 23 of them with an identical version string, so a matching version proves nothing about the file. Before reporting any workflow as current, run the content check and let it override the version comparison:
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/pip_drift_check.py --target .claude/commands
+```
+
+Its states: `VERSION_LIES` (content differs, version matches), `STALE` (content and version both differ), `MISSING`, `SHADOW` (deliberate local override), `CURRENT`. Report `VERSION_LIES` and `STALE` as ⚠ Drifted, never as ✓ Current.
+
 **Status indicators**:
-- ✓ Current - Local and canonical versions match
+- ✓ Current - Local and canonical versions match AND the content check reports `CURRENT` (or `SHADOW`)
+- ⚠ Drifted - Content differs from canonical (`VERSION_LIES` or `STALE`), whatever the version strings say
 - ⚠ Update Available - Canonical version is newer
 - ⚠ Unknown - Canonical version not found
 - ⚡ Ahead - Local version is newer (dev work)
@@ -276,7 +285,7 @@ def generate_status_summary(workflows):
     """Generate overall status line."""
     total = len(workflows)
     current = sum(1 for w in workflows if w.status == "current")
-    updates = sum(1 for w in workflows if w.status == "update_available")
+    updates = sum(1 for w in workflows if w.status in ( "update_available", "drifted" ))
     unknown = sum(1 for w in workflows if w.status == "unknown")
 
     if updates == 0 and unknown == 0:
@@ -490,6 +499,7 @@ Next steps:
 
 ## Version History
 
+- **2026.10.09 (Extra 2, store row `9aadd0ac`, item 3)**: Step 3 now runs `pip_drift_check.py` and lets its content verdict override the version comparison; a workflow whose content differs is reported as Drifted, so "All workflows up to date" can no longer be printed for a drifted install.
 - **2026.10.09 (Sam, store row `681745a9`)**: Pruning pass 4. Removed the five "Key activities" bullets (each restated a step's Purpose line; the header now points at the steps), the normalisation line in Error 4 (the extraction algorithm already adds the `v` prefix), and pointed Step 0's error handling at Error 1. No instruction changed.
 - **2025.10.24**: Fixed YAML version extraction - improved algorithm to properly extract versions from both YAML frontmatter and markdown headers, added normalization to ensure consistent 'v' prefix
 - **2025.10.24**: Initial creation - installation status reporting with version comparison
