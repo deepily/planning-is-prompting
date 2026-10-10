@@ -21,7 +21,7 @@
 > Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 **Relationship to other workflows**:
-- **Manager Spawn/Harvest Autonomy** (`src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md`) is the *can-spawn* **mechanics** half ("spawn freely; edit carefully"; the standing/gated/hygiene envelope). **This workflow is the composition** — "spawn THIS roster with THESE roles." They compose: autonomy *authorizes*; this workflow *specifies the shape*.
+- **Manager Spawn/Harvest Autonomy** (`src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md`) is the *can-spawn* **mechanics** half ("spawn freely; edit carefully"; the standing/gated/hygiene envelope). Spawning follows the skeleton-crew switch: only when skeleton crew is off (`manager-autonomy.md` §2). **This workflow is the composition** — "spawn THIS roster with THESE roles." They compose: autonomy *authorizes*; this workflow *specifies the shape*.
 - The **cascaded plan-review cast** (`workflow/plan-review-cascaded*.md`) is *review-shaped* (N personas reviewing a plan section-by-section). The SWE team is *build-shaped*. Some role overlap (reviewer/steward), different lifecycle — distinct but cross-referenced.
 
 ---
@@ -78,7 +78,7 @@ The team can be brought online three composable ways — they are layers over th
 
 ```mermaid
 flowchart LR
-    D["'spin up your SWE team [task]'"] --> M["Manager spawns crew<br/>(standing autonomy; roles auto-loaded)"]
+    D["'spin up your SWE team [task]'"] --> M["Manager spawns crew<br/>(standing autonomy when skeleton crew is off; roles auto-loaded)"]
     M --> I["Implementer builds"]
     I --> R["Reviewer (adversarial)"]
     R --> T["Tester (integration/e2e)"]
@@ -159,6 +159,7 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 ## Version history
 
+- **1.3 (2026-10-10, store row `9aadd0ac`, item 2, Rick's rulings)** — Spin-up is a spawn and follows the skeleton-crew switch (`manager-autonomy.md` §2): the autonomy pointer in the relationships list and the activation diagram say "when skeleton crew is off".
 - **1.2 (2026-10-10)** — Pruning pass 6: cut the standing-pair line in §6 (§1 says it), the Location and Shape paragraphs in §7 (§2 says them), and three finished build-queue lines in §8; the one open item is renumbered 1. No rule changed.
 - **1.1 (2026-06-29, María 🌸 — Rick GO)** — §5 standing-pair keep-alive: **retired the interim-poker / `/loop` stopgap language.** The standing arbiter is now the fleet-stall *mechanism* + the per-session Stop-hook is the owed-work self-check (folded debounce, no brute-force tick); the Steward is the human-judgment backstop, not the mechanism. Part of the fleet-wide crutch-retirement (task `d0cffe5c`). HELD for review.
 - **1.0 (2026-06-06)** — Initial canonical workflow, authored by María 🌸 (Workflow Steward) from the ratified seed `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (Rick ruled all 7 decisions via guided walkthrough; Tiberius 👑 manager-rec). Composes with the Manager Spawn/Harvest Autonomy workflow.
