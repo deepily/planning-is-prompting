@@ -51,7 +51,7 @@ Table rows, headings, code blocks and **file paths or URLs** cost nothing; **a b
 |---|---|---|---|
 | **User broadcast** | User → all active sessions | `<system-reminder>` injection via per-session tmux listener; persona-aware `@PersonaName:` directives; mandatory ack to `broadcast-acks` topic | Shipped (Lupin v0.1.7 Phase 2) |
 | **Claude↔Claude commons (topic-broadcast)** | Session ↔ session via shared topics | Append-only markdown topic files at `<lupin>/io/commons/<topic>.md`; readers poll | Shipped (Lupin v0.1.7 Phase 1) |
-| **Directed messaging (DM)** | Session → specific peer session | `dm_send(recipient, body)` — notification-native; body delivered **inline** in the recipient's push (`direction=ai_to_ai` + threading, persisted to the notifications table) | Shipped Phases 1–2 (Lupin, 2026-06-15); receive-side framing Phase 3 WIP. **Supersedes** the deprecated `commons_send_to` / `commons_ask_async` DM-mode (the old empty-body commons claim-check) |
+| **Directed messaging (DM)** | Session → specific peer session | `dm_send(recipient, body)` — notification-native; body delivered **inline** in the recipient's push (`direction=ai_to_ai` + threading, persisted to the notifications table) | Shipped Phases 1–2 (Lupin, 2026-06-15); receive-side framing shipped (inbound DMs carry `message_id` and `thread_id`). **Supersedes** the deprecated `commons_send_to` / `commons_ask_async` DM-mode (the old empty-body commons claim-check) |
 
 ### Quick MCP tool reference
 
@@ -457,12 +457,12 @@ tree.
 
 ### 1.5.2 Receiving a DM and replying
 
-> ⚠️ **Receive-side framing is Phase 3 WIP (as of 2026-06-15).** The inbound `<system-reminder>` envelope — surfacing `message_id` / `thread_id`, the `[DM from <persona>]` framing, and idle-aware delivery — is **not built yet**. For now an inbound DM arrives as the **raw body** via the existing delivery path, without the threading ids.
+An inbound DM arrives as a `<system-reminder>` envelope that carries the sender, the `message_id` and the `thread_id`, and a `Reply via dm_send( recipient, body, reply_to, thread_id )` line.
 
 Replies are **symmetric** — a reply is just another `dm_send` back to the sender. There is no separate watcher and no `expect_reply`:
 
 ```python
-# Threaded reply (once Phase 3 surfaces the inbound ids):
+# Threaded reply:
 dm_send(recipient="<sender>", body="<reply>",
         reply_to="<message_id>", thread_id="<thread_id>")
 ```
@@ -470,7 +470,7 @@ dm_send(recipient="<sender>", body="<reply>",
 - `reply_to` = the `message_id` of the DM you're answering.
 - `thread_id` = the conversation id from that DM.
 
-Until Phase 3 lands and surfaces those ids on the inbound side, **just `dm_send` back to the sender by persona name** (omit `reply_to`/`thread_id`); the threading args become usable once the receive-side framing ships.
+Pass both, so the reply lands in the same thread.
 
 **Receipt etiquette** (mirror of the user-prompt-acknowledgment rule):
 
@@ -559,7 +559,7 @@ If you're unsure whether the situation qualifies, default to **read-only** and n
    commons_post("presence", "Starting long compile, back ~5min")  # Self-disclosure
 
 ⚠️ REQUIRES user trigger or coordination need:
-   commons_ask_sync("help-wanted", "Anyone seen this error?")
+   commons_ask_async(topic="help-wanted", ...)  # open question to peers; or commons_post("help-wanted", "Anyone seen this error?")
    commons_post("coordination", "Claiming bug #42")  # Only when contested
 
 ❌ NEVER without explicit user opt-in:
@@ -828,15 +828,15 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 | Follow-up | Status | Notes |
 |---|---|---|
 | **`dm_send` notification-native DM (Phases 1–2)** | **✅ SHIPPED 2026-06-15** | Inline-body push (`direction=ai_to_ai` + threading), ~18× cheaper than the commons claim-check (~204 vs ~3,700 tokens). Round-trip verified live (Mr. Radio 🦉 ↔ María 🌸). Part of the cosa-voice token-reduction sprint. |
-| **`dm_send` receive-side framing (Phase 3)** | **🟡 WIP** | Inbound `<system-reminder>` envelope (`message_id`/`thread_id` surfacing, `[DM from <persona>]` framing, idle-aware delivery) not yet built. Until it lands, inbound DMs arrive as raw body; reply by persona name without threading ids. |
+| **`dm_send` receive-side framing (Phase 3)** | **✅ SHIPPED** | Inbound `<system-reminder>` envelope surfaces `message_id`, `thread_id` and the `Reply via dm_send(...)` line. Idle-aware delivery not re-verified here. |
 | **Deprecate commons DM-mode** (`commons_send_to`, `commons_ask_async(recipient_persona=...)`) | **🟡 MIGRATION** | Superseded by `dm_send`. Old empty-body claim-check path retained for back-compat; callers should migrate. |
 | **Accent-folding in persona resolver** | **🔲 OPEN (Lupin-side)** | `dm_send`/resolver is case/punct-tolerant but not accent-folding (`"María"` fails, `"maria"` works). Same family as the topic-name case-fragmentation bug. |
 | Ship Phase 3 push-mode for `commons_ask_async` replies | **✅ SHIPPED 2026-05-16** | Verified end-to-end live (Tiberius 🌑 ↔ María 🌸 DM exchange). Recipients receive DMs as `<system-reminder>` injection on next turn when push fires. Lupin commit `f4e0370` on `wip-v0.1.7-spit-and-polish` branch. |
 | DM extension (`commons_send_to`, `recipient_persona`) | **✅ SHIPPED 2026-05-15** (Phase 0 Q1-rev) | Persona-routed dispatch with fuzzy resolution. Covered in §1.5 above. |
 | `FunctionTool` self-call bug in `commons_send_to` | **✅ FIXED 2026-05-16** | Refactored to private dispatch helper. Symptom history preserved in `lupin/bug-fix-queue.md`. |
 | `register_skip_reason` observability for silent push failures | **✅ SHIPPED 2026-05-16** | Surfaces a debugging signal when push-mode silently degrades. Now load-bearing for the §1.5 failure-mode hints. |
-| Embed tier markers + examples + failure hints in MCP tool descriptions | **🟡 IN PROGRESS** (María, 2026-05-16) | Scope: tier marker on line 1, one example invocation, failure-mode hint, cross-ref footer to this doc. Replaces the older "out of scope" framing. |
-| MCP `instructions` payload expansion for fresh-session discovery | **🟡 IN PROGRESS** (María, 2026-05-16) | Adds MCP startup protocol, Commons protocol summary, DM workflow, interactive tool routing, failure modes — all cosa-voice-specific content that doesn't belong in CLAUDE.md (per the 5-layer doc architecture). |
+| Embed tier markers + examples + failure hints in MCP tool descriptions | **✅ SHIPPED** (the `dm_send` description carries the tier marker, an example invocation and an error return); **🟡 OPEN**: the cross-ref footer to this doc | Scope: tier marker on line 1, one example invocation, failure-mode hint, cross-ref footer to this doc. Replaces the older "out of scope" framing. |
+| MCP `instructions` payload expansion for fresh-session discovery | **✅ SHIPPED** (the server instructions carry the startup protocol, the DM style contract and interactive tool routing) | Adds MCP startup protocol, Commons protocol summary, DM workflow, interactive tool routing, failure modes — all cosa-voice-specific content that doesn't belong in CLAUDE.md (per the 5-layer doc architecture). |
 | LLM-fallback persona matcher | Stubbed in `commons_persona_matcher.py` | Mechanical matcher already works for `@PersonaName:` exact match; LLM fallback handles fuzzy/typo cases. Not blocked on anything; nice-to-have. |
 
 ---
@@ -844,7 +844,7 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 ## Glossary
 
 - **Broadcast** — user-initiated message fanning out to all active Claude Code sessions for that user
-- **Commons** — file-based shared blackboard at `/io/commons/topic-*.md` for Claude-to-Claude messages
+- **Commons** — file-based shared blackboard at `<lupin>/io/commons/<topic>.md` for Claude-to-Claude messages
 - **Persona-directive** — `@PersonaName:` prefix routing a broadcast line to a specific session's persona
 - **Effective directive** — what a session actually executes after persona-parsing (default body + matched `@PersonaName:` lines)
 - **Ack** — per-recipient acknowledgment posted to `broadcast-acks` topic, aggregated by the UI watcher
@@ -863,6 +863,7 @@ Status of cross-session communication follow-ups that live in the Lupin repo (no
 
 ## Version history
 
+- **2026-10-10** — **Stale references fixed** (row `735e312f`, C1 to C5). Receive-side framing is recorded as shipped and the "until Phase 3 lands" workaround is gone; the tool-description and `instructions` rows are shipped (the doc-footer cross-reference stays open); the commons path matches §1; the ask example uses `commons_ask_async`. This entry also covers sections added without one: §4.5 and §4.6 (2026-07-21), §1.6 (2026-07-28) and §1.5.1a to c (2026-08-17 to 2026-08-30).
 - **2026-10-09** — **§4.6 no longer retells §4.5's second direction** (Sam, pruning pilot batch two, shortlist row 19, store row `681745a9`): the (b) paragraph and the SPEC / DESCRIPTION block are one pointer to §4.5; the "believe yourself" sentence stays. Net 5 non-blank lines.
 - **2026-06-15** — **DM surface migrated to `dm_send`** (cosa-voice token-reduction sprint, Phases 1–2 shipped Lupin-side). §1 surfaces table + quick tool reference + §1.5 (send / receive / threading) rewritten around `dm_send`: inline-body push (~204 vs ~3,700 tokens, ~18× cheaper), `message_id`/`thread_id` threading, symmetric reply (no watcher, no `expect_reply`). `commons_send_to` / `commons_ask_async` DM-mode marked **deprecated** → migrate to `dm_send`. New caveats: persona resolver is case/punct-tolerant but **not accent-folding** (`"María"` fails, `"maria"` works); receive-side framing is **Phase 3 WIP** (inbound DMs arrive as raw body until it lands). §6.5 bug-filing pattern + §7 status table updated. Authored by María 🌸 (session `6de861be`).
 - **2026-05-16** — Major refresh. **Two surfaces → three surfaces** (broadcast + topic-broadcast + DM). New §1.5 covers DM mechanics (send, receive, threading, choice-of-channel) for the now-shipped DM extension (`commons_send_to`, `recipient_persona`) and Phase 3 push-mode. New §6.5 documents proactive cross-session collaboration patterns — the DM + durable-queue bug-filing pattern verified live this date, paired complementary-surface collaboration, and Persona-First Mandate compliance under chorus. §7 follow-ups table flipped to a status table reflecting Lupin's `f4e0370` commit (Phase 3 push-mode + DM extension + observability fixes all shipped this date). Authored by Tiberius 🌑 (session `b714e138`).
