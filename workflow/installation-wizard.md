@@ -508,51 +508,6 @@ This metadata drives the interactive menu generation in Step 2.
 
 ## Installation Flow
 
-### Step 0: Create Installation TODO List
-
-**Purpose**: Track installation progress, if a visible checklist helps
-
-**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
-
-**Template TODO Items**:
-```
-[INSTALL] Configure permissions (optional)
-[INSTALL] Detect current project state
-[INSTALL] Present workflow catalog and get user selection
-[INSTALL] Validate selection and dependencies
-[INSTALL] Collect project configuration
-[INSTALL] Install selected workflows
-[INSTALL] Validate installation
-[INSTALL] Verify git tracking
-[INSTALL] Present summary and next steps
-[INSTALL] Offer session-end workflow (conditional)
-```
-
-**Instructions**:
-1. If you keep one, create the installation checklist with the harness's native list tool
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[INSTALL]` prefix until user provides their project prefix
-
-**Example**:
-```json
-[
-  {"content": "[INSTALL] Configure permissions", "status": "in_progress", "activeForm": "[INSTALL] Configuring permissions"},
-  {"content": "[INSTALL] Detect project state", "status": "pending", "activeForm": "[INSTALL] Detecting project state"},
-  {"content": "[INSTALL] Present workflow catalog", "status": "pending", "activeForm": "[INSTALL] Presenting workflow catalog"},
-  {"content": "[INSTALL] Validate selection", "status": "pending", "activeForm": "[INSTALL] Validating selection"},
-  {"content": "[INSTALL] Collect configuration", "status": "pending", "activeForm": "[INSTALL] Collecting configuration"},
-  {"content": "[INSTALL] Install workflows", "status": "pending", "activeForm": "[INSTALL] Installing workflows"},
-  {"content": "[INSTALL] Validate installation", "status": "pending", "activeForm": "[INSTALL] Validating installation"},
-  {"content": "[INSTALL] Verify git tracking", "status": "pending", "activeForm": "[INSTALL] Verifying git tracking"},
-  {"content": "[INSTALL] Present summary", "status": "pending", "activeForm": "[INSTALL] Presenting summary"},
-  {"content": "[INSTALL] Offer session-end workflow", "status": "pending", "activeForm": "[INSTALL] Offering session-end workflow"}
-]
-```
-
----
-
 ### Step 0.5: Permission Setup (Optional but Recommended)
 
 **Purpose**: Configure auto-approval for workflow installation files to avoid repeated permission prompts
@@ -4445,6 +4400,8 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ---
 
 ## Version History
+
+**v1.6** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B1: removed "Step 0: Create Installation TODO List" (38 lines, with its Optional note). Rick: "Cut them (Recommended)". "Step 0.5" keeps its number. The update-mode twin goes in v1.7.
 
 **v1.5** (2026.10.10) - Wider pruning batch 1 (store row `84211d12`): removed the 19 "If you keep a step checklist" lines. The three "Step 0: Create ... TODO List" sections stay until Rick rules on them.
 
