@@ -17,6 +17,11 @@ Usage:
     python3 pip_drift_check.py --target ~/.claude/commands
     python3 pip_drift_check.py --all              # sweep every known install
     python3 pip_drift_check.py --quiet            # one summary line only
+    python3 pip_drift_check.py --root <tree>      # answer for <tree>, on purpose
+
+Exit codes: 0 for a report that read files; 2 when the report could not be a
+measurement (no root, a root that is not the tree this script lives in, a target
+that is absent or held none of the manifest's commands).
 """
 
 import argparse
@@ -46,22 +51,34 @@ STATE_HELP = {
 }
 
 
-def get_pip_root():
+def get_script_tree():
+    """
+    The tree this script file lives in: <tree>/workflow/scripts/pip_drift_check.py.
+
+    Ensures:
+        - returns the resolved Path two levels above this file's directory
+    """
+    return Path( __file__ ).resolve().parents[ 2 ]
+
+
+def get_pip_root( explicit=None ):
     """
     Resolve the planning-is-prompting repository root.
 
     Requires:
-        - $PLANNING_IS_PROMPTING_ROOT is set and names the repo
+        - explicit is a path string (the --root flag) or None
+        - when explicit is None, $PLANNING_IS_PROMPTING_ROOT is set and names the repo
 
     Ensures:
-        - returns a Path to the repository root
+        - returns a Path to the repository root; an explicit path wins over the
+          environment variable
 
     Raises:
-        - RuntimeError if unset or not the expected repo
+        - RuntimeError if neither is given, or the path has no workflow/
     """
-    raw = os.environ.get( "PLANNING_IS_PROMPTING_ROOT" )
+    raw = explicit if explicit is not None else os.environ.get( "PLANNING_IS_PROMPTING_ROOT" )
     if raw is None:
-        raise RuntimeError( "PLANNING_IS_PROMPTING_ROOT not set — export PLANNING_IS_PROMPTING_ROOT=/path/to/planning-is-prompting" )
+        raise RuntimeError( "PLANNING_IS_PROMPTING_ROOT not set — export PLANNING_IS_PROMPTING_ROOT=/path/to/planning-is-prompting, or pass --root" )
 
     root = Path( raw )
     if not ( root / "workflow" ).is_dir():
@@ -285,14 +302,30 @@ def main():
     parser.add_argument( "--target", help="install directory to check (default: ./.claude/commands)" )
     parser.add_argument( "--all",    action="store_true", help="sweep user scope plus every sibling project" )
     parser.add_argument( "--quiet",  action="store_true", help="summary line only, no per-file detail" )
+    parser.add_argument( "--root",   help="repository root to answer for (default: $PLANNING_IS_PROMPTING_ROOT, which must be the tree this script lives in)" )
     args = parser.parse_args()
 
     try:
-        root     = get_pip_root()
+        root     = get_pip_root( args.root )
         manifest = load_manifest( root )
     except RuntimeError as e:
         print( f"ERROR: {e}", file=sys.stderr )
         return 2
+
+    # The verdict compares installed files to THIS root's manifest and commands.
+    # Run from a different tree (a worktree, a copy) the answer is about the
+    # wrong tree in both directions: a correct tree reads drifted, a drifted one
+    # reads current. Refuse, unless --root says the choice is deliberate.
+    script_tree = get_script_tree()
+    if root.resolve() != script_tree:
+        if args.root is None:
+            print( f"ERROR: this script lives in {script_tree}\n"
+                   f"       but PLANNING_IS_PROMPTING_ROOT names {root.resolve()}\n"
+                   f"       The verdict would be about {root.resolve()}, not the tree you are in.\n"
+                   f"       Run the script from the tree it lives in, or pass --root <tree> to choose on purpose.",
+                   file=sys.stderr )
+            return 2
+        print( f"[PLAN] root: {root.resolve()} (chosen with --root; this script lives in {script_tree})" )
 
     if args.all:
         targets = discover_targets( root )
@@ -301,16 +334,26 @@ def main():
     else:
         targets = [ ( "this repo", Path.cwd() / ".claude" / "commands" ) ]
 
+    failed = False
     for label, target in targets:
         if not target.is_dir():
-            print( f"[PLAN] {label}: no .claude/commands directory — nothing installed" )
+            if args.all:
+                print( f"[PLAN] {label}: no .claude/commands directory — nothing installed" )
+            else:
+                print( f"ERROR: {label}: no .claude/commands directory at {target} — nothing was scanned", file=sys.stderr )
+                failed = True
             continue
         results, scanned = check_target( target, root, manifest )
+        if scanned == 0 and not args.all:
+            print( f"ERROR: {label}: {target} holds none of the manifest's commands — scanned 0 files", file=sys.stderr )
+            failed = True
+            continue
         render( label, results, scanned, manifest, args.quiet )
 
-    # Always exit 0 — this is a report, never a gate. It must not block a
-    # session start, and a non-zero exit would invite exactly that.
-    return 0
+    # A drift report never gates a session start, so findings still exit 0. A
+    # report that read no files is not a clean report: exit 2 so nobody takes
+    # "nothing printed" for "nothing drifted".
+    return 2 if failed else 0
 
 
 if __name__ == "__main__":
