@@ -26,6 +26,7 @@ planning-is-prompting/
 │   └── skills/            # Agent Skills
 ├── src/rnd/               # Research + planning docs, `yyyy.mm.dd-slug.md`
 ├── docs/explainer/        # Long-form explainers for readers outside the fleet
+├── docs/version-history/  # One file per workflow doc: its version history, moved out of workflow/
 ├── global/                # Snapshot of ~/.claude/CLAUDE.md (reference template)
 ├── history/ · todo-archive/   # Archived session history / TODO recuts
 ├── io/                    # Runtime artifacts (mementos, post-games, LoC deltas) — gitignored
@@ -62,7 +63,7 @@ planning-is-prompting/
 
 **Managing TODO.md**: read at session-start, update at session-end, or `/plan-todo`. See `workflow/todo-management.md`.
 
-**Modifying workflow templates**: keep them portable (no hardcoded project paths), update the version history at the bottom, test in at least one consuming project, update `README.md` if adding a file.
+**Modifying workflow templates**: keep them portable (no hardcoded project paths), add the entry at the top of `docs/version-history/<name>.md`, test in at least one consuming project, update `README.md` if adding a file.
 
 **Adding a new workflow**: `workflow/<topic>-<action>.md`, follow the Purpose → When to use → Content structure, add a README entry, include examples and integration points. End each step by naming what must be true before the next one starts: a result you can point at, not "step done".
 
@@ -81,7 +82,7 @@ Each has a canonical doc in `workflow/` and a usage section in `INSTALLATION-GUI
 
 ## Development Guidelines
 
-**Editing workflow templates**: keep them generalizable — use placeholders (`[PROJECT]`, `[SHORT_PROJECT_PREFIX]`, `/path/to/project/`). Include **Purpose**, **When to use**, **Key activities** at the top. Add examples. Version significant changes with a date and change summary.
+**Editing workflow templates**: keep them generalizable — use placeholders (`[PROJECT]`, `[SHORT_PROJECT_PREFIX]`, `/path/to/project/`). Include **Purpose**, **When to use**, **Key activities** at the top. Add examples. Version significant changes with a date and change summary in `docs/version-history/<name>.md`.
 
 **History management**: never let `history.md` exceed 25k tokens; health-check before adding a large session summary; archive proactively when the forecast shows a breach within 7 days; use milestone markers (`✅ COMPLETE`, `🎯 ACHIEVEMENT`) to guide split points.
 
