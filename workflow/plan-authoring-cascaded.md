@@ -165,11 +165,13 @@ See `plan-review-cascaded-common.md` §Step 1. The procedure is identical (workf
 
 | Key | Default | Description |
 |---|---|---|
-| `author_revision_turn_cap` | `2` | Max author-revision cycles per section before vote/escalate. Prevents infinite multi-draft loops; pairs with `discussion_turn_cap` for review-side. |
+| `author_revision_turn_cap` | `2` | Max author-revision cycles per section (int 1-5) before vote/escalate. Prevents infinite multi-draft loops; pairs with `discussion_turn_cap` for review-side. |
 | `intent_capture_required` | `true` | Set `false` in hybrid mode (skips Step 0). |
 | `dependency_map_required` | `true` | Set `false` only for trivially-decoupled (single-section) plans; explicit override required. |
 | `goal_coverage_matrix_required` | `true` | Manager maintains throughout cascade; surfaces uncovered goals at section-close. |
 | `convention_6_active` | detected | Set `true` if consuming project's CLAUDE.md has `## Coverage` section or equivalent ratification; otherwise `false` (Convention 6 dormant). |
+| `hybrid_mode` | auto-detect | `true` if input is a ratified design doc; `false` if pure-authoring |
+| `manager_divergence_check_active` | `true` if hybrid | Author-divergence-from-design-doc safeguard (hybrid only) |
 
 **Stepwise task-item ledger (MANDATE — added 2026-07-12; applies to authoring-mode identically)**: the Manager mints one task-store item per cascade step at Step 0, and one per section at Step 2 close, all sharing the run's `correlation_key` with a non-null `accountable_manager`, statuses kept current throughout. This is the cascade's external progress surface — the one place a user can see where an authoring cascade stands without interrupting it. Canonical spec + required fields + status discipline: `plan-review-cascaded-common.md` §Stepwise Task-Item Ledger. Config knobs: `plan-review-cascaded-defaults.md` §Task-item ledger.
 
@@ -387,15 +389,11 @@ Phase 6C (Lupin notifications-UI multiplexer port) is the **canonical hybrid-mod
 
 **Output target**: implementation plan with all Q-decisions resolved (ratified, deferred-to-Open-sub-question with explicit owning-section, or escalated and resolved by user).
 
-**Casting**: Rachel Author (designed it) / Mr. Radio Usability (cycled from review-cascade Author role) / Arnold Viability / Rio Ownership-with-Convention-6 / Tiberius Manager / María Workflow Steward.
-
 **Activation**:
 - Skip Step 0 (design + partitioning exist)
 - Run Step 0.5 (dependency map for the 4 sub-features)
 - Step 2 = lite multi-select ratification of the 4 sub-features as sections
 - Step 5 multi-draft cap = 2 (default; revise if Rachel hits cap on any sub-feature)
-- Convention 6 active throughout (Lupin's `c8 --100` mandate)
-- Manager-divergence-check safeguard active in Persona 2.A rubric
 
 **Pre-experiment cognitive-workload prediction** (per design doc §10.14): ~70-80 Q's to user under serial baseline → ~7-9 user-attention points under cascade hybrid = ~10× count reduction, ~15× attention-time reduction. Run 3 telemetry validates post-run.
 
@@ -403,17 +401,8 @@ Phase 6C (Lupin notifications-UI multiplexer port) is the **canonical hybrid-mod
 
 ## Configuration Defaults Additions
 
-See `plan-review-cascaded-defaults.md` for the full shared defaults table. Authoring-specific additions:
+See `plan-review-cascaded-defaults.md` for the full shared defaults table. The authoring-specific keys are the table under Step 1 above.
 
-| Key | Default | Allowed values | Notes |
-|---|---|---|---|
-| `author_revision_turn_cap` | `2` | int 1-5 | Multi-draft loop bound |
-| `intent_capture_required` | `true` | bool | Skip when hybrid mode (design doc exists) |
-| `dependency_map_required` | `true` | bool | Skip only for trivially-decoupled (single-section) plans |
-| `goal_coverage_matrix_required` | `true` | bool | Always-on; manager-side maintenance |
-| `convention_6_active` | auto-detect | bool | Activates Rio's coverage-mandate rubric extension |
-| `hybrid_mode` | auto-detect | bool | `true` if input is a ratified design doc; `false` if pure-authoring |
-| `manager_divergence_check_active` | `true` if hybrid | bool | Author-divergence-from-design-doc safeguard (hybrid only) |
 
 ---
 
@@ -430,6 +419,7 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. Autho
 
 ## Version History
 
+- **2026.10.09 (Sam, store row `681745a9`)** — Pruning pass 4. The second configuration table ("Configuration Defaults Additions") repeated the five Step 1 keys; its two extra keys (`hybrid_mode`, `manager_divergence_check_active`) moved into the Step 1 table, which also takes the "int 1-5" bound. Also removed the Phase 6C cast list under the worked example (Step 4 gives it) and two activation bullets that restated defaults. No rule changed.
 - **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
   - `plan-review-cascaded-common.md` (canonical home): NEW §Clarification Tier Vocabulary (T1/T2/T3/T4); NEW §Author-side Discipline Grep-sweep Checklist; NEW §Observer-mode Probe Protocol; NEW §Multi-surface Footer-ratification Close Protocol; §Manager System Prompt self-audit item 7 (post-cascade close-out sweep); §Heartbeat Handling extension for dual-independent daemon kickoff; §Step 9 cold-context test rubric extended from 5 → 6 questions + new §Manager close-out self-audit sweep sub-section
