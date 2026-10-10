@@ -39,7 +39,7 @@
 
 **Who flips it**: the manager the operator names. That manager also restores it (`true`) when skeleton crew is switched off, reads it back, and announces the restore.
 
-**The toggle controls the stop poke.** Once the toggle ships (lupin row `6f72dc83`, queued), skeleton crew on mutes the stop poke and off restores it, and the manual flip above is no longer needed. Until it ships, the poke is flipped as described here.
+**The toggle controls the stop poke.** Once the toggle ships (lupin row `6f72dc83`, queued), skeleton crew on mutes the stop poke and off restores it. Until it ships, the poke is flipped as described here.
 
 ⚠️ **A separate lever that stays ON**: the arbiter's external pokes — `arbiter auto poke managers enabled` (and the `workers` / `operator` siblings) in the app INI, served on `:8001`. The operator ruled on 2026-09-10 to keep them on during skeleton crew: with only two seats, they are the one alarm for a stalled manager while he is away. Change it only on the operator's word.
 

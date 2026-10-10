@@ -308,7 +308,7 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## §10 — Who may spawn, and the cost
 
-**Spawning follows the skeleton-crew switch**, not the clock: with skeleton crew off, a manager spawns the seats it needs without asking; with it on, no spawning. If the cap leaves too few seats, the manager may ask the operator to raise it by just enough. The rule is in `manager-autonomy.md` §2.
+**Spawning follows the skeleton-crew switch**, not the clock: with skeleton crew off, a manager spawns the seats it needs without asking; with it on, no spawning. With skeleton crew off, if the cap leaves too few seats, the manager may ask the operator to raise it by just enough. The rule is in `manager-autonomy.md` §2.
 
 **N concurrent reviewers share Rick's Max-plan rolling window.** Live cascades using `spawn_sessions` consume OAuth from the same pool that powers Rick's interactive sessions.
 
