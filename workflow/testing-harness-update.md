@@ -5,8 +5,8 @@
 **Purpose**: Systematic test harness maintenance after code changes
 **Target**: Claude Code for automated test analysis and planning
 **Principle**: Discover, Analyze, Plan, Template
-**Version**: 1.2
-**Last Updated**: 2026.10.09
+**Version**: 1.3
+**Last Updated**: 2026.10.10
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for harness update decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Coverage gap analysis goes to `abstract`; speak the headline only ("3 modules need new tests, biggest gap is in dispatcher").
 
@@ -176,24 +176,6 @@ MODIFIED_COUNT=$(echo "$MODIFIED_FILES" | grep -c . || echo 0)
 
 echo "New files: ${NEW_COUNT}"
 echo "Modified files: ${MODIFIED_COUNT}"
-```
-
----
-
-### Step 1: Step Checklist (optional)
-
-Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3).
-
-```
-[{PREFIX}] Test harness update analysis - STARTED at [TIMESTAMP]
-[{PREFIX}] Discover code changes via git ({CHANGED_COUNT} files)
-[{PREFIX}] Classify components by testing requirements
-[{PREFIX}] Inventory existing test coverage
-[{PREFIX}] Identify test gaps (missing/outdated tests)
-[{PREFIX}] Generate priority-based update plan
-[{PREFIX}] Provide test creation templates
-[{PREFIX}] Document findings in analysis report
-[{PREFIX}] Send completion notification
 ```
 
 ---
@@ -883,7 +865,7 @@ notify( "Test harness analysis COMPLETE - {changed_count} changes analyzed, {tot
 
 ### Step 10: Final Summary
 
-Provide the summary (and close your checklist, if you kept one):
+Provide the summary:
 
 ```
 ✅ [{PREFIX}] Test harness update analysis COMPLETE
@@ -964,6 +946,9 @@ source_files:
 ---
 
 ## Version History
+
+**Version 1.3** (2026.10.10)
+- Wider pruning batch 1 (store row `84211d12`): removed Step 1 (the optional step checklist) and the "close your checklist" clause in the final summary. Step 1 is unused; later steps keep their numbers.
 
 **Version 1.2** (2026.10.09)
 - Pruning pilot batch two, shortlist rows 4-6 (store row `681745a9`), Sam: the MODIFIED_FILES command is stated as the NEW_FILES pipeline with its two differences, the Benefits list under the inline smoke test is removed (the same points are at 318-321), and the four phase bullets became one mapping line. Net 18 non-blank lines.

@@ -5,8 +5,8 @@
 **Purpose**: Verify system health after changes, identify regressions, systematically remediate issues
 **Mode**: Comparison analysis with targeted remediation
 **Principle**: Compare, Analyze, Fix, Validate
-**Version**: 1.1
-**Last Updated**: 2026.02.23
+**Version**: 1.4
+**Last Updated**: 2026.10.10
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for remediation scope decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Regression diff goes to `abstract`; speak the headline only ("two regressions: auth flow and websocket reconnect").
 
@@ -194,71 +194,6 @@ echo "✅ Git diff saved: {logs_directory}/pre_remediation_${BACKUP_TIMESTAMP}.p
 ```bash
 SESSION_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 echo "Remediation session timestamp: ${SESSION_TIMESTAMP}"
-```
-
----
-
-### Step 1: Step Checklist (optional)
-
-Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3). The lists below are sized to the remediation scope:
-
-**For FULL scope**:
-```
-[{PREFIX}] Post-change verification & remediation (FULL) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Identify and categorize regressions (Critical→High→Medium)
-[{PREFIX}] Phase 1: Fix Critical regressions (immediate)
-[{PREFIX}] Phase 2: Fix High priority issues (same session)
-[{PREFIX}] Phase 3: Fix Medium priority issues (time permitting)
-[{PREFIX}] Validate all fixes with targeted re-testing
-[{PREFIX}] Execute final comprehensive test suite
-[{PREFIX}] Generate final remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For CRITICAL_ONLY scope**:
-```
-[{PREFIX}] Post-change verification (CRITICAL_ONLY) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Identify Critical regressions only
-[{PREFIX}] Fix Critical regressions (time-boxed)
-[{PREFIX}] Validate Critical fixes
-[{PREFIX}] Document remaining issues
-[{PREFIX}] Generate remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For SELECTIVE scope**:
-```
-[{PREFIX}] Post-change verification (SELECTIVE) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Derive affected subset via change-impact analysis
-[{PREFIX}] Fix the derived subset (time-boxed)
-[{PREFIX}] Validate fixes
-[{PREFIX}] Generate remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For ANALYSIS_ONLY scope**:
-```
-[{PREFIX}] Post-change analysis (NO REMEDIATION) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate comprehensive comparison analysis
-[{PREFIX}] Identify and categorize all regressions
-[{PREFIX}] Document recommended fixes (no implementation)
-[{PREFIX}] Generate analysis report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
 ```
 
 ---
@@ -1179,7 +1114,7 @@ notify( "Remediation COMPLETE ({scope}) - {final_rate}% final pass rate (baselin
 
 ### Step 10: Final Summary
 
-Provide the detailed summary (and close your checklist, if you kept one):
+Provide the detailed summary:
 
 ```
 ✅ [{PREFIX}] Post-change verification & remediation COMPLETE
@@ -1332,6 +1267,9 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 ---
 
 ## Version History
+
+**Version 1.4** (2026.10.10)
+- Wider pruning batch 1 (store row `84211d12`): removed Step 1 (the optional step checklist and its four scope lists) and the "close your checklist" clause in the final summary. Step 1 is unused; later steps keep their numbers.
 
 **Version 1.3** (2026.10.09)
 - Pruning pilot, shortlist row 14 (store row `681745a9`): the High and Medium priority regression blocks of the report template, which repeated the Critical block, are described by their differences (heading, impact line, id prefix, fields dropped).

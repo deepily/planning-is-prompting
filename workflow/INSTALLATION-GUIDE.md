@@ -101,9 +101,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Validate updates
    - Step 8: Present update summary
 
-3. Track update progress (a step checklist is optional)
-
-4. Send notifications after each major step (see workflow document for details)
+3. Send notifications after each major step (see workflow document for details)
 
 **If user chooses [2] - Add more workflows:**
 
@@ -123,9 +121,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Present summary and next steps
    - Step 7.5: Remind about future additions
 
-3. Track installation progress (a step checklist is optional)
-
-4. Send notifications after each major step (see workflow document for details)
+3. Send notifications after each major step (see workflow document for details)
 
 **If user chooses [3] or [4] - Manual instructions or nothing:**
 
@@ -2455,6 +2451,8 @@ If you're creating new workflows and need to create slash command wrappers for t
 ---
 
 ## Version History
+
+**v1.5** (2026.10.10) - Wider pruning batch 1 (store row `84211d12`): removed the "Track progress (a step checklist is optional)" item from the update and installation flows and renumbered the notification item to 3.
 
 **v1.4** (2026.10.09, Sam) - Pruning pilot, shortlist row 7 (store row `681745a9`): the backup section's Usage, Version Checking and Customization subsections are replaced by a pointer to the plan-backup command, the script header and `backup-version-check.md`, keeping the two instructions found nowhere else (project exclusions; disabling the check).
 

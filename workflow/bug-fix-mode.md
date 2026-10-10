@@ -127,7 +127,7 @@ Before EVERY edit to `.claude-session.md`, mentally verify:
 
 **Purpose**: Immediately notify user that bug fix mode initialization has begun
 
-**Timing**: Execute BEFORE any step checklist (before Step 0)
+**Timing**: Execute first, before the mode's first step
 
 **Command**:
 ```python
@@ -141,49 +141,6 @@ notify( "Initializing bug fix mode, loading queue and history...", notification_
 - Sets expectation that bug selection menu will appear shortly
 
 **Note**: This is a low-priority "I'm starting" ping. The high-priority bug selection question comes in Step 4 (start mode), Step 14 (continue mode), or Step 18 (wrap mode), via `ask_multiple_choice()`.
-
----
-
-## Step 0: Step Checklist (optional)
-
-**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3). The bug queue itself is tracked in `bug-fix-queue.md` and the store, not here.
-
-This step is MANDATORY for all executions. Do not skip.
-
-```
-Checklist items (adjust based on mode):
-
-For START mode:
-1. [PLAN] Check/create bug-fix-queue.md
-2. [PLAN] Check/create history.md session header
-3. [PLAN] Get session info and stamp ownership
-4. [PLAN] Present bug selection to user
-
-For CONTINUE mode:
-1. [PLAN] Read bug-fix-queue.md for state
-2. [PLAN] Read history.md current session
-3. [PLAN] Present bug selection to user
-
-For CLOSE mode:
-1. [PLAN] Finalize history.md session entry
-2. [PLAN] Archive completed bugs in queue
-3. [PLAN] Send session summary notification
-
-For WRAP mode:
-1. [PLAN] Validate wrap conditions
-2. [PLAN] Document fix in history.md
-3. [PLAN] Update bug-fix-queue.md
-4. [PLAN] Check/update TODO.md
-5. [PLAN] Stage files and commit
-6. [PLAN] Capture hash and update documents
-7. [PLAN] Send completion notification
-8. [PLAN] Present next action options
-```
-
-**Verification**:
-- [ ] If a checklist is kept: created with the items listed above
-- [ ] Items have [PLAN] prefix
-- [ ] First item marked `in_progress`
 
 ---
 
@@ -246,8 +203,6 @@ For WRAP mode:
    - Auto-migrate to v2.0 format (see Migration section)
    - Preserve all existing data
 
-**If you keep a step checklist**: Mark Step 1 complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md exists in project root
 - [ ] File has valid v2.0 structure (Active Sessions, Queued, In Progress, Completed)
@@ -273,8 +228,6 @@ For WRAP mode:
 ```
 
 **If session EXISTS**, verify it's a bug fix session and continue appending.
-
-**If you keep a step checklist**: Mark Step 2 complete.
 
 **Verification**:
 - [ ] history.md has session header for today
@@ -388,8 +341,6 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
    ══════════════════════════════════════════════════════════
    ```
 
-**If you keep a step checklist**: Mark Step 3 complete.
-
 **Verification**:
 - [ ] Session ID retrieved via get_session_info()
 - [ ] Session registered in Active Sessions table (bug-fix-queue.md)
@@ -441,8 +392,6 @@ ask_multiple_choice(
 **If user selects a queued bug**: Proceed to claim and fix (Step 5).
 
 **If user selects their in-progress bug**: Resume work (skip claiming in Step 5).
-
-**If you keep a step checklist**: Mark Step 4 complete, add bug fix cycle items.
 
 **Verification**:
 - [ ] ask_multiple_choice sent with current queue (excluding other sessions' in-progress)
@@ -520,8 +469,6 @@ ask_multiple_choice(
 
 **Note**: File tracking continues in your manifest section (`.claude-session.md`). All files modified during bug-fix-mode are tracked continuously - no reset needed between bugs. The manifest section captures all modifications for the entire session.
 
-**If you keep a step checklist**: Add items for current bug fix.
-
 **Verification**:
 - [ ] Bug added to Queued (if new)
 - [ ] Bug claimed: moved from Queued to In Progress with Owner tag
@@ -581,8 +528,6 @@ Files to track include:
 
 **A scratch checklist for sub-tasks is fine if the fix is complex.**
 
-**If you keep a step checklist**: Update progress as you work.
-
 **Verification**:
 - [ ] Fix implemented
 - [ ] All modified files recorded in manifest section
@@ -625,8 +570,6 @@ Files to track include:
 
 **Record test results for history entry.**
 
-**If you keep a step checklist**: Mark testing complete.
-
 **Verification**:
 - [ ] Smoke test executed
 - [ ] Change-impact classification performed
@@ -648,8 +591,6 @@ Files to track include:
 - **Test**: Smoke PASS, Unit PASS
 - **Commit**: [pending]
 ```
-
-**If you keep a step checklist**: Mark documentation complete.
 
 **Verification**:
 - [ ] Fix entry added to history.md
@@ -726,8 +667,6 @@ git rev-parse --short HEAD
 gh issue close #123 --comment "Fixed in commit abc1234"
 ```
 
-**If you keep a step checklist**: Mark commit complete.
-
 **Verification**:
 - [ ] Manifest section read and files extracted
 - [ ] ONLY manifest files staged (no stray files)
@@ -766,8 +705,6 @@ Add to Completed with attribution:
 **Update Active Sessions table**:
 Update your row's `Last Activity` timestamp.
 
-**If you keep a step checklist**: Mark queue update complete.
-
 **Verification**:
 - [ ] Bug removed from In Progress section
 - [ ] Bug added to Completed with full attribution
@@ -798,8 +735,6 @@ ask_yes_no(
 **If no** (`response.startswith("no")`): Loop back to Step 4 (bug selection) in same context.
 
 **If neither** (`response.startswith("neither")`): Re-frame — typical concerns: "I want to clear but pick a specific next bug", "keep context but pause for a break", "clear and switch to a different repo". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual options. Do NOT default to either branch. See `workflow/cosa-voice-integration.md` → "Handling Neither".
-
-**If you keep a step checklist**: Mark cycle complete.
 
 **Verification**:
 - [ ] Manifest persists (no reset needed)
@@ -855,8 +790,6 @@ ask_yes_no(
 
 **Key Benefit**: If you made edits before context cleared, the manifest still has your file list. You can continue where you left off.
 
-**If you keep a step checklist**: Mark queue read complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md read
 - [ ] Completed count known
@@ -874,8 +807,6 @@ ask_yes_no(
 - Understand fixes completed so far
 - Note current fix number
 - Identify any pending work
-
-**If you keep a step checklist**: Mark history read complete.
 
 **Verification**:
 - [ ] history.md session section read
@@ -910,8 +841,6 @@ ask_multiple_choice(
 
 **Process response and proceed appropriately.**
 
-**If you keep a step checklist**: Mark continuation setup complete.
-
 **Verification**:
 - [ ] ask_multiple_choice sent
 - [ ] User response received
@@ -935,8 +864,6 @@ ask_multiple_choice(
 
 **Status**: Session closed YYYY.MM.DD
 ```
-
-**If you keep a step checklist**: Mark history finalization complete.
 
 **Verification**:
 - [ ] Session summary added
@@ -1018,8 +945,6 @@ Mark these as `stale` and optionally release their In Progress bugs:
 
 **User preference determines which options.**
 
-**If you keep a step checklist**: Mark archive complete.
-
 **Verification**:
 - [ ] Your session status updated to `closed` in Active Sessions
 - [ ] Unclaimed In Progress bugs handled (if any)
@@ -1042,8 +967,6 @@ notify(
     abstract="**Session summary**:\n- Fixes: [N]\n- Commits: [N]\n- Issues closed: [list]\n\nRemaining in queue: [M] bugs"
 )
 ```
-
-**If you keep a step checklist**: Mark all items complete.
 
 **Verification**:
 - [ ] Summary notification sent
@@ -1156,8 +1079,6 @@ ask_multiple_choice(
 )
 ```
 
-**If you keep a step checklist**: Mark Step 18 complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md exists
 - [ ] Session ownership verified
@@ -1174,8 +1095,6 @@ ask_multiple_choice(
 
 **Note**: Commit hash will be updated in Step 22 after commit succeeds.
 
-**If you keep a step checklist**: Mark Step 19 complete.
-
 **Verification**:
 - [ ] Fix entry added to history.md
 - [ ] All touched files listed
@@ -1190,8 +1109,6 @@ ask_multiple_choice(
 **Move your claimed bug from In Progress to Completed in bug-fix-queue.md, with attribution, as in Step 10**, except that the commit field reads `[pending]` until Step 23 records the hash.
 
 **Also update Active Sessions table**: Update your `Last Activity` timestamp.
-
-**If you keep a step checklist**: Mark Step 20 complete.
 
 **Verification**:
 - [ ] Bug removed from In Progress section
@@ -1219,8 +1136,6 @@ ask_multiple_choice(
 ```
 INFO: Bug not found in TODO.md (no action needed)
 ```
-
-**If you keep a step checklist**: Mark Step 21 complete.
 
 **Verification**:
 - [ ] TODO.md searched for related items
@@ -1342,8 +1257,6 @@ notify(
 ```
 Present retry option.
 
-**If you keep a step checklist**: Mark Step 22 complete.
-
 **Verification**:
 - [ ] Pre-commit verification performed (git status compared to manifest section)
 - [ ] Files NOT in manifest section identified and skipped
@@ -1411,8 +1324,6 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 WARN: GitHub issue #123 not found. Continuing without closure.
 ```
 
-**If you keep a step checklist**: Mark Step 23 complete.
-
 **Verification**:
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
@@ -1437,8 +1348,6 @@ notify(
     abstract="**Fix**: [brief description]\n**Files**: [N] changed\n**Tests**: [result summary]\n**Commit**: abc1234\n**GitHub**: #123 closed (or N/A)"
 )
 ```
-
-**If you keep a step checklist**: Mark Step 24 complete.
 
 **Verification**:
 - [ ] Completion notification sent
@@ -1480,8 +1389,6 @@ ask_multiple_choice(
 - Manifest persists on disk; context clear recovery will work
 
 **If "Close session"**: Execute Session Closure (Steps 15-17).
-
-**If you keep a step checklist**: Mark Step 25 complete.
 
 **Verification**:
 - [ ] Manifest state understood (committed section exists)
@@ -1734,6 +1641,8 @@ else:
 ---
 
 ## Version History
+
+**v1.9** (2026.10.10, Sam) - **Wider pruning batch 1 (store row `84211d12`).** Removed Step 0 (the optional step checklist, which also said "MANDATORY" in the same section) and the 25 "If you keep a step checklist" lines; the Preliminary timing line now says "before the mode's first step". The "Checklist updated (if kept)" Verification bullets stay until Rick rules on them.
 
 **v1.8** (2026.10.09, Sam) - **Step 9c's commit template no longer rides the commit line (defect 9, row `1498e58f`).** The message is written to a file and committed with `git commit -F <message-file> -- <paths>`, the shape the commit-scope guard reviews; `session-end.md` Step 4.3 carries the reasons.
 
