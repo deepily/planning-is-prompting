@@ -43,7 +43,9 @@
 
 > **🔴 FOUND 2026-08-05, reproduced on the live tree.** Every `--since` / `--until` in this document
 > must carry an explicit time. The bare-date form this doc used to prescribe under-counts silently,
-> and in the single-day case returns **zero**.
+> and in the single-day case returns **zero**. That is true of git and of the discovery probe; the
+> aggregator pins bare dates itself (`_normalize_window_bounds`, row `d5bfe470`), so the advice stays
+> for the two places that do not.
 
 **The mechanism.** Git parses `--since` / `--until` with *approxidate*, which resolves a bare
 `YYYY-MM-DD` to **that date at the current wall-clock time**, not to midnight. One mechanism, two
@@ -71,8 +73,9 @@ newest commit EXCLUDED by it                        →  2026-08-01 11:44:19 -04
 
 ```bash
 # Accept a bare date from the caller, but never pass one to git.
-SINCE_TS="${SINCE:+${SINCE} 00:00:00}"   # if SINCE already has a time, use it verbatim
-UNTIL_TS="${UNTIL:+${UNTIL} 23:59:59}"
+# if the bound already has a time, use it verbatim
+[[ "$SINCE" == *" "* ]] && SINCE_TS="$SINCE" || SINCE_TS="${SINCE:+$SINCE 00:00:00}"
+[[ "$UNTIL" == *" "* ]] && UNTIL_TS="$UNTIL" || UNTIL_TS="${UNTIL:+$UNTIL 23:59:59}"
 ```
 
 Applies in **both** places a window is used — the Step 1 discovery probe (`has_commits_in_window`)
@@ -185,7 +188,7 @@ distinct from a broken config — **but do not render it as one without checking
 
 ## Step 1.5) Confirmation gate (default ON, user-visible review of discovered repos)
 
-**Purpose**: discovery is automatic but **lossy** — a repo the user wants in the rollup may not have a CSV yet (fresh repo, repo where session-end §6 hasn't fired, repo with stale mtime > 14 days). The confirmation gate gives the user one click to accept the auto-discovery AND a free-text "Other" surface to add missed repos before the aggregator runs.
+**Purpose**: discovery is automatic but **lossy** — a repo the user wants in the rollup may have no commits in the window yet (a fresh repo, or one that was quiet in the window). The confirmation gate gives the user one click to accept the auto-discovery AND a free-text "Other" surface to add missed repos before the aggregator runs.
 
 **Mechanism**: fire `ask_multiple_choice` after discovery resolves a non-empty list:
 
@@ -194,12 +197,12 @@ discovered_repos = [...]  # from Step 1
 
 ask_multiple_choice(
     questions = [{
-        "question"    : "Confirm repos for the cross-repo LoC roll-up. All discovered repos are pre-checked; uncheck any you want to exclude; use Other to add repos that weren't auto-discovered (e.g. repos without a CSV yet).",
+        "question"    : "Confirm repos for the cross-repo LoC roll-up. All discovered repos are pre-checked; uncheck any you want to exclude; use Other to add repos that weren't auto-discovered (e.g. repos with no commits in the window yet).",
         "header"      : "Repos",
         "multiSelect" : True,
         "options"     : [
-            {"label": repo_name, "description": f"CSV at {csv_path}, mtime {mtime_hint}"}
-            for repo_name, csv_path, mtime_hint in discovered_with_metadata
+            {"label": repo_name, "description": f"{commit_count} commits in the window"}
+            for repo_name, commit_count in discovered_with_metadata
         ]
     }],
     priority        = "high",
@@ -223,7 +226,7 @@ When the user enters a repo name (or path) in "Other":
 2. Treat as absolute path if the first interpretation fails: if `{other_value}` exists as a directory, use it
 3. If neither: warn in the rendered summary ("Other repo `{other_value}` not found at expected paths; skipped")
 
-The added repo does NOT need to have an existing CSV — Rachel's aggregator CLI's §7.2 report-as-stale handling will mark it as "no data" in the summary if no CSV is present. This is the user-visible signal that the repo should run `/plan-session-end` first to generate the CSV.
+The added repo does NOT need commits in the window — the aggregator marks a repo with none as "no data" in the summary. That is the user-visible signal that nothing landed there in the window.
 
 ### Bypass paths (skip Step 1.5 entirely)
 
@@ -234,7 +237,7 @@ The confirmation gate is bypassed when:
 
 ### Recommendation Mandate compliance
 
-Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `CSV exists at PATH, mtime N days ago`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
+Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `N commits in the window`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
 
 ---
 
@@ -284,11 +287,11 @@ cd "$LUPIN_ROOT/src" && \
 | Flag | Meaning |
 |---|---|
 | `--repos` (**required**) | Absolute repo dirs from Step 1. Do NOT reconstruct from name + `PROJECTS_ROOT` — that breaks for non-flat repos (`google/lookml`, `google/skills-distillation`) |
-| `--since` / `--until` | Inclusive commit-window bounds. **Pass explicit times** (`"YYYY-MM-DD 00:00:00"` / `"YYYY-MM-DD 23:59:59"`) — a bare date resolves to *now-o'clock on that date*, not midnight (§0.1) |
+| `--since` / `--until` | Inclusive commit-window bounds. **Pass explicit times** (`"YYYY-MM-DD 00:00:00"` / `"YYYY-MM-DD 23:59:59"`) — a bare date resolves to *now-o'clock on that date*, not midnight (§0.1); the aggregator also pins bare dates, git and the discovery probe do not |
 | `--head-only` | Walk only each repo's current HEAD. **The default is ALL LOCAL BRANCHES**; use only to deliberately narrow scope |
 | `--include-merges` | Merges are excluded by default (they would double-count the commits they merge) |
 | `--plot` | Writes `<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png` |
-| `--output` | `json` for the §3 renderer; also `console` / `csv` / `markdown` |
+| `--output` | `json` for the §3 renderer; also `console` / `csv` |
 
 What each flag does beyond this table, and what the aggregator computes: the module docstring and `--help`.
 
@@ -474,6 +477,7 @@ This is the durable artifact of the global rollup — analogous to the per-branc
 
 ## Version History
 
+- **2026-10-10**: Stale references (row `735e312f`, C2 to C5): the confirmation gate and its options describe repos by commit count in the window, not by a CSV and its mtime; `--output` choices are `console`, `json`, `csv`; the bash window normalization leaves a bound that already has a time as it is, as the Python does; §0.1 says the aggregator pins bare dates itself and the advice stays for git and the discovery probe.
 - **2026-10-09**: Pruning pilot batch two, shortlist rows 31-43 (store row `681745a9`), Sam: the When-to-use callout moves below its table (closing the gap that rendered the `--repos` and `--plot` rows as plain text); the zero-repos warnings keep one sentence and the §4.2 pointer; Step 2's failure table points to Step 4, to which its two missing rows move; the header's sister-doc path is corrected and the cross-references point to the header. Net 32 non-blank lines.
 - **2026-07-31**: **Spoken-verdict mandate now REQUIRES added/deleted alongside net, always** (Rick — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only was already banned from the terminal/abstract render (Step 3 has always shown Added/Deleted/Net columns); this closes the one place net-only had survived — the **spoken** line. Updated the compliant-verdict examples and the `notify()` code sample in Step 3, plus the slash wrapper's Step 5 instruction, to always state all three numbers. Net-only spoken line is now an explicit anti-pattern.
 - **2026-07-13**: **THE ROLL-UP NOW COMPUTES FROM GIT.** Three defects, one rewrite (lupin `1ccc05b5`, Mr Radio 🦉; PIP-side doc + slash wrapper by María 🌸; found while investigating Rick's *"the global roll-up discrepancy from yesterday"*).
