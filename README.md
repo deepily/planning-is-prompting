@@ -470,6 +470,10 @@ Written for readers **outside** this fleet — narrative, receipt-backed account
 - [**The KISS Protocol — v3, part 2**](docs/explainer/2026.08.05-the-kiss-protocol-how-a-brevity-mandate-got-built-v3-part-2.md) - **The channel nobody was reading.** Acts 11–14, where a second complaint nine days later revealed that sessions writing *to each other* were complying with every rule and still unreadable — and what happened once somebody built an instrument to read that channel. (This is the WaHH half of the mandate, and the reason it exists.)
 - [**v1**](docs/explainer/2026.07.25-the-kiss-protocol-how-a-brevity-mandate-got-built-v1.md) · [**v2**](docs/explainer/2026.08.04-the-kiss-protocol-how-a-brevity-mandate-got-built-v2.md) - The earlier cuts, kept deliberately rather than overwritten. v3 is v2 split at its natural seam with nothing added but front matter, a bridge, and a recap — so v2 is the last single-document version, and v1 shows what the first telling got wrong.
 
+### Version History Files (`docs/version-history/`)
+
+One file per workflow document, named after it (`docs/version-history/<name>.md`): the document's version history, moved out of `workflow/` so the canonical text carries no change log. Each `workflow/<name>.md` keeps its original history heading and a one-line pointer. New entries go at the top of the list in the file here, newest first.
+
 ### Working Design Notes & Audit Records
 
 Shorter working artifacts from the same period — designs awaiting a ruling, audit records, observer ledgers, and board recuts. Catalogued so the entry page matches the tree; the load-bearing writeups are the fuller entries above.
