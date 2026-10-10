@@ -28,7 +28,7 @@ Keep the two in step in the canonical: the header is what other copies read, the
 |---|---|
 | `PLANNING_IS_PROMPTING_ROOT` is unset | Check skipped silently. The backup runs and nothing is printed |
 | Canonical script not found under the root | Check skipped silently during a backup; `--check-for-update` prints `Canonical: Not found` and the path |
-| `SKIP_VERSION_CHECK` is set to any non-empty value | Check skipped for that run |
+| `SKIP_VERSION_CHECK` is set to any non-empty value | Check skipped for that backup run (`--check-for-update` still reports) |
 | `--check-for-update` is the first argument | The detailed report below, then exit. No backup runs |
 | Versions are equal | No output; the backup proceeds |
 | Versions differ, in either direction | The notice below, then a pause |
@@ -61,7 +61,7 @@ To run a backup without the pause, leave `PLANNING_IS_PROMPTING_ROOT` unset or s
 
 ```bash
 # Via slash command
-/plan-backup --check-for-update
+/plan-backup-check
 
 # Via script directly
 ./src/scripts/backup.sh --check-for-update
@@ -86,7 +86,7 @@ The script does not update itself. After the notice, or after `--check-for-updat
    ```bash
    diff -u src/scripts/backup.sh $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh | less
    ```
-3. **Note your configuration**: the lines between `# === CONFIG START ===` and `# === CONFIG END ===`. `SOURCE_DIR`, `DEST_DIR` and `PROJECT_NAME` are the ones you edited; `SCRIPT_DIR` and `EXCLUDE_FILE` are computed.
+3. **Note your configuration**: the lines between `# === CONFIG START ===` and `# === CONFIG END ===`. `SOURCE_DIR`, `DEST_DIR` and `PROJECT_NAME` are the ones you edited; `SCRIPT_DIR` and `EXCLUDE_FILE` are computed, so any other line you changed in the old copy needs the same treatment.
 4. **Copy the canonical over the local script**:
    ```bash
    cp $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh src/scripts/backup.sh
@@ -152,7 +152,7 @@ The local `SCRIPT_VERSION` differs from the canonical header. Update by hand as 
 
 ## Version History
 
-**v2.0** (2026.10.10, store row `9aadd0ac`, item 10, Rick: cut the doc to the script) - Rewritten to describe only what `scripts/rsync-backup.sh` v1.2 does. Removed: the U/E/B/D/S/C update menu and its per-option operations (the script has one prompt, Enter or Ctrl+C), the once-per-session warning (the script skips silently when the root is unset, and shows the notice every run), the "local is newer" branch (any difference prints the same notice), the changelog display, and the header-based local version (the local version is `SCRIPT_VERSION`). Added: the skip table, `SKIP_VERSION_CHECK`, and a Updating by Hand procedure for the work the menu described. Dropped the "Version shows as unknown" entry, which the script never prints.
+**v2.0** (2026.10.10, store row `9aadd0ac`, item 10, Rick: cut the doc to the script) - Rewritten to describe only what `scripts/rsync-backup.sh` v1.2 does. Removed: the U/E/B/D/S/C update menu and its per-option operations (the script has one prompt, Enter or Ctrl+C), the once-per-session warning (the script skips silently when the root is unset, and shows the notice every run), the "local is newer" branch (any difference prints the same notice), the changelog display, and the header-based local version (the local version is `SCRIPT_VERSION`). Added: the skip table, `SKIP_VERSION_CHECK`, and an Updating by Hand procedure for the work the menu described. Dropped the "Version shows as unknown" entry, which the script never prints.
 
 **v1.2** (2026.10.09, Extra 2, store row `9aadd0ac`, item 12) - The `PLANNING_IS_PROMPTING_ROOT` export goes in `~/.bashrc` or `~/.zshrc` and is loaded with `source ~/.bashrc`; the doc had said `~/.claude/CLAUDE.md`, which is markdown and cannot be sourced.
 
