@@ -36,7 +36,7 @@
 
 5. **MUST produce movement, not just a doc** (§5):
    - Rulings → TODO.md Decisions Log (dated + attributed).
-   - Doctrine-grade lessons → graduate into a `workflow/` doc (record the pointer in that doc's version history / Status).
+   - Doctrine-grade lessons → graduate into a `workflow/` doc (record the pointer in that doc's Status or in its `docs/version-history/<name>.md`).
    - Open threads → a store item via `task_create` (never left in prose).
    - New failure modes → the failure-mode catalog.
 
