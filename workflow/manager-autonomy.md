@@ -33,7 +33,7 @@ Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 The default flips from *"ask before any spawn/reap"* to *"act within the envelope; escalate only when an action crosses a named boundary."* This mirrors the **three-tier commons autonomy** ladder (`workflow/cross-session-communication.md`) and the **blast-radius-scaled authorization** rule: authority scales with reversibility — a fresh worker is cheap to reap (reversible → standing), a **push to origin or a production deploy** is not (outward-facing / irreversible → the user's direct word). *(A dev-infra **server bounce** — the arbiter `:8001` or the test server `:8000` — reads as reversible when the server is idle, and is **standing** per §2's bounce prerogative; it is the outward-facing / production-touching ops that stay gated.)*
 
-**Why it exists**: the originating incident (2026-06-04) was a manager holding for over an hour rather than re-spawning an offline peer whose review gated the last build step — escalating a reversible, role-ownable decision instead of acting. The hold was *reasoned*, but **freeze-and-ask is the failure this doctrine corrects**. It is the same failure family as completion-discipline (FM-19, *difficulty ≠ defer*) and the Heartbeat Hook (an agent with owed work idling because nothing authorized it to proceed) — here the "owed work" is *fleet management* and the missing authorization is *standing spawn/harvest permission*.
+**Why it exists**: the originating incident (2026-06-04) was a manager holding for over an hour rather than re-spawning an offline peer whose review gated the last build step — escalating a reversible, role-ownable decision instead of acting. The hold was *reasoned*, but **freeze-and-ask is the failure this doctrine corrects**. It is the same failure family as completion-discipline (FM-19, *difficulty ≠ defer*) and the Heartbeat Hook (an agent with owed work idling because nothing authorized it to proceed; the hook pokes a frozen *worker*, whereas this doctrine keeps a *manager* from freezing in the first place) — here the "owed work" is *fleet management* and the missing authorization is *standing spawn/harvest permission*.
 
 ---
 
@@ -126,8 +126,6 @@ Standing authority is **announced, not pre-approved**. For every autonomous spaw
 3. On a spawn/reap that **crosses a STILL-GATED boundary** (cap exceed, cross-project, destructive), the `notify()` becomes an **escalation** (high priority) and the action **waits** for the user's direct word.
 
 **Gating ≠ passively waiting — a gate is a QUESTION, not a status line (MANDATE, 2026-06-22).** Whenever an action is blocked on the user's direct word (any STILL-GATED item: push · deploy / put-into-service · activate a flag/feature · shared-infra bounce · destructive op · cross-project spawn), you MUST surface it as a **dedicated, targeted `ask_*`** whose answer unblocks exactly that action — NOT a *"standing by for your approval"* line buried at the end of a status `notify()`. If you never fired a question that requires a response, you are **not** waiting on the user — you are stalled and pretending to. A status update informs; only an ask unblocks. Canonical rule + self-test: planning-is-prompting → `workflow/cosa-voice-integration.md` § "Gate = a Direct Targeted Ask, Never a Buried 'Standing By'". (The *push* gate is the lone exception that stays unsurfaced — never proactively offer push-readiness; it's the user's session-end call.)
-
-The contract's purpose: a manager exercising standing authority is always **traceable after the fact**, so autonomy and accountability hold together.
 
 ---
 
@@ -227,12 +225,9 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 ## 10. Relationship to other workflows
 
 - **`workflow/swe-team-roles.md`** — the manager charter that consumes this envelope; the explicit-TODO discipline (a manager's owned TODO list feeds the heartbeat work-owed oracle) pairs with the harvest threshold here.
-- **`workflow/cross-session-communication.md`** — the three-tier commons autonomy ladder this envelope is modeled on; the announcement contract (§5) rides those commons surfaces.
 - **Harvest-discipline mandate** — the reap *mechanism* + `extra-N` alarm; this doc is its *authorization* half.
 - **`plan-memento` skill** — the continuity seed for identity-continuous respawn (§4).
 - **`workflow/fleet-recovery.md`** — when a crew dies to *process death* (tmux wipe, crash, reboot) rather than a deliberate reap, do **not** respawn-from-memento: the workers' transcripts survive on disk and are resumable verbatim (`claude --resume <uuid>`). A manager resurrects its **own** crew — the memento path is the fallback for a transcript that is genuinely gone, not the first resort when it isn't.
-- **Heartbeat Hook + Arbiter** — same failure family (owed work idling for lack of authorization); the Heartbeat Hook pokes a frozen *worker*, this doctrine keeps a *manager* from freezing in the first place.
-- **Blast-radius-scaled authorization** (global feedback) — the rule that sorts STANDING from STILL-GATED.
 
 ---
 
@@ -283,6 +278,8 @@ bounce arbiter :8001 OR test :8000 when the server is IDLE → STANDING, any rea
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
 
 *Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*
+
+*Version 2.3 (2026-10-09, Sam for María 🌸 — pruning pass 5, reviewed by John) — Cut four lines that other sections already say: §5's closing line (heading, §3 and the contract state it) and three §10 index bullets (cross-session ladder, Heartbeat Hook family, blast-radius rule; each already named inline). §1's Heartbeat Hook sentence gained the one clause the §10 bullet carried: the hook pokes a frozen worker, this doctrine keeps a manager from freezing. No ruling changed.*
 
 *Version 2.2 (2026-09-29, María 🌸 — Rick's request, broadcast `7cabfdb2`) — **§2.1 points at the skeleton-crew exception**: MANAGE-not-BUILD is suspended during declared skeleton-crew hours. The rule itself lives in `skeleton-crew.md` §1 rule 2; this doc only names the exception, so a reader of the cardinal rule finds it.*
 
