@@ -589,3 +589,60 @@ def test_a_self_scan_with_an_older_version_reads_STALE_naming_the_manifest( tmp_
 
     assert state == "STALE"
     assert "v1.0 vs manifest v1.1" in detail and "pip_manifest.py" in detail
+
+
+# ---------------------------------------------------------------------------
+# Gaps found by the code review (mutants that survived): each test below goes red
+# when the matching rule is loosened.
+# ---------------------------------------------------------------------------
+def test_the_env_qualifier_is_set_aside_only_before_workflow_scripts( tmp_path ):
+    """M7: `$PLANNING_IS_PROMPTING_ROOT/` before any other path is a real change."""
+    p         = _project( tmp_path )
+    canonical = _lines( "Read `workflow/other.md` and run `workflow/scripts/x.py`." )
+
+    assert _verdict( p, canonical, _lines( "Read `$PLANNING_IS_PROMPTING_ROOT/workflow/other.md` and run `workflow/scripts/x.py`." ) )[ 0 ] == "VERSION_LIES"
+    assert _verdict( p, canonical, _lines( "Read `workflow/other.md` and run `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/x.py`." ) )[ 0 ] == "CURRENT"
+
+
+@pytest.mark.parametrize( "case", [ "appended", "removed" ] )
+def test_a_last_line_added_or_removed_is_not_a_substitution( tmp_path, case ):
+    """
+    M12: a comparison that stops at the shorter file passes a copy that gained or
+    lost its LAST line. The middle-of-file twin above cannot see that.
+    """
+    p         = _project( tmp_path )
+    canonical = _lines( "**Prefix**: [PLAN]" ) + "the final rule\n"
+    right     = _lines( f"**Prefix**: [{p.prefix}]" ) + "the final rule\n"
+    installed = right + "an appended line\n" if case == "appended" else right.replace( "the final rule\n", "" )
+
+    assert _verdict( p, canonical, right )[ 0 ] == "CURRENT", "the twin must be right"
+    assert _verdict( p, canonical, installed )[ 0 ] == "VERSION_LIES"
+
+
+@pytest.mark.parametrize( "parent, name", [ ( "odd dir", "lupin" ), ( "plain", "my app" ), ( "plain", "has$dollar" ) ], ids=[ "space-in-parent", "space-in-name", "dollar-in-name" ] )
+def test_a_project_path_outside_the_safe_shape_reads_the_hash_only( tmp_path, parent, name ):
+    """
+    M15 and M16: a project tree whose path has a space or a `$` is never rendered,
+    even when every line agrees with it, so such an install reads VERSION_LIES.
+    That is the safe direction, and it is why the sentence in installation-about
+    Step 3 says "a directory not named for its project reads the hash only".
+    """
+    base = tmp_path / parent
+    base.mkdir()
+    p    = _project( base, name=name )
+    canonical = _lines( f"**Prefix**: [PLAN]\n   - **History file**: {CANON_ROOT}/history.md" )
+    installed = _lines( f"**Prefix**: [{p.prefix}]\n   - **History file**: {p.root}/history.md" )
+
+    assert _verdict( p, canonical, installed )[ 0 ] == "VERSION_LIES"
+    assert pdc.render_for_project( canonical, installed, p.path ) is None
+
+
+def test_a_project_at_the_filesystem_root_has_no_name_to_tie_to():
+    """
+    M16: `/` passes the root shape and has an empty last segment, so only the
+    directory-name shape refuses it. Without that check an install at `/` would
+    tie every value to the empty string.
+    """
+    nothing = { "name": None, "dir": None, "prefix": None, "root": None }
+
+    assert not pdc.identity_fits_project( nothing, Path( "/" ) )
