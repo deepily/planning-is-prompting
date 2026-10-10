@@ -578,6 +578,24 @@ whole reason that prefix exists.
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
 
+### 2026-10-09 — Pruning pass and the thirteen workflow defects (rows `681745a9`, `1498e58f`)
+
+Rulings marked *from memento* were given before my 18:51 context clear and are recorded from my memento, not from a card I can still see. Retro: `src/docs/post-games/v0.2.2/2026.10.09-pruning-pass-and-defects-crew-post-game.md`.
+
+- 2026-10-09 — Pilot cuts → **"All of it, 122 lines"** (Rick, *from memento*). Merged `86391c3`, `5f563f9`.
+- 2026-10-09 — What the next pruning pass looks for → **"Repetition and script prose"** (Rick, *from memento*). Why it matters: filled worked examples, retired or legacy material, clause-level repeats and cross-file duplicates are outside that class, and María has kept them out of every batch pending his word.
+- 2026-10-09 — Session-end, ask before committing or not → **"Commit without asking (Recommended)"**; push stays the user's (Rick, card about 18:50, *from memento*). Applied in `workflow/session-end.md`, the `plan-session-end` command, `CLAUDE.md` and `workflow/cosa-voice-integration.md` (merge `4c51045`).
+- 2026-10-09 — Session-end Step 6 skips → **"Every skip prints a line (Recommended)"** (Rick, same card, *from memento*).
+- 2026-10-09 — Token count, documents against script → **"The documents; fix the script (Recommended)"**: characters ÷ 4, warn at 17,000 and 19,000 (Rick, same card, *from memento*). Rick's "yes" at 18:54 to installing the fixed `~/.claude/scripts/get-token-count.sh` (clean keypress).
+- 2026-10-09 — Session-start work menu → **"Cap at four (Recommended)"** (Rick, same card, *from memento*).
+- 2026-10-09 — Merge pruning batch two once the tests pass → **yes** (Rick, clean keypress, 19:14). Merged `7eaf4af`.
+- 2026-10-09 — Survey the next ten workflow files tonight → **yes** (Rick, clean keypress, about 19:47). Batch three was merged at `5f5a517` later that evening, after the ruling in the next entry.
+- 2026-10-09 — Merging finished work → **"Maria why are you asking me for permission to merge work as it finishes up? Isn't that your prerogative as a manager?"** (Rick, by voice, shortly before 23:20, *from memento*). Applied from then on: reviewed, green work is merged without a card and he is told after; push stays his word. Five merges overnight under it, working branch `634d59c`.
+- 2026-10-09 — All-night run → **"work all night or shut it down ... plenty of tokens tonight"** (Rick, broadcast `80448db5`, about 23:15, *from memento*).
+- 2026-10-10 — Defect items 2, 10 and 17 of row `9aadd0ac` (spawn window, backup menu, plan-review rule) → **not ruled**: four cards between about 23:27 and 00:25 EDT timed out unanswered. Next ask 09:00.
+- 2026-10-09 — Defect 8, the staleness scanner that exists only in lupin → **say so in one sentence, do not port it** (María, on Sam's proposal). `ee9e593`.
+- 2026-10-09 — Two of Rick's own records are not cut without his word: the five ratified decisions in `workflow/post-game.md` §0 and the banned-habits table in `workflow/brevity-mandate.md` (María). The question on the table rows was asked twice and not answered.
+
 ### 2026-10-06 — Prompt audit plan, before the go (Session 218, row `dd896810`)
 
 - 2026-10-06 — Reviewer for Part A during skeleton hours → **spawn one reviewer seat now** (Rick, keypress on the walkthrough card). Why: it is the 2026-10-05 ruling as given, and it keeps the commit gate (green and reviewed) the same afternoon.

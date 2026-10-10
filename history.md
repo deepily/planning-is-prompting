@@ -2,7 +2,18 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 218 (2026-10-06, María 🌸 stable `60fd6851`, afternoon, skeleton crew, one reviewer seat)**: the prompt audit plan is applied through phase 5, and the Session 215 post-game is written. Closed on Rick's word with a backup and a push. Next steps are in `TODO.md` § Resume Here.
+**RESUME HERE**: **Session 219 (2026-10-08 evening to 2026-10-10 00:40 EDT, María 🌸 stable `83b4f4d0`, manager with author and reviewer seats)**: the pruning pass over `workflow/` is complete under the rules in force, and two defect rows found along the way are fixed except three items that need Rick's rulings. Working branch at `634d59c`, **not pushed**. Next steps are in the store rows named below.
+
+1. **Pruning pass** (row `681745a9`, blocked on Rick for scope, chase 09:00 on 10-10): all 64 top-level workflow files and the six templates surveyed in batches; an author listed repeats, a reviewer ruled row by row, the author cut one commit per file, the reviewer read the diff, I ran the suite and drift check at each tip and merged. Left alone, for his word: summary diagrams and tables, filled examples, retired rows, clause-level repeats, cross-file duplicates.
+2. **Thirteen workflow defects** (row `1498e58f`, closed at `ee9e593`), including the token-count script (characters ÷ 4, warn at 17k and 19k); the staleness scanner that exists only in lupin is stated as such, not ported.
+3. **Twenty-four defect items** (row `9aadd0ac`, blocked on Rick): merged at `0672a62` and `634d59c` except items 2, 10 and 17. `pip_drift_check.py` now exits 2 when its root is a different tree, unless given `--root`; `rsync-backup.sh --check-for-update` finds the canonical copy; twelve new tests (suite 1200 passed).
+4. **Rick's rulings**: merge reviewed, green work without a card and tell him after; commit without asking; push stays his word. In the Decisions Log, 2026-10-09.
+5. **Post-game**: `src/docs/post-games/v0.2.2/2026.10.09-pruning-pass-and-defects-crew-post-game.md`, with an overnight addendum (section 7).
+6. **Mine, wrong**: reaped three seats in the daytime run with no harvest; sent a seat an instruction after the act it forbade; gave two briefs a stale base commit; guessed a clock time once and was 40 minutes off.
+
+**Files**: workflow/ (most files), workflow/scripts/pip_drift_check.py, workflow/scripts/rsync-backup.sh and three new test files, workflow/skill-templates/, workflow/MANIFEST.json, .claude/commands/plan-session-start.md, TODO.md, history.md, src/docs/post-games/ · outside git: `~/.claude/scripts/get-token-count.sh`
+
+**Previous RESUME HERE**: **Session 218 (2026-10-06, María 🌸 stable `60fd6851`, afternoon, skeleton crew, one reviewer seat)**: the prompt audit plan is applied through phase 5, and the Session 215 post-game is written. Closed on Rick's word with a backup and a push. Next steps are in `TODO.md` § Resume Here.
 
 1. **Prompt audit Part A applied** (row `dd896810`, closed; `beb418c`, `872cf77`, `e222734`): Rick's rulings D1 to D4 are in `global/CLAUDE.md` and the deployed copy, which are byte-identical; seven user skills carry descriptions. Pocholo reviewed the repo diff and the staged skills diff; his first pass reached me only as condensed messages.
 2. **Two rulings before the go, one after**: spawn the reviewer during skeleton hours; change the home-folder files only after the reviewer passes; retire the workflow execution audit and keep one sentence in the project guide. All in the Decisions Log, 2026-10-06.
