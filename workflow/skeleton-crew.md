@@ -45,7 +45,6 @@
 
 ## 3. The window
 
-- **Default**: a declared day only, from the declaration until **17:00 local**.
 - **When the window ends, the no-spawn clause simply lapses. That is not an instruction to spawn.** 2026-09-09: the clause lapsed at 17:00, live peers already covered the work, and the right move was to assign work to them, not to create a new seat.
 - **Only the operator extends or ends it early.** A peer passing on "the operator says it's over" does not end it.
 - **Re-spin rule**: a manager who clears during the window puts the skeleton-crew order in the **first lines of its memento**. A successor who wakes to an owed board and no such line will correctly start spawning.
@@ -64,7 +63,6 @@
 3. Agree a split with the other manager: one DM each way, and say which files and builds each manager will touch.
 
 **During**
-- Rows for every unit · blind-then-swap on shared judgements · announce builds · no spawns, no subagents · the operator's instructions first.
 
 ⚠️ **A seat with an open blocking ask is slow to everything else.** While a `converse` / `ask_*` call waits on the operator, that seat's other MCP calls queue behind it — Mr. Radio measured about 10 minutes on 2026-09-10. With only two seats, that is half the crew. Before firing a long blocking ask, tell the other manager, and route anything time-sensitive to them until it returns.
 
@@ -95,6 +93,7 @@ Asked in one card, and every answer was a real one (`answered: true`, `default_u
 
 ## Version history
 
+- **0.4 (2026-10-10, Sam)** — Pruning pass 7: cut the §3 "Default" bullet (the "When it is in force" line at the top says it) and the "During" checklist bullet (rules 1, 4, 5 and 7 say each item); the ⚠️ keeps its label. No rule changed.
 - **0.3 (2026-09-10, María 🌸)** — the operator's three §6 rulings folded in: in force only on declared days; no subagents inside a manager's session (rule 1, the declaration template and the During checklist); the arbiter's manager pokes stay on (§2). §6 is now a rulings table.
 - **0.2 (2026-09-10, María 🌸)** — Mr. Radio's review folded in: rule 1 says the row move is deliberate, links the re-spin warning, and requires the post-reap check; new hazard — a seat with an open blocking ask queues its other MCP calls. §2 confirmed at source by him, unchanged.
 - **0.1 (2026-09-10, María 🌸)** — draft at the operator's request: rules, Stop-poke mute and restore, window and lapse rule, declaration template, checklists, open questions.
