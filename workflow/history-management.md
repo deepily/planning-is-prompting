@@ -577,12 +577,7 @@ ls history/ | grep "2025-09" | wc -l
 
 ## Version History
 
-**v1.0** (2025.09.30) - Initial canonical workflow
-- Four operational modes
-- Adaptive boundary detection
-- Dual-channel notifications
-- Session-end integration
-- Dry-run testing mode
+Full history: `docs/version-history/history-management.md`.
 
 ---
 
