@@ -66,8 +66,6 @@ Since 2026-09-15 the rule is **mechanical**. A request to admit a row carries a 
 
 **Fold live content out of a pledge before you file it.** Once the promote is approved the pledged row is dropped, so anything worth keeping in it — a finding, a reproduction, a link — must be moved into another row first. The door will not warn you.
 
-**Two things the door does not do**: the **operator's two keypresses** (rule 5) and judging whether the price is fair. It checks that a price was named and that the price is really yours.
-
 ⚠️ **A seat whose MCP process predates the merge cannot pledge.** A `/clear` does not reload the MCP; the seat has to be restarted before it can file an admit.
 
 ---
@@ -123,3 +121,4 @@ Since 2026-09-15 the rule is **mechanical**. A request to admit a row carries a 
 | v0.1 | 2026-09-10 | First draft at the operator's request (row `ab8c5728`), written by Mr. Radio 🦉 |
 | v0.2 | 2026-09-10 ~21:01 | The operator's five rulings folded in (§5); enforcement deliberately deferred — "the absolute simplest implementation" |
 | **v1.0** | **2026-09-15** | **Enforced in code.** The request door refuses an admit that names no deletion (§3). Rule 3, the peer agreement, is struck on the operator's 2026-09-14 ruling and replaced by "pledge a row you own", which the door checks against the persona it resolves from the session. Adds the three build rulings, the switch and its grandfathering, and the fold-live-content-out warning. The trial's wording and both trial uses are kept as history |
+| v1.1 | 2026-10-10 | Pruning pass 6: cut the paragraph on what the door does not do; the operator's two keypresses are in rule 5 (§1) and the door's limit is in §2. No rule changed |
