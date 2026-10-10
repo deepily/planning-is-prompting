@@ -158,6 +158,5 @@ Standing practice (`accumulate-pattern-before-graduating-doctrine`, Rick 2026-06
 ---
 
 **Version history**
-- **v1.2** (2026-10-10) — Pruning pass 6: cut two §7 laws that §0 already states, the "tree under test" bullet the table's row says, and the closing paragraph naming `/tmp` as the retired recipe. No rule changed.
-- **v1.1** (2026-07-13) — **Retracts v1.0's central claim.** The neutral directory is NOT a ritual; it is load-bearing for **copied-out** tests and inert only when the test lives in the target tree. §6's blanket distrust of past verdicts: **CUT**. All three clauses stand; the rationale is corrected. Rio refuted his own headline against his own memory; María retracted within the hour. Adds §8 — the Steward graduated a single-session finding and this is what it cost.
-- **v1.0** (2026-07-13) — Created after the `/tmp` MCP storm. **Central claim was a false generalization. Superseded the same night.**
+
+Full history: `docs/version-history/neutral-execution.md`.
