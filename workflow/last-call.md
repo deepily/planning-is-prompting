@@ -243,7 +243,7 @@ The day's merged work goes to the project's remote host every night, so the host
 - **Standing authority**, but **only if the merge worked**. If the day's merge failed, nothing is deployed that night, and a row is filed for the next morning to fix the merge and then deploy.
 - **The host goes back to the state it was in.** A suspended VM woken for the deploy is suspended again.
 
-`nightly_deploy.py` carries both rulings; its docstring lists the exit codes and the receipt line each one prints. It runs **after `push`, before `backup`**.
+`nightly_deploy.py` carries both rulings; its docstring lists the exit codes and what each means; the script prints the `VM parity` line on 0 and names the follow-up row on 3 and 4. It runs **after `push`, before `backup`**.
 
 **Keep the config out of the repo when it holds per-machine values** (a cloud project id, host names), and pass it with `--config <path>`. lupin's lives at `…/projects-data/lupin/nightly-deploy.env.proposed`, where per-machine state belongs. That also avoids writing into `.claude/`, which the auto-mode permission check treats as self-modification. **Type the command with literal paths, no `$VARS`**, so it matches a `Bash(python3 /…/nightly_deploy.py:*)` allow rule.
 
