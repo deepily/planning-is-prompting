@@ -222,10 +222,7 @@ DO NOT fix anything yet. Deliver:
 I'll review and decide which findings to resolve before Pass 2 begins.
 ```
 
-**Output**:
-- Findings table (5 columns: File / Line or section / Deficiency type / What's missing / Proposed fix)
-- Explicit proposed answers to every enumerated TBD
-- Raw output from the two greps
+**Output** (the prompt's deliverables: the findings table, the TBD answers and the raw output of the two greps):
 - "Design concerns" section (mandatory in Pass 1, even if empty — say so explicitly)
 
 ---
@@ -329,9 +326,7 @@ separately in a "Design concerns" section below the findings table. The
 frozen anchor; surface challenges to them, don't silently override.
 ```
 
-**Output**:
-- Findings table (4 columns: File / Line / Problem / Proposed fix)
-- Raw output from the three greps
+**Output** (the prompt's deliverables: the findings table and the raw output of the three greps):
 - (Optional) "Design concerns" section if Layer 3 challenges surface
 
 ---
@@ -393,20 +388,11 @@ Use partial re-runs only when the user explicitly asserts the skipped passes are
 
 ## 13. Anti-Patterns
 
-In addition to the gate-violations called out inline:
+The gate violations above are each stated where they apply; one more is listed here:
 
 | Anti-pattern | Why it's prohibited |
 |--------------|---------------------|
-| Applying findings without the user gate | Turns review into rubber-stamping. Gate exists for the user to keep decision authority. |
 | Collapsing Pass 1 + Pass 2 into one prompt | Each pass hunts orthogonal failure modes. Bundling loses signal. |
-| AI volunteering "let me just fix the obvious ones" | Same as above — bypasses the gate. Required response: "No. Findings only." |
-| Silently overriding Layer 3 in either pass | The "Design concerns" lane is the only acceptable override path for Layer 3. In-line fixes that change a decision = silent override. |
-| Skipping the convergence re-grep | Without it, "resolved" is self-reported. The greps are cheap; run them. |
-| Re-reading the docs between Pass 1 and Pass 2 | Pass 2 explicitly says "use the context from the previous pass." Re-reading wastes the bundled-context advantage and risks divergence. |
-| Reading order ignored | "Do not skip. Do not skim." The anchor files (Layer 1/2) MUST be loaded before the docs being reviewed; otherwise either pass loses the anchor to compare against. |
-| Running Ownership-Language Audit before Fitness | Wording polish on text that fitness-resolution is about to delete or restructure is wasted work. See §3 for the full ordering rationale. |
-| Running passes in parallel (concurrent `Agent` calls, simultaneous sessions, batched invocations) | The §3 ordering is load-bearing. Parallel execution discards every benefit of the order and silently bypasses the §6/§9 user gates (which only function in a serial pipeline). REUSE may dissolve components Pass 1 was reviewing; Pass 1 may delete steps Pass 2 was wording-polishing. The user has explicitly observed this failure mode — do not repeat it. |
-| Treating Pass 2 as a security / threat-model review (path traversal, manifest tampering, Unicode bypass, attack surface) | Pass 2's job is the binary `EXECUTOR: AI` vs `EXECUTOR: HUMAN` audit and the no-`Manual E2E` sweep. Software-vulnerability discovery is a SEPARATE concern, out of scope for this gate. The word "adversarial" was retired from Pass 2's name on 2026-05-15 specifically because sessions confabulated it into OWASP attacker-mindset semantics. If you find yourself flagging input-sanitization, path-handling, serialization-safety, or attack-surface concerns, you are running the wrong pass. |
 
 ---
 
@@ -421,9 +407,6 @@ In addition to the gate-violations called out inline:
 **In `~/.claude/CLAUDE.md`**:
 - `TEST OWNERSHIP MANDATE` — Layer 1 anchor for Pass 2 (Ownership-Language Audit; "user is never a tester")
 - `DOCUMENTATION-FIRST PROTOCOL` — the gap plan-review fills (docs before code, but no quality bar on the docs)
-
-**Per-project skill wrappers** (out of scope for this canonical doc; tracked separately):
-- `<project>/.claude/skills/plan-review/SKILL.md` — auto-discovers docs in target dir, injects project-specific tags + decision-anchor format
 
 ---
 
@@ -443,15 +426,19 @@ The prompts in §4, §5, and §8 contain double-brace placeholders that per-proj
 | `{{GREP_TARGETS}}` | Doc directory the greps run against (e.g., `src/rnd/v0.1.7/<milestone>/`) | Pass 1, Pass 2 |
 | `{{TBD_QUESTIONS}}` | Numbered enumeration of currently-flagged TBDs in the docs (per-milestone, fills at invocation time) | Pass 1 |
 
-Per-project skill wrappers at `<project>/.claude/skills/plan-review/SKILL.md` auto-discover most of these (anchor files via well-known paths, plan docs via target-directory enumeration, greps via the directory itself). `{{TBD_QUESTIONS}}` is the only slot that's per-milestone and must be enumerated explicitly at invocation.
+Per-project skill wrappers at `<project>/.claude/skills/plan-review/SKILL.md` (out of scope for this canonical doc; tracked separately) auto-discover most of these (anchor files via well-known paths, plan docs via target-directory enumeration, greps via the directory itself) and inject the project-specific tags and the decision-anchor format. `{{TBD_QUESTIONS}}` is the only slot that's per-milestone and must be enumerated explicitly at invocation.
 
 ---
 
 ## Origin Artifacts
 
-The two source prompts in Lupin (kept as historical artifacts; canonical version is this file):
+The two source prompts in Lupin (kept as historical artifacts; canonical version is this file). Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to one specific milestone; this canonical doc is the abstract version, and per-milestone wrappers fill in the slots:
 
 - `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` — historical Lupin Pass-2 instance (filename preserved for archival fidelity; PIP renamed the equivalent pass to "Ownership-Language Audit" on 2026-05-15)
 - `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/06-fitness-review-prompt.md` — Pass 1 (Fitness) instance
 
-Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to that specific milestone. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP's canonical order is Fitness→Ownership-Audit — see §3 for the rationale and `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the 2026-05-15 rename. This canonical doc is the abstract version; per-milestone wrappers fill in the slots.
+---
+
+## Version History
+
+- **2026.10.09 (Sam, store row `681745a9`)**: Pruning pass 4. Removed text that restated another place in this file: nine closing anti-pattern rows (each restated the sequential-execution mandate, the not-a-security-review banner, the Gate 1 rule, the Resolution Loop or the pass ordering; the "collapsing Pass 1 and Pass 2" row stays), two of each pass's Output bullets (the prompt carries the deliverables), and the per-project skill-wrapper bullet (the slot-table note says it). The origin-artifact note moved into the lead-in of that list. No instruction changed. This section is new: the file had no version history.
