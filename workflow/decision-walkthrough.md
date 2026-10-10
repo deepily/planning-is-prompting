@@ -69,11 +69,6 @@ Plus **inline capture** into the relevant doc when one exists (e.g. a `§ Ratifi
 
 ## Rules baked in (do not skip)
 
-- **Framing Contract is mandatory** — never a bare menu; pros + cons + recommendation every time (`workflow/cosa-voice-integration.md`).
-- **TTS-brevity** — the spoken `question` is a one-line headline; all detail in `abstract`. Honor the per-turn cap.
-- **No rubber-stamp gates** — present real choices, not confirmations; don't escalate a non-decision (mandated in-scope work is not a user gate).
-- **Always pass a `default`** = the recommended label, so a **timeout** still yields the recommendation. ⚠️ **This is NOT the same as AFK-safe, and for `ask_multiple_choice` it is not sufficient — see the box below.**
-- **One at a time** — blocking, sequential, descending priority. The user asked to be *walked through*, not handed a wall.
 - **Visibility** — when running attention-demanding asks, the asks themselves reach the user (TTS); record as you go so progress survives an interruption.
 
 ---
@@ -82,20 +77,11 @@ Plus **inline capture** into the relevant doc when one exists (e.g. a `§ Ratifi
 
 **Do not run `/plan-decide` unattended expecting the recommendations to be applied.** If the user has no live UI connection, the **first** `ask_multiple_choice` fails hard and you come back to *zero* answers — not to a set of ratified defaults.
 
-**Two different paths, and a caller-side `default` only covers one:**
-
-| path | what happens | does `default` save it? |
-|---|---|---|
-| **Timeout** — user connected but does not answer in time | returns `{"answers": <default>, "default_used": true, "answered": false}` | ✅ **yes** |
-| **Offline** — no live UI connection for the user | server raises **`503 "User is offline and no default response provided"`** | ❌ **no, not for this verb** |
-
-**Why the offline path is not covered.** The server decides it against a **server-side** `response_default` (`cosa/rest/routers/notifications.py:990-1014`). `ask_yes_no` plumbs that field; **`ask_multiple_choice` never sends it** (`lupin_mcp/cosa_voice_mcp.py:1504` passes it on the YES_NO path only — the file's own comments at `:1718`/`:1732` say the MULTIPLE_CHOICE path never plumbs it). So the server evaluates a field the client never sent, and an absent user 503s **whether or not you passed a `default`**.
+**Offline** — no live UI connection for the user: the server raises **`503 "User is offline and no default response provided"`**, and a caller-side `default` does not save it for `ask_multiple_choice`. (A timeout is different: the tool returns the `default` with `default_used: true`.)
 
 **This claim survived an afternoon of looking wrong.** Calls made *with* a `default` succeeded repeatedly — because the user happened to be at the desk, so the offline branch never evaluated at all. Four green results that were green for a reason unrelated to what they appeared to test. Treat "it worked when I tried it" as **no evidence** here unless you know the user was away.
 
 **What would restore the guarantee**: plumbing `response_default` on the MULTIPLE_CHOICE path the way YES_NO already does. Tracked on cosa-voice row `eeba4858`. **When that lands, restore the AFK-safe claim deliberately — do not let it creep back in** because the tool docstring still advertises it. *(Workflow row: `755910c4`.)*
-
-**Until then**: run the walkthrough when the user is reachable, or expect to re-run it.
 
 ---
 
@@ -109,4 +95,4 @@ Hub-spoke, like every PIP workflow:
 
 ---
 
-*Version: 1.0 (2026-06-02). Design: `src/rnd/2026.06.02-guided-decision-walkthrough-skill.md` (DD1–DD3 ratified by Rick).*
+*Version: 1.1 (2026-10-10): pruning pass 6, cut five restated rules, the two-path table and its citations, and the "until then" line. 1.0 (2026-06-02). Design: `src/rnd/2026.06.02-guided-decision-walkthrough-skill.md` (DD1–DD3 ratified by Rick).*
