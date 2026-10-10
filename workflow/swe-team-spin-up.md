@@ -107,7 +107,6 @@ flowchart LR
 - **Symmetric, one directive:** *"stand down the SWE team"* reaps **all crew workers** in one directive — mirroring spin-up.
 - **The end-of-session ritual IS a teardown trigger (Rick, 2026-07-06).** When the user calls the *"end of session ritual"* (or *"session-end"*), the Manager **harvests the crew (memento each) as an early step of that ritual — BEFORE the Manager's own commit/push** — without a separate *"stand down"* directive. No crew worker is left running across the session boundary (that would be a zombie; the no-zombies hygiene rule already forbids it). **The one exception (Rick's ruling — "let them finish, then harvest"):** a worker **genuinely about to finish a substantial unit** is **let run to its completion / next commit-checkpoint**, and the Manager **holds their own session-end for that worker**, then mementos + reaps it — harvesting it prematurely would waste near-complete work. **Guard against a harvest-dodge loophole:** "about to finish" means an **imminent commit / verifiable checkpoint** (cite the artifact-delta / next_chase evidence per §9.1 receipts-of-progress), never a vague *"still working."* An idle / done / no-owed-work worker is reaped immediately — the exception protects only the near-done case.
 - **Mementos on by default:** each worker writes a memento to its stable, derivable slot (`io/mementos/<persona-slug>.md` — one per persona, no timestamp) before reap, so its role specialization survives for a **warm re-spawn** via `seed_memento`. The Manager derives the seed path from the persona; nobody hands a path around (see `memento-management.md` §3.2).
-- **Standing pair persists** — only the crew is reaped.
 - **Composes with** the Manager's ad-hoc harvest autonomy: the Manager can still reap individual workers mid-run; *"stand down the SWE team"* is the clean end-of-engagement sweep.
 
 ---
@@ -115,10 +114,6 @@ flowchart LR
 ## 7. The Load Document — spec for `workflow/swe-team-roles.md`
 
 The **load document** is the per-role charter artifact each spawned member auto-loads. The Steward owns this *structure spec*; whoever authors the file builds to it.
-
-**Location:** `workflow/swe-team-roles.md` (single canonical doc — ratified Q4).
-
-**Shape:** one `##` section per role (Manager · Steward · Implementer · Reviewer · Tester). The spawn slices the relevant role section into that member's `task_prompt`/seed.
 
 **Each role section MUST contain:**
 1. **Mandate** — the one-sentence charge ("what you own").
@@ -156,10 +151,7 @@ The **load document** is the per-role charter artifact each spawned member auto-
 ## 8. Build & install status
 
 **Build queue (post-ratification):**
-1. ✅ This workflow doc — `workflow/swe-team-spin-up.md`.
-2. ✅ The **load document** — `workflow/swe-team-roles.md` (per §7).
-3. ⏳ The `/spin-up-swe-team [task]` slash command + intent wrapper (§3); add the README link. *(Manager's lane.)*
-4. ✅ First real spin-up (Heartbeat Arbiter v2.1, Thread B) — **APPROVED** (green + reviewed + tested) 2026-06-06; commit held for Rick's word. Post-game: `io/post-games/2026.06.06-swe-team-first-run-postgame.md` (deleted 2026-10-03 with the old corpus).
+1. ⏳ The `/spin-up-swe-team [task]` slash command + intent wrapper (§3); add the README link. *(Manager's lane.)*
 
 **Installer note:** this doc is **not** part of the `/plan-install-wizard` package automatically. It joins the installer only when registered in the wizard catalog (`workflow/INSTALLATION-GUIDE.md` + the wizard) + README — a deliberate follow-up step.
 
@@ -167,5 +159,6 @@ The **load document** is the per-role charter artifact each spawned member auto-
 
 ## Version history
 
+- **1.2 (2026-10-10)** — Pruning pass 6: cut the standing-pair line in §6 (§1 says it), the Location and Shape paragraphs in §7 (§2 says them), and three finished build-queue lines in §8; the one open item is renumbered 1. No rule changed.
 - **1.1 (2026-06-29, María 🌸 — Rick GO)** — §5 standing-pair keep-alive: **retired the interim-poker / `/loop` stopgap language.** The standing arbiter is now the fleet-stall *mechanism* + the per-session Stop-hook is the owed-work self-check (folded debounce, no brute-force tick); the Steward is the human-judgment backstop, not the mechanism. Part of the fleet-wide crutch-retirement (task `d0cffe5c`). HELD for review.
 - **1.0 (2026-06-06)** — Initial canonical workflow, authored by María 🌸 (Workflow Steward) from the ratified seed `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (Rick ruled all 7 decisions via guided walkthrough; Tiberius 👑 manager-rec). Composes with the Manager Spawn/Harvest Autonomy workflow.
