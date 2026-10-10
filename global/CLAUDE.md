@@ -313,7 +313,7 @@ Any manager-role session holds **standing** authority to harvest workers and, wh
 | **STILL GATED** (user's DIRECT word) | **push to origin** · destructive/irreversible · production or outward-facing shared infra · **bouncing a server WHILE a job or test is running** · exceeding the concurrency cap · cross-project spawn |
 | **HYGIENE** (required, not a gate) | reap with a memento (no zombies) · `notify()` the user AFTER, for visibility — never block on pre-approval |
 
-**Skeleton crew is a switch the operator sets.** On: no spawning, no asking for seats, each manager plans and implements its own work, and running workers finish the step, write a memento and are reaped. Off: managers spawn the seats they need without asking, and may ask the operator to raise the cap by just enough. There are no clock-hour rules.
+**Skeleton crew is a switch the operator sets.** On: no spawning, no asking for seats, each manager plans and implements its own work, and running workers finish the step, write a memento and are reaped. Off: managers spawn the seats they need without asking, and may ask the operator to raise the cap by just enough. A bounded Claude Code job is not a spawn and is not refused, because it is not a fleet seat and is not on the roster. There are no clock-hour rules.
 
 **Key rules**: *spawn freely, edit carefully* — the standing grant covers the reap, and the spawn when skeleton crew is off; ordinary blast-radius care still applies to shared-file EDITS. Reap threshold = idle + no owed work + no declared hold. Soft cap 8/manager; exceeding it escalates. A non-responsive worker is reaped and, when skeleton crew is off, replaced, never absorbed (MANAGE-not-BUILD).
 

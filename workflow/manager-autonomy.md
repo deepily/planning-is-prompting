@@ -53,6 +53,8 @@ The operator runs the fleet in one of two modes. A toggle in the fleet status pa
 
 Reaping, merging reviewed green work, and push are unchanged.
 
+**A bounded Claude Code job is not a spawn.** Managers may still submit one while skeleton crew is on: it is not a fleet seat and is not on the roster, and the switch governs seats.
+
 **The same toggle controls the stop poke**: skeleton crew on mutes it, off restores it.
 
 > **Until the toggle exists** (lupin row `6f72dc83`, queued): the operator's announcement is the switch, and the stop poke is flipped as `skeleton-crew.md` §2 says today. Delete this note when the toggle ships.
@@ -298,6 +300,8 @@ bounce arbiter :8001 OR test :8000 when the server is IDLE → STANDING, any rea
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
 
 *Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*
+
+*Version 2.8 (2026-10-10, Job 1 of the wider pruning row `84211d12`) — §2 says a bounded Claude Code job is not a spawn and is allowed under skeleton crew. Rick's answer on Cheech's card, header "Bounded job" (recorded on lupin row `6f72dc83`, amendment of 2026-10-10T19:06Z; answered, no default used): the label "No, out of reach (Recommended)". The option's description, which is Cheech's wording and not Rick's, read: "Your words were 'spin up or spawn new workers'; a bounded job is not a fleet seat and is not on the roster." The card's question wording is not recorded on the row.*
 
 *Version 2.7 (2026-10-10, store row `9aadd0ac`, item 2, after review) — The STANDING row puts "re-spawn / respawn any persona" back under "when skeleton crew is off"; the one-for-one re-spin stays under "always".*
 
