@@ -4,12 +4,7 @@
 
 **When to use**: Invoked via `/plan-about` slash command to check installation status at any time.
 
-**Key activities**:
-- Scan local .claude/commands/ directory for installed workflows
-- Extract version information from each workflow file
-- Compare local versions against canonical source
-- Generate categorized report with status indicators
-- Provide actionable next steps
+**Key activities**: the six steps below (Step 0 to Step 5); each step's Purpose line is its summary.
 
 ---
 
@@ -47,7 +42,7 @@
 
 **Output**: Project prefix, project name, installation path, canonical source path
 
-**Error handling**: If $PLANNING_IS_PROMPTING_ROOT not set, report error and suggest setting environment variable
+**Error handling**: see Error 1 below.
 
 ---
 
@@ -364,7 +359,6 @@ To install workflows:
 
 **Handling**:
 - Parse flexible formats: "v1.0", "1.0", "Version 1.0"
-- Normalize to standard format: v1.0
 - If unparseable, display as-is with ⚠ Unknown status
 
 ---
@@ -496,5 +490,6 @@ Next steps:
 
 ## Version History
 
+- **2026.10.09 (Sam, store row `681745a9`)**: Pruning pass 4. Removed the five "Key activities" bullets (each restated a step's Purpose line; the header now points at the steps), the normalisation line in Error 4 (the extraction algorithm already adds the `v` prefix), and pointed Step 0's error handling at Error 1. No instruction changed.
 - **2025.10.24**: Fixed YAML version extraction - improved algorithm to properly extract versions from both YAML frontmatter and markdown headers, added normalization to ensure consistent 'v' prefix
 - **2025.10.24**: Initial creation - installation status reporting with version comparison
