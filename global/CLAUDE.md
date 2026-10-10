@@ -308,10 +308,12 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 | Tier | Actions |
 |---|---|
-| **STANDING** (no ask) | spawn fresh · respawn any persona · reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed** (no per-commit user gate — Rick 2026-06-16) · **bounce the arbiter (`:8001`) or test (`:8000`) server when IDLE** — announce, log, roll back on regress |
+| **STANDING** (no ask) | **when skeleton crew is off:** spawn fresh · respawn any persona · **always:** reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed** (no per-commit user gate — Rick 2026-06-16) · **bounce the arbiter (`:8001`) or test (`:8000`) server when IDLE** — announce, log, roll back on regress |
 | **STANDING for EVERY seat** | **bounce the notification server `:7999`** to pick up fresh code — auto-reload is OFF, so **a saved file is not a served file**. Use `bounce-dev-server.sh` (warns the fleet, waits for acks). The idle check is **fleet-wide**. ⚠️ `restart` ≠ `--force-recreate`: mounts/env resolve at container CREATE |
 | **STILL GATED** (user's DIRECT word) | **push to origin** · destructive/irreversible · production or outward-facing shared infra · **bouncing a server WHILE a job or test is running** · exceeding the concurrency cap · cross-project spawn |
 | **HYGIENE** (required, not a gate) | reap with a memento (no zombies) · `notify()` the user AFTER, for visibility — never block on pre-approval |
+
+**Skeleton crew is a switch the operator sets.** On: no spawning, no asking for seats, each manager plans and implements its own work, and running workers finish the step, write a memento and are reaped. Off: managers spawn the seats they need without asking, and may ask the operator to raise the cap by just enough. There are no clock-hour rules.
 
 **Key rules**: *spawn freely, edit carefully* — the standing grant covers the spawn/reap; ordinary blast-radius care still applies to shared-file EDITS. Reap threshold = idle + no owed work + no declared hold. Soft cap 8/manager; exceeding it escalates. A non-responsive worker is reaped and replaced, never absorbed (MANAGE-not-BUILD).
 
@@ -319,7 +321,7 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 ## MANAGER CONTEXT MONITORING — THE 15-MINUTE TICK
 
-**Every manager watches their own workers' context and re-spins any worker past 50%** — token economy at both ends. Inside the existing spawn/harvest envelope, so it needs nobody's permission.
+**Every manager watches their own workers' context and re-spins any worker past 50%** — token economy at both ends. Inside the existing spawn/harvest envelope, so it needs nobody's permission when skeleton crew is off (a re-spin is a spawn and follows the same switch).
 
 | | |
 |---|---|
@@ -335,11 +337,11 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 🔴 **Omit `respin_personas` and the reap silently moves that worker's open rows onto YOUR board.** It keys on the persona NAME, not the seat — check `retained_unmatched`.
 
-**Managers are subject to the same line and CAN re-spin themselves** — take the first rung available: **(1) self-clear** (write the memento with `--self-respin-nonce`, verify it on disk, call `self_respin`); **(2) succession** — write the memento, hand your board to the peer manager with the most headroom via `task_reassign`, then announce; **(3)** spawn a fresh manager, adding capacity rather than redistributing its absence. 🔴 The re-spin or the handoff is the control; **announcing is not a control**.
+**Managers are subject to the same line and CAN re-spin themselves** — take the first rung available: **(1) self-clear** (write the memento with `--self-respin-nonce`, verify it on disk, call `self_respin`); **(2) succession** — write the memento, hand your board to the peer manager with the most headroom via `task_reassign`, then announce; **(3)** when skeleton crew is off, spawn a fresh manager, adding capacity rather than redistributing its absence. 🔴 The re-spin or the handoff is the control; **announcing is not a control**.
 
 🔴 **A context reading is a coordinate, not a reference.** Measured 2026-08-31: a manager read 50.5% off a worker and ordered a re-spin; by the time the order landed the worker had already cleared, and neither of its corrections survived the DM condenser — the normal case, because a summary drops a negation first. `self_respin` refused on its own live read, and *that* is what stopped a pointless clear. ⇒ **Pair every context figure with the seat and the wall-clock moment** (`51% · <persona> · 03:14`), and treat a re-spin instruction as a REQUEST the verb still gets to check. **A worker who complies with a stale order is laundering a stale reading into an action.**
 
-⚠️ **Seat ownership ≠ row ownership.** Only the manager who SPAWNED a worker can re-spin it; the row's `accountable_manager` can only chase and reassign. **Rows transfer; seats do not** — but seats can be RECREATED: the dying manager reaps with mementos and hands over a seed list, and the receiver respawns them under its own lineage. **That move has a DEADLINE — fire it when you have one tick left, not none.**
+⚠️ **Seat ownership ≠ row ownership.** Only the manager who SPAWNED a worker can re-spin it; the row's `accountable_manager` can only chase and reassign. **Rows transfer; seats do not** — but seats can be RECREATED: the dying manager reaps with mementos and hands over a seed list, and the receiver respawns them under its own lineage (when skeleton crew is off). **That move has a DEADLINE — fire it when you have one tick left, not none.**
 
 **Canonical**: planning-is-prompting → workflow/manager-context-monitoring.md (§4 the full ladder).
 
