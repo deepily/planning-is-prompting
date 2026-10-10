@@ -2669,47 +2669,6 @@ Start from the minimal template and add the testing additions above only if test
 
 ### Update Mode Flow
 
-#### Step 0: Create Update TODO List
-
-**Purpose**: Track update progress, if a visible checklist helps
-
-**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
-
-**Template TODO Items**:
-```
-[UPDATE] Scan local installation for workflows
-[UPDATE] Compare local vs canonical versions
-[UPDATE] Present selective update UI
-[UPDATE] Extract configuration from selected files
-[UPDATE] Generate and show diff preview
-[UPDATE] Create backups and apply updates
-[UPDATE] Validate updated files
-[UPDATE] Present update summary
-```
-
-**Instructions**:
-1. If you keep one, create the update checklist with the harness's native list tool
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[UPDATE]` prefix or project's [SHORT_PROJECT_PREFIX]
-
-**Example**:
-```json
-[
-  {"content": "[UPDATE] Scan local installation", "status": "in_progress", "activeForm": "[UPDATE] Scanning local installation"},
-  {"content": "[UPDATE] Compare versions", "status": "pending", "activeForm": "[UPDATE] Comparing versions"},
-  {"content": "[UPDATE] Present update UI", "status": "pending", "activeForm": "[UPDATE] Presenting update UI"},
-  {"content": "[UPDATE] Extract config", "status": "pending", "activeForm": "[UPDATE] Extracting config"},
-  {"content": "[UPDATE] Show diff preview", "status": "pending", "activeForm": "[UPDATE] Showing diff preview"},
-  {"content": "[UPDATE] Apply updates", "status": "pending", "activeForm": "[UPDATE] Applying updates"},
-  {"content": "[UPDATE] Validate updates", "status": "pending", "activeForm": "[UPDATE] Validating updates"},
-  {"content": "[UPDATE] Present summary", "status": "pending", "activeForm": "[UPDATE] Presenting summary"}
-]
-```
-
----
-
 #### Step 1: Scan Local Installation
 
 **Purpose**: Discover installed workflows and extract version numbers
@@ -4401,7 +4360,9 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 
 ## Version History
 
-**v1.6** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B1: removed "Step 0: Create Installation TODO List" (38 lines, with its Optional note). Rick: "Cut them (Recommended)". "Step 0.5" keeps its number. The update-mode twin goes in v1.7.
+**v1.7** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B2: removed "Step 0: Create Update TODO List" (34 lines, with its Optional note). Update mode now opens at "Step 1: Scan Local Installation".
+
+**v1.6** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B1: removed "Step 0: Create Installation TODO List" (38 lines, with its Optional note). Rick: "Cut them (Recommended)". "Step 0.5" keeps its number.
 
 **v1.5** (2026.10.10) - Wider pruning batch 1 (store row `84211d12`): removed the 19 "If you keep a step checklist" lines. The three "Step 0: Create ... TODO List" sections stay until Rick rules on them.
 
