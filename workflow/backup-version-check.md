@@ -1,261 +1,63 @@
 # Backup Script Version Check Workflow
 
-**Purpose**: Compare local backup script against canonical reference, offer smart updates that preserve customizations.
+**Purpose**: Say what the version check built into `rsync-backup.sh` does, and how to bring a local copy up to date by hand.
 
 **When to use**:
-- Automatically on every backup run (built into rsync-backup.sh)
-- Manually via `/plan-backup --check-for-update` slash command
-- When you want to check for improvements or bug fixes
+- You saw the "Update Available" notice during a backup run
+- You want to check a local copy against the canonical without running a backup
+- You are bringing a local copy up to date
 
-**Key Feature**: Updates preserve your configuration while merging new features/fixes.
-
----
-
-## Version Check Process
-
-###Step 1: Environment Check
-
-**Verify PLANNING_IS_PROMPTING_ROOT is set**:
-```bash
-echo $PLANNING_IS_PROMPTING_ROOT
-```
-
-If not set:
-- Version check is automatically skipped
-- Backup runs normally
-- Warning shown once per session
-
-**To enable version checking**, add to your shell configuration (`~/.bashrc` or `~/.zshrc`):
-```bash
-export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
-```
-
-### Step 2: Version Extraction
-
-The local version is the `# rsync-backup.sh vX.Y` header line of `src/scripts/backup.sh` (the script also holds it as `SCRIPT_VERSION`); the canonical version is the same header line of `$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh`, which the script reads itself.
-
-### Step 3: Version Comparison
-
-**If versions match**:
-- No output, proceed to backup
-
-**If canonical is newer**:
-- Show update notification
-- Pause for user decision
-- Present update options menu
-
-**If local is newer**:
-- Warning: Local version > canonical (custom modifications detected)
-- Proceed to backup
-- No action needed
+**What the script does and does not do**: it compares one version string against the canonical's and tells you when they differ. It never downloads, replaces, merges or edits anything; the update is a manual job, described under Updating by Hand below.
 
 ---
 
-## Update Options Menu
+## What the Script Does
 
-When a canonical update is available:
+The canonical script is `$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh`. A project's copy, usually `src/scripts/backup.sh`, runs the check at the start of every run, before anything else.
+
+### Where the versions come from
+
+- **Local version**: the `SCRIPT_VERSION="X.Y"` assignment in the copy that is running. The `# rsync-backup.sh vX.Y` header line is not read for the local copy.
+- **Canonical version**: the first `# rsync-backup.sh vX.Y` header line of the canonical script.
+
+Keep the two in step in the canonical: the header is what other copies read, the variable is what the canonical itself reports.
+
+### When the check runs
+
+| Situation | What happens |
+|---|---|
+| `PLANNING_IS_PROMPTING_ROOT` is unset | Check skipped silently. The backup runs and nothing is printed |
+| Canonical script not found under the root | Check skipped silently during a backup; `--check-for-update` prints `Canonical: Not found` and the path |
+| `SKIP_VERSION_CHECK` is set to any non-empty value | Check skipped for that run |
+| `--check-for-update` is the first argument | The detailed report below, then exit. No backup runs |
+| Versions are equal | No output; the backup proceeds |
+| Versions differ, in either direction | The notice below, then a pause |
+
+There is no once-per-session limit. The check runs on every run, and a differing version prints the notice every time.
+
+### The notice and the pause
+
+Any difference between the two strings, including a local copy that is newer than the canonical, prints:
 
 ```
-⚠️  Backup Script Update Available
+========================================
+  Update Available
+========================================
+Local version:     v1.1
+Canonical version: v1.2
 
-Local version:     v1.0
-Canonical version: v1.1
+To update, see: planning-is-prompting → workflow/backup-version-check.md
+Or run: ./backup.sh --check-for-update
+========================================
 
-Changelog for v1.1:
-- Added --progress flag for real-time rsync updates
-- Improved error handling for network failures
-- Better validation of destination directory
-- Fixed bug in version check caching
-
-──────────────────────────────────────────────────
-
-Update Options:
-
-[U] Update backup.sh
-    → Replace local script with v1.1
-    → Your config section (SOURCE_DIR, DEST_DIR, etc.) will be preserved
-    → New features and bug fixes will be applied
-
-[E] Update exclusions
-    → Merge new exclusion patterns from canonical
-    → Your custom patterns will be preserved
-    → New patterns will be appended with version comment
-
-[B] Update both
-    → Update script AND merge exclusions
-    → All customizations preserved
-
-[D] Diff script
-    → Show detailed comparison between v1.0 and v1.1
-    → See exactly what changed before updating
-
-[S] Skip for now
-    → Continue with current v1.0
-    → Don't show this notification again this session
-    → Will check again on next backup run
-
-[C] Cancel
-    → Don't run backup
-    → Exit to review changes first
-
-──────────────────────────────────────────────────
-Choose [U/E/B/D/S/C]:
+Press Enter to continue with current version, or Ctrl+C to cancel...
 ```
 
----
+Enter continues the backup with the current copy. Ctrl+C stops it. There is no other choice, no skip flag set for the session, and no newer-than-canonical branch. The script does not show a changelog.
 
-## Update Operations
+To run a backup without the pause, leave `PLANNING_IS_PROMPTING_ROOT` unset or set `SKIP_VERSION_CHECK=1` for that run.
 
-### Option [U]: Update backup.sh Script
-
-**What happens**:
-
-1. **Extract your configuration**: the block between the `CONFIG START` and `CONFIG END` markers, as in Smart Update Algorithm below.
-
-2. **Copy canonical to local**:
-   ```bash
-   cp $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh src/scripts/backup.sh
-   ```
-
-3. **Inject preserved configuration** (SOURCE_DIR, DEST_DIR, EXCLUDE_FILE, PROJECT_NAME): replace the generic values with the extracted ones, as in Smart Update Algorithm below.
-
-4. **Verify and report**:
-   ```
-   ✓ Script updated from v1.0 → v1.1
-
-   Configuration preserved:
-   - SOURCE_DIR: /mnt/DATA01/include/www.deepily.ai/projects/genie-in-the-box/
-   - DEST_DIR: /mnt/DATA02/include/www.deepily.ai/projects/genie-in-the-box/
-   - PROJECT_NAME: Genie in the Box
-
-   New features in v1.1:
-   - Real-time progress display (--progress flag)
-   - Enhanced error recovery
-   - Better destination validation
-   ```
-
-5. **Test recommendation**:
-   ```
-   Updated successfully. Test with:
-     ./src/scripts/backup.sh        # Dry-run with new version
-     ./src/scripts/backup.sh --write  # Execute when ready
-   ```
-
-**Rollback** (if needed):
-```bash
-git checkout src/scripts/backup.sh  # Restore previous version
-```
-
----
-
-### Option [E]: Update Exclusions
-
-**What happens**:
-
-1. **Diff canonical vs local**:
-   ```bash
-   # Compare excluding comments and blank lines
-   diff -u <(grep -v '^#' $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-exclude-default.txt | grep -v '^$') \
-           <(grep -v '^#' src/scripts/conf/rsync-exclude.txt | grep -v '^$')
-   ```
-
-2. **Identify NEW patterns**:
-   ```
-   New exclusion patterns in canonical v1.1:
-
-   + .pytest_cache/        # Python test cache
-   + *.log                 # Log files
-   + coverage/             # Test coverage reports
-   + .tox/                 # Tox testing environments
-   ```
-
-3. **Offer to merge**:
-   ```
-   These patterns are in canonical but not in your local file.
-
-   Add all new patterns to your rsync-exclude.txt? [Y/n]
-   ```
-
-4. **Append if yes**:
-   ```bash
-   # Add to local file with version comment
-   echo "" >> src/scripts/conf/rsync-exclude.txt
-   echo "# Added from canonical v1.1 ($(date +%Y.%m.%d))" >> src/scripts/conf/rsync-exclude.txt
-   for p in ".pytest_cache/" "*.log" "coverage/" ".tox/"; do echo "$p" >> src/scripts/conf/rsync-exclude.txt; done
-   ```
-
-5. **Report**:
-   ```
-   ✓ Exclusions updated
-
-   Added 4 new patterns from v1.1
-   Your custom exclusions preserved
-
-   Review changes:
-     cat src/scripts/conf/rsync-exclude.txt
-   ```
-
-**Manual merge** (if user chooses [n]):
-- Show list of new patterns
-- User can manually add desired patterns
-- No automatic changes
-
----
-
-### Option [B]: Update Both
-
-Combines [U] and [E]:
-1. Update script (preserve config)
-2. Merge exclusion patterns (preserve custom)
-3. Report both operations
-4. Recommend testing
-
----
-
-### Option [D]: Diff Script
-
-**Show detailed comparison**:
-
-```bash
-diff -u src/scripts/backup.sh $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh --color=always | less -R
-```
-
-**Highlights**:
-- Lines removed (red with -)
-- Lines added (green with +)
-- Context lines (unchanged)
-
-**After viewing diff**: the menu above is shown again without [D].
-
----
-
-### Option [S]: Skip For Now
-
-**Effect**:
-- Sets session flag: `UPDATE_CHECK_SKIPPED=1`
-
-**Use when**:
-- In the middle of important work
-- Want to review changelog later
-- Need backup to run now without interruption
-
----
-
-### Option [C]: Cancel
-
-**Effect**:
-- No changes made
-
-**Use when**:
-- Want to read changelog carefully first
-- Need to check if update is compatible with custom modifications
-- Want to coordinate update with team members
-
----
-
-## Manual Version Check
-
-**Check without running backup**:
+### Manual check
 
 ```bash
 # Via slash command
@@ -265,109 +67,78 @@ diff -u src/scripts/backup.sh $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.s
 ./src/scripts/backup.sh --check-for-update
 ```
 
-The script prints both versions and either `✓ Up to date` or `⚠ Update available` with a pointer to this document.
+It prints the local version and the canonical version, then `✓ Up to date` or `⚠ Update available` with a pointer to this document. It also reports `Canonical: Not configured` when the root is unset and `Canonical: Not found` when the canonical script is missing.
 
----
+To enable the check, add to `~/.bashrc` or `~/.zshrc`, then `source` it:
 
-## Version History Format
-
-**In script header**:
 ```bash
-#!/bin/bash
-# rsync-backup.sh v1.1 from planning-is-prompting
-#
-# Changelog:
-# v1.1 (2025.10.08) - Added progress display, improved error handling
-# v1.0 (2025.10.08) - Initial release
+export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ```
 
-**Version number format**: `MAJOR.MINOR`
-- MAJOR: Breaking changes (config section format changes, etc.)
-- MINOR: New features, bug fixes, improvements
+---
+
+## Updating by Hand
+
+The script does not update itself. After the notice, or after `--check-for-update` reports an update:
+
+1. **Commit first**, so the old copy can be restored with `git checkout src/scripts/backup.sh`.
+2. **Read the difference**:
+   ```bash
+   diff -u src/scripts/backup.sh $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh | less
+   ```
+3. **Note your configuration**: the lines between `# === CONFIG START ===` and `# === CONFIG END ===`. `SOURCE_DIR`, `DEST_DIR` and `PROJECT_NAME` are the ones you edited; `SCRIPT_DIR` and `EXCLUDE_FILE` are computed.
+4. **Copy the canonical over the local script**:
+   ```bash
+   cp $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh src/scripts/backup.sh
+   ```
+5. **Put your configuration back** by editing the three values in the config block. The copy ships with placeholders, and a copy whose `SOURCE_DIR` is not its own project is refused at run time.
+6. **Check the config block against the old copy**:
+   ```bash
+   diff <(git show HEAD:src/scripts/backup.sh | sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p') \
+        <(sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p' src/scripts/backup.sh)
+   ```
+   Only the lines you meant to differ should show.
+7. **Compare exclusions** if you want the canonical's newer patterns. The script does not touch your exclusion file:
+   ```bash
+   diff -u <(grep -v '^#' $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-exclude-default.txt | grep -v '^$') \
+           <(grep -v '^#' src/scripts/conf/rsync-exclude.txt | grep -v '^$')
+   ```
+   Add by hand the patterns you want.
+8. **Dry-run** with `./src/scripts/backup.sh`, then `--write` when the output is right.
+
+If you have heavily customized the script, merge the difference by hand rather than copying over it.
 
 ---
 
-## Smart Update Algorithm
+## Version Numbers
 
-**Config Preservation**:
+In the canonical script header and variable:
 
-1. **Identify config boundaries**:
-   ```bash
-   # === CONFIG START ===
-   SOURCE_DIR="..."
-   DEST_DIR="..."
-   ...
-   # === CONFIG END ===
-   ```
+```bash
+#!/bin/bash
+# rsync-backup.sh v1.2 from planning-is-prompting
+...
+SCRIPT_VERSION="1.2"
+```
 
-2. **Extract values**:
-   ```bash
-   # Parse assignments between markers
-   eval $(sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p' src/scripts/backup.sh | grep '=' | grep -v '^#')
-   ```
-
-3. **Apply to new version**:
-   ```bash
-   # Replace placeholder values with preserved values
-   sed -i "s|SOURCE_DIR=\".*\"|SOURCE_DIR=\"$SOURCE_DIR\"|" new-backup.sh
-   sed -i "s|DEST_DIR=\".*\"|DEST_DIR=\"$DEST_DIR\"|" new-backup.sh
-   # ... repeat for all config vars
-   ```
-
-4. **Verify**:
-   ```bash
-   # Show diff of just config section
-   diff <(sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p' old-backup.sh) \
-        <(sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p' new-backup.sh)
-   # Should show no differences
-   ```
+**Format**: `MAJOR.MINOR`. Raise it for any change a copy should notice, not only features: the check reads this string and nothing else, so a content change that leaves it alone is invisible to every older copy.
 
 ---
 
 ## Troubleshooting
 
-### Issue: PLANNING_IS_PROMPTING_ROOT not set
+### The check never prints anything
 
-**Symptom**: Version check always skipped
+`PLANNING_IS_PROMPTING_ROOT` is unset, the canonical is not under it, or `SKIP_VERSION_CHECK` is set. Run `./src/scripts/backup.sh --check-for-update` to see which: it names the missing canonical path or says `Not configured`.
 
-**Solution**: set it as in Step 1, then reload:
-```bash
-# Reload shell or source file
-source ~/.bashrc
-```
+### "Canonical: Not found"
 
-### Issue: Canonical script not found
+1. Verify `PLANNING_IS_PROMPTING_ROOT` points at the planning-is-prompting checkout
+2. Verify the script exists: `ls -l $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh`
 
-**Symptom**: "Canonical: Not found" in version check
+### The notice appears on every run
 
-**Solution**:
-1. Verify PLANNING_IS_PROMPTING_ROOT points to correct location
-2. Verify canonical script exists: `ls -l $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh`
-3. If moved, update environment variable
-
-### Issue: Update preserved wrong config values
-
-**Symptom**: After update, SOURCE_DIR or DEST_DIR are incorrect
-
-**Solution**:
-1. Restore the previous version (see Rollback above), then manually copy canonical and edit the config section
-2. Report issue (config markers may be malformed)
-
-### Issue: Version shows as "unknown"
-
-**Symptom**: Version extraction fails
-
-**Solution**:
-1. Check version header format: `head -3 src/scripts/backup.sh`
-2. Fix the header to the format under Version History Format above if it is incorrect
-
----
-
-## Best Practices
-
-1. **Commit before updating**: If using git, commit current version before updating
-
-2. **Custom modifications**: If you've heavily customized, consider manual merge instead of automatic update
+The local `SCRIPT_VERSION` differs from the canonical header. Update by hand as above, or accept that the notice shows each run while the copies differ.
 
 ---
 
@@ -380,6 +151,8 @@ source ~/.bashrc
 ---
 
 ## Version History
+
+**v2.0** (2026.10.10, store row `9aadd0ac`, item 10, Rick: cut the doc to the script) - Rewritten to describe only what `scripts/rsync-backup.sh` v1.2 does. Removed: the U/E/B/D/S/C update menu and its per-option operations (the script has one prompt, Enter or Ctrl+C), the once-per-session warning (the script skips silently when the root is unset, and shows the notice every run), the "local is newer" branch (any difference prints the same notice), the changelog display, and the header-based local version (the local version is `SCRIPT_VERSION`). Added: the skip table, `SKIP_VERSION_CHECK`, and a Updating by Hand procedure for the work the menu described. Dropped the "Version shows as unknown" entry, which the script never prints.
 
 **v1.2** (2026.10.09, Extra 2, store row `9aadd0ac`, item 12) - The `PLANNING_IS_PROMPTING_ROOT` export goes in `~/.bashrc` or `~/.zshrc` and is loaded with `source ~/.bashrc`; the doc had said `~/.claude/CLAUDE.md`, which is markdown and cannot be sourced.
 
