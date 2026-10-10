@@ -11,12 +11,6 @@
 
 ---
 
-## Overview
-
-The backup script includes automatic version checking that compares your local copy against the canonical reference in the planning-is-prompting repository. When updates are available, you can selectively update the script, exclusion patterns, or both while preserving your customizations.
-
----
-
 ## Version Check Process
 
 ###Step 1: Environment Check
@@ -38,23 +32,12 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 
 ### Step 2: Version Extraction
 
-**From local script** (`src/scripts/backup.sh`):
-```bash
-grep -m 1 "# rsync-backup.sh v" src/scripts/backup.sh
-# Output: # rsync-backup.sh v1.0 from planning-is-prompting
-```
-
-**From canonical reference**:
-```bash
-grep -m 1 "# rsync-backup.sh v" $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh
-# Output: # rsync-backup.sh v1.1 from planning-is-prompting
-```
+The local version is the `# rsync-backup.sh vX.Y` header line of `src/scripts/backup.sh` (the script also holds it as `SCRIPT_VERSION`); the canonical version is the same header line of `$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh`, which the script reads itself.
 
 ### Step 3: Version Comparison
 
 **If versions match**:
 - No output, proceed to backup
-- Everything is up-to-date
 
 **If canonical is newer**:
 - Show update notification
@@ -127,20 +110,14 @@ Choose [U/E/B/D/S/C]:
 
 **What happens**:
 
-1. **Extract your configuration**:
-   ```bash
-   # Parse config section between markers
-   sed -n '/^# === CONFIG START ===/,/^# === CONFIG END ===/p' src/scripts/backup.sh > /tmp/backup-config.txt
-   ```
+1. **Extract your configuration**: the block between the `CONFIG START` and `CONFIG END` markers, as in Smart Update Algorithm below.
 
 2. **Copy canonical to local**:
    ```bash
    cp $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh src/scripts/backup.sh
    ```
 
-3. **Inject preserved configuration**:
-   - Replace generic config section with your extracted values
-   - Preserves: SOURCE_DIR, DEST_DIR, EXCLUDE_FILE, PROJECT_NAME
+3. **Inject preserved configuration** (SOURCE_DIR, DEST_DIR, EXCLUDE_FILE, PROJECT_NAME): replace the generic values with the extracted ones, as in Smart Update Algorithm below.
 
 4. **Verify and report**:
    ```
@@ -204,10 +181,7 @@ git checkout src/scripts/backup.sh  # Restore previous version
    # Add to local file with version comment
    echo "" >> src/scripts/conf/rsync-exclude.txt
    echo "# Added from canonical v1.1 ($(date +%Y.%m.%d))" >> src/scripts/conf/rsync-exclude.txt
-   echo ".pytest_cache/" >> src/scripts/conf/rsync-exclude.txt
-   echo "*.log" >> src/scripts/conf/rsync-exclude.txt
-   echo "coverage/" >> src/scripts/conf/rsync-exclude.txt
-   echo ".tox/" >> src/scripts/conf/rsync-exclude.txt
+   for p in ".pytest_cache/" "*.log" "coverage/" ".tox/"; do echo "$p" >> src/scripts/conf/rsync-exclude.txt; done
    ```
 
 5. **Report**:
@@ -251,18 +225,7 @@ diff -u src/scripts/backup.sh $PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.s
 - Lines added (green with +)
 - Context lines (unchanged)
 
-**After viewing diff**:
-```
-Diff complete. What would you like to do?
-
-[U] Update script
-[E] Update exclusions
-[B] Update both
-[S] Skip for now
-[C] Cancel
-
-Choose [U/E/B/S/C]:
-```
+**After viewing diff**: the menu above is shown again without [D].
 
 ---
 
@@ -270,9 +233,6 @@ Choose [U/E/B/S/C]:
 
 **Effect**:
 - Sets session flag: `UPDATE_CHECK_SKIPPED=1`
-- Proceeds to backup with current version
-- Won't show update notification again this session
-- Will check again next time script runs (new session)
 
 **Use when**:
 - In the middle of important work
@@ -284,9 +244,7 @@ Choose [U/E/B/S/C]:
 ### Option [C]: Cancel
 
 **Effect**:
-- Exits without running backup
 - No changes made
-- User can review update details offline
 
 **Use when**:
 - Want to read changelog carefully first
@@ -307,22 +265,7 @@ Choose [U/E/B/S/C]:
 ./src/scripts/backup.sh --check-for-update
 ```
 
-**Output**:
-```
-========================================
-  Backup Script Version Check
-========================================
-Local version: v1.0
-Canonical version: v1.1
-
-⚠ Update available
-
-To update, see:
-  planning-is-prompting → workflow/backup-version-check.md
-
-Or run backup normally to see update options.
-========================================
-```
+The script prints both versions and either `✓ Up to date` or `⚠ Update available` with a pointer to this document.
 
 ---
 
@@ -389,9 +332,6 @@ Or run backup normally to see update options.
 
 **Solution**:
 ```bash
-# Add to ~/.claude/CLAUDE.md
-export PLANNING_IS_PROMPTING_ROOT="/mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting"
-
 # Reload shell or source file
 source ~/.claude/CLAUDE.md
 ```
@@ -410,9 +350,8 @@ source ~/.claude/CLAUDE.md
 **Symptom**: After update, SOURCE_DIR or DEST_DIR are incorrect
 
 **Solution**:
-1. Restore from git: `git checkout src/scripts/backup.sh`
-2. Manually copy canonical and edit config section
-3. Report issue (config markers may be malformed)
+1. Restore the previous version (see Rollback above), then manually copy canonical and edit the config section
+2. Report issue (config markers may be malformed)
 
 ### Issue: Version shows as "unknown"
 
@@ -420,24 +359,15 @@ source ~/.claude/CLAUDE.md
 
 **Solution**:
 1. Check version header format: `head -3 src/scripts/backup.sh`
-2. Should be: `# rsync-backup.sh vX.Y from planning-is-prompting`
-3. Fix format if incorrect
+2. Fix the header to the format under Version History Format above if it is incorrect
 
 ---
 
 ## Best Practices
 
-1. **Review changelog before updating**: Use [D] Diff option to see all changes
+1. **Commit before updating**: If using git, commit current version before updating
 
-2. **Test after updating**: Always run dry-run first after an update
-
-3. **Commit before updating**: If using git, commit current version before updating
-
-4. **Selective updates**: You don't have to update both script and exclusions together
-
-5. **Custom modifications**: If you've heavily customized, consider manual merge instead of automatic update
-
-6. **Version comments**: Keep version notes in script header for future reference
+2. **Custom modifications**: If you've heavily customized, consider manual merge instead of automatic update
 
 ---
 
@@ -450,6 +380,8 @@ source ~/.claude/CLAUDE.md
 ---
 
 ## Version History
+
+**v1.1** (2026.10.09, Sam, store row `681745a9`) - Pruning pass 4, rows 20-31 and 33. Removed text that repeated another place in this file or the script's own output: the Overview paragraph, the version-extraction code and its sample output (the script does this; one sentence now names where each version lives), the printed `--check-for-update` output, the repeated [S]/[C]/[D] effects, the four hard-coded exclusion `echo`s (now a loop), and four Best Practices that restated a section. No instruction changed. Row 32 (the skip-when-unset bullets) failed review: the line it would keep, "warning shown once per session", is not what the script does; that is a fix, not a prune.
 
 **v1.0** (2025.10.08) - Initial backup version check workflow
 - Automatic version comparison on every run
