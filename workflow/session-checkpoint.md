@@ -53,7 +53,7 @@ word.
 ⚠️ **Found by retracting an absence claim rather than by hitting the bug again** — Rachel 🕊️ had
 called this vocabulary *unwritten*, then searched (56 workflow docs plus Lupin `CLAUDE.md`, positive
 control first), found **this section**, and reported that her own correction made the finding
-**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md` (deleted 2026-10-03 with the old corpus).
+**sharper rather than smaller**.
 
 **Why the distinction is load-bearing — an uncommitted green is a rumor:**
 
@@ -80,10 +80,10 @@ Claude Code's aggressive context clearing makes it important to checkpoint work 
 
 ## ⚠️ Conversation Mode Awareness
 
-The checkpoint commit gate (commit-message approval) becomes a voice gate when `conversation_mode_active=true` (check via `get_session_info()`).
+The checkpoint's blocking questions (manifest missing, no files tracked, the description, and a conflict) become voice gates when `conversation_mode_active=true` (check via `get_session_info()`). The commit itself has no approval step: invoking the command is the approval.
 
 **Mandates in conversation mode**:
-- The blocking commit-approval call MUST use `priority="high"`.
+- Each blocking ask above MUST use `priority="high"`.
 - **Brevity mandate**: speak the **1-line commit subject only**; full message body and file list stay in the terminal and the `abstract` parameter. Don't read the diff manifest aloud — say "wrapping up two commits across nine files" not the verbatim file enumeration.
 - Receipt-acknowledge the checkpoint trigger before tool work (1 sentence: "Running the checkpoint commit now.").
 
@@ -601,6 +601,8 @@ After checkpoint completes:
 ---
 
 ## Version History
+**v1.5** (2026.10.10) - Stale references (row `735e312f`, C1, C2): the conversation-mode section names the asks that still block, not a commit-approval gate that the command no longer has; the seed pointer to a deleted post-game is removed.
+
 **v1.4** (2026.10.09) - Removed the optional "Step 0: Step Checklist" step and the "before Step 0" timing reference, so the file matches the `plan-session-start.md` wrapper and the canonical session-start workflow, which have no checklist step (Rick's ruling, row `efa0a4cf`; store row `9aadd0ac`, Extra 2).
 
 **v1.3** (2026.10.09) - Step 6c's commit template no longer rides the commit line (defect 9, row `1498e58f`, Sam): the message is written to a file and committed with `git commit -F <message-file> -- <paths>`, the shape the commit-scope guard reviews; `session-end.md` Step 4.3 carries the reasons.
