@@ -127,7 +127,7 @@ result = dismiss_sessions(
 
 **What the MCP does** (per the Lupin Track-T plan):
 1. Each spawned session receives a "you're being dismissed" notice + the `reason` string
-2. If `write_memento=True`, the session writes its memento per `workflow/memento-management.md` 7-element contract to its working directory (`.claude-memento.md`)
+2. If `write_memento=True`, the session writes its memento per the `workflow/memento-management.md` 9-element contract to its stable slot `io/mementos/<persona-slug>.md` (the bare `.claude-memento.md` is retired)
 
 ### §5.2 Idle-TTL auto-reap backstop (built + 100% tested)
 
@@ -229,13 +229,13 @@ spawn_sessions(
     task_prompt        = "...",
     role               = "author",
     persona_preference = ["Tiffany"],          # same voice as prior Author
-    seed_memento       = "/path/to/.claude-memento.md",  # prior Author's memento
+    seed_memento       = "io/mementos/tiffany.md",      # prior Author's memento
 )
 ```
 
 The MCP prepends the memento content to the rendered `task_prompt` so the spawned session reads its prior context as part of its initial brief.
 
-**Cross-link**: see `workflow/memento-management.md` §2 for the 7-element memento contract that the spawned session reads.
+**Cross-link**: see `workflow/memento-management.md` §2 for the 9-element memento contract that the spawned session reads.
 
 ### §8.2 On dismiss — `write_memento=True` captures post-cascade state
 
@@ -320,7 +320,7 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
-- **v1.3 (2026-10-09, Extra 2, store row `9aadd0ac`)** — Pass-4 defect fixes. Item 1: the §8.2 and §8.3 re-spin dismissals now pass `respin_personas` (§5.3 replaces the seat with a different persona and is left as written). Item 5: §8.2 `session_ids` corrected to `session_names`. Item 7: §5.4 names `persona_state` and the do-not-address-by-name rule. Item 6: §7 persona-unavailable row now says what the tool does (persona-less child, never re-allocated; a trailing `*` accepts any free name).
+- **v1.3 (2026-10-09, Extra 2, store row `9aadd0ac`)** — Pass-4 defect fixes. Item 1: the §8.2 and §8.3 re-spin dismissals now pass `respin_personas` (§5.3 replaces the seat with a different persona and is left as written). Item 5: §8.2 `session_ids` corrected to `session_names`. Item 8: §5.1, §8.1 and §8.2 say 9-element and the `io/mementos/<persona-slug>.md` slot, not 7-element and the retired `.claude-memento.md`. Item 7: §5.4 names `persona_state` and the do-not-address-by-name rule. Item 6: §7 persona-unavailable row now says what the tool does (persona-less child, never re-allocated; a trailing `*` accepts any free name).
 - **v1.2 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file or the tools' own descriptions: the HISTORICAL banner above §3.4's decision (the paragraph below carries the retirement), two "Operator implication" paragraphs, the example `spawn_sessions` result (the tool's Returns is the source; the paragraph under it now names the real keys), two steps of "What the MCP does" and the Result line, two `# Returns:` comments and the `session_names=None` default sentence. No instruction changed; the wrong-text items found in the same pass (§5.3 `respin_personas`, §10 spawn window, §8.2 `session_ids`) are filed separately.
 - **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
