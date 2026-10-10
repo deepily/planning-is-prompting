@@ -64,9 +64,6 @@ authorization for any raise above `P5` belongs **in the row**, where it can be a
 
 - **Everyone READS** from day one: `task_query` is [READ]-tier, no gating.
 - **ALL workers WRITE their own owed work** (F4 "managers-first" **RETIRED 2026-06-17**, Rick's direct confirmation — see §0). Every session writes via `task_create`; workers no longer wait for a manager to create+assign their items. Rationale (cascade rev H): `POST /api/tasks` is auth-only, never manager-gated — F4 lived only in the now-retired mirror — so worker-liveness holds and the store-only single-source needs every owed item present regardless of role. Enforcement stays social + audit-trail, not tool gating.
-- **(🗄️ HISTORICAL — pre-cutover interim, now CLOSED):** the dual-write rule (harness for liveness + `task_create` for auditability) applied only until the store-count seam shipped. Post-cutover: **write to the store, single source.**
-- **Superseded**: the old "managers-first at launch + widening rider" framing is closed — all sessions write their own owed work.
-- **(🗄️ HISTORICAL — mirror retired):** the manager-figure write-gate defect (`9bf1dc4a`, project derived from `LUPIN_ROOT`) silently dropped non-lupin sessions' harness writes — moot now the mirror is retired and all sessions write directly via `task_create`.
 
 ## 3. Creating items — every owed item goes through `task_create`
 
@@ -294,6 +291,7 @@ VERIFIED 2026-06-15 (Krishna E2E, probe `c5ba4603` on `:7999`; venue-agnostic �
 - **States** — non-terminal: `queued`, `claimed`, `in_progress`, `blocked`, `review` · **terminal**: `done`, `dropped`.
 - **Rule**: every non-terminal status may transition to every OTHER status. `done` and `dropped` are **append-only sinks** (zero out-edges). A no-op (`same → same`) is rejected.
 - **Terminal lockout OBSERVED**: `done → in_progress` → `422` → *"item is terminal ('done') — done/dropped are append-only, no transitions out"*.
+- **Live-observed path** (the solid edges below): `queued → in_progress → blocked → in_progress → done` (probe `c5ba4603`).
 
 ```mermaid
 stateDiagram-v2
@@ -307,17 +305,6 @@ stateDiagram-v2
     in_progress --> dropped
     done --> [*]
     dropped --> [*]
-    note right of in_progress
-      Server rule (task_store_rules GATE#1):
-      ANY non-terminal {queued, claimed, in_progress, blocked, review}
-      may go to ANY other status; same to same is rejected.
-      Solid edges = the live-observed path
-      (queued to in_progress to blocked to in_progress to done; probe c5ba4603).
-    end note
-    note right of done
-      done and dropped: terminal, append-only (zero out-edges).
-      done to in_progress returns 422.
-    end note
 ```
 
 > **Verification scope — EDGE-VERIFIED (v1.1, exhaustive)**: Krishna probed every edge live (2026-06-15, self-cleaning on `:7999`, 37 probe tasks). The 5 non-terminal states form a **fully-connected digraph** — every non-terminal → every other state returns `200` (30/30). **Rejected `422`**: every no-op (`same → same`, all 5) and every terminal-source edge (`done`/`dropped` → anything — zero out-edges, append-only sinks). **Payload-gated** (legal, extra fields required): `→done` (`receipt_refs`), `→blocked` (`blocked_by` + `next_chase_ts`), `→dropped` (`reason`). Venue-agnostic to `:8000`. *Dev-hygiene*: the store is append-only (no DELETE on terminal rows), so labeled `edge-probe` rows persist in `task_query` results — expected history, not pollution.
@@ -326,11 +313,10 @@ stateDiagram-v2
 
 VERIFIED 2026-06-15 (Krishna E2E on `:7999`, probe `c5ba4603`; audit event ids 58–62, queryable; venue-agnostic — identical on `:8000`). Every call + response below is a **real server response**, observed verbatim.
 
-> **Two different mechanisms — don't conflate them** (Krishna's distinction, after Rick hit the confusion live): **citing a task to a commit / PR / DM** is `receipt_refs` at `→done` time (§10.1) — Rick's phrase *"correlate to a commit"* maps HERE. **`task_correlate`** is separate: it re-stamps the item's IDENTITY / upsert key for **cross-session respawn adoption** (§10.3). One proves the work; the other stops a respawned session from forking the item.
+> **Two different mechanisms — don't conflate them** (Krishna's distinction, after Rick hit the confusion live): **citing a task to a commit / PR / DM** is `receipt_refs` at `→done` time (§10.1) — Rick's phrase *"correlate to a commit"* maps HERE. **`task_correlate`** is separate: it re-stamps the item's IDENTITY / upsert key for **cross-session respawn adoption** (§7, §10.3). One proves the work; the other stops a respawned session from forking the item.
 
 ### 10.1 The receipt-on-done gate (receipt #1)
 - **Accepted** — `→done` with `receipt_refs = {"commit":"0ca22758", "doc_path":"lupin/src/rnd/v0.1.8/2026.06.15-task-store-phase2.1/01-build-plan.md", "log_line":"lupin/…/01-build-plan.md:115"}` → `200`, persisted verbatim in the audit event.
-- **Whitelisted keys** (≥1 required): `commit`, `test_run`, `qid`, `doc_path`, `log_line`.
 - **Rejection A (empty)** → `422` → *"receipt_refs must be a non-empty object with at least one whitelisted key ('commit', 'test_run', 'qid', 'doc_path', 'log_line')"*.
 - **Rejection B (path shape)** → `422` → *"receipt path scope 'src' is not a registered repo scope"* + *"receipt log_line … must be '<scope>/<rel-path>:<lineno>'"*. ⇒ cite as `<registered-scope>/<rel-path>` with `log_line` ending `:<lineno>`; never a bare `src/…`. (See §4.)
 
@@ -340,10 +326,6 @@ VERIFIED 2026-06-15 (Krishna E2E on `:7999`, probe `c5ba4603`; audit event ids 5
 
 ### 10.3 Cross-session adoption via `task_correlate` (receipt #4)
 - **Accepted** — `task_correlate(correlation_key="cc-task:7e8fb0d6:demo-worked-example")` on a non-terminal item → `200`; audit event `transition="re-correlated"`, `reason="correlation_key: None -> cc-task:7e8fb0d6:demo-worked-example"`.
-- **Use** — a respawned successor session ADOPTS an inherited item (re-stamps its identity/upsert key) instead of forking a duplicate. This is §7's cross-session-respawn adoption, mechanized.
-
-### 10.4 A full lifecycle walk (synthesis)
-- Walked live (probe `c5ba4603`, event ids 58–62): `queued → in_progress → blocked → in_progress → done` — the `→blocked` fields from §10.2, the `→done` `receipt_refs` from §10.1, then the §9 terminal lockout confirming `done` is a sink. Cross-session adoption (§10.3) overlays at any non-terminal point.
 
 ## 11. Known gaps & friction (living — Krishna's adoption-gaps inventory)
 
@@ -373,6 +355,7 @@ Daily-use friction + known gaps live in a separate, living inventory Krishna aut
 - **v0.3 WIP (2026-06-15, María — owner, S110-cont-2)** — ownership confirmed (Rick tapped María to own the daily-use conventions doc; Krishna coordinates + feeds verified semantics from the live Phase-2.1 E2E). Stood up two scaffolds for the v0.2→v1.0 evolution — §9 legal-transition-graph (server-enforced; mermaid pending) + §10 Worked Examples (4 placeholder subsections matching Krishna's 4 receipts) — both held as **visibly-empty PENDING-RECEIPT placeholders** (no-confab). Added the venue-agnostic note (`:7999` hand-demo == `:8000`; same server code, only the backing Postgres differs — Krishna). **The provenance shift is the point of v1.0**: §4/§7's design/spec-derived rules become VERIFIED behavior when Krishna's green receipts (accepted `receipt_refs` shapes + verbatim `422` + transition matrix + correlate sequence) fold in. Pending: those receipts → v1.0 bump.
 - **v1.0 (2026-06-15, María — owner, S110-cont-2)** — Krishna's GREEN E2E receipts FOLDED (probe `c5ba4603` on `:7999`, audit events 58–62; venue-agnostic to `:8000`). §9 transition graph → verified mermaid (live-observed path + `done` terminal-lockout `422` + the `task_store_rules` GATE#1 enum rule). §10 Worked Examples filled verbatim: receipt-on-done gate with TWO real `422`s (empty + path-scope shape), `→blocked` required-fields, `task_correlate` cross-session adoption — with Krishna's mechanism-distinction (cite-to-commit = `receipt_refs`; `task_correlate` = adopt-across-sessions) split into separate subsections. §4 gained the receipt path-scope shape rule (`<scope>/<rel>:<lineno>`, never bare `src/…` — bonus finding, not in the build-plan prose). NEW §11 Known gaps & friction pointer → Krishna's living adoption-gaps inventory. Provenance shift COMPLETE: design-derived → verified. Open (→ v1.1): Krishna's exhaustive per-edge probe (upgrades §9 to edge-verified) + the §11 gap go/no-gos (Rick).
 - **v1.1 (2026-06-15, María — owner, S110-cont-2)** — Krishna's EXHAUSTIVE edge matrix folded (37 probe tasks, self-cleaning on `:7999`): §9 verification-scope upgraded from rule-derived to **edge-verified** — 5 non-terminals = fully-connected digraph (30/30 `200`), no-op + terminal-source edges `422`, the 3 payload-gated edges (`→done`/`→blocked`/`→dropped`). Added the append-only probe-row dev-hygiene note. §9 is now ground-truth, not enum-cited. Remaining open: §11 gap go/no-gos (Rick).
+- **v1.10 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file: three §2 bullets that repeated the fenced historical blocks and §0, the receipt-key list in §10.1 (the 422 in §4 and Rejection B carry it), the two `note` blocks inside the §9 diagram (the prose above it states the rule and the lockout; the live-observed path is now a bullet there), and the §10.3 "Use" line and §10.4 (a re-walk of §10.1-10.3). No rule changed.
 - **v1.9 (2026-10-02, María — owner)** — **§3 rewritten to store-only** (Rick's "yes" on a direct ask, row `efa0a4cf`). The section still named the harness `TaskCreate` the default for your own work and called `task_create` "strictly redundant", contradicting §0–§1 since the 2026-06-17 cutover. Now: one method, `task_create`, for every owed item; a workflow's step checklist is scratch and no workflow may require one. The old text is kept as a marked historical note.
 - **v1.8 (2026-09-14, María — owner)** — **§4.2 CLAIMS COME FROM INSTRUMENTS** added. Rick graduated it by keypress (~22:50) from rulings R1 and R2 of the `cascade-spoken-ask-door` post-game: (1) a timestamp is a reading, never an estimate; (2) a write is claimed only from its tool's reply, never in the same batch, including a claim inside another call's arguments. Before writing, the draft went back to its sources on the commons `post-game` topic: Sam agreed, Tiffany added the in-arguments clause, and John added the elapsed-time-estimate clause. R3 ("N of M" plus the tool-side discriminator) and R5 (a row keypress counts as Rick's word) were offered and not taken.
 - **v1.7 (2026-07-07, María — owner)** — **§6 query-hygiene MANDATE** (Rick directive, voice, 2026-07-07). Root cause: a manager asked for his open items and `task_query()` returned the whole board (~90 rows) — because the read was unfiltered, not because the API can't filter. Confirmed the capacity already exists (`owner_persona` + `status` + `terse=True`) and proved the collapse live: `owner_persona=<self>` → 89 rows, **only 2 non-terminal**. Hardened §6 from a thin patterns list into a **narrow-filter MANDATE**: never pull the unfiltered board; scope every read by owner+status and always pass `terse=True`; the "my owed work" reflex is two cheap terse passes (`in_progress`→`queued`), not a board glance. Documented the §11-D gap (single-value `status`, no one-shot "any-open" set) as an OPTIONAL lupin enhancement, explicitly NOT a blocker. Discoverability pointer (global CLAUDE.md, closing §11-A) + a possible task-query-hygiene skill are drafted as RECOMMENDATIONS for Rick (global-config blast radius; held for his nod). Surfaced in the same session as model-field bug `35bdd68f` (done, lupin `c3144d18`).
