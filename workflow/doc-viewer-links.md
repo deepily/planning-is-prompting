@@ -40,14 +40,7 @@ A doc-link is a markdown anchor of shape:
 | `planning-is-prompting/workflow/session-end.md` | `[Open: session-end.md](/app/docs?path=planning-is-prompting/workflow/session-end.md)` |
 | `cosa-voice/CHANGELOG.md` | `[Open: CHANGELOG.md](/app/docs?path=cosa-voice/CHANGELOG.md)` |
 
-**Server-side resolution flow** (per Lupin's Phase 4b implementation):
-
-1. URL-decode + `lstrip("/")` the `path` query param
-2. `(project_name, rel_path) = decoded.split("/", 1)`
-3. `_get_scope_registry().get(project_name)` — registry is built from Lupin INI `§ external repos` keys at first request, invalidated by `/api/init`
-4. If `project_name` is unknown → HTTP 400 "Unknown project: '<name>'"
-5. If `rel_path` is empty (no slash in path) → HTTP 400 "Missing project prefix"
-6. Otherwise: resolve against the scope's allowed-prefixes + per-repo `.docview.yml` whitelist
+A new scope declared in `lupin-app.ini § external repos` is picked up on `/api/init`; no restart.
 
 **Critical**: there is no separate registration handshake. **Declaration in `lupin-app.ini § external repos` IS the registration.**
 
@@ -155,11 +148,6 @@ A repo's optional `.docview.yml` (at the repo root) **narrows** the allowed-pref
 | `/app/docs?path=<rel>&scope=<scope>` | `?scope=` is silently ignored, but the path lacks the project prefix → HTTP 400 "Missing project prefix" | `/app/docs?path=<project>/<rel>` |
 | `/app/docs?path=docs/<rel>` | `docs` scope retired Phase 4a → HTTP 400 "Unknown project: 'docs'" | `/app/docs?path=lupin/<rel>` (or whichever real project owns the file) |
 | `/app/docs?path=io/<rel>` | `io` scope retired Phase 4a → HTTP 400 "Unknown project: 'io'" | `/app/docs?path=lupin/io/<rel>` |
-| Doc-link inside `notify(message=…)` spoken parameter | URL verbalizes character-by-character → TTS gibberish | Move link to `abstract` parameter |
-| Naming a file in `abstract` without a viewer link | Reference trigger violation — bare paths confuse and waste a click | Wrap the path in a markdown anchor with the canonical URL form |
-| Reading `info["doc_scope"]["scope"]` | Dead syntax — `doc_scope` dict envelope was retired | `info["project"]` (single string) |
-| Maintaining a local copy of "registered scopes" list | Drifts the moment a new scope is added to Lupin INI | Inspect `get_session_info()` + read Lupin INI as source-of-truth |
-| Adding a scope name to `.docview.yml` to "register" it | `.docview.yml` is whitelist-narrowing only, not registration | Add the scope to `lupin-app.ini § external repos`; bounce lupin-rest-dev |
 
 ---
 
@@ -178,10 +166,7 @@ If a doc-link 404s when you expected a 200:
 
 ## Cross-References
 
-- **Runtime contract**: Lupin `CLAUDE.md § Doc Viewer Scope` (URL grammar, registered-repo list — the spec this workflow defers to)
-- **Source-of-truth design**: Lupin `src/rnd/v0.1.7/2026.05.15-doc-viewer-scope-unification.md`
 - **Phase A startup mandate**: `workflow/claude-config-global.md § Persona-First & Doc-Link Literacy`
-- **Installer guidance for `.docview.yml`**: `workflow/INSTALLATION-GUIDE.md § Doc Viewer Readiness`
 - **Notification framing**: `workflow/cosa-voice-integration.md § The abstract Parameter`
 - **Cross-session comms**: `workflow/cross-session-communication.md` — doc-links also belong in `commons_post()` bodies under the same rules
 
@@ -189,5 +174,6 @@ If a doc-link 404s when you expected a 200:
 
 ## Version History
 
+- **2026-10-10**: Pruning pass 6. Cut the server-side resolution steps (the lupin `_resolve_scoped` code is the source; kept the one sentence that a new scope is picked up on `/api/init`), five Common-Mistakes rows that restate the sections above, and three Cross-Reference bullets whose pointer is given earlier. No rule changed.
 - **2026-09-26**: Added *Don't write a file just to have something to link*: one-off reports go in the abstract, or in the 7-day-swept `io/tmp/`. Operator ruling, broadcast `355f708f`.
 - **2026-05-21**: Initial canonical hub document. Consolidates the doc-link guidance previously scattered across `claude-config-global.md`, `INSTALLATION-GUIDE.md`, and `cosa-voice-integration.md`. Reconciles the URL form to path-only (canonical post-2026-05-15 unification); flags form-(a) two-param URLs, `docs`/`io` shorthand scopes, and the `doc_scope` dict envelope as retired dead syntax. Drafted by María (PIP session `d66169f2`) with authoritative confirmation from Tiberius (Lupin session); plan-of-attack ratified by Rick.
