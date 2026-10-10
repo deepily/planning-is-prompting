@@ -25,7 +25,7 @@ If not set:
 - Backup runs normally
 - Warning shown once per session
 
-**To enable version checking**, add to your ~/.claude/CLAUDE.md:
+**To enable version checking**, add to your shell configuration (`~/.bashrc` or `~/.zshrc`):
 ```bash
 export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ```
@@ -333,7 +333,7 @@ The script prints both versions and either `✓ Up to date` or `⚠ Update avail
 **Solution**: set it as in Step 1, then reload:
 ```bash
 # Reload shell or source file
-source ~/.claude/CLAUDE.md
+source ~/.bashrc
 ```
 
 ### Issue: Canonical script not found
@@ -380,6 +380,8 @@ source ~/.claude/CLAUDE.md
 ---
 
 ## Version History
+
+**v1.2** (2026.10.09, Extra 2, store row `9aadd0ac`, item 12) - The `PLANNING_IS_PROMPTING_ROOT` export goes in `~/.bashrc` or `~/.zshrc` and is loaded with `source ~/.bashrc`; the doc had said `~/.claude/CLAUDE.md`, which is markdown and cannot be sourced.
 
 **v1.1** (2026.10.09, Sam, store row `681745a9`) - Pruning pass 4, rows 20-31 and 33. Removed text that repeated another place in this file or the script's own output: the Overview paragraph, the version-extraction code and its sample output (the script does this; one sentence now names where each version lives), the printed `--check-for-update` output, the repeated [S]/[C]/[D] effects, the four hard-coded exclusion `echo`s (now a loop), and four Best Practices that restated a section. No instruction changed. Row 32 (the skip-when-unset bullets) failed review: the line it would keep, "warning shown once per session", is not what the script does; that is a fix, not a prune.
 
