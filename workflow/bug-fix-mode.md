@@ -207,7 +207,6 @@ notify( "Initializing bug fix mode, loading queue and history...", notification_
 - [ ] bug-fix-queue.md exists in project root
 - [ ] File has valid v2.0 structure (Active Sessions, Queued, In Progress, Completed)
 - [ ] v1.0 auto-migration performed (if applicable)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -232,7 +231,6 @@ notify( "Initializing bug fix mode, loading queue and history...", notification_
 **Verification**:
 - [ ] history.md has session header for today
 - [ ] Session is marked as Bug Fix Mode
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -348,7 +346,6 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
 - [ ] Parallel sessions noted (if applicable)
 - [ ] Session manifest initialized/resumed (`.claude-session.md`)
 - [ ] Manifest section created or found for this session
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -397,7 +394,6 @@ ask_multiple_choice(
 - [ ] ask_multiple_choice sent with current queue (excluding other sessions' in-progress)
 - [ ] User response received
 - [ ] Next action determined (fix bug / add new bug / close session)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -475,7 +471,6 @@ ask_multiple_choice(
 - [ ] No ownership conflict (or conflict resolved)
 - [ ] GitHub issue details fetched (if applicable)
 - [ ] Manifest section active (tracking continues)
-- [ ] Checklist updated (if kept) with bug-specific items
 
 ---
 
@@ -526,13 +521,10 @@ Files to track include:
 - Configuration files changed
 - Any other files touched during fix
 
-**A scratch checklist for sub-tasks is fine if the fix is complex.**
-
 **Verification**:
 - [ ] Fix implemented
 - [ ] All modified files recorded in manifest section
 - [ ] Last Activity timestamp updated
-- [ ] Checklist reflects implementation progress (if kept)
 
 ---
 
@@ -576,7 +568,6 @@ Files to track include:
 - [ ] All applicable tiers executed by Claude (not deferred to human)
 - [ ] Results reported in pass/fail table
 - [ ] Test results recorded (for history entry)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -597,7 +588,6 @@ Files to track include:
 - [ ] All touched files listed
 - [ ] Test results recorded
 - [ ] Commit marked as pending
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -675,7 +665,6 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
 - [ ] GitHub issue closed (if applicable)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -711,7 +700,6 @@ Update your row's `Last Activity` timestamp.
 - [ ] Active Sessions Last Activity updated
 - [ ] Commit hash recorded
 - [ ] GitHub issue reference included (if applicable)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -741,7 +729,6 @@ ask_yes_no(
 - [ ] User prompted about context clear
 - [ ] Response received
 - [ ] Next action determined
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -796,7 +783,6 @@ ask_yes_no(
 - [ ] Queued count known
 - [ ] Manifest resumed or created
 - [ ] Session tracking active
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -812,7 +798,6 @@ ask_yes_no(
 - [ ] history.md session section read
 - [ ] Fix history understood
 - [ ] Ready to continue
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -845,7 +830,6 @@ ask_multiple_choice(
 - [ ] ask_multiple_choice sent
 - [ ] User response received
 - [ ] Next action determined
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -869,7 +853,6 @@ ask_multiple_choice(
 - [ ] Session summary added
 - [ ] All metrics accurate
 - [ ] Session marked as closed
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -951,7 +934,6 @@ Mark these as `stale` and optionally release their In Progress bugs:
 - [ ] Completed bugs archived (if user chose Option B)
 - [ ] Stale sessions marked (if any)
 - [ ] Remaining bugs preserved if any
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1085,7 +1067,6 @@ ask_multiple_choice(
 - [ ] Manifest section found and parsed
 - [ ] File list extracted from manifest (or fallback mode chosen)
 - [ ] Current bug identified
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1100,7 +1081,6 @@ ask_multiple_choice(
 - [ ] All touched files listed
 - [ ] Test results recorded (or "Not run")
 - [ ] Commit marked as [pending]
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1116,7 +1096,6 @@ ask_multiple_choice(
 - [ ] Commit hash marked as [pending]
 - [ ] Your session's Last Activity updated
 - [ ] GitHub issue reference included (if applicable)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1140,7 +1119,6 @@ INFO: Bug not found in TODO.md (no action needed)
 **Verification**:
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1267,7 +1245,6 @@ Present retry option.
 - [ ] history.md and bug-fix-queue.md staged
 - [ ] TODO.md staged (if modified)
 - [ ] Commit created successfully
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1332,7 +1309,6 @@ WARN: GitHub issue #123 not found. Continuing without closure.
 - [ ] Manifest cleaned up (deleted if only section, kept if others active)
 - [ ] Commit amended with final document state
 - [ ] GitHub issue closed (if applicable)
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1352,7 +1328,6 @@ notify(
 **Verification**:
 - [ ] Completion notification sent
 - [ ] All fix details included in abstract
-- [ ] Checklist updated (if kept)
 
 ---
 
@@ -1641,6 +1616,8 @@ else:
 ---
 
 ## Version History
+
+**v2.0** (2026.10.10, Sam) - **Wider pruning job 2, item B4 (store row `84211d12`).** Removed the 23 Verification bullets that checked a step checklist ("Checklist updated (if kept)", its "with bug-specific items" variant, and "Checklist reflects implementation progress (if kept)") and the sentence "A scratch checklist for sub-tasks is fine if the fix is complex." Rick: "Cut them (Recommended)".
 
 **v1.9** (2026.10.10, Sam) - **Wider pruning batch 1 (store row `84211d12`).** Removed Step 0 (the optional step checklist, which also said "MANDATORY" in the same section) and the 25 "If you keep a step checklist" lines; the Preliminary timing line now says "before the mode's first step". The "Checklist updated (if kept)" Verification bullets stay until Rick rules on them.
 
