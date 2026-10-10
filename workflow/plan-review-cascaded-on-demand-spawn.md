@@ -65,23 +65,7 @@ result = spawn_sessions(
 
 ### §3.2 What the MCP returns
 
-```python
-{
-  "spawned": [
-    {"session_name": "cc-reviewer-mr-radio-1", "requested_role": "reviewer",
-     "project": "planning-is-prompting", "status": "spawning", "dry_run": False},
-    {"session_name": "cc-reviewer-mr-radio-2", ...},
-    {"session_name": "cc-reviewer-mr-radio-3", ...},
-  ],
-  "manager_persona": "mr-radio",                 # slugified per PG-6; the spawner resolved this from bridge
-  "collection_topic": "dm-mr-radio",             # findings thread back here
-  "persona_preference": ["Tiberius", "Krishna", "Sam"],
-  "requested": 3,
-  "dry_run": False,
-}
-```
-
-The `session_name` is the tmux session name; persona allocation (name/icon/color) is resolved at child startup time + reported back via the child's first `commons_post` ack. The runbook below cites sessions by `session_name`.
+The tool returns `spawned` (per session: `session_name`, `requested_role`, `status`, `model`), `manager_persona`, `collection_topic` and `model`. The `session_name` is the tmux session name; persona allocation (name/icon/color) is resolved at child startup time + reported back via the child's first `commons_post` ack. The runbook below cites sessions by `session_name`.
 
 ### §3.3 Wait for v1 polling-based acks
 
@@ -105,11 +89,7 @@ for entry in recent:
 
 ### §3.4 Heartbeat scheduler registration (decision: spawn does NOT auto-register reviewers)
 
-> 🗄️ **HISTORICAL framing (Rick GO 2026-06-29)**: the `cascade_heartbeat_scheduler.py` daemon is RETIRED — the standing arbiter is the waker now (see `plan-review-cascaded-common.md §Heartbeat Handling` banner). The decision below still holds in spirit (spawned reviewers need no per-session waker entry — they self-signal readiness via commons-post), but read "the scheduler pokes the Manager" as "the **arbiter** pokes the Manager."
-
 `spawn_sessions` does NOT auto-register reviewers with any heartbeat waker. The waker (formerly `cascade_heartbeat_scheduler.py`, now the arbiter) pokes the **Manager** (keeps it awake); reviewers self-signal readiness via commons-post (per Decision #4 in the Track-T plan), so they need no waker entry. Reviewer-liveness heartbeats are deferred to v1.1.
-
-**Operator implication**: the Manager's own heartbeat is unchanged; the Manager does not need to call any scheduler-register API for spawned reviewers; the spawned reviewers' liveness is observed via the `ready, [role]` ack + later commons-post activity on `dm-{manager_persona}`.
 
 ### §3.5 Proceed to Step 5
 
@@ -143,18 +123,11 @@ result = dismiss_sessions(
     reason        = "Cascade-notif-sync complete; freeing reviewer slots",
     write_memento = None,  # None → INI default (currently True); pass True/False to override per-call
 )
-# Returns: {dismissed:[{session_name, status}], remaining, reason, write_memento, manager_session_id}
 ```
-
-`session_names=None` is the "dismiss all I spawned" default — the MCP filters by the `spawned_by=<your manager session_id>` bridge tag.
 
 **What the MCP does** (per the Lupin Track-T plan):
 1. Each spawned session receives a "you're being dismissed" notice + the `reason` string
 2. If `write_memento=True`, the session writes its memento per `workflow/memento-management.md` 7-element contract to its working directory (`.claude-memento.md`)
-3. MCP tears down the tmux session via `tmux kill-session`
-4. MCP nullifies the persona bridge → the Extra-N (or named-pool) slot is freed for re-spawn
-
-**Result**: the Manager's `list_spawned_sessions()` no longer shows these session_ids.
 
 ### §5.2 Idle-TTL auto-reap backstop (built + 100% tested)
 
@@ -180,7 +153,6 @@ spawn_sessions(count=1, role="reviewer", persona_preference=["Rachel"], ...)
 
 ```python
 result = list_spawned_sessions()
-# Returns: {sessions:[{session_name, requested_role, status, alive}], count, manager_session_id}
 ```
 
 Useful for sanity-check before dismissal + for the Workflow Steward's mid-cascade probes.
@@ -219,8 +191,6 @@ The three-axis mapping (codified verbatim against the cosa-voice machinery):
 | **Reviewer→Manager comms: text via commons** | Reviewers post findings via `commons_post` + DM threading on `dm-{manager_persona}`. Their comms path uses text, never `notify()`-TTS. | Silent by comms-path regardless of speakerphone state |
 | **Spoken TTS: shoulder-tap un-mute** | The user/Manager calls the EXISTING `enable_speakerphone(session_id=<reviewer-sid>)` tool (browser endpoint: `POST /api/cosa-voice/speakerphone/{reviewer_sid}`). It's already per-session + broadcasts `speakerphone_changed`. | That IS the shoulder-tap — no new toggle |
 | **Text broadcasts: always reach reviewers** | User `USER BROADCAST` messages reach sessions independently of `speakerphone_on` — listener injection bypasses the spoken-TTS gate. | Already true; "text-broadcastable" needs no new work |
-
-**Operator implication**: when authoring a Cast Manifest for an on-demand-spawn cascade, default the TTS column to "speakerphone OFF (call enable_speakerphone to un-mute)" for spawned reviewers. To shoulder-tap a specific reviewer, the user (or Manager) calls `enable_speakerphone` with the reviewer's session_id.
 
 **Residual hardening** (Tiberius noted): `register_session` will self-register headless reviewers with `speakerphone_on=False` belt-and-suspenders to defend against stray `urgent`-priority `notify()` slipping through. Lands with the live E2E pass; doesn't change this narrative.
 
@@ -348,5 +318,6 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.2 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file or the tools' own descriptions: the HISTORICAL banner above §3.4's decision (the paragraph below carries the retirement), two "Operator implication" paragraphs, the example `spawn_sessions` result (the tool's Returns is the source; the paragraph under it now names the real keys), two steps of "What the MCP does" and the Result line, two `# Returns:` comments and the `session_names=None` default sentence. No instruction changed; the wrong-text items found in the same pass (§5.3 `respin_personas`, §10 spawn window, §8.2 `session_ids`) are filed separately.
 - **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
