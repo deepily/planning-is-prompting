@@ -308,7 +308,7 @@ Any manager-role session holds **standing** authority to harvest workers and, wh
 
 | Tier | Actions |
 |---|---|
-| **STANDING** (no ask) | **when skeleton crew is off:** spawn fresh · respawn any persona · **always:** reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed** (no per-commit user gate — Rick 2026-06-16) · **bounce the arbiter (`:8001`) or test (`:8000`) server when IDLE** — announce, log, roll back on regress |
+| **STANDING** (no ask) | **when skeleton crew is off:** spawn fresh · **always:** re-spin a seat one for one · reap idle/unproductive/completed · **commit + merge to the working branch once green AND reviewed** (no per-commit user gate — Rick 2026-06-16) · **bounce the arbiter (`:8001`) or test (`:8000`) server when IDLE** — announce, log, roll back on regress |
 | **STANDING for EVERY seat** | **bounce the notification server `:7999`** to pick up fresh code — auto-reload is OFF, so **a saved file is not a served file**. Use `bounce-dev-server.sh` (warns the fleet, waits for acks). The idle check is **fleet-wide**. ⚠️ `restart` ≠ `--force-recreate`: mounts/env resolve at container CREATE |
 | **STILL GATED** (user's DIRECT word) | **push to origin** · destructive/irreversible · production or outward-facing shared infra · **bouncing a server WHILE a job or test is running** · exceeding the concurrency cap · cross-project spawn |
 | **HYGIENE** (required, not a gate) | reap with a memento (no zombies) · `notify()` the user AFTER, for visibility — never block on pre-approval |
