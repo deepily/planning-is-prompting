@@ -91,7 +91,6 @@ What would you like to do? [1/2/3/4]
    ```
 
 2. Execute the update flow as described in that document:
-   - Step 0: Create update TODO list
    - Step 1: Scan local installation (detect versions)
    - Step 2: Compare with canonical versions
    - Step 3: Present selective update UI
@@ -111,7 +110,6 @@ What would you like to do? [1/2/3/4]
    ```
 
 2. Execute the installation flow as described in that document:
-   - Step 0: Create installation TODO list
    - Step 1: Detect current state (already done above)
    - Step 2: Present workflow catalog
    - Step 3: Collect user selection and validate
@@ -2451,6 +2449,8 @@ If you're creating new workflows and need to create slash command wrappers for t
 ---
 
 ## Version History
+
+**v1.6** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B5: removed the two "Step 0: Create ... TODO list" bullets from the update and installation flows, because the wizard sections they named are gone.
 
 **v1.5** (2026.10.10) - Wider pruning batch 1 (store row `84211d12`): removed the "Track progress (a step checklist is optional)" item from the update and installation flows and renumbered the notification item to 3.
 
