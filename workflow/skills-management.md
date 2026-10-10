@@ -651,7 +651,7 @@ To use a template:
 /plan-skills-management create <skill-name>
 
 Select source:
-[4] From template
+[6] From template
 
 Available templates:
 [1] testing-skill-template
@@ -818,6 +818,8 @@ ask_multiple_choice( questions=[{
 ---
 
 ## Version History
+
+**v1.3** (2026.10.10) - Stale reference (row `735e312f`, C1): the create-mode example selects `[6] From template`, the number the source list gives it.
 
 **v1.2** (2026.10.09) - Pruning pilot batch two, shortlist rows 7-14 (store row `681745a9`), Sam: removed the five When-to-use bullets, three Key-capabilities bullets, three token bullets, the repeated trigger-description wrap, two scan-order bullets, two Delete Step 3 bullets, the bodies of five anti-patterns (Duplicating CLAUDE.md keeps its body) and two Complementary-Usage bullets; the labels they hung from are reworded. Net 30 non-blank lines.
 
