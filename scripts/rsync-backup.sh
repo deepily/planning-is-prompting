@@ -1,5 +1,5 @@
 #!/bin/bash
-# rsync-backup.sh v1.1 from planning-is-prompting
+# rsync-backup.sh v1.2 from planning-is-prompting
 #
 # Generic rsync backup script with version checking capability.
 # This is a CANONICAL REFERENCE - copy to your project's src/scripts/ and customize.
@@ -20,7 +20,7 @@ PROJECT_NAME="Your Project Name"
 # === CONFIG END ===
 
 # Version information
-SCRIPT_VERSION="1.1"
+SCRIPT_VERSION="1.2"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -78,9 +78,9 @@ if [[ "$1" == "--check-for-update" ]]; then
     echo -e "Local version: ${YELLOW}v$SCRIPT_VERSION${NC}"
 
     if [[ -n "$PLANNING_IS_PROMPTING_ROOT" ]]; then
-        local canonical_script="$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh"
+        canonical_script="$PLANNING_IS_PROMPTING_ROOT/scripts/rsync-backup.sh"
         if [[ -f "$canonical_script" ]]; then
-            local canonical_version=$( grep -m 1 "# rsync-backup.sh v" "$canonical_script" | sed 's/.*v\([0-9.]*\).*/\1/' )
+            canonical_version=$( grep -m 1 "# rsync-backup.sh v" "$canonical_script" | sed 's/.*v\([0-9.]*\).*/\1/' )
             echo -e "Canonical version: ${GREEN}v$canonical_version${NC}"
 
             if [[ "$canonical_version" == "$SCRIPT_VERSION" ]]; then

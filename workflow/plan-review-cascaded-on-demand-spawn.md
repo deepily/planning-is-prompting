@@ -127,7 +127,7 @@ result = dismiss_sessions(
 
 **What the MCP does** (per the Lupin Track-T plan):
 1. Each spawned session receives a "you're being dismissed" notice + the `reason` string
-2. If `write_memento=True`, the session writes its memento per `workflow/memento-management.md` 7-element contract to its working directory (`.claude-memento.md`)
+2. If `write_memento=True`, the session writes its memento per the `workflow/memento-management.md` 9-element contract to its stable slot `io/mementos/<persona-slug>.md` (the bare `.claude-memento.md` is retired)
 
 ### §5.2 Idle-TTL auto-reap backstop (built + 100% tested)
 
@@ -155,7 +155,7 @@ spawn_sessions(count=1, role="reviewer", persona_preference=["Rachel"], ...)
 result = list_spawned_sessions()
 ```
 
-Useful for sanity-check before dismissal + for the Workflow Steward's mid-cascade probes.
+Useful for sanity-check before dismissal + for the Workflow Steward's mid-cascade probes. Each row carries `session_name`, `requested_role`, `status`, `alive`, `model`, `persona`, `persona_state`, `identity_verified` and `age_seconds`; the result also has `identity_complete` and `identity_warning`. A live seat is not proof of who sits in it: do not address a seat by persona name until its `persona_state` is `allocated` (read `identity_warning` when `identity_complete` is False).
 
 ---
 
@@ -207,7 +207,7 @@ The Step 0 light-review = Stage 2 reviewer recycling rule (per stage-specs §0) 
 | **Extra-N pool exhausted** | `spawn_sessions` returns `status: "extra_n_exhausted"` for the failed slots | Wait + retry, OR dismiss other live sessions to free slots, OR override the spawn cap if INI permits |
 | **tmux launch denied** (host permission classifier) | `spawn_sessions` returns `status: "tmux_denied"` | Per PG-2 lesson: request user grant the launch permission explicitly, OR fall back to manual launch + user-tap into the cast |
 | **Project not found** (the `project` param doesn't resolve to a known working directory) | `spawn_sessions` returns `status: "project_not_found"` | Verify project name + retry; named projects are enumerated in the Lupin INI |
-| **persona_preference unavailable** (predictable-fail per the contract) | `spawn_sessions` returns `status: "persona_unavailable"` for the failed slots | Either retry without `persona_preference` (accept Extra-N allocation) OR wait for the requested persona to free + retry |
+| **persona_preference unavailable** (predictable-fail per the contract) | Exhausting the `persona_preference` chain without a trailing `*` is a LOUD failure: the child boots persona-less and is never re-allocated. `list_spawned_sessions` shows `persona_state` other than `allocated` for that seat | Dismiss the persona-less seat, then either re-spawn with `*` at the end of the chain (e.g. `["Rachel", "*"]`) to accept any free name, OR wait for the requested persona to free + retry |
 | **Spawned session can't ack within Step 4 timer (2 min)** | Manager poll-cycle observes missing ack | Per Step 4 protocol: dismiss + re-spawn rather than wait longer |
 | **Spawned session crashes mid-cascade** | v1: heartbeat-via-poll detects ~2-3 min later. v1.1: push hook fires within seconds | Per `plan-review-cascaded-common.md` §Reviewer Reassignment: dismiss the dead session + spawn replacement + escalate to user if reassignment cost exceeds 18-min user-attention-block cap |
 | **Manager session crashes mid-cascade leaving spawned reviewers orphaned** | Manager doesn't call `dismiss_sessions`; spawned sessions remain live | Idle-TTL auto-reap backstop (v1 safety net) — see §5.2. Workflow Steward should flag the Manager-died event + recommend fresh Manager session take over via `list_spawned_sessions` + manual `dismiss_sessions(reason="prior Manager died; reaping for fresh cascade")` |
@@ -229,29 +229,31 @@ spawn_sessions(
     task_prompt        = "...",
     role               = "author",
     persona_preference = ["Tiffany"],          # same voice as prior Author
-    seed_memento       = "/path/to/.claude-memento.md",  # prior Author's memento
+    seed_memento       = "io/mementos/tiffany.md",      # prior Author's memento
 )
 ```
 
 The MCP prepends the memento content to the rendered `task_prompt` so the spawned session reads its prior context as part of its initial brief.
 
-**Cross-link**: see `workflow/memento-management.md` §2 for the 7-element memento contract that the spawned session reads.
+**Cross-link**: see `workflow/memento-management.md` §2 for the 9-element memento contract that the spawned session reads.
 
 ### §8.2 On dismiss — `write_memento=True` captures post-cascade state
 
 ```python
-dismiss_sessions(session_ids=[author_session_id], write_memento=True)
+dismiss_sessions(session_names=[author_session_name], respin_personas=["tiffany"], write_memento=True)
 ```
+
+`respin_personas` names every seat you are bringing back. Without it the reap moves that seat's open store rows onto the reaping Manager, and nothing checks that the named seat returns. Retention is keyed on the persona NAME, so reap and re-spin in one batch.
 
 Before the tmux kill, the dismissed Author session writes its memento — capturing the cascade's outcome + open loops + lessons-learned. This memento is then the seed for the NEXT spawn of an Author resuming work on the same plan.
 
-**Location convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation; revised 2026-06-27 to stable slots): the dismissed session writes to its **stable per-persona slot** `io/mementos/<persona-slug>.md` (one slot per persona, no timestamp, derivable from the persona name). This lets multiple personas have parallel continuity threads — Tiffany's `io/mementos/tiffany.md` does NOT clobber Mr. Radio's `io/mementos/mr-radio.md` — while keeping every path predictable so nobody hands a path to the user or the Manager. A fresh memento overwrites the slot by default; a still-load-bearing predecessor is moved to `io/mementos/archive/` (timestamp on the copy only). See `workflow/memento-management.md` §3.2 for the full convention.
+**Location convention** (decided 2026-05-29 — María ↔ Tiberius reconciliation; revised 2026-06-27 to stable slots): the dismissed session writes to its **stable per-persona slot** `io/mementos/<persona-slug>.md` (one slot per persona, no timestamp, derivable from the persona name). This lets multiple personas have parallel continuity threads — Tiffany's `io/mementos/tiffany.md` does NOT clobber Mr. Radio's `io/mementos/mr-radio.md` — while keeping every path predictable so nobody hands a path to the user or the Manager. `io/mementos/<persona-slug>.md` is the POINTER to the seat's current record, not the record: `memento_io.py write` writes a new record (`io/mementos/<persona>-<session_id_8>.md`) and refreshes the pointer in the same call, refuses (exit 3) if that record already exists, and `memento_io.py amend` is how an existing record gets more content. See `workflow/memento-management.md` §3.2 for the full convention.
 
 **Re-spawn selection — Manager DERIVES the path**: when the Manager calls `spawn_sessions(seed_memento=<path>)`, the seed path is computed from the persona being re-spawned — `io/mementos/<persona-slug>.md`, the stable single slot. No archive-picking and no path hand-off; the slug IS the answer. See `workflow/memento-management.md` §3.4.
 
 ### §8.3 The continuity loop in narrative
 
-> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
+> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(respin_personas=["tiffany"], write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
 >
 > Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany.md")` — the seed path derived straight from the persona, no file-picking. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
 
@@ -318,6 +320,7 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.3 (2026-10-09, Extra 2, store row `9aadd0ac`)** — Pass-4 defect fixes. Item 1: the §8.2 and §8.3 re-spin dismissals now pass `respin_personas` (§5.3 replaces the seat with a different persona and is left as written). Item 5: §8.2 `session_ids` corrected to `session_names`. Item 9: §8.2 location paragraph no longer says a fresh memento overwrites the slot; it names the pointer/record split and the `write` refusal and `amend`. Item 8: §5.1, §8.1 and §8.2 say 9-element and the `io/mementos/<persona-slug>.md` slot, not 7-element and the retired `.claude-memento.md`. Item 7: §5.4 names `persona_state` and the do-not-address-by-name rule. Item 6: §7 persona-unavailable row now says what the tool does (persona-less child, never re-allocated; a trailing `*` accepts any free name).
 - **v1.2 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file or the tools' own descriptions: the HISTORICAL banner above §3.4's decision (the paragraph below carries the retirement), two "Operator implication" paragraphs, the example `spawn_sessions` result (the tool's Returns is the source; the paragraph under it now names the real keys), two steps of "What the MCP does" and the Result line, two `# Returns:` comments and the `session_names=None` default sentence. No instruction changed; the wrong-text items found in the same pass (§5.3 `respin_personas`, §10 spawn window, §8.2 `session_ids`) are filed separately.
 - **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).

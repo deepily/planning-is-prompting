@@ -117,17 +117,11 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 **Purpose**: Immediate user awareness that checkpoint is executing
 
-**Timing**: Execute BEFORE creating task list (before Step 0)
+**Timing**: Execute BEFORE Step 1
 
 ```python
 notify( "Creating checkpoint commit...", notification_type="progress", priority="low" )
 ```
-
----
-
-## Step 0: Step Checklist (optional)
-
-Optional: a checklist of the steps, if it helps you track progress. It is scratch, not owed work; owed work goes in the task store (`task-store-discipline.md` §3).
 
 ---
 
@@ -607,6 +601,8 @@ After checkpoint completes:
 ---
 
 ## Version History
+**v1.4** (2026.10.09) - Removed the optional "Step 0: Step Checklist" step and the "before Step 0" timing reference, so the file matches the `plan-session-start.md` wrapper and the canonical session-start workflow, which have no checklist step (Rick's ruling, row `efa0a4cf`; store row `9aadd0ac`, Extra 2).
+
 **v1.3** (2026.10.09) - Step 6c's commit template no longer rides the commit line (defect 9, row `1498e58f`, Sam): the message is written to a file and committed with `git commit -F <message-file> -- <paths>`, the shape the commit-scope guard reviews; `session-end.md` Step 4.3 carries the reasons.
 
 **v1.2** (2026.10.09) - Pruning pilot batch two, shortlist rows 25-27 and 44-46 (store row `681745a9`), Sam: the Step 7c manifest example, the repeated history entry format and the Before-every-commit list point to Manifest Format Enhancement, Step 4 and Steps 1, 5, 6a-6b; the step-checklist class Rick cut from three other files is removed here too (eight Mark Step N complete lines, seven TaskUpdate updated boxes, the Step 0 list and Step 0's own Verification, the other per-step Verification lists staying). Net 58 non-blank lines.
