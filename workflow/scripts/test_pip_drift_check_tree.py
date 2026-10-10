@@ -4,7 +4,7 @@ not call an empty scan a clean one.
 
 WHY THIS TEST EXISTS (store row `9aadd0ac`, item 22). Run from a git worktree the
 tool gave a wrong answer three ways, all reproduced in
-`io/tmp/2026.10.09-pass4-defects-review.md`:
+the review recorded on that row:
 
   a. A correct worktree was called drifted because PLANNING_IS_PROMPTING_ROOT named
      the main checkout, whose manifest was newer.
