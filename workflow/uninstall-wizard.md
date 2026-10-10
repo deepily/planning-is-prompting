@@ -192,8 +192,6 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    Nothing to uninstall. Exiting wizard.
    ```
 
-**If you keep a step checklist**: Mark "Detect installed workflows" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```python
 notify( "Detection complete - found X installed workflows", notification_type="progress", priority="low" )
@@ -284,8 +282,6 @@ What would you like to do? [1/2/3]
 
 3. **Wait for User Selection**
 
-**If you keep a step checklist**: Mark "Present catalog" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Catalog presented - awaiting selection", notification_type="task", priority="high" )
@@ -357,8 +353,6 @@ Manual cleanup will be suggested for the items listed under these families in th
 
 Ready to proceed with deletion preview.
 ```
-
-**If you keep a step checklist**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -457,8 +451,6 @@ Proceed with deletion of these 5 files? [y/n]
    **If user responds 'y'**:
    Proceed to Step 5 (deletion).
 
-**If you keep a step checklist**: Mark "Show deletion candidates" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 ask_yes_no( "Proceed with deletion of selected workflows?", default="no", timeout_seconds=300 )
@@ -518,8 +510,6 @@ Deletion Complete: 5 files removed
    You may need to manually delete the failed file:
      rm .claude/commands/plan-session-start.md
    ```
-
-**If you keep a step checklist**: Mark "Delete files" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -639,8 +629,6 @@ What would you like to do? [1/2/3]
    Remove these sections? [y/n]
    ```
 
-**If you keep a step checklist**: Mark "Offer CLAUDE.md cleanup" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "CLAUDE.md cleanup handled", notification_type="progress", priority="low" )
@@ -725,8 +713,6 @@ What would you like to do? [1/2]
    This is fine - the entries won't cause any issues even if
    the directory is empty.
    ```
-
-**If you keep a step checklist**: Mark "Offer .gitignore cleanup" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -817,8 +803,6 @@ What would you like to do? [1/2]
    This is fine - you can install workflows again anytime.
    ```
 
-**If you keep a step checklist**: Mark "Handle empty directory" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Directory cleanup handled", notification_type="progress", priority="low" )
@@ -894,8 +878,6 @@ planning-is-prompting workflows!
 
    Make it clear they can easily reinstall anytime.
 
-**If you keep a step checklist**: Mark "Present summary" as completed (all tasks done!)
-
 **Send Notification**:
 ```bash
 notify( "Uninstallation complete - X workflows removed", notification_type="task", priority="high" )
@@ -969,6 +951,7 @@ This section provides detailed guidance on cleaning up related files that were n
 
 ## Version History
 
+- **2026.10.10 (Sam)**: Wider pruning batch 1 (store row `84211d12`): removed the 9 "If you keep a step checklist" lines. "Step 0: Create Uninstall TODO List" stays until Rick rules on it.
 - **2026.10.09 (Sam)**: Pruning pilot, shortlist rows 17-18 (store row `681745a9`): the installed-command scan is a rule over the catalog (a family counts as installed if any of its commands exists), the menu entries for B and C refer to the catalog, and the confirmation and final screens refer to the Manual Cleanup Reference (the final screen lists only the removed families' items). The Installation Wizard entry keeps its "removes /plan-uninstall-wizard too" warning.
 - **2026.10.02**: A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
 - **2025.10.21**: Initial creation - uninstall wizard for planning-is-prompting workflows
