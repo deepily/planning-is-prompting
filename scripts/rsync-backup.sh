@@ -1,5 +1,5 @@
 #!/bin/bash
-# rsync-backup.sh v1.1 from planning-is-prompting
+# rsync-backup.sh v1.2 from planning-is-prompting
 #
 # Generic rsync backup script with version checking capability.
 # This is a CANONICAL REFERENCE - copy to your project's src/scripts/ and customize.
@@ -20,7 +20,7 @@ PROJECT_NAME="Your Project Name"
 # === CONFIG END ===
 
 # Version information
-SCRIPT_VERSION="1.1"
+SCRIPT_VERSION="1.2"
 
 # Color codes for output
 RED='\033[0;31m'
