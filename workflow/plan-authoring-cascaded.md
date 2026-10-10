@@ -166,7 +166,7 @@ See `plan-review-cascaded-common.md` §Step 1. The procedure is identical (workf
 | Key | Default | Description |
 |---|---|---|
 | `author_revision_turn_cap` | `2` | Max author-revision cycles per section (int 1-5) before vote/escalate. Prevents infinite multi-draft loops; pairs with `discussion_turn_cap` for review-side. |
-| `intent_capture_required` | `true` | Set `false` in hybrid mode (skips Step 0). |
+| `intent_capture_required` | `true` | Set `false` in hybrid mode (skips Step 0.0; the session enters at Step 0.1). |
 | `dependency_map_required` | `true` | Set `false` only for trivially-decoupled (single-section) plans; explicit override required. |
 | `goal_coverage_matrix_required` | `true` | Manager maintains throughout cascade; surfaces uncovered goals at section-close. |
 | `convention_6_active` | detected | Set `true` if consuming project's CLAUDE.md has `## Coverage` section or equivalent ratification; otherwise `false` (Convention 6 dormant). |
@@ -390,7 +390,7 @@ Phase 6C (Lupin notifications-UI multiplexer port) is the **canonical hybrid-mod
 **Output target**: implementation plan with all Q-decisions resolved (ratified, deferred-to-Open-sub-question with explicit owning-section, or escalated and resolved by user).
 
 **Activation**:
-- Skip Step 0 (design + partitioning exist)
+- Skip Step 0.0 (design + partitioning exist; enter at Step 0.1)
 - Run Step 0.5 (dependency map for the 4 sub-features)
 - Step 2 = lite multi-select ratification of the 4 sub-features as sections
 - Step 5 multi-draft cap = 2 (default; revise if Rachel hits cap on any sub-feature)
@@ -419,6 +419,7 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. The a
 
 ## Version History
 
+- **2026.10.09 (Extra 2, store row `9aadd0ac`)** — Item 18: the `intent_capture_required` row and the 6c example say hybrid mode skips Step 0.0 and enters at Step 0.1, as §Step 0.0 already states; they had said "skip Step 0".
 - **2026.10.09 (Sam, store row `681745a9`)** — Pruning pass 4. The second configuration table ("Configuration Defaults Additions") repeated the five Step 1 keys; its two extra keys (`hybrid_mode`, `manager_divergence_check_active`) moved into the Step 1 table, which also takes the "int 1-5" bound. Also removed the Phase 6C cast list under the worked example (Step 4 gives it) and two activation bullets that restated defaults. No rule changed.
 - **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
