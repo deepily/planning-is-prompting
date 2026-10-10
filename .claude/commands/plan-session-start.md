@@ -2,7 +2,7 @@
 
 **Project**: Planning is Prompting
 **Prefix**: [PLAN]
-**Version**: 1.1
+**Version**: 1.2
 
 ---
 
@@ -28,7 +28,7 @@
    - Location: planning-is-prompting → workflow/session-start.md
    - This is the ONLY authoritative source for ALL session initialization steps
    - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: Preliminary 0 (Phase A MCP startup), Preliminary 0.5 (persona-request swap, conditional), Preliminary notification, an optional step checklist, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
+   - The canonical workflow contains: Preliminary 0 (Phase A MCP startup), Preliminary 0.5 (persona-request swap, conditional), Preliminary notification, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
 
 4. **MUST execute the complete session initialization routine**:
    - Execute ALL steps exactly as described in the canonical workflow document
@@ -67,5 +67,6 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Version History
 
+- **1.2 (2026.10.09)**: Removed "an optional step checklist" from the list of what the canonical workflow contains; the workflow has no such step (store row `9aadd0ac`, item 21).
 - **1.1 (2026.05.19)**: Added optional `[persona]` argument support — `$ARGS` detection routed to canonical workflow's new Preliminary 0.5 (Persona-Request Swap). Restores cross-day narrative continuity. Paired with Lupin-side `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` endpoint extension.
 - **1.0**: Initial slash-command wrapper for the canonical session-start workflow.
