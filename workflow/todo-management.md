@@ -70,8 +70,8 @@ Last updated: YYYY-MM-DD (Session N)
 2. **Read TODO.md** if it exists
 
 3. **Review pending items**:
-   - Identify items from previous sessions
-   - Note which items you plan to address this session
+   - Identify pending decisions and not-yet-owed backlog items from previous sessions (live owed work comes from `task_query`, not from this file)
+   - Note which backlog items you will promote to store rows this session
    - Check if any items were completed outside of Claude sessions
 
 4. **Display summary**:
@@ -106,11 +106,11 @@ Last updated: YYYY-MM-DD (Session N)
    - If file doesn't exist, create it from the File Format block above
    - If file exists, read current contents
 
-2. **Move completed items** from Pending → Completed section:
+2. **Move resolved backlog and decision items** from Pending → Completed section (live owed work completes in the store with `task_transition`, not here):
    - Add session number attribution: `- [x] Item description - Session N`
    - Remove from Pending section
 
-3. **Add new items** discovered during this session:
+3. **Add new not-yet-owed backlog items** discovered during this session (work you will start is a store row via `task_create`, not a line here):
    - Use checkbox format: `- [ ] New item description`
    - Add to Pending section
 
@@ -313,6 +313,7 @@ When bug fix mode is active:
 
 ## Version History
 
+- **2026.10.09 (Extra 2, store row `9aadd0ac`)**: Item 15: Session-Start and Session-End Integration treat Pending as decisions and not-yet-owed backlog and send live owed work to the store, as the Purpose and the Three-Document table already say.
 - **2026.10.09 (Sam, store row `681745a9`)**: Pruning pass 4. Removed text that repeated another place in this file: the new-file template (the File Format block is the template; the three places that pointed at it now say so), the "When to Use Each Document" questions, the Field Descriptions table, the Transition and Going-forward bullets that restated Session-End and the three-document table, and four Best Practices that restated a section. No rule changed.
 - **2026.01.27 (Session 50)**: Initial creation - extracted TODO tracking from history.md pattern
 
