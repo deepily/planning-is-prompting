@@ -239,7 +239,7 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 
 ### Where the detail goes — the same routing rule as everywhere else
 
-**Detail is not deleted. It is routed** — to the `abstract`, the surface built for it: a 3-line spoken payload with a rich `abstract` card carries MORE than a rambling paragraph.
+**Detail is not deleted. It is routed.** A 3-line spoken payload with a rich `abstract` card carries MORE than a rambling paragraph.
 
 | Content | Destination |
 |---|---|
@@ -387,7 +387,7 @@ Rick's blunt form, and it is **two directives in one**:
 | Half | Means | Mandate |
 |---|---|---|
 | **STFU** | stop the verbosity, now | this document |
-| **GB2W** | stop talking *about* the work and go **do** it, with the full anti-gaming guard | `workflow/push-to-completion.md` |
+| **GB2W** | stop talking *about* the work and go **do** it, with the full anti-gaming guard when aimed at a manager | `workflow/push-to-completion.md` |
 
 **Firing only the STFU half does half the job.** The correct response is *fewer words **and** more work* — not a shorter status update. It targets the specific failure of a session that has substituted narration for progress.
 
