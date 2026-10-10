@@ -94,8 +94,6 @@ A wrapper's job:
 - "ONLY authoritative source" → Single source of truth
 
 **No competing instructions**:
-- Only ONE place to find execution steps (the canonical workflow)
-- No alternative lists that create shortcuts
 - No room for interpretation
 
 ---
@@ -124,16 +122,9 @@ A wrapper's job:
 
 **Always reference the canonical workflow** (Step 2):
 
-```markdown
-2. **MUST read the canonical workflow document**:
-   - Location: planning-is-prompting → workflow/[name].md
-   - This is the ONLY authoritative source for ALL [type] steps
-   - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: [1-sentence summary]
-```
+Same text as Step 2 of the template, with three slots: the workflow file name, `[type]` (the kind of steps, for example "session initialization") and a `[1-sentence summary]` of its contents.
 
 **Key phrases**:
-- "ONLY authoritative source" - No alternatives
 - "Do NOT proceed without reading" - Must read first
 - "in full" - No skimming or shortcuts
 
@@ -141,20 +132,15 @@ A wrapper's job:
 
 ### 3. Execution Command
 
-**Always command complete execution** (Step 3):
+**Always command complete execution** (Step 3 of the template, plus these two optional lines):
 
 ```markdown
-3. **MUST execute the complete [workflow type]**:
-   - Execute ALL steps exactly as described in the canonical workflow document
    - Do NOT skip any steps (including [critical steps to emphasize])
-   - Do NOT substitute a shortened or summarized version
    - [Optional: conditional instructions for arguments]
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
 ```
 
 **Key constraints**:
 - "ALL steps" - Nothing omitted
-- "Do NOT skip" - Reinforces completeness
 - "Do NOT substitute" - No shortcuts
 - "exactly as documented" - Strict adherence
 
@@ -164,18 +150,7 @@ A wrapper's job:
 
 ### ❌ Anti-Pattern 1: Competing Task Lists
 
-**WRONG**:
-```markdown
-1. Read the canonical workflow
-2. Execute as described
-3. Apply configuration: [params]
-4. Execute the following:    ← COMPETING INSTRUCTION
-   - Task A
-   - Task B
-   - Task C
-```
-
-**Problem**: Step 4 creates an alternative to Step 2
+**WRONG**: the wrapper under The Problem above: a numbered Step 4 ("Execute the following") that lists the tasks again, competing with Step 2.
 
 **Fix**: Remove Step 4 entirely
 
@@ -190,12 +165,7 @@ A wrapper's job:
 
 **Problem**: "Read", "Execute" sound optional
 
-**Fix**: Use MUST language:
-```markdown
-1. MUST use the following configuration...
-2. MUST read the canonical workflow...
-3. MUST execute the complete workflow...
-```
+**Fix**: use the MUST wording of Steps 1-3 of the template above.
 
 ### ❌ Anti-Pattern 3: Implicit Steps
 
@@ -207,16 +177,7 @@ A wrapper's job:
 
 **Problem**: Doesn't specify what NOT to do
 
-**Fix**: Add explicit constraints:
-```markdown
-2. MUST read the canonical workflow document:
-   - Do NOT proceed without reading
-   - This is the ONLY authoritative source
-
-3. MUST execute the complete workflow:
-   - Do NOT skip any steps
-   - Do NOT substitute a shortened version
-```
+**Fix**: add the template's explicit constraints: "Do NOT proceed without reading" and "ONLY authoritative source" (Step 2), "Do NOT skip any steps" and "Do NOT substitute a shortened version" (Step 3).
 
 ### ❌ Anti-Pattern 4: Parameters Buried in Middle
 
@@ -227,9 +188,7 @@ A wrapper's job:
 3. Use these parameters: [params]
 ```
 
-**Problem**: Parameters are inputs, should come first
-
-**Fix**: Parameters → Read → Execute
+**Problem and fix**: parameters are inputs and come first (see Implementation Guideline 1 above): Parameters → Read → Execute.
 
 ---
 
@@ -321,21 +280,14 @@ Review the wrapper text:
    - Follow the workflow exactly as documented using the configuration parameters from Step 1
 ```
 
-**Why this works**:
-- ✅ Parameters first (Step 1)
-- ✅ MUST language throughout
-- ✅ Explicit constraints ("Do NOT skip", "ONLY source")
-- ✅ No competing task lists
-- ✅ Clear hierarchy: Params → Read → Execute
+**Why this works**: it is the template above with this project's values filled in.
 
 ### Bad Example: (OLD plan-session-start.md)
 
 ```markdown
 ## Instructions to Claude
 
-1. Read the canonical workflow: path/to/workflow.md
-2. Execute the session initialization routine as described
-3. Apply project-specific configuration: [params]
+(Steps 1-3 as in The Problem above: read the workflow, execute as described, apply configuration, with no MUST wording and the parameters last.)
 4. Execute the following:        ← PROBLEM
    - Read history.md file
    - Display current status
@@ -343,12 +295,7 @@ Review the wrapper text:
    - Provide context
 ```
 
-**Why this fails**:
-- ❌ No MUST language (sounds optional)
-- ❌ Parameters buried in Step 3
-- ❌ Step 4 provides competing instruction set
-- ❌ No explicit constraints ("Do NOT skip")
-- ❌ Claude will choose Step 4 over canonical workflow
+**Why this fails**: see Anti-Patterns 1-4 above: no MUST language, parameters buried in Step 3, Step 4 as a competing instruction set, no explicit constraints. Claude will choose Step 4 over the canonical workflow.
 
 ---
 
@@ -368,22 +315,13 @@ Create a comprehensive workflow document with:
 
 ### 2. Create Minimal Wrappers
 
-Create thin wrapper slash commands that:
-- Provide project-specific parameters only
-- Point to the canonical workflow
-- Command complete execution
-- Use the deterministic pattern
+Create thin wrapper slash commands to the Core Principle above (the Three-Step Structure), using the deterministic pattern.
 
 **Example**: `.claude/commands/plan-session-start.md`
 
 ### 3. Test Thoroughly
 
-Invoke the wrapper and verify:
-- Claude reads the canonical workflow
-- Claude executes ALL steps
-- No shortcuts or summaries
-- All notifications sent
-- All user prompts presented
+Invoke the wrapper and run the checks under Testing Your Wrapper above (expected behaviour, red flags, step completeness).
 
 ### 4. Document Expectations
 
@@ -401,38 +339,27 @@ This makes testing easier and sets clear expectations.
 
 ### 1. Single Source of Truth
 
-The canonical workflow is the ONLY place execution steps are defined:
 - No synchronization burden across projects
 - Updates to canonical automatically apply to all projects
 - Reduces maintenance overhead
 
 ### 2. Deterministic Execution
 
-MUST language and explicit constraints eliminate ambiguity:
-- Claude always reads the canonical workflow
-- Claude always executes ALL steps
-- No room for shortcuts or interpretation
+MUST language and explicit constraints eliminate ambiguity.
 
 ### 3. Project Portability
 
 Wrappers are thin and project-specific:
 - Easy to copy to new projects
-- Just update parameters (paths, prefixes)
-- Workflow logic stays in canonical
 
 ### 4. Maintainability
 
 Clear separation of concerns:
-- Canonical workflow = logic (maintained centrally)
-- Wrapper = parameters (maintained per project)
 - Easy to audit and update
 
 ### 5. Testability
 
-Clear expectations make testing straightforward:
-- Can verify Claude reads canonical
-- Can verify Claude executes all steps
-- Can verify no shortcuts taken
+Clear expectations make testing straightforward (see Testing Your Wrapper above).
 
 ---
 
@@ -472,5 +399,6 @@ Clear expectations make testing straightforward:
 
 ## Version History
 
+- **2026.10.09 (Sam, store row `681745a9`)**: Pruning pass 4, rows 5-17. Removed text that repeated another place in this file: the competing-task-list wrapper shown three times (now once, under The Problem), the Step 2 and Step 3 blocks printed twice, the fixes and consequences that restated the template, the repeated MUST-phrase bullets, and the Benefits and Good-Example bullets that restated Why This Works. The remaining anti-patterns point at The Problem and the template. No rule changed; the Step Completeness and Language Audit checklists were left in place (not the class Rick cut).
 - **2026.10.02**: TodoWrite removed from the wrapper's "do not skip" list and from the step-completeness checks. A workflow's step checklist is optional scratch; owed work goes in the task store (Rick, row `efa0a4cf`).
 - **2025.10.23**: Initial creation - Documented pattern after fixing 5 slash command wrappers
