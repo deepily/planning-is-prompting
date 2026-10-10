@@ -8,7 +8,7 @@
 
 ## Template Content
 
-```yaml
+````yaml
 ---
 name: api-conventions
 description: API conventions and patterns for this project. Use when creating endpoints, handling authentication, making API calls, documenting APIs, or debugging HTTP errors.
@@ -136,7 +136,7 @@ X-RateLimit-Reset: 1640000000
 - [Authentication flow details](references/auth-flow.md)
 - [Error code reference](references/error-codes.md)
 - [OpenAPI specification](references/openapi.yaml)
-```
+````
 
 ---
 

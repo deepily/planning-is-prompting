@@ -8,7 +8,7 @@
 
 ## Template Content
 
-```yaml
+````yaml
 ---
 name: testing-patterns
 description: Testing patterns and caveats for this project. Use when writing tests, running pytest, debugging test failures, choosing between smoke/unit/integration tests, or fixing flaky tests.
@@ -39,9 +39,9 @@ metadata:
 **Trigger:** "quick test", "sanity check", "basic validation"
 
 **Command:**
-\`\`\`bash
+```bash
 pytest tests/smoke/ -v
-\`\`\`
+```
 
 **Caveats:**
 - Don't rely on for comprehensive coverage
@@ -52,9 +52,9 @@ pytest tests/smoke/ -v
 **Trigger:** "unit test", "test this function", "mock"
 
 **Command:**
-\`\`\`bash
+```bash
 pytest tests/unit/ -v
-\`\`\`
+```
 
 **Caveats:**
 - Always mock external dependencies
@@ -65,15 +65,15 @@ pytest tests/unit/ -v
 **Trigger:** "integration test", "test API", "end-to-end"
 
 **Prerequisites:**
-\`\`\`bash
+```bash
 # Verify server is running
 python3 -c "import urllib.request; urllib.request.urlopen( 'http://localhost:8000/health' )"
-\`\`\`
+```
 
 **Command:**
-\`\`\`bash
+```bash
 pytest tests/integration/ -v
-\`\`\`
+```
 
 **Caveats:**
 - REQUIRES server running
@@ -103,7 +103,7 @@ pytest tests/integration/ -v
 - [Detailed mocking patterns](references/mocking-patterns.md)
 - [Fixture documentation](references/fixtures.md)
 - [Known flaky tests](references/flaky-tests.md)
-```
+````
 
 ---
 

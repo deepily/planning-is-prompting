@@ -8,7 +8,7 @@
 
 ## Template Content
 
-```yaml
+````yaml
 ---
 name: skill-name
 description: Brief description of what this skill does. Use when [trigger phrase 1], [trigger phrase 2], or [trigger phrase 3].
@@ -38,9 +38,9 @@ Brief explanation of the first core concept.
 - Situation B
 
 **Example:**
-\`\`\`
+```
 Example code or command
-\`\`\`
+```
 
 ### Concept 2
 Brief explanation of the second core concept.
@@ -50,25 +50,25 @@ Brief explanation of the second core concept.
 - Situation D
 
 **Example:**
-\`\`\`
+```
 Example code or command
-\`\`\`
+```
 
 ## Common Patterns
 
 ### Pattern 1: Name
 Description of the pattern.
 
-\`\`\`
+```
 Pattern example
-\`\`\`
+```
 
 ### Pattern 2: Name
 Description of the pattern.
 
-\`\`\`
+```
 Pattern example
-\`\`\`
+```
 
 ## Caveats & Gotchas
 
@@ -76,14 +76,14 @@ Pattern example
 Explanation of a common mistake or gotcha.
 
 **Incorrect:**
-\`\`\`
+```
 What NOT to do
-\`\`\`
+```
 
 **Correct:**
-\`\`\`
+```
 What TO do
-\`\`\`
+```
 
 ### Caveat 2
 Another common issue to watch for.
@@ -96,7 +96,7 @@ Another common issue to watch for.
 ## See Also
 - [Detailed topic 1](references/topic-1.md)
 - [Detailed topic 2](references/topic-2.md)
-```
+````
 
 ---
 
