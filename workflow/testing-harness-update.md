@@ -61,10 +61,10 @@ project_config:
 
   # Component Classification Rules (project-specific)
   component_types:
-    "core/": {type: "critical", requires_unit: true, requires_smoke: true}
-    "api/": {type: "critical", requires_unit: true, requires_smoke: true}
-    "utils/": {type: "support", requires_unit: true, requires_smoke: false}
-    "scripts/": {type: "support", requires_unit: false, requires_smoke: true}
+    "core/": {type: "critical", requires_unit: true, requires_smoke: true, requires_integration: false}
+    "api/": {type: "critical", requires_unit: true, requires_smoke: true, requires_integration: false}
+    "utils/": {type: "support", requires_unit: true, requires_smoke: false, requires_integration: false}
+    "scripts/": {type: "support", requires_unit: false, requires_smoke: true, requires_integration: false}
 
   # Coverage Thresholds (configurable)
   coverage_requirements:
