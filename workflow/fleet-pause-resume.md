@@ -101,5 +101,4 @@ First live execution 2026-07-02: pause broadcast `ac6cfe0f` (order serialized at
 
 ## Version history
 
-- **1.1 (2026-10-10)** — Pruning pass 7: §4 keeps the one step §2.1 leaves open (write the hold with the verb); its checkpoint, ACK, re-assert and resume steps repeated §2.1 rules 1, 3, 4 and §3 and are cut. No rule changed.
-- **1.0 (2026-07-02, María 🌸 Workflow Steward)** — Canonized from the first live fleet pause/resume run (Rick's request, same day): pause-order template (7 rules incl. self-sealing TTL, re-spin memento rule, manager chase-suspension), resume template, arbiter stop/start syntax, the 3 leak paths, session-side compliance steps, founding-run receipts.
+Full history: `docs/version-history/fleet-pause-resume.md`.
