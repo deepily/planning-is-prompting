@@ -12,7 +12,7 @@
 
 **Status**: v1 — markdown-driven, no orchestration code, no autonomous session spawning. The user manually launches 5 CC sessions; the manager assigns roles via DM.
 
-**Sister workflow** (added 2026-05-19): `/plan-authoring-cascaded` extends this cascade shape to plan-AUTHORING (pure greenfield + hybrid design-to-implementation). See `plan-authoring-cascaded.md`. ~60% of workflow guidance is now SHARED between review and authoring modes via `plan-review-cascaded-common.md` (extracted 2026-05-19). This document (`plan-review-cascaded.md`) retains the full text of shared sections for v1 backwards-compat; future v3+ revisions should consolidate so common.md is the sole source of truth and review-cascaded.md reduces to its review-specific bits. The sections marked `[SHARED]` below also live in common.md.
+**Sister workflow** (added 2026-05-19): `/plan-authoring-cascaded` extends this cascade shape to plan-AUTHORING (pure greenfield + hybrid design-to-implementation). See `plan-authoring-cascaded.md`. ~60% of workflow guidance is now SHARED between review and authoring modes via `plan-review-cascaded-common.md` (extracted 2026-05-19). This document (`plan-review-cascaded.md`) retains the full text of shared sections for v1 backwards-compat; future v3+ revisions should consolidate so common.md is the sole source of truth and review-cascaded.md reduces to its review-specific bits. The `[SHARED]` markers are in `plan-review-cascaded-common.md`; the sections they mark are shared with it.
 
 ---
 
@@ -349,7 +349,7 @@ When manager calls a vote per §5 turn cap, run Vote Mechanics Spec below, then:
   - Pauses the section in the dead persona's pipeline
   - Escalates to user via Trigger 7
 
-**Scheduler dead-man's-switch**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
+**Scheduler dead-man's-switch (retired with the interim scheduler, §6.4)**: if the manager doesn't respond to **3 consecutive scheduler pokes** (no commons activity from the manager within 1 min of each poke), the scheduler itself fires `notify()` to the user with `priority=high`, body roughly: "Cascade heartbeat: manager unresponsive after 3 consecutive pokes — possible stall". This makes manager-as-phantom recoverable without Workflow Steward intervention.
 
 **See also**: §Heartbeat Handling in the detailed Manager Behavior section below, which carries the steps that come after the ones above (advance the pipeline on new posts, return idle silently), the suppression-during-user-pause rule, the Logging paragraph and the retired scheduler's spec as historical record. ⛔ The external-scheduler *integration pattern* documented there is **RETIRED (2026-06-29)** and preserved as historical record only; do not implement it.
 
@@ -368,7 +368,7 @@ Per `manager_push_frequency = per_section_complete`, manager `notify()`s the use
 
 ## Step 7: Escalation to User
 
-Per `escalation_form = notify_immediate`, the manager escalates by calling `mcp__cosa-voice__notify()` with `priority=high` and the manager's own persona voice. Escalations happen for these 7 triggers (see Phase B7 for the full template):
+Per `escalation_form = notify_immediate`, the manager escalates by calling `mcp__cosa-voice__notify()` with `priority=high` and the manager's own persona voice. Escalations happen for these 7 triggers (see §Escalation Taxonomy Template for the full template):
 
 1. **Foundational finding** — load-bearing assumption invalidated
 2. **Cross-section conflict** — no single chain resolves it
@@ -481,7 +481,7 @@ The manager session loads this preamble at workflow launch (before reading the r
 >
 > **Persona voice**: your `notify()` pushes use your own assigned persona voice. In chorus mode the user identifies you by voice. Maintain this voice consistently.
 >
-> **Universal step zero** (added 2026-05-18 post-Run-1 workflow update): on **every** wake event — whether triggered by a worker DM, a scheduler heartbeat, a user response, or anything else — your first action is to **disk-read every active topic** (section topics, DM topics, the briefing topic). This is non-negotiable. The read-side `commons_read` API can truncate long entries; the disk version is always authoritative. Run 1 lost ~30+ min of detection-delay by relying on `commons_read` and missing reviewer posts that were intact on disk. Disk-read first, then act.
+> **Universal step zero** (added 2026-05-18 post-Run-1 workflow update): on **every** wake event — whether triggered by a worker DM, a scheduler heartbeat, a user response, or anything else — your first action is to **disk-read every active topic** (section topics, DM topics, the briefing topic). This is non-negotiable. The read-side `commons_read` API can truncate long entries (fixed after 2026-05-18, but disk-read remains defense-in-depth); the disk version is always authoritative. Run 1 lost ~30+ min of detection-delay by relying on `commons_read` and missing reviewer posts that were intact on disk. Disk-read first, then act.
 >
 > **Self-audit checklist** (added 2026-05-18 post-Run-1 workflow update): before composing any response, run the following internal check:
 >
@@ -489,7 +489,9 @@ The manager session loads this preamble at workflow launch (before reading the r
 > 2. Did I check each worker's last activity against `stall_threshold_minutes`? Any worker past threshold gets a probe DM.
 > 3. Is there a new worker post since my last wake? If yes, advance the pipeline per Step 5.
 > 4. Is there a stage-close I haven't classified yet? If yes, classify + post `kind: "manager_classification"` to the section topic.
-> 5. Is the cascade complete (all sections done + escalations resolved)? If yes, post `kind: "cascade_complete"` to the input-plan topic so the scheduler can transition out of active state.
+> 5. Is the cascade complete (all sections done + escalations resolved)? If yes, post `kind: "cascade_complete"` to the input-plan topic so the arbiter stops poking.
+>
+> Items 6 (blocked waiting on the user for more than 5 minutes) and 7 (post-cascade close-out), the spoken-headline contract and the manager-funnel lines are in `plan-review-cascaded-common.md`, the authoritative copy.
 >
 > Failure to perform step zero or the self-audit was the load-bearing operational failure of Run 1. Treat both as mandatory pre-flight.
 
@@ -797,6 +799,7 @@ usability_reviewer: option_A  — original approach reuses existing pattern; ref
 
 ## Version History
 
+- **2026.10.10** — Stale references (row `735e312f`, C1, C3, C4, C5, C6): the `[SHARED]` pointer names the common file's markers; the Phase B7 pointer names §Escalation Taxonomy Template; the truncation note carries the fix date; the dead-man's-switch is labelled retired and checklist item 5 says the arbiter stops poking; one line points to items 6 and 7 in common (the copy is not synced). C2, the trigger list, is held for Rick's ruling.
 - **2026.10.09 (Sam)** — Pruning pilot batch two, shortlist rows 20-24 (store row `681745a9`): the vote steps in §5 and §6.3, the tier definitions in §6.1, the DM-subset bounds in §6.2 and the heartbeat response steps in the Manager Behavior subsection point to Vote Mechanics Spec, Severity Classification Heuristics, DM-Subset Selection Heuristics and §6.4; the §6.4 pointer and the Heartbeat Handling banner no longer send the reader to each other. Net 21 non-blank lines.
 - **2026.06.29 (María 🌸 — Rick GO)** — Two changes: (a) **crutch-retirement** — §6.4 rewritten arbiter-driven + the daemon reference-impl fenced HISTORICAL (task `d0cffe5c`); (b) **manager floor obligations** — injected MUST manage-never-build + MUST staff-proactively into the cascade Manager preamble (task `c6af7fca`; mirrors `role-goals.md` v1.1, Rick-locked imperative wording). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
