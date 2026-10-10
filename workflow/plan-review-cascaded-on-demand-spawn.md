@@ -22,7 +22,7 @@
 **When NOT to use**:
 - Cast is already assembled and stable → no spawn needed; proceed directly to Step 5
 - Single-section plan (`prototype_scope < 2`) → cascade refuses anyway; spawn won't help
-- Off-peak window is closed AND the cascade is non-urgent → see §10 cost constraint
+- Skeleton crew is on → managers do not spawn; see §10
 
 ---
 
@@ -36,7 +36,7 @@ Before invoking `spawn_sessions`:
 4. **Project context known** — the `project` param sets the spawned session's working directory + which CLAUDE.md loads. Default is `"lupin"`; cascade-PIP work passes `project="planning-is-prompting"`
 5. **Task template ready** — a workflow-side prompt template that uses the supported tokens (`{role}` / `{section}` / `{scope_sentence}` / `{cascade_name}` / `{parent_topic}` / `{manager_session_id}`)
 6. **Workflow Steward attached** (optional but recommended for on-demand spawn scenarios — Steward observes the spawn + handles any decline-attempts per user-tap override rule)
-7. **Off-peak window** for live cascades sharing Rick's Max-plan rolling window — see §10
+7. **Skeleton crew is off** — see §10
 
 ---
 
@@ -306,13 +306,13 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ---
 
-## §10 — Cost / off-peak rule (standing constraint)
+## §10 — Who may spawn, and the cost
 
-**N concurrent reviewers share Rick's Max-plan rolling window.** Live cascades using `spawn_sessions` consume OAuth from the same pool that powers Rick's interactive sessions. The Track-T plan captures this as a standing constraint:
+**Spawning follows the skeleton-crew switch**, not the clock: with skeleton crew off, a manager spawns the seats it needs without asking; with it on, no spawning. If the cap leaves too few seats, the manager may ask the operator to raise it by just enough. The rule is in `manager-autonomy.md` §2.
 
-- **Off-peak window**: post-midnight (Rick's typical pattern). Schedule live cascades + multi-spawn runs during off-peak.
-- **Peak-window override**: if a cascade is urgent and falls in peak window, the Manager may proceed but Rick's interactive throughput suffers proportionally. Workflow Steward should surface the cost trade-off via `notify()` to Rick before the spawn fires.
-- **Dry-run available** (Track-T testing): `spawn_sessions(..., dry_run=True)` prints the tmux commands for N spawn slots without actually launching. Use for cascade rehearsal during peak windows.
+**N concurrent reviewers share Rick's Max-plan rolling window.** Live cascades using `spawn_sessions` consume OAuth from the same pool that powers Rick's interactive sessions.
+
+**Dry-run available**: `spawn_sessions(..., dry_run=True)` prints the commands without launching, for cascade rehearsal.
 
 **Cap enforcement**: the spawn-cap is configured in `lupin-app.ini` (Track-T item). If a `spawn_sessions(count=N)` exceeds the cap, the MCP rejects the call with `status: "cap_exceeded"` before any tmux launches.
 
@@ -320,6 +320,7 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.4 (2026-10-10, store row `9aadd0ac`, item 2, Rick's rulings)** — §10 and the two mentions in the use and prerequisite lists no longer carry the off-peak window, the post-midnight pattern or the peak-window override; spawning follows the skeleton-crew switch in `manager-autonomy.md` §2. The dry-run and cap-enforcement lines stay (both match the `spawn_sessions` description).
 - **v1.3 (2026-10-09, Extra 2, store row `9aadd0ac`)** — Pass-4 defect fixes. Item 1: the §8.2 and §8.3 re-spin dismissals now pass `respin_personas` (§5.3 replaces the seat with a different persona and is left as written). Item 5: §8.2 `session_ids` corrected to `session_names`. Item 9: §8.2 location paragraph no longer says a fresh memento overwrites the slot; it names the pointer/record split and the `write` refusal and `amend`. Item 8: §5.1, §8.1 and §8.2 say 9-element and the `io/mementos/<persona-slug>.md` slot, not 7-element and the retired `.claude-memento.md`. Item 7: §5.4 names `persona_state` and the do-not-address-by-name rule. Item 6: §7 persona-unavailable row now says what the tool does (persona-less child, never re-allocated; a trailing `*` accepts any free name).
 - **v1.2 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file or the tools' own descriptions: the HISTORICAL banner above §3.4's decision (the paragraph below carries the retirement), two "Operator implication" paragraphs, the example `spawn_sessions` result (the tool's Returns is the source; the paragraph under it now names the real keys), two steps of "What the MCP does" and the Result line, two `# Returns:` comments and the `session_names=None` default sentence. No instruction changed; the wrong-text items found in the same pass (§5.3 `respin_personas`, §10 spawn window, §8.2 `session_ids`) are filed separately.
 - **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
