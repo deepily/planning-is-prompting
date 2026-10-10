@@ -123,7 +123,7 @@ ruling that does not belong to this document. Row: `f4f43c25`.
 the three managers had a timer — Cheech, because he happened to build one. **The other two, myself
 included, sat idle for roughly 35 minutes while over or near the line.** Compliance had been left to
 three people separately remembering to look, which is precisely the rule-versus-detector failure
-§5's anti-patterns warn about, committed by the person writing the warning.
+that §1b states, committed by the person writing the warning.
 
 **So installation is part of adoption, not a follow-up.** It is set up in the same sitting that the
 policy is adopted, on that manager's slot in the stagger. A manager who has read this document and
@@ -204,7 +204,7 @@ reason anyone noticed was that a *different* manager's tick happened to print th
 
 ⇒ **A roster-wide tick can DETECT any seat; only the spawning manager can ACT on one.** Installing
 the timer everywhere fixes the first half. The second half needs the spawn lineage to be recorded
-and reachable — see § *Seat ownership ≠ row ownership*.
+and reachable — see §4b, *Two ownerships, and a reader who checks one will believe the other is covered*.
 
 ### ✅ BUILT 2026-08-16 — the reflex above is now a backstop, not the control
 
@@ -235,7 +235,7 @@ because their names happened to hash to the same offset. The installer now reads
 in use — from the crontab *and* from the batch it is writing — and steps to the next free minute.
 
 **The reflex above still applies** as a backstop for a box where the hook has not been wired, and
-**§ANTI-PATTERN applies to it too: a manager who notices the entry is missing and does not add it
+**The same holds for it: a manager who notices the entry is missing and does not add it
 has left the fleet unwatched.**
 
 ### The tick script must survive a null
@@ -520,7 +520,7 @@ context it was trying to discard anyway.
 ### 4a. Self-clear — the seat re-spins itself
 
 **The mechanism already exists and was not built for this.** `inject_qualifier_via_tmux()`
-(`lupin/src/lupin_cli/claude_code/hooks/lib/hook_common.py:992`) resolves a session id to a tmux
+(`lupin/src/lupin_cli/claude_code/hooks/lib/hook_common.py`) resolves a session id to a tmux
 session through the session bridge and types text into that session's input as first-class user
 input. The load-bearing property is `start_new_session=True` plus a leading `sleep`: **the injecting
 process is detached and outlives its caller.** So a session can schedule an injection into its own
@@ -562,8 +562,8 @@ swallowed or land in the wrong place); a **one-shot marker** cleared at SessionS
 injections cannot clear twice — the second would destroy the freshly rehydrated context; and treat a
 failed clear as a **no-op you retry**, never as done.
 
-**Status**: the mechanism is proven; the agent-callable verb is filed with lupin's MCP surface (Mr
-Radio, row `9e0678f6`) — that is his plumbing, not this repo's. Reasoning, risk table and the
+**Status**: the mechanism is proven and the verb is built: `self_respin` (row `9e0678f6`, lupin
+`src/lupin_mcp/cosa_voice_mcp.py`). Reasoning, risk table and the
 existing-code citations: `src/rnd/2026.08.13-manager-self-respin-mechanism.md`.
 
 ### The fallback: succession
@@ -784,7 +784,7 @@ verified over the thing you wrote before**, which is the same discipline that ca
 correction this day.
 
 **One of the two things worth building now exists.** The `/clear`-into-a-named-pane helper is §4a —
-proven mechanism, verb pending — and it removes the deadline for the *manager's own* seat rather than
+proven mechanism, verb built (`self_respin`, row `9e0678f6`) — and it removes the deadline for the *manager's own* seat rather than
 asking a tiring session to judge the moment correctly. The other, a reap/respawn path authorised by
 something other than spawn lineage, is still open and still worth building: **self-clear saves the
 manager, not the orphans it leaves.** Until that exists, this recovery move stands. **But the fleet
@@ -913,6 +913,7 @@ predictable event can have.
 
 ## Version History
 
+- **2026.10.10 (row `735e312f`, stale references C1 to C5)**: §1b is named as the source of the rule-versus-detector point; the seat-ownership cross-reference points at §4b; the crontab-entry sentence no longer cites a §ANTI-PATTERN label; the `hook_common.py` line number is dropped; the `self_respin` verb is recorded as built. C6, the tick cadence, is held for Rick's ruling.
 - **2026.08.13 (María 🌸)**: Initial version. Written on Rick's AFK-day broadcast `69e577a7` — 15-minute
   tick, 50% threshold, memento → reap → re-spin, and the manager self-re-spin limit stated as a
   verified mechanical fact rather than a preference.
