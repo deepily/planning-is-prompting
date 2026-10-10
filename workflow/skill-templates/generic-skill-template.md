@@ -161,7 +161,7 @@ List things to avoid:
 
 ### When to Use references/
 
-Create a `references/` directory when:
+Create a `references/` directory (and link it from See Also) when:
 - Detailed examples exceed 50 lines
 - Multiple sub-topics each need extensive documentation
 - You have code snippets, schemas, or configurations to include
@@ -198,18 +198,3 @@ When writing your description, include domain-specific trigger keywords:
 
 **Performance:**
 - optimize, cache, performance, latency, throughput, profile
-
----
-
-## Validation Checklist
-
-Before finalizing your skill:
-
-- [ ] Name follows format (lowercase, hyphens only)
-- [ ] Description includes trigger phrases
-- [ ] Description under 1024 characters
-- [ ] SKILL.md under 500 lines
-- [ ] Core concepts clearly explained
-- [ ] Caveats documented (most valuable content!)
-- [ ] Anti-patterns listed
-- [ ] References linked if >200 lines
