@@ -67,7 +67,7 @@ Plus **inline capture** into the relevant doc when one exists (e.g. a `§ Ratifi
 
 ---
 
-## Rules baked in (do not skip)
+## Rule baked in (do not skip)
 
 - **Visibility** — when running attention-demanding asks, the asks themselves reach the user (TTS); record as you go so progress survives an interruption.
 

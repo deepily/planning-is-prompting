@@ -54,7 +54,7 @@ Two layers, never collapsed (ratified Q6):
 | Reviewer | spin-up crew | `workflow/swe-team-roles.md` § Reviewer |
 | Tester | spin-up crew | `workflow/swe-team-roles.md` § Tester |
 
-The per-role **charter text** is the durable artifact each spawned member auto-loads on spin-up — the **"load document"** (ratified Q4: one canonical `workflow/swe-team-roles.md`, a section per role; the spawn slices the relevant role section into that member's brief). The required shape + content of that document is specified in **§7** below.
+The per-role **charter text** is the durable artifact each spawned member auto-loads on spin-up — the **"load document"** (ratified Q4: one canonical `workflow/swe-team-roles.md`, a section per role; the spawn slices the relevant role section into that member's brief). The required content of that document is specified in **§7** below.
 
 ---
 

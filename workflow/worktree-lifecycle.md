@@ -79,7 +79,7 @@ The janitor runs on the arbiter (`make_worktree_janitor_fn`, `fleet_arbiter_loop
 | `wip_commit_failed` | Uncommitted edits could not be saved |
 | `broken_or_not_a_worktree` | Git cannot operate in it; the janitor does not `rm` such trees |
 
-**What counts as disposable (never a blocker)**, so a refusal is about real data: the build and vendored directories and the ignored files and prefixes in the list named at the end of this section, plus:
+**What counts as disposable (never a blocker)**, so a refusal is about real data: the build and vendored directories and the ignored files and prefixes in the list named below, plus:
 - a seat's own run output: `io/test-suite/`, `io/swe-team/`, `io/claude_code_hooks/`, `tmp/`, `.claude-session.md`
 - memento records and pointers are handled by a separate memento check in the same function
 
