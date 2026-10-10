@@ -72,22 +72,14 @@ The janitor runs on the arbiter (`make_worktree_janitor_fn`, `fleet_arbiter_loop
 
 **It reaps a tree when all of these hold**: the tree is under the repo's `.claude/worktrees`, is not the main checkout, is not locked (or is a seat tree whose seat is provably gone), and its newest file is older than the threshold.
 
-**It refuses, in the drain (`drain_then_remove`)**:
+**It refuses, in the drain (`drain_then_remove`)**. Its docstring in `worktree_reaper.py` lists `ignored_files_present`, `ignored_check_failed` and `rescue_branch_failed` among the `skipped_reason` values; two more are only in the code:
 
 | Refusal (`skipped_reason`) | Meaning |
 |---|---|
-| `ignored_files_present` | The tree holds git-ignored files that are somebody's data, and removal would delete them without warning. Nothing is touched: no rescue branch, no WIP commit |
-| `ignored_check_failed` | The ignored files could not be listed; cannot prove safe, so refuse |
-| `rescue_branch_failed` | A detached tree's rescue branch could not be made; removing it would orphan its commits |
 | `wip_commit_failed` | Uncommitted edits could not be saved |
 | `broken_or_not_a_worktree` | Git cannot operate in it; the janitor does not `rm` such trees |
 
-Skipped before the drain: trees outside the sandbox lane, the main tree, locked trees, live seats, trees younger than the threshold.
-
-**What counts as disposable (never a blocker)**, so a refusal is about real data:
-
-- build and vendored directories: `node_modules`, `.venv`, `__pycache__`, `dist`, `build`, `coverage`, `.dart_tool`, `.gradle` and similar
-- files: `.coverage`, `.DS_Store`, `local.properties`, `pubspec.lock`, `gradlew.bat`, `*.pyc`, `*.pyo`; and families by prefix: `.coverage-*`, `.coverage.*`, `.flutter-plugins*`, `GeneratedPluginRegistrant.*`
+**What counts as disposable (never a blocker)**, so a refusal is about real data: the build and vendored directories and the ignored files and prefixes in the list named at the end of this section, plus:
 - a seat's own run output: `io/test-suite/`, `io/swe-team/`, `io/claude_code_hooks/`, `tmp/`, `.claude-session.md`
 - memento records and pointers are handled by a separate memento check in the same function
 
@@ -132,17 +124,7 @@ The 2026-09-18 manual cleanup tagged every branch it dropped before deleting it 
 
 ## 6. The Monday census
 
-`workflow/scripts/worktree_hygiene_report.py --notify`, crontab **Mondays 09:00** (line tagged `# worktree-hygiene-report`). **Report-only: it never deletes or moves anything.** It sends **one** card, and only if it found something. It looks, per repo, for:
-
-| Finding | Meaning |
-|---|---|
-| Stale worktrees | not locked, older than 48h (age from the `.git` pointer's mtime) |
-| Dead registrations | git says the directory is gone. Fix: `git worktree prune` |
-| Merged leftovers | branches merged into the current branch that the sweep should have removed: any listed are its misses |
-| Stale unmerged | not merged, last commit older than 7 days. Each needs a **merge / salvage / drop** ruling from someone |
-| **Unledgered branches** | branches the guard never saw, made by going around it. Only reported once the guard is installed. `wip` names are **not** skipped here, since a forged `wip-v…` is exactly the case |
-
-A clean repo prints one line with its counts. Exit codes: 0 clean · 1 findings · 2 could not look · 3 findings and delivery failed.
+`workflow/scripts/worktree_hygiene_report.py --notify`, crontab **Mondays 09:00** (line tagged `# worktree-hygiene-report`). **Report-only: it never deletes or moves anything.** It sends **one** card, and only if it found something. Its finding kinds, clean line and exit codes are in the script's docstring. One kind is not obvious from its name: **unledgered branches**, branches the guard never saw, made by going around it. They are only reported once the guard is installed, and `wip` names are **not** skipped here, since a forged `wip-v…` is exactly the case.
 
 The guard has its own census: `python3 workflow/scripts/branch_guard.py census --repo <path>`. Also `install` and `status`. The hook is installed today in all three repos (`status` read `current` on 2026-09-29).
 
@@ -175,6 +157,8 @@ The guard has its own census: `python3 workflow/scripts/branch_guard.py census -
 | lupin commits `484470f40`, `6df8aefeb`, `7766e1013`, `e72b7f302` | the 2026-09-29 janitor changes (row `747199ef`) |
 
 ---
+
+*Version 1.2 (2026-10-10) — §4 and §6: pruning pass 6. Cut three refusal rows the `drain_then_remove` docstring lists (the two it does not list stay), the skipped-before-the-drain line, two disposable-file bullets the `ARTIFACT_*` constants carry, and the census finding table and exit-code line the script's docstring carries. No rule changed.*
 
 *Version 1.1 (2026-09-29) — §3 and §7: the PreToolUse guard landed (lupin `7267f7ea1`, row `3a592920`), so the four routes around the hook are now denied before a command runs.*
 
