@@ -287,7 +287,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 
 1. **REFUSES** (exit 3) if the record path already exists. *The overwrite is not spellable.*
 2. **Repairs `.gitignore` itself** if the record path would be visible to git, and refuses (exit 4) if it cannot. *A committed memento is a memento written less honestly — see §3.5.*
-3. **Stamps the record's own provenance as line 1** — `<!-- memento-record: persona=… session_id=… written_at=… slot=… -->` — and nothing else. It no longer injects `**Written**` / `**Written by**` body lines (v2.1). **Element-1 provenance does not depend on the author having remembered it.**
+3. **Stamps the record's own provenance as line 1** — `<!-- memento-record: persona=… session_id=… written_at=… slot=… -->` — and nothing else. It no longer injects `**Written**` / `**Written by**` body lines (v2.1). **Element-1 provenance does not depend on the author having remembered it.** The header is an HTML comment, so a rendered markdown view (the doc viewer) now shows no identity; a raw read shows line 1.
 4. **Writes the mirror in the same call**, then **verifies by execution**: all three files exist and `sha256(record) == sha256(mirror)`. **A record never lands unmirrored.**
 
 **To AMEND a record** — you learned something after you wrote it, or you must correct it:
