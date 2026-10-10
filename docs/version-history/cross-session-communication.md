@@ -1,0 +1,13 @@
+# Version history: workflow/cross-session-communication.md
+
+Moved out of `workflow/cross-session-communication.md` (lines 864-870 at `d73f36b`) without change. Newest entry first; add new entries at the top of the list below.
+
+---
+
+## Version history
+
+- **2026-10-10** — **Stale references fixed** (row `735e312f`, C1 to C5). Receive-side framing is recorded as shipped and the "until Phase 3 lands" workaround is gone; the tool-description and `instructions` rows are shipped (the doc-footer cross-reference stays open); the commons path matches §1; the ask example uses `commons_ask_async`. This entry also covers sections added without one: §4.5 and §4.6 (2026-07-21), §1.6 (2026-07-28) and §1.5.1a to c (2026-08-17 to 2026-08-30).
+- **2026-10-09** — **§4.6 no longer retells §4.5's second direction** (Sam, pruning pilot batch two, shortlist row 19, store row `681745a9`): the (b) paragraph and the SPEC / DESCRIPTION block are one pointer to §4.5; the "believe yourself" sentence stays. Net 5 non-blank lines.
+- **2026-06-15** — **DM surface migrated to `dm_send`** (cosa-voice token-reduction sprint, Phases 1–2 shipped Lupin-side). §1 surfaces table + quick tool reference + §1.5 (send / receive / threading) rewritten around `dm_send`: inline-body push (~204 vs ~3,700 tokens, ~18× cheaper), `message_id`/`thread_id` threading, symmetric reply (no watcher, no `expect_reply`). `commons_send_to` / `commons_ask_async` DM-mode marked **deprecated** → migrate to `dm_send`. New caveats: persona resolver is case/punct-tolerant but **not accent-folding** (`"María"` fails, `"maria"` works); receive-side framing is **Phase 3 WIP** (inbound DMs arrive as raw body until it lands). §6.5 bug-filing pattern + §7 status table updated. Authored by María 🌸 (session `6de861be`).
+- **2026-05-16** — Major refresh. **Two surfaces → three surfaces** (broadcast + topic-broadcast + DM). New §1.5 covers DM mechanics (send, receive, threading, choice-of-channel) for the now-shipped DM extension (`commons_send_to`, `recipient_persona`) and Phase 3 push-mode. New §6.5 documents proactive cross-session collaboration patterns — the DM + durable-queue bug-filing pattern verified live this date, paired complementary-surface collaboration, and Persona-First Mandate compliance under chorus. §7 follow-ups table flipped to a status table reflecting Lupin's `f4e0370` commit (Phase 3 push-mode + DM extension + observability fixes all shipped this date). Authored by Tiberius 🌑 (session `b714e138`).
+- **2026-05-14** — Initial guidance. Three-tier autonomy + reserved-core topic vocabulary + routing-based broadcast receipt + four-layer signaling. Authored against Lupin v0.1.7 Phase 1+2 shipped infrastructure.
