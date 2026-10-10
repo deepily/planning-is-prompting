@@ -3339,7 +3339,7 @@ Detailed Diff: plan-session-start.md
 +   - Location: planning-is-prompting → workflow/session-start.md
 +   - This is the ONLY authoritative source for ALL session initialization steps
 +   - Do NOT proceed without reading this document in full
-+   - The canonical workflow contains: Preliminary notification, an optional step checklist, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
++   - The canonical workflow contains: Preliminary notification, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
 
 -4. Execute the following:
 -   - Load configuration files
@@ -4483,6 +4483,8 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ---
 
 ## Version History
+
+**v1.4** (2026.10.09) - Item 21 (store row `9aadd0ac`): the sample wrapper diff no longer lists "an optional step checklist" among the contents of the canonical session-start workflow, which has no such step.
 
 **v1.3** (2026.10.09) - Pruning pilot, shortlist row 9 (store row `681745a9`): the testing and planning CLAUDE.md templates, which repeated the minimal template and its identical Session Workflows sections, are now variants listing only their additions. The planning variant's own sections are kept.
 
