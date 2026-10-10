@@ -73,8 +73,7 @@ Short form (what actually goes in the broadcast box), pointing at the full order
 
 ## 4. Session-side compliance (what a session receiving the order does)
 
-1. Reach the nearest safe checkpoint (never leave a broken compile / half-written file).
-2. **Write the hold with the VERB, not by hand:**
+1. **Write the hold with the VERB, not by hand** — the rest of what a session does is §2.1:
 
    ```bash
    python3 $LUPIN_ROOT/src/lupin_cli/claude_code/hooks/lib/heartbeat_hold_io.py write \
@@ -93,9 +92,6 @@ Short form (what actually goes in the broadcast box), pointing at the full order
    **Re-running `write` is a REFRESH, not a refusal** — it replaces your hold in place. A reader expecting memento-style immutability will reach for a hand-edit instead; that is the failure this step exists to prevent.
 
    *Schema reference only — **NOT the instruction**, do not hand-author it:* the artifact is `.heartbeat-hold-<FULL-session-id>.json` carrying `work_owed`, `awaiting`, `ttl_seconds`, `held_at`, `reason`. Recorded so a reader can recognize and debug one, never so a reader can write one.
-3. ACK once (one line), then silence.
-4. On ANY wake: re-assert the hold; do not resume; do not treat a poke as permission.
-5. On the user's resume broadcast: rewrite the hold to the normal working form, resume the board as-was, managers re-verify crew before re-driving.
 
 ## 5. Founding run (receipts)
 
@@ -105,4 +101,5 @@ First live execution 2026-07-02: pause broadcast `ac6cfe0f` (order serialized at
 
 ## Version history
 
+- **1.1 (2026-10-10)** — Pruning pass 7: §4 keeps the one step §2.1 leaves open (write the hold with the verb); its checkpoint, ACK, re-assert and resume steps repeated §2.1 rules 1, 3, 4 and §3 and are cut. No rule changed.
 - **1.0 (2026-07-02, María 🌸 Workflow Steward)** — Canonized from the first live fleet pause/resume run (Rick's request, same day): pause-order template (7 rules incl. self-sealing TTL, re-spin memento rule, manager chase-suspension), resume template, arbiter stop/start syntax, the 3 leak paths, session-side compliance steps, founding-run receipts.
