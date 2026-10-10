@@ -137,11 +137,11 @@ Added to the handoff light-review as criterion 7. Each is a checkable claim; say
 
 - `plan-authoring-cascaded.md` §Step 9 — the manifest is Artifact 4 of the handoff package.
 - `plan-review-cascaded.md` §Step 9 — the manifest accompanies the revision-handoff doc.
-- `plan-review-cascaded-common.md` §Step 9 — light-review criterion 7.
 - `p-is-p-01-planning-the-work.md` Phase 3 Step 5 — multi-phase plans write a manifest instead of a hand-made list.
 - `task-store-discipline.md` — the rows the importer creates are ordinary store rows and follow its transition and receipt rules.
 
 ## Version history
 
+- **2026.10.10** — Pruning pass 6: cut one cross-reference bullet whose pointer (`plan-review-cascaded-common.md` §Step 9, criterion 7) is already given earlier in the file. No rule changed.
 - **2026.10.02** — The importer accepts a section number in front of a phase heading and an optional hyphenated phase `label` (row `3ad36dc9`, asked by Cheech: plan 1's headings read `## 3. Phase 0: …` and plan 2's phases are `W-A` to `W-H`).
 - **2026.10.01** — Initial version, approved by Rick the same day ("Approve, then build the importer"). Rick's voice ruling of 2026-10-01 (stubs in one shot, bulk import, bulk approve, "Plan N · Phase X of Y · Step X of Y", no `P1` as a plan tag).
