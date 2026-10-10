@@ -201,8 +201,8 @@ ask_multiple_choice(
         "header"      : "Repos",
         "multiSelect" : True,
         "options"     : [
-            {"label": repo_name, "description": f"{commit_count} commits in the window"}
-            for repo_name, commit_count in discovered_with_metadata
+            {"label": repo_name, "description": "has commits in the window"}
+            for repo_name in discovered_repos
         ]
     }],
     priority        = "high",
@@ -237,7 +237,7 @@ The confirmation gate is bypassed when:
 
 ### Recommendation Mandate compliance
 
-Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `N commits in the window`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
+Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `has commits in the window`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
 
 ---
 
@@ -477,7 +477,7 @@ This is the durable artifact of the global rollup — analogous to the per-branc
 
 ## Version History
 
-- **2026-10-10**: Stale references (row `735e312f`, C2 to C5): the confirmation gate and its options describe repos by commit count in the window, not by a CSV and its mtime; `--output` choices are `console`, `json`, `csv`; the bash window normalization leaves a bound that already has a time as it is, as the Python does; §0.1 says the aggregator pins bare dates itself and the advice stays for git and the discovery probe.
+- **2026-10-10**: Stale references (row `735e312f`, C2 to C5): the confirmation gate and its options describe repos by having commits in the window, not by a CSV and its mtime; `--output` choices are `console`, `json`, `csv`; the bash window normalization leaves a bound that already has a time as it is, as the Python does; §0.1 says the aggregator pins bare dates itself and the advice stays for git and the discovery probe.
 - **2026-10-09**: Pruning pilot batch two, shortlist rows 31-43 (store row `681745a9`), Sam: the When-to-use callout moves below its table (closing the gap that rendered the `--repos` and `--plot` rows as plain text); the zero-repos warnings keep one sentence and the §4.2 pointer; Step 2's failure table points to Step 4, to which its two missing rows move; the header's sister-doc path is corrected and the cross-references point to the header. Net 32 non-blank lines.
 - **2026-07-31**: **Spoken-verdict mandate now REQUIRES added/deleted alongside net, always** (Rick — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only was already banned from the terminal/abstract render (Step 3 has always shown Added/Deleted/Net columns); this closes the one place net-only had survived — the **spoken** line. Updated the compliant-verdict examples and the `notify()` code sample in Step 3, plus the slash wrapper's Step 5 instruction, to always state all three numbers. Net-only spoken line is now an explicit anti-pattern.
 - **2026-07-13**: **THE ROLL-UP NOW COMPUTES FROM GIT.** Three defects, one rewrite (lupin `1ccc05b5`, Mr Radio 🦉; PIP-side doc + slash wrapper by María 🌸; found while investigating Rick's *"the global roll-up discrepancy from yesterday"*).
