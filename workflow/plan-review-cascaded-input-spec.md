@@ -17,13 +17,6 @@ The cascaded plan-review pipeline (`/plan-review-cascaded`) ingests a planning d
 
 The cheapest remediation is the one you avoid by producing a cascade-ready output **upstream**, during planning. This doc is the specification of that target shape.
 
-**The two-layer contract** (Mr Radio's §4 split):
-
-- **§2a Planner-pre-satisfiable** — 4 properties the planner can produce directly. PUSH these upstream into the planning workflow.
-- **§2b Intrinsically Step-0** — 2 properties the Manager produces from the planner's sliceable breakdown. KEEP cascade-side.
-
-A planner can satisfy §2a fully and never see §2b. The Manager handles §2b at Step 0.
-
 ---
 
 ## §2 The contract
@@ -188,8 +181,6 @@ After the planner submits a plan to the cascade, the **Step 0 light-review** run
 | Plan arrives with 1-2 gaps → Manager fixes (1 turn) → PASS | 1 revision turn (~15-30 min) | 0 attention units |
 | Plan arrives with severe gaps → STILL FAIL → escalation | 1 revision turn + escalation overhead | 1-2 attention units |
 
-**The cheapest remediation is the one you avoid by satisfying the spec upstream.** A planning doc that arrives cascade-ready costs zero Manager revision turns and zero user attention. The Cascade-Readiness guidance in `workflow/p-is-p-01-planning-the-work.md` §Phase 3 is the upstream mechanism.
-
 ---
 
 ## §6 Worked example — the cascade-notif-sync planning output
@@ -278,7 +269,6 @@ Estimated implementation hours: §A 3h / §B 3h / §C 4h / §D 2h. Largest-small
 
 ### Empirical anchors
 
-- **`src/rnd/2026.05.22-cascade-readiness-in-p-is-p-docs.md` §4** — the original Mr Radio-ratified spec from which this doc is promoted
 - **`io/post-games/2026.05.22-cascade-notif-sync-post-game.md` (deleted 2026-10-03 with the old corpus)** — the cascade-notif-sync Run that anchors §6 worked example
 - **`src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`** — the PG-5 root-cause analysis that informs the Recon scope-applicability lesson in §4 criterion 3
 - **`io/post-games/2026.05.22-cascade-run-5-observer-log-post-game.md` (deleted 2026-10-03 with the old corpus)** — the Run 5 observer log + post-game
@@ -286,5 +276,7 @@ Estimated implementation hours: §A 3h / §B 3h / §C 4h / §D 2h. Largest-small
 ---
 
 ## §8 Version History
+
+- **v1.1 (2026-10-09, Sam for María 🌸 — pruning pass 5, reviewed by John)** — Cut §1's preview of the two layers (the §2 headings and the note after §2b say it), the §5.1 closing paragraph (§1 and the table say it) and one provenance bullet repeated from the Status line. No rule changed.
 
 - **v1.0 (2026-05-28)** — Initial promotion from `src/rnd/2026.05.22-cascade-readiness-in-p-is-p-docs.md` §4 (Mr Radio-ratified contract) into a canonical workflow-doc home. Adds §3 planner-facing checklist view, §4 validation rubric (lifted from common.md §Step 0), §5 remediation flowchart, §6 cascade-notif-sync worked example. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer) at Rick's voice-msg request.
