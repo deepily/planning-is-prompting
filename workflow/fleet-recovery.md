@@ -100,11 +100,10 @@ The wipe itself costs nothing. **Acting on stale inherited beliefs is what costs
 
 ## Related workflows
 
-- `memento-management.md` — the fallback when a transcript is genuinely gone
 - `manager-autonomy.md` — the standing authority under which a manager respawns its crew
-- `session-start.md` — Step 4.7, the owed-work reconcile a resumed session still owes
 
 ---
 
 **Version history**
+- **v1.1** (2026-10-10) — Pruning pass 7: cut two Related-workflows bullets whose pointers (`memento-management.md`, `session-start.md` Step 4.7) are given in §1 and §6. No rule changed.
 - **v1.0** (2026-07-13) — Created after a whole-fleet tmux wipe took 7 sessions simultaneously. All 7 transcripts recovered intact; zero work lost. Procedure verified end-to-end (`--dry-run` confirmed the launcher needs no modification).
