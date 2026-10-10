@@ -433,7 +433,6 @@ cp planning-is-prompting/.claude/commands/p-is-p-02-documentation.md \
 ### What It Does
 
 Comprehensive end-of-session ritual that:
-- Creates TODO list for tracking progress
 - Checks history.md health and archives if needed
 - Updates session history with date/summary/TODOs
 - Updates planning and tracking documents
@@ -2449,6 +2448,8 @@ If you're creating new workflows and need to create slash command wrappers for t
 ---
 
 ## Version History
+
+**v1.7** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B6, beyond the 131 lines Rick approved: removed "Creates TODO list for tracking progress" from the Session-End Workflow "What It Does" list. That line describes `/plan-session-end`, whose workflow has no step that creates a TODO list (its Step 0 is gone).
 
 **v1.6** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B5: removed the two "Step 0: Create ... TODO list" bullets from the update and installation flows, because the wizard sections they named are gone.
 
