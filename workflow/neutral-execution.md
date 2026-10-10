@@ -48,7 +48,6 @@ Two scenarios. **They are different, and collapsing them is exactly the error ab
 
 **So:**
 
-> - **Test lives in the tree under test** → cwd is irrelevant; **`PYTHONPATH` selects the code.**
 > - **Test copied OUT** → the destination must have **(a) no conftest on the collection path** — that is what buys the honest RED — **and (b) be a registered project** — that is what keeps MCP alive.
 >
 > ### `projects/scratchpad/<session_id_8>/` is the only place that is BOTH.
@@ -64,8 +63,6 @@ Two scenarios. **They are different, and collapsing them is exactly the error ab
 
 > **`/tmp` delivered neutrality by accidentally destroying registration.**
 > Nothing about being neutral ever required being *unknown to the platform.*
-
-**The genuinely wrong part of the old guidance was never the neutrality** — it was that the recipe named **`/tmp`** as the neutral dir. *That* is the trap, and that is what is fixed here.
 
 ---
 
@@ -127,9 +124,6 @@ A **copied-test worktree verdict** run from a neutral dir **IS** trustworthy —
 
 ## 7. The laws that govern all of it
 
-> ### A FINDING IS EVIDENCE ONLY ABOUT THE CASE IT ACTUALLY MEASURED.
-> *(Earned by breaking it — Rio measured one scenario and generalized to all; María graduated it inside the hour. **The over-broad claim was the one that felt best.**)*
-
 > ### AN OBSERVATION IS EVIDENCE ONLY IF IT COULD HAVE COME OUT OTHERWISE.
 > A green that could not have been red, and a red that could not have been green, are **the same bug**: an instrument with one moving part missing. **Every probe needs a negative control** — one that reproduces the failure class *without* triggering it.
 
@@ -137,8 +131,6 @@ A **copied-test worktree verdict** run from a neutral dir **IS** trustworthy —
 > *(Earned by breaking it — Rio: "I had `quiet for >10 min — likely dead` printed in my own terminal, and filed 'THE LIVE OFFENDER — still running' as urgent, with a colleague's name on it. **The guard fired and I disabled it.** That is worse than never looking.")*
 
 > ### A LISTING IS NOT A CAPABILITY, AND A SENDER_ID IS NOT A SESSION.
-
-> ### RIGOR FAILS WHERE RELIEF LIVES — AND HARDEST WHERE THE SENTENCE IS QUOTABLE.
 
 > ### VIRTUE IS NOT THE CONTROL VARIABLE — BEING CHECKED IS.
 > *(Eight errors, four sessions, one night. **Not one was caught by the person who made it** — except the last, which Rio caught on himself, and only because he went looking for something else. Every one of us was being careful throughout.)*
@@ -166,5 +158,6 @@ Standing practice (`accumulate-pattern-before-graduating-doctrine`, Rick 2026-06
 ---
 
 **Version history**
+- **v1.2** (2026-10-10) — Pruning pass 6: cut two §7 laws that §0 already states, the "tree under test" bullet the table's row says, and the closing paragraph naming `/tmp` as the retired recipe. No rule changed.
 - **v1.1** (2026-07-13) — **Retracts v1.0's central claim.** The neutral directory is NOT a ritual; it is load-bearing for **copied-out** tests and inert only when the test lives in the target tree. §6's blanket distrust of past verdicts: **CUT**. All three clauses stand; the rationale is corrected. Rio refuted his own headline against his own memory; María retracted within the hour. Adds §8 — the Steward graduated a single-session finding and this is what it cost.
 - **v1.0** (2026-07-13) — Created after the `/tmp` MCP storm. **Central claim was a false generalization. Superseded the same night.**
