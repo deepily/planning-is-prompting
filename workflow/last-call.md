@@ -53,8 +53,6 @@ That second check is the whole redundancy. A missing schedule looks exactly like
 
 ## 4. Stage 1 — last call (soft)
 
-**Meaning**: stop starting, start finishing.
-
 | Do | Do not |
 |---|---|
 | finish the step in flight, reach a safe checkpoint | start a new investigation, spawn a new worker |
@@ -155,7 +153,6 @@ Three failure modes, all of them already measured in this fleet:
 ## 8. Failure and partial completion
 
 - **Report and carry, never block.** Blocking at closing time with the operator AFK produces a stalled seat and no report at all — the worst of both.
-- **A named, receipted "not done, because X" is strictly more useful than a blank.**
 - **An unmet deliverable becomes a store row** before the seat reports it, so it is owed work somebody can see tomorrow.
 - **A failed DM is not a delivered DM.** The summary card names every seat the bell could not reach, with its HTTP status.
 - **A bell that reached nobody did not ring.** Zero delivered seats, whether every poke was refused or a wildcard resolved to no one, is reported as `poked: false, reached_nobody: true`. It goes to the operator at **urgent** priority and exits 4, and `status` shows it as a failed fire. On 2026-09-26 the bell reached no one and still logged `poked: true` (row d92dc473).
@@ -213,17 +210,9 @@ python3 workflow/scripts/last_call.py cancel --row <uuid>
 
 🔴 **Cron's environment is nearly empty, so the line carries its own.** At install, `LUPIN_ROOT`, `PLANNING_IS_PROMPTING_ROOT`, `LUPIN_DEV_EMAIL` and every `LAST_CALL_*` variable that is set are written into both cron lines as `NAME=value` prefixes. This is the same pattern the disk-hygiene lines use. **`set` refuses** when the API key cannot be read or no operator is configured (`LAST_CALL_OPERATOR` or `LUPIN_DEV_EMAIL`), because install time is the one moment a human is watching. Without this, the 2026-09-26 bell had no key, answered 401 to everything, and resolved "all managers" to nobody (row d92dc473).
 
-**Safety**: removal matches **only** a line whose trailing comment is exactly `# last-call-<8 hex>-wrap` / `-close`. Every other crontab line — the context ticks, the operator's own jobs — is structurally unmatched, not carefully avoided. The crontab is backed up before any write, and **no backup means no write**.
-
 ### 🔴 The shared crontab lock
 
-`crontab -l` → edit → `crontab -` is a **read-modify-write**, and two scripts in this repo both perform it on schedules that overlap by construction: `install_context_pressure_tick.py` runs at **every** SessionStart including after a `/clear`, and `last_call.py` runs at declaration and again at each bell. With no lock the ordinary interleaving — A reads, B reads, A writes, B writes — leaves **A's lines silently gone**, and nothing goes red: the crontab is still valid, still parses, still runs. *A missing monitor looks exactly like a quiet one*, which is the failure `install_context_pressure_tick.py` was itself written to close. Found by Mr. Radio 🦉 reviewing `feeec70`.
-
-Both scripts now take one exclusive `fcntl.flock` across the **whole read-and-write span** — a lock held only over the write still loses lines, because the loser already holds a stale snapshot by the time it asks. **On timeout the operation aborts and says so; it never falls through and writes anyway**, which would be the race with extra steps.
-
-⚠️ **A lock is the one thing that must not be duplicated.** Two copies that disagree about which file to lock are not a lock — they are two processes each holding their own and taking turns to feel safe. The path is therefore decided in exactly one place, `workflow/scripts/crontab_lock.py`: `CRONTAB_LOCK_PATH`, else `$PLANNING_IS_PROMPTING_ROOT/io/crontab.lock`, else `~/.claude/crontab.lock`. **That last fallback is load-bearing** — the installer runs from a SessionStart hook and the tick runs from **cron, whose environment is bare**, so an unset variable must not send the two processes to different files. A `$HOME` path is the same string in both, with no environment at all.
-
-This closes the race between the two automated writers. A `crontab -e` typed by hand takes no lock and never will.
+Both crontab writers (`install_context_pressure_tick.py` and `last_call.py`) take one exclusive `flock` around the whole read-modify-write, so neither can silently delete the other's lines. The reasons, the lock-file path and its fallbacks, and the abort-on-timeout rule are in the `workflow/scripts/crontab_lock.py` docstring; a hand-typed `crontab -e` takes no lock.
 
 **Tests**: `workflow/scripts/test_last_call.py` and `workflow/scripts/test_crontab_lock.py` — run `pytest workflow/scripts/test_last_call.py workflow/scripts/test_crontab_lock.py -q`. No case in either touches the real crontab, the real store or the real notification server.
 
@@ -254,18 +243,9 @@ The day's merged work goes to the project's remote host every night, so the host
 - **Standing authority**, but **only if the merge worked**. If the day's merge failed, nothing is deployed that night, and a row is filed for the next morning to fix the merge and then deploy.
 - **The host goes back to the state it was in.** A suspended VM woken for the deploy is suspended again.
 
-`nightly_deploy.py` carries both rulings. It runs **after `push`, before `backup`**:
-
-| Exit | Meaning | Receipt line |
-|---|---|---|
-| 0 | deployed, and the remote runs the dev head | `VM parity: remote runs <sha> == dev <sha>` |
-| 3 | merge gate failed: not on the branch, mid-merge, unresolved paths, or `GATE_CMD` red. **Nothing ran** | the reason, plus the follow-up row's id |
-| 4 | the wake, deploy or parity check failed. The host is restored anyway | the reason, plus the follow-up row's id |
-| 1 | no config, or keys missing | fix the config |
+`nightly_deploy.py` carries both rulings; its docstring lists the exit codes and the receipt line each one prints. It runs **after `push`, before `backup`**.
 
 **Keep the config out of the repo when it holds per-machine values** (a cloud project id, host names), and pass it with `--config <path>`. lupin's lives at `…/projects-data/lupin/nightly-deploy.env.proposed`, where per-machine state belongs. That also avoids writing into `.claude/`, which the auto-mode permission check treats as self-modification. **Type the command with literal paths, no `$VARS`**, so it matches a `Bash(python3 /…/nightly_deploy.py:*)` allow rule.
-
-"Tested, approved and closed" means **the head of the working branch**: managers merge to it only once work is green and reviewed. Unreviewed work lives on worktree branches and never ships. 🔴 **Cron has a bare environment**: anything the deploy command needs from your login shell (a cloud project id, for example) goes in the config as `ENV_<NAME>=…`. The Last Call bell failed exactly this way (row `d92dc473`).
 
 ---
 
@@ -279,6 +259,8 @@ The day's merged work goes to the project's remote host every night, so the host
 ---
 
 ## Version history
+
+- **1.3 (2026-10-09, Sam for María 🌸 — pruning pass 5, reviewed by John)** — Cut what the scripts' own docstrings carry: the `crontab_lock.py` paragraphs (now one pointer sentence), the `nightly_deploy.py` exit-code table and its closing paragraph, and the `last_call.py` safety paragraph. Also cut two lines that repeated the stage table and §5. No behaviour or ruling changed.
 
 - **1.2 (2026-09-27, María 🌸)** — Row d92dc473: the bell reached nobody from cron. The cause was measured by running the bell's own reads under `env -i`: every call returned 401 and nobody was resolved, while the same code with the shell's environment resolved three managers. The roster was not at fault. Fixes: the cron line carries the installer's environment; `set` refuses without a readable key and an operator target; a fire that reaches nobody reports `poked: false`, goes to the operator at urgent priority, exits 4 and shows as failed in `status`. The regression test runs cron's exact command with only `HOME` and `PATH` against a stub server that checks the key. A mutant that drops the prefix reddens it.
 
