@@ -26,8 +26,6 @@
 
 > **🗄️ HISTORICAL (pre-cutover; the harness→store mirror is RETIRED, so this is moot BY CONSTRUCTION — kept as a record, NOT a live instruction).** Pre-cutover, the auto-mirror silently dropped writes from non-lupin sessions (`9bf1dc4a`: write-gate derived the project from `LUPIN_ROOT` → always `"lupin"`), and the `/clear` counter-reset could UPSERT-corrupt store rows (`9b23d5bc`). The **dual-write workaround those defects required is CLOSED** — store-only is live; write owed work directly via `task_create` and query the store. Record: planning-is-prompting → workflow/task-store-discipline.md §1–§2.
 
-**Scope**: F4 "managers-first writes" is **RETIRED (2026-06-17 cutover)** — **ALL sessions write their own owed work to the store now**, not just manager-figures.
-
 **Canonical practice**: planning-is-prompting → workflow/task-store-discipline.md (§1 mandate, §2 who-writes, §3 when an explicit `task_create` is owed, §4 transition/receipts discipline).
 
 ## General Preferences
@@ -60,7 +58,6 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 
 - **No [PREFIX] needed**: Project auto-detected from working directory
 - **No --target-user parameter**: Routing handled internally
-- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
 
 ### When to Send Notifications
 
