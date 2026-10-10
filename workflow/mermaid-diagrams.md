@@ -167,13 +167,7 @@ When converting existing ASCII diagrams to Mermaid:
 
 ### Step 1: Identify the Diagram's Purpose
 
-Ask: "What does this diagram communicate?"
-- Decision flow? → `flowchart TD`
-- State machine? → `stateDiagram-v2`
-- Hierarchy/breakdown? → `mindmap`
-- Schedule/phases? → `gantt`
-- Progression over time? → `timeline`
-- Actor interactions? → `sequenceDiagram`
+Ask: "What does this diagram communicate?" Then pick the type from the Selection Heuristic above.
 
 ### Step 2: Translate the Content
 
@@ -307,9 +301,7 @@ flowchart TD
 
 ## Anti-Patterns
 
-- **Don't use Mermaid for directory trees** — keep `├── └──` notation
 - **Don't use Mermaid for simple tables** — use standard markdown tables
-- **Don't use Mermaid for terminal UI chrome** — keep box-drawing characters
 - **Don't nest Mermaid blocks inside other code blocks** — Mermaid blocks must be top-level
 - **Don't over-complicate** — if a 2-line arrow conveys the idea, a full diagram isn't needed
 - **Don't use Mermaid for inline notation** — `A → B` in prose is fine as-is
@@ -319,3 +311,4 @@ flowchart TD
 ## Version History
 
 - v1.0 (2026.02.14): Initial directive with full type catalog, conversion guide, and before/after examples
+- v1.1 (2026.10.09): Pruning pass 5. Cut two anti-patterns that restated the two Exemptions and Step 1's six use-case bullets, which repeated the Selection Heuristic; Step 1 now points at it. No rule changed.
