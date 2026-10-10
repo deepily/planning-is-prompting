@@ -73,7 +73,7 @@ Short form (what actually goes in the broadcast box), pointing at the full order
 
 ## 4. Session-side compliance (what a session receiving the order does)
 
-1. **Write the hold with the VERB, not by hand** — the rest of what a session does is §2.1:
+1. **Write the hold with the VERB, not by hand** — the rest of what a session does is §2.1 (pause) and §3 (resume):
 
    ```bash
    python3 $LUPIN_ROOT/src/lupin_cli/claude_code/hooks/lib/heartbeat_hold_io.py write \
