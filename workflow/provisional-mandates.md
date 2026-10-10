@@ -108,4 +108,4 @@ A session can hold a provisional mandate **and** the standing workflow at once. 
 
 ## Version history
 
-- **v1.0 (2026-07-16, María 🌸)** — Created after Rick rejected the first design. The Steward had written a project-scoped 3-day POC mandate into `planning-is-prompting/workflow/` and wired it into the **fleet-wide** spawn seam — every crew in every repo would have inherited one project's deadline. Rick: *"I questioned the wisdom of putting a provisional three day mandate into all workers instructions. This is really only relevant to Sam's work… how do we make a time sensitive mandate only relative to Sam's project?"* **The answer became rule 1, and the self-expiry (rule 2) fell out of the same question.** First instance: `skills-distillation/MANDATE.md`. **HELD for commit.**
+Full history: `docs/version-history/provisional-mandates.md`.
