@@ -1,4 +1,4 @@
-# Manager Context Monitoring — the 15-minute tick
+# Manager Context Monitoring — the 10-minute tick
 
 **Purpose**: every manager watches how much context their own workers have burned, and re-spins
 any worker past **50%** so the work continues in a fresh seat instead of dying in a full one.
@@ -18,8 +18,8 @@ ends — shorter DMs going in, and nobody carrying a bloated context past halfwa
 
 | | |
 |---|---|
-| **Interval** | every **15 minutes** |
-| **Mechanism** | `/loop` (dynamic pacing) or `ScheduleWakeup( delaySeconds=900 )` |
+| **Interval** | every **10 minutes** |
+| **Mechanism** | `/loop` (dynamic pacing) or `ScheduleWakeup( delaySeconds=600 )` |
 | **Reads** | `GET /api/arbiter/context-pressure` on `:7999` — per-persona context headroom, proxied from the arbiter's `:8001/state` |
 | **Auth** | send an **`X-API-Key`** header; the key comes from `read_api_key()` in `lupin/src/lupin_cli/claude_code/hooks/lib/task_store_client.py`. Without it the endpoint answers **401** |
 | **Cross-check** | `list_spawned_sessions()` — who is actually mine, and is the seat alive |
@@ -152,7 +152,7 @@ work.** Install both.
 **Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo; its header says what it prints, who it DMs and when it exits non-zero. One line per manager, on your own slot:
 
 ```cron
-10,25,40,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
+5,15,25,35,45,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
 ```
 
 ---
@@ -913,6 +913,7 @@ predictable event can have.
 
 ## Version History
 
+- **2026.10.10 (María's card, answered by Rick, no default used)**: The tick is every 10 minutes, matching what `install_context_pressure_tick.py` writes (`offset + 0,10,...,50`). Title, the interval row, `ScheduleWakeup( delaySeconds=600 )` and the crontab example now say ten. Rick's answer to "Context tick: your documents say 15 minutes, the installer writes 10. Which one changes?" was "Documents say 10 (Recommended)". The installer is unchanged.
 - **2026.10.10 (row `735e312f`, stale references C1 to C5)**: §1b is named as the source of the rule-versus-detector point; the seat-ownership cross-reference points at §4b; the crontab-entry sentence no longer cites a §ANTI-PATTERN label; the `hook_common.py` line number is dropped; the `self_respin` verb is recorded as built. C6, the tick cadence, is held for Rick's ruling.
 - **2026.10.10 (store row `9aadd0ac`, item 2, Rick's ruling of 13:14 EDT)**: A one-for-one re-spin of a seat you spawned needs nobody's permission in either skeleton-crew mode, because the seat stays allocated across re-spins; step 4 of the re-spin steps no longer carries "skeleton crew off". This replaces the earlier entry below, which said a re-spin follows the switch.
 - **2026.10.10 (store row `9aadd0ac`, item 2, Rick's rulings)**: Re-spinning a worker is a spawn and follows the skeleton-crew switch (`manager-autonomy.md` §2); the standing-authority line says "when skeleton crew is off". Nothing else changed.

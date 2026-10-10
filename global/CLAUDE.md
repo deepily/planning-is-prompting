@@ -319,13 +319,13 @@ Any manager-role session holds **standing** authority to harvest workers and, wh
 
 **Canonical**: planning-is-prompting → workflow/manager-autonomy.md.
 
-## MANAGER CONTEXT MONITORING — THE 15-MINUTE TICK
+## MANAGER CONTEXT MONITORING — THE 10-MINUTE TICK
 
 **Every manager watches their own workers' context and re-spins any worker past 50%** — token economy at both ends. Inside the existing spawn/harvest envelope: a one-for-one re-spin of a worker you spawned needs nobody's permission, in either skeleton-crew mode, because the seat stays allocated across re-spins.
 
 | | |
 |---|---|
-| **Tick** | every **15 minutes**, staggered. 🔴 **Install the timer in the same sitting you adopt this** — a rule that depends on remembering is not installed |
+| **Tick** | every **10 minutes**, staggered. 🔴 **Install the timer in the same sitting you adopt this** — a rule that depends on remembering is not installed |
 | **Durability** | 🔴 the timer must **outlive the session** — an in-session scheduler dies at exactly the moment it was meant to matter. Use a real crontab/systemd entry (`workflow/scripts/context-pressure-tick.sh`). **Cron detects, a live session acts** — install both |
 | **Sensor** | `GET /api/arbiter/context-pressure` on `:7999`, with an `X-API-Key` header or it answers 401 |
 | **Roster** | `list_spawned_sessions()` — your workers only, never another manager's crew |
