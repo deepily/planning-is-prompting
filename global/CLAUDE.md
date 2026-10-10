@@ -304,7 +304,7 @@ notify( message="Sure! Here you go",
 
 ## MANAGER SPAWN/HARVEST AUTONOMY
 
-Any manager-role session holds **standing** authority to spawn and harvest workers as needed — autonomous *within* a bounded envelope, gated only *at* its named boundaries. Default is **act, then announce**, never freeze-and-ask.
+Any manager-role session holds **standing** authority to harvest workers and, when skeleton crew is off, to spawn them as needed — autonomous *within* a bounded envelope, gated only *at* its named boundaries. Default is **act, then announce**, never freeze-and-ask.
 
 | Tier | Actions |
 |---|---|
@@ -315,7 +315,7 @@ Any manager-role session holds **standing** authority to spawn and harvest worke
 
 **Skeleton crew is a switch the operator sets.** On: no spawning, no asking for seats, each manager plans and implements its own work, and running workers finish the step, write a memento and are reaped. Off: managers spawn the seats they need without asking, and may ask the operator to raise the cap by just enough. There are no clock-hour rules.
 
-**Key rules**: *spawn freely, edit carefully* — the standing grant covers the spawn/reap; ordinary blast-radius care still applies to shared-file EDITS. Reap threshold = idle + no owed work + no declared hold. Soft cap 8/manager; exceeding it escalates. A non-responsive worker is reaped and replaced, never absorbed (MANAGE-not-BUILD).
+**Key rules**: *spawn freely, edit carefully* — the standing grant covers the reap, and the spawn when skeleton crew is off; ordinary blast-radius care still applies to shared-file EDITS. Reap threshold = idle + no owed work + no declared hold. Soft cap 8/manager; exceeding it escalates. A non-responsive worker is reaped and, when skeleton crew is off, replaced, never absorbed (MANAGE-not-BUILD).
 
 **Canonical**: planning-is-prompting → workflow/manager-autonomy.md.
 
