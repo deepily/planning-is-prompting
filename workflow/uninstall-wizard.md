@@ -85,49 +85,6 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 
 ## Uninstallation Flow
 
-### Step 0: Create Uninstall TODO List
-
-**Purpose**: Track uninstallation progress, if a visible checklist helps
-
-**Optional** (Rick, 2026-10-02, row `efa0a4cf`): a step checklist is scratch, not owed work. Keep one or keep none; owed work goes in the task store (`task-store-discipline.md` §3).
-
-**Template TODO Items**:
-```
-[UNINSTALL] Detect installed workflows
-[UNINSTALL] Present catalog and get user selection
-[UNINSTALL] Validate selection
-[UNINSTALL] Show deletion candidates and get confirmation
-[UNINSTALL] Delete slash command files
-[UNINSTALL] Offer CLAUDE.md cleanup
-[UNINSTALL] Offer .gitignore cleanup
-[UNINSTALL] Handle empty directory cleanup
-[UNINSTALL] Present summary and manual cleanup suggestions
-```
-
-**Instructions**:
-1. If you keep one, create the uninstallation checklist with the harness's native list tool
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[UNINSTALL]` prefix until finished
-
-**Example**:
-```json
-[
-  {"content": "[UNINSTALL] Detect installed workflows", "status": "in_progress", "activeForm": "[UNINSTALL] Detecting installed workflows"},
-  {"content": "[UNINSTALL] Present catalog", "status": "pending", "activeForm": "[UNINSTALL] Presenting catalog"},
-  {"content": "[UNINSTALL] Validate selection", "status": "pending", "activeForm": "[UNINSTALL] Validating selection"},
-  {"content": "[UNINSTALL] Show deletion candidates", "status": "pending", "activeForm": "[UNINSTALL] Showing deletion candidates"},
-  {"content": "[UNINSTALL] Delete files", "status": "pending", "activeForm": "[UNINSTALL] Deleting files"},
-  {"content": "[UNINSTALL] Offer CLAUDE.md cleanup", "status": "pending", "activeForm": "[UNINSTALL] Offering CLAUDE.md cleanup"},
-  {"content": "[UNINSTALL] Offer .gitignore cleanup", "status": "pending", "activeForm": "[UNINSTALL] Offering .gitignore cleanup"},
-  {"content": "[UNINSTALL] Handle empty directory", "status": "pending", "activeForm": "[UNINSTALL] Handling empty directory cleanup"},
-  {"content": "[UNINSTALL] Present summary", "status": "pending", "activeForm": "[UNINSTALL] Presenting summary"}
-]
-```
-
----
-
 ### Step 1: Detect Installed Workflows
 
 **Purpose**: Scan `.claude/commands/` directory to identify currently installed planning-is-prompting workflows
@@ -951,6 +908,7 @@ This section provides detailed guidance on cleaning up related files that were n
 
 ## Version History
 
+- **2026.10.10 (Sam, job 2, item B3)**: Wider pruning (store row `84211d12`): removed "Step 0: Create Uninstall TODO List" (36 lines, with its Optional note). Rick: "Cut them (Recommended)". The flow now opens at "Step 1: Detect Installed Workflows".
 - **2026.10.10 (Sam)**: Wider pruning batch 1 (store row `84211d12`): removed the 9 "If you keep a step checklist" lines. "Step 0: Create Uninstall TODO List" stays until Rick rules on it.
 - **2026.10.09 (Sam)**: Pruning pilot, shortlist rows 17-18 (store row `681745a9`): the installed-command scan is a rule over the catalog (a family counts as installed if any of its commands exists), the menu entries for B and C refer to the catalog, and the confirmation and final screens refer to the Manual Cleanup Reference (the final screen lists only the removed families' items). The Installation Wizard entry keeps its "removes /plan-uninstall-wizard too" warning.
 - **2026.10.02**: A step checklist is optional scratch, not owed work; owed work goes in the task store (Rick, row `efa0a4cf`). The TodoWrite mandate and the per-step "TodoWrite Update" requirements are now conditional on keeping a checklist.
