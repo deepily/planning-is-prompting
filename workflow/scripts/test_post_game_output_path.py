@@ -135,7 +135,7 @@ def test_the_agreed_directory_is_the_tracked_per_version_corpus():
     assert distinct == [ EXPECTED_DIR ], (
         f"the full-retro output path is {distinct!r}, expected [{EXPECTED_DIR!r}] — the corpus is "
         "tracked and per-version by the owner's 2026-10-03 ruling; if it genuinely moved, change "
-        "EXPECTED_DIR here and say so in the doc's version history"
+        "EXPECTED_DIR here and say so in docs/version-history/post-game.md"
     )
 
 
