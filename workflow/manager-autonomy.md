@@ -47,13 +47,15 @@ The operator runs the fleet in one of two modes. A toggle in the fleet status pa
 |---|---|---|
 | **Who does the work** | Each manager plans and implements its own work | Managers run crews and manage them |
 | **Spawning** | No spawning | A manager spawns the seats it needs, when it needs them, without asking |
-| **Asking for seats** | Not allowed | If the cap leaves too few seats, the manager may ask the operator to raise it by just enough for the work in hand. Raising it is the operator's choice, by admin login only: a manager cannot raise it with its own key |
+| **Asking for seats** | Not allowed | If the cap leaves too few seats, the manager may ask the operator to raise it by just enough for the work in hand. Raising it is the operator's choice |
 
 **When skeleton crew is switched on while workers are running**, each worker finishes its current step, writes its memento and is reaped. Its manager takes over what is left.
 
 Reaping, merging reviewed green work, and push are unchanged.
 
-**A bounded Claude Code job is not a spawn.** Managers may still submit one while skeleton crew is on: it is not a fleet seat and is not on the roster, and the switch governs seats.
+**A bounded Claude Code job is not a spawn.** Managers may still submit one while skeleton crew is on: it is not a fleet seat and is not on the roster.
+
+**Raising the fleet cap is the operator's alone, by admin login.** A manager asks the operator, where asking is allowed above, and cannot raise the cap with its own key.
 
 **The same toggle controls the stop poke**: skeleton crew on mutes it, off restores it.
 
@@ -301,9 +303,11 @@ bounce arbiter :8001 OR test :8000 when the server is IDLE → STANDING, any rea
 
 *Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*
 
-*Version 2.9 (2026-10-10, Job 1 of the wider pruning row `84211d12`) — §2: raising the fleet cap is the operator's alone, by admin login; a manager asks and cannot raise it with its own key. Rick's answer on Cheech's card, header "Cap PUT" (recorded on lupin row `151dcafb`, amendment of 2026-10-10T19:05Z; answered, no default used): the label "Admin only (Recommended)". The option's description, which is Cheech's wording and not Rick's, read: "The fleet cap PUT takes an admin login only, like the new skeleton crew PUT." The code is not built yet (that row is open); this entry writes the rule, not the mechanism.*
+*Version 2.10 (2026-10-10, Job 1 of the wider pruning row `84211d12`, after review) — §2: the "Asking for seats" row is back to the approved wording, word for word; the admin-login rule moved to its own paragraph below the table, outside the approved block. Removed "and the switch governs seats" from the bounded-job paragraph, which neither the ruling nor the card's option text says. Entries 2.8 and 2.9 no longer quote card headers: no record carries one, so they cite what the rows record.*
 
-*Version 2.8 (2026-10-10, Job 1 of the wider pruning row `84211d12`) — §2 says a bounded Claude Code job is not a spawn and is allowed under skeleton crew. Rick's answer on Cheech's card, header "Bounded job" (recorded on lupin row `6f72dc83`, amendment of 2026-10-10T19:06Z; answered, no default used): the label "No, out of reach (Recommended)". The option's description, which is Cheech's wording and not Rick's, read: "Your words were 'spin up or spawn new workers'; a bounded job is not a fleet seat and is not on the roster." The card's question wording is not recorded on the row.*
+*Version 2.9 (2026-10-10, Job 1 of the wider pruning row `84211d12`) — §2: raising the fleet cap is the operator's alone, by admin login; a manager asks and cannot raise it with its own key. Rick's answer on Cheech's card (recorded on lupin row `151dcafb`, amendment of 2026-10-10T19:05Z; answered, no default used): the label "Admin only (Recommended)". The option's description, which is Cheech's wording and not Rick's, read: "The fleet cap PUT takes an admin login only, like the new skeleton crew PUT." The code is not built yet (that row is open); this entry writes the rule, not the mechanism.*
+
+*Version 2.8 (2026-10-10, Job 1 of the wider pruning row `84211d12`) — §2 says a bounded Claude Code job is not a spawn and is allowed under skeleton crew. Rick's answer on Cheech's card (recorded on lupin row `6f72dc83`, under Cheech's caption "BOUNDED JOBS", amendment of 2026-10-10T19:06Z; answered, no default used): the label "No, out of reach (Recommended)". The option's description, which is Cheech's wording and not Rick's, read: "Your words were 'spin up or spawn new workers'; a bounded job is not a fleet seat and is not on the roster." The card's question wording is not recorded on the row.*
 
 *Version 2.7 (2026-10-10, store row `9aadd0ac`, item 2, after review) — The STANDING row puts "re-spawn / respawn any persona" back under "when skeleton crew is off"; the one-for-one re-spin stays under "always".*
 
