@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T23:29:21-04:00",
+  "generated_at": "2026-10-10T12:53:55-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -24,7 +24,7 @@
       "version": "1.0"
     },
     "plan-backup-check.md": {
-      "sha256": "9fe4cd942f06f1243cc1609d979a073f197d93f950d5da17751b848d21899163",
+      "sha256": "5449ee8d6405d1b123e221b70a7d48ada7293a56bb7499feb1cab7d4db40cb89",
       "version": "1.0"
     },
     "plan-backup-write.md": {
@@ -104,7 +104,7 @@
       "version": "1.0"
     },
     "plan-review.md": {
-      "sha256": "06ed01bf7270fad22ac6d938c98a51888f07c60c5848882b5bb9af8e6d061fdd",
+      "sha256": "ce56de40ec015a49c43408282f74e8da540929f3df89feb1594cabba2c534cf0",
       "version": "1.0"
     },
     "plan-session-checkpoint.md": {
