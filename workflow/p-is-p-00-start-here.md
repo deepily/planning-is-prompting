@@ -263,7 +263,7 @@ flowchart TD
     Step1["STEP 1: Planning the Work<br>p-is-p-01-planning-the-work.md<br>• Answer discovery questions<br>• Select pattern 1-6<br>• Break down into tasks<br>• Record tasks on the task board<br>(store rows; stub manifest if 2+ phases)"]
     Start --> Step1
     Step1 --> Branch{Pattern type?}
-    Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
+    Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex; Pattern 2 only when medium or larger)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
     Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip Step 2 docs<br>Use history.md for tracking"]
     Review["GATE: /plan-review<br>plan-review.md<br>• Dispatch: ≥2 sections → cascade<br>• else → critique (1 critic seat)<br>• REUSE / Fitness / Ownership<br>(non-negotiable gates)"]
     Step2 --> Review
@@ -283,7 +283,7 @@ flowchart TD
 
 **What it does**:
 - Classifies your work type through discovery questions
-- Recommends one of 5 planning patterns
+- Recommends one of 6 planning patterns
 - Breaks down work into manageable tasks
 - Records the tasks on the task board for progress tracking (store rows; a stub manifest when the plan has two or more phases)
 
@@ -293,6 +293,7 @@ flowchart TD
 3. **Feature Development**: Well-scoped features in existing systems (1-3 weeks)
 4. **Problem Investigation**: Systematic debugging with hypothesis testing
 5. **Architecture & Design**: System-level design and decision documentation
+6. **Research-Driven Implementation**: Build work that needs research before design (agent systems, unfamiliar frameworks)
 
 **Pattern and tracking form are separate choices.** The "3+ distinct phases" above picks the pattern only. The tracking form follows one rule: a plan with two or more phases ships a stub manifest, whatever its pattern; single-phase work is tracked as ordinary store rows. In single-phase work the numbered groups of a breakdown are *stages*, not phases, and the examples below label them that way.
 
@@ -303,7 +304,7 @@ flowchart TD
 
 **File**: `p-is-p-02-documenting-the-implementation.md`
 
-**When to use**: Only for large/complex work (Pattern 1, 2, or 5 from Step 1)
+**When to use**: Only for large/complex work (Pattern 1, 2, or 5 from Step 1; Pattern 2 only when medium or larger)
 
 **What it does**:
 - Creates structured documentation (multiple markdown files)
@@ -408,7 +409,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 - ✓ Duration 8+ weeks
 - ✓ Multiple distinct phases (3+)
 - ✓ Documentation will exceed 10,000 tokens
-- ✓ Pattern 1 (Multi-Phase), Pattern 2 (Research), or Pattern 5 (Architecture)
+- ✓ Pattern 1 (Multi-Phase), Pattern 2 (Research, only when medium or larger), or Pattern 5 (Architecture)
 
 ---
 
@@ -421,7 +422,7 @@ Suggested routing: YES - Use Pattern 6 (Research-Driven Implementation)
 2. Answer the 8 discovery questions (Phase 1)
 3. Review pattern recommendation
 4. Check decision matrix above:
-   - Pattern 1, 2, or 5? → Also use `p-is-p-02-documenting-the-implementation.md`
+   - Pattern 1, 2 (only when medium or larger), or 5? → Also use `p-is-p-02-documenting-the-implementation.md`
    - Pattern 3 or 4? → Skip Step 2 docs, use history.md. **If a plan document exists, it still enters `/plan-review`.**
 5. Break down work into tasks (Phase 3 of workflow 01)
 6. Record the breakdown on the task board (Phase 3 Step 5 of workflow 01): store rows, or a stub manifest if the plan has two or more phases
@@ -858,6 +859,7 @@ The "Planning is Prompting" core workflows integrate with supporting workflows:
 
 ## Version History
 
+- **2026.10.10**: Stale references (row `735e312f`, C1 and C2): the pattern count is six and Pattern 6, Research-Driven Implementation, is listed; the four places that send Pattern 2 to Step 2 say it goes only when medium or larger, as the matrix does.
 - **2026.10.09 (Sam)**: Pruning pilot batch two, shortlist rows 15-18 (store row `681745a9`): the closing list for new work points to Scenario 1, Scenario 2's Pattern 4 stages point to Example 4, and a duplicate time line and three document bullets the example already creates are removed. Net 16 non-blank lines.
 - **2026.10.01**: Replaced TodoWrite tracking wording with task-store rows and the stub manifest (see `p-is-p-01-planning-the-work.md` *Where Owed Work Lives*, `task-store-discipline.md`, `plan-stub-manifest.md`): benefits line, interactive-flow sample, visual flow, Step 1 summary, scenarios, Examples 1-5, integration notes, summary and principles. The decision matrix and pattern routing are unchanged. Review fixes, same day: the numbered groups in the single-phase examples (Examples 1, 3 and 4, and the interactive-flow sample) are now called stages, and the Step 1 summary says that "3+ distinct phases" picks the pattern while "two or more phases" picks the stub manifest.
 - **2026.05.22**: Added a `/plan-review-cascaded` pointer to the Two-Step Process gate section, directing cascade-bound plans to the p-is-p-01 Cascade-Readiness guidance; companion note added to the Decision Matrix
