@@ -293,7 +293,7 @@ flowchart TD
 3. **Feature Development**: Well-scoped features in existing systems (1-3 weeks)
 4. **Problem Investigation**: Systematic debugging with hypothesis testing
 5. **Architecture & Design**: System-level design and decision documentation
-6. **Research-Driven Implementation**: Build work that needs research before design (agent systems, unfamiliar frameworks)
+6. **Research-Driven Implementation**: Building systems based on external research, documentation, or recommendations that you need to understand before planning
 
 **Pattern and tracking form are separate choices.** The "3+ distinct phases" above picks the pattern only. The tracking form follows one rule: a plan with two or more phases ships a stub manifest, whatever its pattern; single-phase work is tracked as ordinary store rows. In single-phase work the numbered groups of a breakdown are *stages*, not phases, and the examples below label them that way.
 
