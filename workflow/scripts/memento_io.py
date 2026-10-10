@@ -1865,8 +1865,8 @@ def cmd_write( args ):
 
     Requires:
         - cwd (or --repo) is inside a git working tree
-        - --persona and --session-id are supplied (both are in the session's context
-          from the Phase-A get_session_info() call — zero new information required)
+        - --persona is supplied; --session-id is optional and omitted, so the bridge
+          resolves the session's own id (memento-management.md §3.1)
         - content arrives on stdin or via --content-file
     Ensures:
         - all THREE files exist on success, and record bytes == mirror bytes
