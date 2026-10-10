@@ -863,8 +863,6 @@ Wait for user response. Proceed to Section 0.5.5.
 
 #### Section 0.5.5: Completion and Error Handling
 
-**If you keep a step checklist**: Mark "Configure permissions" as completed
-
 **Send Notification**:
 ```python
 notify( "Permission setup completed", notification_type="progress", priority="low" )
@@ -1009,8 +1007,6 @@ Found:
 
 Ready for fresh installation.
 ```
-
-**If you keep a step checklist**: Mark "Detect project state" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1198,8 +1194,6 @@ What would you like to do? [1/2/3/4]
    - Show required files (history.md, etc.)
 
 3. **Wait for User Selection**
-
-**If you keep a step checklist**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
 **Send Blocking Notification and Await Selection**:
 ```python
@@ -1424,8 +1418,6 @@ This will create:
 
 Ready to proceed with configuration.
 ```
-
-**If you keep a step checklist**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1654,8 +1646,6 @@ Is this correct?
 [2] No, let me correct something (which field?)
 [3] Cancel installation
 ```
-
-**If you keep a step checklist**: Mark "Collect configuration" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1911,8 +1901,6 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    ⏳ [MYPROJ] Create archive directory
    ```
 
-**If you keep a step checklist**: Mark "Install workflows" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Workflows installed successfully", notification_type="progress", priority="medium" )
@@ -1999,8 +1987,6 @@ Workflow Test:
 
 Installation validated successfully!
 ```
-
-**If you keep a step checklist**: Mark "Validate installation" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2105,8 +2091,6 @@ notify( "Installation validated - all checks passed", notification_type="progres
    The files should appear in the "Changes to be committed"
    section (not "Untracked files").
    ```
-
-**If you keep a step checklist**: Mark "Verify git tracking" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2336,8 +2320,6 @@ For detailed workflow documentation, see:
 • planning-is-prompting → workflow/testing-harness-update.md
 ```
 
-**If you keep a step checklist**: Mark "Present summary" as completed
-
 **Send Notification**:
 ```bash
 notify( "Installation complete - ready to work!", notification_type="task", priority="high" )
@@ -2451,8 +2433,6 @@ You can always add more workflows later by sharing:
 The wizard works the same way whether you have the slash
 command installed or not.
 ```
-
-**If you keep a step checklist**: Add and complete "Install wizard slash command (optional)" item
 
 **Send Notification** (if installed):
 ```bash
@@ -2571,8 +2551,6 @@ What would you like to do? [1/2]
 
    **Rationale**: Only offer session-end if user installed Session Management
    workflows. Don't confuse users who only installed Planning or Backup workflows.
-
-**If you keep a step checklist**: Mark "Offer session-end workflow" as completed
 
 **Send Notification** (if user ran session-end):
 ```bash
@@ -2857,8 +2835,6 @@ Version Summary:
    Treating as version 0.0 for comparison purposes.
    ```
 
-**If you keep a step checklist**: Mark "Scan local installation" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Scanned local installation - found 7 workflows", notification_type="progress", priority="low" )
@@ -2963,8 +2939,6 @@ Affected Files (5):
   → plan-history-management.md
   → p-is-p-01-planning.md, p-is-p-02-documentation.md
 ```
-
-**If you keep a step checklist**: Mark "Compare versions" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3106,8 +3080,6 @@ What will happen:
 Ready to proceed.
 ```
 
-**If you keep a step checklist**: Mark "Present update UI" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```python
 notify( "Update selection presented - awaiting user choice", notification_type="task", priority="high" )
@@ -3228,8 +3200,6 @@ All configurations extracted successfully.
    - History workflows: PREFIX + history path + archive directory
    - Planning workflows: PREFIX (+ argument support preserved)
    - Testing workflows: PREFIX (+ argument support preserved)
-
-**If you keep a step checklist**: Mark "Extract config" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3400,8 +3370,6 @@ This operation is reversible (backups will be available).
 What would you like to do? [1/2]
 ```
 
-**If you keep a step checklist**: Mark "Show diff preview" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```python
 ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=300 )
@@ -3545,8 +3513,6 @@ Update Application Complete
 
 All files updated. Proceeding to validation...
 ```
-
-**If you keep a step checklist**: Mark "Apply updates" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3730,8 +3696,6 @@ Update validation complete!
    What would you like to do? [1/2]
    ```
 
-**If you keep a step checklist**: Mark "Validate updates" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Validation complete - all 6 workflows verified", notification_type="progress", priority="medium" )
@@ -3912,8 +3876,6 @@ Would you like to run /plan-session-end to:
 
 What would you like to do? [1/2]
 ```
-
-**If you keep a step checklist**: Mark "Present summary" as completed
 
 **Send Notification**:
 ```bash
@@ -4483,6 +4445,8 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 ---
 
 ## Version History
+
+**v1.5** (2026.10.10) - Wider pruning batch 1 (store row `84211d12`): removed the 19 "If you keep a step checklist" lines. The three "Step 0: Create ... TODO List" sections stay until Rick rules on them.
 
 **v1.4** (2026.10.09) - Item 21 (store row `9aadd0ac`): the sample wrapper diff no longer lists "an optional step checklist" among the contents of the canonical session-start workflow, which has no such step.
 
