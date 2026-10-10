@@ -245,25 +245,11 @@ When a key is set in multiple places, precedence is:
 invocation arg  >  consuming-project CLAUDE.md  >  workflow default (this file)
 ```
 
-**Example resolution**:
-
-- `discussion_turn_cap`: workflow default = `3`; CLAUDE.md override = `5`; invocation = `2` → effective = `2`
-- `persona_activation`: workflow default = `all_hot`; CLAUDE.md override = `hybrid`; no invocation override → effective = `hybrid`
-- `vote_tiebreaker_policy`: no overrides anywhere → effective = `severity_dependent` (default)
-
 ---
 
 ## Worked Example: How the Manager Resolves Effective Values
 
-**Scenario**: User invokes `/plan-review-cascaded --turn-cap=2` from a project whose local `CLAUDE.md` contains:
-
-```markdown
-## [cascaded-plan-review] Overrides
-
-- persona_activation = hybrid
-- budget_enforcement_threshold = 50
-- discussion_turn_cap = 5
-```
+**Scenario**: User invokes `/plan-review-cascaded --turn-cap=2` from a project whose local `CLAUDE.md` carries the overrides shown in §1 above.
 
 **Manager's resolution at launch**:
 
@@ -275,11 +261,11 @@ invocation arg  >  consuming-project CLAUDE.md  >  workflow default (this file)
 | `reviewer_context_scope` | `narrow` | — | — | **`narrow`** (default) |
 | (all other keys) | (see table above) | — | — | (default) |
 
-The manager holds these resolved values in its working context. When the workflow later says "when discussion reaches `discussion_turn_cap` rounds without consensus, call a vote", the manager applies `2` — not the default `3`, not the CLAUDE.md value `5`.
-
 ---
 
 ## Version History
+
+- **2026.10.09 (Sam for María 🌸 — pruning pass 5, reviewed by John)** — Cut what the file already says: the three example-resolution bullets (the worked example's table is the same example), the worked example's repeated `CLAUDE.md` block (it now points at the §1 block), and one closing sentence that restated lines 23 and 25 and the table row for `discussion_turn_cap`. No key, default or rule changed.
 
 - **2026.07.20 (Tiffany 💍 — Workflow Steward; found by Clayton 😎, cascade manager)** — **Three retired-mechanism entries corrected. Commit HELD.** Surfaced during a live cascade on `skills-distillation`, by a Manager who resolved config from this table and noticed the defaults named things §6.4 forbids.
   1. **`phantom_detection_mode` default CHANGED** `heartbeat_handling_via_external_scheduler` → **`commons_freshness`**. The prior default *was the action playbook §6.4 prohibits* — a Manager resolving config here and stopping was instructed to launch the retired per-cascade daemon. The retired option is now ⛔-fenced rather than removed, so a config naming it fails loudly instead of silently resolving.
