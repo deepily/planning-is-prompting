@@ -240,8 +240,10 @@ The MCP prepends the memento content to the rendered `task_prompt` so the spawne
 ### §8.2 On dismiss — `write_memento=True` captures post-cascade state
 
 ```python
-dismiss_sessions(session_ids=[author_session_id], write_memento=True)
+dismiss_sessions(session_names=[author_session_name], respin_personas=["tiffany"], write_memento=True)
 ```
+
+`respin_personas` names every seat you are bringing back. Without it the reap moves that seat's open store rows onto the reaping Manager, and nothing checks that the named seat returns. Retention is keyed on the persona NAME, so reap and re-spin in one batch.
 
 Before the tmux kill, the dismissed Author session writes its memento — capturing the cascade's outcome + open loops + lessons-learned. This memento is then the seed for the NEXT spawn of an Author resuming work on the same plan.
 
@@ -251,7 +253,7 @@ Before the tmux kill, the dismissed Author session writes its memento — captur
 
 ### §8.3 The continuity loop in narrative
 
-> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
+> Round 1: Tiffany authors §A. Cascade closes. `dismiss_sessions(respin_personas=["tiffany"], write_memento=True)` → Tiffany writes a memento to her stable slot `io/mementos/tiffany.md` naming the Stage-3 ownership-language pattern she just learned.
 >
 > Round 2 (next day): Manager spawns Tiffany again to author §B. `spawn_sessions(persona_preference=["Tiffany"], seed_memento="io/mementos/tiffany.md")` — the seed path derived straight from the persona, no file-picking. Tiffany comes up with prior-round context (MCP **appends** the memento as a "Prior context" section AFTER the task — see §8.4 for why append, not prepend), applies the ownership-language pattern from §A's review to §B's draft from the start. Forward-sweep without the prior round's review-cycle cost.
 
@@ -318,6 +320,7 @@ Per the Track-T plan's caveat: Extra-N reviewers share Arnold's voice, so voice-
 
 ## Version History
 
+- **v1.3 (2026-10-09, Extra 2, store row `9aadd0ac`)** — Pass-4 defect fixes. Item 1: the §8.2 and §8.3 re-spin dismissals now pass `respin_personas` (§5.3 replaces the seat with a different persona and is left as written). Item 5: §8.2 `session_ids` corrected to `session_names`.
 - **v1.2 (2026-10-09, Sam, store row `681745a9`)** — Pruning pass 4. Removed text that restated another place in this file or the tools' own descriptions: the HISTORICAL banner above §3.4's decision (the paragraph below carries the retirement), two "Operator implication" paragraphs, the example `spawn_sessions` result (the tool's Returns is the source; the paragraph under it now names the real keys), two steps of "What the MCP does" and the Result line, two `# Returns:` comments and the `session_names=None` default sentence. No instruction changed; the wrong-text items found in the same pass (§5.3 `respin_personas`, §10 spawn window, §8.2 `session_ids`) are filed separately.
 - **v1.1 (2026-06-29, María 🌸 — Rick GO)** — §3.4 reframed HISTORICAL: the `cascade_heartbeat_scheduler.py` daemon is retired (the standing arbiter is the waker now); the "spawn does NOT auto-register reviewers" decision still holds, but "the scheduler pokes the Manager" now reads "the arbiter pokes the Manager." Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **v1.0 (2026-05-28)** — Initial codification at Rick's request (parallel coordination — Tiberius authoring Track-T mechanics, María authoring this runbook). 10 sections binding §3-§5 worked examples to Tiberius's final API contract (`spawn_sessions` + `dismiss_sessions` + `list_spawned_sessions`). Covers the full Author-continuity loop (Decision #6), TTS two-axis rule (Decision #5), v1 polling-based lifecycle (Decision #4), and off-peak cost constraint. Joint reconciliation pending Track-T tool signatures landing in code. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
