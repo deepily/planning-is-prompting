@@ -214,7 +214,7 @@ Health: ✅ HEALTHY
 
 **Purpose**: Check history.md health BEFORE adding new session content that might push over token limit
 
-**When**: After creating TODO list (Step 0), before updating history (Step 1)
+**When**: Before updating history (Step 1)
 
 > ### 🔴 Draft the entry FIRST, then threshold `on-disk + drafted`
 >
@@ -1872,6 +1872,7 @@ If ANY checkbox is unchecked: fix before completing session-end. Re-fire Step 6 
 
 ## Version History
 
+- **2026.10.10 (Sam, wider pruning job 2, item B7, beyond the 131 lines Rick approved)**: Step 0.5's "When" line no longer says "After creating TODO list (Step 0)": this file has no Step 0. It now reads "Before updating history (Step 1)". The "Add 'Archive history.md' to TODO list" lines at 296 and 307 are unchanged; they mean TODO.md.
 - **2026.10.09 (Sam)**: **Step 4.3's commit template no longer rides the commit line (defect 9, row `1498e58f`, Pocholo's probe of the guard)**: `git commit -m "$(cat <<'EOF' ... EOF)"` ended in an unclosed quote once the guard cut the command at the first newline, so every commit following this document was allowed unreviewed. It is now `git commit -F <message-file> -- <paths>` with the message written first, plus the rules the guard needs (paths exactly as in Touched Files, a manifest section for the review to happen at all).
 - **2026.10.09 (Sam)**: **Pruning pilot cuts (row `681745a9`, Rick: "All of it, 122 lines")**: removed the Claude Code attribution footer from the commit-message guidance and the commit template, and the Git Safety Protocol block (15 lines). Trials showed no change in behavior without them.
 - **2026.09.23 (María)**: **Step 1.7 Memento Sweep added**, on Rick's keypress rulings on row `5b29a807`: keep each live seat's newest memento in the repo where it runs, summarize only the last two days into today's history entry, then move the rest to the trash with `workflow/scripts/memento_sweep.py` (`gio trash`, never `rm`). First run cleared 1,010 files across three repos and kept 12.
