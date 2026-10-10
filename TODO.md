@@ -578,6 +578,24 @@ whole reason that prefix exists.
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
 
+### 2026-10-10 — Spawn policy, three defect rulings and the wider-pruning plan (rows `9aadd0ac`, `84211d12`, lupin `6f72dc83`)
+
+All from cards Rick answered himself between 12:41 and 13:13 EDT; times are the card answers. Two morning cards (09:00, 11:00) timed out and ruled nothing.
+
+- 2026-10-10 12:41 — Backup version check doc describes a menu the script lacks → **"Cut the doc to the script (Recommended)"**. Merged `322504a`.
+- 2026-10-10 12:41 — Plan review bans simultaneous sessions yet routes to the cascade → **"Write the cascade exemption (Recommended)"**. Merged `322504a`. One sentence goes past the letter of the ruling (per-pass user gates do not fire inside the cascade); kept, and he was told.
+- 2026-10-10 12:41 — Pruning row, close or widen → **"close this row and start a new 1 for the wider review ... I want a deeper assessment before we actually do any work ... give me a plan we can work from and then I will okay it"**. New row `84211d12`; old row `681745a9` closed as the ticket its admit cost.
+- 2026-10-10 12:46 — Spawn window → **"Let's remove all references to rules for when spawns happen"**. He did not pick a window; he removed the idea.
+- 2026-10-10 12:50 — The three seats I spawned at 12:46 without a separate ask → **"Keep them (Recommended)"**.
+- 2026-10-10 12:50 — My first policy draft (per-request permission, skeleton crew on evenings and weekends) → rejected: **"I think you misunderstood During a skeleton crew which is generally during the day Monday through Friday managers plan and implement their own work Any time outside of that is when we are in spun up crude mode"**.
+- 2026-10-10 12:56 — My second draft (announcement, refusal is final, ask if you missed it) → rejected: **"rules 4 5 and 6 that you added ... will either provide excuses for doing nothing or that the managers will badger the shit out of me for more seats So let's make this simpler"**. His rule: **"a toggle skeleton crew on or off. If we are in the skeleton crew the managers may not ask and they may not spin up or spawn new workers. If the toggle says we are out of skeleton crew then managers may spin up more seats as they need them And if we are out of skeleton mode and there are not enough seats they may request that I bump the cap up just enough for them to get their work done. Increasing the cap is the operator's discretion."**
+- 2026-10-10 12:56 — Skeleton crew switched on while workers are running → **"Finish the step, then reap (Recommended)"**.
+- 2026-10-10 13:01 — The toggle → **"I don't just want this in the multiplexer and the legacy notifications page but I want this for the mobile app also ... persisted in the configuration file ... The configuration file MUST always be backed up No questions"**. On lupin row `6f72dc83` (Cheech).
+- 2026-10-10 13:04 — Who mutes the stop poke → **"The skeleton crew toggle does both"**. This replaces his 2026-09-23 ruling that a named manager runs the script, once the toggle ships.
+- 2026-10-10 13:04 — Third policy draft → **"Yes, apply it (Recommended)"**. Text and file table: `io/tmp/2026.10.10-spawn-policy-approved-text.md`; it lands in `workflow/manager-autonomy.md`.
+- 2026-10-10 13:13 — Wider-pruning plan (`src/rnd/2026.10.10-wider-pruning-assessment-and-plan.md`) → batches 1 to 3 **"Yes, all three"**; histories **"Move them out, whole"**; examples **"Trial first, move if it passes"**; leave-alone list **"Agree, leave them"**. His yes also covers merging each batch without a card under the plan's stop rule.
+- 2026-10-10 — Mine, wrong: both rejected drafts added rules he had not stated. The third kept to his words.
+
 ### 2026-10-09 — Pruning pass and the thirteen workflow defects (rows `681745a9`, `1498e58f`)
 
 Rulings marked *from memento* were given before my 18:51 context clear and are recorded from my memento, not from a card I can still see. Retro: `src/docs/post-games/v0.2.2/2026.10.09-pruning-pass-and-defects-crew-post-game.md`.
