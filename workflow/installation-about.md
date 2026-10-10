@@ -179,6 +179,8 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/pip_drift_check.py --target
 
 Its states: `VERSION_LIES` (content differs, version matches), `STALE` (content and version both differ), `MISSING`, `SHADOW` (deliberate local override), `CURRENT`. Report `VERSION_LIES` and `STALE` as ⚠ Drifted, never as ✓ Current. Exit code 2 means nothing was measured (no `.claude/commands`, a root that is not the tree the script lives in, or a scan that read no files): report Unknown, not Current.
 
+`CURRENT` also covers a project-customized copy: one that differs from canonical only in the values the installer writes per project (the Project and Prefix lines, the directory paths, the heading, and the `src/rnd/` and `workflow/scripts/` path forms). The check renders canonical for the project the install sits in and compares bytes, so a wrong value on those lines still reads `VERSION_LIES`. In user scope (`~/.claude/commands`) there is no project to check the values against, so only the hash is compared there.
+
 **Status indicators**:
 - ✓ Current - Local and canonical versions match AND the content check reports `CURRENT` (or `SHADOW`)
 - ⚠ Drifted - Content differs from canonical (`VERSION_LIES` or `STALE`), whatever the version strings say

@@ -29,7 +29,6 @@ is simulated by explicit string replacement written here, not by the code under
 test, so a test cannot agree with the implementation by sharing its mistake.
 """
 import hashlib
-import inspect
 import sys
 
 from pathlib import Path
@@ -83,21 +82,7 @@ def _verdict( project, canonical, installed, version="1.0", project_root="defaul
     path = project.path / ".claude" / "commands" / "plan-x.md"
     path.write_text( installed, encoding="utf-8" )
     root = project.path if project_root == "default" else project_root
-    return _classify( path, _entry( canonical, version ), canonical, is_self_scan=self_scan, project_root=root )
-
-
-def _classify( path, entry, canonical, is_self_scan=False, project_root=None ):
-    """
-    Call `pdc.classify`, passing `project_root` only when it exists.
-
-    RED-RUN SHIM, removed in the fix commit: before the fix `classify` has no
-    `project_root` parameter, and a TypeError would turn every guard test red for
-    the wrong reason. This way the guards run today's behaviour and stay green, and
-    only the tests that need the fix are red.
-    """
-    if "project_root" in inspect.signature( pdc.classify ).parameters:
-        return pdc.classify( path, entry, canonical, is_self_scan=is_self_scan, project_root=project_root )
-    return pdc.classify( path, entry, canonical, is_self_scan=is_self_scan )
+    return pdc.classify( path, _entry( canonical, version ), canonical, is_self_scan=self_scan, project_root=root )
 
 
 # ---------------------------------------------------------------------------
@@ -130,6 +115,10 @@ KINDS = [
       "   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use [PLAN] as default)",
       lambda p: f"   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use [{p.prefix}] as default)",
       lambda p: f"   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or skip them and use [{p.prefix}])" ),
+    ( "use-prefix-sentence",
+      "Use `[PLAN]` prefix for this repository.",
+      lambda p: f"Use `[{p.prefix}]` prefix for this repository.",
+      lambda p: f"Use `[{p.prefix}]` prefix for this repository, and skip the notifications." ),
     ( "working-directory",
       f"   - **Working directory**: {CANON_ROOT}",
       lambda p: f"   - **Working directory**: {p.root}",
@@ -211,11 +200,12 @@ def test_every_kind_together_in_one_file_reads_CURRENT( tmp_path ):
     assert state == "CURRENT"
 
 
-def test_a_customized_copy_plus_one_real_change_reports_one_differing_line( tmp_path ):
+def test_a_customized_copy_plus_one_real_change_reports_only_the_real_change( tmp_path ):
     """
     The "N lines differ" count is taken against the RENDERED canonical, so it names
-    real drift only. Before the fix it said 7 for a file whose only real change was
-    one line, and a reader could not tell the two apart.
+    real drift only. One changed line is one removed plus one added, so 2; before
+    the fix the four substituted lines made it 10 and a reader could not tell the
+    real change from the renames.
     """
     p         = _project( tmp_path )
     kinds     = [ k for k in KINDS if k[ 0 ] in ( "project-form-2", "prefix-line", "working-directory", "history-file" ) ]
@@ -224,7 +214,7 @@ def test_a_customized_copy_plus_one_real_change_reports_one_differing_line( tmp_
 
     state, detail = _verdict( p, canonical, installed )
     assert state == "VERSION_LIES"
-    assert "1 lines differ" in detail, f"the count included the substitutions: {detail!r}"
+    assert "2 lines differ" in detail, f"the count included the substitutions: {detail!r}"
 
 
 def test_a_customized_copy_with_an_older_version_line_is_STALE( tmp_path ):
@@ -381,11 +371,11 @@ def test_user_scope_renders_nothing( tmp_path ):
     custom.write_text( _lines( "**Prefix**: [LUPIN]" ), encoding="utf-8" )
 
     assert pdc.get_install_project( commands, home=home ) is None
-    state, _ = _classify( custom, _entry( canonical ), canonical, project_root=pdc.get_install_project( commands, home=home ) )
+    state, _ = pdc.classify( custom, _entry( canonical ), canonical, project_root=pdc.get_install_project( commands, home=home ) )
     assert state == "VERSION_LIES"
 
     custom.write_text( canonical, encoding="utf-8" )
-    state, _ = _classify( custom, _entry( canonical ), canonical, project_root=None )
+    state, _ = pdc.classify( custom, _entry( canonical ), canonical, project_root=None )
     assert state == "CURRENT"
 
 
@@ -526,3 +516,76 @@ def test_the_script_reads_a_customized_project_install_as_current( tmp_path ):
 
     assert result.returncode == 0, result.stderr
     assert "1/1 current" in result.stdout, result.stdout
+
+
+def test_identity_fits_project_rejects_each_field_that_is_outside_its_shape_or_its_tree( tmp_path ):
+    """
+    The shape and tie checks, called directly: `derive_identity` already filters
+    the prefix by its own pattern, so the check in `identity_fits_project` is a
+    second wall and needs its own test, or it is code no test can reach.
+    """
+    p    = _project( tmp_path )
+    good = { "name": "Lupin", "dir": "lupin", "prefix": "LUPIN", "root": p.root }
+
+    assert pdc.identity_fits_project( good, p.path )
+    assert pdc.identity_fits_project( { "name": None, "dir": None, "prefix": None, "root": None }, p.path )
+    for field, value in ( ( "prefix", "lupin" ), ( "dir", "ampe" ), ( "root", p.other_root ), ( "name", "Ampe" ), ( "name", "Lupin; rm -rf" ) ):
+        assert not pdc.identity_fits_project( dict( good, **{ field: value } ), p.path ), f"{field}={value!r} fitted the project"
+
+
+def _canonical_tree( tmp_path, files ):
+    """
+    A minimal canonical tree for `check_target`.
+
+    Requires:
+        - files maps command name to canonical text
+    Ensures:
+        - returns ( root, manifest ) where the manifest lists every file with its sha
+    """
+    root = tmp_path / "pip"
+    ( root / ".claude" / "commands" ).mkdir( parents=True )
+    for name, text in files.items():
+        ( root / ".claude" / "commands" / name ).write_text( text, encoding="utf-8" )
+    manifest = { "commands": { name: _entry( text ) for name, text in files.items() } }
+    return root, manifest
+
+
+def test_check_target_renders_for_the_project_and_still_reports_missing( tmp_path ):
+    """The in-process path the script takes: one customized, one changed, one absent."""
+    canon  = { "a.md": _lines( "**Prefix**: [PLAN]" ), "b.md": _lines( "rule X" ), "c.md": _lines( "other" ) }
+    root, manifest = _canonical_tree( tmp_path, canon )
+    p      = _project( tmp_path )
+    cmds   = p.path / ".claude" / "commands"
+    ( cmds / "a.md" ).write_text( _lines( f"**Prefix**: [{p.prefix}]" ), encoding="utf-8" )
+    ( cmds / "b.md" ).write_text( _lines( "rule Y" ), encoding="utf-8" )
+
+    results, scanned = pdc.check_target( cmds, root, manifest )
+
+    assert scanned == 2
+    assert [ n for n, _ in results[ "CURRENT" ] ]      == [ "a.md" ]
+    assert [ n for n, _ in results[ "VERSION_LIES" ] ] == [ "b.md" ]
+    assert [ n for n, _ in results[ "MISSING" ] ]      == [ "c.md" ]
+
+
+def test_check_target_in_user_scope_compares_hashes_only( tmp_path, monkeypatch ):
+    canon  = { "a.md": _lines( "**Prefix**: [PLAN]" ) }
+    root, manifest = _canonical_tree( tmp_path, canon )
+    home   = tmp_path / "home"
+    cmds   = home / ".claude" / "commands"
+    cmds.mkdir( parents=True )
+    ( cmds / "a.md" ).write_text( _lines( "**Prefix**: [LUPIN]" ), encoding="utf-8" )
+    monkeypatch.setattr( Path, "home", classmethod( lambda cls: home ) )
+
+    results, _ = pdc.check_target( cmds, root, manifest )
+
+    assert [ n for n, _ in results[ "VERSION_LIES" ] ] == [ "a.md" ]
+
+
+def test_a_self_scan_with_an_older_version_reads_STALE_naming_the_manifest( tmp_path ):
+    """The self-scan STALE arm, which the customized path must leave exactly as it was."""
+    p         = _project( tmp_path )
+    canonical = _lines( "rule", version="1.1" )
+    state, detail = _verdict( p, canonical, _lines( "rule", version="1.0" ), version="1.1", self_scan=True )
+
+    assert state == "STALE"
+    assert "v1.0 vs manifest v1.1" in detail and "pip_manifest.py" in detail

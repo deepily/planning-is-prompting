@@ -10,7 +10,16 @@ That specific combination — hash differs, version matches — is reported as i
 own state (VERSION_LIES), because it is the case the previous version-string
 check reported as current.
 
+A project-customized copy is CURRENT too (row 9aadd0ac item 25). The installer
+writes per-project values into every wrapper: the Project and Prefix lines, the
+directory paths, the heading, and two path-form rewrites. A hash cannot tell those
+from drift, so for an install that sits in a project the canonical text is RENDERED
+for that project and compared byte for byte. It is a render, not an ignore: a wrong
+value on a substituted line still reads VERSION_LIES. In user scope there is no
+project to witness the values, so the hash is the only evidence there.
+
 Spec: src/rnd/2026.07.19-workflow-distribution-user-scope-migration.md §5.3
+Design: io/tmp/2026.10.10-drift-check-item25-design.md (revision 2, reviewed)
 
 Usage:
     python3 pip_drift_check.py                    # check ./.claude/commands
@@ -38,6 +47,34 @@ from pathlib  import Path
 MANIFEST_REL   = "workflow/MANIFEST.json"
 OVERRIDE_RE    = re.compile( r"<!--\s*pip-override:\s*(.+?)\s*-->" )
 VERSION_RE     = re.compile( r"^\*\*Version\*\*:\s*(.+)$", re.MULTILINE )
+
+# Shapes of the values read from an installed file. A value outside its shape is
+# not rendered: the install must not supply its own comparison value as free text.
+NAME_RE        = re.compile( r"^[A-Za-z0-9][A-Za-z0-9 ._-]{0,39}$" )
+DIR_RE         = re.compile( r"^[A-Za-z0-9._-]+$" )
+ROOT_RE        = re.compile( r"^/[A-Za-z0-9._/-]*$" )
+PREFIX_RE      = re.compile( r"^[A-Z][A-Z0-9_]*$" )
+
+PRODUCT_DIR    = "planning-is-prompting"
+PROJECT_FORM_1 = "**Project**: Planning is Prompting"
+PROJECT_FORM_2 = "**Project**: planning-is-prompting (meta-repository)"
+NAME_BULLET_RE = re.compile( r"^(\s*- \*\*Project Name\*\*: )Planning is Prompting$" )
+PREFIX_LABEL   = r"(?:\*\*Prefix\*\*: |\s*- \*\*(?:\[SHORT_PROJECT_PREFIX\]|Prefix)\*\*: )"
+PREFIX_LINE_RE = re.compile( r"^" + PREFIX_LABEL + r"(.*)$" )
+PREFIX_TOKEN_RE= re.compile( r"\[([A-Z][A-Z0-9_]*)\]" )
+USE_PREFIX_RE  = re.compile( r"^Use `\[([A-Z][A-Z0-9_]*)\]` prefix for this repository\.$" )
+PATH_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root|History file|TODO file|TODO file path|Bug fix queue file|Archive directory|README file|Planning documents)\*\*: |Source: )" )
+ROOT_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root)\*\*: |Source: )(\S+)$" )
+CANON_ROOT_RE  = re.compile( r"(/[\w./-]*?/planning-is-prompting)(?=/|\b)" )
+TITLE_NAME_RE  = re.compile( r"Planning[- ]is[- ]Prompting" )
+
+# The two in-line rewrites the installer makes, and ONLY these: the qualifier is
+# set aside when it sits immediately before the path it qualifies, at a word start
+# or after the `<planning-is-prompting>/` placeholder, never after a path character.
+QUALIFIER_RES  = [
+    re.compile( r"(?:(?<![\w/.$-])|(?<=>/))planning-is-prompting/(?=src/rnd/)" ),
+    re.compile( r"(?<![\w/.-])\$PLANNING_IS_PROMPTING_ROOT/(?=workflow/scripts/)" )
+]
 
 # Ordered worst-first so the report leads with what needs attention.
 STATE_ORDER    = [ "VERSION_LIES", "STALE", "MISSING", "SHADOW", "CURRENT" ]
@@ -139,7 +176,193 @@ def manifest_age_days( manifest ):
     return max( 0, ( datetime.now( timezone.utc ) - generated ).days )
 
 
-def classify( installed_path, canonical_entry, canonical_text, is_self_scan=False ):
+def name_is_well_formed( text ):
+    """
+    Requires:
+        - text is a string
+    Ensures:
+        - returns True when text is a plausible project display name: 1 to 40
+          characters of letters, digits, space, dot, underscore, hyphen, starting
+          with a letter or digit. A sentence, a shell fragment or a long string is not.
+    """
+    return NAME_RE.match( text ) is not None
+
+
+def get_install_project( target, home=None ):
+    """
+    The project an install directory sits in.
+
+    Requires:
+        - target is a path (may be absent); home is a Path or None for the real home
+    Ensures:
+        - returns the resolved <project> when target is <project>/.claude/commands
+          and <project> is not the home directory; otherwise None. None means there
+          is no project to witness the values (user scope, or a bare directory), so
+          nothing is rendered and the hash is the only evidence.
+    """
+    target = Path( target ).expanduser().resolve()
+    if target.name != "commands" or target.parent.name != ".claude":
+        return None
+
+    project = target.parent.parent
+    home    = Path.home() if home is None else Path( home )
+    if project == home.resolve():
+        return None
+
+    return project
+
+
+def line_prefix_token( line ):
+    """
+    Requires:
+        - line is one line of a wrapper
+    Ensures:
+        - returns the project prefix a prefix-bearing line declares (the first
+          `[X]` token after a Prefix label, or the one in the "Use `[X]` prefix"
+          sentence), or None for any other line
+    """
+    use = USE_PREFIX_RE.match( line )
+    if use: return use.group( 1 )
+
+    label = PREFIX_LINE_RE.match( line )
+    token = PREFIX_TOKEN_RE.search( label.group( 1 ) ) if label else None
+    return token.group( 1 ) if token else None
+
+
+def derive_identity( installed_text ):
+    """
+    Read the project identity an installed file declares, once.
+
+    Requires:
+        - installed_text is the installed wrapper's text
+    Ensures:
+        - returns { name, dir, prefix, root } with None for a field the file does
+          not declare; a field declared with two different values is a conflict and
+          the whole result is None (the file is not one project's install)
+        - values are returned as written; shapes are checked by the caller
+    """
+    found = { "name": set(), "dir": set(), "prefix": set(), "root": set() }
+
+    for line in installed_text.splitlines():
+        form_2 = re.match( r"^\*\*Project\*\*: (\S+) \(installed from planning-is-prompting\)$", line )
+        if form_2:
+            found[ "dir" ].add( form_2.group( 1 ) )
+            continue
+
+        project = re.match( r"^\*\*Project\*\*: (.+)$", line )
+        if project and line != PROJECT_FORM_2:
+            found[ "name" ].add( project.group( 1 ) )
+            continue
+
+        bullet = re.match( r"^\s*- \*\*Project Name\*\*: (.+)$", line )
+        if bullet:
+            found[ "name" ].add( bullet.group( 1 ) )
+            continue
+
+        token = line_prefix_token( line )
+        if token is not None:
+            found[ "prefix" ].add( token )
+            continue
+        if PREFIX_LINE_RE.match( line ): continue
+
+        root = ROOT_LINE_RE.match( line )
+        if root: found[ "root" ].add( root.group( 1 ).rstrip( "/" ) )
+
+    if any( len( values ) > 1 for values in found.values() ):
+        return None
+
+    return { key: ( next( iter( values ) ) if values else None ) for key, values in found.items() }
+
+
+def identity_fits_project( identity, project_root ):
+    """
+    Requires:
+        - identity is a dict from derive_identity; project_root is the resolved Path
+          of the project the install sits in
+    Ensures:
+        - returns True only when every declared value has its shape AND names the
+          project the install sits in: root equals the tree, dir equals its name,
+          and the display name is that name written as words. A value that is
+          merely consistent with itself is not enough (an install re-rooted at
+          /home/rruiz agrees with itself on every line).
+    """
+    if DIR_RE.match( project_root.name ) is None or ROOT_RE.match( str( project_root ) ) is None:
+        return False
+
+    if identity[ "prefix" ] is not None and PREFIX_RE.match( identity[ "prefix" ] ) is None:
+        return False
+    if identity[ "dir" ] is not None and identity[ "dir" ] != project_root.name:
+        return False
+    if identity[ "root" ] is not None and identity[ "root" ] != str( project_root ):
+        return False
+    if identity[ "name" ] is not None:
+        if not name_is_well_formed( identity[ "name" ] ): return False
+        if re.sub( r"[ _]+", "-", identity[ "name" ] ).lower() != project_root.name.lower(): return False
+
+    return True
+
+
+def strip_qualifiers( text ):
+    """
+    Requires:
+        - text is a string
+    Ensures:
+        - returns text with the two installer path qualifiers removed where they
+          sit exactly before `src/rnd/` and `workflow/scripts/`; nothing else moves
+    """
+    for pattern in QUALIFIER_RES:
+        text = pattern.sub( "", text )
+
+    return text
+
+
+def render_for_project( canonical_text, installed_text, project_root ):
+    """
+    Render canonical text for the project an install sits in.
+
+    Requires:
+        - canonical_text and installed_text are wrapper texts
+        - project_root is the resolved Path of the project the install sits in
+    Ensures:
+        - returns the canonical text with its per-project lines written the way the
+          installer writes them for that project, or None when the installed file
+          is not renderable (conflicting identity, or a value outside its shape or
+          not naming this project)
+        - only lines whose canonical form is exactly a known per-project form are
+          rewritten, and only their value part; every other line is unchanged
+        - a heading keeps the product name when the installed heading does
+          (the install and uninstall wizards do)
+    """
+    identity = derive_identity( installed_text )
+    if identity is None or not identity_fits_project( identity, project_root ):
+        return None
+
+    canon_root   = CANON_ROOT_RE.search( canonical_text )
+    canon_root   = canon_root.group( 1 ) if canon_root else None
+    canon_prefix = next( ( t for t in map( line_prefix_token, canonical_text.splitlines() ) if t is not None ), None )
+
+    installed_lines = installed_text.split( "\n" )
+    out             = []
+    for index, line in enumerate( canonical_text.split( "\n" ) ):
+        if line == PROJECT_FORM_1 and identity[ "name" ] is not None:
+            line = f"**Project**: {identity[ 'name' ]}"
+        elif line == PROJECT_FORM_2 and identity[ "dir" ] is not None:
+            line = f"**Project**: {identity[ 'dir' ]} (installed from planning-is-prompting)"
+        elif NAME_BULLET_RE.match( line ) and identity[ "name" ] is not None:
+            line = NAME_BULLET_RE.sub( lambda m: m.group( 1 ) + identity[ "name" ], line )
+        elif line.startswith( "# " ) and identity[ "name" ] is not None:
+            kept = index < len( installed_lines ) and installed_lines[ index ] == line
+            if not kept: line = TITLE_NAME_RE.sub( identity[ "name" ], line )
+        elif ( PREFIX_LINE_RE.match( line ) or USE_PREFIX_RE.match( line ) ) and canon_prefix is not None and identity[ "prefix" ] is not None:
+            line = line.replace( f"[{canon_prefix}]", f"[{identity[ 'prefix' ]}]" )
+        elif PATH_LINE_RE.match( line ) and canon_root is not None:
+            line = line.replace( canon_root, str( project_root ), 1 )
+        out.append( line )
+
+    return "\n".join( out )
+
+
+def classify( installed_path, canonical_entry, canonical_text, is_self_scan=False, project_root=None ):
     """
     Classify one installed command against its canonical entry.
 
@@ -161,12 +384,19 @@ def classify( installed_path, canonical_entry, canonical_text, is_self_scan=Fals
         - canonical_entry has 'sha256' and 'version'
         - canonical_text is the canonical file's text
         - is_self_scan is True when installed_path IS the canonical file
+        - project_root is the resolved Path of the project the install sits in, or
+          None (user scope, or no project): then nothing is rendered and the hash
+          is the only evidence
 
     Ensures:
         - returns ( state, detail ) where state is one of STATE_ORDER and
           detail is a human-readable qualifier (may be empty)
         - on a self-scan the detail names the manifest as the stale party and
           NEVER reports a line-diff, because no cross-file diff was performed
+        - an install that differs from canonical only in the values the installer
+          writes for its project is CURRENT with detail "project-customized"
+        - the line count in a VERSION_LIES or STALE detail is taken against the
+          rendered canonical, so it counts real differences only
     """
     text   = installed_path.read_text( encoding="utf-8" )
     digest = hashlib.sha256( installed_path.read_bytes() ).hexdigest()
@@ -178,13 +408,26 @@ def classify( installed_path, canonical_entry, canonical_text, is_self_scan=Fals
     if override is not None:
         return ( "SHADOW", override.group( 1 ) )
 
+    # Render canonical for this project and compare. Not for a self-scan (the file
+    # is canonical already) and not without a project (user scope: no witness).
+    compared = canonical_text
+    if project_root is not None and not is_self_scan:
+        rendered = render_for_project( canonical_text, text, project_root )
+        if rendered is not None:
+            if strip_qualifiers( rendered ) == strip_qualifiers( text ):
+                return ( "CURRENT", "project-customized" )
+            compared = rendered
+
     match          = VERSION_RE.search( text )
     local_version  = match.group( 1 ).strip().lstrip( "v" ) if match else None
     canon_version  = canonical_entry[ "version" ]
 
+    if compared is not canonical_text:
+        compared, text = strip_qualifiers( compared ), strip_qualifiers( text )
+
     diff_lines = sum(
         1 for line in difflib.unified_diff(
-            canonical_text.splitlines(), text.splitlines(), lineterm="", n=0
+            compared.splitlines(), text.splitlines(), lineterm="", n=0
         ) if line.startswith( ( "+", "-" ) ) and not line.startswith( ( "+++", "---" ) )
     )
 
@@ -221,6 +464,7 @@ def check_target( target, root, manifest ):
     commands_dir = root / ".claude" / "commands"
     results      = { state: [] for state in STATE_ORDER }
     scanned      = 0
+    project_root = get_install_project( target )
 
     for name, entry in manifest[ "commands" ].items():
         installed = target / name
@@ -233,7 +477,7 @@ def check_target( target, root, manifest ):
         # SAME FILE on the default (self) scan — see classify()'s § THE SELF-SCAN CASE.
         # Resolved on both sides so a symlinked or relative target is still recognised.
         is_self_scan    = installed.resolve() == canonical_file.resolve()
-        state, detail   = classify( installed, entry, canonical_text, is_self_scan=is_self_scan )
+        state, detail   = classify( installed, entry, canonical_text, is_self_scan=is_self_scan, project_root=project_root )
         results[ state ].append( ( name, detail ) )
         scanned += 1
 
