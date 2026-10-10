@@ -226,7 +226,7 @@ All shared facilitation duties from `plan-review-cascaded-common.md` §Step 6 (s
 
 ### 6.6 Dependency-Map Maintenance Protocol
 
-Throughout the cascade, manager keeps the Step-0.5 dependency map current. When a reviewer surfaces a finding that REVEALS a previously-uncaptured dependency, manager:
+Throughout the cascade, manager keeps the Step-0.7 dependency map current. When a reviewer surfaces a finding that REVEALS a previously-uncaptured dependency, manager:
 
 1. Updates the dependency-map yaml on its commons topic
 2. Posts `kind: "dependency_map_update"` with the delta + affected sections
@@ -234,7 +234,7 @@ Throughout the cascade, manager keeps the Step-0.5 dependency map current. When 
 
 ### 6.7 Goal-Coverage Matrix Maintenance Protocol
 
-Manager initializes the goal-coverage matrix at Step 0/0.5 (rows = goal-promised behaviors extracted from intent statement OR design doc; columns = sections; cells initially all `uncovered`).
+Manager initializes the goal-coverage matrix at Step 0.0/0.7 (rows = goal-promised behaviors extracted from intent statement OR design doc; columns = sections; cells initially all `uncovered`).
 
 After each section's Stage-3 (Ownership) close, manager:
 
@@ -363,7 +363,7 @@ Step 9 authorship is the **Manager's** responsibility by default. Rationale:
 
 The Manager System Prompt, Severity Classification Heuristics, Escalation Taxonomy Template, DM-Subset Selection Heuristics, Vote Mechanics Spec, and Heartbeat Handling (external-scheduler integration) are all in `plan-review-cascaded-common.md`. **Authoring-mode addendum to the System Prompt**:
 
-> **Authoring-mode addendum** (added 2026-05-19): in addition to your shared manager-system-prompt duties, you maintain TWO new artifacts throughout the cascade: (a) the dependency map (DAG of section-to-section contract surfaces); (b) the goal-coverage matrix (rows = goal-promised behaviors; columns = sections; cells = owned/partial/uncovered). Both initialize at Step 0/0.5; both update on section-close events; both are checked at end-of-pipeline. Goal-coverage matrix uncovered cells at cascade-end escalate as Trigger 2 (cross-section conflict).
+> **Authoring-mode addendum** (added 2026-05-19): in addition to your shared manager-system-prompt duties, you maintain TWO new artifacts throughout the cascade: (a) the dependency map (DAG of section-to-section contract surfaces); (b) the goal-coverage matrix (rows = goal-promised behaviors; columns = sections; cells = owned/partial/uncovered). Both initialize at Step 0.0/0.7; both update on section-close events; both are checked at end-of-pipeline. Goal-coverage matrix uncovered cells at cascade-end escalate as Trigger 2 (cross-section conflict).
 >
 > **Proactive decision-delivery (added 2026-07-01, Rick post-game — mux cascade)**: shared Manager System Prompt meta-rule 6 (common.md) binds you identically — user-destined decisions (ratified Q-decisions revisited, scope/design forks, preference OQs) are driven to the user PROACTIVELY per-batch via a `/plan-decide` walkthrough (no permission-ask, no buried end-of-run batch), while the attention-filter keeps manager-resolvable items off the user's desk.
 
@@ -391,7 +391,7 @@ Phase 6C (Lupin notifications-UI multiplexer port) is the **canonical hybrid-mod
 
 **Activation**:
 - Skip Step 0.0 (design + partitioning exist; enter at Step 0.1)
-- Run Step 0.5 (dependency map for the 4 sub-features)
+- Run Step 0.7 (dependency map for the 4 sub-features)
 - Step 2 = lite multi-select ratification of the 4 sub-features as sections
 - Step 5 multi-draft cap = 2 (default; revise if Rachel hits cap on any sub-feature)
 
@@ -419,7 +419,7 @@ See `plan-review-cascaded-defaults.md` for the full shared defaults table. The a
 
 ## Version History
 
-- **2026.10.09 (Extra 2, store row `9aadd0ac`)** — Item 18: the `intent_capture_required` row and the 6c example say hybrid mode skips Step 0.0 and enters at Step 0.1, as §Step 0.0 already states; they had said "skip Step 0".
+- **2026.10.09 (Extra 2, store row `9aadd0ac`)** — Item 19: four stale "Step 0.5" / "Step 0/0.5" references to the dependency map now say Step 0.7 (Step 0.0/0.7 where the goal-coverage matrix is initialised alongside); Step 0.5 is pre-cascade ratification. Item 18: the `intent_capture_required` row and the 6c example say hybrid mode skips Step 0.0 and enters at Step 0.1, as §Step 0.0 already states; they had said "skip Step 0".
 - **2026.10.09 (Sam, store row `681745a9`)** — Pruning pass 4. The second configuration table ("Configuration Defaults Additions") repeated the five Step 1 keys; its two extra keys (`hybrid_mode`, `manager_divergence_check_active`) moved into the Step 1 table, which also takes the "int 1-5" bound. Also removed the Phase 6C cast list under the worked example (Step 4 gives it) and two activation bullets that restated defaults. No rule changed.
 - **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
 - **2026.05.20 (Run-4 v1.1 workflow fold)** — Version-history-only entry; the v1.1 workflow fold applies to this playbook via the shared-workflow references already in place. New shared sections + extensions landed in:
