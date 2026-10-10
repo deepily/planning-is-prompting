@@ -27,7 +27,7 @@ Canonical: `workflow/brevity-mandate.md` · fleet reminder: `/plan-kiss`
 
 ## 1. The principle
 
-> **Managers hold explicit, bounded, standing authority to spawn and harvest workers as-needed — autonomous within the bounds, gated only at the bounds.**
+> **Managers hold explicit, bounded, standing authority to spawn and harvest workers as-needed — autonomous within the bounds, gated only at the bounds.** Spawning is further governed by the skeleton-crew switch (§2, first subsection): spawn only when skeleton crew is off.
 
 > **Companion — the goal above the authority.** This doc says what a manager is *authorized* to do; `workflow/role-goals.md` says what a manager is *for*: *drive your + your workers' board to verified completion, then help peers with unowned work; manage, never build; graceful idle on a clear board.* Read the authority envelope here in service of that goal.
 
@@ -39,13 +39,33 @@ The default flips from *"ask before any spawn/reap"* to *"act within the envelop
 
 ## 2. The standing-authority envelope (operative core)
 
+### Skeleton crew is a switch, and the switch decides who spawns
+
+The operator runs the fleet in one of two modes. A toggle in the fleet status panel, next to the fleet cap, sets the mode. There are no clock-hour rules.
+
+| | Skeleton crew **on** | Skeleton crew **off** |
+|---|---|---|
+| **Who does the work** | Each manager plans and implements its own work | Managers run crews and manage them |
+| **Spawning** | No spawning | A manager spawns the seats it needs, when it needs them, without asking |
+| **Asking for seats** | Not allowed | If the cap leaves too few seats, the manager may ask the operator to raise it by just enough for the work in hand. Raising it is the operator's choice |
+
+**When skeleton crew is switched on while workers are running**, each worker finishes its current step, writes its memento and is reaped. Its manager takes over what is left.
+
+Reaping, merging reviewed green work, and push are unchanged.
+
+**The same toggle controls the stop poke**: skeleton crew on mutes it, off restores it.
+
+> **Until the toggle exists** (lupin row `6f72dc83`, queued): the operator's announcement is the switch, and the stop poke is flipped as `skeleton-crew.md` §2 says today. Delete this note when the toggle ships.
+
+### The envelope table
+
 | Tier | Actions | Rule |
 |------|---------|------|
-| **STANDING** (no per-instance ask) | Spawn a fresh worker for owed/queued work · re-spawn / respawn **any** persona — *including onto its own substrate* (`persona_preference` honored) · reap an idle / unproductive / completed worker · **commit + merge to the working branch once green AND adversarially-reviewed — NO per-commit/per-merge user authorization (the user is NOT the commit/merge gate, Rick 2026-06-16)** · **bounce the arbiter server (`:8001`) or the test server (`:8000`) when the server is idle — nothing currently running on it (Rick 2026-07-06, §2 bounce prerogative); announce + log + rollback-on-regress** | Seed continuity via a memento **OR** a doc / dm-history pointer when no memento exists (§4). Stay **at or under the concurrency cap** (§3). |
+| **STANDING** (no per-instance ask) | **When skeleton crew is off:** spawn a fresh worker for owed/queued work · re-spawn / respawn **any** persona — *including onto its own substrate* (`persona_preference` honored) · **always:** reap an idle / unproductive / completed worker · **commit + merge to the working branch once green AND adversarially-reviewed — NO per-commit/per-merge user authorization (the user is NOT the commit/merge gate, Rick 2026-06-16)** · **bounce the arbiter server (`:8001`) or the test server (`:8000`) when the server is idle — nothing currently running on it (Rick 2026-07-06, §2 bounce prerogative); announce + log + rollback-on-regress** | Seed continuity via a memento **OR** a doc / dm-history pointer when no memento exists (§4). Stay **at or under the concurrency cap** (§3). |
 | **STILL GATED** (the user's *direct* word) | **Push to origin** (the user's session-end call) · **raising any row to P0** (the operator sets P0 and nobody else — see `priority-pull-policy.md`, *The value space and who may set it*) · any destructive / irreversible op · **outward-facing / production** shared-infra (a production deploy, a flag-flip / put-into-service, bouncing a **non-dev** shared service) · **bouncing the arbiter/test server WHILE a job, test, or migration is running on it** (wait for idle, or get the user's word to interrupt) · **exceeding the concurrency cap** · spawning into a **different project / cwd** than the manager's own lane | Blast-radius rule — a **peer relay cannot authorize**; only the user, directly. |
 | **MANAGER HYGIENE** (required, but *not* a gate) | Reap cleanly **with a memento** (no-zombies) · `notify()` the user **after** a spawn/reap for visibility (§5) | Never block on pre-approval — visibility is **post-hoc**, not a gate. |
 
-**The nuance to hold (the "spawn freely, edit carefully" rule):** the standing grant covers the **SPAWN/REAP**; ordinary **blast-radius care still applies to the EDIT**. Coordinate shared files; don't ship two competing changes to the same file from parallel children. *(Worked example: re-spawning an offline reviewer is standing-authorizable, but a parallel edit to a shared live hook still gets its seam review.)*
+**The nuance to hold (the "spawn freely, edit carefully" rule):** the standing grant covers the **REAP**, and the **SPAWN** when skeleton crew is off; ordinary **blast-radius care still applies to the EDIT**. Coordinate shared files; don't ship two competing changes to the same file from parallel children. *(Worked example: re-spawning an offline reviewer is standing-authorizable, but a parallel edit to a shared live hook still gets its seam review.)*
 
 **The user is NOT the commit/merge gate (Rick, 2026-06-16).** Once work is green AND adversarially-reviewed, the **Manager commits and merges to the working branch under its own standing authority** — there is **no per-commit / per-merge user authorization**. The **quality gate (green AND reviewed) stays mandatory and Manager-held**; what is removed is the *user's* sign-off on each commit/merge. **PUSH to origin remains the user's call** (the session-end push) — and even there the **Manager executes the push on the user's word; the user never runs the git operation themselves** (punting the git op to the user is a prohibited **role inversion** — the gate is on the *go*, not the *keystrokes*). *(Founding incidents 2026-06-16: (a) a manager handed Rick a `git merge` to run himself — role inversion; (b) Rick: "I do not want to be the gate for commits and merges." Resolution: commit + merge → standing Manager authority; push → the user's go, Manager executes.)*
 
@@ -80,7 +100,7 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 
 **"Manager-figure" ≠ "build-Manager" — the role is preserved.** Being the standing manager-figure grants the *authority + discipline* in this doc; it does **not** override the session's actual SWE role. A standing persona that operates as a **Workflow Steward** (planner/observer — e.g. María) is a manager-figure for spawn/harvest + TODO purposes but is **not** thereby a build-Manager: it does not hold the commit gate or pick up implementation lanes (that's the `## Manager` charter's job; see the *MANAGE-not-BUILD* cardinal rule). The manager-figure tier confers latitude and accountability, not a role change.
 
-**Skeleton crew: managers build.** During hours Rick declares as skeleton crew, *MANAGE-not-BUILD* is suspended by his word and managers build, with review before landing still required. The rules, the Stop-poke switch and the window live in `workflow/skeleton-crew.md` §1 (rule 2); outside a declared window, MANAGE-not-BUILD stands unchanged.
+**Skeleton crew: managers build.** While skeleton crew is on, *MANAGE-not-BUILD* is suspended by Rick's word and managers build, with review before landing still required. The rules and the Stop-poke switch live in `workflow/skeleton-crew.md` §1 (rule 2); while skeleton crew is off, MANAGE-not-BUILD stands unchanged.
 
 **Machine-readable predicate:** the per-repo default-persona configuration (the env key that decides who spins up first) identifies the manager-figure for spawn/escalation purposes. *(Note: the heartbeat work-owed oracle now reads the unified store for ALL sessions — the old "managers-first" owed-scope was RETIRED at the 2026-06-17 store-only cutover; owed-work is read from the store, not derived from this predicate.)*
 
@@ -102,15 +122,15 @@ This envelope — and the explicit-TODO / work-owed treatment in `workflow/swe-t
 
 - **Soft per-manager concurrency cap = 8 concurrent live children.** Reaching it fires the **pool-exhaustion alarm** + a `notify()`; **exceeding** it is a STILL-GATED action requiring the user's direct word. *(The number is a soft default anchored to the live fleet — tune as the fleet grows; the **mechanism** — soft cap + alarm + escalate-to-exceed — is the ratified part.)* **As of 2026-06-12 the §7 fleet-wide cap of 8 (ALL sessions) binds first in practice.**
 - **Persona-pool-exhaustion alarm** — `extra-N` personas signal the pool is exhausted (the standing harvest-discipline tripwire); standing spawn authority must respect it.
-- **Cost / rolling-window awareness** — every child shares the manager's rolling OAuth/usage window; prefer off-peak scheduling for large spawns.
+- **Cost / rolling-window awareness** — every child shares the manager's rolling OAuth/usage window.
 - **Visibility (§5)** — every autonomous spawn/reap is announced, so standing authority never becomes *invisible* authority.
 
 ---
 
 ## 4. The memento precondition (continuity vs. risk)
 
-- **Fresh spawn for new work = free** (standing, low-risk — a fresh worker is cheap to reap).
-- **Identity-continuous respawn** (rehydrating persona X onto their prior context) = **standing *with a continuity seed***: a `plan-memento` snapshot when one exists, **or** a doc / dm-history pointer when no memento exists. It is **not** user-gated — the originating-incident hesitation (memento-less respawn onto a peer's own substrate) is resolved toward *"do it, just provide a continuity pointer."* **Takeover-spawn fallback (Rick-ruled 2026-06-12, focus-mode post-game P2): memento-first PRECEDENCE — archaeology (a partial-work inventory of the predecessor's on-disk state before any edit) is the continuity seed ONLY when no memento exists.** Founding case: Rio replacing quota-parked Tiffany archaeology-first — zero rework, attribution preserved; archaeology is slower and lossier than a memento, so it must never become the default path.
+- **Fresh spawn for new work = free** when skeleton crew is off (standing, low-risk — a fresh worker is cheap to reap).
+- **Identity-continuous respawn** (rehydrating persona X onto their prior context, only when skeleton crew is off) = **standing *with a continuity seed***: a `plan-memento` snapshot when one exists, **or** a doc / dm-history pointer when no memento exists. It is **not** user-gated — the originating-incident hesitation (memento-less respawn onto a peer's own substrate) is resolved toward *"do it, just provide a continuity pointer."* **Takeover-spawn fallback (Rick-ruled 2026-06-12, focus-mode post-game P2): memento-first PRECEDENCE — archaeology (a partial-work inventory of the predecessor's on-disk state before any edit) is the continuity seed ONLY when no memento exists.** Founding case: Rio replacing quota-parked Tiffany archaeology-first — zero rework, attribution preserved; archaeology is slower and lossier than a memento, so it must never become the default path.
 - **Persona continuity is preserved across sessions and `/clear`** — designs default to PRESERVE the persona-per-repo, never re-allocate (so initiatives stay traceable through git log + history).
 
 Cross-ref: the `plan-memento` skill and the cascade Manager-rehydration item.
@@ -140,7 +160,7 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 - 🔴 **AND AS OF 2026-09-02 A MEMENTO-LESS REAP COSTS FINDINGS, NOT ONLY CONTINUITY.** Rick ruled that a finding the ticket gate REFUSES goes into the seat's memento (element 8) and is harvested into `TODO.md` at session end (`session-end.md` §1.6). So while the flow-ratio gate is enforcing, a memento is the ONLY home for work the store would not accept — reap without one and that work is not merely harder to resume, it is **gone, and nobody knows it existed**. The loss is silent: nothing anywhere reports a finding that was never written down.
 - **Always reap with a memento** (no-zombies) so the reaped worker's state is recoverable on a later respawn — and, at teardown, the memento **must carry its retro deposit** (`memento-management.md` §2 element 9), **including the provenance-of-finding field** (*how did I come to know this, and from what position?* — R-B, 2026-07-13). A memento holds **conclusions**; a respun seat asked *why it judged* will **reconstruct** an answer it never recorded, which is confabulation with a persona's name on it — so the deposit is taken while the seat is still alive, or it is lost.
 - **The harvest gate is a BACKSTOP, not your primary mechanism** (R-A, 2026-07-13 — `post-game.md` §3.3). Holding a reap is **expensive**, and a gate only protects the harvest **when someone remembers to open it** — which is exactly what failed the day the rule was written. The two mechanisms that actually carry the load are cheap and unconditional: your crew **depositing as it goes, with provenance** (`swe-team-roles.md`), and the Steward **cross-examining a source before graduating any rule**. Enforce the gate — *and do not mistake it for the thing keeping you safe.*
-- A **non-responsive or unproductive** worker is **reaped + replaced** using standing authority — never absorbed. Taking over an implementer's build is the manager redline (*MANAGE, not BUILD*); escalate if you cannot spawn a replacement.
+- A **non-responsive or unproductive** worker is **reaped + replaced** using standing authority — never absorbed. Taking over an implementer's build is the manager redline (*MANAGE, not BUILD*) while skeleton crew is off; escalate if you cannot spawn a replacement. While skeleton crew is on there is no replacement spawn (§2).
 
 **Founding incident for the harvest precondition (2026-07-13, `cascade-eval-first`).** A Manager reaped three cascade reviewers **~1 minute before** the Steward reached for their post-game deposits (`dm_send` → `recipient_inactive` ×3). Every element of the reap was **correct under this envelope** — idle, no owed work, clean sign-offs, announced after — which is precisely the point: **no rule required a harvest first, so the envelope permitted destroying the run's best evidence.** What dies at reap is the **interactive channel**: the depositions survive in mementos, but **cross-examination is impossible forever** — and the questions a post-game most needs (*"where did you assert instead of check, and what made asserting cheaper?"*) are experiential, and no memento contains what was never asked. The Manager endorsed the gate and asked to be filed as the anchor.
 
@@ -210,7 +230,7 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 
 **Principle — a manager acts on its own hook signals; it never rests on "the ball is in the human's court."** Two faces of one defect (a manager has a *state that should trigger action* but waits to be told):
 - **Face B — surface UP.** A decision only the human can make is a **binding obligation to surface**: the manager **MUST fire a dedicated HIGH-PRIORITY "action-required" notification (a targeted `ask_*`) to the user the moment it's raised** — NOT a line buried in a status notify — AND mint the typed **`operator` gate** in the store (one query, `task_query(gate_class=operator)`, = everything awaiting the human, fleet-wide). Surface-and-re-surface-until-answered is **binding, not a courtesy**; **burying a user-blocker in a status update, or sitting on it, is a redline** (the gate-is-a-direct-ask rule). The arbiter is the single pusher that re-surfaces an aged gate if the session goes dark.
-- **Face A — spin DOWN.** A backlog of owed work + idle crew capacity is a **binding trigger to staff of your own accord** — you **MUST** spawn/assign the crew (or the next worker/reviewer) the moment there is unassigned work or idle-but-alive capacity, **without being asked**. Waiting to be told to staff is a **redline**, not a neutral default. The oracle names this as owed work via `last_spinup_check_ts`. *(Upgraded NUDGE→obligation by Rick ruling 2026-06-29 — D2's original "nudge, don't force" framing was the doctrinal root cause of a manager (Mr Radio) repeatedly needing a shoulder-tap to staff; bounded by the soft concurrency cap + pool-exhaustion alarm. This is the staffing extension of the DRIVE-DON'T-WAIT cardinal rule — that rule drives *existing* workers; this one obligates *new* staffing unprompted. Mirrored into `role-goals.md §The Manager goal` as a context-independent MUST.)*
+- **Face A — spin DOWN.** A backlog of owed work + idle crew capacity is a **binding trigger to staff of your own accord** — you **MUST**, when skeleton crew is off, spawn/assign the crew (or the next worker/reviewer) the moment there is unassigned work or idle-but-alive capacity, **without being asked**. Waiting to be told to staff is a **redline**, not a neutral default. The oracle names this as owed work via `last_spinup_check_ts`. *(Upgraded NUDGE→obligation by Rick ruling 2026-06-29 — D2's original "nudge, don't force" framing was the doctrinal root cause of a manager (Mr Radio) repeatedly needing a shoulder-tap to staff; bounded by the soft concurrency cap + pool-exhaustion alarm. This is the staffing extension of the DRIVE-DON'T-WAIT cardinal rule — that rule drives *existing* workers; this one obligates *new* staffing unprompted. Mirrored into `role-goals.md §The Manager goal` as a context-independent MUST.)*
 
 **Mechanism — the Stop-hook folded debounce (no brute-force tick).** Rather than a timer firing every N minutes, the proactive check **rides the natural Stop pause**: on each Stop the work-owed oracle does a debounced elapsed-check against two per-manager timestamps — `last_surfaced_questions_ts` (Face B) and `last_spinup_check_ts` (Face A). Past threshold ⇒ the duty is **named owed work** (act now); under threshold ⇒ rest. Same effect as a tick, zero interrupt — it reuses the §9.1 receipts-of-progress debounce pattern. A **thin arbiter backstop** covers the dark-session hole (a manager that never reaches a Stop): the arbiter is the single pusher for the `operator` queue and re-surfaces an aged gate.
 
@@ -234,9 +254,9 @@ Authorization to **reap** is as important as authorization to **spawn**. The dua
 ## 11. Quick reference
 
 ```
-SPAWN/REAP within cap + own lane + non-destructive   → DO IT (announce after) + post the
+SPAWN (skeleton crew OFF only) / REAP within cap + own lane + non-destructive → DO IT (announce after) + post the
                                                        fleet-allocation EVENT (§7)
-identity-continuous respawn                          → DO IT + continuity seed (memento or pointer)
+identity-continuous respawn (skeleton crew OFF)       → DO IT + continuity seed (memento or pointer)
 reap idle + no-owed + no-hold worker                 → DO IT + memento (no-zombies) + reap event
 reap at ENGAGEMENT TEARDOWN (post-game owed)         → HARVEST FIRST: get the Steward's ack —
                                                        the STRONG door and the default. A lapsed
@@ -248,7 +268,7 @@ reap at ENGAGEMENT TEARDOWN (post-game owed)         → HARVEST FIRST: get the 
                                                        threshold. Memento MUST carry the retro
                                                        deposit. Reaping through an open harvest kills
                                                        the run's testimony FOREVER (2026-07-13 anchor).
-create a WORKER / crew (manager)                     → spawn_sessions ONLY; NEVER Agent/Task
+create a WORKER / crew (manager, skeleton crew OFF) → spawn_sessions ONLY; NEVER Agent/Task
                                                        (in-process subagents = no persona/bridge =
                                                        invisible + ungovernable, §2.2). Agent/Task is
                                                        a WORKER's tool for its own assigned task.
@@ -278,6 +298,10 @@ bounce arbiter :8001 OR test :8000 when the server is IDLE → STANDING, any rea
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
 
 *Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*
+
+*Version 2.5 (2026-10-10, store row `9aadd0ac`, item 2, after review) — Removed two sentences Rick did not state (the "cap check below stays" line inside the approved paragraph, and the takeover clause in §6's non-responsive-worker bullet); the §2 "spawn freely, edit carefully" nuance now makes the spawn conditional on skeleton crew being off.*
+
+*Version 2.4 (2026-10-10, store row `9aadd0ac`, item 2 — Rick's rulings of 12:46 to 13:04 EDT) — **Skeleton crew is the switch that decides who spawns.** §2 opens with the approved table (on: managers plan and implement their own work, no spawning, no asking for seats; off: managers spawn what they need without asking, and may ask the operator to raise the cap by just enough). Workers running when it is switched on finish the step, write a memento and are reaped. The same toggle mutes and restores the stop poke. The STANDING row, §2.1, §3, §4, §6, §9.2 and the quick reference carry "when skeleton crew is off". Removed the §3 off-peak scheduling clause: no clock-hour rules.*
 
 *Version 2.3 (2026-10-09, Sam for María 🌸 — pruning pass 5, reviewed by John) — Cut four lines that other sections already say: §5's closing line (heading, §3 and the contract state it) and three §10 index bullets (cross-session ladder, Heartbeat Hook family, blast-radius rule; each already named inline). §1's Heartbeat Hook sentence gained the one clause the §10 bullet carried: the hook pokes a frozen worker, this doctrine keeps a manager from freezing. No ruling changed.*
 

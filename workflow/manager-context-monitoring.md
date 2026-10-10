@@ -7,7 +7,7 @@ any worker past **50%** so the work continues in a fresh seat instead of dying i
 You monitor **your own** workers — the ones your session spawned — not the whole fleet.
 
 **Standing authority**: this is inside the existing spawn/harvest envelope
-(`workflow/manager-autonomy.md`). Re-spinning a worker you spawned needs nobody's permission.
+(`workflow/manager-autonomy.md`). Re-spinning a worker you spawned needs nobody's permission when skeleton crew is off. A re-spin is a spawn and follows the same switch (`manager-autonomy.md` §2).
 
 **Origin**: Rick, 2026-08-13 (broadcast `69e577a7`, AFK day). The goal is token economy at both
 ends — shorter DMs going in, and nobody carrying a bloated context past halfway.
@@ -451,7 +451,7 @@ it is called out here rather than left to the tool docstring.
 the result's `retained_unmatched` — a name you typed that was not in this batch protects nothing.
 (Independently verified by Cheech 🌿, 2026-08-13, before either of us relied on it.)
 
-**4. Spawn the replacement with the memento.**
+**4. Spawn the replacement with the memento** (skeleton crew off).
 
 ```python
 spawn_sessions(
@@ -510,7 +510,7 @@ Two of those three paths do fail. The third does not, and I wrote that it did:
 |---|---|---|
 | 1 | Over the line · memento **verified on disk** · self-clear verb available | **Self-clear** (§4a). Keeps the seat, the persona, the tmux session, the board and the lineage. Costs one memento write. |
 | 2 | Verb unavailable, or a fired clear did not come back | **Succession** — memento, hand the board, announce (immediately below). |
-| 3 | Every manager over the line | **Spawn a fresh one** — adding capacity rather than redistributing its absence. |
+| 3 | Every manager over the line | When skeleton crew is off, **spawn a fresh one** — adding capacity rather than redistributing its absence. |
 
 **Rung 1 is not a nicer version of rung 2 — it is a different trade.** Succession spends a whole
 manager's remaining budget to save a manager's budget: the successor boots empty, re-derives what
@@ -585,7 +585,7 @@ is still somebody else's two seconds — but the *work* no longer waits for it.
 
 **Receiving is not optional and not a favour.** A peer manager with headroom takes the board.
 
-### When EVERY manager is over the line: spawn a fresh one
+### When EVERY manager is over the line and skeleton crew is off: spawn a fresh one
 
 **Do not hunt for the least-full manager. Add one** (Cheech 🌿, 2026-08-13, when all three of us
 were over and he was the last one asked):
@@ -728,7 +728,7 @@ reaches only sessions the caller spawned. I first wrote that as unsolvable-witho
 not** (Cheech 🌿, 2026-08-13, correcting me an hour later):
 
 > **Seats cannot transfer, but they can be RECREATED.** The dying manager **reaps** its workers
-> before going dark; the receiving manager **respawns** them from their mementos **under its own
+> before going dark; the receiving manager **respawns** them (when skeleton crew is off) from their mementos **under its own
 > lineage**. An unrecoverable orphan becomes an ordinary re-spin, and the whole cost is the work
 > pausing for the minute in between.
 
@@ -913,6 +913,7 @@ predictable event can have.
 
 ## Version History
 
+- **2026.10.10 (store row `9aadd0ac`, item 2, Rick's rulings)**: Re-spinning a worker is a spawn and follows the skeleton-crew switch (`manager-autonomy.md` §2); the standing-authority line says "when skeleton crew is off". Nothing else changed.
 - **2026.08.13 (María 🌸)**: Initial version. Written on Rick's AFK-day broadcast `69e577a7` — 15-minute
   tick, 50% threshold, memento → reap → re-spin, and the manager self-re-spin limit stated as a
   verified mechanical fact rather than a preference.
