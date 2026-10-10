@@ -595,7 +595,7 @@ Reviewers should *not* try to coordinate directly across sections — that's the
 
 ## Persona Assignment at Launch (v1)
 
-Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes; the Manager may instead spawn the four peers, `plan-review-cascaded.md` Step 4), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, ownership).
+Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes; the Manager may instead, when skeleton crew is off, spawn the four peers, `plan-review-cascaded.md` Step 4), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, ownership).
 
 **v2 path**: Dedicated role-specific personas (`AuthorBot`, `UsabilityCritic`, `ViabilityAnalyst`, `OwnershipAuditor`, `PipelineManager`) — assignment becomes automatic by persona name. Defer until v1 dynamics are validated.
 
