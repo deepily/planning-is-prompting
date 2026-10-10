@@ -1,8 +1,8 @@
 # Skeleton Crew (canonical workflow)
 
-**Status**: v0.5 — written 2026-09-10 at the operator's request, reviewed by Mr. Radio 🦉, ratified by the operator's §6 rulings the same evening, and updated 2026-10-10 for the on/off toggle.
+**Status**: v0.6 — written 2026-09-10 at the operator's request, reviewed by Mr. Radio 🦉, ratified by the operator's §6 rulings the same evening, and updated 2026-10-10 for the on/off toggle.
 
-**Purpose**: Run the fleet with **only the manager seats**. No spawns, no workers. The managers do the work themselves and sanity-check each other. The heartbeat **Stop poke is muted**, so nobody is pulled back to their board while the operator hands out ad hoc instructions.
+**Purpose**: Run the fleet with **only the manager seats**. No spawns (except a one-for-one re-spin), no workers. The managers do the work themselves and sanity-check each other. The heartbeat **Stop poke is muted**, so nobody is pulled back to their board while the operator hands out ad hoc instructions.
 
 **When it is in force**: skeleton crew is the on state of the operator's toggle (see `manager-autonomy.md` §2). There are no clock-hour rules and no fixed end time; it is in force from when the operator switches it on until the operator switches it off.
 
@@ -15,7 +15,7 @@
 | # | Rule | Why it is written down |
 |---|---|---|
 | 1 | **No spawns, and no subagents.** No `spawn_sessions` or re-spawning workers except for a one-for-one re-spin, no borrowed seats, and no background subagents inside a manager's own session, not even read-only ones. The operator ruled this on 2026-09-10: *"When I say we're in Skeleton Crew you get no extra workers. You do the work yourselves."* Live workers finish their current step, then are stood down: memento, reap, and their rows reassigned to a manager. **The row move is deliberate here**: `respin_personas` is left out on purpose, which is the exact move `manager-context-monitoring.md:482` warns against during a re-spin. **Then check it landed**: read the reap result's `retained_unmatched`, and run `task_query( owner_persona=<that manager> )` to see the rows on that manager's board. The reap matches on the persona **name**, not the seat | Under skeleton crew the operator is the only one adding capacity. A row move nobody checked is owed work nobody can see |
-| 2 | **Managers build.** The "MANAGE, not BUILD" rule and the 15-minute tick's "spawn, don't absorb" step are **suspended by the operator's word** while skeleton crew is on | A manager who spawns to satisfy the tick has broken the order it was given |
+| 2 | **Managers build.** The "MANAGE, not BUILD" rule and the 10-minute tick's "spawn, don't absorb" step are **suspended by the operator's word** while skeleton crew is on | A manager who spawns to satisfy the tick has broken the order it was given |
 | 3 | **Sanity-check each other before building, and review before landing.** Send the plan as a path, not a paste. The other manager answers with a measurement or a named concern | 2026-09-09: four of one manager's six mistakes were caught by the other seat |
 | 4 | **Independent first, then swap.** On any shared judgement (triage, counts, rankings), each manager works it blind and writes the result to disk. Then compare the **sets**, not the totals, and argue only the differences. Disagreements go to the operator as disagreements | Comparing while ranking produces one list twice and calls it agreement |
 | 5 | **The operator's ad hoc instructions come first.** Do what the broadcast says, in its order, and nothing else. Every unit still gets a store row | The Stop poke is muted precisely so the board does not compete with the operator |
@@ -55,7 +55,7 @@
 
 ## 4. The declaration (broadcast template)
 
-> @all — **Skeleton crew is on** (my direct word). Only **[MANAGER-A]** and **[MANAGER-B]** are active. No spawns, no workers, no subagents: you do the work and you sanity-check each other. **[MANAGER-A]**: mute the heartbeat Stop poke now and confirm it by reading it back. Follow my ad hoc instructions and nothing else. Workflow: `planning-is-prompting → workflow/skeleton-crew.md`.
+> @all — **Skeleton crew is on** (my direct word). Only **[MANAGER-A]** and **[MANAGER-B]** are active. No spawns (except a one-for-one re-spin), no workers, no subagents: you do the work and you sanity-check each other. **[MANAGER-A]**: mute the heartbeat Stop poke now and confirm it by reading it back. Follow my ad hoc instructions and nothing else. Workflow: `planning-is-prompting → workflow/skeleton-crew.md`.
 
 ## 5. Checklists
 
@@ -97,6 +97,7 @@ Ruling 1 is replaced by the toggle (2026-10-10, `manager-autonomy.md` §2): ther
 
 ## Version history
 
+- **0.6 (2026-10-10, Job 1 of the wider pruning row `84211d12`)** — Rule 2 says "10-minute tick", matching `manager-context-monitoring.md` (Rick: "Documents say 10 (Recommended)"). The Purpose line and the broadcast template carry the one-for-one re-spin exception rule 1 already states (Pocholo's Recheck 3). No rule changed.
 - **0.5 (2026-10-10, store row `9aadd0ac`, item 2, Rick's rulings)** — Skeleton crew is the on state of the operator's toggle. The "When it is in force" line's "only on a declared day ... until 17:00" is gone; rule 1 has workers finish their current step before they are stood down; rule 2 says "while skeleton crew is on"; §2 gains the line that the toggle controls the stop poke once it ships; §3 is "Switching it on and off"; the §4 template and §5 checklist lose the 17:00; §6 ruling 1 is marked superseded. Rules 3 to 7 and the no-subagents clause stay.
 - **0.4 (2026-10-10, Sam)** — Pruning pass 7: cut the §3 "Default" bullet (the "When it is in force" line at the top says it) and the "During" checklist bullet (rules 1, 4, 5 and 7 say each item); the ⚠️ keeps its label. No rule changed.
 - **0.3 (2026-09-10, María 🌸)** — the operator's three §6 rulings folded in: in force only on declared days; no subagents inside a manager's session (rule 1, the declaration template and the During checklist); the arbiter's manager pokes stay on (§2). §6 is now a rulings table.
