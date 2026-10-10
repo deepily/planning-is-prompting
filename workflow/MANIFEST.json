@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-10T13:20:30-04:00",
+  "generated_at": "2026-10-10T15:43:37-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -92,7 +92,7 @@
       "version": "2.0"
     },
     "plan-post-game.md": {
-      "sha256": "1e61671e41db462516a0ceb065f93b38ea893c49d4ac03da323925f9c9d2d5fc",
+      "sha256": "1d7b756ea9298cac0183a734dfad82121e071cddf481631696163f85198cbeaa",
       "version": "0.1 (draft \u2014 held for Rick's review)"
     },
     "plan-push.md": {
