@@ -321,7 +321,7 @@ Any manager-role session holds **standing** authority to harvest workers and, wh
 
 ## MANAGER CONTEXT MONITORING — THE 15-MINUTE TICK
 
-**Every manager watches their own workers' context and re-spins any worker past 50%** — token economy at both ends. Inside the existing spawn/harvest envelope, so it needs nobody's permission when skeleton crew is off (a re-spin is a spawn and follows the same switch).
+**Every manager watches their own workers' context and re-spins any worker past 50%** — token economy at both ends. Inside the existing spawn/harvest envelope: a one-for-one re-spin of a worker you spawned needs nobody's permission, in either skeleton-crew mode, because the seat stays allocated across re-spins.
 
 | | |
 |---|---|
