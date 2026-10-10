@@ -66,17 +66,13 @@ To update, see:
 
 **Update Process**:
 
-If an update is available, follow the smart update workflow:
-1. See planning-is-prompting → workflow/backup-version-check.md
-2. The workflow preserves your custom configuration
-3. Merges new exclusion patterns with existing ones
-4. Updates script logic while keeping project-specific paths
+If an update is available, see planning-is-prompting → workflow/backup-version-check.md, Updating by Hand. The script does not update itself.
 
 ---
 
 ## Notes
 
 - **Requires PLANNING_IS_PROMPTING_ROOT**: Environment variable must be set
-- **Offline graceful**: If canonical not found, reports "Not configured"
+- **Offline graceful**: If the root is unset, reports `Not configured`; if the canonical is missing under it, reports `Not found`
 - **Lightweight**: Quick check, no backup operations performed
 - **Safe**: Read-only operation, no files modified

@@ -1347,7 +1347,7 @@ Claude will ask you to provide:
 
 ### Usage, Version Checking and Customization
 
-Run `/plan-backup` for a dry run and `/plan-backup --write` to execute. The flags, the skip variable (`SKIP_VERSION_CHECK=1`) and the update options are described in `.claude/commands/plan-backup.md`, in the header of `src/scripts/backup.sh`, and in `workflow/backup-version-check.md`.
+Run `/plan-backup` for a dry run and `/plan-backup --write` to execute. The flags, the skip variable (`SKIP_VERSION_CHECK=1`) and the by-hand update steps are described in `.claude/commands/plan-backup.md`, in the header of `src/scripts/backup.sh`, and in `workflow/backup-version-check.md`.
 
 Two things are set per project and written nowhere else:
 

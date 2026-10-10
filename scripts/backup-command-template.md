@@ -9,7 +9,7 @@
 
 - `/plan-backup` - Dry-run (preview changes, no files modified)
 - `/plan-backup --write` - Execute backup to destination
-- `/plan-backup --check-for-update` - Check for script updates only
+- `/plan-backup-check` - Check for script updates only
 
 ---
 
@@ -88,7 +88,7 @@ src/scripts/conf/rsync-exclude.txt
 **Version Management**:
 
 This script is versioned and can be updated from the canonical reference:
-- Check for updates: `/plan-backup --check-for-update`
+- Check for updates: `/plan-backup-check`
 - See planning-is-prompting → workflow/backup-version-check.md for update process
 
 ---
