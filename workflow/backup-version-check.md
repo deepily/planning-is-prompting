@@ -330,7 +330,7 @@ The script prints both versions and either `✓ Up to date` or `⚠ Update avail
 
 **Symptom**: Version check always skipped
 
-**Solution**:
+**Solution**: set it as in Step 1, then reload:
 ```bash
 # Reload shell or source file
 source ~/.claude/CLAUDE.md
