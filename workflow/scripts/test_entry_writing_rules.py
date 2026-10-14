@@ -75,7 +75,12 @@ POINTING_DOCS = (
     "session-end.md", "todo-management.md", "history-management.md", "session-checkpoint.md", "brevity-mandate.md",
     "post-game.md", "bug-fix-mode.md", "branch-pr-and-merge.md", "decision-walkthrough.md",
     "testing-baseline.md", "testing-remediation.md",
+    "session-start.md", "installation-wizard.md", "INSTALLATION-GUIDE.md", "p-is-p-01-planning-the-work.md",
+    "p-is-p-02-documenting-the-implementation.md", "skills-management.md",
 )
+
+# Skills that write a Decisions Log row; paths are relative to the repository root.
+SKILL_FILES = ( ".claude/skills/guided-decision-walkthrough/SKILL.md", ".claude/skills/plan-post-game/SKILL.md" )
 
 # Documents that carry the marker in a cap table or layout comment, and so must carry the backticked form.
 MARKER_DOCS = ( "session-end.md", "history-management.md", "session-checkpoint.md", "brevity-mandate.md", "testing-baseline.md" )
@@ -182,3 +187,8 @@ def test_readme_names_the_policy_without_the_rejected_form():
     readme = ( WORKFLOW_DIR.parent / "README.md" ).read_text( encoding="utf-8" )
     line   = next( l for l in readme.splitlines() if "entry-writing-rules.md" in l )
     assert "dates in backticks" not in line, "README teaches the form the ruling rejected"
+
+
+@pytest.mark.parametrize( "skill", SKILL_FILES )
+def test_skills_that_write_a_log_row_point_at_the_policy( skill ):
+    assert POINTER in ( WORKFLOW_DIR.parent / skill ).read_text( encoding="utf-8" ), f"{skill} no longer points at {POINTER}"
