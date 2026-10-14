@@ -77,4 +77,4 @@ Headings from `workflow/session-end.md`:
 
 - Step 4.3 — Commit Autonomously (no approval gate)
 - Step 4.5 — Push Decision (the one retained user gate)
-- Step 6 — LoC Delta Summary (Day's Work)
+- Step 6 — LoC Delta Summary
