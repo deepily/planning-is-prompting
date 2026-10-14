@@ -104,4 +104,4 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 Heading from `workflow/installation-wizard.md`, for the step named above; the canonical file holds more.
 
-- Step 7.5: Install the Wizard Slash Command (Optional)
+- Step 7.5: Install the Wizard Slash Command
