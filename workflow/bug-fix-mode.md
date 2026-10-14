@@ -579,7 +579,7 @@ Files to track include:
 ### Fix N: [Brief description]
 - **Source**: GitHub #123 / ad-hoc
 - **Files**: file1.py, file2.py, file3.py
-- **Test**: Smoke PASS, Unit PASS
+- **Test**: Smoke pass, unit pass
 - **Commit**: [pending]
 ```
 

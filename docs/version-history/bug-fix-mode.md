@@ -5,6 +5,8 @@ Moved out of `workflow/bug-fix-mode.md` (lines 1618-1676 at `d73f36b`) without c
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy re-loop, parent row `8b32de78`) - Step 8 template reads `Smoke pass, unit pass` instead of capitals (reviewer finding F3).
+
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - Step 8 names `workflow/entry-writing-rules.md` for the history entry; bug-fix-queue.md is stated to be outside it.
 
 
