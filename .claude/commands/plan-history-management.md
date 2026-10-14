@@ -33,7 +33,7 @@
    - Execute every step exactly as described in the canonical workflow document
    - Never skip any step (including notifications or mode-specific operations)
    - Never substitute a shortened or summarized version
-   - Follow the workflow exactly as documented using the configuration parameters from the first item of this list
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
    - Parse and apply the mode parameter as described in the canonical workflow
 
 ---
