@@ -29,7 +29,7 @@ version: 1.0
    - The canonical workflow contains: Detection algorithms, version comparison logic, categorization rules, and report formatting
 
 3. **Must execute the complete reporting workflow**:
-   - Execute every step exactly as described in the canonical workflow document, step zero through step five
+   - Execute every step exactly as described in the canonical workflow document (Step 0 through Step 5)
    - Never skip any step (detect config, scan local, read canonical, compare versions, group by category, generate report)
    - Never substitute a shortened or summarized version
    - Follow the workflow exactly as documented
@@ -57,3 +57,12 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Single source of truth for installation reporting
 - Demonstrates the workflow pattern for other projects
 - This file serves as a working example for other repos
+
+---
+
+## Steps this command names
+
+Headings from `workflow/installation-about.md`, for the steps named above; the canonical file holds more.
+
+- Step 0: Detect Project Configuration
+- Step 5: Generate Enhanced Report
