@@ -113,8 +113,8 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 Headings from `workflow/loc-delta-global.md`:
 
-- Step 1 — Resolve repo set (discovery policy)
+- Step 1 — Resolve repo set
 - Step 1.5 — Confirmation gate
 - Step 1.7 — Refresh per-repo CSVs before aggregating
 - Step 3 — Render the consolidated summary
-- Step 4 — Failure handling (full table)
+- Step 4 — Failure handling
