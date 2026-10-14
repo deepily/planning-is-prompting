@@ -57,7 +57,7 @@ Never invoke this command when:
 
 This slash command is a **reference wrapper** that reads the canonical workflow documents at runtime. This ensures:
 - Always up-to-date implementation when the canonical docs are improved
-- Single source of truth: the playbook + defaults + personas docs in `workflow/`
+- Single source of truth: the playbook + defaults + personas docs in `planning-is-prompting/workflow/`
 - Demonstrates the cascaded-pipeline pattern for other projects that want to install it
 - Companion to the existing `/plan-review` (single-session, serial) — use whichever fits the plan's scope
 
@@ -67,13 +67,13 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - `plan-review-cascaded-personas.md` — role briefs + reviewer rubrics
 - `plan-review.md` — the wrapped single-session review skill (not modified by this work)
 
-**Design provenance**: `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
+**Design provenance**: `planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
 
 ---
 
 ## Steps this command names
 
-Heading text from `workflow/plan-review-cascaded.md`, for the steps named above; the canonical file holds more.
+Heading text from `planning-is-prompting/workflow/plan-review-cascaded.md`, for the steps named above; the canonical file holds more.
 
 - Step 1: Resolve Effective Configuration
 - Step 3: Decomposition Validation
