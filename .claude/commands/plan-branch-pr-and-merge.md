@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications and has destructive-or-shared-state gates (push, merge, force-push). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate. The **TTS Brevity Mandate** applies: speak the PR title only; full body and diff stats stay in `abstract` and the terminal reply. Destructive operations require explicit voice confirmation, never silent default. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications and has destructive-or-shared-state gates (push, merge, force-push). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate. The **TTS Brevity Mandate** applies — speak the PR title only, full body and diff stats stay in `abstract` and the terminal reply. Destructive operations require explicit voice confirmation, never silent default. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -27,15 +27,14 @@
    - Location: planning-is-prompting → workflow/branch-pr-and-merge.md
    - This is the only authoritative source for all branch completion steps
    - Never proceed without reading this document in full
-   - The canonical workflow contains: documentation surface check, branch state audit, test verification, PR description generation, and PR creation. It also contains post-merge sync, branch cleanup, release tagging, and next branch creation
+   - The canonical workflow contains: Documentation surface check, branch state audit, test verification, PR description generation, and PR creation. It also contains post-merge sync, branch cleanup, release tagging, and next branch creation
 
 3. **Must execute the complete branch PR and merge workflow**:
-   - Execute all steps exactly as described in the canonical workflow document (Steps 0-11)
+   - Execute every step of `workflow/branch-pr-and-merge.md`, in order, first to last, exactly as described
    - Never skip any steps (including notifications or verification checks)
    - Never substitute a shortened or summarized version
    - Never merge without user confirmation
-   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
-   - Steps 0-11 — the numbered steps of the canonical workflow document
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
 
 ---
 
