@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. In that mode, spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. In that mode, spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -84,11 +84,11 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Heading text from `workflow/session-start.md`, for the steps named above; the canonical file holds more.
+Heading text from `planning-is-prompting/workflow/session-start.md`, for the steps named above; the canonical file holds more.
 
 - Step 3: Discover Available Workflows
 - Step 5: Identify Outstanding Work
 
-Label from `global/CLAUDE.md`, section "MCP SESSION STARTUP PROTOCOL", for the phase named above.
+Label from `planning-is-prompting/global/CLAUDE.md`, section "MCP SESSION STARTUP PROTOCOL", for the phase named above.
 
 - Phase A — before any user-facing text, including the first ack
