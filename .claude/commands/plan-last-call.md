@@ -36,7 +36,7 @@
 
 **On every invocation:**
 
-1. **Must read the canonical workflow** — `planning-is-prompting → workflow/last-call.md` — in full. It is the only authoritative source for the four declaration elements, filing rule, ACK contract, deliverable-receipt loop, roster semantics and expiry rules. Never substitute a summarized version.
+1. **Must read the canonical workflow** — `planning-is-prompting → workflow/last-call.md` — in full. It is the only authoritative source for the four declaration elements, the filing rule, the ACK contract, the deliverable-receipt loop, roster semantics and expiry rules. Never substitute a summarized version.
 
 2. **Must use project configuration**:
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
