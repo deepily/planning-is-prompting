@@ -1,12 +1,12 @@
 # Bug Fix Mode - Wrap Fix
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications and includes a commit-approval gate. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies. Speak the 1-line commit subject only; full body and file list stay in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications and includes a commit-approval gate. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. Speak the 1-line commit subject only; full body and file list stay in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -35,30 +35,30 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Bug fix queue file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/bug-fix-queue.md
    - **TODO file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/TODO.md
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting -> workflow/bug-fix-mode.md
-   - This is the ONLY authoritative source for ALL bug fix mode steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all bug fix mode steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute WRAP mode workflow**:
+3. **Must execute wrap mode workflow**:
    - Execute the "Fix Wrap (`wrap` mode)" section
-   - Steps 18-25 from the canonical workflow (Steps 19, 20, 22d and 23 refer back to Steps 8, 10, 9c and 9d for the history entry, queue move, commit message and hash capture; read those steps too)
+   - Steps 18-25 from the canonical workflow. Step 19, Step 20, Step 22d and Step 23 refer back to Step 8, Step 10, Step 9c and Step 9d. These are, respectively, the history entry, queue move, commit message and hash capture; read those steps too
    - Continue to next action based on user choice (next bug / clear context / close session)
 
-4. **Key Actions for WRAP mode**:
+4. **Key Actions for wrap mode**:
    - Validate wrap conditions (queue exists, session ownership, files tracked)
    - Document fix in `history.md` with files and test results
    - Update `bug-fix-queue.md` (move bug to Completed)
    - Check/update `TODO.md` for related items
-   - Stage files and commit **WITHOUT ASKING FOR APPROVAL**
+   - Stage files and commit **without asking for approval**
    - Capture commit hash and update documents
    - Send completion notification
    - Present next action options
@@ -80,14 +80,14 @@
 
 ## Key Behavior: No Approval Required
 
-**CRITICAL**: This command commits automatically. By invoking `/plan-bug-fix-mode-wrap`, the user has already approved the commit.
+**Critical**: This command commits automatically. By invoking `/plan-bug-fix-mode-wrap`, the user has already approved the commit.
 
-**Do NOT**:
+**Do not**:
 - Ask "Should I commit these changes?"
 - Ask "Ready to commit?"
 - Wait for commit confirmation
 
-**DO**:
+**Do**:
 - Stage files and commit immediately
 - Report any errors if commit fails
 - Continue to next action options after successful commit
@@ -96,17 +96,17 @@
 
 ## Parallel Session Safety
 
-**CRITICAL**: This workflow supports environments where **multiple Claude Code sessions work on the same repository simultaneously**.
+**Critical**: This workflow supports environments where **multiple Claude Code sessions work on the same repository simultaneously**.
 
-**Isolation Rule**: Only files in `touched_files` (tracked during this bug fix) may be staged. Other modified files in the repo belong to parallel sessions and MUST NOT be staged.
+**Isolation Rule**: Only files in `touched_files` (tracked during this bug fix) may be staged. Other modified files in the repo belong to parallel sessions and must not be staged.
 
 **Before every commit**:
 1. Run `git status` to see all modified files
 2. Compare against `touched_files` list
-3. Stage ONLY files that appear in BOTH
+3. Stage only files that appear in both
 4. Skip files not in `touched_files` - they belong to another session
 
-**NEVER use**: `git add .`, `git add -A`, or `git add --all` - these break session isolation.
+**Never use**: `git add .`, `git add -A`, or `git add --all` - these break session isolation.
 
 ---
 
@@ -117,7 +117,7 @@ Use this command when you've:
 - Tested the fix (smoke test passed)
 - Want to document and commit in one action
 
-This command combines Steps 8-10 of the Per-Bug Fix Cycle (Document -> Commit -> Update Queue) into a streamlined wrap-up sequence that doesn't require separate approvals.
+This command combines Step 8 through Step 10 of the Per-Bug Fix Cycle (Document -> Commit -> Update Queue) into a streamlined wrap-up sequence. It doesn't require separate approvals.
 
 ---
 
@@ -127,3 +127,16 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Always up-to-date implementation when canonical doc is improved
 - Single source of truth for bug fix mode
 - Demonstrates the workflow pattern for other projects
+
+## Steps this command names
+
+Headings from `workflow/bug-fix-mode.md`:
+
+- Step 8 — Document in History
+- Step 9c — Create Commit
+- Step 9d — Capture Hash and Update
+- Step 10 — Update Queue
+- Step 19 — Document in History
+- Step 20 — Update Bug Fix Queue
+- Step 22d — Create Commit
+- Step 23 — Capture Hash and Update Documents

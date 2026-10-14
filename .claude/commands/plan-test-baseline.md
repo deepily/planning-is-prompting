@@ -7,6 +7,7 @@ allowed-tools: Bash(.*), Read, Write, Edit
 
 **Purpose**: Establish baseline before workflow/documentation changes
 **Project**: Planning is Prompting (Meta-repository for workflow templates)
+
 **Note**: This is a documentation-only project - tests validate document structure and links
 **Version**: 1.0
 
@@ -15,7 +16,7 @@ allowed-tools: Bash(.*), Read, Write, Edit
 ## Project Configuration
 
 **Identity**:
-- **Prefix**: [PLAN]
+- **Prefix**: `[PLAN]`
 - **Project Name**: Planning is Prompting
 - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
 
@@ -38,8 +39,8 @@ allowed-tools: Bash(.*), Read, Write, Edit
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project Name**: Planning is Prompting
    - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
    - **Paths**:
@@ -49,18 +50,18 @@ allowed-tools: Bash(.*), Read, Write, Edit
    - **Test Scripts**: Simple validation script (validates docs exist and are readable)
    - **Health Checks**: None required (no server/service dependencies)
    - **Environment**: No special environment variables needed
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/testing-baseline.md
-   - This is the ONLY authoritative source for ALL baseline testing steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all baseline testing steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute the complete baseline testing workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications or test execution)
-   - Do NOT substitute a shortened or summarized version
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+3. **Must execute the complete baseline testing workflow**:
+   - Execute all steps exactly as described in the canonical workflow document
+   - Never skip any steps (including notifications or test execution)
+   - Never substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
    - For this documentation project, "smoke tests" means: verify workflow documents exist and are readable, check referenced paths are valid, validate markdown formatting, ensure cross-references work
 
 ---
