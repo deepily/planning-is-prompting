@@ -74,7 +74,7 @@ arguments:
    - Execute all steps exactly as described in the canonical workflow document
    - Never skip any steps (including notifications or comparison analysis)
    - Never substitute a shortened or summarized version
-   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
    - For this documentation project, ANALYSIS_ONLY scope is recommended (generates comparison report, no code fixes needed)
 
 ---
