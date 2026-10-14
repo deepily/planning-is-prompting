@@ -697,7 +697,7 @@ Any regressions introduced by upcoming changes can be measured against these met
 {if integration tests configured}
 - **Integration Tests**: {XX.X%} pass rate ({PASSED}/{TOTAL} tests)
 {endif}
-- **Overall Health**: {EXCELLENT/GOOD/FAIR/POOR}
+- **Overall Health**: {excellent/good/fair/poor}
 - **Critical Issues**: {NUMBER} identified
 - **Report**: {relative_path_to_report_file}
 
