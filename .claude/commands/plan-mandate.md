@@ -39,7 +39,7 @@
 
 ## Census mode — `/plan-mandate census`
 
-**Ruled by Rick** (Part C of its store row) as the fleet-dispatch mechanism, over declared event scope. Rio's argument carried it:
+**Ruled by Rick** (Part C of the store row on how mandates are dispatched across the fleet) as the fleet-dispatch mechanism, over declared event scope. Rio's argument carried it:
 
 > Declared scope needs the amending seat to classify correctly **at edit time**. It is the same rule-in-the-author's-head one step earlier, just with a field to fill in wrong. A census answers *"which others does this touch"* **after the fact too**, so a missed classification is still recoverable.
 
