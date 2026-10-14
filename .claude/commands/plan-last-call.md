@@ -81,4 +81,4 @@
 
 This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language triggers live in the companion Agent Skill; both resolve to the same `workflow/last-call.md` contract.
 
-**Fleet-wide by ruling** (Rick): the deliverable *names* are portable, the deliverable *procedures* are per-repo. A consuming repo copies this wrapper, changes the two configuration lines in item two, and cites the same canonical workflow.
+**Fleet-wide by ruling** (Rick): the deliverable *names* are portable, the deliverable *procedures* are per-repo. A consuming repo copies this wrapper, changes the two configuration lines in instruction 2, and cites the same canonical workflow.
