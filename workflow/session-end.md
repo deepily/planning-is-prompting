@@ -15,6 +15,8 @@ This document contains the comprehensive end-of-session workflow extracted from 
 >
 > **`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. Duplicating the retro into the one file with a hard 25k ceiling (`history-management.md`) just accelerates the next forced archive.
 >
+> **Wording**: every line this ritual stages in `history.md` or `TODO.md` follows `workflow/entry-writing-rules.md` (25-word sentences, no capitals for emphasis, the marker in backticks).
+>
 > **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
 >
 > ⚠️ **This gate exists because the session that WROTE the brevity mandate violated it** — S139 (2026-07-19) filed an ~1,100-word history entry the same hour; Rick caught it. The mandate's first draft had exempted history/retro docs as "content-shaped," **a self-assessed exception — the exact move the mandate forbids.** Do not restore it.
@@ -433,6 +435,7 @@ Health: ✅ HEALTHY
 **Requirements**:
 - Use date format: `yyyy.mm.dd`
 - Sort newest changes at TOP ( reverse chronological )
+- Word every staged line, the demoted header and status lines included, to `workflow/entry-writing-rules.md`
 - Session summary with **brief accomplishments only**
 
 **For complete history management guidelines**: See planning-is-prompting repo → workflow/history-management.md
@@ -485,6 +488,8 @@ Health: ✅ HEALTHY
 **Purpose**: Maintain persistent TODO tracking across sessions
 
 **Canonical Workflow**: See planning-is-prompting → workflow/todo-management.md
+
+**Wording**: Decisions Log and Pending Decisions rows follow `workflow/entry-writing-rules.md`.
 
 **Process**:
 
