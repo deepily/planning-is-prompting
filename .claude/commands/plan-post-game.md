@@ -57,7 +57,7 @@
 
 ## When to Use
 
-- **Always (scaled)**: after a SWE-crew run (`swe-team-spin-up.md` §5) and as cascade Step 9 — those workflows point here.
+- **Always (scaled)**: after a SWE-crew run (`planning-is-prompting/workflow/swe-team-spin-up.md` §5) and as cascade Step 9 — those workflows point here.
 - **Recommended**: after a substantive solo session (design, bug-fix, investigation) with lessons worth keeping.
 - **On demand**: whenever the user asks for "the post-game / retro / debrief."
 - **Skip → light tier only**: a trivial change with no lesson collapses to a one-line history note.
