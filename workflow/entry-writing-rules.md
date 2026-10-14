@@ -18,11 +18,11 @@ It reads prose, headings, bullets and table cells. It skips fenced code blocks, 
 
 | # | Rule | Write this |
 |---|---|---|
-| 1 | A sentence is 25 words or fewer, counted to the next period. A semicolon, a colon or a dash does not end a sentence. | Two short sentences, not one long one joined by a semicolon. Each bullet is its own paragraph. Headings and table rows are not counted. |
-| 2 | No all-caps English word. Acronyms such as JSON or TTS are fine. | **Bold** for the one word that carries the point. |
+| 1 | A sentence is 25 words or fewer, counted to the next period, question mark or exclamation mark. A semicolon, a colon or a dash does not end a sentence. | Two short sentences, not one long one joined by a semicolon. Each bullet is its own paragraph. Headings and table rows are not counted. |
+| 2 | No all-caps English word. An acronym that is not a word, such as API, CI, DM or SSH, is fine. An acronym that is also a word, such as `PASS`, `DONE`, `LOG` or `SET`, fires. | **Bold** for the one word that carries the point. |
 | 3 | The linter flags three glyphs: the warning sign, the red circle and the right double arrow. Other emoji are not flagged. | Words instead of those three. |
 | 4 | No tic phrases: about twenty words and phrases that add tone and no constraint. The linter's list is `rule_lists.py` in lupin. | State the constraint itself. |
-| 5 | No dated banner. A line does not start with Update, Correction, Retracted or Forensic update, in any case. A verb such as added, fixed, measured, ruled, changed or landed is not joined to a date. | Start the line with another word. Say what changed in the sentence, and keep the date in a separate clause. |
+| 5 | No dated banner. Three shapes fire. A line starts with Update, Correction, Retracted or Forensic update, in any case. One of those words stands anywhere in a line within 60 characters before a date. A verb such as added, fixed, measured, ruled, changed or landed is joined to a date. | Start the line with another word. Say what changed in the sentence, and keep the date more than 60 characters from those words or in a separate sentence. |
 | 6 | Nothing is addressed to a model: no second-person order built on must, should or need to, no instruction to drop earlier text, and no sentence that opens with a prohibition. | A plain statement of fact in the third person. Never is not flagged. |
 | 7 | A step, phase, stage, item or option number is named by what it is, unless the same page defines that label at the start of a line. | The lint pass; the second wrapper batch. |
 | 8 | A case label, ruling number or acceptance code is named by what it is. Session numbers and the priorities P0 to P5 are fine. | The sha ruling. |
@@ -53,7 +53,7 @@ The demoted header reads "Previous" followed by the marker in backticks. A fence
 ## Before saving
 
 1. Read each sentence and count to the next period; split any that run past 25 words.
-2. Search the new lines for runs of capital letters and the three glyphs. Look for a line that starts with Update or Correction. Look for a number after step, phase, item or option.
+2. Search the new lines for runs of capital letters and the three glyphs. Look for the words update, correction or retracted within 60 characters before a date, or at a line start. Look for a number after step, phase, item or option.
 3. Run the linter on the file when it is available. Any finding left must be one of the three in the second table.
 
 ## Version history
