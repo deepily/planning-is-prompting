@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications and includes a commit-approval gate. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. Speak the 1-line commit subject only; full body and file list stay in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications and includes a commit-approval gate. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. Speak the 1-line commit subject only; full body and file list stay in `abstract`. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -130,7 +130,7 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Headings from `workflow/bug-fix-mode.md`:
+Headings from `planning-is-prompting/workflow/bug-fix-mode.md`:
 
 - Step 8 — Document in History
 - Step 9c — Create Commit
