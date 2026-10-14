@@ -1,7 +1,7 @@
 # Skills Management - Edit Mode
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -37,24 +37,24 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
    - **Skills location**: .claude/skills/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/skills-management.md
-   - This is the ONLY authoritative source for ALL skills management steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all skills management steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute EDIT mode workflow**:
+3. **Must execute edit mode workflow**:
    - Execute the "Mode: edit" section from the canonical workflow
    - List available skills if none specified
    - Compare skill to source documentation
    - Apply updates and revalidate
 
-4. **Key Actions for EDIT mode**:
+4. **Key Actions for edit mode**:
    - Step 1: Select skill (list available if not specified)
    - Step 2: Identify changes (compare skill vs source documentation dates)
    - Step 3: Apply updates (add, modify, remove sections)
@@ -67,7 +67,7 @@
 1. **Lists skills** - Shows available skills with last-updated dates
 2. **Compares to source** - Detects changes in source documentation
 3. **Shows diff** - Highlights what changed (additions, modifications, removals)
-4. **Applies updates** - Updates SKILL.md and references/ as needed
+4. **Applies updates** - Updates `SKILL.md` and references/ as needed
 5. **Revalidates** - Re-runs format validation and intent detection
 
 ---
