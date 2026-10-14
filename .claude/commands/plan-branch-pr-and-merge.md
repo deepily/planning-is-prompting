@@ -1,12 +1,12 @@
 # Branch PR and Merge Workflow for Planning-is-Prompting Project
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications and has destructive-or-shared-state gates (push, merge, force-push). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate; the **TTS Brevity Mandate** applies — speak the PR title only, full body and diff stats stay in `abstract` and the terminal reply. Destructive operations require explicit voice confirmation, never silent default. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications and has destructive-or-shared-state gates (push, merge, force-push). In conversation mode (`get_session_info().conversation_mode_active=true`), each gate is a voice gate. The **TTS Brevity Mandate** applies: speak the PR title only; full body and diff stats stay in `abstract` and the terminal reply. Destructive operations require explicit voice confirmation, never silent default. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -14,27 +14,28 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **TODO file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/TODO.md
    - **README file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/README.md
    - **Base branch**: main
    - **Branch naming pattern**: `wip-v{version}-{date}-{description}`
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/branch-pr-and-merge.md
-   - This is the ONLY authoritative source for ALL branch completion steps
-   - Do NOT proceed without reading this document in full
-   - The canonical workflow contains: Documentation surface check, branch state audit, test verification, PR description generation, PR creation, post-merge sync, branch cleanup, release tagging, and next branch creation
+   - This is the only authoritative source for all branch completion steps
+   - Never proceed without reading this document in full
+   - The canonical workflow contains: documentation surface check, branch state audit, test verification, PR description generation, and PR creation. It also contains post-merge sync, branch cleanup, release tagging, and next branch creation
 
-3. **MUST execute the complete branch PR and merge workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document (Steps 0-11)
-   - Do NOT skip any steps (including notifications or verification checks)
-   - Do NOT substitute a shortened or summarized version
-   - Do NOT merge without user confirmation
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+3. **Must execute the complete branch PR and merge workflow**:
+   - Execute all steps exactly as described in the canonical workflow document (Steps 0-11)
+   - Never skip any steps (including notifications or verification checks)
+   - Never substitute a shortened or summarized version
+   - Never merge without user confirmation
+   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
+   - Steps 0-11 — the numbered steps of the canonical workflow document
 
 ---
 
