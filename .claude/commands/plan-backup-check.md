@@ -1,7 +1,7 @@
 # Backup Script - Version Check
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
