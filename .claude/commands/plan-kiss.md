@@ -61,7 +61,7 @@
 
 4. **Must deliver the payload verbatim** via `dm_send` (inline body), and `notify()` the user so the correction is visible. The **payload itself must obey the mandate** — a 40-line lecture on brevity is self-refuting.
 
-5. **Must preserve the escape clause exactly**: **"Go longer ONLY WHEN ASKED"**. Never soften it to "when the content requires it" — that wording returns the discretion to the author, which is the defect being corrected (Rick).
+5. **Must preserve the escape clause exactly**: **"Go longer ONLY WHEN ASKED."** Never soften it to "when the content requires it". That wording returns the discretion to the author, which is the defect being corrected (Rick).
 
 6. **Must not solicit acknowledgment.** Targets tighten and continue. An "understood, I'll be more concise" reply chain is the waste this command exists to kill — say so in the payload.
 
