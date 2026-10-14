@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T21:30:08-04:00",
+  "generated_at": "2026-10-13T21:53:08-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -8,19 +8,19 @@
       "version": "1.0"
     },
     "p-is-p-01-planning.md": {
-      "sha256": "e8bb113a578fdb69f3c30f592ecee646b04e4c4d780f741e21247f878be9ed67",
+      "sha256": "ffe66eb50f0e354422cb4cb5e20545e2c98f26c01a25c95644e1a55762b88c6d",
       "version": "1.0"
     },
     "p-is-p-02-documentation.md": {
-      "sha256": "14dfd5fca19545267771d568253553a7144b8ef5cf91d2ccac649e192c603f5e",
+      "sha256": "5540a11d6869fceb69a7cc4bee09667c663833d809ed472b0138b1396b8ffa56",
       "version": "1.0"
     },
     "plan-about.md": {
-      "sha256": "185f7448458346d141a7a1aa7e90546499ddf012d7f37e89bdc6abe6403cc79a",
+      "sha256": "4bebbfa5ed697f6da71daa2d920863508bb3e9ec58b215da47dbe1b88588481d",
       "version": "1.0"
     },
     "plan-authoring-cascaded.md": {
-      "sha256": "2ce87f9cd6e4a728aeeffaad7dac759c295d3d143afdef89d52b0aa3aa1244d9",
+      "sha256": "c2878c3644d68ebba77163b09d584ef73945453430fb89eb90cd8c75b12af4ba",
       "version": "1.0"
     },
     "plan-backup-check.md": {
@@ -36,87 +36,87 @@
       "version": "1.0"
     },
     "plan-branch-pr-and-merge.md": {
-      "sha256": "86b37cccde788f8fb14e3d4521b38634bf59e031c0566a1560adfbae02aa073a",
+      "sha256": "edeacb1de3f47ef7edb8fc5368ae37a2d6ba120d562051d0111106b8e6229f36",
       "version": "1.0"
     },
     "plan-bug-fix-mode-close.md": {
-      "sha256": "938b8446ca69d833651462f3be4f8136f69d1c104ae8fcd54eb68a85614211de",
+      "sha256": "df9c75ce85413eb1d6e0b1ea5eb56cbe778a5c16f6e974d599fdd2503d3569a5",
       "version": "1.0"
     },
     "plan-bug-fix-mode-continue.md": {
-      "sha256": "8403a3000aa81dcd0752e7bd1382a15854eb1736c81690d28f57031efed543e5",
+      "sha256": "5ce371c8d781243852e0ebab567284e3d5ec4e06668b6bb7ad6d42f685efe923",
       "version": "1.0"
     },
     "plan-bug-fix-mode-start.md": {
-      "sha256": "6dc81290ab14e758b591aae7c75d1a5369802391d831b216c4d694566c1cdf26",
+      "sha256": "6b2ad7c07beefb0493062c768dc0ceabc782b387933e02fa9563442ea13395a2",
       "version": "1.0"
     },
     "plan-bug-fix-mode-wrap.md": {
-      "sha256": "b52b2ba99d00f2091d81980c58be36e854c2a15e3b69285859061688b963de00",
+      "sha256": "a6731f2c1304749efd0574ce4b17ba88ce0c033264de46edd85dad55068f3c7f",
       "version": "1.0"
     },
     "plan-bug-fix-mode.md": {
-      "sha256": "1c96697399c30b67dc01b8962e2883e2b7c53410063e34bc84e66eeb5cb5a32a",
+      "sha256": "d9511b328b7fd9dff83b05f157476ef3cfaee8bc272d322d347db1479ab8b848",
       "version": "1.0"
     },
     "plan-decide.md": {
-      "sha256": "1253e89f890b184571031d2af4caa53800ff1ccfabe4d7837aef2559daa39a09",
+      "sha256": "3fec04f822321cf639bd456e7c559c756edecdf12baf81c3de9c92995e9145a4",
       "version": "1.0"
     },
     "plan-history-management.md": {
-      "sha256": "b18c212afee559d54ff820264921910a96d668c0cd477c29149da33d23e9cd0e",
+      "sha256": "d37c0395583c766cf5421a80f669731a1cd102505b1170c6705609b931257b22",
       "version": "1.1"
     },
     "plan-install-wizard.md": {
-      "sha256": "49efebccccc8af9f9cb68bb273edff6db462c7f87f0735b32ec9d1ab399a14e4",
+      "sha256": "ffe8fe654c5057252f9f49576a40b1641ed8d01b760a17cba5ca544d28550584",
       "version": "1.0"
     },
     "plan-kiss.md": {
-      "sha256": "8239012e289e939eb23d8f068405ed80690c13329bbee59be0f08aa44b12c333",
+      "sha256": "9f95acb550719e40424d7245f96ed15061ad6ac6208e62384113a53ca3d33c93",
       "version": "1.0"
     },
     "plan-last-call.md": {
-      "sha256": "f7456a8569e6deb04670d495c5bad956848fb0abd92d252c63756a81204330a9",
+      "sha256": "ba99e96129c2a538971e2371405034c7aadcd134fa5ad7d88a7d3fbe9db74e63",
       "version": "1.0"
     },
     "plan-loc-delta-global.md": {
-      "sha256": "922c047285a4b9a10f17db9b0d76787faad17f8dbd95a713e3e5a27503f565e1",
+      "sha256": "b302862016606503bb425e6bbf4cf6667b19fa474e4ffdaadba25e9af029441b",
       "version": "1.1"
     },
     "plan-mandate.md": {
-      "sha256": "fe1837179bcf6c083cb7bc053665980bb5527f59c85807dc5784fd40951ec97a",
+      "sha256": "5bcafc0655459df33eb690b74999ea325a310397b911a82032a0fa78c65a3e27",
       "version": "1.2"
     },
     "plan-memento.md": {
-      "sha256": "b86edca28eb44edae81ba59ee5246072fae9eaaec2742f03eddbcb56c3aa13ec",
+      "sha256": "53afdd2199c84d0e6e9da4ff7fed0a0ccff895343ab23f45fc8a9ee850619699",
       "version": "2.0"
     },
     "plan-post-game.md": {
-      "sha256": "cc9c42b3e9b3a388822630b0dd2848db273414c332690a3d6d329569fa67c711",
+      "sha256": "79c6ac175a70c889d138a4339cf3f4c686ca8f9510da3a653362fb016809953a",
       "version": "0.1 (draft \u2014 held for Rick's review)"
     },
     "plan-push.md": {
-      "sha256": "eaad70409b6a2223685ef37bdf555bfb8efc06691d0352a09783cde2e2b72cba",
+      "sha256": "11ab5af487fbc424343c0a2b2e8017d159e47733a84098bad8335df7bc4f8b82",
       "version": "1.0"
     },
     "plan-review-cascaded.md": {
-      "sha256": "f9970478e3ca1377f9d382a63eed67517f2096b5178dffa57ec1e1e678054c35",
+      "sha256": "766033dd9a967756378ebd17042208232492575b75d1693b133ffb87640a8c42",
       "version": "1.0"
     },
     "plan-review.md": {
-      "sha256": "baf28f796c1baa942d85b0acad857f95e820efd5b9b9e40e37369bf34f43d527",
+      "sha256": "bba965ddea331744daa308f1c0c670755c776b72d1ea47aa4d06611828c09c45",
       "version": "1.0"
     },
     "plan-session-checkpoint.md": {
-      "sha256": "e86a6b58b88c9bfe3f8587616d15d4c93596dcefd92a2ca6e5f6b446f5c8eab1",
+      "sha256": "0a9d18c070a6a90cf5e00525f3c6c0b4a62119f507c604c128c56831d89ff87b",
       "version": "1.0"
     },
     "plan-session-end.md": {
-      "sha256": "0030c209106f34fe290cbded80821aa04f29827d8144bad35657ff955814319a",
+      "sha256": "9cda9a31e1b3ca1af29682ba88dedfe655dad4852ed10544886f77975797c63d",
       "version": "1.0"
     },
     "plan-session-start.md": {
-      "sha256": "dde69f7a752ef82207e8b024b189515e7fc1cd935424f722f68af351c2dcf99f",
+      "sha256": "502cd5500b8f6de6d985ff97c16d6b99d2b3b8765762d1908640040dc3180843",
       "version": "1.2"
     },
     "plan-skills-management-audit.md": {
@@ -140,7 +140,7 @@
       "version": "1.0"
     },
     "plan-skills-management.md": {
-      "sha256": "ec2572c65360af4afbed45c5682dd917f69938dd9fb6ba2ddacdecf332f71d41",
+      "sha256": "ecd4d7cfa2aa094c54d82999104da0ef6b526d86a6854056b30e651c152f9b8f",
       "version": "1.1"
     },
     "plan-test-baseline.md": {
@@ -156,11 +156,11 @@
       "version": "1.0"
     },
     "plan-todo.md": {
-      "sha256": "2cbdc30dadf99f89eed97ca09e01cd21512e50cc5115d573a6adc4fe7180b545",
+      "sha256": "167da7166917b05f7ab5f76f4d78a4dc2bbe8e1980e7274f6fe485368b8fc05b",
       "version": "1.1"
     },
     "plan-uninstall-wizard.md": {
-      "sha256": "2b0e44a4ae3f96e1f30466fe04b98e3ed26b6e6659967fda7dda650a9f836d66",
+      "sha256": "25e5c6c54a2d7312aacbac65628c7f20b0fc9f77a3fe35cbef69fe7fa1587f81",
       "version": "1.0"
     }
   }
