@@ -71,7 +71,7 @@ This command supports all five modes via arguments. For discoverability in the s
 4. **Must execute the complete workflow for the selected mode**:
    - Execute all steps exactly as described in the canonical workflow document
    - Never skip any steps (including notifications, validation, user confirmations)
-   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
 
 ---
 
@@ -89,7 +89,7 @@ This command supports all five modes via arguments. For discoverability in the s
 /plan-skills-management delete
 ```
 
-## Workflow
+## Steps of the Workflow
 
 1. Read the canonical workflow from planning-is-prompting → workflow/skills-management.md
 2. Parse the mode argument (default: `discover`)
@@ -135,7 +135,7 @@ This command supports all five modes via arguments. For discoverability in the s
 This workflow uses cosa-voice MCP for all notifications:
 - `notify()` for progress updates
 - `ask_multiple_choice()` for skill selection
-- `ask_yes_no()` for deletion confirmation. **Critical**, on `neither`: do not delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `workflow/cosa-voice-integration.md` → "Handling Neither".
+- `ask_yes_no()` for deletion confirmation. **Critical** on `neither`: do not delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ## Project Prefix
 
