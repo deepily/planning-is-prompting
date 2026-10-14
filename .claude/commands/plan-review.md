@@ -25,12 +25,12 @@
    - Location: planning-is-prompting → workflow/plan-review.md
    - This is the only authoritative source for the gate's structure (reuse pre-pass, Pass 1 Fitness, Resolution Loop, Pass 2 Ownership-Language Audit, gates, termination, anti-patterns)
    - Never proceed without reading this document in full
-   - Pay particular attention to these sections of `workflow/plan-review.md`:
-     - Section 1 (Hierarchy of Anchors)
-     - Section 3 (Pass Ordering rationale: fitness-first)
-     - Section 6 (Gate 1) and Section 9 (Gate 2) — both are non-negotiable
-     - Section 7 (Resolution Loop convergence re-grep)
-     - Section 12 (partial re-runs)
+   - Pay particular attention to these sections:
+     - §1 of `workflow/plan-review.md` (Hierarchy of Anchors)
+     - §3 of `workflow/plan-review.md` (Pass Ordering rationale: fitness-first)
+     - §6 (Gate 1) and §9 (Gate 2) of `workflow/plan-review.md` — both are non-negotiable
+     - §7 of `workflow/plan-review.md` (Resolution Loop convergence re-grep)
+     - §12 of `workflow/plan-review.md` (partial re-runs)
 
 3. **Parse invocation flags**:
    - `--from=reuse` (default if no flag) — full pipeline: reuse → Pass 1 (Fitness) → Pass 2 (Ownership-Language Audit)
