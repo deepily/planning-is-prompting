@@ -573,7 +573,7 @@ Files to track include:
 
 ### Step 8: Document in History
 
-**Add fix entry to history.md under current session:**
+**Add fix entry to history.md under current session** (wording follows `workflow/entry-writing-rules.md`; `bug-fix-queue.md` is outside that policy):
 
 ```markdown
 ### Fix N: [Brief description]
