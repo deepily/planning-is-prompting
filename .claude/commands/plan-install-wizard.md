@@ -15,7 +15,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow is a long multi-phase wizard with many user-decision gates. In conversation mode (`get_session_info().conversation_mode_active=true`), the entire wizard becomes voice-driven. In that mode the **TTS Brevity Mandate** applies: never read the workflow catalog aloud, speak categories and put the detailed catalog in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow is a long multi-phase wizard with many user-decision gates. In conversation mode (`get_session_info().conversation_mode_active=true`), the entire wizard becomes voice-driven. In that mode the **TTS Brevity Mandate** applies: never read the workflow catalog aloud, speak categories and put the detailed catalog in `abstract`. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -90,8 +90,8 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Works across all projects (project-agnostic)
 
 **Mode Routing**:
-- Installation mode → workflow/installation-wizard.md (Installation Flow section, lines 1-2173)
-- Update mode → workflow/installation-wizard.md (Update Mode Workflow section, lines 2175-3903)
+- Installation mode → planning-is-prompting/workflow/installation-wizard.md (Installation Flow section, lines 1-2173)
+- Update mode → planning-is-prompting/workflow/installation-wizard.md (Update Mode Workflow section, lines 2175-3903)
 
 **Installation of this command**:
 - Created during Step 7.5 of installation wizard (optional)
@@ -102,6 +102,6 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Heading from `workflow/installation-wizard.md`, for the step named above; the canonical file holds more.
+Heading from `planning-is-prompting/workflow/installation-wizard.md`, for the step named above; the canonical file holds more.
 
 - Step 7.5: Install the Wizard Slash Command
