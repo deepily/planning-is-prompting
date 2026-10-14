@@ -139,7 +139,7 @@ Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but
 8. Update the "Last updated" timestamp.
 9. Notify: "Archived N item(s) to <file>; TODO.md now at current+next-2 horizon."
 
-**Dry-run first (mandate)**: present the proposed moves and confirm before writing (`ask_yes_no` in conversation mode) — never archive silently. The session-end health-check (`session-end.md`) proposes this pass automatically when TODO.md outgrows its horizon.
+**Dry-run first (mandate)**: present the proposed moves and confirm before writing (`ask_yes_no` in conversation mode) — never archive silently. The session-end health-check (`planning-is-prompting/workflow/session-end.md`) proposes this pass automatically when TODO.md outgrows its horizon.
 
 ---
 
@@ -167,7 +167,7 @@ notify( "TODO.md updated: 5 pending items", notification_type="progress", priori
 ## Notes
 
 This slash command is a **reference wrapper** that reads the canonical workflow document on every invocation. This ensures:
-- Always up-to-date when todo-management.md is improved
+- Always up-to-date when planning-is-prompting/workflow/todo-management.md is improved
 - Single source of truth for TODO operations
 - No duplication between workflow and slash command
 - Works across all projects (with project-specific configuration)
