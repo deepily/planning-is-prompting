@@ -84,7 +84,7 @@
 ## Notes
 
 This slash command is a **reference wrapper** that reads the canonical workflow document on every invocation. This ensures:
-- Always up-to-date when installation-wizard.md is improved
+- Always up-to-date when planning-is-prompting/workflow/installation-wizard.md is improved
 - Single source of truth for installation and update logic
 - No duplication between workflow and slash command
 - Works across all projects (project-agnostic)
@@ -96,7 +96,7 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 **Installation of this command**:
 - Created during Step 7.5 of installation wizard (optional)
 - Can be manually installed: copy this file to target project's `.claude/commands/`
-- Not required - INSTALLATION-GUIDE.md and workflow documents work standalone
+- Not required - planning-is-prompting/workflow/INSTALLATION-GUIDE.md and workflow documents work standalone
 
 ---
 
