@@ -12,7 +12,7 @@
 
 1. **Must use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
-   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `plan-review-cascaded-defaults.md` for the full key list and override conventions — the authoring cascade shares the review cascade's configuration surface.
+   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` for the full key list and override conventions — the authoring cascade shares the review cascade's configuration surface.
    - Never proceed without [SHORT_PROJECT_PREFIX]
 
 2. **Must resolve the activation mode before anything else**:
@@ -69,11 +69,11 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Sister command to `/plan-review-cascaded` (which *reviews* an existing plan); this one *authors* one
 
 **Companion docs**:
-- `plan-authoring-cascaded.md` — the manager's authoring playbook
-- `plan-review-cascaded-common.md` — shared workflow guidance (~60%)
-- `plan-review-cascaded-defaults.md` — config defaults + override mechanism
-- `plan-review-cascaded-personas.md` — role briefs + rubrics (Persona 2.A = Authoring Author)
-- `plan-review-cascaded.md` — the sister review-mode playbook
+- `planning-is-prompting/workflow/plan-authoring-cascaded.md` — the manager's authoring playbook
+- `planning-is-prompting/workflow/plan-review-cascaded-common.md` — shared workflow guidance (~60%)
+- `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` — config defaults + override mechanism
+- `planning-is-prompting/workflow/plan-review-cascaded-personas.md` — role briefs + rubrics (Persona 2.A = Authoring Author)
+- `planning-is-prompting/workflow/plan-review-cascaded.md` — the sister review-mode playbook
 
 **Design provenance**: `planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
 
