@@ -4,6 +4,8 @@ Moved out of `workflow/post-game.md` (lines 316-326 at `d73f36b`) without change
 
 ---
 
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - Names `workflow/entry-writing-rules.md` for the history entry and Decisions Log rows a post-game writes.
+
 ## Version history
 
 - **1.7 (2026-10-09, Extra 2, store row `9aadd0ac`, item 4)**: the Trigger paragraph names the recorded waiver (`--no-post-game "<reason>"`, used when the gate fires and no retro is warranted) so "a workflow bug" no longer reads as having no way out.
