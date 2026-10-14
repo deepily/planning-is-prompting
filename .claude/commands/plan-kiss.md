@@ -7,7 +7,7 @@
 
 ---
 
-> **Note**: This command delivers a fleet-wide behavioral correction. The payload is `dm_send`'d to targets and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
+> **Note**: This command delivers a fleet-wide behavioral correction. The payload is `dm_send`'d to targets and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `planning-is-prompting/workflow/cosa-voice-integration.md`.
 
 > ## 😘 / 🫡 / 🏆 — the glyph exchange
 > **😘 alone, with no other text, fires the entire mandate**. Never ask what it refers to. **🫡** is the complete reply — salute, then the tightened output, nothing else. This is the mandate applied to itself: a reminder that costs a paragraph would be self-refuting.
@@ -18,7 +18,7 @@
 
 > *A 📷 answered with a description of the checkpoint you intend to make is not a checkpoint.*
 
-> **☕ = "coffee break's over, get back to work"** — the one-character form of `/plan-push`, the Riot Act, fired at a **manager**. Routes to `workflow/push-to-completion.md`, not to this mandate. **🫡 on receipt, receipts on delivery** — the one glyph whose salute does **not** discharge the order. The 📷 asks for one artifact and ends. The ☕ asks you to drive a whole board to terminal and come back with proof of work.
+> **☕ = "coffee break's over, get back to work"** — the one-character form of `/plan-push`, the Riot Act, fired at a **manager**. Routes to `planning-is-prompting/workflow/push-to-completion.md`, not to this mandate. **🫡 on receipt, receipts on delivery** — the one glyph whose salute does **not** discharge the order. The 📷 asks for one artifact and ends. The ☕ asks you to drive a whole board to terminal and come back with proof of work.
 
 > *Compressing the trigger must never compress the receipt.*
 
@@ -121,7 +121,7 @@ to do better is itself the defect.
 | Half | Means | Mandate |
 |---|---|---|
 | **STFU** | stop the verbosity | this one — KISS · 3LoL · NoMC C2C · NoAA · NoDrama · WaHH |
-| **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
+| **GB2W** | stop talking *about* the work and go **do** it | `planning-is-prompting/workflow/push-to-completion.md` |
 
 **Correct response: tighten and resume driving.** Not a shorter status update — *fewer words and more work*. It targets a session that has substituted narration for progress.
 
@@ -144,7 +144,7 @@ Or by utterance: "KISS", "KISS it" / "KISS that", "Say 3LoL", "NoMC", "C2C", "cu
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow on every invocation, so improvements to `workflow/brevity-mandate.md` propagate without editing this file.
+This slash command is a **reference wrapper** that reads the canonical workflow on every invocation, so improvements to `planning-is-prompting/workflow/brevity-mandate.md` propagate without editing this file.
 
 **Companion**: `/plan-push` (the Riot Act) fixes a manager who won't *move*. `/plan-kiss` fixes a session that won't *stop talking*. Same broadcast shape, different defect.
 
