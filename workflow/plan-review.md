@@ -138,18 +138,35 @@ mode of AI-authored plans is missing existing helpers.
 
 For each new-thing, output one row:
 
-| New thing the plan proposes | Existing prior art (file:line) | Verdict |
+| New thing the plan proposes | Existing prior art (file:line) | Verdict | Receipt |
 
 Verdicts (pick exactly one):
 - reuse-as-is        — existing code already does what the plan needs
 - extend-existing    — extend the named existing function/class
 - genuinely-new      — no prior art found; explain WHY this is novel
 
+Receipts: if a reuse tool is installed in this repo, call it for each
+new-thing and cite `reuse-receipt: <id>` from that call in the Receipt
+column. A row with no receipt is challenged, not accepted. If no reuse
+tool is installed, grep as above and write "no receipt: tool not
+installed" in the Receipt column.
+
 DO NOT fix anything yet. Deliver the table. Wait for my confirmation.
 After I review, I'll tell you which findings to apply.
 ```
 
-**After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers — this persists past the review and is useful at code-write time.
+**Receipts**: a reuse tool, for example lupin's `check_exists` or `fetch_similar`, returns a receipt id with every verdict. The pre-pass requires one per row, so a verdict can be replayed later and a bare assertion is challenged. A row carrying "no receipt: tool not installed" is accepted as a grep-only row and says so.
+
+**Three vocabularies**: the tool, this pre-pass and a code-review skill each name the same outcomes differently. This table maps them, so a receipt cited in a prior-art row needs no translation. The example names are lupin's `check_exists` verdicts and its reuse-reviewer skill.
+
+| `check_exists` verdict | Section 4 prior-art label | Reuse-reviewer ruling |
+| --- | --- | --- |
+| `REUSE` | `reuse-as-is` | `DUPLICATE` |
+| `EXTEND` | `extend-existing` | `EXTEND <symbol>` |
+| `NEW` | `genuinely-new` | `DISTINCT <why>`, only after the reviewer has read the shortlist's source; a `NEW` verdict does not rule `DISTINCT` by itself |
+| `UNCERTAIN_READ_SOURCE` | none yet: read the source first | the reviewer rules only after reading the candidates |
+
+**After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers and receipt ids — this persists past the review and is useful at code-write time.
 
 **Single-doc plans**: the REUSE pre-pass works on any doc shape, not just multi-doc Pattern A/B/C structures. It runs as part of this gate under the critique branch (§4a) — **there is no separate standalone command.**
 
