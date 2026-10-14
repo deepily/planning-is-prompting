@@ -7,7 +7,7 @@ This document contains the comprehensive end-of-session workflow extracted from 
 >
 > | Artifact | HARD CAP |
 > |---|---|
-> | `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+> | `history.md` `RESUME HERE` | headline + **≤5 numbered findings, ≤2 sentences each** |
 > | `history.md` Checkpoint line | **one line**, semicolon-separated |
 > | `history.md` Files line | **paths only**, no per-file commentary |
 > | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
