@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T21:53:08-04:00",
+  "generated_at": "2026-10-14T09:52:25-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -112,7 +112,7 @@
       "version": "1.0"
     },
     "plan-session-end.md": {
-      "sha256": "9cda9a31e1b3ca1af29682ba88dedfe655dad4852ed10544886f77975797c63d",
+      "sha256": "1f7df6f7979f245d14821f47a87af5c1f62c67dc6f4bfa9851cd57598480aad2",
       "version": "1.0"
     },
     "plan-session-start.md": {

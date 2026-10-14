@@ -17,7 +17,7 @@
 1. **Must use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
-   - **Planning documents**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/workflow/
+   - **Planning documents**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/src/rnd/
    - **Archive directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history/
    - Never proceed without these parameters
 
