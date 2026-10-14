@@ -59,8 +59,8 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 Headings from `workflow/p-is-p-00-start-here.md`:
 
-- Step 1 — Planning the Work (Always Required)
-- Step 2 — Documenting the Implementation (Conditional)
+- Step 1 — Planning the Work
+- Step 2 — Documenting the Implementation
 
 Headings from `workflow/p-is-p-01-planning-the-work.md`:
 
