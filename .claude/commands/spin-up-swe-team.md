@@ -46,7 +46,7 @@
    - **The mandate lives in the target repo, and its existence is the in-force flag.** Present: governs. Absent: nothing to append. `rm`: gone, everywhere, at once. Scoping **comes from where the file lives**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, and is *structurally incapable* of inheriting another project's deadline. Mechanism: `workflow/provisional-mandates.md`.
    - **Where**: in the **Expectations & gates / done-section**, not the preamble. A *mandate at the top gets skimmed; a mandate in the acceptance criteria gets executed.*
    - **If absent**: the slot is empty; append nothing. **The seam is permanent; the mandate is not.**
-   - **Receipt for why "the Manager will tell them" is not acceptable** : a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist. The **bounce reported itself with the live roster attached, and it was read and moved past**. 3 of 4 briefs carried a defect. The briefs were never reviewed. **Two hops, both lossy. In the append, the brief is the delivery.**
+   - **Receipt for why "the Manager will tell them" is not acceptable**: a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist. The **bounce reported itself with the live roster attached, and it was read and moved past**. 3 of 4 briefs carried a defect. The briefs were never reviewed. **Two hops, both lossy. In the append, the brief is the delivery.**
 
 6. **Must spawn the crew** via the cosa-voice **`spawn_sessions`** tool — one call per member (`count=1`), with:
    - `task_prompt` = the composed brief from instruction 5.
