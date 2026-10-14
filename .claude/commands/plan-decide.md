@@ -7,7 +7,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven and spoken text follows the **TTS Brevity Mandate**. The spoken `question` is a one-line headline; pros/cons/recommendation live in `abstract`. See `workflow/cosa-voice-integration.md`.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven and spoken text follows the **TTS Brevity Mandate**. The spoken `question` is a one-line headline; pros/cons/recommendation live in `abstract`. See `planning-is-prompting/workflow/cosa-voice-integration.md`.
 
 > **Activation**: this is the explicit fallback. The same workflow auto-activates via the Agent Skill `.claude/skills/guided-decision-walkthrough/SKILL.md`. Natural phrases trigger it, for example "walk me through the pending decisions" or "walk through my options one by one".
 
@@ -59,4 +59,4 @@
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language trigger lives in the companion Agent Skill; both resolve to the same `workflow/decision-walkthrough.md` ritual.
+This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language trigger lives in the companion Agent Skill; both resolve to the same `planning-is-prompting/workflow/decision-walkthrough.md` ritual.
