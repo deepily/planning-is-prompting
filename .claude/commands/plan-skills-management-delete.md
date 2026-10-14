@@ -48,13 +48,13 @@
    - This is the only authoritative source for all skills management steps
    - Never proceed without reading this document in full
 
-3. **Must execute DELETE mode workflow**:
+3. **Must execute delete mode workflow**:
    - Execute the "Mode: delete" section from the canonical workflow
    - List available skills if none specified
    - Show skill contents and require confirmation
    - Clean up references after deletion
 
-4. **Key Actions for DELETE mode**:
+4. **Key Actions for delete mode**:
    - Step 1: List available skills (with metadata)
    - Step 2: Show skill contents and confirm (require typing skill name)
    - Step 3: Execute deletion (remove skill directory recursively)
