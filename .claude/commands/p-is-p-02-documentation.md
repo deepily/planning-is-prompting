@@ -1,7 +1,7 @@
 # Planning is Prompting - Step 2: Document the Implementation
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -10,26 +10,26 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Optional arguments**:
      - `--pattern=A|B|C` (if provided, skip pattern determination)
      - `--project-name=NAME` (for directory naming)
-   - Do NOT proceed without the [SHORT_PROJECT_PREFIX] parameter
+   - Never proceed without the [SHORT_PROJECT_PREFIX] parameter
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md
-   - This is the ONLY authoritative source for ALL implementation documentation steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all implementation documentation steps
+   - Never proceed without reading this document in full
    - The canonical workflow contains: Need determination, pattern selection (A/B/C), structure creation, token budgets, archival strategies, and template generation
 
-3. **MUST execute the complete implementation documentation workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including need determination, pattern selection, or template generation)
-   - Do NOT substitute a shortened or summarized version
+3. **Must execute the complete implementation documentation workflow**:
+   - Execute all steps exactly as described in the canonical workflow document
+   - Never skip any steps (including need determination, pattern selection, or template generation)
+   - Never substitute a shortened or summarized version
    - If `--pattern` argument is provided, skip pattern determination and use the specified pattern
    - If `--project-name` argument is provided, use it for directory naming
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
 
 ---
 
@@ -52,7 +52,7 @@ Invoke this command when:
 - Pattern from Step 1 is Pattern 3 or 4 (small/simple work)
 - Use history.md for tracking instead
 
-> **Skipping the documentation step does *not* exempt any plan document you do write** — if a plan document exists, it enters `/plan-review` (see `workflow/plan-review.md` §4a). The gate is keyed to the **document**, not to the pattern.
+> **Skipping the documentation step does *not* exempt any plan document you do write**. If a plan document exists, it enters `/plan-review` (see `workflow/plan-review.md` §4a). The gate is keyed to the **document**, not to the pattern.
 
 ---
 
@@ -63,3 +63,10 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Single source of truth for implementation documentation methodology
 - Demonstrates the workflow pattern for other projects
 - This file serves as a working example for other repos
+
+## Steps this command names
+
+Headings from `workflow/p-is-p-00-start-here.md`:
+
+- Step 1 — Planning the Work (Always Required)
+- Step 2 — Documenting the Implementation (Conditional)
