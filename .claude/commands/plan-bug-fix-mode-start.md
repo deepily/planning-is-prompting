@@ -1,12 +1,12 @@
 # Bug Fix Mode - Start Session
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications, including `converse()` for bug-id selection. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications, including `converse()` for bug-id selection. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. In that mode, spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -29,24 +29,24 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Bug fix queue file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/bug-fix-queue.md
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/bug-fix-mode.md
-   - This is the ONLY authoritative source for ALL bug fix mode steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all bug fix mode steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute START mode workflow**:
+3. **Must execute `start` mode workflow**:
    - Execute the "Session Initialization (`start` mode)" section
    - Steps 0-4 from the canonical workflow
    - Continue into Per-Bug Fix Cycle when user selects a bug
 
-4. **Key Actions for START mode**:
+4. **Key Actions for `start` mode**:
    - Check/create `bug-fix-queue.md` in project root
    - Create session header in `history.md` if not present
    - Stamp session ownership using `get_session_info()`
