@@ -5,6 +5,8 @@ Moved out of `workflow/skills-management.md` (lines 820-848 at `d73f36b`) withou
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
+
 
 **v1.3** (2026.10.10) - Stale reference (row `735e312f`, C1): the create-mode example selects `[6] From template`, the number the source list gives it.
 

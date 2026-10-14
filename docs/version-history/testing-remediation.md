@@ -5,6 +5,8 @@ Moved out of `workflow/testing-remediation.md` (lines 1269-1292 at `d73f36b`) wi
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - Step 8 names `workflow/entry-writing-rules.md` for the remediation entry.
+
 
 **Version 1.4** (2026.10.10)
 - Wider pruning batch 1 (store row `84211d12`): removed Step 1 (the optional step checklist and its four scope lists) and the "close your checklist" clause in the final summary. Step 1 is unused; later steps keep their numbers.

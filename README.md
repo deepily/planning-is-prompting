@@ -264,6 +264,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Resource Management
 - [**history-management.md**](workflow/history-management.md) - Prompts for maintaining session history and documentation
+- [**entry-writing-rules.md**](workflow/entry-writing-rules.md) - The wording rules for a `history.md` and a `TODO.md` entry so it passes lupin's markdown linter: 25-word sentences, no capitals for emphasis, the marker in backticks, ids and steps named by what they are
 - [**todo-management.md**](workflow/todo-management.md) - `TODO.md` as the durable narrative companion to the task store: the Decisions Log, the pending-decisions queue, and backlog not yet owed. `/plan-todo`
 - [**task-store-discipline.md**](workflow/task-store-discipline.md) - The unified task store: open an item for every unit of owed work, keep its status current, and never pull the unfiltered board
 - [**manager-context-monitoring.md**](workflow/manager-context-monitoring.md) - The 10-minute tick: every manager watches their workers' context and re-spins anyone past 50%. The timer must outlive the session, so it is a real crontab entry

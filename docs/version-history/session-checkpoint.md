@@ -5,6 +5,8 @@ Moved out of `workflow/session-checkpoint.md` (lines 603-619 at `d73f36b`) witho
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The cap table writes `RESUME HERE` in backticks; Step 4 format notes name `workflow/entry-writing-rules.md`.
+
 **v1.5** (2026.10.10) - Stale references (row `735e312f`, C1, C2): the conversation-mode section names the asks that still block, not a commit-approval gate that the command no longer has; the seed pointer to a deleted post-game is removed.
 
 **v1.4** (2026.10.09) - Removed the optional "Step 0: Step Checklist" step and the "before Step 0" timing reference, so the file matches the `plan-session-start.md` wrapper and the canonical session-start workflow, which have no checklist step (Rick's ruling, row `efa0a4cf`; store row `9aadd0ac`, Extra 2).

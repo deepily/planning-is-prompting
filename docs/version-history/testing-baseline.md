@@ -5,6 +5,10 @@ Moved out of `workflow/testing-baseline.md` (lines 968-986 at `d73f36b`) without
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy re-loop, parent row `8b32de78`) - The history entry template's health value is lowercase, so a copied entry carries no capitalised word (reviewer finding F3).
+
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The history.md layout comment writes the marker as `RESUME HERE` in backticks and names `workflow/entry-writing-rules.md`.
+
 
 **Version 1.2.1** (2026.10.09)
 - Follow-through on the Step 0 cut (María's ruling): removed the two orphaned checklist examples and the "close your checklist" clause in the final summary step.

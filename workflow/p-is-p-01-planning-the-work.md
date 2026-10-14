@@ -1291,7 +1291,7 @@ After completing work, capture learnings and archive for future reference.
 
 #### Update History.md
 
-Add a session entry documenting the work:
+Add a session entry documenting the work, worded to `workflow/entry-writing-rules.md`:
 
 ```markdown
 ## YYYY.MM.DD - Session N: [Brief Description]

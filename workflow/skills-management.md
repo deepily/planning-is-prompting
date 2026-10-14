@@ -138,6 +138,7 @@ description: Helps with testing.
 3. **Identify Rediscovery Patterns**
    - Review history.md for repeated mistakes or reminders
    - Check for patterns like "Remember to...", "Don't forget..."
+   - Any line this workflow writes to history.md or TODO.md follows `workflow/entry-writing-rules.md`
    - Identify knowledge that's frequently "relearned"
 
 4. **Generate Candidate Report**

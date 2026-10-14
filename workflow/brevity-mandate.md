@@ -232,10 +232,12 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 
 | Artifact | Cap |
 |---|---|
-| `history.md` **RESUME HERE** | Headline sentence + **≤5 numbered findings**, **≤2 sentences each** |
+| `history.md` `RESUME HERE` | Headline sentence + **≤5 numbered findings**, **≤2 sentences each** |
 | `history.md` **Checkpoint line** | One line. Semicolon-separated, not a paragraph. |
 | `history.md` **Files line** | Paths only. No commentary per file. |
 | **Decisions Log** bullet | One ruling, **≤3 sentences**. Split multi-ruling sessions into multiple bullets. |
+
+The wording of these entries (sentence length, capitals, dates, ids) is set in `workflow/entry-writing-rules.md`.
 
 ### Where the detail goes — the same routing rule as everywhere else
 

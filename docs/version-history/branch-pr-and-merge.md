@@ -5,6 +5,8 @@ Moved out of `workflow/branch-pr-and-merge.md` (lines 1186-1206 at `d73f36b`) wi
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The marker check notes the marker is written in backticks and names `workflow/entry-writing-rules.md`.
+
 
 **v1.4** (2026.10.09, Sam) - **Pruning pilot, shortlist rows 1-3 (store row `681745a9`).** Step 0 (the optional step checklist) and the 27 `TaskUpdate` lines and boxes that belonged to it are removed; the v1.3 entry below is the record of why they were optional. Three probes that Steps 1, 3 and 5 repeated now point at their first occurrence, and Step 11's final display points at Step 10.
 

@@ -250,7 +250,7 @@ INFO: No related TODO items found (no action needed)
 
 | Artifact | HARD CAP |
 |---|---|
-| `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+| `history.md` `RESUME HERE` | headline + **≤5 numbered findings, ≤2 sentences each** |
 | `history.md` Checkpoint line | **one line**, semicolon-separated |
 | `history.md` Files line | **paths only**, no per-file commentary |
 | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
@@ -281,6 +281,7 @@ INFO: No related TODO items found (no action needed)
 - Include timestamp for multiple checkpoints per day
 - Keep files list compact (show first 2-3, then "+N more" if many)
 - Commit hash will be updated in Step 7 after commit succeeds
+- Wording follows `workflow/entry-writing-rules.md`
 
 **Verification**:
 - [ ] Checkpoint entry added to history.md

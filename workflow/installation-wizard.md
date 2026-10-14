@@ -2613,6 +2613,8 @@ Start from the minimal template and add the testing additions above only if test
 
 ### Template: Initial history.md
 
+The first entry and every later line follow `workflow/entry-writing-rules.md`.
+
 ```markdown
 # [Project Name] - Session History
 

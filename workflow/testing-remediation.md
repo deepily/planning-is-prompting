@@ -1058,7 +1058,7 @@ git reset --hard HEAD~1  # Go back one commit
 
 ### Step 8: Update Session History
 
-**Add remediation entry to history.md**:
+**Add remediation entry to history.md** (wording follows `workflow/entry-writing-rules.md`):
 
 ```markdown
 #### $(date +%Y.%m.%d) - Post-Change Remediation ({REMEDIATION_SCOPE})

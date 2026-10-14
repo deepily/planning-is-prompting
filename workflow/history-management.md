@@ -7,11 +7,13 @@
 >
 > | Artifact | HARD CAP |
 > |---|---|
-> | RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+> | `RESUME HERE` | headline + **≤5 numbered findings, ≤2 sentences each** |
 > | Checkpoint line | **one line**, semicolon-separated |
 > | Files line | **paths only**, no per-file commentary |
 >
 > **`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/` (the retro, uncapped), `src/rnd/<date>-<slug>.md`, or the task-store. The entry carries a **pointer** — an entry that reproduces the retro has not preserved it, it has duplicated it into the one file with a hard token budget.
+>
+> **Wording**: entries follow `workflow/entry-writing-rules.md` so they read 0 findings under the markdown linter.
 >
 > **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop.**
 >

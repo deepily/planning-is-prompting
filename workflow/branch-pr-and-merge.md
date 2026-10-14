@@ -556,7 +556,7 @@ ask_yes_no(
 
 1. **Read TODO.md** for pending items
 
-2. **Check history.md header** for "RESUME HERE" indicators
+2. **Check history.md header** for "RESUME HERE" indicators (the marker is written in backticks; see `workflow/entry-writing-rules.md`)
 
 3. **Look for open implementation docs** in src/rnd/
 

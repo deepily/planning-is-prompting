@@ -697,7 +697,7 @@ Any regressions introduced by upcoming changes can be measured against these met
 {if integration tests configured}
 - **Integration Tests**: {XX.X%} pass rate ({PASSED}/{TOTAL} tests)
 {endif}
-- **Overall Health**: {EXCELLENT/GOOD/FAIR/POOR}
+- **Overall Health**: {excellent/good/fair/poor}
 - **Critical Issues**: {NUMBER} identified
 - **Report**: {relative_path_to_report_file}
 
@@ -714,7 +714,7 @@ Any regressions introduced by upcoming changes can be measured against these met
 # Typical history.md structure:
 # Line 1: # Project Name - Session History
 # Line 2: (blank)
-# Line 3: **RESUME HERE**: ...
+# Line 3: `RESUME HERE`: ...   (wording: workflow/entry-writing-rules.md)
 # Line 4-6: Status lines
 # Line 7: ---
 # Line 8: (start of entries)

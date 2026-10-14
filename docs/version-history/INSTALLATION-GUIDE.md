@@ -5,6 +5,8 @@ Moved out of `workflow/INSTALLATION-GUIDE.md` (lines 2450-2479 at `d73f36b`) wit
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
+
 
 **v1.7** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B6, beyond the 131 lines Rick approved: removed "Creates TODO list for tracking progress" from the Session-End Workflow "What It Does" list. That line describes `/plan-session-end`, whose workflow has no step that creates a TODO list (its Step 0 is gone).
 

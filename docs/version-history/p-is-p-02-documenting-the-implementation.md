@@ -5,6 +5,8 @@ Moved out of `workflow/p-is-p-02-documenting-the-implementation.md` (lines 1210-
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
+
 
 - **2026.10.09 (Sam)**: Pruning pilot, shortlist row 10 (store row `681745a9`): the second token-count loop in the monthly-review commands is replaced by a pointer to the first, noting the `sort` that it adds.
 - **2026.10.01**: "The Complete Flow" no longer tells the reader to keep owed work in a TodoWrite list. Planning Step 4 now records the breakdown as task-store rows or a stub manifest; Execution Step 1 works through store rows. No documentation pattern (A, B, C) changed. Review fix, same day: the importer is cited as planning-is-prompting → workflow/scripts/plan_stub_import.py.
