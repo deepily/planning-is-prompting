@@ -17,7 +17,7 @@
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Archive directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history/
-   - **Token thresholds**: **17k warning, 19k critical**, 25k limit (canonical defaults, corrected; this file had claimed 20k/22k, which contradicted workflow/history-management.md and would have thresholded 3k late)
+   - **Token thresholds**: **17k warning, 19k critical**, 25k limit (canonical defaults, corrected; this file had claimed 20k/22k, which contradicted planning-is-prompting/workflow/history-management.md and would have thresholded 3k late)
    - **Thresholds are applied to the projected total** — on-disk + `pending_entry`, never the bare file measurement
    - **Retention targets**: 8-12k tokens, 7-14 days (defaults)
    - **Mode parameter**: mode=check (default), mode=archive, mode=analyze, mode=dry-run
