@@ -94,6 +94,14 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Update mode → workflow/installation-wizard.md (Update Mode Workflow section, lines 2175-3903)
 
 **Installation of this command**:
-- Created during the installation wizard's step numbered 7.5 (optional)
+- Created during Step 7.5 of installation wizard (optional)
 - Can be manually installed: copy this file to target project's `.claude/commands/`
 - Not required - INSTALLATION-GUIDE.md and workflow documents work standalone
+
+---
+
+## Steps this command names
+
+Heading from `workflow/installation-wizard.md`, for the step named above; the canonical file holds more.
+
+- Step 7.5: Install the Wizard Slash Command (Optional)
