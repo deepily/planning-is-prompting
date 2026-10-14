@@ -1,14 +1,14 @@
 # Skills Management Workflow
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.1
 
 **Canonical Workflow**: planning-is-prompting → workflow/skills-management.md
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven AND spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, NOT verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -50,28 +50,28 @@ This command supports all five modes via arguments. For discoverability in the s
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
    - **Skills location**: .claude/skills/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/skills-management.md
-   - This is the ONLY authoritative source for ALL skills management steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all skills management steps
+   - Never proceed without reading this document in full
 
-3. **MUST determine the mode from arguments**:
+3. **Must determine the mode from arguments**:
    - `discover` (default) - Find skill candidates
    - `create [skill-name]` - Build new skill
    - `edit [skill-name]` - Update existing skill
    - `audit` - Check skills health
    - `delete [skill-name]` - Remove obsolete skill
 
-4. **MUST execute the complete workflow for the selected mode**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications, validation, user confirmations)
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+4. **Must execute the complete workflow for the selected mode**:
+   - Execute all steps exactly as described in the canonical workflow document
+   - Never skip any steps (including notifications, validation, user confirmations)
+   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
 
 ---
 
@@ -89,7 +89,7 @@ This command supports all five modes via arguments. For discoverability in the s
 /plan-skills-management delete
 ```
 
-## Workflow Steps
+## Workflow
 
 1. Read the canonical workflow from planning-is-prompting → workflow/skills-management.md
 2. Parse the mode argument (default: `discover`)
@@ -108,7 +108,7 @@ This command supports all five modes via arguments. For discoverability in the s
 ### create [skill-name]
 - Guides through source selection
 - Analyzes skill granularity (single vs multiple)
-- Writes SKILL.md with trigger-rich description
+- Writes `SKILL.md` with trigger-rich description
 - Extracts detailed content to references/ if needed
 - Validates format and tests intent detection
 
@@ -135,7 +135,7 @@ This command supports all five modes via arguments. For discoverability in the s
 This workflow uses cosa-voice MCP for all notifications:
 - `notify()` for progress updates
 - `ask_multiple_choice()` for skill selection
-- `ask_yes_no()` for deletion confirmation. **CRITICAL** on `neither`: do NOT delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `workflow/cosa-voice-integration.md` → "Handling Neither".
+- `ask_yes_no()` for deletion confirmation. **Critical**, on `neither`: do not delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ## Project Prefix
 
