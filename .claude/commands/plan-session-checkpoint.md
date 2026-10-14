@@ -1,12 +1,12 @@
 # Session Checkpoint - Mid-Session Commit
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), the commit-approval gate is voice-driven; the **TTS Brevity Mandate** applies — speak the 1-line commit subject only, full body and file list stay in `abstract` and the terminal reply. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), the commit-approval gate is voice-driven. The **TTS Brevity Mandate** applies: speak the 1-line commit subject only; full body and file list stay in `abstract` and the terminal reply. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -34,21 +34,21 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/session-checkpoint.md
-   - This is the ONLY authoritative source for ALL checkpoint steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all checkpoint steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute the checkpoint workflow**:
+3. **Must execute the checkpoint workflow**:
    - Steps 0-8 from the canonical workflow
-   - User invocation IS the commit approval (no need to ask)
-   - Session stays ACTIVE after checkpoint (key difference from session-end)
+   - User invocation is the commit approval (no need to ask)
+   - Session stays `active` after checkpoint (key difference from session-end)
 
 4. **Key Actions**:
    - Validate manifest exists and has your session section
@@ -56,7 +56,7 @@
    - Update TODO.md if related items found
    - Add checkpoint entry to history.md
    - Check for conflicts with parallel sessions
-   - Stage ONLY your files (selective staging from manifest)
+   - Stage only your files (selective staging from manifest)
    - Commit with checkpoint message
    - Update manifest with checkpoint tracking (keep `active` status)
    - Notify completion
