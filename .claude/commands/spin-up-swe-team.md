@@ -32,7 +32,7 @@
    - **Reviewer** ×`--reviewers` (default 1, adversarial)
    - **Tester** ×`--testers` (default 1, integration/e2e)
 
-5. **Must compose each member's brief by slicing its role's `##` section** out of `swe-team-roles.md` verbatim, then appending:
+5. **Must compose each member's brief by slicing its role's `##` section** out of `planning-is-prompting/workflow/swe-team-roles.md` verbatim, then appending:
    - (a) **the task** (the command argument)
    - (b) the governing spec/R&D doc path if known
    - (c) the **collection topic** — *"DM the Manager (this session's `dm-<manager-persona>` topic, returned as `collection_topic`) at your three reporting points."*
@@ -57,7 +57,7 @@
 
 7. **Must notify the user** after spawning (`notify`, medium priority): who came online, in which roles, and the collection topic you'll gather reports on. Then **ping the Steward** (`commons_send_to recipient="<steward>"`) the spin-up plan so they can observe live.
 
-8. **Run the lifecycle + gate** per `swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → tester integration/e2e green → **you verify both green and reviewed**. Commit **only on the user's word**. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
+8. **Run the lifecycle + gate** per `planning-is-prompting/workflow/swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → tester integration/e2e green → **you verify both green and reviewed**. Commit **only on the user's word**. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`planning-is-prompting/workflow/swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
 
 ---
 
@@ -96,7 +96,7 @@ Invoke when: a **build-shaped** engagement (implement → review → test) warra
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow docs at runtime. Single source of truth, always current, installable into other repos via `/plan-install-wizard`. Per `swe-team-spin-up.md` §3, the first spin-up does **not** depend on this shim: the Manager can spawn directly via `spawn_sessions` using the role charters. This command is the ergonomic + repeatable layer over that.
+This slash command is a **reference wrapper** that reads the canonical workflow docs at runtime. Single source of truth, always current, installable into other repos via `/plan-install-wizard`. Per `planning-is-prompting/workflow/swe-team-spin-up.md` §3, the first spin-up does **not** depend on this shim: the Manager can spawn directly via `spawn_sessions` using the role charters. This command is the ergonomic + repeatable layer over that.
 
 **Companion artifacts**:
 - `planning-is-prompting/workflow/swe-team-spin-up.md` — the workflow (model · activation · lifecycle · gates · teardown).
