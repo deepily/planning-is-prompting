@@ -12,7 +12,7 @@
 
 1. **Must use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
-   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `plan-review-cascaded-defaults.md` for the full key list and override conventions.
+   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` for the full key list and override conventions.
    - Never proceed without [SHORT_PROJECT_PREFIX]
 
 2. **Must read the three canonical workflow documents in order**:
@@ -34,7 +34,7 @@
 ## Usage
 
 ```bash
-# Standard invocation (all defaults from plan-review-cascaded-defaults.md)
+# Standard invocation (all defaults from planning-is-prompting/workflow/plan-review-cascaded-defaults.md)
 /plan-review-cascaded
 
 # With invocation-time overrides (override the workflow defaults)
@@ -62,10 +62,10 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Companion to the existing `/plan-review` (single-session, serial) — use whichever fits the plan's scope
 
 **Companion docs**:
-- `plan-review-cascaded.md` — the manager's playbook
-- `plan-review-cascaded-defaults.md` — config defaults + override mechanism
-- `plan-review-cascaded-personas.md` — role briefs + reviewer rubrics
-- `plan-review.md` — the wrapped single-session review skill (not modified by this work)
+- `planning-is-prompting/workflow/plan-review-cascaded.md` — the manager's playbook
+- `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` — config defaults + override mechanism
+- `planning-is-prompting/workflow/plan-review-cascaded-personas.md` — role briefs + reviewer rubrics
+- `planning-is-prompting/workflow/plan-review.md` — the wrapped single-session review skill (not modified by this work)
 
 **Design provenance**: `planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
 
