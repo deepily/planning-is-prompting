@@ -49,7 +49,7 @@
 
 5. **Must install through the helper**, never by hand-editing a crontab:
    ```bash
-   python3 workflow/scripts/last_call.py set --row <uuid> --wrap HH:MM --close HH:MM \
+   python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/last_call.py set --row <uuid> --wrap HH:MM --close HH:MM \
            --participants "Tiffany, María, Mr. Radio" --deliverables "push, backup" --filer "María"
    ```
 
@@ -79,6 +79,6 @@
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language triggers live in the companion Agent Skill; both resolve to the same `workflow/last-call.md` contract.
+This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language triggers live in the companion Agent Skill; both resolve to the same `planning-is-prompting/workflow/last-call.md` contract.
 
 **Fleet-wide by ruling** (Rick): the deliverable *names* are portable, the deliverable *procedures* are per-repo. A consuming repo copies this wrapper, changes the two configuration lines in instruction 2, and cites the same canonical workflow.
