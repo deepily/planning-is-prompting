@@ -1,10 +1,24 @@
 # TODO
 
-Last updated: 2026-10-10 (**Session 220** (María 🌸 stable `83b4f4d0`): defects, spawn policy and wider pruning closed; Decisions Log for 2026-10-10; archive cut to `todo-archive/2026-10-10-todo.md`.)
+Last updated: 2026-10-13 (**Session 221**, María 🌸 stable `31425d5c`). The command wrappers read 0 lint findings. The entry-writing rules are merged. Seven items are carried below.
 
 ## 📍 Resume Here
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
+
+### **S221: pick up here** (María 🌸 stable `31425d5c`, closed 2026-10-13 at Rick's Last Call)
+
+The command wrapper lint task (`8b32de78`) is still open and mine. The source work is merged at `51892aa`, not pushed. What is left, in the order I would take it:
+
+1. **Two deployed copies in the home folder** still hold the old text: `plan-push.md` and `plan-kiss.md` under `~/.claude/commands`. The permission layer refused my copy. Rick's card on it timed out twice. Two parity tests stay red until the copies are replaced.
+2. **lupin's reinstall** is Cheech's, from `b7bb2d4` or later, after his landing. He sends the lupin sha. The three test wrappers and ten unsourced command files stay lupin's own.
+3. **Evidence for the lupin row that gives these two files their own rule set** (`486cc499`) is not posted. Dates, eight-character ids and eight-character shas cannot fit a session record. The examples are in `workflow/entry-writing-rules.md` and in the reviewer's groundwork under `io/tmp/2026.10.13-wrapper-lint/`.
+4. **Archive folder mismatch**, for the same lupin row. lupin leaves `todo-history/` in warn mode. This repo archives to `todo-archive/`.
+5. **The planning-documents line** in `plan-session-end.md` names this repo's `workflow/` folder. Each installed copy needs its own value there, and the drift check reads the difference as drift. Found by Tiffany's reviewer.
+6. **pdf-reduce-to-text** carries seven old wrappers and lacks thirty-four. It needs a session inside that repo, which is a cross-project spawn and Rick's word.
+7. **Post-game for tonight's crews** is not written. Seats deposited to the commons topic `post-game`. Mementos are in `io/mementos/` for Mr. Radio, Chloé and Maya.
+
+Scratch for all of it is `io/tmp/2026.10.13-wrapper-lint/`: both specs, the reviews, and the per-repo difference lists. It is not checked in.
 
 > ### **S218 — pick up here** (María 🌸 stable `60fd6851`, closed 2026-10-06 on Rick's word)
 >
@@ -352,6 +366,15 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-10-13: Wrapper lint and entry-writing rules (the command wrapper lint task, `8b32de78`)
+
+Rick ruled nothing by card tonight. Three cards timed out: seats, the home-folder copies, and the Last Call deliverables. These are María's rulings as workflow owner, open to his reversal.
+
+- 2026-10-13 21:07. A step range that restates "all steps" is dropped from a wrapper. `plan-session-end.md` and `plan-branch-pr-and-merge.md` now say every step of the canonical document, first to last. For session end that adds the delivery collision check and the orphaned-work sweep.
+- 2026-10-13 21:03. A wrapper may define a step it names, in one block at the end of the file, using the canonical heading's own text. The linter clears a step reference no other way.
+- 2026-10-13 21:40. An entry is not bent to pass the date, id and sha rules. Those three go to the lupin side as evidence. The marker keeps its spelling, in backticks.
+- 2026-10-13 21:43. A reference to this repo's documents or scripts is written in a form that is right in any repo. Installed copies need no hand edit for it.
 
 ### 2026-10-10 — Spawn policy, three defect rulings and the wider-pruning plan (rows `9aadd0ac`, `84211d12`, lupin `6f72dc83`)
 

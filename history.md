@@ -2,7 +2,19 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-**RESUME HERE**: **Session 220 (2026-10-10, 12:41 to 18:35 EDT, María 🌸 stable `83b4f4d0`, manager with author and reviewer seats; same seat as Session 219, two context clears)**: every row I owned is closed. Working branch at `49e22a3`, **not pushed**; suite 1269 passed and drift check 40/40 there, my run at 18:32. One held row is left under my name (`4371cfb5`, the `test_types` key in the test-harness template; Cheech is accountable).
+`RESUME HERE`: **Session 221 (2026-10-13, 20:42 to closing time at 22:35 EDT, María 🌸 stable `31425d5c`, manager with author and reviewer seats)**. The command wrappers read 0 findings under lupin's markdown linter. The entry-writing rules are merged. Working branch at `51892aa`, **not pushed**. Suite there: 2 failed, 1308 passed, my run at 22:05. Both failures are the parity test against two deployed copies in the home folder.
+
+1. **Wrapper sources to zero** (the command wrapper lint task, `8b32de78`, still open): 41 files went from 1,048 findings to 0. Three lots, each sent back once by review before it passed. Merges `9dd864a` and `056f24d`.
+2. **References that work in any repo** (merge `fb9d69c`): the sources name this repo's documents and scripts in full. lupin and lupin-mobile had hand-edited those lines.
+3. **Entry-writing rules** (merge `51892aa`): `workflow/entry-writing-rules.md` holds eleven rules a writer can keep, and every document that writes a history or TODO line points at it. Dates, eight-character ids and eight-character shas still fire. That evidence is not yet posted on the lupin row for these two files.
+4. **Reinstalls**: lupin-mobile is clean at mobile `51333e5`, by Tiffany. lupin waits for Cheech, from `b7bb2d4` or later. pdf-reduce-to-text has no seat.
+5. **Mine, wrong**: briefed a seat to create a branch, which the branch guard refused. Wrote a rule that backticks clear a glyph without testing it. Wrote a spec that was wrong about the linter in four places, found by the reviewer's groundwork before any edit.
+
+**Open with Rick**: two cards timed out (seats, and overwriting the two home-folder copies). The permission layer refused that copy.
+
+**Files**: `.claude/commands/` (41 files), `workflow/entry-writing-rules.md`, `workflow/scripts/test_entry_writing_rules.py`, `workflow/` (16 documents with a pointer), `.claude/skills/` (2), `docs/version-history/`, `workflow/MANIFEST.json`, `README.md`, `TODO.md`, `history.md`
+
+**Previous `RESUME HERE`**: **Session 220 (2026-10-10, 12:41 to 18:35 EDT, María 🌸 stable `83b4f4d0`, manager with author and reviewer seats; same seat as Session 219, two context clears)**: every row I owned is closed. Working branch at `49e22a3`, **not pushed**; suite 1269 passed and drift check 40/40 there, my run at 18:32. One held row is left under my name (`4371cfb5`, the `test_types` key in the test-harness template; Cheech is accountable).
 
 1. **Defects row** (`9aadd0ac`, closed at `49e22a3`): backup doc cut to the script and the cascade exemption (`322504a`); new item 25, `pip_drift_check.py` renders the canonical wrapper for the install's project, so a correct install in another repo reads CURRENT and a drifted one does not. Wrappers re-installed in lupin (`92a662e4d`) and lupin-mobile (`cbe1854`); **pdf-reduce-to-text is not done** and needs a session inside that repo.
 2. **Spawn policy** (`4a67f1f`, `d2829ae`, `5e12887`): skeleton crew is a switch the operator sets, with no clock-hour rules; a one-for-one re-spin is always allowed and raising the cap is the operator's alone. Mirrored into the live `~/.claude/CLAUDE.md`; the toggle is lupin row `6f72dc83`.
