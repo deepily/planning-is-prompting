@@ -8,7 +8,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -135,7 +135,7 @@ This command supports all five modes via arguments. For discoverability in the s
 This workflow uses cosa-voice MCP for all notifications:
 - `notify()` for progress updates
 - `ask_multiple_choice()` for skill selection
-- `ask_yes_no()` for deletion confirmation. **Critical** on `neither`: do not delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `workflow/cosa-voice-integration.md` → "Handling Neither".
+- `ask_yes_no()` for deletion confirmation. **Critical** on `neither`: do not delete — re-frame and re-ask (typically "delete which specific skill files?" via `ask_multiple_choice()`). See `planning-is-prompting/workflow/cosa-voice-integration.md` → "Handling Neither".
 
 ## Project Prefix
 

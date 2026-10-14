@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications and emits per-bug status updates throughout the lifecycle. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. Per-bug updates are spoken as "bug N fixed, smoke tests green", not the full diff. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications and emits per-bug status updates throughout the lifecycle. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. Per-bug updates are spoken as "bug N fixed, smoke tests green", not the full diff. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 

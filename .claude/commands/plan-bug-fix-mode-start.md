@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications, including `converse()` for bug-id selection. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. In that mode, spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications, including `converse()` for bug-id selection. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. In that mode, spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 

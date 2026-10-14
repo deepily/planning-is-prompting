@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command uses cosa-voice notifications. In conversation mode, all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md § Conversation Mode` for full rules.
+> **Note**: This command uses cosa-voice notifications. In conversation mode, all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate** — re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `planning-is-prompting/workflow/cosa-voice-integration.md § Conversation Mode` for full rules.
 
 ---
 
@@ -28,17 +28,17 @@
    - Contains: discovery policy (git-root enumeration), aggregator CLI invocation, summary rendering, surfacing pattern, full failure-mode table, the coverage-reconciliation guard
 
 3. **Must execute discovery before invoking aggregator** (per canonical workflow Step 1):
-   > **🔄 Rewritten — discovery enumerates git roots, not CSVs**. The aggregator now **computes from git** and no longer reads per-repo CSVs at all (those are artifacts, not inputs). Keying discovery on CSV freshness is what made `google/skills-distillation` invisible — a repo had to have already run session-end `workflow/session-end.md` §6 to be *seen*.
+   > **🔄 Rewritten — discovery enumerates git roots, not CSVs**. The aggregator now **computes from git** and no longer reads per-repo CSVs at all (those are artifacts, not inputs). Keying discovery on CSV freshness is what made `google/skills-distillation` invisible — a repo had to have already run session-end `planning-is-prompting/workflow/session-end.md` §6 to be *seen*.
    - Glob three depth patterns for **`.git`** (repos are not all one level under `$PROJECTS_ROOT`) and union+dedup. The patterns are `$PROJECTS_ROOT/*/.git` (flat), `$PROJECTS_ROOT/*/*/.git` (grouping dirs like `google/lookml`, `google/skills-distillation`, `google/harvey-labs`), `$PROJECTS_ROOT/*/src/*/.git` (nested sub-repos like `lupin/src/lupin-mobile`)
    - **🛑 Guard 1 — `.git` must be a directory**. A `.git` **file** means a **worktree or submodule**, which **shares its parent's object database and branch refs**. Analyzing one returns the parent's commits *again*. There are **9 lupin worktrees** (`lupin-wt-*`, `lupin-worktrees/*`) sitting directly under `$PROJECTS_ROOT`, and counting them would **multiply lupin's LoC by ~10**. Keep a candidate only if `Path(dotgit).is_dir()`
    - **🛑 Guard 2 — the repo must have commits in the window**. `git -C <repo> log --branches --no-merges --since=<since> --until=<until> --oneline` must be non-empty. **`<since>`/`<until>` must already be time-normalized (see flag semantics below)**. A bare date here makes this probe return empty for every repo, and discovery reports zero active repos on a busy day. This is what drops the ~39 vendored/dormant clones (`transformers`, `peft`, `vllm`, `lancedb`, …). On a typical week discovery goes **43 roots → 4 active**. `--branches` walks local refs only, so a `git fetch` on a vendored clone does not make it look active
    - Carry each repo's absolute path `str(Path(dotgit).parent)`; repo name for display is `Path(p).name`
-   - **No mtime filter — the activity filter is git**. The old CSV-mtime heuristic asked whether the repo had run session-end `workflow/session-end.md` §6 recently. That was a proxy for activity a repo had to **earn by running our tooling**, which is exactly what made `google/skills-distillation` invisible. Asking git directly also surfaced `google/harvey-labs`, which the CSV glob had **never once seen**
+   - **No mtime filter — the activity filter is git**. The old CSV-mtime heuristic asked whether the repo had run session-end `planning-is-prompting/workflow/session-end.md` §6 recently. That was a proxy for activity a repo had to **earn by running our tooling**, which is exactly what made `google/skills-distillation` invisible. Asking git directly also surfaced `google/harvey-labs`, which the CSV glob had **never once seen**
    - Pass the resolved absolute paths explicitly via `--repos <abs-path-list>`. Never reconstruct from name + `PROJECTS_ROOT` (breaks for non-flat repos), and never rely on the CLI to auto-discover. `--repos` is required because discovery policy lives PIP-side
    - **Bypass discovery only if user passed `--repos REPO1 REPO2 ...` explicitly** — explicit override always wins
 
 4. **Must honor flag semantics**:
-   - **🛑 `--since` / `--until` — normalize to explicit times before passing to git**. Accept a bare `YYYY-MM-DD` from the user, but **never hand one to git**. Append `00:00:00` to `--since` and `23:59:59` to `--until` if the value carries no time. Git's approxidate resolves a bare date to that date at the **current wall-clock time**, not midnight. So `--since=D` silently drops that morning's commits (a different set every hour you run it). Likewise `--since=D --until=D` is an **empty interval**, because both bounds resolve to the same instant, and returns **zero**. Reproduced on lupin: bare single-day window → **0 commits**, same window with explicit times → **92**. Apply the normalization in **both** places — the Guard 2 discovery probe *and* the aggregator call. Normalizing one gives you a repo set and a total that disagree. Canonical: `workflow/loc-delta-global.md` §0.1
+   - **🛑 `--since` / `--until` — normalize to explicit times before passing to git**. Accept a bare `YYYY-MM-DD` from the user, but **never hand one to git**. Append `00:00:00` to `--since` and `23:59:59` to `--until` if the value carries no time. Git's approxidate resolves a bare date to that date at the **current wall-clock time**, not midnight. So `--since=D` silently drops that morning's commits (a different set every hour you run it). Likewise `--since=D --until=D` is an **empty interval**, because both bounds resolve to the same instant, and returns **zero**. Reproduced on lupin: bare single-day window → **0 commits**, same window with explicit times → **92**. Apply the normalization in **both** places — the Guard 2 discovery probe *and* the aggregator call. Normalizing one gives you a repo set and a total that disagree. Canonical: `planning-is-prompting/workflow/loc-delta-global.md` §0.1
    - `--repos REPO1 REPO2 ...` — overrides discovery; explicit list passes through directly
    - `--head-only` — pass through. The default is **all local branches**: the roll-up asks *"what work happened in window W"*, and work on a sibling branch is still work. Only pass this when you intend to narrow scope
    - `--include-merges` — pass through; merges are excluded by default (they'd double-count)
@@ -48,20 +48,20 @@
 
 5. **Must surface the rollup via `notify()`** with:
    - **Spoken `message`**: TTS-Brevity-Mandate-compliant one-line LoC verdict (≈8-20 words). It **must state added and deleted, not net alone** (Rick). For example, *"Cross-repo wrap: 7 days, 3 repos, 51k added, 4k deleted, net plus 47k lines"*
-   - **Rich `abstract`**: full markdown table per canonical workflow Step 3, with doc-viewer links to consolidated CSV + plot PNG. The links use canonical path-only URL form (`/app/docs?path=lupin/io/loc-delta-global/...`) per `workflow/doc-viewer-links.md`
+   - **Rich `abstract`**: full markdown table per canonical workflow Step 3, with doc-viewer links to consolidated CSV + plot PNG. The links use canonical path-only URL form (`/app/docs?path=lupin/io/loc-delta-global/...`) per `planning-is-prompting/workflow/doc-viewer-links.md`
    - **`priority="medium"`** + `suppress_ding=True` (informational, not alerting)
 
 6. **Must handle failures per canonical workflow Step 4**:
    - **Coverage-reconciliation mismatch → warn loudly**. The aggregator asserts counted-commits == `git rev-list --count` for the same window/branch-scope/date-basis, per repo. On mismatch the roll-up still ships but the summary is **prominently flagged as unreliable** — surface it in the spoken line, not just the abstract. Never render a suspect number as if it were **fine**. (This guard is the replacement for the retired Step 1.7. The original bug produced figures that were internally consistent, confidently rendered, and wrong by 1,607 lines. Nothing complained, because nothing ever asked "is this everything?")
    - `LUPIN_ROOT` unset → hard error with hint
    - No git roots found under `PROJECTS_ROOT` → **configuration error**, not "nothing to roll up"
-   - **Zero active repos across 40+ discovered git roots → suspect, not "a quiet week"** (`workflow/loc-delta-global.md` §4.2). Say so in the spoken line and put the exact `--since`/`--until` strings **as passed to git** in the abstract. That makes a bare date visible at a glance. A quiet week and a broken window produce byte-identical output, and on this fleet the broken window is far likelier. (The documented bare-date form reported 0 active repos on a day with 70 commits.)
-   - **📊 Always report the largest single commit** — SHA, subject, files touched, and its share of the window total (`workflow/loc-delta-global.md` §4.3). Unconditional, no threshold. A squash-merge has one parent, so `--no-merges` leaves it in. In one case a squashed PR carried **93% of a two-day total across 1,277 files**. The coverage guard passed cleanly because the commit was in fact in the window
+   - **Zero active repos across 40+ discovered git roots → suspect, not "a quiet week"** (`planning-is-prompting/workflow/loc-delta-global.md` §4.2). Say so in the spoken line and put the exact `--since`/`--until` strings **as passed to git** in the abstract. That makes a bare date visible at a glance. A quiet week and a broken window produce byte-identical output, and on this fleet the broken window is far likelier. (The documented bare-date form reported 0 active repos on a day with 70 commits.)
+   - **📊 Always report the largest single commit** — SHA, subject, files touched, and its share of the window total (`planning-is-prompting/workflow/loc-delta-global.md` §4.3). Unconditional, no threshold. A squash-merge has one parent, so `--no-merges` leaves it in. In one case a squashed PR carried **93% of a two-day total across 1,277 files**. The coverage guard passed cleanly because the commit was in fact in the window
    - Aggregator CLI fails → surface stderr in abstract; suggest a cosa-side status check
    - A repo has no commits in the window → **informational**; list it explicitly so an expected-but-absent repo is conspicuous
    - `--plot` fails but data succeeded → render summary without plot link; non-fatal
 
-7. **Must follow Recommendation Mandate** if any blocking-tool ask arises during invocation (e.g. ambiguous repo selection). Put pros/cons + recommendation in abstract per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`.
+7. **Must follow Recommendation Mandate** if any blocking-tool ask arises during invocation (e.g. ambiguous repo selection). Put pros/cons + recommendation in abstract per `planning-is-prompting/workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`.
 
 8. **Must run the Step 1.5 confirmation gate before invoking the aggregator** (default behavior):
    - After Step 1 discovery resolves a non-empty list, fire `ask_multiple_choice` with `multiSelect=True` and all discovered repos pre-checked as options. Each option's description carries the **repo's absolute path** (no more CSV path / mtime hint — there is no CSV in the loop)
@@ -98,7 +98,7 @@ Invoked ad-hoc throughout the day for cross-repo LoC progress snapshots. The sec
 
 ## Coordination
 
-The cosa-side aggregator CLI (`cosa.repo.run_git_loc_delta_global`) is owned + maintained by the CoSA session (Rachel). Schema v2 + sidecar JSON shape is locked per Rick's ratification (voice-greenlit "EXPAND FULL"; see `<planning-is-prompting>/src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md` for full context).
+The cosa-side aggregator CLI (`cosa.repo.run_git_loc_delta_global`) is owned + maintained by the CoSA session (Rachel). Schema v2 + sidecar JSON shape is locked per Rick's ratification (voice-greenlit "EXPAND FULL"; see `planning-is-prompting/src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md` for full context).
 
 ---
 
@@ -111,7 +111,7 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Headings from `workflow/loc-delta-global.md`:
+Headings from `planning-is-prompting/workflow/loc-delta-global.md`:
 
 - Step 1 — Resolve repo set
 - Step 1.5 — Confirmation gate

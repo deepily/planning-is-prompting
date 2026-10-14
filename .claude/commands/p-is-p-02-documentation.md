@@ -52,7 +52,7 @@ Invoke this command when:
 - Pattern from Step 1 is Pattern 3 or 4 (small/simple work)
 - Use history.md for tracking instead
 
-> **Skipping the documentation step does *not* exempt any plan document you do write**. If a plan document exists, it enters `/plan-review` (see `workflow/plan-review.md` §4a). The gate is keyed to the **document**, not to the pattern.
+> **Skipping the documentation step does *not* exempt any plan document you do write**. If a plan document exists, it enters `/plan-review` (see `planning-is-prompting/workflow/plan-review.md` §4a). The gate is keyed to the **document**, not to the pattern.
 
 ---
 
@@ -66,7 +66,7 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Headings from `workflow/p-is-p-00-start-here.md`:
+Headings from `planning-is-prompting/workflow/p-is-p-00-start-here.md`:
 
 - Step 1 — Planning the Work
 - Step 2 — Documenting the Implementation

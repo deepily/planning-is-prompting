@@ -7,7 +7,7 @@
 
 ---
 
-> **Note**: This command delivers a severe manager poke. In conversation/speakerphone mode the whip is `dm_send`'d to the target manager(s) and mirrored to the user via `notify()`. TTS Brevity Mandate applies — spoken headline only, detail in `abstract`. See `workflow/cosa-voice-integration.md`.
+> **Note**: This command delivers a severe manager poke. In conversation/speakerphone mode the whip is `dm_send`'d to the target manager(s) and mirrored to the user via `notify()`. TTS Brevity Mandate applies — spoken headline only, detail in `abstract`. See `planning-is-prompting/workflow/cosa-voice-integration.md`.
 
 > **Activation**: this is the explicit fallback. The same directive auto-activates from the **☕ glyph** and from these six natural phrases, via the Agent Skill `.claude/skills/push-to-completion/SKILL.md`:
 
@@ -18,7 +18,7 @@
 - "**get off your ass**"
 - "**coffee break's over**"
 
-> **☕ = this entire command, in one character** *(Rick)*. The ☕ alone needs no accompanying text — never ask what it refers to. The response is **🫡 on receipt, receipts on delivery**: the salute is the whole acknowledgment, but unlike 📷 it does **not** discharge the order. The board still gets driven and the Operational Contract report still comes back. Compressing the *trigger* must never compress the *receipt*. Palette: `workflow/brevity-mandate.md` § the glyph exchange.
+> **☕ = this entire command, in one character** *(Rick)*. The ☕ alone needs no accompanying text — never ask what it refers to. The response is **🫡 on receipt, receipts on delivery**: the salute is the whole acknowledgment, but unlike 📷 it does **not** discharge the order. The board still gets driven and the Operational Contract report still comes back. Compressing the *trigger* must never compress the *receipt*. Palette: `planning-is-prompting/workflow/brevity-mandate.md` § the glyph exchange.
 
 ---
 
@@ -62,4 +62,4 @@
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language triggers live in the companion Agent Skill; both resolve to the same `workflow/push-to-completion.md` directive.
+This slash command is a **reference wrapper** that reads the canonical workflow on every invocation — keeping it current and identical across repos. The natural-language triggers live in the companion Agent Skill; both resolve to the same `planning-is-prompting/workflow/push-to-completion.md` directive.

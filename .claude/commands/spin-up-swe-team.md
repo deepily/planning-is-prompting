@@ -32,7 +32,7 @@
    - **Reviewer** ×`--reviewers` (default 1, adversarial)
    - **Tester** ×`--testers` (default 1, integration/e2e)
 
-5. **Must compose each member's brief by slicing its role's `##` section** out of `swe-team-roles.md` verbatim, then appending:
+5. **Must compose each member's brief by slicing its role's `##` section** out of `planning-is-prompting/workflow/swe-team-roles.md` verbatim, then appending:
    - (a) **the task** (the command argument)
    - (b) the governing spec/R&D doc path if known
    - (c) the **collection topic** — *"DM the Manager (this session's `dm-<manager-persona>` topic, returned as `collection_topic`) at your three reporting points."*
@@ -40,10 +40,10 @@
 
    Never paraphrase the charter — slice it whole so the durable wording is preserved.
 
-5a. **⭐ Must append every in-force provisional mandate to every brief — every role without exception.** (Canonical: `workflow/swe-team-spin-up.md` **§7.1**.)
+5a. **⭐ Must append every in-force provisional mandate to every brief — every role without exception.** (Canonical: `planning-is-prompting/workflow/swe-team-spin-up.md` **§7.1**.)
    - **Why this step exists**: a member receives **only its own `##` section**. A directive governing the whole run — a deadline, a scope bar, a quality ceiling — **cannot live at the top of the load document**. It is **sliced away and reaches nobody**. This append is the only path that does not depend on a manager remembering.
    - **How**: check **the target project's repo root** for **`MANDATE.md`** — not this repo, not `workflow/`. If present, append its directive block **verbatim**. **Never paraphrase — paraphrase is how a mandate erodes.**
-   - **The mandate lives in the target repo, and its existence is the in-force flag.** Present: governs. Absent: nothing to append. `rm`: gone, everywhere, at once. Scoping **comes from where the file lives**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, and is *structurally incapable* of inheriting another project's deadline. Mechanism: `workflow/provisional-mandates.md`.
+   - **The mandate lives in the target repo, and its existence is the in-force flag.** Present: governs. Absent: nothing to append. `rm`: gone, everywhere, at once. Scoping **comes from where the file lives**: a crew spawned against `lupin` reads `lupin/MANDATE.md`, finds nothing, and is *structurally incapable* of inheriting another project's deadline. Mechanism: `planning-is-prompting/workflow/provisional-mandates.md`.
    - **Where**: in the **Expectations & gates / done-section**, not the preamble. A *mandate at the top gets skimmed; a mandate in the acceptance criteria gets executed.*
    - **If absent**: the slot is empty; append nothing. **The seam is permanent; the mandate is not.**
    - **Receipt for why "the Manager will tell them" is not acceptable**: a manager's supersession notice reached **2 of 4** workers. One send bounced off a persona that did not exist. The **bounce reported itself with the live roster attached, and it was read and moved past**. 3 of 4 briefs carried a defect. The briefs were never reviewed. **Two hops, both lossy. In the append, the brief is the delivery.**
@@ -57,7 +57,7 @@
 
 7. **Must notify the user** after spawning (`notify`, medium priority): who came online, in which roles, and the collection topic you'll gather reports on. Then **ping the Steward** (`commons_send_to recipient="<steward>"`) the spin-up plan so they can observe live.
 
-8. **Run the lifecycle + gate** per `swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → tester integration/e2e green → **you verify both green and reviewed**. Commit **only on the user's word**. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
+8. **Run the lifecycle + gate** per `planning-is-prompting/workflow/swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → tester integration/e2e green → **you verify both green and reviewed**. Commit **only on the user's word**. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`planning-is-prompting/workflow/swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
 
 ---
 
@@ -96,21 +96,21 @@ Invoke when: a **build-shaped** engagement (implement → review → test) warra
 
 ## Notes
 
-This slash command is a **reference wrapper** that reads the canonical workflow docs at runtime. Single source of truth, always current, installable into other repos via `/plan-install-wizard`. Per `swe-team-spin-up.md` §3, the first spin-up does **not** depend on this shim: the Manager can spawn directly via `spawn_sessions` using the role charters. This command is the ergonomic + repeatable layer over that.
+This slash command is a **reference wrapper** that reads the canonical workflow docs at runtime. Single source of truth, always current, installable into other repos via `/plan-install-wizard`. Per `planning-is-prompting/workflow/swe-team-spin-up.md` §3, the first spin-up does **not** depend on this shim: the Manager can spawn directly via `spawn_sessions` using the role charters. This command is the ergonomic + repeatable layer over that.
 
 **Companion artifacts**:
-- `workflow/swe-team-spin-up.md` — the workflow (model · activation · lifecycle · gates · teardown).
-- `workflow/swe-team-roles.md` — the load document (per-role charters this command slices).
+- `planning-is-prompting/workflow/swe-team-spin-up.md` — the workflow (model · activation · lifecycle · gates · teardown).
+- `planning-is-prompting/workflow/swe-team-roles.md` — the load document (per-role charters this command slices).
 - `.claude/skills/spin-up-swe-team/SKILL.md` — the intent-activation companion (natural-language trigger).
-- `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` — the spawn/harvest *mechanics* half this composes with.
+- `planning-is-prompting/src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` — the spawn/harvest *mechanics* half this composes with.
 
-**Design provenance**: `src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (Rick ruled all 7 decisions via guided walkthrough; Tiberius 👑 manager-rec, María 🌸 Steward/author).
+**Design provenance**: `planning-is-prompting/src/rnd/2026.06.05-swe-team-spin-up-workflow.md` §6 (Rick ruled all 7 decisions via guided walkthrough; Tiberius 👑 manager-rec, María 🌸 Steward/author).
 
 ---
 
 ## Steps this command names
 
-Decision labels from `src/rnd/2026.06.05-swe-team-spin-up-workflow.md`, for the decisions cited above; that file holds more.
+Decision labels from `planning-is-prompting/src/rnd/2026.06.05-swe-team-spin-up-workflow.md`, for the decisions cited above; that file holds more.
 
 - Q1 — Roster shape
 - Q2 — Persona binding

@@ -51,7 +51,7 @@
 ## Notes
 
 This slash command is a **reference wrapper** that reads the canonical uninstall workflow on every invocation. This ensures:
-- Always up-to-date when uninstall-wizard.md is improved
+- Always up-to-date when planning-is-prompting/workflow/uninstall-wizard.md is improved
 - Single source of truth for uninstallation logic
 - No duplication between workflow and slash command
 - Works across all projects (project-agnostic)
@@ -64,4 +64,4 @@ This slash command is a **reference wrapper** that reads the canonical uninstall
 
 **Self-removal**:
 - This wizard can uninstall itself (along with `/plan-install-wizard`)
-- After self-removal, use INSTALLATION-GUIDE.md to reinstall any workflows
+- After self-removal, use planning-is-prompting/workflow/INSTALLATION-GUIDE.md to reinstall any workflows

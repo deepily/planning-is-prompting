@@ -7,7 +7,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), all gates are voice-driven. Spoken responses follow the **TTS Brevity Mandate**: re-crafted conversational prose, not verbatim copies of markdown terminal replies. See `planning-is-prompting/workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -127,7 +127,7 @@
 
 ### Archive Mode
 
-Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but keyed on **branch/version horizon**. Full rules: workflow/todo-management.md → **Archival Strategy** + design record `src/rnd/2026.06.17-todo-md-redefinition-and-archival.md` §3.
+Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but keyed on **branch/version horizon**. Full rules: planning-is-prompting/workflow/todo-management.md → **Archival Strategy** + design record `planning-is-prompting/src/rnd/2026.06.17-todo-md-redefinition-and-archival.md` §3.
 
 1. Read TODO.md and detect the **current version** from the branch name (e.g. `wip-v0.1.3-…` → `v0.1.3`).
 2. Compute the **keep-horizon** = { current, +1, +2 } planned versions.
@@ -139,7 +139,7 @@ Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but
 8. Update the "Last updated" timestamp.
 9. Notify: "Archived N item(s) to <file>; TODO.md now at current+next-2 horizon."
 
-**Dry-run first (mandate)**: present the proposed moves and confirm before writing (`ask_yes_no` in conversation mode) — never archive silently. The session-end health-check (`session-end.md`) proposes this pass automatically when TODO.md outgrows its horizon.
+**Dry-run first (mandate)**: present the proposed moves and confirm before writing (`ask_yes_no` in conversation mode) — never archive silently. The session-end health-check (`planning-is-prompting/workflow/session-end.md`) proposes this pass automatically when TODO.md outgrows its horizon.
 
 ---
 
@@ -167,7 +167,7 @@ notify( "TODO.md updated: 5 pending items", notification_type="progress", priori
 ## Notes
 
 This slash command is a **reference wrapper** that reads the canonical workflow document on every invocation. This ensures:
-- Always up-to-date when todo-management.md is improved
+- Always up-to-date when planning-is-prompting/workflow/todo-management.md is improved
 - Single source of truth for TODO operations
 - No duplication between workflow and slash command
 - Works across all projects (with project-specific configuration)

@@ -13,15 +13,15 @@ Captures the session's cognitive / role state so a post-`/clear` (or re-spawned)
 > ### ⛔ You do not write the file. The script writes the file.
 > ### ⛔ You do not edit the file. The script amends the file.
 >
-> **You assemble the content. `workflow/scripts/memento_io.py` decides every path and performs every write**. One call writes the immutable record, the out-of-repo mirror, and the pointer, or it fails loud. Amend a record afterwards with **`memento_io.py amend`**, which appends, re-mirrors and re-points in one call.
+> **You assemble the content. `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py` decides every path and performs every write**. One call writes the immutable record, the out-of-repo mirror, and the pointer, or it fails loud. Amend a record afterwards with **`memento_io.py amend`**, which appends, re-mirrors and re-points in one call.
 >
 > **Never hand-`Write` or hand-`Edit` a memento**. Not `io/mementos/<persona>.md`, not `.claude-memento.md`, not anywhere. `Write` is the exact keystroke that destroyed two irreplaceable records. **Two rules are deleted here, and both were bugs written as guidance**. The first was *"overwrite the slot, archive the predecessor first"*: Sam had it written down and destroyed a record anyway. The second was *"need to amend? use `Edit`"*: it handed you a raw tool and asked you to **remember** to re-sync the mirror. It drifted the mirror the first time its own author followed it.
 >
 > **A rule adds a step; a mechanism removes a decision. A rule on the sanctioned path is still a rule.**
 
-**Canonical workflow**: `workflow/memento-management.md` — read for the 9-element memento contract, trigger phrases (§0), the record/pointer/mirror convention (§3), lifecycle, and rehydration mechanism.
+**Canonical workflow**: `planning-is-prompting/workflow/memento-management.md` — read for the 9-element memento contract, trigger phrases (§0), the record/pointer/mirror convention (§3), lifecycle, and rehydration mechanism.
 
-**Intent triggers (no slash needed)**: this command also fires on the **"prepare for re-spin"** shorthand. Its synonyms are *"respin prep," "ready yourself for re-spin," "make a memento"*. When a worker is told *"prepare for re-spin,"* it runs the §0 3-beat sequence of `workflow/memento-management.md`. The sequence is **reach a safe checkpoint → write the memento → ACK "ready for re-spin"** to the requesting manager/Rick. Commit is not bundled; that stays with session-end / the manager. See `workflow/memento-management.md` §0.
+**Intent triggers (no slash needed)**: this command also fires on the **"prepare for re-spin"** shorthand. Its synonyms are *"respin prep," "ready yourself for re-spin," "make a memento"*. When a worker is told *"prepare for re-spin,"* it runs the §0 3-beat sequence of `workflow/memento-management.md` in planning-is-prompting. The sequence is **reach a safe checkpoint → write the memento → ACK "ready for re-spin"** to the requesting manager/Rick. Commit is not bundled; that stays with session-end / the manager. See `planning-is-prompting/workflow/memento-management.md` §0.
 
 ---
 
@@ -29,7 +29,7 @@ Captures the session's cognitive / role state so a post-`/clear` (or re-spawned)
 
 ### Mode 1: `write` (default)
 
-1. Read the canonical **9-element** memento contract from `workflow/memento-management.md` §2. Element 9 (the retro deposit) is **mandatory**. Its **provenance** bullet goes first — *by what act? from what position? what would have sufficed?* It is the field that dies first.
+1. Read the canonical **9-element** memento contract from `planning-is-prompting/workflow/memento-management.md` §2. Element 9 (the retro deposit) is **mandatory**. Its **provenance** bullet goes first — *by what act? from what position? what would have sufficed?* It is the field that dies first.
 2. **Assemble the content** — current state / cast roster / open findings / active DM threads / standing memory guidance. Then heartbeat state / rehydration instructions / the verbatim pending-TODO skeleton / the retro deposit.
 3. **Hand the content to the mechanism.** `--persona` and `--session-id` are already in your context from the Phase-A `get_session_info()` call — you need **zero new information**:
 
@@ -66,7 +66,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
    round-trip verified against it, including the truncated-write case.
 
 4. **Do not "verify the file was written"** by re-reading it, and do not touch `.gitignore`. The script already did both, by execution, and would have exited non-zero if either failed.
-5. `notify()` the user that the memento is ready, and **do not report the path**. It is derivable (§3 governing principle of `workflow/memento-management.md`), and nobody should ever be handed one.
+5. `notify()` the user that the memento is ready, and **do not report the path**. It is derivable (§3 governing principle of `workflow/memento-management.md` in planning-is-prompting), and nobody should ever be handed one.
 
 ### Mode 2: `load`
 
@@ -76,7 +76,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
    - **If your per-persona pointer is absent, do not fall back to the shared file**. Your record is per-persona and immutable — `.claude-memento-<persona-slug>-<sid8>.md` — so read it directly, or regenerate the pointer (§ below). Falling back to `.claude-memento.md` is how you end up reading a memento two sessions stale with nothing warning you. Measured: two lupin seats had a *present* per-persona pointer naming an *old* record. The fallback never fired, and they resolved cleanly to the wrong thing.
    - **Ordering rule, and it is why this paragraph changed in the same commit as the writer**. This command lands **with or after** the writer, never before it. Once this step named a per-persona pointer that no code created. It told readers the fallback would retire on their next write when it never would. Never **edit this step to describe a `memento_io.py` that has not shipped**.
 2. Validate the 9-element contract is satisfied; flag any missing elements.
-3. Follow §7 rehydration instructions (re-warm reading list → first action → open loops). First action **must include reconciling owed work via `task_query` against element 8** (store-authoritative union — `session-start.md` Step 4.7).
+3. Follow §7 rehydration instructions (re-warm reading list → first action → open loops). First action **must include reconciling owed work via `task_query` against element 8** (store-authoritative union — `planning-is-prompting/workflow/session-start.md` Step 4.7).
 4. Confirm rehydration via `notify()`, naming the rehydrated role + first action.
 5. **Discard nothing**. The record is immutable and stays; the pointer is refreshed by the next write. The old "discard or archive after rehydration" step is **deleted** — that step was the bug.
 
@@ -107,9 +107,9 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 ## Mandates
 
 1. **Never hand-`Write` a memento file**. Every write goes through `memento_io.py`. This is the redline. A bare `Write` to a record path is the keystroke that destroyed two irreplaceable records.
-2. **Must read `workflow/memento-management.md`** before invoking — do not improvise the 9-element contract.
-3. **Must notify via `notify()`** when write or load completes, but **never report the memento's path**. The location is derivable (§3 governing principle of `workflow/memento-management.md`), never handed to anyone.
-4. **Must follow the cascade-Manager-specific lifecycle** in cascade mode — see `plan-review-cascaded-common.md` §Manager Rehydration.
+2. **Must read `planning-is-prompting/workflow/memento-management.md`** before invoking — do not improvise the 9-element contract.
+3. **Must notify via `notify()`** when write or load completes, but **never report the memento's path**. The location is derivable (§3 governing principle of `workflow/memento-management.md` in planning-is-prompting), never handed to anyone.
+4. **Must follow the cascade-Manager-specific lifecycle** in cascade mode — see `planning-is-prompting/workflow/plan-review-cascaded-common.md` §Manager Rehydration.
 
 **Mandates deleted in v2.0** — both were rules, and rules do not act:
 - ~~"MUST verify `.gitignore` excludes `.claude-memento.md`"~~ → the script runs `git check-ignore` on every write and **repairs `.gitignore` itself**. (It had to: planning-is-prompting and skills-distillation ignored only the *bare* name. Repo-root **records** would have leaked into git and taxed the candor Rick declined to tax.)
@@ -119,15 +119,15 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 
 ## Cross-references
 
-- `workflow/memento-management.md` — canonical workflow + 9-element contract + §3 record/pointer/mirror
-- `workflow/scripts/memento_io.py` — the mechanism (`write` · `resolve` · `regenerate-pointer` · `migrate` · `verify`)
-- `src/rnd/2026.07.13-memento-overwrite-mechanism.md` — the ruled design (María 🌸, Rev 2; Rick-ruled). **Read §4 for what this does not protect.**
-- `plan-review-cascaded-common.md` §Manager Rehydration — cascade-specific application
+- `planning-is-prompting/workflow/memento-management.md` — canonical workflow + 9-element contract + §3 record/pointer/mirror
+- `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py` — the mechanism (`write` · `resolve` · `regenerate-pointer` · `migrate` · `verify`)
+- `planning-is-prompting/src/rnd/2026.07.13-memento-overwrite-mechanism.md` — the ruled design (María 🌸, Rev 2; Rick-ruled). **Read §4 for what this does not protect.**
+- `planning-is-prompting/workflow/plan-review-cascaded-common.md` §Manager Rehydration — cascade-specific application
 - `~/.claude/CLAUDE.md` § Parallel Session Safety — `.claude-session.md` companion
 - `~/.claude/CLAUDE.md` § auto memory — durable cross-conversation alternative
 
 ## Steps this command names
 
-Headings from `workflow/session-start.md`:
+Headings from `planning-is-prompting/workflow/session-start.md`:
 
 - Step 4.7 — Reconcile Owed Work on Rehydrate (store-only)

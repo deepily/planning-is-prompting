@@ -7,13 +7,13 @@
 
 > **This command has no content of its own**. It recites `<target-repo>/MANDATE.md`. The mandate lives in the repo it governs; **this command is a pointer, not a source**. If the target repo has no `MANDATE.md`, **there is no mandate — say so and stop**.
 
-> **Mechanism**: `workflow/provisional-mandates.md`.
+> **Mechanism**: `planning-is-prompting/workflow/provisional-mandates.md`.
 
 > **What is currently in force**: run `/plan-mandate census`. **This line used to name a specific file** (`skills-distillation/MANDATE.md`). That is precisely the defect: a hand-maintained claim about which mandate is live, in a file nobody updates when it changes. It went stale, and a stale in-force claim is worse than none. The **census is the answer; a sentence here can only be a second copy that rots**.
 
 ---
 
-> **Note**: In conversation/speakerphone mode the directive is `dm_send`'d to the target session(s) and mirrored to the user via `notify()`. The TTS Brevity Mandate applies: spoken headline only, detail in `abstract`. See `workflow/cosa-voice-integration.md`.
+> **Note**: In conversation/speakerphone mode the directive is `dm_send`'d to the target session(s) and mirrored to the user via `notify()`. The TTS Brevity Mandate applies: spoken headline only, detail in `abstract`. See `planning-is-prompting/workflow/cosa-voice-integration.md`.
 
 > **Activation**: this is the explicit fallback. The same directive auto-activates from natural phrases:
 
@@ -60,7 +60,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/mandate_census.py --strict 
 | Output | Why it is there |
 |---|---|
 | `roots_swept` **separate from** `files_found` | *"I looked nowhere"* and *"I looked and found nothing"* are **opposite facts**. A lone zero cannot tell them apart. |
-| **expired-but-present** (shown with a red circle in the output) | The file's existence is the in-force flag (rule 2), so a mandate past its own death date **is still in force** and a spawn appends it without anyone having to choose to (`workflow/swe-team-spin-up.md` §7.1). Nobody has to make a mistake for this to fire. |
+| **expired-but-present** (shown with a red circle in the output) | The file's existence is the in-force flag (rule 2), so a mandate past its own death date **is still in force** and a spawn appends it without anyone having to choose to (`planning-is-prompting/workflow/swe-team-spin-up.md` §7.1). Nobody has to make a mistake for this to fire. |
 | **missing `## DIRECTIVE` anchor** (shown with a warning sign in the output) | Rick ruled the fixed heading (Part B). Without it a spawn must guess which `##` block is the directive — the census prints the guess it would make. |
 | ⚖️ **conditional expiry** | *"dies once the demo runs end to end"* is not a date and no parser settles it. Quoted as **undecidable**, never silently dropped. |
 
@@ -72,7 +72,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/mandate_census.py --strict 
 
 **On every invocation:**
 
-1. **Must resolve the target project first, then read `<that-repo-root>/MANDATE.md`**. **Never recite one project's mandate at another project's session**. A mandate is scoped to its repo because it lives there; carrying it across is the defect `workflow/provisional-mandates.md` §1 exists to prevent.
+1. **Must resolve the target project first, then read `<that-repo-root>/MANDATE.md`**. **Never recite one project's mandate at another project's session**. A mandate is scoped to its repo because it lives there; carrying it across is the defect `planning-is-prompting/workflow/provisional-mandates.md` §1 exists to prevent.
 
 2. **Must recite the directive block verbatim**. Never summarize, compress, or "adapt it for the reader." This **command exists precisely because paraphrase is how a mandate erodes**. If it is too long for TTS, the spoken line is a headline and **the verbatim block goes in `abstract`**; never a paraphrase in either.
 
@@ -100,6 +100,6 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/mandate_census.py --strict 
 
 ## See also
 
-- `workflow/provisional-mandates.md` — **the mechanism** (authoritative): mandate lives in the target repo · existence is the in-force flag · the spawn appends it to every brief.
-- `workflow/push-to-completion.md` / `/plan-push` — **the sibling, in deliberate tension.** `/plan-push` governs the **drive**; this governs the **bar**. Compose as **drive hard, to a lower bar**. **Neither licenses faking done.**
-- `workflow/swe-team-spin-up.md` §7.1 — how the mandate reaches spawned workers: the spawn appends it itself, with no manager in the delivery path.
+- `planning-is-prompting/workflow/provisional-mandates.md` — **the mechanism** (authoritative): mandate lives in the target repo · existence is the in-force flag · the spawn appends it to every brief.
+- `planning-is-prompting/workflow/push-to-completion.md` / `/plan-push` — **the sibling, in deliberate tension.** `/plan-push` governs the **drive**; this governs the **bar**. Compose as **drive hard, to a lower bar**. **Neither licenses faking done.**
+- `planning-is-prompting/workflow/swe-team-spin-up.md` §7.1 — how the mandate reaches spawned workers: the spawn appends it itself, with no manager in the delivery path.

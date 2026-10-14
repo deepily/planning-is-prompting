@@ -12,7 +12,7 @@
 
 1. **Must use the following project-specific configuration**:
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
-   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `plan-review-cascaded-defaults.md` for the full key list and override conventions.
+   - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` for the full key list and override conventions.
    - Never proceed without [SHORT_PROJECT_PREFIX]
 
 2. **Must read the three canonical workflow documents in order**:
@@ -34,7 +34,7 @@
 ## Usage
 
 ```bash
-# Standard invocation (all defaults from plan-review-cascaded-defaults.md)
+# Standard invocation (all defaults from planning-is-prompting/workflow/plan-review-cascaded-defaults.md)
 /plan-review-cascaded
 
 # With invocation-time overrides (override the workflow defaults)
@@ -57,23 +57,23 @@ Never invoke this command when:
 
 This slash command is a **reference wrapper** that reads the canonical workflow documents at runtime. This ensures:
 - Always up-to-date implementation when the canonical docs are improved
-- Single source of truth: the playbook + defaults + personas docs in `workflow/`
+- Single source of truth: the playbook + defaults + personas docs in `planning-is-prompting/workflow/`
 - Demonstrates the cascaded-pipeline pattern for other projects that want to install it
 - Companion to the existing `/plan-review` (single-session, serial) — use whichever fits the plan's scope
 
 **Companion docs**:
-- `plan-review-cascaded.md` — the manager's playbook
-- `plan-review-cascaded-defaults.md` — config defaults + override mechanism
-- `plan-review-cascaded-personas.md` — role briefs + reviewer rubrics
-- `plan-review.md` — the wrapped single-session review skill (not modified by this work)
+- `planning-is-prompting/workflow/plan-review-cascaded.md` — the manager's playbook
+- `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` — config defaults + override mechanism
+- `planning-is-prompting/workflow/plan-review-cascaded-personas.md` — role briefs + reviewer rubrics
+- `planning-is-prompting/workflow/plan-review.md` — the wrapped single-session review skill (not modified by this work)
 
-**Design provenance**: `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
+**Design provenance**: `planning-is-prompting/src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
 
 ---
 
 ## Steps this command names
 
-Heading text from `workflow/plan-review-cascaded.md`, for the steps named above; the canonical file holds more.
+Heading text from `planning-is-prompting/workflow/plan-review-cascaded.md`, for the steps named above; the canonical file holds more.
 
 - Step 1: Resolve Effective Configuration
 - Step 3: Decomposition Validation
