@@ -1,166 +1,166 @@
 {
-  "generated_at": "2026-10-10T15:43:37-04:00",
+  "generated_at": "2026-10-13T21:30:08-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
     "p-is-p-00-start-here.md": {
-      "sha256": "4bb75aaa44f98a50495df1cbc04c59d5563a416e0d905dc1ac1d828c7cae426d",
+      "sha256": "f385f5e173ee1ac92ed1441738bda20fc0ec22a544a064ef03ac66a324e7e90a",
       "version": "1.0"
     },
     "p-is-p-01-planning.md": {
-      "sha256": "5d30abfbaa6dc2ad22de771180de62a34b6019f6312220d67c4d9b102f68ea6b",
+      "sha256": "e8bb113a578fdb69f3c30f592ecee646b04e4c4d780f741e21247f878be9ed67",
       "version": "1.0"
     },
     "p-is-p-02-documentation.md": {
-      "sha256": "902e4f365c7232c1e2a17583838979975829118b337004838d9179435dbae088",
+      "sha256": "14dfd5fca19545267771d568253553a7144b8ef5cf91d2ccac649e192c603f5e",
       "version": "1.0"
     },
     "plan-about.md": {
-      "sha256": "ef455b5cb8c1eec97d7605af384eabcdb20883c1af1461627fe8a97c83f8272d",
+      "sha256": "185f7448458346d141a7a1aa7e90546499ddf012d7f37e89bdc6abe6403cc79a",
       "version": "1.0"
     },
     "plan-authoring-cascaded.md": {
-      "sha256": "d1a8a17c0490b8793c37f87d5b33bddf749756084a2a080984349cf33fc490ec",
+      "sha256": "2ce87f9cd6e4a728aeeffaad7dac759c295d3d143afdef89d52b0aa3aa1244d9",
       "version": "1.0"
     },
     "plan-backup-check.md": {
-      "sha256": "5449ee8d6405d1b123e221b70a7d48ada7293a56bb7499feb1cab7d4db40cb89",
+      "sha256": "9fc8d9fdb6ece401d54e6f488725c85634b9459bf545f0eecb21d3c4b9310c3b",
       "version": "1.0"
     },
     "plan-backup-write.md": {
-      "sha256": "95ebf5ca10e1d1eb0b410a4ec676a331778cf8ec41335620a6044d2226a26c61",
+      "sha256": "1240bd943ff4906db398932c19749fa3e280249e4fba5f8389dd6fc399080e0a",
       "version": "1.0"
     },
     "plan-backup.md": {
-      "sha256": "303206b5ba23a518ed848083b15e34165d0ff48d1a4d040432e617e12e37adfd",
+      "sha256": "fb19c1cfb9c87dd48cf323b1d5d3c7f682be09b567d42facb5d4002dd4c265c5",
       "version": "1.0"
     },
     "plan-branch-pr-and-merge.md": {
-      "sha256": "2a90385690799a68e0bf843ea5b267244664982a46859c36b7e7af513c15531c",
+      "sha256": "86b37cccde788f8fb14e3d4521b38634bf59e031c0566a1560adfbae02aa073a",
       "version": "1.0"
     },
     "plan-bug-fix-mode-close.md": {
-      "sha256": "b0ddafe0f741e31fe65c54ef1882e92419fdb590343325138075f669e6147944",
+      "sha256": "938b8446ca69d833651462f3be4f8136f69d1c104ae8fcd54eb68a85614211de",
       "version": "1.0"
     },
     "plan-bug-fix-mode-continue.md": {
-      "sha256": "773e6a81cc3e1ba72588c5ab3547c4a87be8e2b313e42e6677aa830b10e8e5de",
+      "sha256": "8403a3000aa81dcd0752e7bd1382a15854eb1736c81690d28f57031efed543e5",
       "version": "1.0"
     },
     "plan-bug-fix-mode-start.md": {
-      "sha256": "5327ef3a82c1751a5ebc002e797163cbb030859e90c3cc52eef3d5017efd3935",
+      "sha256": "6dc81290ab14e758b591aae7c75d1a5369802391d831b216c4d694566c1cdf26",
       "version": "1.0"
     },
     "plan-bug-fix-mode-wrap.md": {
-      "sha256": "78bf0810a04a78c0f5932b66c311308707225eef805888676c86b762efe16d0e",
+      "sha256": "b52b2ba99d00f2091d81980c58be36e854c2a15e3b69285859061688b963de00",
       "version": "1.0"
     },
     "plan-bug-fix-mode.md": {
-      "sha256": "ccf1ed566c7843648ab064418d6ef409ee55d09af6fc85d5d6dcdc6ebac38a2e",
+      "sha256": "1c96697399c30b67dc01b8962e2883e2b7c53410063e34bc84e66eeb5cb5a32a",
       "version": "1.0"
     },
     "plan-decide.md": {
-      "sha256": "a50b0146e90d2c06e6f6ca3317f747e54465d75cbe95c9d6076c5d4f8d25e5a8",
+      "sha256": "1253e89f890b184571031d2af4caa53800ff1ccfabe4d7837aef2559daa39a09",
       "version": "1.0"
     },
     "plan-history-management.md": {
-      "sha256": "27c0a26a1ee67370d3c9c51ab9f2e97ed418878d2e8e1796c851961533798fd2",
+      "sha256": "b18c212afee559d54ff820264921910a96d668c0cd477c29149da33d23e9cd0e",
       "version": "1.1"
     },
     "plan-install-wizard.md": {
-      "sha256": "145c35df052e2f9837e7c1256d08daeb6877aaf83d9ffb0e2ca6c598b61921b2",
+      "sha256": "49efebccccc8af9f9cb68bb273edff6db462c7f87f0735b32ec9d1ab399a14e4",
       "version": "1.0"
     },
     "plan-kiss.md": {
-      "sha256": "32db10ab935b57e5f6f7836e9d99627bda869a55146a0770debbc38f4eb853c7",
+      "sha256": "8239012e289e939eb23d8f068405ed80690c13329bbee59be0f08aa44b12c333",
       "version": "1.0"
     },
     "plan-last-call.md": {
-      "sha256": "3c8523c134c9eb5e411c19b94619528b480f05ff3af018688eb757404d6ecba8",
+      "sha256": "f7456a8569e6deb04670d495c5bad956848fb0abd92d252c63756a81204330a9",
       "version": "1.0"
     },
     "plan-loc-delta-global.md": {
-      "sha256": "7c5c2cbb4a525625cbed8d33922dd791f1a4e781d4b84c4a281caf2ca51e886f",
+      "sha256": "922c047285a4b9a10f17db9b0d76787faad17f8dbd95a713e3e5a27503f565e1",
       "version": "1.1"
     },
     "plan-mandate.md": {
-      "sha256": "fc32f905cac28196b5bdeb50071a15efc7292798e9cd61e087eed5f02d1e2beb",
+      "sha256": "fe1837179bcf6c083cb7bc053665980bb5527f59c85807dc5784fd40951ec97a",
       "version": "1.2"
     },
     "plan-memento.md": {
-      "sha256": "5f63b19e981cb41c46aaca46e08b0af6a9d3157d5d3d544fa3c81ce88385a00f",
+      "sha256": "b86edca28eb44edae81ba59ee5246072fae9eaaec2742f03eddbcb56c3aa13ec",
       "version": "2.0"
     },
     "plan-post-game.md": {
-      "sha256": "1d7b756ea9298cac0183a734dfad82121e071cddf481631696163f85198cbeaa",
+      "sha256": "cc9c42b3e9b3a388822630b0dd2848db273414c332690a3d6d329569fa67c711",
       "version": "0.1 (draft \u2014 held for Rick's review)"
     },
     "plan-push.md": {
-      "sha256": "5aba78280cfa407d3b7db4263d3d7975d7fc9794a7af7474c898274f858daf37",
+      "sha256": "eaad70409b6a2223685ef37bdf555bfb8efc06691d0352a09783cde2e2b72cba",
       "version": "1.0"
     },
     "plan-review-cascaded.md": {
-      "sha256": "60519b192b1e29284f943162a9128eefc1e4085114a9d0a6e5a36027f2a8c879",
+      "sha256": "f9970478e3ca1377f9d382a63eed67517f2096b5178dffa57ec1e1e678054c35",
       "version": "1.0"
     },
     "plan-review.md": {
-      "sha256": "ce56de40ec015a49c43408282f74e8da540929f3df89feb1594cabba2c534cf0",
+      "sha256": "baf28f796c1baa942d85b0acad857f95e820efd5b9b9e40e37369bf34f43d527",
       "version": "1.0"
     },
     "plan-session-checkpoint.md": {
-      "sha256": "c3e54e34e0cff331921008ab0fcb04ee6131515f636b34a9ba1936c63664e471",
+      "sha256": "e86a6b58b88c9bfe3f8587616d15d4c93596dcefd92a2ca6e5f6b446f5c8eab1",
       "version": "1.0"
     },
     "plan-session-end.md": {
-      "sha256": "810b4a0e74cfd65e3f4152c4cadbb5c4d4c72b9a5a597e45aafa4d671ead588d",
+      "sha256": "0030c209106f34fe290cbded80821aa04f29827d8144bad35657ff955814319a",
       "version": "1.0"
     },
     "plan-session-start.md": {
-      "sha256": "90769de690e191f493da9b95f20c3ab92a9da51ed4595caca2730b60384bc5a7",
+      "sha256": "dde69f7a752ef82207e8b024b189515e7fc1cd935424f722f68af351c2dcf99f",
       "version": "1.2"
     },
     "plan-skills-management-audit.md": {
-      "sha256": "1b80892d67a2cdd46143dff90811e063e209ceff7d9b8826482b3b28ad3b5b19",
+      "sha256": "84af8f9fe6e0028bed8003ec365ee85a1253122237af09ae2137e751d9e9fd52",
       "version": "1.0"
     },
     "plan-skills-management-create.md": {
-      "sha256": "a2b262b0094c8a4c415e2702e0878736da8d6ac66752a40cc41538643f1d2801",
+      "sha256": "305f78e812589ebf5121cc3d7722aa8beb38589694023a47c93444d62004e798",
       "version": "1.0"
     },
     "plan-skills-management-delete.md": {
-      "sha256": "436ea5e08164fe3398211074ba868a0fe9595115451b1a26d615b073ac99b5a4",
+      "sha256": "215b63c9c6e61f592eeec601565313c71cb44c00ef479981526f601b98ab4028",
       "version": "1.0"
     },
     "plan-skills-management-discover.md": {
-      "sha256": "1394067922d8ccb18092db0a8e136d119e9105d3056233f511f46231abca9daa",
+      "sha256": "7463bb30e205e4a4ac542a81f3b3eda31c07ca4eddd12eb8d7896584cd76e856",
       "version": "1.0"
     },
     "plan-skills-management-edit.md": {
-      "sha256": "b2440894ec16adb5e0d2e8e4ec59eb831e87368f25bdd1f186658999b6f17697",
+      "sha256": "e8e796c0b9cde85b9c435fa9499c2d7722ba5cf891e73f2e0f28dcf7fa63a659",
       "version": "1.0"
     },
     "plan-skills-management.md": {
-      "sha256": "d54b52a070f3ddfaa95c3c21f2101c7159305fec1caeca5a4d063380ebdfab41",
+      "sha256": "ec2572c65360af4afbed45c5682dd917f69938dd9fb6ba2ddacdecf332f71d41",
       "version": "1.1"
     },
     "plan-test-baseline.md": {
-      "sha256": "b96e8a583ac0114cde14647189fe16286f23669849cf2c8245077b4b02b76767",
+      "sha256": "656aa930ab81034ddb63c7b9e60cd9cf65ab79d0b51b65815d56c3806f581ac3",
       "version": "1.0"
     },
     "plan-test-harness-update.md": {
-      "sha256": "f9f630f6efb29ffab307a1527b1e0cee0c055526e51d644596e1af720cfd5d85",
+      "sha256": "55ea3eea9392a778ceed18ee999b18faf52eb20b760bee082d6dd980b9180ef6",
       "version": "1.0"
     },
     "plan-test-remediation.md": {
-      "sha256": "556ce97d746369f4eb4b9802702b6fa28caf3c198a2321c33877ee67218eb872",
+      "sha256": "20bdf4923f72188b2e2ca3a045c1fa1ac6f69580a3a5e130719295b7431dc9fa",
       "version": "1.0"
     },
     "plan-todo.md": {
-      "sha256": "e6f8bab4ea25fc1f408b521f0021f73d85cbdf5589b40ba34b38530b50f0e5c4",
+      "sha256": "2cbdc30dadf99f89eed97ca09e01cd21512e50cc5115d573a6adc4fe7180b545",
       "version": "1.1"
     },
     "plan-uninstall-wizard.md": {
-      "sha256": "85c6111a2720a3ab2216da98fd1290607752b4298e7e600c6d95959db6b96c0c",
+      "sha256": "2b0e44a4ae3f96e1f30466fe04b98e3ed26b6e6659967fda7dda650a9f836d66",
       "version": "1.0"
     }
   }
