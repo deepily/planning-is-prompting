@@ -57,12 +57,12 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Headings from `workflow/p-is-p-00-start-here.md`:
+Headings from `planning-is-prompting/workflow/p-is-p-00-start-here.md`:
 
 - Step 1 — Planning the Work
 - Step 2 — Documenting the Implementation
 
-Headings from `workflow/p-is-p-01-planning-the-work.md`:
+Headings from `planning-is-prompting/workflow/p-is-p-01-planning-the-work.md`:
 
 - Phase 1 — Work Discovery & Classification
 - Phase 2 — Pattern Selection
