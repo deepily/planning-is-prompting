@@ -76,7 +76,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
    - **If your per-persona pointer is absent, do not fall back to the shared file**. Your record is per-persona and immutable — `.claude-memento-<persona-slug>-<sid8>.md` — so read it directly, or regenerate the pointer (§ below). Falling back to `.claude-memento.md` is how you end up reading a memento two sessions stale with nothing warning you. Measured: two lupin seats had a *present* per-persona pointer naming an *old* record. The fallback never fired, and they resolved cleanly to the wrong thing.
    - **Ordering rule, and it is why this paragraph changed in the same commit as the writer**. This command lands **with or after** the writer, never before it. Once this step named a per-persona pointer that no code created. It told readers the fallback would retire on their next write when it never would. Never **edit this step to describe a `memento_io.py` that has not shipped**.
 2. Validate the 9-element contract is satisfied; flag any missing elements.
-3. Follow §7 rehydration instructions (re-warm reading list → first action → open loops). First action **must include reconciling owed work via `task_query` against element 8** (store-authoritative union — `session-start.md` Step 4.7).
+3. Follow §7 rehydration instructions (re-warm reading list → first action → open loops). First action **must include reconciling owed work via `task_query` against element 8** (store-authoritative union — `planning-is-prompting/workflow/session-start.md` Step 4.7).
 4. Confirm rehydration via `notify()`, naming the rehydrated role + first action.
 5. **Discard nothing**. The record is immutable and stays; the pointer is refreshed by the next write. The old "discard or archive after rehydration" step is **deleted** — that step was the bug.
 
@@ -109,7 +109,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 1. **Never hand-`Write` a memento file**. Every write goes through `memento_io.py`. This is the redline. A bare `Write` to a record path is the keystroke that destroyed two irreplaceable records.
 2. **Must read `planning-is-prompting/workflow/memento-management.md`** before invoking — do not improvise the 9-element contract.
 3. **Must notify via `notify()`** when write or load completes, but **never report the memento's path**. The location is derivable (§3 governing principle of `workflow/memento-management.md` in planning-is-prompting), never handed to anyone.
-4. **Must follow the cascade-Manager-specific lifecycle** in cascade mode — see `plan-review-cascaded-common.md` §Manager Rehydration.
+4. **Must follow the cascade-Manager-specific lifecycle** in cascade mode — see `planning-is-prompting/workflow/plan-review-cascaded-common.md` §Manager Rehydration.
 
 **Mandates deleted in v2.0** — both were rules, and rules do not act:
 - ~~"MUST verify `.gitignore` excludes `.claude-memento.md`"~~ → the script runs `git check-ignore` on every write and **repairs `.gitignore` itself**. (It had to: planning-is-prompting and skills-distillation ignored only the *bare* name. Repo-root **records** would have leaked into git and taxed the candor Rick declined to tax.)
@@ -122,7 +122,7 @@ python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py write \
 - `planning-is-prompting/workflow/memento-management.md` — canonical workflow + 9-element contract + §3 record/pointer/mirror
 - `$PLANNING_IS_PROMPTING_ROOT/workflow/scripts/memento_io.py` — the mechanism (`write` · `resolve` · `regenerate-pointer` · `migrate` · `verify`)
 - `planning-is-prompting/src/rnd/2026.07.13-memento-overwrite-mechanism.md` — the ruled design (María 🌸, Rev 2; Rick-ruled). **Read §4 for what this does not protect.**
-- `plan-review-cascaded-common.md` §Manager Rehydration — cascade-specific application
+- `planning-is-prompting/workflow/plan-review-cascaded-common.md` §Manager Rehydration — cascade-specific application
 - `~/.claude/CLAUDE.md` § Parallel Session Safety — `.claude-session.md` companion
 - `~/.claude/CLAUDE.md` § auto memory — durable cross-conversation alternative
 
