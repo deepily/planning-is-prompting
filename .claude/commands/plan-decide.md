@@ -1,15 +1,15 @@
 # Guided Decision Walkthrough
 
-**Purpose**: Walk the user through their pending decisions one at a time — each with pros, cons, and a recommendation — via the cosa-voice `ask_multiple_choice` method, in descending priority.
+**Purpose**: Walk the user through their pending decisions one at a time, in descending priority. Each decision comes with pros, cons, and a recommendation, via the cosa-voice `ask_multiple_choice` method.
 
 **Project**: planning-is-prompting (meta-repository)
 **Version**: 1.0
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven AND spoken text follows the **TTS Brevity Mandate** (the spoken `question` is a one-line headline; pros/cons/recommendation live in `abstract`). See `workflow/cosa-voice-integration.md`.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven. Spoken text follows the **TTS Brevity Mandate**: the spoken `question` is a one-line headline, and pros/cons/recommendation live in `abstract`. See `workflow/cosa-voice-integration.md`.
 
-> **Activation**: this is the explicit fallback. The same workflow auto-activates from natural phrases ("walk me through the pending decisions", "walk through my options one by one", …) via the Agent Skill `.claude/skills/guided-decision-walkthrough/SKILL.md`.
+> **Activation**: this is the explicit fallback. The same workflow auto-activates via the Agent Skill `.claude/skills/guided-decision-walkthrough/SKILL.md`. Natural phrases trigger it, for example "walk me through the pending decisions" or "walk through my options one by one".
 
 ---
 
@@ -26,16 +26,19 @@
 
 **On every invocation:**
 
-1. **MUST read the canonical workflow** — `planning-is-prompting → workflow/decision-walkthrough.md` — in full. It is the ONLY authoritative source for the ritual, queue convention, and recording format. Do NOT substitute a summarized version.
+1. **Must read the canonical workflow** — `planning-is-prompting → workflow/decision-walkthrough.md` — in full. It is the only authoritative source for the ritual, queue convention, and recording format. Never substitute a summarized version.
 
-2. **MUST use project configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+2. **Must use project configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Working directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
    - **Queue + log**: the `## Pending Decisions` and `## Decisions Log` sections of `TODO.md`.
 
-3. **MUST execute the ritual exactly**: gather → order (descending) → per decision (frame live → `ask_multiple_choice` with pros/cons + recommended-first + a `default` that covers a **timeout** — ⚠️ **not** an absent user, who 503s regardless → record) → recap. Do NOT skip recording or the recap.
+3. **Must execute the ritual exactly**, in this order: gather → order (descending) → per decision → recap.
+   - Per decision: frame live → `ask_multiple_choice` with pros/cons + recommended-first + a `default` → record.
+   - The `default` covers a **timeout**, **not** an absent user, who 503s regardless.
+   - Never skip recording or the recap.
 
-4. **MUST honor the hard rules**: Framing Contract (never a bare menu), TTS-brevity, no rubber-stamp gates, one-at-a-time/blocking/descending.
+4. **Must honor the hard rules**: Framing Contract (never a bare menu), TTS-brevity, no rubber-stamp gates, one-at-a-time/blocking/descending.
 
 ---
 
