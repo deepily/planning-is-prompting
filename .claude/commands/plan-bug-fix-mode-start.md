@@ -41,12 +41,12 @@
    - This is the only authoritative source for all bug fix mode steps
    - Never proceed without reading this document in full
 
-3. **Must execute `start` mode workflow**:
+3. **Must execute start mode workflow**:
    - Execute the "Session Initialization (`start` mode)" section
    - Steps 0-4 from the canonical workflow
    - Continue into Per-Bug Fix Cycle when user selects a bug
 
-4. **Key Actions for `start` mode**:
+4. **Key Actions for start mode**:
    - Check/create `bug-fix-queue.md` in project root
    - Create session header in `history.md` if not present
    - Stamp session ownership using `get_session_info()`
