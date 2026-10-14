@@ -5,6 +5,8 @@ Moved out of `workflow/history-management.md` (lines 578-585 at `d73f36b`) witho
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The brevity gate names `workflow/entry-writing-rules.md`; the cap table writes the marker as `RESUME HERE` in backticks.
+
 
 **v1.0** (2025.09.30) - Initial canonical workflow
 - Four operational modes
