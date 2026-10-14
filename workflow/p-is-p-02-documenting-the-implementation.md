@@ -1089,7 +1089,7 @@ src/rnd/jwt-oauth/
 2. Update implementation docs as you progress
 3. Monitor token budgets
 4. Archive completed phases when needed
-5. Update history.md at session end
+5. Update history.md at session end, worded to `workflow/entry-writing-rules.md`
 
 ### Decision Matrix
 
