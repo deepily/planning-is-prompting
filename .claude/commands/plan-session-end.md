@@ -28,21 +28,13 @@
    - The canonical workflow contains: token count check, history health check, history update, planning document updates, uncommitted changes summary, and commit message proposal. It also contains commit execution (with notifications throughout)
 
 3. **Must execute the complete session-end ritual**:
-   - Execute all steps exactly as described in the canonical workflow document (Step 0, Step 0.4, Step 0.5, and Steps 1-6)
+   - Execute every step of `workflow/session-end.md`, in order, first to last, exactly as described
    - Never skip any steps (including notifications, health checks, or the **LoC Delta Summary** — canonical `workflow/session-end.md` §6)
    - Never substitute a shortened or summarized version
    - Commit without asking once the quality gate is met (canonical Step 4.3); only the push waits for the user's word (Step 4.5)
-   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
-   - The canonical steps named in this command:
-     - Step 0 — Use Notification System Throughout
-     - Step 0.4 — Quick Token Count Check
-     - Step 0.5 — History Health Check
-     - Steps 1-6 — from Update Session History through LoC Delta Summary
-     - Step 4.3 — Commit Autonomously (no approval gate)
-     - Step 4.5 — Push Decision (the one retained user gate)
-     - Step 6 — LoC Delta Summary
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
 
-4. **Must honor the LoC Delta Summary mandate** (canonical `workflow/session-end.md` §6, renamed from "Day's Work Summary"; the three obligations are non-optional):
+4. **Must honor the LoC Delta Summary mandate** (canonical `workflow/session-end.md` §6 — renamed from "Day's Work Summary"; the three obligations are non-optional):
    - **Must fire**: Step 6 runs unless `--no-summary` was explicit or the §6.1 preflight in `workflow/session-end.md` failed with an explicit skip line. Soft-skip ("we're wrapping up") is a violation.
    - **Must surface the table**: the rendered markdown table (per `workflow/session-end.md` §6.4) lands in the closing `notify()`'s `abstract` parameter — not terminal-only.
    - **Must speak a one-line verdict**: the closing `notify()`'s spoken `message` parameter includes a single short LoC verdict (≈8-15 words) replacing the generic "session ended" sign-off.
@@ -53,7 +45,7 @@
 
 5. **Must clear the Step-6 Accountability Checklist** before declaring session-end complete:
    - Did Step 6 fire? Did the table land in abstract? Did the spoken message carry a LoC verdict? Does the CSV doc-link use canonical URL form?
-   - Full checklist: `workflow/session-end.md` § Final Verification → Step-6 Accountability Checklist
+   - Full checklist: canonical workflow doc `workflow/session-end.md` § Final Verification → Step-6 Accountability Checklist
    - If any checkbox unchecked: re-fire Step 6, re-issue the closing notify() with the missing elements added.
 
 ---
@@ -78,3 +70,11 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Single source of truth for the session-end ritual
 - Demonstrates the workflow pattern for other projects
 - This file serves as a working example for other repos
+
+## Steps this command names
+
+Headings from `workflow/session-end.md`:
+
+- Step 4.3 — Commit Autonomously (no approval gate)
+- Step 4.5 — Push Decision (the one retained user gate)
+- Step 6 — LoC Delta Summary (Day's Work)
