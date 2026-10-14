@@ -7,6 +7,8 @@
 > ## 😘 BREVITY GATE — Decisions Log entries
 > **One ruling per bullet, ≤3 sentences.** A session that produced five rulings writes **five bullets**, not one mega-bullet. Canonical: `workflow/brevity-mandate.md`.
 >
+> **Wording**: every line written to TODO.md follows `workflow/entry-writing-rules.md`.
+>
 > **State the ruling and its rule-of-record; route the narrative elsewhere** — `src/docs/post-games/<version>/` for the retro, `src/rnd/` for design reasoning, the store for owed work. The Decisions Log answers *"what was decided and why"* in a form someone can scan a year later, not *"what happened all day."*
 >
 > ⚠️ Added 2026-07-19 — the S139 entry packed five rulings into a single unreadable bullet on the same day its author landed the brevity mandate.
