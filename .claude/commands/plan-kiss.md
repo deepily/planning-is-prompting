@@ -57,7 +57,7 @@
    - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Working directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
 
-3. **Must resolve the target**: named persona → that one (canonical persona key — see `task-store-discipline.md`); otherwise every active session via `commons_who()`. If said directly to you, apply it to yourself immediately and do not broadcast.
+3. **Must resolve the target**: named persona → that one (canonical persona key — see `planning-is-prompting/workflow/task-store-discipline.md`); otherwise every active session via `commons_who()`. If said directly to you, apply it to yourself immediately and do not broadcast.
 
 4. **Must deliver the payload verbatim** via `dm_send` (inline body), and `notify()` the user so the correction is visible. The **payload itself must obey the mandate** — a 40-line lecture on brevity is self-refuting.
 
