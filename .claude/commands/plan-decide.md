@@ -7,7 +7,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven. Spoken text follows the **TTS Brevity Mandate**: the spoken `question` is a one-line headline, and pros/cons/recommendation live in `abstract`. See `workflow/cosa-voice-integration.md`.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation/speakerphone mode, all decision asks are voice-driven and spoken text follows the **TTS Brevity Mandate**. The spoken `question` is a one-line headline; pros/cons/recommendation live in `abstract`. See `workflow/cosa-voice-integration.md`.
 
 > **Activation**: this is the explicit fallback. The same workflow auto-activates via the Agent Skill `.claude/skills/guided-decision-walkthrough/SKILL.md`. Natural phrases trigger it, for example "walk me through the pending decisions" or "walk through my options one by one".
 
@@ -33,7 +33,7 @@
    - **Working directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
    - **Queue + log**: the `## Pending Decisions` and `## Decisions Log` sections of `TODO.md`.
 
-3. **Must execute the ritual exactly**, in this order: gather → order (descending) → per decision → recap.
+3. **Must execute the ritual exactly**: gather → order (descending) → per decision → recap.
    - Per decision: frame live → `ask_multiple_choice` with pros/cons + recommended-first + a `default` → record.
    - The `default` covers a **timeout**, **not** an absent user, who 503s regardless.
    - Never skip recording or the recap.
