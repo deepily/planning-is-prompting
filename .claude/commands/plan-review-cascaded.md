@@ -1,7 +1,7 @@
 # Cascaded Plan-Review
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -10,23 +10,23 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Optional invocation overrides**: any flags passed after the command (e.g., `--turn-cap=5 --persona-activation=hybrid`). See `plan-review-cascaded-defaults.md` for the full key list and override conventions.
-   - Do NOT proceed without [SHORT_PROJECT_PREFIX]
+   - Never proceed without [SHORT_PROJECT_PREFIX]
 
-2. **MUST read the three canonical workflow documents in order**:
+2. **Must read the three canonical workflow documents in order**:
    - `planning-is-prompting/workflow/plan-review-cascaded.md` — the manager's playbook (orchestration logic, the main workflow)
    - `planning-is-prompting/workflow/plan-review-cascaded-defaults.md` — configuration defaults table + override resolution rules
    - `planning-is-prompting/workflow/plan-review-cascaded-personas.md` — persona role briefs + reviewer rubrics
-   - These are the ONLY authoritative sources for the cascaded plan-review pipeline
-   - Do NOT proceed without reading all three in full
+   - These are the only authoritative sources for the cascaded plan-review pipeline
+   - Never proceed without reading all three in full
 
-3. **MUST execute the playbook completely**:
+3. **Must execute the playbook completely**:
    - Become the **manager** session for this pipeline (you are the orchestrator from this point forward)
-   - Execute Steps 1-8 of the playbook exactly as documented
+   - Execute Step 1 through Step 8 of the playbook exactly as documented
    - Apply resolved configuration values per the playbook's Step 1 resolution procedure
-   - Do NOT skip steps; do NOT substitute a shortened version
+   - Never skip steps; never substitute a shortened version
    - The user's only mandatory gate is Step 3 (approve the section decomposition); thereafter the manager runs autonomously, escalating only per the 7-trigger escalation taxonomy
 
 ---
@@ -46,7 +46,7 @@ Invoke this command when:
 - The user's attention budget is the binding constraint (saves attention by spending compute)
 - 5 CC sessions are already launched and available (typically 5 tmux panes)
 
-Do NOT invoke this command when:
+Never invoke this command when:
 - The plan is short or single-section (use `/plan-review` instead)
 - You don't have ≥5 CC sessions running
 - The user wants per-stage attention on every review pass (use `/plan-review` instead)
@@ -68,3 +68,13 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - `plan-review.md` — the wrapped single-session review skill (not modified by this work)
 
 **Design provenance**: `src/rnd/2026.05.17-cascaded-plan-review-pipeline.md`
+
+---
+
+## Steps this command names
+
+Heading text from `workflow/plan-review-cascaded.md`, for the steps named above; the canonical file holds more.
+
+- Step 1: Resolve Effective Configuration
+- Step 3: Decomposition Validation
+- Step 8: End-of-Pipeline Summary
