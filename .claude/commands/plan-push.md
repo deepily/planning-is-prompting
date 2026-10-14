@@ -7,11 +7,11 @@
 
 ---
 
-> **⚠️ Note**: This command delivers a severe manager poke. In conversation/speakerphone mode the whip is `dm_send`'d to the target manager(s) and mirrored to the user via `notify()` (TTS Brevity Mandate applies — spoken headline only, detail in `abstract`). See `workflow/cosa-voice-integration.md`.
+> **Note**: This command delivers a severe manager poke. In conversation/speakerphone mode the whip is `dm_send`'d to the target manager(s) and mirrored to the user via `notify()`. TTS Brevity Mandate applies — spoken headline only, detail in `abstract`. See `workflow/cosa-voice-integration.md`.
 
-> **Activation**: this is the explicit fallback. The same directive auto-activates from the **☕ glyph** and from natural phrases — "**push push push**", "**push push push to completion**", "**push to completion**", "**drive it to completion**", "**get off your ass**", "**coffee break's over**" — via the Agent Skill `.claude/skills/push-to-completion/SKILL.md`.
+> **Activation**: this is the explicit fallback. The same directive auto-activates via the Agent Skill `.claude/skills/push-to-completion/SKILL.md`. It fires from the **☕ glyph**. It also fires from natural phrases such as "push push push", "push push push to completion", and "push to completion". Likewise "drive it to completion", "get off your ass", and "coffee break's over" fire it.
 
-> **☕ = this entire command, in one character** *(Rick, 2026-07-25)*. ☕ alone needs no accompanying text — never ask what it refers to. **Response: 🫡 on receipt, receipts on delivery** — the salute is the whole acknowledgment, but unlike 📷 it does **not** discharge the order; the board still gets driven and the Operational Contract report still comes back. *Compressing the trigger must never compress the receipt.* Palette: `workflow/brevity-mandate.md` § the glyph exchange.
+> **☕ = this entire command, in one character** *(Rick)*. The ☕ alone needs no accompanying text — never ask what it refers to. The response is **🫡 on receipt, receipts on delivery**: the salute is the whole acknowledgment, but unlike 📷 it does **not** discharge the order. The board still gets driven and the Operational Contract report still comes back. Compressing the *trigger* must never compress the *receipt*. Palette: `workflow/brevity-mandate.md` § the glyph exchange.
 
 ---
 
@@ -27,17 +27,17 @@
 
 **On every invocation:**
 
-1. **MUST read the canonical workflow** — `planning-is-prompting → workflow/push-to-completion.md` — in full. It is the ONLY authoritative source for the verbatim Directive, the Operational Contract, the Anti-Gaming Guard, and delivery mechanics. Do NOT substitute a summarized version.
+1. **Must read the canonical workflow** — `planning-is-prompting → workflow/push-to-completion.md` — in full. It is the only authoritative source for the verbatim Directive, the Operational Contract, the Anti-Gaming Guard, and delivery mechanics. Never substitute a summarized version.
 
-2. **MUST use project configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+2. **Must use project configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Working directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
 
-3. **MUST resolve the target**: named manager → that one; otherwise every active manager (`commons_who`) owing open work (`task_query`). If said directly to a manager, that manager runs the Operational Contract on itself.
+3. **Must resolve the target**: named manager → that one; otherwise every active manager (`commons_who`) owing open work (`task_query`). If said directly to a manager, that manager runs the Operational Contract on itself.
 
-4. **MUST deliver the Directive verbatim** + the Operational Contract items via `dm_send`, and `notify()` the user so the whip is visible.
+4. **Must deliver the Directive verbatim** + the Operational Contract items via `dm_send`, and `notify()` the user so the whip is visible.
 
-5. **MUST enforce the Anti-Gaming Guard**: a DONE board, not a clean-looking one. `->done` needs a receipt; `->dropped` needs a reason; a worker's claim is not a receipt (verify an artifact-delta); absorbing a worker's lane is the redline.
+5. **Must enforce the Anti-Gaming Guard**: a done board, not a clean-looking one. `->done` needs a receipt; `->dropped` needs a reason; a worker's claim is not a receipt (verify an artifact-delta); absorbing a worker's lane is the redline.
 
 ---
 
