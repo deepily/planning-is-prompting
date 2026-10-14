@@ -63,6 +63,8 @@ Ratified decisions land in a lightweight **`## Decisions Log`** (in `TODO.md` or
 - YYYY-MM-DD — <decision> → <ruling>. Why: <one-line rationale>.
 ```
 
+Wording of a Decisions Log line follows `workflow/entry-writing-rules.md`.
+
 Plus **inline capture** into the relevant doc when one exists (e.g. a `§ Ratified Decisions` block in the governing plan/R&D doc). Reserve **full ADR files** (Title · Status · Context · Decision · Consequences) only for genuinely architectural decisions — the skill may *promote* a weighty decision to a full ADR.
 
 ---
