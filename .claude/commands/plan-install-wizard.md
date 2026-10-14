@@ -15,7 +15,7 @@
 
 ---
 
-> **⚠️ Note**: This command's canonical workflow is a long multi-phase wizard with many user-decision gates. In conversation mode (`get_session_info().conversation_mode_active=true`), the entire wizard becomes voice-driven; the **TTS Brevity Mandate** applies — never read the workflow catalog aloud, speak categories and put the detailed catalog in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow is a long multi-phase wizard with many user-decision gates. In conversation mode (`get_session_info().conversation_mode_active=true`), the entire wizard becomes voice-driven. In that mode the **TTS Brevity Mandate** applies: never read the workflow catalog aloud, speak categories and put the detailed catalog in `abstract`. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -23,30 +23,30 @@
 
 **On every invocation of this command:**
 
-1. **MUST detect operation mode**:
+1. **Must detect operation mode**:
    - Check if user provided `mode=` parameter
    - If no parameter: default to `mode=install`
    - Valid modes: `install`, `update`
-   - Do NOT proceed without determining mode
+   - Never proceed without determining mode
 
-2. **MUST read the appropriate canonical workflow document**:
+2. **Must read the appropriate canonical workflow document**:
 
    **For mode=install** (default):
    - Location: planning-is-prompting → workflow/installation-wizard.md → Installation Flow section
-   - This is the ONLY authoritative source for ALL installation steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all installation steps
+   - Never proceed without reading this document in full
    - The canonical workflow contains: State detection, workflow catalog, user selection, configuration collection, file installation, validation, and summary
 
    **For mode=update**:
    - Location: planning-is-prompting → workflow/installation-wizard.md → Update Mode Workflow section
-   - This is the ONLY authoritative source for ALL update steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all update steps
+   - Never proceed without reading this document in full
    - The canonical workflow contains: Local installation scan, version comparison, selective update UI, config extraction, diff preview, backup/update/validation, and summary
 
-3. **MUST execute the complete workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications or user prompts)
-   - Do NOT substitute a shortened or summarized version
+3. **Must execute the complete workflow**:
+   - Execute every step exactly as described in the canonical workflow document
+   - Never skip any step (including notifications or user prompts)
+   - Never substitute a shortened or summarized version
    - Follow the workflow exactly as documented
 
 ---
@@ -85,7 +85,7 @@
 
 This slash command is a **reference wrapper** that reads the canonical workflow document on every invocation. This ensures:
 - Always up-to-date when installation-wizard.md is improved
-- Single source of truth for installation AND update logic
+- Single source of truth for installation and update logic
 - No duplication between workflow and slash command
 - Works across all projects (project-agnostic)
 
@@ -97,3 +97,11 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 - Created during Step 7.5 of installation wizard (optional)
 - Can be manually installed: copy this file to target project's `.claude/commands/`
 - Not required - INSTALLATION-GUIDE.md and workflow documents work standalone
+
+---
+
+## Steps this command names
+
+Heading from `workflow/installation-wizard.md`, for the step named above; the canonical file holds more.
+
+- Step 7.5: Install the Wizard Slash Command

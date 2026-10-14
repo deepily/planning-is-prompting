@@ -1,9 +1,10 @@
 # History Management for Planning-is-Prompting Project
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Mode Parameter**: Accepts mode=check (default), mode=archive, mode=analyze, mode=dry-run
-**Optional Parameter**: `pending_entry=<path>` — a drafted-but-unwritten history entry whose size is added before thresholding (see canonical workflow → *Threshold the PROJECTED total*)
+
+**Optional Parameter**: `pending_entry=<path>` — a drafted-but-unwritten history entry whose size is added before thresholding (see canonical workflow → `Threshold the PROJECTED total`)
 **Version**: 1.1
 
 ---
@@ -12,27 +13,27 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **History file**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history.md
    - **Archive directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/history/
-   - **Token thresholds**: **17k warning, 19k critical**, 25k limit (canonical defaults — corrected 2026-08-15; this file had claimed 20k/22k, which contradicted workflow/history-management.md and would have thresholded 3k late)
-   - **Thresholds are applied to the PROJECTED total** — on-disk + `pending_entry`, never the bare file measurement
+   - **Token thresholds**: **17k warning, 19k critical**, 25k limit (canonical defaults, corrected; this file had claimed 20k/22k, which contradicted workflow/history-management.md and would have thresholded 3k late)
+   - **Thresholds are applied to the projected total** — on-disk + `pending_entry`, never the bare file measurement
    - **Retention targets**: 8-12k tokens, 7-14 days (defaults)
    - **Mode parameter**: mode=check (default), mode=archive, mode=analyze, mode=dry-run
    - **Optional**: `pending_entry=<path>` (drafted entry, counted before thresholding)
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/history-management.md
-   - This is the ONLY authoritative source for ALL history management operations
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all history management operations
+   - Never proceed without reading this document in full
 
-3. **MUST execute the complete history management workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications or mode-specific operations)
-   - Do NOT substitute a shortened or summarized version
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+3. **Must execute the complete history management workflow**:
+   - Execute every step exactly as described in the canonical workflow document
+   - Never skip any step (including notifications or mode-specific operations)
+   - Never substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from instruction 1
    - Parse and apply the mode parameter as described in the canonical workflow
 
 ---

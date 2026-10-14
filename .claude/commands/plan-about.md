@@ -8,7 +8,7 @@ version: 1.0
 
 **Purpose**: Display installed workflows with version comparison
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -17,21 +17,21 @@ version: 1.0
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use [PLAN] as default)
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[PLAN]` as default)
    - **Installation directory**: ./.claude/commands
-   - Do NOT proceed without detecting project configuration
+   - Never proceed without detecting project configuration
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/installation-about.md
-   - This is the ONLY authoritative source for workflow reporting
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for workflow reporting
+   - Never proceed without reading this document in full
    - The canonical workflow contains: Detection algorithms, version comparison logic, categorization rules, and report formatting
 
-3. **MUST execute the complete reporting workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document (Steps 0-5)
-   - Do NOT skip any steps (detect config, scan local, read canonical, compare versions, group by category, generate report)
-   - Do NOT substitute a shortened or summarized version
+3. **Must execute the complete reporting workflow**:
+   - Execute every step of `workflow/installation-about.md`, in order, first to last, exactly as described in the canonical workflow document
+   - Never skip any step (detect config, scan local, read canonical, compare versions, group by category, generate report)
+   - Never substitute a shortened or summarized version
    - Follow the workflow exactly as documented
 
 ---
