@@ -11,15 +11,15 @@
 
 **On every invocation of this command:**
 
-1. **MUST read the canonical uninstall workflow**:
+1. **Must read the canonical uninstall workflow**:
    - Location: planning-is-prompting → workflow/uninstall-wizard.md
-   - This is the ONLY authoritative source for ALL uninstallation steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all uninstallation steps
+   - Never proceed without reading this document in full
 
-2. **MUST execute the complete interactive uninstall wizard**:
-   - Execute ALL steps exactly as described in the canonical uninstall workflow
-   - Do NOT skip any steps (including workflow detection, user prompts, or file deletion)
-   - Do NOT substitute a shortened or summarized version
+2. **Must execute the complete interactive uninstall wizard**:
+   - Execute all steps exactly as described in the canonical uninstall workflow
+   - Never skip any steps (including workflow detection, user prompts, or file deletion)
+   - Never substitute a shortened or summarized version
    - Follow the wizard flow exactly as documented in the uninstall workflow
 
 ---
@@ -39,7 +39,7 @@
 
 **What gets removed**:
 - ✓ Slash command files only (`.claude/commands/*.md`)
-- ✗ Related files NOT auto-removed (history.md, backup.sh, etc.)
+- ✗ Related files not auto-removed (history.md, backup.sh, etc.)
   - These are listed as "manual cleanup suggestions"
 
 **To reinstall later**:
@@ -63,5 +63,5 @@ This slash command is a **reference wrapper** that reads the canonical uninstall
 - Warns about dependencies (e.g., History Management depends on Session Management)
 
 **Self-removal**:
-- This wizard CAN uninstall itself (along with `/plan-install-wizard`)
+- This wizard can uninstall itself (along with `/plan-install-wizard`)
 - After self-removal, use INSTALLATION-GUIDE.md to reinstall any workflows
