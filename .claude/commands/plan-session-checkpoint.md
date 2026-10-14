@@ -6,7 +6,7 @@
 
 ---
 
-> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), the commit-approval gate is voice-driven. The **TTS Brevity Mandate** applies: speak the 1-line commit subject only; full body and file list stay in `abstract` and the terminal reply. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
+> **Note**: This command's canonical workflow uses cosa-voice notifications. In conversation mode (`get_session_info().conversation_mode_active=true`), the commit-approval gate is voice-driven. The **TTS Brevity Mandate** applies — speak the 1-line commit subject only, full body and file list stay in `abstract` and the terminal reply. See `workflow/cosa-voice-integration.md` §Conversation Mode for full rules.
 
 ---
 
@@ -48,7 +48,7 @@
 3. **Must execute the checkpoint workflow**:
    - Steps 0-8 from the canonical workflow
    - User invocation is the commit approval (no need to ask)
-   - Session stays `active` after checkpoint (key difference from session-end)
+   - Session stays active after checkpoint (key difference from session-end)
 
 4. **Key Actions**:
    - Validate manifest exists and has your session section
