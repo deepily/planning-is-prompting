@@ -29,7 +29,7 @@ version: 1.0
    - The canonical workflow contains: Detection algorithms, version comparison logic, categorization rules, and report formatting
 
 3. **Must execute the complete reporting workflow**:
-   - Execute every step of `workflow/installation-about.md`, in order, first to last, exactly as described in the canonical workflow document
+   - Execute every step of `planning-is-prompting/workflow/installation-about.md`, in order, first to last, exactly as described in the canonical workflow document
    - Never skip any step (detect config, scan local, read canonical, compare versions, group by category, generate report)
    - Never substitute a shortened or summarized version
    - Follow the workflow exactly as documented
