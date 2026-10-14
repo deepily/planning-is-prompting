@@ -5,6 +5,8 @@ Moved out of `workflow/installation-wizard.md` (lines 4361-4399 at `d73f36b`) wi
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
+
 
 **v1.7** (2026.10.10) - Wider pruning job 2 (store row `84211d12`), item B2: removed "Step 0: Create Update TODO List" (34 lines, with its Optional note). Update mode now opens at "Step 1: Scan Local Installation".
 
