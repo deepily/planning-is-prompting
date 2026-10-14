@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T09:52:25-04:00",
+  "generated_at": "2026-10-14T10:45:50-04:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -88,7 +88,7 @@
       "version": "1.2"
     },
     "plan-memento.md": {
-      "sha256": "53afdd2199c84d0e6e9da4ff7fed0a0ccff895343ab23f45fc8a9ee850619699",
+      "sha256": "07a1e40fb7ea868b82a5bfd3835b463939486c7395f35de86b9029e5fc7c48cb",
       "version": "2.0"
     },
     "plan-post-game.md": {
