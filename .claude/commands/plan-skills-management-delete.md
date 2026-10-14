@@ -1,7 +1,7 @@
 # Skills Management - Delete Mode
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -37,18 +37,18 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
    - **Skills location**: .claude/skills/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/skills-management.md
-   - This is the ONLY authoritative source for ALL skills management steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all skills management steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute DELETE mode workflow**:
+3. **Must execute DELETE mode workflow**:
    - Execute the "Mode: delete" section from the canonical workflow
    - List available skills if none specified
    - Show skill contents and require confirmation
@@ -65,7 +65,7 @@
 ## What This Command Does
 
 1. **Lists skills** - Shows available skills with sizes and last-updated dates
-2. **Previews deletion** - Shows what will be deleted (SKILL.md, references/, etc.)
+2. **Previews deletion** - Shows what will be deleted (`SKILL.md`, references/, etc.)
 3. **Requires confirmation** - User must type skill name to confirm
 4. **Executes deletion** - Removes skill directory recursively
 5. **Cleans references** - Checks CLAUDE.md for references to deleted skill
