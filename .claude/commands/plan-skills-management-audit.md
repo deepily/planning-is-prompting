@@ -66,7 +66,7 @@
 | Status | Meaning | Action |
 |--------|---------|--------|
 | ✅ Up to date | Skill matches source | None needed |
-| Needs update | Source modified since skill update | Run edit mode |
+| Needs update (shown with a warning sign in the output) | Source modified since skill update | Run edit mode |
 | ❌ Stale | >30 days behind source | Consider recreating |
 | 📋 Missing | Candidate not yet converted | Run create mode |
 
