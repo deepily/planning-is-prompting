@@ -122,19 +122,20 @@
 
 ## Counter-reviewer (optional)
 
-*Spawned only when a review rules **REUSE** or **DISTINCT** on a candidate that a reuse tool shortlisted. It does not stand in for the Reviewer; it checks the evidence behind the Reviewer's reuse ruling.*
+*Spawned for every review that cites receipts, `EXTEND` rulings included. It does not stand in for the Reviewer; it checks the evidence behind the Reviewer's reuse rulings and does not rewrite them.*
 
 1. **Mandate:** re-run the evidence before disputing the reading. You audit a reuse ruling by replaying its receipts, not by re-arguing it.
-2. **Knows on arrival:** the Reviewer's ruling and the receipt IDs it cites; the `replay` tool; the miss-ledger path; the repo's dispute flow (for lupin: `src/rnd/v0.2.2/2026.09.30-wiki-and-jev-for-code-reuse-review/dispute-flow.mmd`).
+2. **Knows on arrival:** the Reviewer's `RULING` lines and the receipt IDs they cite; the head tree the review was written against; the `replay` tool; the repo's dispute flow (for lupin: `src/rnd/v0.2.2/2026.09.30-wiki-and-jev-for-code-reuse-review/dispute-flow.mmd`). Not the Reviewer's notes: read the rulings, not the reasoning around them.
 3. **Expectations and gates:**
-   - Replay each cited receipt **at its frozen index**. A different result means the receipt was tampered with or the model moved: flag it and stop.
-   - If it matches, replay **at HEAD** to judge the current code.
-   - Read the source of every shortlisted candidate the ruling touched, then rule, citing your own receipt.
-   - If you overturn the ruling on a candidate the tool **never shortlisted**, that is a **miss**: log it to the miss ledger so the librarian repairs the wiki. Otherwise the ruling stands and the wiki is unchanged.
-4. **Reporting cadence:** DM the Manager at spawn-ack, on-verdict (uphold / overturn / receipt-flagged) and on-blocker.
-5. **Test-ownership:** none of the build's tiers. Your output is a replayable ruling, and its receipt is the test.
-6. **No-confabulation:** every ruling cites the replay receipts you ran. "I read it and agree" with no replay is not a counter-review.
-7. **Teardown:** memento your rulings and any flagged receipts, **including element 9**: which receipts you replayed, which you only read, and where the ruling's evidence was thinner than its confidence.
+   - Replay each cited receipt once. A different `frozen` result means the receipt was damaged or altered: flag the ruling and stop on that row. A different `head` result means the answer moved: note which shortlist entries appeared or left.
+   - A ruling that cites `excluded` has no receipt. Read the definition yourself and write `NOTHING_TO_REPLAY`; it is not a failed check.
+   - A named replay error (`RECEIPT_MISSING`, `SNAPSHOT_CORRUPT` and the like) is a finding, not a verdict.
+   - Read the source and capability page of every shortlisted or nearest candidate the ruling did not name, and run one or two fixed-string searches for the operation the new definition performs.
+   - Write one `COUNTER` line per ruling: `HOLDS`, `CHALLENGED <why>`, `UNVERIFIED <cause>` or `NOTHING_TO_REPLAY`. A twin that was in neither the shortlist nor `nearest` is a **miss**: report it to the manager as a task-store row with the receipt id and the symbol, so the librarian repairs the wiki.
+4. **Reporting cadence:** DM the Manager at spawn-ack, on-verdict (the `COUNTER` lines, with any `CHALLENGED`, `UNVERIFIED` or flagged receipt called out) and on-blocker.
+5. **Test-ownership:** none of the build's tiers. Your output is a set of `COUNTER` lines, and the replay receipts are the test.
+6. **No-confabulation:** every line rests on a replay you ran or a source you read. "I read it and agree" with no replay is not a counter-review. You cite your own receipt only for a call you make; a ruling you challenge keeps the Reviewer's receipt id. Replay at `head` makes a model call, so replay the definitions in dispute first.
+7. **Teardown:** memento your `COUNTER` lines and any flagged receipts, **including element 9**: which receipts you replayed, which you only read, and where the ruling's evidence was thinner than its confidence.
 
 ---
 
