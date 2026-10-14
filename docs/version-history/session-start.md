@@ -5,6 +5,8 @@ Moved out of `workflow/session-start.md` (lines 1745-1767 at `d73f36b`) without 
 ---
 
 ## Version History
+**v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
+
 
 - **2026.10.09 (Sam, row `1498e58f`, defect 8)**: **Step 3.6.2 says the staleness scan ships in lupin only.** The step reads as repo-agnostic but `stale-seat-scan.py` exists only in lupin; one warning line (same wording as `session-end.md` §7.2) now says the `NO SCAN INSTALLED` output is correct elsewhere and still means the tree was not checked. No behaviour change.
 - **2026.10.09 (Sam, row `1498e58f`, Rick's ruling)**: **The work-direction menu shows at most four options; the rest sit under "Other...".** Cases D, E, F and G (5, 6 and 6 options, then a two-step menu) are one Case D: the first three TODOs plus "Other...", paged three at a time on request. Cases A-C were already within four.

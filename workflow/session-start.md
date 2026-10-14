@@ -957,7 +957,7 @@ finding more expensive to act on.
 
 4. **Identify Recent Session**:
 
-   Find the most recent session entry (top of file, reverse chronological):
+   Entries are worded to `workflow/entry-writing-rules.md`. Find the most recent session entry (top of file, reverse chronological):
    ```
    ### YYYY.MM.DD - Session N: [Session Title]
 
