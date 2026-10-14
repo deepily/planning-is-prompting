@@ -20,7 +20,7 @@ Run the **post-game** — a first-class, scaled retrospective on a just-finished
 5. **Write the output** — `src/docs/post-games/<version>/yyyy.mm.dd-<slug>-post-game.md` (full retro, §4 template; `<version>` is the work branch's version; register it in `src/docs/post-games/README.md` with tags) or one line in `history.md` (lightweight). Note: the folder is **tracked** and commits with the session's other files — see workflow §5.6.
 
 6. **Produce movement, not just a doc** (§5):
-   - Rulings → TODO.md Decisions Log (dated + attributed).
+   - Rulings → TODO.md Decisions Log (dated + attributed; wording follows `workflow/entry-writing-rules.md` in planning-is-prompting).
    - Doctrine-grade lessons → graduate into a `workflow/` doc (record the pointer).
    - Open threads → a store item via `task_create` (never left in prose).
    - New failure modes → the failure-mode catalog.
