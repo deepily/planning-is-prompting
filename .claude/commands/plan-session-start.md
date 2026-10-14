@@ -89,6 +89,6 @@ Heading text from `workflow/session-start.md`, for the steps named above; the ca
 - Step 3: Discover Available Workflows
 - Step 5: Identify Outstanding Work
 
-Heading text from the global `CLAUDE.md`, section "MCP SESSION STARTUP PROTOCOL", for the phase named above.
+Label from `global/CLAUDE.md`, section "MCP SESSION STARTUP PROTOCOL", for the phase named above.
 
-- Phase A — before any user-facing text
+- Phase A — before any user-facing text, including the first ack
