@@ -16,6 +16,7 @@ arguments:
 **Purpose**: Verify documentation structure after changes
 **Project**: Planning is Prompting (Meta-repository for workflow templates)
 **Note**: ANALYSIS_ONLY scope recommended (documentation repo doesn't need code fixes)
+
 **Version**: 1.0
 
 ---
@@ -23,7 +24,7 @@ arguments:
 ## Project Configuration
 
 **Identity**:
-- **Prefix**: [PLAN]
+- **Prefix**: `[PLAN]`
 - **Project Name**: Planning is Prompting
 - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
 
@@ -47,8 +48,8 @@ arguments:
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project Name**: Planning is Prompting
    - **Working Directory**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting
    - **Arguments**:
@@ -62,18 +63,18 @@ arguments:
      - Test Types: smoke (documentation validation)
      - Logs Directory: tests/results/logs
      - Reports Directory: tests/results/reports
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/testing-remediation.md
-   - This is the ONLY authoritative source for ALL remediation steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all remediation steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute the complete remediation workflow**:
-   - Execute ALL steps exactly as described in the canonical workflow document
-   - Do NOT skip any steps (including notifications or comparison analysis)
-   - Do NOT substitute a shortened or summarized version
-   - Follow the workflow exactly as documented using the configuration parameters from Step 1
+3. **Must execute the complete remediation workflow**:
+   - Execute all steps exactly as described in the canonical workflow document
+   - Never skip any steps (including notifications or comparison analysis)
+   - Never substitute a shortened or summarized version
+   - Follow the workflow exactly as documented using the configuration parameters from the first instruction above
    - For this documentation project, ANALYSIS_ONLY scope is recommended (generates comparison report, no code fixes needed)
 
 ---
