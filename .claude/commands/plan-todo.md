@@ -82,7 +82,7 @@
    - Notify: "Created TODO.md"
 3. If exists:
    - Read current contents
-   - Display the pending list
+   - Display pending items.
 4. Show summary: "X pending, Y completed (recent)"
 
 ### Add Mode
@@ -131,7 +131,7 @@ Branch-horizon-scoped archival, mirroring the `history.md` adaptive archival but
 
 1. Read TODO.md and detect the **current version** from the branch name (e.g. `wip-v0.1.3-…` → `v0.1.3`).
 2. Compute the **keep-horizon** = { current, +1, +2 } planned versions.
-3. Scan items for an optional `| horizon: vX.Y` tag. Untagged items are **current horizon, so keep**. Flag items tagged to a version older than the keep-horizon as past-horizon.
+3. Scan items for an optional `| horizon: vX.Y` tag. **Untagged = current horizon = keep**. Flag items tagged to a version older than the keep-horizon as past-horizon.
 4. **Decisions Log**: additionally slice entries older than the date-retention window (same window as history.md).
 5. **Pending Decisions**: never auto-archived while open (a live decision queue) — archived only once ruled (the ruling lands in the Decisions Log).
 6. Move past-horizon items + the dated Decisions-Log slice to `todo-archive/<vLow>-to-<vHigh>-todo.md` (version-range) or `todo-archive/YYYY-MM-DD-todo.md` (Decisions-Log date slice), creating `todo-archive/` if missing.
