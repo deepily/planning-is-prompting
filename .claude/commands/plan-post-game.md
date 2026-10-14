@@ -57,7 +57,7 @@
 
 ## When to Use
 
-- **Always (scaled)**: after a SWE-crew run (`swe-team-spin-up.md` §5) and as cascade Stage 9 — those workflows point here.
+- **Always (scaled)**: after a SWE-crew run (`swe-team-spin-up.md` §5) and as cascade Step 9 — those workflows point here.
 - **Recommended**: after a substantive solo session (design, bug-fix, investigation) with lessons worth keeping.
 - **On demand**: whenever the user asks for "the post-game / retro / debrief."
 - **Skip → light tier only**: a trivial change with no lesson collapses to a one-line history note.
@@ -72,6 +72,6 @@ This slash command is a **reference wrapper** that reads the canonical workflow 
 
 ## Steps this command names
 
-Heading text from `workflow/plan-review-cascaded.md`, for the step named above (that file's heading numbers it 9); the canonical file holds more.
+Heading text from `workflow/plan-review-cascaded.md`, for the step named above; the canonical file holds more.
 
-- Stage 9: Revision-Handoff Synthesis
+- Step 9: Revision-Handoff Synthesis
