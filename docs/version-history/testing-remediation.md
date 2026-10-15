@@ -5,6 +5,8 @@ Moved out of `workflow/testing-remediation.md` (lines 1269-1292 at `d73f36b`) wi
 ---
 
 ## Version History
+**v+** (2026.10.14, Extra 1, row `8188ff76`) - The history entry template writes its placeholder in lowercase (0 caps findings).
+
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - Step 8 names `workflow/entry-writing-rules.md` for the remediation entry.
 
 

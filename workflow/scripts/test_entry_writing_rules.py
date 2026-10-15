@@ -62,6 +62,8 @@ PROSE_LINES = (
     "`RESUME HERE`: Session 221 closed the wrapper lint work.",
     "```",
     "The demoted header reads \"Previous\" followed by the marker in backticks. A fenced block or an HTML comment is not a substitute.",
+    "## Templates",
+    "A template in a workflow document is an entry a session copies, so it follows the same rules. Placeholders are lowercase words, such as `[describe the changes]`. A value list is lowercase, such as `{excellent/good/fair/poor}`. An example of a wrong entry shows its fault in a lowercase note and keeps no capitals.",
     "## Before saving",
     "1. Read each sentence and count to the next period; split any that run past 25 words.",
     "2. Search the new lines for runs of capital letters and the three glyphs. Look for the words update, correction or retracted within 60 characters before a date, or at a line start. Look for a number after step, phase, item or option.",
@@ -95,6 +97,8 @@ FORBIDDEN_IN_POLICY = (
 TEMPLATE_LINES = {
     "bug-fix-mode.md"      : ( "- **Test**: Smoke pass, unit pass", "- **Test**: Smoke PASS" ),
     "testing-baseline.md"  : ( "- **Overall Health**: {excellent/good/fair/poor}", "- **Overall Health**: {EXCELLENT/GOOD/FAIR/POOR}" ),
+    "testing-remediation.md": ( "after [describe the changes] with", "after [DESCRIBE CHANGES] with" ),
+    "session-end.md"       : ( "(this belongs in the implementation doc)", "THIS BELONGS IN IMPLEMENTATION DOC" ),
 }
 
 

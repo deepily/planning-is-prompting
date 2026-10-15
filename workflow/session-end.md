@@ -474,9 +474,9 @@ Health: ✅ HEALTHY
 ### 2026.01.28 - Session 52
 
 **Phase 2 Progress**:
-- [x] Step 2.1: Create base classes ← THIS BELONGS IN IMPLEMENTATION DOC
+- [x] Step 2.1: Create base classes (this belongs in the implementation doc)
 - [x] Step 2.2: Add validation
-- [ ] Step 2.3: Integration tests (TODO) ← THIS BELONGS IN TODO.md
+- [ ] Step 2.3: Integration tests (this belongs in TODO.md)
 ```
 
 **Important**: Do NOT add TODO lists to history.md session entries. TODOs are tracked separately in TODO.md (see Step 1.5).

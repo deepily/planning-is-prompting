@@ -316,11 +316,11 @@ This is a simulation. Run with mode=archive to execute.
 ```markdown
 # {Project} History - {Date Range}
 
-> **Archive Period**: {Start Date} - {End Date}
-> **Archived**: {Archive Date}
-> **Reason**: {Auto-generated reason}
-> **Original Size**: {X} tokens → Reduced to {Y} tokens
-> **Parent Document**: [../history.md](../history.md)
+- **Archive Period**: {Start Date} - {End Date}
+- **Archived**: {Archive Date}
+- **Reason**: {Auto-generated reason}
+- **Original Size**: {X} tokens, reduced to {Y} tokens
+- **Parent Document**: `../history.md`
 
 This archive contains detailed session entries from {period description}, a period of {intensity level} development activity including {key themes}.
 

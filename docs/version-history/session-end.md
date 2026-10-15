@@ -5,6 +5,8 @@ Moved out of `workflow/session-end.md` (lines 1873-1882 at `d73f36b`) without ch
 ---
 
 ## Version History
+**v+** (2026.10.14, Extra 1, row `8188ff76`) - The wrong-entry example keeps its fault in lowercase notes, not capitals, so a copy reads 0 caps findings.
+
 **v+** (2026.10.14, Maya, entry policy re-loop, parent row `8b32de78`) - The cap table writes `RESUME HERE` in backticks (reviewer finding F5).
 
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - Names `workflow/entry-writing-rules.md` as the wording rules for every line staged in history.md and TODO.md: the brevity gate, Step 1 requirements and Step 1.5.

@@ -1063,7 +1063,7 @@ git reset --hard HEAD~1  # Go back one commit
 ```markdown
 #### $(date +%Y.%m.%d) - Post-Change Remediation ({REMEDIATION_SCOPE})
 
-**Summary**: Remediated system after [DESCRIBE CHANGES] with {REMEDIATION_SCOPE} scope.
+**Summary**: Remediated system after [describe the changes] with {REMEDIATION_SCOPE} scope.
 
 **Comparison Results**:
 - **Baseline**: {baseline_pass_rate}% pass rate
