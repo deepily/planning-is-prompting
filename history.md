@@ -2,7 +2,19 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 222 (2026-10-14, 09:45 to 23:05 EDT, María 🌸 stable `5b72acf4`, manager)**. The wrapper lint task is closed, and the writing rules now cover templates. Working branch at `42ccba6`, **not pushed**. Scripts suite 1312 passed there, my run at 22:19.
+`RESUME HERE`: **Session 223 (2026-10-15, to 15:50 EDT, María 🌸 stable `5b72acf4`, manager, one context re-spin at 12:36)**. Every row I owned is closed and no seat is out. The work landed on the lupin wiki branch, and this repo changed only its records. Pushed at session end on Rick's word.
+
+1. **lupin wiki, six slices** (`9444557e`, `60511dfb`): 171 pages for cosa.rest and cosa.repo, and every fix was re-read by a seat that did not write it. A fresh lint on the tip reads 0 orphan, stale or dangling pins for both packages.
+2. **Render folder** (`e4b11501`, from Cheech): 43 web-client-render pages in four shares, merged and indexed at `77a23fbd5` with 0 lint findings.
+3. **REST auth** (`2288e442`, `117490e9`): two routes are admin-only (`1b7221a89`). The smoke helper now fails loudly without the admin test account (`38cf20a9c`).
+4. **Writing rules** (`8188ff76`): caps and sentence-length block again in the three lupin record files (`eb8ff46c0`), after every fleet seat re-spun. A mutant check showed the new test catches the old value.
+5. **Mine, wrong**: a sed on the lupin wiki index also rewrote two lines a peer owned. I restored them in the next commit (`9f886514e`).
+
+**Memento sweep**: 17 trashed here and 220 in lupin, 98 of them digested. One lesson carried: pair every reuse receipt with its call-log entry, never by reply order.
+
+**Files**: `history.md`, `TODO.md`
+
+**Previous `RESUME HERE`**: **Session 222 (2026-10-14, 09:45 to 23:05 EDT, María 🌸 stable `5b72acf4`, manager)**. The wrapper lint task is closed, and the writing rules now cover templates. Working branch at `42ccba6`, **not pushed**. Scripts suite 1312 passed there, my run at 22:19.
 
 1. **Wrapper leftovers** (`8b32de78`): the planning documents line names `src/rnd/` (`b222d03`). Every memento command names its full script path (`148af79`). The home-folder copies and the lupin and lupin-mobile reinstalls are done.
 2. **Reuse review** (`1f56717c`, Sam): plan-review section 4 asks for a reuse receipt on every pre-pass row (`9f6d6f1`). The counter-reviewer charter matches lupin's skill (`2031984`).
@@ -14,7 +26,7 @@
 
 **Files**: `.claude/commands/plan-session-end.md`, `.claude/commands/plan-memento.md`, `workflow/plan-review.md`, `workflow/swe-team-roles.md`, `workflow/entry-writing-rules.md`, `workflow/history-management.md`, `workflow/session-end.md`, `workflow/testing-remediation.md`, `workflow/scripts/test_entry_writing_rules.py`, `docs/version-history/` (4), `workflow/MANIFEST.json`, `history.md`
 
-**Previous `RESUME HERE`**: **Session 221 (2026-10-13, 20:42 to closing time at 22:35 EDT, María 🌸 stable `31425d5c`, manager with author and reviewer seats)**. The command wrappers read 0 findings under lupin's markdown linter. The entry-writing rules are merged. Working branch at `51892aa`, **not pushed**. Suite there: 2 failed, 1308 passed, my run at 22:05. Both failures are the parity test against two deployed copies in the home folder.
+**Session 221 (2026-10-13, 20:42 to closing time at 22:35 EDT, María 🌸 stable `31425d5c`, manager with author and reviewer seats)**. The command wrappers read 0 findings under lupin's markdown linter. The entry-writing rules are merged. Working branch at `51892aa`, **not pushed**. Suite there: 2 failed, 1308 passed, my run at 22:05. Both failures are the parity test against two deployed copies in the home folder.
 
 1. **Wrapper sources to zero** (the command wrapper lint task, `8b32de78`, still open): 41 files went from 1,048 findings to 0. Three lots, each sent back once by review before it passed. Merges `9dd864a` and `056f24d`.
 2. **References that work in any repo** (merge `fb9d69c`): the sources name this repo's documents and scripts in full. lupin and lupin-mobile had hand-edited those lines.

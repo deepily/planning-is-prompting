@@ -1,24 +1,19 @@
 # TODO
 
-Last updated: 2026-10-13 (**Session 221**, María 🌸 stable `31425d5c`). The command wrappers read 0 lint findings. The entry-writing rules are merged. Seven items are carried below.
+Last updated: 2026-10-15 (**Session 223**, María 🌸 stable `5b72acf4`). Every row I owned is closed. Two items carry below.
 
 ## 📍 Resume Here
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
 
-### **S221: pick up here** (María 🌸 stable `31425d5c`, closed 2026-10-13 at Rick's Last Call)
+### **S223: pick up here** (María 🌸 stable `5b72acf4`, closed 2026-10-15 on Rick's session-end word)
 
-The command wrapper lint task (`8b32de78`) is still open and mine. The source work is merged at `51892aa`, not pushed. What is left, in the order I would take it:
+No store row is open under my name, and no seat is out. Two items carry from S221:
 
-1. **Two deployed copies in the home folder** still hold the old text: `plan-push.md` and `plan-kiss.md` under `~/.claude/commands`. The permission layer refused my copy. Rick's card on it timed out twice. Two parity tests stay red until the copies are replaced.
-2. **lupin's reinstall** is Cheech's, from `b7bb2d4` or later, after his landing. He sends the lupin sha. The three test wrappers and ten unsourced command files stay lupin's own.
-3. **Evidence for the lupin row that gives these two files their own rule set** (`486cc499`) is not posted. Dates, eight-character ids and eight-character shas cannot fit a session record. The examples are in `workflow/entry-writing-rules.md` and in the reviewer's groundwork under `io/tmp/2026.10.13-wrapper-lint/`.
-4. **Archive folder mismatch**, for the same lupin row. lupin leaves `todo-history/` in warn mode. This repo archives to `todo-archive/`.
-5. **The planning-documents line** in `plan-session-end.md` names this repo's `workflow/` folder. Each installed copy needs its own value there, and the drift check reads the difference as drift. Found by Tiffany's reviewer.
-6. **pdf-reduce-to-text** carries seven old wrappers and lacks thirty-four. It needs a session inside that repo, which is a cross-project spawn and Rick's word.
-7. **Post-game for tonight's crews** is not written. Seats deposited to the commons topic `post-game`. Mementos are in `io/mementos/` for Mr. Radio, Chloé and Maya.
+1. **pdf-reduce-to-text** carries seven old wrappers and lacks thirty-four. It needs a session inside that repo, which is a cross-project spawn and Rick's word.
+2. **Archive folder mismatch**: lupin leaves `todo-history/` in warn mode, and this repo archives to `todo-archive/`. Not checked since S221.
 
-Scratch for all of it is `io/tmp/2026.10.13-wrapper-lint/`: both specs, the reviews, and the per-repo difference lists. It is not checked in.
+S221 items 1, 2, 3 and 5 are done (Session 222 entry, and lupin `9f71acd77`). Item 7 was waived in my memento on 2026-10-14.
 
 > ### **S218 — pick up here** (María 🌸 stable `60fd6851`, closed 2026-10-06 on Rick's word)
 >
@@ -366,6 +361,14 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-10-15: lupin wiki rollups, REST auth and the record-file rules (rows `9444557e`, `60511dfb`, `e4b11501`, `2288e442`, `8188ff76`)
+
+These are María's rulings as manager, open to Rick's reversal.
+
+- 2026-10-15 12:34. The websocket-session routes stay at sign-in. The decision proxy reads them with its own account, so admin-only would break its presence feed.
+- 2026-10-15 14:50. `delete_job_history_bulk` clearing the last N days is as designed. The route offers a window of 1, 7, 14 or 30 days.
+- 2026-10-15 14:27. Every render-folder wiki page is named `web-client-render-*`, matching the existing web-client pages.
 
 ### 2026-10-13: Wrapper lint and entry-writing rules (the command wrapper lint task, `8b32de78`)
 
