@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 223 (2026-10-15, to 15:50 EDT, María 🌸 stable `5b72acf4`, manager, one context re-spin at 12:36)**. Every row I owned is closed and no seat is out. The work landed on the lupin wiki branch, and this repo changed only its records. Pushed at session end on Rick's word.
+`RESUME HERE`: **Session 224 (2026-10-18 20:52 to 2026-10-19 22:15 EDT, María 🌸 stable `da2cdc24`, manager, no seats)**. Every row I owned is closed except the archive routing bug, which Rick promoted and set as tomorrow's first item. This repo changed only its records.
+
+1. **Archive triage, 10-18**: three of four rescue branches had already landed, so I dropped their rows. Clayton's flaky-test fix went to Cheech and landed as lupin `eb2f0f0a4`.
+2. **Archive triage, 10-19**: 25 more rows arrived overnight. One was dropped because its files already matched the branch, and 24 twin-refactor review branches went to Mr. Radio.
+3. **Two new lupin rows**: `8ca4be22`, the janitor routes worker-named branches to me (P2, promoted). `d6846ef5`, the test VM doc-viewer scope fix is uncommitted (held).
+4. **Holding area**: three rows re-owned to their managers, and Cheech re-blocked his band-fit row on an item. The one finding left is the check's own false report, now a TODO item.
+5. **Mine, wrong**: an amendment said no reviewer was recorded, corrected in the next one. I also launched an empty Workflow call without Rick's opt-in, which ran nothing.
+
+**Files**: `history.md`, `TODO.md`
+
+**Previous `RESUME HERE`**: **Session 223 (2026-10-15, to 15:50 EDT, María 🌸 stable `5b72acf4`, manager, one context re-spin at 12:36)**. Every row I owned is closed and no seat is out. The work landed on the lupin wiki branch, and this repo changed only its records. Pushed at session end on Rick's word.
 
 1. **lupin wiki, six slices** (`9444557e`, `60511dfb`): 171 pages for cosa.rest and cosa.repo, and every fix was re-read by a seat that did not write it. A fresh lint on the tip reads 0 orphan, stale or dangling pins for both packages.
 2. **Render folder** (`e4b11501`, from Cheech): 43 web-client-render pages in four shares, merged and indexed at `77a23fbd5` with 0 lint findings.
@@ -14,7 +24,7 @@
 
 **Files**: `history.md`, `TODO.md`
 
-**Previous `RESUME HERE`**: **Session 222 (2026-10-14, 09:45 to 23:05 EDT, María 🌸 stable `5b72acf4`, manager)**. The wrapper lint task is closed, and the writing rules now cover templates. Working branch at `42ccba6`, **not pushed**. Scripts suite 1312 passed there, my run at 22:19.
+**Session 222 (2026-10-14, 09:45 to 23:05 EDT, María 🌸 stable `5b72acf4`, manager)**. The wrapper lint task is closed, and the writing rules now cover templates. Working branch at `42ccba6`, **not pushed**. Scripts suite 1312 passed there, my run at 22:19.
 
 1. **Wrapper leftovers** (`8b32de78`): the planning documents line names `src/rnd/` (`b222d03`). Every memento command names its full script path (`148af79`). The home-folder copies and the lupin and lupin-mobile reinstalls are done.
 2. **Reuse review** (`1f56717c`, Sam): plan-review section 4 asks for a reuse receipt on every pre-pass row (`9f6d6f1`). The counter-reviewer charter matches lupin's skill (`2031984`).

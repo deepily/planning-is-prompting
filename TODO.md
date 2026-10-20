@@ -1,10 +1,16 @@
 # TODO
 
-Last updated: 2026-10-15 (**Session 223**, María 🌸 stable `5b72acf4`). Every row I owned is closed. Two items carry below.
+Last updated: 2026-10-19 (**Session 224**, María 🌸 stable `da2cdc24`). One promoted row is first tomorrow, and one more waits in the holding area.
 
 ## 📍 Resume Here
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
+
+### **S224: pick up here** (María 🌸 stable `da2cdc24`, closed 2026-10-19 on Rick's session-end word)
+
+1. **First thing tomorrow, on Rick's word**: lupin row `8ca4be22` (P2, queued, mine). The archive janitor sends rescue branches named after workers to me instead of their spawning manager. The cause is `owner_for_tree` in lupin `src/cosa/agents/shared/worktree_straggler_tickets.py`, which only reads `seat-cc-<role>-<manager>-<n>`. The fix plan and done-when are in the row body. Rick said no to a crew spawned from this repo tonight, so ask him again or hand the build to a lupin manager.
+2. **Held for Rick's promotion**: lupin row `d6846ef5`. Sam's doc-viewer scope fix for mcp-and-a2ui-apps is uncommitted on the test VM, and each deploy wipes it.
+3. **Mine, this repo, small**: `workflow/scripts/orphan_row_check.py` reports a row blocked only on an item as "blocked past its chase" when its chase is empty. The store needs no chase for an item-only block, so this is a false finding. Seen on Cheech's `25f53d5e` at 22:12 EDT, after he re-blocked it on row `78ec2079`.
 
 ### **S223: pick up here** (María 🌸 stable `5b72acf4`, closed 2026-10-15 on Rick's session-end word)
 
