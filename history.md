@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 224 (2026-10-18 20:52 to 2026-10-19 22:15 EDT, María 🌸 stable `da2cdc24`, manager, no seats)**. Every row I owned is closed except the archive routing bug, which Rick promoted and set as tomorrow's first item. This repo changed only its records.
+`RESUME HERE`: **Session 225 (2026-10-20 18:57 to 23:00 EDT, María 🌸 stable `3b492205`, manager with author and reviewer seats)**. Three lupin rows are merged and closed, and no seat is out. This repo changed only its records, and the push is ordered by Rick's broadcast `42a10e45`.
+
+1. **Holding-area toggle, P0** (`30257e87`): Creator and Assignee grouping in both clients, merged as lupin `e6229bd1a`. Chloe passed three rounds, and the e2e on :8000 passed both clients.
+2. **Mobile reuse, lupin side** (`55013536`): one `index_readable()` check lets the exact lookups answer for lupin-mobile, merged as `fc0517fc6`. Tiffany reviewed it and closed the row.
+3. **Janitor routing** (`8ca4be22`): a worker's new tree records its manager, so archive rows reach that manager. Sam failed the first cut, and the rework merged as `2c91cf59d`.
+4. **Doc-viewer scope** (`d6846ef5`): blocked on Rick after two timed-out cards, with a chase at 09:00 tomorrow.
+5. **Mine, wrong**: I nearly started three seats before reading Rick's card answer, and I first called an old MCP's live answer a control.
+
+**Files**: `history.md`, `TODO.md`
+
+**Previous `RESUME HERE`**: **Session 224 (2026-10-18 20:52 to 2026-10-19 22:15 EDT, María 🌸 stable `da2cdc24`, manager, no seats)**. Every row I owned is closed except the archive routing bug, which Rick promoted and set as tomorrow's first item. This repo changed only its records.
 
 1. **Archive triage, 10-18**: three of four rescue branches had already landed, so I dropped their rows. Clayton's flaky-test fix went to Cheech and landed as lupin `eb2f0f0a4`.
 2. **Archive triage, 10-19**: 25 more rows arrived overnight. One was dropped because its files already matched the branch, and 24 twin-refactor review branches went to Mr. Radio.
@@ -12,7 +22,7 @@
 
 **Files**: `history.md`, `TODO.md`
 
-**Previous `RESUME HERE`**: **Session 223 (2026-10-15, to 15:50 EDT, María 🌸 stable `5b72acf4`, manager, one context re-spin at 12:36)**. Every row I owned is closed and no seat is out. The work landed on the lupin wiki branch, and this repo changed only its records. Pushed at session end on Rick's word.
+**Session 223 (2026-10-15, to 15:50 EDT, María 🌸 stable `5b72acf4`, manager, one context re-spin at 12:36)**. Every row I owned is closed and no seat is out. The work landed on the lupin wiki branch, and this repo changed only its records. Pushed at session end on Rick's word.
 
 1. **lupin wiki, six slices** (`9444557e`, `60511dfb`): 171 pages for cosa.rest and cosa.repo, and every fix was re-read by a seat that did not write it. A fresh lint on the tip reads 0 orphan, stale or dangling pins for both packages.
 2. **Render folder** (`e4b11501`, from Cheech): 43 web-client-render pages in four shares, merged and indexed at `77a23fbd5` with 0 lint findings.

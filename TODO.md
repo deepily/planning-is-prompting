@@ -1,10 +1,19 @@
 # TODO
 
-Last updated: 2026-10-19 (**Session 224**, María 🌸 stable `da2cdc24`). One promoted row is first tomorrow, and one more waits in the holding area.
+Last updated: 2026-10-20 (**Session 225**, María 🌸 stable `3b492205`). One row waits on Rick, and the TODO.md archive is first tomorrow.
 
 ## 📍 Resume Here
 
 → Blocks older than Session 212 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md` (the standing danger note is kept).
+
+### **S225: pick up here** (María 🌸 stable `3b492205`, closed 2026-10-20 at Rick's 23:00 closing time)
+
+1. **Waiting on Rick**: lupin row `d6846ef5` is blocked on him, with a chase at 09:00 EDT. My recommendation is the repo part only: commit the INI and compose edits, plus a registry warning with a test.
+2. **Archive TODO.md**: it is 597 lines, and the horizon check flags anything past about 200. Rick's card timed out, so run `/plan-todo archive` tomorrow.
+3. **Still open, S224 item 3**: the orphan check's false finding fired again tonight on Cheech's `b7fc7240`, an item-only block. I reported it to him, then retracted it.
+4. **Known gap, lupin `2c91cf59d`**: trees made before tonight have no creator record, so their archive rows can still reach me once.
+
+S224 items 1 and 2 are done (`8ca4be22` merged as `2c91cf59d`), or moved to item 1 above.
 
 ### **S224: pick up here** (María 🌸 stable `da2cdc24`, closed 2026-10-19 on Rick's session-end word)
 
