@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 226 (2026-10-24 18:07 to 2026-10-25 00:15 EDT, María 🌸 stable `3cf97292`, workflow steward for Cheech's reuse remediation cascade)**. My board is clear, and the lupin cascade and build ran under Cheech. This repo changed only its records. First job tomorrow, on Rick's yes: the doc-viewer scope row `d6846ef5`, then the TODO.md archive (606 lines).
+`RESUME HERE`: **Session 227 (2026-10-31 afternoon to 22:00 EDT, María 🌸 stable `ffbe8c58`, manager with author and reviewer seats)**. One lupin row merged and closed, and no seat is out. This repo changed only its records. First job tomorrow: close the Drive steward row `9b497cfb` once Mr. Radio sends the first live-upload receipt (chase 10:00).
+
+1. **Drive podcast publish** (`d0361881`): my plan check sent Mr. Radio three fixes (resolved `full_path`, cache the `drive.file` folder id, Tiffany's row 3469e9db). He folded them in, Rick approved, and he merged lupin `0910548f8`, off by default. Rick sets up the OAuth client with Mr. Radio.
+2. **Reuse shortlist, Dart constructors** (`74d0db47`): a class and its constructor no longer take two slots. Sam wrote it (`34584645a`); the reviewer found an EXTEND case that emptied the shortlist, fixed in `1f9163ff4` and approved on re-review. Merged as lupin `79c361b8c`: twin recall 38 to 39 of 42, unit sweep 4052 passed.
+3. **End of shift**: dropped archive row `3a79ca8c` (Rick ruled the crew/chloe-decisions rewrite not merged, on row 696b6744). Filled the empty manager on Mr. Radio's P0 `a3975cf4`. Orphan check exit 1, one finding left: Cheech's `3ef167df` has no chase date, told him.
+4. **Mine, wrong**: I sent Rick an OAuth card that read as if a Cloud Console project were for the test VM. He answered neither; Mr. Radio had already asked him, so I withdrew mine.
+5. **Mementos**: nothing to sweep here. In lupin, 12 crew records are past the sweep line; left for its resident managers to trash.
+
+**Files**: `history.md`
+
+**Previous `RESUME HERE`**: **Session 226 (2026-10-24 18:07 to 2026-10-25 00:15 EDT, María 🌸 stable `3cf97292`, workflow steward for Cheech's reuse remediation cascade)**. My board is clear, and the lupin cascade and build ran under Cheech. This repo changed only its records. First job tomorrow, on Rick's yes: the doc-viewer scope row `d6846ef5`, then the TODO.md archive (606 lines).
 
 1. **Archive row** (`2f3ef163`): dropped, because `496f0e95` is the pre-rebase copy of lupin `28ef9f387`, already on the branch.
 2. **Stub manifest**: confirmed for Rick that a cascade is not handoff-ready without `<plan>.stubs.json`. Rick allowed building against unapproved stubs and opened the create-gate slider, since stub rows are not exempt.
@@ -12,7 +22,7 @@
 
 **Files**: `history.md`
 
-**Previous `RESUME HERE`**: **Session 225 (2026-10-20 18:57 to 23:00 EDT, María 🌸 stable `3b492205`, manager with author and reviewer seats)**. Three lupin rows are merged and closed, and no seat is out. This repo changed only its records, and the push is ordered by Rick's broadcast `42a10e45`.
+**Session 225 (2026-10-20 18:57 to 23:00 EDT, María 🌸 stable `3b492205`, manager with author and reviewer seats)**. Three lupin rows are merged and closed, and no seat is out. This repo changed only its records, and the push is ordered by Rick's broadcast `42a10e45`.
 
 1. **Holding-area toggle, P0** (`30257e87`): Creator and Assignee grouping in both clients, merged as lupin `e6229bd1a`. Chloe passed three rounds, and the e2e on :8000 passed both clients.
 2. **Mobile reuse, lupin side** (`55013536`): one `index_readable()` check lets the exact lookups answer for lupin-mobile, merged as `fc0517fc6`. Tiffany reviewed it and closed the row.
