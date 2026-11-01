@@ -269,6 +269,9 @@ NOTIFICATION VERIFICATION:
   per the Recommendation Mandate for Blocking-Tool Asks above?
 □ Is any next step blocked on the user's go? If so, did I fire a DIRECT targeted
   ask_* for it — NOT bury "standing by" in a status notify? (Gate = a Direct Ask)
+□ Am I asking for a held row to be approved? Then the abstract carries one
+  [approve ☐](/app/tasks/approve?row=<full row id>) line per row
+  (task-store-discipline.md §3.2).
 ```
 
 **If ANY checkbox is unchecked**: Send the missing notification(s) NOW, or re-issue the blocking-tool ask with the missing decision-support added.

@@ -2,7 +2,7 @@
 
 **Purpose**: the day-to-day practice for using the unified task-store — when to create items, how to transition them, what stays in markdown, and what every session owes the store. This is the PIP-side Phase-2 companion to the Lupin-side service build.
 
-**Status**: v1.11 (2026-10-09, Extra 2 — §6 manager board glance scoped; §2 `/clear` collision warning fenced HISTORICAL; see `docs/version-history/task-store-discipline.md`) · v1.10 (2026-10-09, Sam — pruning pass 4) · v1.9 (2026-10-02, María — §3 rewritten to store-only) · v1.8 (2026-09-07, Tiffany 💍 — §1 gains the **priority ceiling**: a worker files `P5` and only `P5`; `P4`–`P1` is an operator-or-manager raise and `P0` is the operator's alone. Removes a live contradiction — §1 told every session to file freely with no ceiling, which Rick's 2026-09-07 declarations forbid. **Unenforced in code; flagged as such.** Companion: `priority-pull-policy.md` §7) · v1.7 (2026-07-07, María — §6 query-hygiene MANDATE: never pull the unfiltered board — scope `owner_persona`+`status`+`terse=True`; 90→2 collapse proof; §11-D any-open gap flagged as an OPTIONAL lupin enhancement; Rick directive after a 90-row full-board pull) · v1.6 (2026-06-29, María — §3 title-hygiene HARDENED: ~60-char target + ratified client-truncation/store-guard enforcement, task-list redesign `3b85863e`) · v1.5 (2026-06-23, María — title-hygiene convention §3 [`47ba26fd`] + non-repo receipt form §4/§10.1 [`18eebb46`], Rick board-completion push) · v1.4 (2026-06-17, María — store-only body-sweep) · v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
+**Status**: v1.12 (2026-11-01, María — new §3.2, the one-click approve link for held rows) · v1.11 (2026-10-09, Extra 2 — §6 manager board glance scoped; §2 `/clear` collision warning fenced HISTORICAL; see `docs/version-history/task-store-discipline.md`) · v1.10 (2026-10-09, Sam — pruning pass 4) · v1.9 (2026-10-02, María — §3 rewritten to store-only) · v1.8 (2026-09-07, Tiffany 💍 — §1 gains the **priority ceiling**: a worker files `P5` and only `P5`; `P4`–`P1` is an operator-or-manager raise and `P0` is the operator's alone. Removes a live contradiction — §1 told every session to file freely with no ceiling, which Rick's 2026-09-07 declarations forbid. **Unenforced in code; flagged as such.** Companion: `priority-pull-policy.md` §7) · v1.7 (2026-07-07, María — §6 query-hygiene MANDATE: never pull the unfiltered board — scope `owner_persona`+`status`+`terse=True`; 90→2 collapse proof; §11-D any-open gap flagged as an OPTIONAL lupin enhancement; Rick directive after a 90-row full-board pull) · v1.6 (2026-06-29, María — §3 title-hygiene HARDENED: ~60-char target + ratified client-truncation/store-guard enforcement, task-list redesign `3b85863e`) · v1.5 (2026-06-23, María — title-hygiene convention §3 [`47ba26fd`] + non-repo receipt form §4/§10.1 [`18eebb46`], Rick board-completion push) · v1.4 (2026-06-17, María — store-only body-sweep) · v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
 
 **When to use**: any session in a repo where the task-store is live. Store-only is **LIVE fleet-wide as of the 2026-06-17 cutover** (§0) — this doc is operative practice, not forward-guidance.
 
@@ -111,6 +111,38 @@ Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
 **Rejected alternatives, recorded so they are not re-proposed:** moving artifacts to a durable path only MOVES the rot (something still has to survive, and nothing guarantees it); building machinery to snapshot artifacts buys tooling for a problem that does not recur often enough to earn it; and "just regenerate it later" has already cost the fleet once.
 
 ⚠️ **THE RULE APPLIES TO ITS OWN RULING.** Row `644313b9` was deliberately NOT closed when this was ruled, because at that moment the ruling existed only in a DM and in outgoing spawn briefs — *an unwritten convention, which is precisely the failure mode the row was filed about, one level up.* Closing on "it was ruled" would have made the doctrine the next artifact to expire silently. **This section IS the close condition.** A seat that never saw the DM now files correctly.
+
+### 3.2 Asking Rick to approve a held row — the one-click approve link (binding on every seat)
+
+A row filed without `status` lands in the holding area (`not_approved`) and waits for Rick. **To ask him to approve it, put one approve link per row in the `abstract` of a `notify()` or of an action-requested ask.** He clicks it, the row moves to `queued`, and the link turns into "approved ✅". He does not need to open the board, type anything or switch sessions.
+
+```markdown
+- <row title> [approve ☐](/app/tasks/approve?row=<full 36-character row id>)
+```
+
+| Rule | Why |
+|---|---|
+| **Label is `approve ☐`**: the verb first, then the empty checkbox | Rick's ruling of 2026-11-01. After a successful click the client rewrites it to "approved ✅" and disables the link |
+| **Relative path, no host, scope or token** | The click runs under Rick's own logged-in session, which also makes it safe to post in a card |
+| **The full lowercase 36-character row id** | A short id like `3529274b` does not resolve |
+| **In the `abstract`, never in the spoken `message`** | A URL read aloud is gibberish, and only the card renders the link |
+| **One line per row, title first** | Rick recognises a row by its title, not its id |
+
+**Coming soon (lupin row `192fecdf`, Krishna): a view link right after the approve link**, so Rick can read the row before he approves instead of approving blind:
+
+```markdown
+- <row title> [approve ☐](/app/tasks/approve?row=<full id>) [📄](/app/tasks/view?row=<full id>)
+```
+
+⚠️ **Do not send the 📄 link until `192fecdf` merges.** Until then a click opens a missing page. Mr. Radio announces when it is live, and this note then becomes part of the format.
+
+**Both clients handle it.** Both the legacy notifications page and the multiplexer catch the click and do the approval in place (lupin `notifications.js` `_handleApproveLinkClick`; `multiplexer/render/approveLink.ts`). They match the link by its address, so the label text does not affect whether it works. If a click gets past both, `task-approve.html` is the landing page.
+
+**The helper tool.** `task_approve_line( task_id )` returns the whole bullet with the row's real title, built by lupin's `src/cosa/rest/task_approve_link.py` `approve_link_line`. ⚠️ **Until lupin row `39624bae` lands, the helper still writes the old label `✅ approve`.** Use it to get the title and the address, then change the label to `approve ☐` before sending. Once `39624bae` lands, use its output as it comes.
+
+**This is the one-click way to satisfy *Gate = a direct ask*.** Approving a held row is a gate, and the card that carries the link is the dedicated ask that unblocks exactly that row. A held row mentioned without a link is the "standing by for your approval" pattern that rule bans.
+
+Ruled by Rick 2026-11-01. Designed and built by Rick and Mr. Radio 🦉, who confirmed the format. Store row `3529274b`, which was itself the first row approved this way.
 
 ## 4. Transitions — the receipts discipline
 
