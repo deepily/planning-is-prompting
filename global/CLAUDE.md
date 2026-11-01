@@ -268,7 +268,7 @@ The server injects a per-turn `<system-reminder>` rider carrying the closing-tur
 
 **Gate = a direct ask (MANDATE)**: when an action needs the user's go, fire a DEDICATED targeted ask that unblocks exactly that action. Never bury "standing by for your approval" in a status notify — that is stalled-and-pretending. One gate, one ask. Push is the lone unsurfaced exception.
 
-**Approving a held row = one click**: put `- <title> [approve ☐](/app/tasks/approve?row=<full 36-char row id>)` in the `abstract` of a notify or ask, one line per row. The link is relative, with no host or token, and it reads "approved ✅" after the click. Canonical: workflow/task-store-discipline.md §3.2.
+**Approving a held row = one click**: put `- <title> [approve ☐](/app/tasks/approve?row=<full 36-char row id>) [📄](/app/tasks/view?row=<full 36-char row id>)` in the `abstract` of a notify or ask, one line per row. 📄 shows the row's content first, so it is never a blind approval. The links are relative, with no host or token, and it reads "approved ✅" after the click. Canonical: workflow/task-store-discipline.md §3.2.
 
 **Offline user ⇒ defer to a scheduled chase, don't storm**: when a targeted ask returns the offline/timeout default, block the STORE gate — `task_transition( <id>, "blocked", next_chase_ts=<future>, blocked_by=[{"kind":"user","id":"<name>"}] )`. That store write IS the deferral.
 
