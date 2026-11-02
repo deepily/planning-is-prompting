@@ -136,35 +136,69 @@ fixture, anything), actively grep {{CODEBASE_ROOTS}} for prior art before
 accepting it as new. Do NOT skip the grep. The most common silent failure
 mode of AI-authored plans is missing existing helpers.
 
-For each new-thing, output one row:
+For each new-thing, run the reuse check (below), then output one row:
 
-| New thing the plan proposes | Existing prior art (file:line) | Verdict | Receipt |
+| New thing the plan proposes | Need sent | Candidates read (file:line) | Verdict | Outcome line |
 
 Verdicts (pick exactly one):
 - reuse-as-is        — existing code already does what the plan needs
 - extend-existing    — extend the named existing function/class
-- genuinely-new      — no prior art found; explain WHY this is novel
+- genuinely-new      — after reading every candidate, nothing does the
+                       job; name the difference
 
-Receipts: if a reuse tool is installed in this repo, call it for each
-new-thing and cite `reuse-receipt: <id>` from that call in the Receipt
-column. A row with no receipt is challenged, not accepted. If no reuse
-tool is installed, grep as above and write "no receipt: tool not
-installed" in the Receipt column.
+The reuse check, per new-thing:
+1. Write the need: what the code would do, not what it would be called.
+2. If a reuse tool is installed, call it with the need and keep the
+   receipt id, the verdict and any cause.
+3. Run the tool's plain-text search on that receipt every time, adding
+   three to six identifier words you would expect existing code to use.
+   Keep its search id.
+4. Read the source: the top-rated candidate first, then the rest of the
+   shortlist, then what the search found.
+5. Rule, and write the outcome line in the last column.
+
+Reading the answer:
+- A shortlisted candidate is a lead, not a match. Expect most of the
+  shortlist to be look-alikes. Never rule on a score.
+- "Uncertain, read the source" means the tool does not know. It never
+  means nothing exists.
+- An empty or short shortlist is not "nothing exists" either.
+- genuinely-new needs the candidates read and the search cited. It is
+  never ruled on a shortlist, a score or an uncertain answer alone.
+
+If no reuse tool is installed, or the tool refuses this repository,
+grep {{CODEBASE_ROOTS}}, read what grep finds, and write `unindexed` in
+both id positions of the outcome line.
 
 DO NOT fix anything yet. Deliver the table. Wait for my confirmation.
 After I review, I'll tell you which findings to apply.
 ```
 
-**Receipts**: a reuse tool, for example lupin's `check_exists` or `fetch_similar`, returns a receipt id with every verdict. The pre-pass requires one per row, so a verdict can be replayed later and a bare assertion is challenged. A row carrying "no receipt: tool not installed" is accepted as a grep-only row and says so.
+**The outcome line**: every check ends in one line that ties the lookup to what the plan decided. A script can read it, so outcomes can be counted later.
+
+```text
+REUSE-OUTCOME <receipt id> :: <search id> :: REUSED <symbol> | EXTENDED <symbol> | WROTE_NEW <difference> :: <plan path>#<step>
+```
+
+- The plan author writes it when the step is planned. The implementer confirms it, or writes a second line, when the code lands, so a plan that said `REUSED` and shipped new code shows both.
+- `WROTE_NEW` takes any text that does not contain ` :: `. There is no fixed list of reasons.
+- Where the tool sends nothing for a definition it refuses, the receipt position holds `excluded`. Where the code is outside the tool's index or repository, both id positions hold `unindexed`, and the reviewer challenges the line.
+- A receipt with no outcome line is a lookup nobody acted on.
+
+**When the check is required**: where the repository installs a reuse tool and an outcome checker, every planning and coding decision goes through the check. The checker refuses a line that starts with `REUSE-OUTCOME` and does not match the format, and a line whose receipt or search id is not in the tool's call log. A decision with no outcome line is refused. Where no checker is installed, write the lines anyway.
+
+**Why every rule above exists**: lupin measured its checker on 2 Nov 2026. The median request had 7 wrong candidates above the shortlist line, and the judge passed 41% of look-alike pairs. The top-rated candidate was the right one in 50 of 60 requests. The index search never found 10 of 70 known answers, and the plain-text search on the request text alone found 1 of those 10. Source: lupin `src/docs/post-games/v0.2.2/2026.11.02-first-thousand-part-3-stage-c-post-game.md`, and this repository's `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8.
 
 **Three vocabularies**: the tool, this pre-pass and a code-review skill each name the same outcomes differently. This table maps them, so a receipt cited in a prior-art row needs no translation. The example names are lupin's `check_exists` verdicts and its reuse-reviewer skill.
 
-| `check_exists` verdict | Section 4 prior-art label | Reuse-reviewer ruling |
-| --- | --- | --- |
-| `REUSE` | `reuse-as-is` | `DUPLICATE` |
-| `EXTEND` | `extend-existing` | `EXTEND <symbol>` |
-| `NEW` | `genuinely-new` | `DISTINCT <why>`, only after the reviewer has read the shortlist's source; a `NEW` verdict does not rule `DISTINCT` by itself |
-| `UNCERTAIN_READ_SOURCE` | none yet: read the source first | the reviewer rules only after reading the candidates |
+| `check_exists` verdict | Section 4 prior-art label | Outcome line | Reuse-reviewer ruling |
+| --- | --- | --- | --- |
+| `REUSE` | `reuse-as-is` | `REUSED <symbol>` | `DUPLICATE` |
+| `EXTEND` | `extend-existing` | `EXTENDED <symbol>` | `EXTEND <symbol>` |
+| `UNCERTAIN_READ_SOURCE` | none yet: read the source first | whichever the reading supports | the reviewer rules only after reading the candidates |
+| none: the tool never says it | `genuinely-new`, after reading | `WROTE_NEW <difference>` | `DISTINCT <why>`, after reading |
+
+`check_exists` no longer answers `NEW`. A sweep that found nothing answers `UNCERTAIN_READ_SOURCE` with the cause `NO_MATCH`, and still names the nearest entries to read.
 
 **After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers and receipt ids — this persists past the review and is useful at code-write time.
 
