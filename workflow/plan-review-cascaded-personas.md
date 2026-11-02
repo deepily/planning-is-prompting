@@ -217,21 +217,25 @@ Same anti-pattern, mirrored on two ACs. AC2's `EXECUTOR: AI` depended on OSQ4(a)
 
 ### Usability/Reuse Rubric (maps to `/plan-review` REUSE pre-pass)
 
-**Mandate**: actively grep the codebase for prior art before accepting any "new" thing the section proposes. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep.
+**Mandate**: run the reuse check in `/plan-review` §4 before accepting any "new" thing the section proposes: the tool call where one is installed, the plain-text search every time, and the source read. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep or the search.
 
-For each "new" thing the section proposes (helper, primitive, queue, emitter, rate-limiter, route, schema, fixture, anything), determine prior art and produce one row:
+For each "new" thing the section proposes (helper, primitive, queue, emitter, rate-limiter, route, schema, fixture, anything), the author's draft carries a `REUSE-OUTCOME` line (§4, "The outcome line"). Check every line, and re-run the check yourself, with the need written in your own words, on every line the author marked `WROTE_NEW`. Produce one row per new thing:
 
-| New thing the section proposes | Existing prior art (file:line) | Verdict |
-|--------------------------------|--------------------------------|---------|
-| ... | ... | reuse-as-is / extend-existing / genuinely-new |
+| New thing the section proposes | Author's outcome line | Candidates read (file:line) | Verdict |
+|--------------------------------|-----------------------|-----------------------------|---------|
+| ... | `REUSE-OUTCOME ...` | ... | reuse-as-is / extend-existing / genuinely-new |
 
 **Verdicts** (pick exactly one per row):
 - `reuse-as-is` — existing code already does what the section needs
 - `extend-existing` — extend the named existing function/class
-- `genuinely-new` — no prior art found; explain WHY this is novel
+- `genuinely-new` — after reading every candidate, nothing does the job; name the difference
+
+**Reading the answer** (the rules in `/plan-review` §4 apply in full): a shortlisted candidate is a lead, not a match; "uncertain, read the source" never means nothing exists; and `genuinely-new` is never ruled on a shortlist, a score or an uncertain answer alone.
 
 **Anti-patterns this reviewer must catch**:
 - Author proposes a new utility/helper without grepping the codebase first
+- A new thing with no `REUSE-OUTCOME` line, or one that does not match the §4 format
+- A `WROTE_NEW` line whose candidates were not read, or whose search was not cited
 - Author uses a different name for a pattern that already has a canonical name in the project
 - Section diverges from established CLAUDE.md conventions (e.g., snake_case vs camelCase, path management patterns, explicit-attribute-access rule) without justification
 - Section reinvents an existing skill, workflow, or convention
@@ -254,9 +258,9 @@ For each "new" thing the section proposes (helper, primitive, queue, emitter, ra
 
 **Findings (raw, for manager to classify)**:
 
-| New thing | Existing prior art | Verdict | Layer challenged |
-|-----------|--------------------|---------|------------------|
-| ... | ... | ... | Layer 1 / 2 / 3 / none |
+| New thing | Author's outcome line | Candidates read | Verdict | Layer challenged |
+|-----------|-----------------------|-----------------|---------|------------------|
+| ... | ... | ... | ... | Layer 1 / 2 / 3 / none |
 ```
 
 ---
@@ -455,6 +459,7 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 **Outputs**:
 - Everything Persona 2 outputs (see Persona 2 above)
 - **For hybrid mode**: explicit acknowledgment when implementation-plan draft diverges from the design doc (see "manager-divergence-check safeguard" below)
+- **A `REUSE-OUTCOME` line for each new thing a section proposes**, from the reuse check in `/plan-review` §4, run before the section decides to write new code
 
 **Boundaries** (same as Persona 2 Review Author).
 

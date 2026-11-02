@@ -6,6 +6,7 @@ Moved out of `workflow/plan-authoring-cascaded.md` (lines 420-443 at `d73f36b`) 
 
 ## Version History
 
+- **2026.11.02 (María 🌸, Rick's rulings of 2 Nov via Cheech, design `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8, row `3d11c8b3`)** — The must-reuse list, the Author's first draft (Step 5) and the handoff's reuse map each carry `REUSE-OUTCOME` lines from the reuse check in `plan-review.md` §4.
 - **2026.10.09 (Extra 2, store row `9aadd0ac`)** — Item 19: four stale "Step 0.5" / "Step 0/0.5" references to the dependency map now say Step 0.7 (Step 0.0/0.7 where the goal-coverage matrix is initialised alongside); Step 0.5 is pre-cascade ratification. Item 18: the `intent_capture_required` row and the 6c example say hybrid mode skips Step 0.0 and enters at Step 0.1, as §Step 0.0 already states; they had said "skip Step 0".
 - **2026.10.09 (Sam, store row `681745a9`)** — Pruning pass 4. The second configuration table ("Configuration Defaults Additions") repeated the five Step 1 keys; its two extra keys (`hybrid_mode`, `manager_divergence_check_active`) moved into the Step 1 table, which also takes the "int 1-5" bound. Also removed the Phase 6C cast list under the worked example (Step 4 gives it) and two activation bullets that restated defaults. No rule changed.
 - **2026.06.29 (María 🌸 — Rick GO)** — Marked the `cascade_heartbeat_scheduler.py` related-files reference RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.

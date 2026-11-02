@@ -117,7 +117,7 @@ raw_design_received → (Step 0) → cascade_input_ready
 
 **Manager elicits from user** (via `ask_open_ended_batch` or `converse`):
 1. **Intent statement** — one paragraph naming the work's WHY + the user-observable outcome
-2. **Must-reuse list** — components, patterns, conventions the plan MUST build on (vs reinvent)
+2. **Must-reuse list** — components, patterns, conventions the plan MUST build on (vs reinvent). Each code entry carries the `REUSE-OUTCOME` line from the reuse check in `plan-review.md` §4
 3. **Immutable constraints** — non-negotiable (performance, compatibility, deadline, policy)
 4. **Target deliverables** — what counts as "done"
 
@@ -209,7 +209,7 @@ Same cascade structure as `/plan-review-cascaded` Step 5 (Author → Usability �
 **Multi-draft author loop**: in pure-authoring mode, the Author's first draft of each section is typically a strawman. Reviewers tear it up; Author revises. This loop is bounded by `author_revision_turn_cap = 2` (default).
 
 **Per-section flow**:
-1. Author drafts section (Draft 1)
+1. Author drafts section (Draft 1). Before the section decides to write any new code, the Author runs the reuse check in `plan-review.md` §4 and writes a `REUSE-OUTCOME` line per new thing
 2. Section enters Stage 1 (Usability)
 3. Reviewer findings classified by manager (per shared severity heuristics)
 4. **If foundational** → escalate (Trigger 1)
@@ -293,7 +293,7 @@ Single canonical contract derived from all section artifacts. Implementer (and f
   - Execution steps (final revised text)
   - Pre-flight Recon items (final list including retired/rescoped/added)
   - Files affected inventory (NEW vs EDITED)
-  - Reused functions / utilities (pre-surfaced reuse map)
+  - Reused functions / utilities (pre-surfaced reuse map), each with its final `REUSE-OUTCOME` line, so the implementer can confirm or amend it when the code lands
   - Cross-section dependencies (E-edge identifiers + contract surface)
   - Stage findings closure trail (Stages 1/2/3)
 - §4 Cross-section dependency map (mermaid graph + edges table)
