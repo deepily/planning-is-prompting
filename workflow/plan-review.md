@@ -162,6 +162,11 @@ Reading the answer:
   shortlist to be look-alikes. Never rule on a score.
 - "Uncertain, read the source" means the tool does not know. It never
   means nothing exists.
+- A failed lookup (the tool hit a limit or a call failed) still counts.
+  Cite its receipt, record the cause, run the search, and decide from
+  the source, as for any uncertain answer.
+- Send the need itself where the tool takes one. A lookup on a nearby
+  existing symbol does not send the need, so the row says so.
 - An empty or short shortlist is not "nothing exists" either.
 - genuinely-new needs the candidates read and the search cited. It is
   never ruled on a shortlist, a score or an uncertain answer alone.
