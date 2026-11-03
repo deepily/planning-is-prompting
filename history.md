@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 228 (2026-11-01 14:32 to 20:20 EDT, María 🌸 stable `726204bd`, manager, no seats)**. The one-click approve link is now the standard way to ask Rick to approve a held row, with both rows closed. First job tomorrow: the Drive steward row `9b497cfb`, still blocked on `d0361881`.
+`RESUME HERE`: **Session 229 (2026-11-02 17:19 to 22:45 EST, María 🌸 stable `2ec5ec95`, workflow owner and cascade steward with Cheech, no seats)**. The plan-time reuse check is in the workflow, and Plan 3 §12 passed its cascaded review and is being built in lupin. My board is clear except the cross-repo row `a38bc952`, parked to 9 Nov. First job tomorrow: nothing owed here; Tiffany's podcast-delete row `a51e7fd2` waits on Rick's approval.
+
+1. **Plan-time reuse check** (row `3d11c8b3`, closed by Cheech): `workflow/plan-review.md` §4 now runs the check in five steps and every new definition gets a `REUSE-OUTCOME` line. Persona 3, the authoring cascade and the Implementer charter use it too. Design: `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8 with Rick's five rulings. Rachel reviewed it (`8cb89a9`), and it merged as `3ee7a00`. Follow-ups: `8810c4a` (required from the day it lands) and `4ba1151` (a failed lookup still counts). 1312 tests passed after each.
+2. **Steward, cascade-plan3-s12** (row `95cf8893`, closed by Cheech): Step 0 passed with four gaps, all fixed. All sections closed at revision 8, lupin `095d2d2a6`, with no foundational findings. I posted five post-game items; Cheech writes the post-game.
+3. **Mine, wrong**: I went quiet from 18:37 until Rick asked at about 21:30, and I missed the cascade close at 19:40. Nothing in the steward's observe assignment wakes the steward; this is post-game item 4.
+4. **View link is 📋** (`3de93ed`): Rick corrected my 📄. `task_approve_line` already wrote 📋; the docs were stale and I had typed the line by hand. Changed in task-store-discipline v1.14 and three cross-references, and the global rule now says to use the helper.
+5. **Filed**: Tiffany's podcast-list Download/Delete row `a51e7fd2` (Rick, voice). Last Call rows `3b777bec` and `3c6ed07e` for tonight.
+
+**Files**: `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md`, `workflow/plan-review.md`, `workflow/plan-review-cascaded-personas.md`, `workflow/plan-authoring-cascaded.md`, `workflow/swe-team-roles.md`, `workflow/task-store-discipline.md`, `workflow/cosa-voice-integration.md`, `workflow/manager-autonomy.md`, `global/CLAUDE.md`, `docs/version-history/` (five files), `history.md`
+
+**Previous `RESUME HERE`**: **Session 228 (2026-11-01 14:32 to 20:20 EDT, María 🌸 stable `726204bd`, manager, no seats)**. The one-click approve link is now the standard way to ask Rick to approve a held row, with both rows closed. First job tomorrow: the Drive steward row `9b497cfb`, still blocked on `d0361881`.
 
 1. **Approve link standard** (`3529274b`, `5539d44d`): new `workflow/task-store-discipline.md` §3.2, giving `- <title> [approve ☐](/app/tasks/approve?row=<id>) [📄](/app/tasks/view?row=<id>)` in a card's abstract. Format from Mr. Radio; Rick corrected the label twice (checkbox after the verb). Cross-references added in cosa-voice-integration, manager-autonomy and global/CLAUDE.md. Commits `7db0c52`, `82b02cc`, `0bdc6e5`; 1312 tests passed.
 2. **The row approved itself**: `3529274b` was the first row approved with its own link.
@@ -11,7 +21,7 @@
 
 **Files**: `workflow/task-store-discipline.md`, `docs/version-history/task-store-discipline.md`, `workflow/cosa-voice-integration.md`, `workflow/manager-autonomy.md`, `global/CLAUDE.md`, `history.md`
 
-**Previous `RESUME HERE`**: **Session 227 (2026-10-31 afternoon to 22:00 EDT, María 🌸 stable `ffbe8c58`, manager with author and reviewer seats)**. One lupin row merged and closed, and no seat is out. This repo changed only its records. First job tomorrow: close the Drive steward row `9b497cfb` once Mr. Radio sends the first live-upload receipt (chase 10:00).
+**Session 227 (2026-10-31 afternoon to 22:00 EDT, María 🌸 stable `ffbe8c58`, manager with author and reviewer seats)**. One lupin row merged and closed, and no seat is out. This repo changed only its records. First job tomorrow: close the Drive steward row `9b497cfb` once Mr. Radio sends the first live-upload receipt (chase 10:00).
 
 1. **Drive podcast publish** (`d0361881`): my plan check sent Mr. Radio three fixes (resolved `full_path`, cache the `drive.file` folder id, Tiffany's row 3469e9db). He folded them in, Rick approved, and he merged lupin `0910548f8`, off by default. Rick sets up the OAuth client with Mr. Radio.
 2. **Reuse shortlist, Dart constructors** (`74d0db47`): a class and its constructor no longer take two slots. Sam wrote it (`34584645a`); the reviewer found an EXTEND case that emptied the shortlist, fixed in `1f9163ff4` and approved on re-review. Merged as lupin `79c361b8c`: twin recall 38 to 39 of 42, unit sweep 4052 passed.
