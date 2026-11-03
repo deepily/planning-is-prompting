@@ -43,10 +43,15 @@ def sh( script ):
     return [ "sh", "-c", script ]
 
 
-def run_wait( name, **kwargs ):
-    out, err = io.StringIO(), io.StringIO()
-    receipt = cj.wait( name, out=out, err=err, **kwargs )
-    return receipt, out.getvalue(), err.getvalue()
+def run_wait( name, limit=30, **kwargs ):
+    """wait() in a thread with a bound, so a wait that never returns FAILS the test instead of hanging the suite."""
+    out, err, box = io.StringIO(), io.StringIO(), {}
+    def target(): box["receipt"] = cj.wait( name, out=out, err=err, **kwargs )
+    thread = threading.Thread( target=target, daemon=True )
+    thread.start()
+    thread.join( limit )
+    assert not thread.is_alive(), f"wait({name}) did not return within {limit}s"
+    return box["receipt"], out.getvalue(), err.getvalue()
 
 
 def ledger( tmp_path ):
@@ -166,13 +171,69 @@ def test_bad_names_are_refused( bad ):
     with pytest.raises( ValueError ): cj.job_paths( bad )
 
 
-def test_a_reused_pid_is_not_mistaken_for_the_job( tmp_path ):
+def test_a_process_outside_the_jobs_session_is_not_the_job( tmp_path ):
+    stranger = subprocess.Popen( [ "sleep", "30" ] )                 # same session as pytest, so sid != its pid
+    try:
+        assert not cj.session_alive( stranger.pid )
+        assert not cj.is_running( { "pid": stranger.pid } )
+    finally:
+        stranger.kill(); stranger.wait()
+
+
+def test_a_zombie_is_not_a_running_job_and_the_check_is_bounded( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "exit 0" ) )         # our child: a zombie until reaped
+    limit = time.time() + 5
+    while cj.job_paths( "j" )["rc"].exists() is False and time.time() < limit: time.sleep( 0.02 )
+    while cj.is_running( state ) and time.time() < limit: time.sleep( 0.02 )
+    assert not cj.is_running( state ), "a zombie was counted as a running job"
+
+
+# ── the wrapper can die; the job cannot be lost ──────────────────────────────────────────────────
+
+def test_killing_the_wrapper_does_not_end_the_wait( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "sleep 1.5" ) )
+    time.sleep( 0.3 )                                                # let the wrapper start the job first
+    os.kill( state["pid"], signal.SIGKILL )                          # the wrapper only; the job lives on
+    os.waitpid( state["pid"], 0 )
+    assert cj.is_running( state ), "the job's session emptied when only the wrapper died"
+    began = time.time()
+    receipt, out, _ = run_wait( "j" )
+    assert time.time() - began >= 1.0, "wait returned while the job was still running"
+    assert receipt["status"] == "failed" and receipt["rc"] == "unknown"      # no rc: the wrapper never wrote one
+
+
+def test_term_to_the_wrapper_reaches_the_job_and_the_real_rc_is_written( tmp_path ):
     state = cj.start( "j", str( tmp_path ), sh( "sleep 30" ) )
-    forged = { **state, "proc_ticks": "1" }
-    assert cj.is_running( state ) and not cj.is_running( forged )
+    time.sleep( 0.3 )                                                # let the wrapper install its trap
+    os.kill( state["pid"], signal.SIGTERM )
+    began = time.time()
+    receipt, _, _ = run_wait( "j" )
+    assert time.time() - began < 10, "the job did not get the TERM"
+    assert receipt["status"] == "failed" and receipt["rc"] == 143    # 128 + TERM: read from the rc file, not guessed
+
+
+# ── the rc file ──────────────────────────────────────────────────────────────────────────────────
+
+def test_a_stale_rc_file_from_an_earlier_run_is_not_read_as_this_runs( tmp_path ):
+    paths = cj.job_paths( "j" )
+    paths["rc"].parent.mkdir( parents=True )
+    paths["rc"].write_text( "0\n" )                                  # a clean exit left by an earlier job of this name
+    state = cj.start( "j", str( tmp_path ), sh( "sleep 30" ) )
     os.killpg( state["pid"], signal.SIGKILL ); os.waitpid( state["pid"], 0 )
-    assert not cj.is_running( state )                                # gone entirely
-    assert cj.proc_stamp( state["pid"] ) is None
+    receipt, _, _ = run_wait( "j" )
+    assert receipt["rc"] == "unknown" and receipt["status"] == "failed"
+
+
+@pytest.mark.parametrize( "garbage", [ "", "\n", "not-a-number", "1.5" ] )
+def test_a_blank_or_garbage_rc_file_reads_as_unknown( tmp_path, garbage ):
+    cj.start( "j", str( tmp_path ), sh( "exit 0" ) )
+    run_wait( "j" )
+    cj.job_paths( "j" )["rc"].write_text( garbage )
+    out = io.StringIO()
+    cj.status( "j", out=out )
+    assert "rc=unknown" in out.getvalue()
+    receipt, _, _ = run_wait( "j" )
+    assert receipt["status"] == "failed" and receipt["rc"] == "unknown"
 
 
 # ── the result file: newest, and only one written AFTER this job started ─────────────────────────

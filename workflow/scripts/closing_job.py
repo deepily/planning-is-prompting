@@ -23,7 +23,10 @@ A job that fails or is refused AND finishes past the deadline keeps its failure 
 the field `past-deadline`.
 
 Job rc mapping: 0 ok, 3 guard-refused, anything else failed. A job killed before the wrapper could
-write its code has no rc file; that is `failed` with rc `unknown`, never a guessed number.
+write its code, or an rc file that is blank or not a number, is `failed` with rc `unknown`, never a guessed number.
+
+The job counts as running while ANY process in its session is alive, so killing the wrapper (even with
+SIGKILL) does not end the wait. TERM and HUP sent to the wrapper are forwarded to the job's whole process group.
 
 Environment (no __file__ chains):
     LAST_CALL_STATE_DIR   state + ledger root (default ~/.claude/last-call)
@@ -42,7 +45,11 @@ from pathlib import Path
 EXIT_FOR_STATUS = { "ok": 0, "failed": 1, "guard-refused": 3, "overrun": 5, "not-started": 6 }
 
 # The wrapper: run the command, then record its exit code atomically. $1 is the rc file path.
-WRAPPER = 'rc_file=$1; shift; "$@"; rc=$?; echo "$rc" > "$rc_file.tmp" && mv "$rc_file.tmp" "$rc_file"; exit "$rc"'
+# TERM and HUP aimed at the wrapper are forwarded to the job's whole process group (`kill 0`), and the wrapper keeps waiting for it, so
+# the job's real exit code still gets written. KILL cannot be trapped; `is_running` covers that case.
+WRAPPER = ( 'rc_file=$1; shift; "$@" & child=$!; trap \'trap "" TERM HUP; kill -TERM 0\' TERM HUP; '
+            'wait "$child"; rc=$?; while kill -0 "$child" 2>/dev/null; do wait "$child"; rc=$?; done; '
+            'echo "$rc" > "$rc_file.tmp" && mv "$rc_file.tmp" "$rc_file"; exit "$rc"' )
 
 
 def state_dir():
@@ -77,29 +84,42 @@ def now_utc():
     return datetime.datetime.now( datetime.timezone.utc )
 
 
-def proc_stamp( pid ):
+def session_alive( sid ):
     """
     Ensures:
-        - returns ( state letter, start-time ticks ) read from /proc/<pid>/stat
-        - returns None when the process does not exist
+        - True if any live (non-zombie) process belongs to session `sid`, read from /proc/<pid>/stat
+        - the job is started as a session leader, so its session id is the wrapper's pid; the kernel does
+          not reuse a pid while a session carries it, so a match cannot be a stranger
     """
-    try:
-        raw = Path( f"/proc/{pid}/stat" ).read_text()
-    except FileNotFoundError:
-        return None
-    fields = raw.rsplit( ")", 1 )[1].split()
-    return fields[0], fields[19]
+    for entry in Path( "/proc" ).iterdir():
+        if not entry.name.isdigit(): continue
+        try:
+            fields = ( entry / "stat" ).read_text().rsplit( ")", 1 )[1].split()
+        except ( FileNotFoundError, ProcessLookupError ):
+            continue
+        if fields[0] != "Z" and fields[3] == str( sid ): return True
+    return False
 
 
 def is_running( state ):
     """
     Ensures:
-        - True only if the recorded pid is alive, not a zombie, and still the same process
-          (start ticks match), so a reused pid is not mistaken for the job
+        - True while ANY process in the job's session is alive, not only the wrapper: a wrapper killed
+          with SIGKILL leaves the job running, and the job is what the closing ritual waits for
     """
-    stamp = proc_stamp( state["pid"] )
-    if stamp is None: return False
-    return stamp[0] != "Z" and stamp[1] == state["proc_ticks"]
+    return session_alive( state["pid"] )
+
+
+def read_rc( path ):
+    """
+    Ensures:
+        - returns the job's exit code from the rc file
+        - returns None if the file is absent, blank or not an integer: rc is then reported unknown
+    """
+    try:
+        return int( Path( path ).read_text().strip() )
+    except ( FileNotFoundError, ValueError ):
+        return None
 
 
 def read_state( name ):
@@ -141,7 +161,6 @@ def start( name, cwd, command ):
     state = {
         "name"       : name,
         "pid"        : proc.pid,
-        "proc_ticks" : proc_stamp( proc.pid )[1],
         "started"    : started.isoformat(),
         "started_ts" : started.timestamp(),
         "cwd"        : str( cwd ),
@@ -257,7 +276,7 @@ def wait( name, deadline=None, result_dir=None, result_glob="*.json", poll=None,
                 print( f"closing_job: {name} still running past closing time; waiting for it to exit", file=err )
                 warned = True
             time.sleep( poll )
-        rc = int( paths["rc"].read_text().strip() ) if paths["rc"].exists() else None
+        rc = read_rc( paths["rc"] )
         finished_ts = paths["rc"].stat().st_mtime if paths["rc"].exists() else now_utc().timestamp()
         found  = newest_result( result_dir, result_glob, paths["marker"].stat().st_mtime )
         receipt = build_receipt( name, state, rc, finished_ts, deadline, read_result( found ) if found else None )
@@ -281,7 +300,7 @@ def status( name, out=sys.stdout ):
         print( f"{name} · running · pid={state['pid']} · elapsed={round( time.time() - state['started_ts'], 1 )}s", file=out )
         return "running"
     paths = job_paths( name )
-    rc = int( paths["rc"].read_text().strip() ) if paths["rc"].exists() else None
+    rc = read_rc( paths["rc"] )
     finished_ts = paths["rc"].stat().st_mtime if paths["rc"].exists() else now_utc().timestamp()
     print( format_receipt( build_receipt( name, state, rc, finished_ts, None, None ) ), file=out )
     return "finished"

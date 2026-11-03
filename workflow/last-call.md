@@ -121,7 +121,7 @@ A run with **zero findings files no row** and the receipt says "zero findings, n
 DUPCHECK-VERDICT run=<result file stem> finding=<findings[].id> verdict=DUPLICATE|EXTEND|DISTINCT class=<kebab-case reason> by=<persona key> ts=<ISO-8601 UTC>
 ```
 
-`run` is the result file's name without its extension. `class` is a short kebab-case reason, for example `test-local-helper`. The counting side belongs to the repo that runs the check; this document owns only the line.
+The triage seat's verb appends each line to the repo's verdict file and onto the triage row; until that verb exists, the seat amends the lines onto the row by hand. `run` is the result file's name without its extension. `class` is a short kebab-case reason, for example `test-local-helper`. The counting side belongs to the repo that runs the check; this document owns only the line.
 
 ---
 
@@ -267,6 +267,7 @@ python3 workflow/scripts/closing_job.py wait  --name <job> [--deadline <ISO-8601
 python3 workflow/scripts/closing_job.py status --name <job>
 ```
 
+- The job counts as running while **any** process in its session is alive, so killing the wrapper, even with SIGKILL, does not end the wait. TERM and HUP sent to the wrapper are forwarded to the job. A missing, blank or non-numeric rc file reads `rc=unknown`.
 - `start` detaches the job in its own session and keeps its state (pid, start time, command, log path) under `LAST_CALL_STATE_DIR/jobs/`. A shell wrapper writes the job's exit code **after** the job exits, so the code on the receipt is read, never guessed. A job killed before it could write one reads `rc=unknown`.
 - `wait` never returns while the job runs. It prints one receipt line and appends one line to `LAST_CALL_STATE_DIR/closing-job-ledger.jsonl`, so the lead time can be re-measured from real runs. Exit code: `ok` 0 · `failed` 1 · `guard-refused` 3 · `overrun` 5 · `not-started` 6. A job exit code of 0 is `ok`, 3 is `guard-refused`, anything else `failed`. A job that finishes past the deadline with code 0 is `overrun`; one that fails past the deadline keeps its failure status and the line adds `past-deadline`.
 - The result file is the newest file matching `--result-glob` (default `*.json`) with a modification time at or after the job's start. Use the glob to keep a sidecar file, such as a "last success" marker, out of the receipt.
@@ -308,7 +309,7 @@ A started-at-last-call deliverable (§5a). A repo binds it by giving the command
 | Lead | at least 40 min |
 | Triage row: owner and accountable | `cheech` and `cheech` |
 | Triage row: `correlation_key` | `epic:v022-reuse-remediation` |
-| Verdict writer and reader | lupin row `63c83b3c` |
+| Verdict writer and reader | lupin row `63c83b3c`: its verb appends to `<checkout>/io/duplicate-check-daily/verdicts.jsonl` and onto the triage row |
 
 The cron lines that used to run the check were removed on 2026-11-03; last call is the only thing that starts it. Type the command with literal paths, as for `deploy`.
 
