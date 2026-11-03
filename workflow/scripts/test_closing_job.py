@@ -212,6 +212,14 @@ def test_term_to_the_wrapper_reaches_the_job_and_the_real_rc_is_written( tmp_pat
     assert receipt["status"] == "failed" and receipt["rc"] == 143    # 128 + TERM: read from the rc file, not guessed
 
 
+def test_a_job_that_ignores_term_keeps_its_own_exit_code( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "trap '' TERM; sleep 1; exit 7" ) )
+    time.sleep( 0.3 )                                                # the trap, in the wrapper and in the job, must be installed
+    os.kill( state["pid"], signal.SIGTERM )                          # the wrapper's wait is interrupted; the job carries on
+    receipt, _, _ = run_wait( "j" )
+    assert receipt["rc"] == 7 and receipt["status"] == "failed", "the interrupted wait was taken for the job's exit code"
+
+
 # ── the rc file ──────────────────────────────────────────────────────────────────────────────────
 
 def test_a_stale_rc_file_from_an_earlier_run_is_not_read_as_this_runs( tmp_path ):
