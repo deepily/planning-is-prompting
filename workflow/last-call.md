@@ -1,6 +1,6 @@
 # Last Call 🔔 (canonical workflow)
 
-**Status**: v1.0 — built 2026-09-23 on Rick's go, from the proposal `src/rnd/2026.09.22-scheduled-session-close-proposal.md` and his seven rulings of the same day (`TODO.md` § Decisions Log, commit `e9ccf57`).
+**Status**: v1.4 — built 2026-09-23 on Rick's go, from the proposal `src/rnd/2026.09.22-scheduled-session-close-proposal.md` and his seven rulings of the same day (`TODO.md` § Decisions Log, commit `e9ccf57`).
 
 **Purpose**: Turn one spoken sentence — *"we start wrapping up at 22:45 and run the full ritual at 23:00, and every manager gives me a push and a backup"* — into a **durable, cancellable, two-stage close** that survives a `/clear`, names who it binds, and names what each of them owes.
 
@@ -8,7 +8,7 @@
 
 **When NOT to use it**: ending one engagement (reap with mementos), freezing the fleet (`fleet-pause-resume.md`), or a single seat wrapping up on its own (`session-end.md` directly — a Last Call is for a roster, not for one seat).
 
-**Key activities**: parse the declaration into four elements → file a store row → install two cron lines → **last call** (soft: stop starting, start finishing, ACK) → **closing time** (hard: run each declared deliverable, one receipted line each) → report and expire.
+**Key activities**: parse the declaration into four elements → file a store row → install two cron lines → **last call** (soft: stop starting, start finishing, ACK, and start any long job the declaration names) → **closing time** (hard: run each declared deliverable, one receipted line each, and wait for the long job) → report and expire.
 
 ---
 
@@ -58,6 +58,7 @@ That second check is the whole redundancy. A missing schedule looks exactly like
 | finish the step in flight, reach a safe checkpoint | start a new investigation, spawn a new worker |
 | write or amend the memento if a re-spin is near | begin anything that cannot be abandoned cleanly |
 | surface anything that needs the operator **while he is still here** | open a new blocking ask that will time out |
+| start each *started-at-last-call* deliverable (§5a) in the background | wait until closing time to start it |
 | **ACK in one line** | stay silent |
 
 🔴 **The ACK is mandatory, and it is the liveness check, not politeness** (Rick, Q1). A seat that has crashed, wedged or lost its timer is indistinguishable from a seat that is quietly working — and the entire point of a lead time is to find that out **while there is still time to act on it**. If nobody must ACK, the warning's only function is lost.
@@ -81,6 +82,46 @@ For each participant, for each declared deliverable, **in the declared order**:
 ⚠️ **A declared deliverable IS the order for that item — and only that item.** `push` is normally the operator's discretion and never a seat's to initiate. Naming it in the declaration *is* the authorization. That widening is scoped to the named deliverable and expires with the schedule; nothing else in the standing gate list moves.
 
 **The close runs even if the operator is still present** (Rick, Q4). A close that silently waits for him to leave is a close that never happens on the nights he stays. He controls it with `cancel` or `move`.
+
+### 5a. A deliverable that starts at last call and is awaited at closing time
+
+Most deliverables are *run at closing time*. A second kind is **started at last call, awaited at closing time**: a job too long to start at closing time without keeping the operator waiting, such as the `duplicate-check` slot in §11. The seat that owns the deliverable starts it at last call with `closing_job.py start` (§10), so it runs in parallel with the wrap-up and survives the seat's shell. It needs a **lead** of at least the slot's lead time (40 min for `duplicate-check`) between last call and closing time. When the declared gap is shorter, the filer says so when it reads the declaration back.
+
+**The closing sequence for a declaration that holds such a deliverable** (Rick, 2026-11-03). Each step that was not declared is skipped; the order of the rest does not change:
+
+| # | Step | Receipt |
+|---|---|---|
+| 1 | session end | the commit sha |
+| 2 | `push` | the pushed sha |
+| 3 | `deploy`, if declared | the `VM parity` line |
+| 4 | **wait for the check** (`closing_job.py wait`) | the one receipt line it prints |
+| 5 | **file the triage row** (below) | the row id, or "zero findings, no row" |
+| 6 | `backup` | the backup path |
+| 7 | **the summary card** | Rick's signal that it is safe to power down |
+
+**The wait cannot be cut short.** `wait` does not return while the job runs, and keeps waiting past the closing time: the operator ruled that lights-out waits for the run to finish. At the deadline it prints one line, "still running past closing time", and the final receipt reads `overrun`.
+
+**A failure or an overrun goes on the receipt, never skipped.** The receipt line names the status (`ok` · `failed` · `guard-refused` · `overrun` · `not-started`), the job's exit code, the elapsed time and, from the newest result file written after the job started, the judge calls, the run's own elapsed seconds, the findings count and the file's path. `not-started` means no job of that name was started at last call; it is reported, not repaired by starting a 40-minute job at closing time. A `failed`, `guard-refused` or `not-started` result is an unmet deliverable and becomes a store row under §8 before the card goes out.
+
+**The triage row.** At step 5 the closing manager files ONE row per run, never one row per finding:
+
+| Field | Value |
+|---|---|
+| class · priority | task · P1 |
+| owner · accountable | the slot's triage owner (§11) |
+| chase | 10:00 the next morning (`next_chase_ts`, and written on the first line of the body) |
+| `correlation_key` | the slot's key (§11) |
+| body | the receipt line, then every finding in the result file's `findings`: its `id`, file and name, and the candidates it was matched against |
+
+A run with **zero findings files no row** and the receipt says "zero findings, no row". A result file that cannot be read files no row either; the receipt says that instead.
+
+**The verdict line.** The triage seat records one line per finding, in this format, which a script can count:
+
+```text
+DUPCHECK-VERDICT run=<result file stem> finding=<findings[].id> verdict=DUPLICATE|EXTEND|DISTINCT class=<kebab-case reason> by=<persona key> ts=<ISO-8601 UTC>
+```
+
+`run` is the result file's name without its extension. `class` is a short kebab-case reason, for example `test-local-helper`. The counting side belongs to the repo that runs the check; this document owns only the line.
 
 ---
 
@@ -216,6 +257,22 @@ Both crontab writers (`install_context_pressure_tick.py` and `last_call.py`) tak
 
 **Tests**: `workflow/scripts/test_last_call.py` and `workflow/scripts/test_crontab_lock.py` — run `pytest workflow/scripts/test_last_call.py workflow/scripts/test_crontab_lock.py -q`. No case in either touches the real crontab, the real store or the real notification server.
 
+### `closing_job.py` — the started-at-last-call deliverable (§5a)
+
+`workflow/scripts/closing_job.py` is generic; it names no repo's job.
+
+```bash
+python3 workflow/scripts/closing_job.py start --name <job> --cwd <dir> -- <command...>
+python3 workflow/scripts/closing_job.py wait  --name <job> [--deadline <ISO-8601>] [--result-dir <dir>] [--result-glob <glob>]
+python3 workflow/scripts/closing_job.py status --name <job>
+```
+
+- `start` detaches the job in its own session and keeps its state (pid, start time, command, log path) under `LAST_CALL_STATE_DIR/jobs/`. A shell wrapper writes the job's exit code **after** the job exits, so the code on the receipt is read, never guessed. A job killed before it could write one reads `rc=unknown`.
+- `wait` never returns while the job runs. It prints one receipt line and appends one line to `LAST_CALL_STATE_DIR/closing-job-ledger.jsonl`, so the lead time can be re-measured from real runs. Exit code: `ok` 0 · `failed` 1 · `guard-refused` 3 · `overrun` 5 · `not-started` 6. A job exit code of 0 is `ok`, 3 is `guard-refused`, anything else `failed`. A job that finishes past the deadline with code 0 is `overrun`; one that fails past the deadline keeps its failure status and the line adds `past-deadline`.
+- The result file is the newest file matching `--result-glob` (default `*.json`) with a modification time at or after the job's start. Use the glob to keep a sidecar file, such as a "last success" marker, out of the receipt.
+
+**Environment**: `LAST_CALL_STATE_DIR` (default `~/.claude/last-call`) · `CLOSING_JOB_POLL` (seconds between checks, default 2). **Tests**: `pytest workflow/scripts/test_closing_job.py -q`; every case runs a real short subprocess in a temp directory.
+
 ---
 
 ## 11. Integration
@@ -236,6 +293,24 @@ Both crontab writers (`install_context_pressure_tick.py` and `last_call.py`) tak
 | `deploy` | n/a (no remote host) | `python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/nightly_deploy.py --repo <checkout>`, configured by `<repo>/.claude/nightly-deploy.env` |
 | `backup` | `/plan-backup-write` | your repo's backup command |
 | `post-game` | `/plan-post-game` | your repo's retro command |
+| `duplicate-check` | n/a (no check) | the command that scans the day's commits for duplicate definitions, started at last call (§5a) |
+
+### The `duplicate-check` slot (Rick, 2026-11-03, row `ccea494c`)
+
+A started-at-last-call deliverable (§5a). A repo binds it by giving the command, the directory it runs in, where its result files land, and the lead time. The `--branch` value is read from the repo's current branch **at last call**, so a stale branch name can never be passed. Lead: at least 40 minutes, from the longest measured run (the 300-call cap is about 34 minutes at the measured pace) plus margin; the ledger from `closing_job.py wait` is how it gets revised after a week of real runs.
+
+| | lupin |
+|---|---|
+| Runs in | the main checkout, `<checkout>` |
+| Start (at last call) | `python3 <planning-is-prompting>/workflow/scripts/closing_job.py start --name duplicate-check --cwd <checkout> -- env LUPIN_ROOT=<checkout> PYTHONPATH=<checkout>/src <checkout>/.venv/bin/python -m lupin_mcp.duplicate_check_daily --cap 300 --claude-cli-path /home/rruiz/.local/bin/claude --trigger hand --branch <the checkout's current branch>` |
+| Wait (closing time) | `python3 <planning-is-prompting>/workflow/scripts/closing_job.py wait --name duplicate-check --deadline <close_at, ISO-8601> --result-dir <checkout>/io/duplicate-check-daily --result-glob "20??-??-??-*-hand.json"` |
+| Exit codes | 0 ok · 1 failed · 3 the branch guard refused |
+| Lead | at least 40 min |
+| Triage row: owner and accountable | `cheech` and `cheech` |
+| Triage row: `correlation_key` | `epic:v022-reuse-remediation` |
+| Verdict writer and reader | lupin row `63c83b3c` |
+
+The cron lines that used to run the check were removed on 2026-11-03; last call is the only thing that starts it. Type the command with literal paths, as for `deploy`.
 
 ### The `deploy` slot (Rick, 2026-09-28, row `6eaad077`)
 
