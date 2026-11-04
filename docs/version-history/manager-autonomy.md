@@ -4,6 +4,8 @@ Moved out of `workflow/manager-autonomy.md` (lines 302-342 at `d73f36b`) without
 
 ---
 
+*2026-11-03 (María, row `bc975ca0`) — §2: a row that needs Rick's go gets the helper's approve line in the notify message, not the abstract; `priority="P0"` raises it in the same click, and several rows go in one line from `task_approve_batch_line` (Rick's voice ruling).*
+
 *Version 1.0 (2026-06-10). Promoted from seed `src/rnd/2026.06.04-manager-spawn-harvest-autonomy.md` (§7 ratifications). Founding grant 2026-06-04; envelope + home + cascade-inheritance + cap ratified by Rick via guided walkthrough 2026-06-10.*
 
 *Version 1.4 (2026-06-22, María — Rick-ruled via broadcast a8c4070e; empirical-probe layer co-authored w/ Tiberius 👑) — Added §9.1 Receipts-of-progress (the empirical liveness contract): closes the "managers sit back and wait for notifications" loophole by extending receipts-not-claims from the RESULT to the IN-PROGRESS state. Liveness ≠ progress (a heartbeat/"still working" reply is a claim; the arbiter can also mis-infer an active worker as blocked — Tiberius's Clayton catch). Proof = an artifact-delta within the chase window; probes = tmux capture-pane freeze-detection + `git show <hash>`/growing diff + fresh-reviewer reproduce-not-trust. `awaiting:X` is never terminal — it must cite a recent progress observation + next_chase_ts. Default flips to "demonstrate progress or it's a stall." Quick-reference gained the prove-progress row.*

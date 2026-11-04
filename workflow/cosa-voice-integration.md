@@ -269,9 +269,10 @@ NOTIFICATION VERIFICATION:
   per the Recommendation Mandate for Blocking-Tool Asks above?
 □ Is any next step blocked on the user's go? If so, did I fire a DIRECT targeted
   ask_* for it — NOT bury "standing by" in a status notify? (Gate = a Direct Ask)
-□ Am I asking for a held row to be approved? Then the abstract carries one
-  [approve ☐](/app/tasks/approve?row=<full row id>) [📋](/app/tasks/view?row=<full row id>)
-  line per row
+□ Am I asking for a held row to be approved? Then the notify MESSAGE itself
+  (not the abstract) carries the helper's line:
+  one row    → task_approve_line( task_id )  [add priority="P0" to raise it]
+  many rows  → ONE line from task_approve_batch_line( task_ids )
   (task-store-discipline.md §3.2).
 ```
 
@@ -1042,6 +1043,7 @@ response = ask_multiple_choice( questions=[
 
 ## Version History
 
+- **2026.11.03 (María 🌸 — Rick's voice ruling, row `bc975ca0`)**: the verification checklist puts the approve line in the notify message, not the abstract, and names the priority and batch helpers.
 - **2026.10.02 (María 🌸)**: notifications are tied to task-item status changes in the task store, not to a TodoWrite list (Rick, row `efa0a4cf`). Wording only; the notify rules are unchanged.
 - **2026.06.29 (María 🌸 — Rick GO)**: §Re-ask-until-answered — replaced the manual `/loop` / `ScheduleWakeup` self-tick timer with the stock Stop-hook (names the due gate on its debounced cadence) + arbiter re-surface; the interim timer crutch is retired (task `d0cffe5c`). HELD for commit.
 - **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)

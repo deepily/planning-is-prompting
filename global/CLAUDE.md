@@ -268,7 +268,7 @@ The server injects a per-turn `<system-reminder>` rider carrying the closing-tur
 
 **Gate = a direct ask (MANDATE)**: when an action needs the user's go, fire a DEDICATED targeted ask that unblocks exactly that action. Never bury "standing by for your approval" in a status notify — that is stalled-and-pretending. One gate, one ask. Push is the lone unsurfaced exception.
 
-**Approving a held row = one click**: get the line from `task_approve_line( task_id )`, never hand-typed. It writes `- <title> [approve ☐](/app/tasks/approve?row=<full 36-char row id>) [📋](/app/tasks/view?row=<full 36-char row id>)`; put it in the `abstract` of a notify or ask, one line per row. 📋 shows the row's content first, so it is never a blind approval. The links are relative, with no host or token, and it reads "approved ✅" after the click. Canonical: workflow/task-store-discipline.md §3.2.
+**Approving a held row = one click**: get the line from a helper, never hand-typed, and put it in the notify **`message` itself, not the abstract**: it renders and can be clicked there, and the abstract costs Rick an extra click (Rick 2026-11-03). One row: `task_approve_line( task_id )` writes `- <title> [approve ☐](/app/tasks/approve?row=<full 36-char row id>) [📋](/app/tasks/view?row=<full 36-char row id>)`; add `priority="P0"` for a `[⏫ P0]` link that approves and raises in one click (Rick's login only, raise only). Several rows: ONE line from `task_approve_batch_line( task_ids )`, never a list. 📋 shows the content first, so it is never a blind approval. The spoken cap counts the link, so a batch over about five rows overflows 500 characters. Canonical: workflow/task-store-discipline.md §3.2.
 
 **Offline user ⇒ defer to a scheduled chase, don't storm**: when a targeted ask returns the offline/timeout default, block the STORE gate — `task_transition( <id>, "blocked", next_chase_ts=<future>, blocked_by=[{"kind":"user","id":"<name>"}] )`. That store write IS the deferral.
 
@@ -278,7 +278,7 @@ The server injects a per-turn `<system-reminder>` rider carrying the closing-tur
 
 **MANDATE (two triggers)**: (1) asked to view a project file → respond with a `notify()` whose abstract carries a doc-viewer link, **never dump file contents into chat**; (2) an abstract that *references* a project file (audit finding, R&D citation, file:line callout, diff) MUST link it. A bare path in an abstract is a violation.
 
-**Links live ONLY in `abstract`** (and `commons_post()` body), **NEVER in a spoken `message`** — URLs verbalize as character-by-character gibberish.
+**Links live ONLY in `abstract`** (and `commons_post()` body), **NEVER in a spoken `message`** — URLs verbalize as character-by-character gibberish. **The one exception is an approve link**, which goes in the `message` (see *Approving a held row* above).
 
 ```python
 notify( message="Sure! Here you go",

@@ -2,7 +2,7 @@
 
 **Purpose**: the day-to-day practice for using the unified task-store — when to create items, how to transition them, what stays in markdown, and what every session owes the store. This is the PIP-side Phase-2 companion to the Lupin-side service build.
 
-**Status**: v1.15 (2026-11-03, María — §3.2 adds the one-click priority link `[⏫ P0]`; Rick) · v1.14 (2026-11-02, María — the view link is 📋, as the helper writes it; Rick) · v1.13 (2026-11-01, María — §3.2 adds the 📄 view link to the format) · v1.12 (2026-11-01, María — new §3.2, the one-click approve link for held rows) · v1.11 (2026-10-09, Extra 2 — §6 manager board glance scoped; §2 `/clear` collision warning fenced HISTORICAL; see `docs/version-history/task-store-discipline.md`) · v1.10 (2026-10-09, Sam — pruning pass 4) · v1.9 (2026-10-02, María — §3 rewritten to store-only) · v1.8 (2026-09-07, Tiffany 💍 — §1 gains the **priority ceiling**: a worker files `P5` and only `P5`; `P4`–`P1` is an operator-or-manager raise and `P0` is the operator's alone. Removes a live contradiction — §1 told every session to file freely with no ceiling, which Rick's 2026-09-07 declarations forbid. **Unenforced in code; flagged as such.** Companion: `priority-pull-policy.md` §7) · v1.7 (2026-07-07, María — §6 query-hygiene MANDATE: never pull the unfiltered board — scope `owner_persona`+`status`+`terse=True`; 90→2 collapse proof; §11-D any-open gap flagged as an OPTIONAL lupin enhancement; Rick directive after a 90-row full-board pull) · v1.6 (2026-06-29, María — §3 title-hygiene HARDENED: ~60-char target + ratified client-truncation/store-guard enforcement, task-list redesign `3b85863e`) · v1.5 (2026-06-23, María — title-hygiene convention §3 [`47ba26fd`] + non-repo receipt form §4/§10.1 [`18eebb46`], Rick board-completion push) · v1.4 (2026-06-17, María — store-only body-sweep) · v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
+**Status**: v1.16 (2026-11-03, María — §3.2: the approve link goes in the notify message, not the abstract, and the batch line for several rows; Rick, row `bc975ca0`) · v1.15 (2026-11-03, María — §3.2 adds the one-click priority link `[⏫ P0]`; Rick) · v1.14 (2026-11-02, María — the view link is 📋, as the helper writes it; Rick) · v1.13 (2026-11-01, María — §3.2 adds the 📄 view link to the format) · v1.12 (2026-11-01, María — new §3.2, the one-click approve link for held rows) · v1.11 (2026-10-09, Extra 2 — §6 manager board glance scoped; §2 `/clear` collision warning fenced HISTORICAL; see `docs/version-history/task-store-discipline.md`) · v1.10 (2026-10-09, Sam — pruning pass 4) · v1.9 (2026-10-02, María — §3 rewritten to store-only) · v1.8 (2026-09-07, Tiffany 💍 — §1 gains the **priority ceiling**: a worker files `P5` and only `P5`; `P4`–`P1` is an operator-or-manager raise and `P0` is the operator's alone. Removes a live contradiction — §1 told every session to file freely with no ceiling, which Rick's 2026-09-07 declarations forbid. **Unenforced in code; flagged as such.** Companion: `priority-pull-policy.md` §7) · v1.7 (2026-07-07, María — §6 query-hygiene MANDATE: never pull the unfiltered board — scope `owner_persona`+`status`+`terse=True`; 90→2 collapse proof; §11-D any-open gap flagged as an OPTIONAL lupin enhancement; Rick directive after a 90-row full-board pull) · v1.6 (2026-06-29, María — §3 title-hygiene HARDENED: ~60-char target + ratified client-truncation/store-guard enforcement, task-list redesign `3b85863e`) · v1.5 (2026-06-23, María — title-hygiene convention §3 [`47ba26fd`] + non-repo receipt form §4/§10.1 [`18eebb46`], Rick board-completion push) · v1.4 (2026-06-17, María — store-only body-sweep) · v1.3 (2026-06-17, María — §0 store-only TRANSITION banner added [ratified target + not-live-until-cutover caveat] + F4 RETIRED per Rick) · v1.2 (2026-06-16, María — owner; ⚠️ §1/§2 write-gate Known-Limitation added — the harness auto-mirror silently drops non-lupin-manager writes, bug `9bf1dc4a`) · v1.1 (2026-06-15, Krishna E2E receipts + exhaustive edge matrix folded — verified behavior) — authored against design v0.4.1 (`src/rnd/2026.06.11-unified-task-store-design.md`, all rulings folded) + the committed MCP wrapper spec (Lupin `src/rnd/v0.1.8/2026.06.11-task-store-phase1/02-mcp-wrapper-spec.md`). **Syncs with the Phase-2 hook crew before freeze** — write-path hooks kick off 2026-06-12 night (ruling D3); wrapper names follow the `taskstore_*` collision review if it renames.
 
 **When to use**: any session in a repo where the task-store is live. Store-only is **LIVE fleet-wide as of the 2026-06-17 cutover** (§0) — this doc is operative practice, not forward-guidance.
 
@@ -114,7 +114,15 @@ Ruled 2026-07-21 (Mr. Radio 🦉), store row `644313b9`, effective immediately.
 
 ### 3.2 Asking Rick to approve a held row — the one-click approve link (binding on every seat)
 
-A row filed without `status` lands in the holding area (`not_approved`) and waits for Rick. **To ask him to approve it, put one line per row in the `abstract` of a `notify()` or of an action-requested ask, carrying an approve link and a 📋 view link.** The 📋 link shows him the row's content first, so he is never approving blind. When he clicks approve, the row moves to `queued` and the link turns into "approved ✅". He does not need to open the board, type anything or switch sessions.
+A row filed without `status` lands in the holding area (`not_approved`) and waits for Rick. **To ask him to approve it, put the helper's line in the `message` of a `notify()` itself, not in the abstract.** The line carries an approve link and a 📋 view link. A markdown link in a plain notification renders and can be clicked, so he approves straight from the notification without opening the card first. The detail (what the row is, why now) still goes in the abstract. The 📋 link shows him the row's content first, so he is never approving blind. When he clicks approve, the row moves to `queued` and the link turns into "approved ✅". He does not need to open the board, type anything or switch sessions.
+
+There are three forms, all from a helper and never hand-typed:
+
+| You are asking for | Helper | One click does |
+|---|---|---|
+| One row, approved as filed | `task_approve_line( task_id )` | `not_approved → queued` |
+| One row, approved at a higher priority | `task_approve_line( task_id, priority="P0" )` | `not_approved → queued` at the new level |
+| Several rows at once | `task_approve_batch_line( task_ids, move="queued" \| "dropped", reason )` | the same move on every listed row |
 
 ```markdown
 - <row title> [approve ☐](/app/tasks/approve?row=<full 36-character row id>) [📋](/app/tasks/view?row=<full 36-character row id>)
@@ -125,8 +133,8 @@ A row filed without `status` lands in the holding area (`not_approved`) and wait
 | **Label is `approve ☐`**: the verb first, then the empty checkbox | Rick's ruling of 2026-11-01. After a successful click the client rewrites it to "approved ✅" and disables the link |
 | **Relative path, no host, scope or token** | The click runs under Rick's own logged-in session, which also makes it safe to post in a card |
 | **The full lowercase 36-character row id** | A short id like `3529274b` does not resolve |
-| **In the `abstract`, never in the spoken `message`** | A URL read aloud is gibberish, and only the card renders the link |
-| **One line per row, title first** | Rick recognises a row by its title, not its id |
+| **In the notify `message`, not the abstract** | Rick's ruling of 2026-11-03: the link renders and can be clicked in a plain notification, and putting it in the abstract made him open the card just to reach it, doubling his clicks. Keep the words around it short. ⚠️ Until lupin row `e8b9b428` lands, speech reads the link's address aloud (Mr. Radio traced it at `ac1f8c86b`: no client and no server step strips a link target). Rick ruled for the click anyway, so do not move the link back to the abstract |
+| **One row: one line, title first. Several rows: one batch line** | Rick recognises a row by its title, not its id, and he does not click seventeen times |
 | **📋 right after the approve link, with the same row id** | It opens the row's content, so he gets the context before deciding. Built by Krishna under lupin row `192fecdf`, live since 2026-11-01 |
 
 A card drawn again later shows each row's current state, so a row that has already been approved reads "approved ✅" there too.
@@ -142,6 +150,25 @@ A card drawn again later shows each row's current state, so a row that has alrea
 ```
 
 Use it when Rick has said he wants the row at a higher level than it was filed at. The usual case is a P0 he ordered, which no seat can set (§1). The server honours the link only for Rick's login, only on `not_approved → queued`, and only when the level raises the row. Anything else gets a 403 and the row is unchanged. A successful click reads "approved at P0 ✅". Built by Mr. Radio's crew under lupin row `54d62c0e` (merge `fa1abf79b`, E2E `ts-42505955` 21 of 21), Rick 2026-11-03. A seat whose MCP server started before that merge has the old helper without `priority`; it needs a restart, not a `/clear`.
+
+**Several rows in one click.** When you ask Rick to act on more than one held row, send ONE line from `task_approve_batch_line( task_ids, move="queued", reason=None )`, never a list of single lines:
+
+```markdown
+- <N> held rows [approve all N ☐](/app/tasks/approve?rows=<ids>&move=queued) [📋](/app/tasks/view?rows=<ids>)
+```
+
+The 📋 link lists every row's title first, so the batch is never approved blind. After the click the notification shows each row as applied, or refused with the reason, and one refusal does not hide the others. `move="dropped"` drops the whole list, reads `[drop all N ☐]`, and requires a `reason`, which rides in the link; an approve refuses a reason. The ids must be full, distinct 36-character UUIDs, and the helper refuses a short or repeated id with `invalid_batch` without asking the server. A batch carries no priority: to raise rows, send each one its own `priority` line.
+
+**Who can click, and what a refusal says.** Approve and batch links work for a logged-in approver account. The `⏫` link works only for Rick's login. The server's refusals for it are, in order (lupin `src/cosa/rest/task_priority_firewall.py` `refusal_for_promote_priority`):
+
+| Condition | Refusal |
+|---|---|
+| Not Rick's login | "Promoting a ticket's priority is honoured only for Rick's login. This request came from …, so the row was not changed." |
+| Not `not_approved → queued` | "A priority promotion is only the move not_approved -> queued; this row is … and the request was …, so the row was not changed." |
+| Not one of P0–P5 | "promote_priority must be one of (…), got …, so the row was not changed." |
+| Equal or lower level | "P… does not raise this row, which is already P…; a promotion only raises, so the row was not changed." |
+
+**The spoken length cap counts the link.** The notify `message` is checked raw against the 500-character spoken cap, link targets included. One row's line is about 200 characters and fits. A batch line grows about 74 characters per row, because each id appears twice, so more than five rows overflow the cap and the whole notify is refused.
 
 **This is the one-click way to satisfy *Gate = a direct ask*.** Approving a held row is a gate, and the card that carries the link is the dedicated ask that unblocks exactly that row. A held row mentioned without a link is the "standing by for your approval" pattern that rule bans.
 

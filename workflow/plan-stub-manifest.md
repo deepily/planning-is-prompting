@@ -129,7 +129,7 @@ Added to the handoff light-review as criterion 7. Each is a checkable claim; say
 | Point | State |
 |---|---|
 | Whether the board's create gate and ticket ratio will refuse a bulk import | **Measured 2026-10-01, read-only: not that day.** Ratio 1.16 against a 1.4 limit, room for about 45 rows. A snapshot, not a promise: `epic:` rows are not exempt, so a large import on a busy day can still be refused. Never proven by a real write |
-| Whether the holding area can bulk-approve by `correlation_key` today | **Measured 2026-10-01: no.** Batch approve is a client-side loop and operator-only. A one-click approve by story key is a ticket for the board's repo |
+| Whether the holding area can bulk-approve by `correlation_key` today | **Measured 2026-10-01: no.** Batch approve was a client-side loop and operator-only. **Since 2026-11-03 there is a one-click batch by row list**: `task_approve_batch_line( task_ids )` (`task-store-discipline.md` §3.2). Selecting the rows by story key is still the caller's job |
 | The board's title length limit | **Measured 2026-10-01: 120 characters.** A create trims the tail into the body; an edit over 120 is refused. The importer warns before a trim |
 | Rows already hand-built for the two v0.2.2 plans | Need a one-time adoption: write the manifest, add `stub_key` to the existing rows, then let the importer re-stamp titles |
 
