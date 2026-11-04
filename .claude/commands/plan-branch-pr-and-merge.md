@@ -27,7 +27,7 @@
    - Location: planning-is-prompting → workflow/branch-pr-and-merge.md
    - This is the only authoritative source for all branch completion steps
    - Never proceed without reading this document in full
-   - The canonical workflow contains: Documentation surface check, branch state audit, test verification, PR description generation, and PR creation. It also contains post-merge sync, branch cleanup, release tagging, and next branch creation
+   - The canonical workflow contains: Documentation surface check, branch state audit, test verification, PR description generation, and PR creation. It also contains post-merge sync, branch cleanup, the version tag and release package (offered on every run), and next branch creation
 
 3. **Must execute the complete branch PR and merge workflow**:
    - Execute every step of `planning-is-prompting/workflow/branch-pr-and-merge.md`, in order, first to last, exactly as described

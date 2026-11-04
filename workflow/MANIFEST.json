@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-04T10:12:46-05:00",
+  "generated_at": "2026-11-04T10:40:23-05:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -36,7 +36,7 @@
       "version": "1.0"
     },
     "plan-branch-pr-and-merge.md": {
-      "sha256": "edeacb1de3f47ef7edb8fc5368ae37a2d6ba120d562051d0111106b8e6229f36",
+      "sha256": "2fa2c7bcec7664136b2bbc63aa1a1f62feeeebbdb53da2754d24693f0f38fd44",
       "version": "1.0"
     },
     "plan-bug-fix-mode-close.md": {

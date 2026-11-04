@@ -994,9 +994,9 @@ Forked branches: [N] found
 
 ---
 
-## Step 9: Release Tagging (Optional)
+## Step 9: Version Tag and Release Package
 
-**Purpose**: Tag the release if this branch represents a version.
+**Purpose**: Offer a version tag **and** a GitHub release (a release page whose notes come from the README; GitHub attaches source `.zip` and `.tar.gz` downloads automatically). This step runs on **every** run and is offered, never silently skipped.
 
 ### Extract Version from Branch Name
 
@@ -1004,46 +1004,90 @@ Parse branch name for version pattern:
 - `wip-v0.1.1-2025.10.28-description` → `v0.1.1`
 - `feature/v2.0.0-new-feature` → `v2.0.0`
 
+If the branch name carries no version, ask for the tag with `converse()` rather than skipping.
+
+### Build the Notes
+
+```bash
+MERGE_SHA=$(git rev-parse HEAD)          # the merge commit on main, after Step 7
+python3 [PIP_ROOT]/workflow/scripts/release_notes.py \
+    --readme README.md --version [version] \
+    --repo-url https://github.com/[OWNER]/[REPO] > [scratchpad]/release-notes.md
+```
+
+The script prints the README section headed `## What's New in [version]` (a suffix such as `(released 2026-09-30)` is fine), rewrites relative links to `blob/[version]/` URLs, and exits non-zero when the section is missing. If it fails, say so in the ask and offer tag only; do not invent notes.
+
 ### Confirmation
 
 ```python
 ask_yes_no(
-    question="Create release tag?",
+    question="Create tag and release for [version]?",
     default="no",
-    timeout_seconds=60,
+    timeout_seconds=600,
     priority="high",  # MANDATORY for blocking tools
-    abstract="**Suggested tag**: [version]\n(extracted from branch name: [branch-name])"
+    abstract="**Tag + release**: [version] on [merge sha]\n(from branch [branch-name])\n\n**Notes preview**:\n[first 20 lines of release-notes.md]"
 )
 ```
 
 ### If Yes (`response.startswith("yes")`, may include `[comment: ...]`)
 
 ```bash
-git tag [version]
+gh release create [version] --target "$MERGE_SHA" --title "[version]" --notes-file [scratchpad]/release-notes.md
+```
+
+This creates the tag on the remote too, so no separate `git tag` or push is needed.
+
+### If No (`response.startswith("no")`)
+
+Offer tag only with a second `ask_yes_no()`; on yes:
+
+```bash
+git tag [version] "$MERGE_SHA"
 git push origin [version]
 ```
 
 ### If Neither (`response.startswith("neither")`)
 
-**CRITICAL — do NOT tag.** Tagging is irreversible on remote (`git push origin --delete tag <name>` works but git tag hygiene is fragile). Typical re-frames: "the extracted version is wrong", "this is a pre-release/RC", "tag locally but don't push", "use a different versioning scheme". Read the `[comment: ...]` qualifier, then re-prompt — usually `converse()` asking the user to type the exact tag string, or `ask_multiple_choice()` over the variant types. See `workflow/cosa-voice-integration.md` → "Handling Neither".
+**CRITICAL — do NOT tag or release.** Tagging is irreversible on remote (`git push origin --delete tag <name>` works but git tag hygiene is fragile). Typical re-frames: "the extracted version is wrong", "this is a pre-release/RC", "tag locally but don't push", "use a different versioning scheme". Read the `[comment: ...]` qualifier, then re-prompt — usually `converse()` asking the user to type the exact tag string, or `ask_multiple_choice()` over the variant types. See `workflow/cosa-voice-integration.md` → "Handling Neither".
+
+### Missing Releases Check
+
+List version merges on main against published releases, and offer to backfill any version that has none:
+
+```bash
+git log main --grep '→ main' --format='%h %s'
+gh release list --limit 100
+```
+
+For each version merge with no release, offer the same tag + release ask above, with `--target` set to that merge commit and notes built for that version.
+
+### Older `gh` Builds
+
+`gh` 2.4 and similar fail `gh pr edit` and `gh pr merge` on a retired GraphQL field. The REST API works instead:
+
+```bash
+gh api -X PATCH repos/[OWNER]/[REPO]/pulls/[N] -F body=@[file]       # edit a PR body
+gh api -X PUT   repos/[OWNER]/[REPO]/pulls/[N]/merge -f merge_method=merge   # merge
+```
 
 ### Display
 
 ```
 ══════════════════════════════════════════════════════════
-Release Tagged
+Version Tag and Release Package
 ══════════════════════════════════════════════════════════
 Tag: [version]
 Commit: [hash] (on main)
-Pushed: Yes
+Release: [release URL, or "tag only" / "declined"]
 ══════════════════════════════════════════════════════════
 ```
 
 
 **Verification**:
 - [ ] Version extracted from branch name
-- [ ] User confirmation obtained
-- [ ] Tag created and pushed (if confirmed)
+- [ ] Offer shown with notes preview (never skipped)
+- [ ] Tag and release created (if confirmed), or tag only (if offered and confirmed)
+- [ ] Missing releases check run
 
 ---
 
