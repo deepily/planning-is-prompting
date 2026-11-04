@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-10-20 (**Session 225**, María 🌸 stable `3b492205`). One row waits on Rick, and the TODO.md archive is first tomorrow.
+Last updated: 2026-11-03 (**Session 230**, María 🌸 stable `b36bd697`). First tomorrow: the duplicate check deferred from tonight (row `30ecf5af`).
 
 ## 📍 Resume Here
 
@@ -376,6 +376,14 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-11-03: Cheech's board, the last-call duplicate check and approve links (rows `ccea494c`, `bc975ca0`)
+
+- **Cheech's 8 Phase 3 rows parked to 17 Nov**: Rick ruled it, and everything already built stays in daily use so that two weeks of data can be judged on behaviour and on statistics.
+- **The duplicate check runs at last call and is waited for at closing time.** Findings go into ONE P1 triage row for Cheech, chased at 10:00 the next morning, not fixed at night. Each verdict is a DUPCHECK-VERDICT log line that can be counted later (`workflow/last-call.md` §5a).
+- **The one-click P0 link** (lupin `54d62c0e`): Rick asked for it so that he can raise the fix rows without editing each one.
+- **Approve links go in the notify message, not the abstract**: the link renders and can be clicked there, and the abstract cost Rick an extra click. Speech reads the URL aloud until lupin row `e8b9b428` lands.
+- **Tonight's duplicate check moves to the morning** (Rick, broadcast `7de23482`): row `30ecf5af`.
 
 ### 2026-10-15: lupin wiki rollups, REST auth and the record-file rules (rows `9444557e`, `60511dfb`, `e4b11501`, `2288e442`, `8188ff76`)
 
