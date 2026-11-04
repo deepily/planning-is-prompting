@@ -53,7 +53,7 @@ VERSION_RE     = re.compile( r"^\*\*Version\*\*:\s*(.+)$", re.MULTILINE )
 NAME_RE        = re.compile( r"^[A-Za-z0-9][A-Za-z0-9 ._-]{0,39}$" )
 DIR_RE         = re.compile( r"^[A-Za-z0-9._-]+$" )
 ROOT_RE        = re.compile( r"^/[A-Za-z0-9._/-]*$" )
-PREFIX_RE      = re.compile( r"^[A-Z][A-Z0-9_]*$" )
+PREFIX_RE      = re.compile( r"^[A-Z][A-Z0-9_-]*$" )
 
 PRODUCT_DIR    = "planning-is-prompting"
 PROJECT_FORM_1 = "**Project**: Planning is Prompting"
@@ -61,8 +61,8 @@ PROJECT_FORM_2 = "**Project**: planning-is-prompting (meta-repository)"
 NAME_BULLET_RE = re.compile( r"^(\s*- \*\*Project Name\*\*: )Planning is Prompting$" )
 PREFIX_LABEL   = r"(?:\*\*Prefix\*\*: |\s*- \*\*(?:\[SHORT_PROJECT_PREFIX\]|Prefix)\*\*: )"
 PREFIX_LINE_RE = re.compile( r"^" + PREFIX_LABEL + r"(.*)$" )
-PREFIX_TOKEN_RE= re.compile( r"\[([A-Z][A-Z0-9_]*)\]" )
-USE_PREFIX_RE  = re.compile( r"^Use `\[([A-Z][A-Z0-9_]*)\]` prefix for this repository\.$" )
+PREFIX_TOKEN_RE= re.compile( r"\[([A-Z][A-Z0-9_-]*)\]" )
+USE_PREFIX_RE  = re.compile( r"^Use `\[([A-Z][A-Z0-9_-]*)\]` prefix for this repository\.$" )
 PATH_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root|History file|TODO file|TODO file path|Bug fix queue file|Archive directory|README file|Planning documents)\*\*: |Source: )" )
 ROOT_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root)\*\*: |Source: )(\S+)$" )
 CANON_ROOT_RE  = re.compile( r"(/[\w./-]*?/planning-is-prompting)(?=/|\b)" )

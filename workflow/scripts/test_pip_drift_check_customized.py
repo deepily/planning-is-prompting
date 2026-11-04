@@ -307,6 +307,16 @@ def test_a_form_2_canonical_line_with_a_name_only_install_reads_CURRENT( tmp_pat
     assert "**Project**: Lupin Mobile" in pdc.render_for_project( canonical, installed, p.path )
 
 
+def test_a_hyphenated_prefix_in_every_prefix_form_reads_CURRENT( tmp_path ):
+    """The lupin-mobile shape: the project's prefix is [LUPIN-MOBILE], hyphen included."""
+    p         = _project( tmp_path, name="lupin-mobile" )
+    canonical = _lines( "**Prefix**: `[PLAN]`\nUse `[PLAN]` prefix for this repository.\n   - **[SHORT_PROJECT_PREFIX]**: Detect (or use [PLAN] as default)" )
+    installed = _lines( "**Prefix**: `[LUPIN-MOBILE]`\nUse `[LUPIN-MOBILE]` prefix for this repository.\n   - **[SHORT_PROJECT_PREFIX]**: Detect (or use [LUPIN-MOBILE] as default)" )
+
+    assert _verdict( p, canonical, installed )[ 0 ] == "CURRENT"
+    assert pdc.derive_identity( installed )[ "prefix" ] == "LUPIN-MOBILE"
+
+
 def test_a_legitimate_name_with_a_space_is_still_renderable( tmp_path ):
     """The twin of H1: a name with spaces is fine when it matches the tree."""
     p         = _project( tmp_path, name="my-app" )
