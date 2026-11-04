@@ -297,6 +297,16 @@ def test_a_free_text_project_name_is_not_renderable( tmp_path ):
     assert pdc.render_for_project( canonical, installed, p.path ) is None
 
 
+def test_a_form_2_canonical_line_with_a_name_only_install_reads_CURRENT( tmp_path ):
+    """The lupin-mobile shape: the install records only a display name, no directory."""
+    p         = _project( tmp_path, name="lupin-mobile" )
+    canonical = _lines( "**Project**: planning-is-prompting (meta-repository)" )
+    installed = _lines( "**Project**: Lupin Mobile" )
+
+    assert _verdict( p, canonical, installed )[ 0 ] == "CURRENT"
+    assert "**Project**: Lupin Mobile" in pdc.render_for_project( canonical, installed, p.path )
+
+
 def test_a_legitimate_name_with_a_space_is_still_renderable( tmp_path ):
     """The twin of H1: a name with spaces is fine when it matches the tree."""
     p         = _project( tmp_path, name="my-app" )

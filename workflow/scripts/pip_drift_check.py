@@ -328,6 +328,8 @@ def render_for_project( canonical_text, installed_text, project_root ):
           installer writes them for that project, or None when the installed file
           is not renderable (conflicting identity, or a value outside its shape or
           not naming this project)
+        - a PROJECT_FORM_2 line becomes the "installed from" form when the install
+          records a directory, or the bare display name when it records only a name
         - only lines whose canonical form is exactly a known per-project form are
           rewritten, and only their value part; every other line is unchanged
         - a heading keeps the product name when the installed heading does
@@ -348,6 +350,8 @@ def render_for_project( canonical_text, installed_text, project_root ):
             line = f"**Project**: {identity[ 'name' ]}"
         elif line == PROJECT_FORM_2 and identity[ "dir" ] is not None:
             line = f"**Project**: {identity[ 'dir' ]} (installed from planning-is-prompting)"
+        elif line == PROJECT_FORM_2 and identity[ "name" ] is not None:
+            line = f"**Project**: {identity[ 'name' ]}"
         elif NAME_BULLET_RE.match( line ) and identity[ "name" ] is not None:
             line = NAME_BULLET_RE.sub( lambda m: m.group( 1 ) + identity[ "name" ], line )
         elif line.startswith( "# " ) and identity[ "name" ] is not None:
