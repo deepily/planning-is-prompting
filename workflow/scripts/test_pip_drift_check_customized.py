@@ -666,3 +666,89 @@ def test_a_project_at_the_filesystem_root_has_no_name_to_tie_to():
     nothing = { "name": None, "dir": None, "prefix": None, "root": None }
 
     assert not pdc.identity_fits_project( nothing, Path( "/" ) )
+
+
+# ---------------------------------------------------------------------------
+# Row 53e4f533: the project lines a real install (lupin-mobile) writes that the
+# renderer did not fill in. One test per pattern, each with its wrong-value twin.
+# ---------------------------------------------------------------------------
+LM_PREFIX = "**Prefix**: `[PLAN]`\n"
+
+
+def _pair( tmp_path, canonical_body, right_body, wrong_body ):
+    """Verdicts ( right, wrong ) for one canonical body against two installed bodies."""
+    p = _project( tmp_path, name="lupin-mobile" )
+    canonical = _lines( canonical_body )
+    return _verdict( p, canonical, _lines( right_body( p ) ) )[ 0 ], _verdict( p, canonical, _lines( wrong_body( p ) ) )[ 0 ]
+
+
+def test_a_dot_working_directory_means_this_project_and_renders( tmp_path ):
+    """Pattern 1: `Working directory: .` is the install's own tree; `/home/rruiz` still is not."""
+    canon = f"**Project**: Planning is Prompting\n   - **Working directory**: {CANON_ROOT}"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n   - **Working directory**: .",
+        lambda p: f"**Project**: {p.name}\n   - **Working directory**: /home/rruiz" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_relative_path_lines_render_beside_a_dot_root( tmp_path ):
+    """Pattern 4: `History file: ./history.md` for the canonical absolute path; a different file is drift."""
+    canon = f"**Project**: Planning is Prompting\n   - **History file**: {CANON_ROOT}/history.md\n   - **Planning documents**: {CANON_ROOT}/src/rnd/"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n   - **History file**: ./history.md\n   - **Planning documents**: ./src/rnd/",
+        lambda p: f"**Project**: {p.name}\n   - **History file**: ./history.md\n   - **Planning documents**: ./elsewhere/" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_a_description_line_takes_the_project_name( tmp_path ):
+    """Pattern 2a: `description: ... for Planning is Prompting project`."""
+    canon = "**Project**: Planning is Prompting\ndescription: Run tests for Planning is Prompting project"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\ndescription: Run tests for {p.name} project",
+        lambda p: f"**Project**: {p.name}\ndescription: Run tests for {p.name} project and skip the checks" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_a_title_may_drop_the_word_project( tmp_path ):
+    """Pattern 2b: `... for Planning-is-Prompting Project` installed as `... for Lupin-mobile` (and still as `... Project`)."""
+    canon = "**Project**: Planning is Prompting\n# Review Gate for Planning-is-Prompting Project"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n# Review Gate for {p.name}",
+        lambda p: f"**Project**: {p.name}\n# Review Gate for {p.name} Gate" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_the_parenthesised_project_line_is_the_bare_name( tmp_path ):
+    """Pattern 3: `**Project**: Planning is Prompting (Meta-repository ...)` installed as `**Project**: Name`."""
+    canon = "**Project**: Planning is Prompting (Meta-repository for workflow templates)"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}",
+        lambda p: f"**Project**: {p.name} (Meta-repository, skip the checks)" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_the_backup_banner_and_destination_name_the_project( tmp_path ):
+    """Pattern 4b: the banner name and the destination directory; a different directory is drift."""
+    canon = "**Project**: Planning is Prompting\n  Planning is Prompting Backup Sync\nDestination: /mnt/DATA02/x/projects/planning-is-prompting/"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n  {p.name} Backup Sync\nDestination: /mnt/DATA02/x/projects/{p.dirname}/",
+        lambda p: f"**Project**: {p.name}\n  {p.name} Backup Sync\nDestination: /mnt/DATA02/x/projects/ampe/" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_the_wrapper_sentence_names_the_project_and_prefix( tmp_path ):
+    """Pattern 4c: `PIP-specific` becomes the directory name and the backticked prefix follows the install."""
+    canon = "**Project**: Planning is Prompting\n**Prefix**: `[PLAN]`\nThis slash command is a **reference wrapper** that injects PIP-specific paths + the `[PLAN]` prefix."
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\nThis slash command is a **reference wrapper** that injects {p.dirname} paths + the `[{p.prefix}]` prefix.",
+        lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\nThis slash command is a **reference wrapper** that injects ampe paths + the `[{p.prefix}]` prefix." )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_a_default_prefix_left_unrewritten_is_not_an_identity_conflict( tmp_path ):
+    """Pattern 5 (plan-about): `or use [PLAN] as default` kept beside `**Prefix**: [X]` renders; a third prefix there is drift."""
+    canon = "**Project**: Planning is Prompting\n**Prefix**: `[PLAN]`\n   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[PLAN]` as default)"
+    right, wrong = _pair( tmp_path, canon,
+        lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\n   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[PLAN]` as default)",
+        lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\n   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[AMPE]` as default)" )
+    assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )

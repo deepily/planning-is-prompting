@@ -62,11 +62,19 @@ NAME_BULLET_RE = re.compile( r"^(\s*- \*\*Project Name\*\*: )Planning is Prompti
 PREFIX_LABEL   = r"(?:\*\*Prefix\*\*: |\s*- \*\*(?:\[SHORT_PROJECT_PREFIX\]|Prefix)\*\*: )"
 PREFIX_LINE_RE = re.compile( r"^" + PREFIX_LABEL + r"(.*)$" )
 PREFIX_TOKEN_RE= re.compile( r"\[([A-Z][A-Z0-9_-]*)\]" )
+PREFIX_LEAD_RE = re.compile( r"^`?\[([A-Z][A-Z0-9_-]*)\]" )
 USE_PREFIX_RE  = re.compile( r"^Use `\[([A-Z][A-Z0-9_-]*)\]` prefix for this repository\.$" )
 PATH_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root|History file|TODO file|TODO file path|Bug fix queue file|Archive directory|README file|Planning documents)\*\*: |Source: )" )
 ROOT_LINE_RE   = re.compile( r"^(?:\s*- \*\*(?:Working directory|Working Directory|Project root)\*\*: |Source: )(\S+)$" )
 CANON_ROOT_RE  = re.compile( r"(/[\w./-]*?/planning-is-prompting)(?=/|\b)" )
 TITLE_NAME_RE  = re.compile( r"Planning[- ]is[- ]Prompting" )
+TITLE_PROJ_RE  = re.compile( r"Planning[- ]is[- ]Prompting Project" )
+PROJECT_FORM_3 = re.compile( r"^\*\*Project\*\*: Planning is Prompting \(.*\)$" )
+BANNER_NAME_RE = "Planning is Prompting Backup Sync"
+DEST_LINE_RE   = re.compile( r"^(Destination: /[\w./-]*?/)planning-is-prompting(/)$" )
+WRAPPER_RE     = re.compile( r"^This slash command is a \*\*reference wrapper\*\*" )
+RELATIVE_ROOT  = "."
+RELATIVE_PATH_RE = re.compile( r"\*\*: \./" )
 
 # The two in-line rewrites the installer makes, and ONLY these: the qualifier is
 # set aside when it sits immediately before the path it qualifies, at a word start
@@ -229,6 +237,18 @@ def line_prefix_token( line ):
     return token.group( 1 ) if token else None
 
 
+def is_declaration( line ):
+    """
+    Requires:
+        - line is a prefix-bearing line (line_prefix_token is not None)
+    Ensures:
+        - returns True when the prefix is the line's value (`**Prefix**: `[X]``,
+          the "Use `[X]` prefix" sentence), False when it is named in passing
+    """
+    if USE_PREFIX_RE.match( line ): return True
+    return PREFIX_LEAD_RE.search( PREFIX_LINE_RE.match( line ).group( 1 ) ) is not None
+
+
 def derive_identity( installed_text ):
     """
     Read the project identity an installed file declares, once.
@@ -242,6 +262,7 @@ def derive_identity( installed_text ):
         - values are returned as written; shapes are checked by the caller
     """
     found = { "name": set(), "dir": set(), "prefix": set(), "root": set() }
+    weak  = set()
 
     for line in installed_text.splitlines():
         form_2 = re.match( r"^\*\*Project\*\*: (\S+) \(installed from planning-is-prompting\)$", line )
@@ -261,13 +282,17 @@ def derive_identity( installed_text ):
 
         token = line_prefix_token( line )
         if token is not None:
-            found[ "prefix" ].add( token )
+            # A prefix named in passing ("... or use [PLAN] as default") is only a
+            # fallback witness: installer versions differ on rewriting it, so it
+            # must not conflict with the prefix the file declares up front.
+            ( found[ "prefix" ] if is_declaration( line ) else weak ).add( token )
             continue
         if PREFIX_LINE_RE.match( line ): continue
 
         root = ROOT_LINE_RE.match( line )
         if root: found[ "root" ].add( root.group( 1 ).rstrip( "/" ) )
 
+    if not found[ "prefix" ]: found[ "prefix" ] = weak
     if any( len( values ) > 1 for values in found.values() ):
         return None
 
@@ -284,7 +309,8 @@ def identity_fits_project( identity, project_root ):
           project the install sits in: root equals the tree, dir equals its name,
           and the display name is that name written as words. A value that is
           merely consistent with itself is not enough (an install re-rooted at
-          /home/rruiz agrees with itself on every line).
+          /home/rruiz agrees with itself on every line). A root written "." means
+          the project the install sits in, so it fits any project.
     """
     if DIR_RE.match( project_root.name ) is None or ROOT_RE.match( str( project_root ) ) is None:
         return False
@@ -293,7 +319,7 @@ def identity_fits_project( identity, project_root ):
         return False
     if identity[ "dir" ] is not None and identity[ "dir" ] != project_root.name:
         return False
-    if identity[ "root" ] is not None and identity[ "root" ] != str( project_root ):
+    if identity[ "root" ] is not None and identity[ "root" ] not in ( str( project_root ), RELATIVE_ROOT ):
         return False
     if identity[ "name" ] is not None:
         if not name_is_well_formed( identity[ "name" ] ): return False
@@ -343,6 +369,8 @@ def render_for_project( canonical_text, installed_text, project_root ):
     canon_root   = canon_root.group( 1 ) if canon_root else None
     canon_prefix = next( ( t for t in map( line_prefix_token, canonical_text.splitlines() ) if t is not None ), None )
 
+    relative        = identity[ "root" ] == RELATIVE_ROOT or any( PATH_LINE_RE.match( l ) and RELATIVE_PATH_RE.search( l ) for l in installed_text.splitlines() )
+    project_dir     = project_root.name
     installed_lines = installed_text.split( "\n" )
     out             = []
     for index, line in enumerate( canonical_text.split( "\n" ) ):
@@ -352,15 +380,36 @@ def render_for_project( canonical_text, installed_text, project_root ):
             line = f"**Project**: {identity[ 'dir' ]} (installed from planning-is-prompting)"
         elif line == PROJECT_FORM_2 and identity[ "name" ] is not None:
             line = f"**Project**: {identity[ 'name' ]}"
+        elif PROJECT_FORM_3.match( line ) and identity[ "name" ] is not None:
+            line = f"**Project**: {identity[ 'name' ]}"
+        elif line.strip() == BANNER_NAME_RE and identity[ "name" ] is not None:
+            line = line.replace( "Planning is Prompting", identity[ "name" ], 1 )
+        elif DEST_LINE_RE.match( line ):
+            line = DEST_LINE_RE.sub( lambda m: m.group( 1 ) + project_dir + m.group( 2 ), line )
+        elif line.startswith( "description: " ) and identity[ "name" ] is not None:
+            line = TITLE_NAME_RE.sub( identity[ "name" ], line )
+        elif WRAPPER_RE.match( line ):
+            line = line.replace( "PIP-specific", project_dir )
+            if canon_prefix is not None and identity[ "prefix" ] is not None:
+                line = line.replace( f"`[{canon_prefix}]`", f"`[{identity[ 'prefix' ]}]`" )
         elif NAME_BULLET_RE.match( line ) and identity[ "name" ] is not None:
             line = NAME_BULLET_RE.sub( lambda m: m.group( 1 ) + identity[ "name" ], line )
         elif line.startswith( "# " ) and identity[ "name" ] is not None:
             kept = index < len( installed_lines ) and installed_lines[ index ] == line
-            if not kept: line = TITLE_NAME_RE.sub( identity[ "name" ], line )
-        elif ( PREFIX_LINE_RE.match( line ) or USE_PREFIX_RE.match( line ) ) and canon_prefix is not None and identity[ "prefix" ] is not None:
+            if not kept:
+                dropped = TITLE_NAME_RE.sub( lambda m: identity[ "name" ], TITLE_PROJ_RE.sub( lambda m: identity[ "name" ], line ) )
+                line    = dropped if index < len( installed_lines ) and installed_lines[ index ] == dropped else TITLE_NAME_RE.sub( lambda m: identity[ "name" ], line )
+        elif PREFIX_LINE_RE.match( line ) and canon_prefix is not None and identity[ "prefix" ] is not None:
+            rewritten = line.replace( f"[{canon_prefix}]", f"[{identity[ 'prefix' ]}]" )
+            # A line that only mentions the prefix as a default (it declares none)
+            # was left as written by some installer versions, rewritten by others.
+            kept = ( line_prefix_token( line ) is None or not is_declaration( line ) ) and index < len( installed_lines ) and installed_lines[ index ] == line
+            line = line if kept else rewritten
+        elif USE_PREFIX_RE.match( line ) and canon_prefix is not None and identity[ "prefix" ] is not None:
             line = line.replace( f"[{canon_prefix}]", f"[{identity[ 'prefix' ]}]" )
         elif PATH_LINE_RE.match( line ) and canon_root is not None:
-            line = line.replace( canon_root, str( project_root ), 1 )
+            if relative: line = line.replace( canon_root + "/", "./", 1 ) if canon_root + "/" in line else line.replace( canon_root, RELATIVE_ROOT, 1 )
+            else:        line = line.replace( canon_root, str( project_root ), 1 )
         out.append( line )
 
     return "\n".join( out )
