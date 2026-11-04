@@ -75,7 +75,7 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 
 | Anti-pattern | Example | Fix |
 |---|---|---|
-| **Narrating the plan** | "I'll start by reading the file, then I'll check the tests, then…" | Just do it. Tool calls are already visible. |
+| **Narrating the plan** | "I'll start by reading the file, then I'll check the tests, then…" | One line before the first tool call is enough, and one more if a long run goes quiet. |
 | **Restating the request** | "So if I understand correctly, you want me to…" | Act. Ask only if genuinely ambiguous. |
 | **Hedging preamble** | "Great question! That's an interesting problem. Let me think…" | Delete. Start at the verdict. |
 | **Peer politeness bloat** | "Thanks so much for the thorough review, really appreciate it!" | Ack in ≤1 clause, or not at all. |
@@ -217,8 +217,7 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 | `commons_post` | 3 sentences + structured body | Same rule as DM, WaHH included. |
 | Review finding | Headline + failure scenario + fix | Three parts. Not three paragraphs. |
 | Status / progress | 1 sentence | "Done: X. Next: Y." |
-| **`history.md` entry** | **headline + ≤5 findings, ≤2 sentences each** | **HARD CAP. See below.** |
-| **Decisions Log entry** | **one ruling per bullet, ≤3 sentences** | Multiple rulings = multiple bullets, not one mega-bullet. |
+| **`history.md` entry** · **Decisions Log entry** | capped: see The cap below | **HARD CAP.** |
 | Retro / post-game doc | Content-shaped | The one genuinely uncapped prose surface — it is the archive. Still NoMC. |
 
 ---
@@ -233,18 +232,20 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 
 | Artifact | Cap |
 |---|---|
-| `history.md` **RESUME HERE** | Headline sentence + **≤5 numbered findings**, **≤2 sentences each** |
+| `history.md` `RESUME HERE` | Headline sentence + **≤5 numbered findings**, **≤2 sentences each** |
 | `history.md` **Checkpoint line** | One line. Semicolon-separated, not a paragraph. |
 | `history.md` **Files line** | Paths only. No commentary per file. |
 | **Decisions Log** bullet | One ruling, **≤3 sentences**. Split multi-ruling sessions into multiple bullets. |
 
+The wording of these entries (sentence length, capitals, dates, ids) is set in `workflow/entry-writing-rules.md`.
+
 ### Where the detail goes — the same routing rule as everywhere else
 
-**Detail is not deleted. It is routed.**
+**Detail is not deleted. It is routed.** A 3-line spoken payload with a rich `abstract` card carries MORE than a rambling paragraph.
 
 | Content | Destination |
 |---|---|
-| Full narrative, receipts, cross-examination, provenance | `io/post-games/` retro (uncapped — this is the archive) |
+| Full narrative, receipts, cross-examination, provenance | `src/docs/post-games/<version>/` retro (uncapped; kept while its version is current work, `post-game.md` §5.6) |
 | Design reasoning, measurements, option analysis | `src/rnd/<date>-<slug>.md` |
 | Owed work, status, ownership | the task-store (`task_create` / `task_amend`) |
 | **A pointer to each of the above** | `history.md` — **the index, not the archive** |
@@ -254,8 +255,6 @@ Everything defaults to **3 sentences** — counted by the claim rule above. **Th
 ### Self-check before writing any history entry
 
 *Could a rehydrating session act correctly on this entry alone? If yes, stop — it is long enough. If it needs more, that is what the pointer is for.*
-
-**The `abstract` is the pressure valve.** Brevity does not mean losing detail — it means routing detail to the surface built for it. A 3-line spoken payload with a rich `abstract` card carries MORE than a rambling paragraph.
 
 ---
 
@@ -300,8 +299,6 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 **Attached to a message**, it scopes to that message: *"here's the summary 😘"* = give me this, short.
 
 **Why a glyph** — this is the mandate applied to itself: *a rule against verbosity whose reminder costs a paragraph is self-refuting.* One character carries the weight of the entire opening statement; the reply costs one character back. The pair is the cheapest complete exchange in the fleet.
-
-> ⇒ **Never answer 😘 with prose.** 🫡, then the tightened output. A sentence explaining that you are about to be brief is the defect wearing the cure's clothes.
 
 ### 🏆 — the reward glyph (Rick, 2026-07-19)
 
@@ -362,7 +359,6 @@ WaHH: plain English in every DM — write as if a human colleague will read it.
 
 | Utterance | Effect |
 |---|---|
-| **😘** | **Carrier glyph — the full mandate, no text required** |
 | "KISS" | Reminder — the receiving session tightens immediately |
 | "KISS it" / "KISS that" | Verb form, usable mid-sentence — *"KISS that summary and re-send"* |
 | "Say 3LoL" / "3LoL" / "three lines or less" / "three sentences" | Reminder, length-specific |
@@ -393,13 +389,9 @@ Rick's blunt form, and it is **two directives in one**:
 | Half | Means | Mandate |
 |---|---|---|
 | **STFU** | stop the verbosity, now | this document |
-| **GB2W** | stop talking *about* the work and go **do** it | `workflow/push-to-completion.md` |
+| **GB2W** | stop talking *about* the work and go **do** it, with the full anti-gaming guard when aimed at a manager | `workflow/push-to-completion.md` |
 
 **Firing only the STFU half does half the job.** The correct response is *fewer words **and** more work* — not a shorter status update. It targets the specific failure of a session that has substituted narration for progress.
-
-**Do NOT acknowledge it.** An 🫡 is sufficient. Then output — no sentence explaining that you are about to comply.
-
-Aimed at a manager, GB2W carries the full anti-gaming guard from `push-to-completion.md`: no faking done, no dropping to clear the list, MANAGE-don't-build.
 
 ### Deliberately NOT triggers
 
@@ -448,10 +440,4 @@ Note the diagnosis: **neurotic**. The verbosity is anxiety-shaped — hedging, o
 
 ## Version History
 
-- **1.5 (2026-09-08)**: **`NoYell` added as the seventh rule, ruled by Rick** after Mr. Radio 🦉 found a full sentence in capitals while reviewing Lupin's `CLAUDE.md`. His words: *"It is annoying and inappropriate."* Capitals are for headings, acronyms and code identifiers, never emphasis. New § *NoYell — no all-caps yelling* carries the boundary table, the receipt and the reason it is a defect rather than a taste — shouting **spends** emphasis instead of adding it, leaving no way to mark the clause that matters. The rule row went into `~/.claude/CLAUDE.md`; **the receipt stayed here**, per Rick's same-morning *split rule from receipt* ruling on the `CLAUDE.md` load-limit overage. Known debt recorded in the section: the existing docs and store rows are full of the thing the rule bans, and are being left alone until touched for another reason.
-- **1.4 (2026-08-12)**: **Words → sentences, ruled by Rick across seven decisions in one walkthrough.** The unit of the rule is now a **claim-carrying sentence**, not a word and not a display line — extending to every surface a call already made for the spoken channel on 2026-06-13, on the measured finding that *models count sentences reliably and words badly*. **Rick's clause, his words: "File paths are free."** New § *What counts as a line* carries the rule and its table; the per-surface defaults, the spawn-brief rider and the trigger vocabulary follow it. **`3LoL` keeps its name** — the acronym sits in 19 files with a July-ratified trigger vocabulary, so a rename would spend a fleet-wide reinstall for a cosmetic gain. **Scope ruled explicitly as every surface, not DMs alone**, because a "DM rule" reading would exempt status updates, commons posts and review findings. ⚠️ **The rider deliberately states three and names no enforcement number** — publishing where the line sits teaches that number instead of the bar. Companion analysis and the full reasoning per ruling: `src/rnd/2026.08.12-words-to-sentences.md` + `TODO.md` § Decisions Log.
-
-- **1.0 (2026-07-19)**: Initial. Rick's directive + his escape-clause amendment ("only when ASKED"). Landing sites ruled via checkbox walkthrough.
-- **1.2 (2026-07-28)**: **WaHH seated as the 6th rule** (Rick) — *We're All Humans Here*: plain English, no jargon, write every message as though a human colleague will read it. Ruled **1 rule + 4 triggers** (`WaHH` / `MoPEP` / `NoJP` / `TLH`) rather than four separate rules — the other three name the behavior, WaHH names the reason. Trigger was the register asymmetry: the same session writes plainly to the user and densely to a peer, with only the assumed reader changing. **The tiebreak against KISS is the load-bearing part** — jargon is compression, so the two rules genuinely conflict, and WaHH wins: *compression that costs the reader a re-derivation is not compression.* Substantive landing is `cross-session-communication.md` §1.6, not this file alone; a landing here only would have fired on speech, which was already fine. ⚠️ **Tiebreak wording is María's draft, pending Rick's review** — the rule and the winner are his.
-- **1.1 (2026-07-25)**: **☕ seated as the 5th glyph** (Rick) — the Riot Act's one-character form, routing to `push-to-completion.md`. Two rulings: (a) its response is **🫡 on receipt, receipts on delivery** — the only glyph whose salute does not discharge the order, because ☕'s action does not terminate the way 📷's does and the Anti-Gaming Guard is carried entirely by the report; (b) **the palette stays inside this doc** rather than graduating to `glyph-palette.md` — a new doc starts at zero distribution, the same argument that put NoDrama here. Table gains a **Routes to** column so the taxonomy survives the filename. Also closed a distribution gap found in the same pass: `push-to-completion` had **no user-scope install** (skill + `/plan-push` existed in this repo only), so ☕ would have advertised a route that could not fire in most repos.
-- **1.3 (2026-07-31)**: **🏆's ack split off from 🫡** (Rick) — the trophy is now acked with **🙏🏼**, not 🫡. 🫡 keeps its job for 😘, 📷, and ☕. Every other rule about the trophy is unchanged (one glyph, no prose, then keep working).
+Full history: `docs/version-history/brevity-mandate.md`.

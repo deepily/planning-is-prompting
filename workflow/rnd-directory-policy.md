@@ -52,8 +52,6 @@ A sweep of this repository's own workflow corpus:
 
 **The widest door is one sentence in the global config, and its load-bearing word is undefined.** *"All research and planning documents"* — nothing anywhere says what makes a document **research**. A seat that has just spent forty minutes chasing a bug has, by any honest reading of that sentence, produced a research document. The line is not being abused. It is being obeyed.
 
-⇒ **Six doors, no lock on any of them.** The scratch work is not the fleet breaking the rules. It is the fleet following them.
-
 `workflow/plan-serialization.md` is the clearest instance, and worth naming because its criteria read as rigorous while gating nothing:
 
 | Its "Serialize (Yes)" criterion | Who judges it | What it actually admits |
@@ -152,7 +150,6 @@ Accepted forms:
 
 | | |
 |---|---|
-| September `.md` | 108 |
 | Distinct days | **16** |
 | Files per active day | 6.75 |
 | Worst single day (Sept 10) | **17 files** |
@@ -169,6 +166,8 @@ authorized_by: task:3a2f726b-caa5-469c-94aa-67d95f0c3936
 doc_kind: post-game        # plan | design | census | review | spec | post-game
 ---
 ```
+
+> **2026-10-03:** post-games no longer live under `src/rnd/` at all (`post-game.md` §5.6), so `post-game` stays in the list only for retros filed here before that date. The example below is kept because the reasoning applies to every kind.
 
 Without it, the gate would refuse a post-game because a plan already cited the same row — a real need colliding with a rule, which is the fastest way to get a guard switched off entirely. It is declared, not inferred, so the author states the claim and the reviewer can see it.
 
@@ -199,7 +198,7 @@ This is the test the 83 diary-shaped documents fail. Titles shaped like sentence
 | **A report the operator reads once** (a shortlist, a status summary, a triage list) | the `abstract` of the notify that delivers it — **no file**. Too long for a card: `io/tmp/yyyy.mm.dd-slug.md` in the served repo, linked from the abstract | the card: the notification · `io/tmp/`: **7 days**, swept automatically |
 | A report a store row or a doc must cite later | not ephemeral — a store row amendment, or `src/rnd/` with authorization | permanent |
 | A finding worth keeping | a **store row** | permanent, queryable |
-| A lesson from a finished run | a **post-game** under `src/rnd/` (authorized by the run) | permanent |
+| A lesson from a finished run | a **post-game** under `src/docs/post-games/<version>/` (`post-game.md` §5.6; a review of a run is not R&D, so it needs no `authorized_by`) | while its version is current work |
 | An authorized deliverable | `src/rnd/yyyy.mm.dd-slug.md` + frontmatter | permanent |
 
 **Install `.scratch/` in the project's `.gitignore` when installing this policy.** A destination that is not gitignored is not a destination; it is a delay.
@@ -208,12 +207,7 @@ This is the test the 83 diary-shaped documents fail. Titles shaped like sentence
 
 The session scratchpad and `.scratch/` are ephemeral, but the doc viewer cannot serve them. So a seat that needed to hand the operator a **link** wrote into the nearest path the viewer *could* serve — `io/write-ups/` — and nothing there ever expires. Measured 2026.09.26: 10 one-off files in lupin `io/write-ups/`, the newest a holding-area shopping list the operator read once. His ruling the same day (broadcast `355f708f`, ask answered, not defaulted): *if it is in a temp directory it is by definition not my problem to clean up.*
 
-| | |
-|---|---|
-| **First choice** | put it in the `abstract`. A 12-row list fits a card; no file, nothing to clean |
-| **Too long for a card** | `io/tmp/yyyy.mm.dd-slug.md`, linked from the abstract |
-| **Lifetime** | 7 days from mtime, then deleted by a scheduled sweep — **nobody deletes by hand, and nobody may cite an `io/tmp/` path from a store row or a durable doc** |
-| **Must outlive the week** | then it was never ephemeral: amend the row, or write an authorized `src/rnd/` doc |
+An `io/tmp/` file lasts 7 days from its mtime, then a scheduled sweep deletes it — **nobody deletes by hand, and nobody may cite an `io/tmp/` path from a store row or a durable doc**.
 
 **Installing it in a served repo** — three parts, and the rule is not installed until all three are. **This document is the rule, not the install**: in lupin the install is store row `730b33f2`, and it is not done until that row closes.
 1. `io/tmp/` is gitignored (`io/**` usually already covers it).
@@ -295,32 +289,22 @@ The commit guard is the one that actually holds. The write guard exists because 
 | Surface | Change |
 |---|---|
 | `workflow/plan-serialization.md` | add the authorization test ahead of its "Serialize (Yes)" table; its criteria are necessary, not sufficient |
-| `workflow/post-game.md` | post-games are authorized by the run they retrospect — name it in frontmatter |
+| `workflow/post-game.md` | post-games left `src/rnd/` on 2026-10-03 for `src/docs/post-games/<version>/` (owner's ruling); a retro written under `src/rnd/` is in the wrong tree |
 | `workflow/session-end.md` | the serialization prompt asks for the authorization, not just the slug |
-| Project `.gitignore` | add `.scratch/` |
 | Project `CLAUDE.md` | cite this document; do not copy it |
 
 ---
 
 ## Anti-Patterns
 
-- **Don't self-authorize.** A row you minted for your own sub-project is not the operator asking for the work.
-- **Don't check in receipts.** Cite the run; put the reference in the store row.
-- **Don't convict on missing citations.** 94% of a real directory has none.
-- **Don't let `README.md` launder the directory** by citing its own contents.
-- **Don't retrofit frontmatter** onto an existing backlog — triage it instead.
-- **Don't delete a diary-shaped document before its finding is minted as a row.** The file is the only copy; the finding is what has value.
 - **Don't treat "I spent 30 minutes on it" as a reason to keep it.** Effort spent is not value to a reader.
 - **Don't write an R&D document to report on R&D clutter.** The census that produced this policy's numbers lives in a session scratchpad and was never committed. An audit that adds a file to the directory it is auditing has already failed its own test — and it is the most tempting file in the whole cleanup to write, because it feels like the deliverable.
-- **Don't issue "delete what wasn't authorized" as an instruction.** It reads as decisive and is unsafe; see Rule 0.
 
 ---
 
 ## Version History
 
-- **v1.2** (2026.09.26): Added the **operator-reads-once** row and the `io/tmp/` section: a one-off report goes in the notify abstract, or into a served, 7-day-swept `io/tmp/` — never `io/write-ups/`. Operator ruling, broadcast `355f708f`. María 🌸 with Mr. Radio 🦉, who proposed the same shape independently.
-- **v1.1** (2026.09.22): Added **Rule A** (an audit must prove each of its own signals fired) and **Rule B** (delinking is not line deletion), both earned during the live cleanup rather than reasoned out in advance. Corrected the door count **55 → 14 → 6**, the first two being grep artifacts published as findings; the wrong numbers are kept in the text deliberately. Named the widest door: the undefined word *"research"* in `claude-config-global.md`, now gated at source.
-- **v1.0** (2026.09.22): Initial policy. Authored by María 🌸 with Mr. Radio 🦉 under task `3a2f726b-caa5-469c-94aa-67d95f0c3936`. Evidence: 153-artifact September census of lupin `src/rnd/`, plus a door/authorization sweep of this repository's own workflow corpus.
+Full history: `docs/version-history/rnd-directory-policy.md`.
 
 ### Outcome of the first application
 

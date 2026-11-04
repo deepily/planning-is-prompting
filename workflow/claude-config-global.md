@@ -26,8 +26,6 @@
 
 > **🗄️ HISTORICAL (pre-cutover; the harness→store mirror is RETIRED, so this is moot BY CONSTRUCTION — kept as a record, NOT a live instruction).** Pre-cutover, the auto-mirror silently dropped writes from non-lupin sessions (`9bf1dc4a`: write-gate derived the project from `LUPIN_ROOT` → always `"lupin"`), and the `/clear` counter-reset could UPSERT-corrupt store rows (`9b23d5bc`). The **dual-write workaround those defects required is CLOSED** — store-only is live; write owed work directly via `task_create` and query the store. Record: planning-is-prompting → workflow/task-store-discipline.md §1–§2.
 
-**Scope**: F4 "managers-first writes" is **RETIRED (2026-06-17 cutover)** — **ALL sessions write their own owed work to the store now**, not just manager-figures.
-
 **Canonical practice**: planning-is-prompting → workflow/task-store-discipline.md (§1 mandate, §2 who-writes, §3 when an explicit `task_create` is owed, §4 transition/receipts discipline).
 
 ## General Preferences
@@ -38,7 +36,6 @@
 - I'm going to be working with multiple repos at a time. Whenever you create a to do list, or you need to ask my permission or guidance on any issue please use the `[SHORT_PROJECT_PREFIX]` mentioned below. That would mean for every to do list item you would insert this short prefix at the beginning of each item
 - When running quick smoke tests always pipe the output to the console and summarize the results in tabular form when the run is finished
 - **R&D documents are AUTHORIZED DELIVERABLES, not a notebook.** A document may be written to `src/rnd` only if it carries frontmatter naming a live authorization **someone other than you granted** — `authorized_by: task:<uuid>` / `broadcast:<id>` / `plan:<path>`. A row you minted for your own sub-project is not authorization. No authorization ⇒ it goes to the worktree-local scratch dir that dies with the tree; if it holds a real finding, that finding becomes a **store row** or a **post-game**, which outlive the worktree. The finding survives; the file does not. Never write logs, probe rigs, receipts, screenshots or data dumps there at any authorization level. Authorized documents begin with the date `yyyy.mm.dd` and get a README link. **Canonical**: planning-is-prompting → `workflow/rnd-directory-policy.md`
-  - ⚠️ *This line used to read "All research and planning documents should be stored in the `src/rnd` directory," and nothing anywhere defined **research**. A seat that had just spent forty minutes chasing a bug had, by any honest reading, produced a research document — so it wrote one. Measured 2026.09.22 on one repo: **153 artifacts in a single month, 0 carrying any frontmatter, 9 cited from anywhere durable.** The directory was not being abused. This sentence was being obeyed.*
 - When I ask you to show me all untracked or uncommitted changes like "Please give me a comprehensive tree list view of all untracked files", I want you to use your internal wrapper for the following CLI commands: `Bash(git ls-files --others --exclude-standard | tree --fromfile -a)`
 
 ## CLAUDE CODE NOTIFICATION SYSTEM
@@ -61,7 +58,6 @@ The cosa-voice MCP server provides audio notifications and interactive prompts f
 
 - **No [PREFIX] needed**: Project auto-detected from working directory
 - **No --target-user parameter**: Routing handled internally
-- **AskUserQuestion compatible**: `ask_multiple_choice()` uses identical format
 
 ### When to Send Notifications
 
@@ -196,7 +192,7 @@ Whenever entering attention-demanding mode, ALSO fire `notify(message=..., notif
 - **Indentation**: 4 spaces (not tabs)
 - **Naming for Python**: snake_case for functions/methods, PascalCase for classes, UPPER_SNAKE_CASE for constants
 - **Naming for JavaScript/TypeScript**: camelCase for variables, functions/methods, PascalCase for classes, UPPER_SNAKE_CASE for constants
-- **Documentation**: Use Design by Contract docstrings for all functions and methods
+- **Documentation**: Use Design by Contract docstrings for all functions and methods. A docstring says what the code does and why, as it is now; dates, ids, incidents and "was previously" go to the commit, the task row or the decisions log (see planning-is-prompting → workflow/docstring-content.md)
   ```python
   def process_input(text, max_length=100):
       """

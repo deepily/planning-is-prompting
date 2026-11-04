@@ -7,7 +7,9 @@
 > ## 😘 BREVITY GATE — Decisions Log entries
 > **One ruling per bullet, ≤3 sentences.** A session that produced five rulings writes **five bullets**, not one mega-bullet. Canonical: `workflow/brevity-mandate.md`.
 >
-> **State the ruling and its rule-of-record; route the narrative elsewhere** — `io/post-games/` for the retro, `src/rnd/` for design reasoning, the store for owed work. The Decisions Log answers *"what was decided and why"* in a form someone can scan a year later, not *"what happened all day."*
+> **Wording**: every line written to TODO.md follows `workflow/entry-writing-rules.md`.
+>
+> **State the ruling and its rule-of-record; route the narrative elsewhere** — `src/docs/post-games/<version>/` for the retro, `src/rnd/` for design reasoning, the store for owed work. The Decisions Log answers *"what was decided and why"* in a form someone can scan a year later, not *"what happened all day."*
 >
 > ⚠️ Added 2026-07-19 — the S139 entry packed five rulings into a single unreadable bullet on the same day its author landed the brevity mandate.
 
@@ -17,7 +19,7 @@
 
 ## Overview
 
-TODO.md is the durable **narrative companion** to the unified task-store. The **store** is the single source of truth for *owed work* (live, owned, status-tracked, liveness-bearing — query with `task_query`); TODO.md holds the **Decisions Log**, the **Pending-Decisions queue**, and the **not-yet-owed backlog** — the durable record that doesn't get buried in history archives. Unlike TODO lists embedded in history.md session entries, this file:
+TODO.md is the durable **narrative companion** to the unified task-store (see Purpose). Unlike TODO lists embedded in history.md session entries, this file:
 
 - Is **branch-horizon-scoped** — keeps the current + next-two branch horizon; older content archives to `todo-archive/` (see Archival Strategy)
 - Is always at project root (easy to find)
@@ -41,30 +43,20 @@ Last updated: YYYY-MM-DD (Session N)
 
 ## Pending
 
-- [ ] Item from current session
-- [ ] Item carried forward from previous session
+- [ ] Decision awaiting a ruling
+- [ ] Backlog item carried forward from a previous session
 - [ ] Long-standing backlog item
 
 ## Completed (Recent)
 
-- [x] Fixed bug XYZ - Session 50
-- [x] Updated documentation - Session 49
-- [x] Refactored auth module - Session 48
+- [x] Decision on auth approach ruled - Session 50
+- [x] Backlog item for API docs resolved - Session 49
+- [x] Backlog item for pagination promoted to a store row - Session 48
 
 ---
 
 *Completed items older than 7 days can be removed or archived.*
 ```
-
-### Field Descriptions
-
-| Field | Purpose |
-|-------|---------|
-| `Last updated` | Timestamp with session number for tracking |
-| `## Pending` | Items not yet completed |
-| `## Completed (Recent)` | Recently finished items with session attribution |
-| `- [ ]` | Uncompleted item checkbox |
-| `- [x]` | Completed item checkbox |
 
 ---
 
@@ -80,8 +72,8 @@ Last updated: YYYY-MM-DD (Session N)
 2. **Read TODO.md** if it exists
 
 3. **Review pending items**:
-   - Identify items from previous sessions
-   - Note which items you plan to address this session
+   - Identify pending decisions and not-yet-owed backlog items from previous sessions (live owed work comes from `task_query`, not from this file)
+   - Note which backlog items you will promote to store rows this session
    - Check if any items were completed outside of Claude sessions
 
 4. **Display summary**:
@@ -90,10 +82,10 @@ Last updated: YYYY-MM-DD (Session N)
    Outstanding Work from TODO.md
    ══════════════════════════════════════════════════════════
 
-   Pending Items (3):
-   - [ ] Implement user authentication
-   - [ ] Update API documentation
-   - [ ] Fix pagination bug
+   Pending Items (3, decisions and not-yet-owed backlog):
+   - [ ] Decide on the authentication approach
+   - [ ] Backlog: update API documentation
+   - [ ] Backlog: look into pagination
 
    Last updated: 2026-01-26 (Session 49)
    ```
@@ -113,42 +105,23 @@ Last updated: YYYY-MM-DD (Session N)
 **Process**:
 
 1. **Open or create TODO.md**:
-   - If file doesn't exist, create it using the template below
+   - If file doesn't exist, create it from the File Format block above
    - If file exists, read current contents
 
-2. **Move completed items** from Pending → Completed section:
+2. **Move resolved backlog and decision items** from Pending → Completed section (live owed work completes in the store with `task_transition`, not here):
    - Add session number attribution: `- [x] Item description - Session N`
    - Remove from Pending section
 
-3. **Add new items** discovered during this session:
+3. **Add new not-yet-owed backlog items** discovered during this session (work you will start is a store row via `task_create`, not a line here):
    - Use checkbox format: `- [ ] New item description`
    - Add to Pending section
 
 4. **Update timestamp**:
    - Update "Last updated: YYYY-MM-DD (Session N)"
 
-5. **Prune old completions** (optional):
-   - Remove completed items older than 7 days
-   - Keep recent completions for context
+5. **Prune old completions** (optional), per the Completed-items rule under Archival Strategy.
 
-**Template for new TODO.md**:
-```markdown
-# TODO
-
-Last updated: YYYY-MM-DD (Session N)
-
-## Pending
-
-- [ ] [First item]
-
-## Completed (Recent)
-
-*No completed items yet*
-
----
-
-*Completed items older than 7 days can be removed or archived.*
-```
+**Template for new TODO.md**: the File Format block above, with `*No completed items yet*` under Completed (Recent).
 
 **Important**: Do NOT add TODO items to the history.md session summary. History.md should only document what happened, not what's pending.
 
@@ -164,12 +137,13 @@ Last updated: YYYY-MM-DD (Session N)
 | add | `/plan-todo add` | Add new item(s) interactively |
 | complete | `/plan-todo complete` | Mark item(s) as complete |
 | edit | `/plan-todo edit` | Review and edit the TODO list |
+| archive | `/plan-todo archive` | Move past-horizon items to `todo-archive/` (steps: Archive Mode in `.claude/commands/plan-todo.md`) |
 
 ### Mode Details
 
 **Default Mode (check/list)**:
 1. Check if `TODO.md` exists in project root
-2. If not: Create from template, notify user
+2. If not: Create from the File Format block, notify user
 3. If exists: Read and display current pending items
 4. Show summary: "X pending, Y completed"
 
@@ -221,11 +195,6 @@ Last updated: YYYY-MM-DD (Session N)
 - Cross-session visibility guaranteed
 - history.md focuses on what happened
 
-**Transition**:
-- Session-end workflow writes to TODO.md instead of history.md
-- Session-start workflow reads from TODO.md
-- history.md session entries reference TODO.md but don't duplicate items
-
 ### Implementation Tracking Documents
 
 **Location**: `src/rnd/YYYY.MM.DD-project-name.md`
@@ -259,17 +228,6 @@ Last updated: YYYY-MM-DD (Session N)
 - Using RS256 algorithm for signing
 - Token expiry: 24 hours
 ```
-
-### When to Use Each Document
-
-| Scenario | Document |
-|----------|----------|
-| "What did I accomplish today?" | history.md |
-| "What do I still need to do?" | TODO.md |
-| "Where am I in this 20-step project?" | Implementation doc |
-| "What tests are failing?" | Implementation doc |
-| "What's the next session priority?" | TODO.md |
-| "What happened last week?" | history.md |
 
 ---
 
@@ -307,15 +265,11 @@ For existing repos with TODOs embedded in history.md:
    See TODO.md for pending items going forward.
    ```
 
-3. **Going forward**:
-   - Only use TODO.md for pending items
-   - history.md documents what happened (not what's pending)
+3. **Going forward**: only TODO.md holds pending items; history.md documents what happened (not what's pending).
 
 ### What NOT to Do
 
 - Don't retroactively modify old history entries
-- Don't duplicate items in both files
-- Don't continue adding TODOs to history.md
 
 ---
 
@@ -342,14 +296,10 @@ notify( "TODO.md has 15 pending items - consider prioritization", notification_t
 
 ## Best Practices
 
-1. **Review at session start**: Always check TODO.md before starting work
-2. **Update at session end**: Always update TODO.md with completions and new items
-3. **Keep items actionable**: Each item should be a clear, completable task
-4. **Add context**: Include enough detail to understand the item later
-5. **Use session attribution**: Always note which session completed an item
-6. **Prune regularly**: Remove old completed items (7+ days)
-7. **Prioritize visually**: Put highest priority items at top of Pending section
-8. **Don't over-detail**: Keep items concise (1-2 sentences max)
+1. **Keep items actionable**: Each item should be a clear, completable task
+2. **Add context**: Include enough detail to understand the item later
+3. **Prioritize visually**: Put highest priority items at top of Pending section
+4. **Don't over-detail**: Keep items concise (1-2 sentences max)
 
 ---
 
@@ -366,7 +316,7 @@ When bug fix mode is active:
 
 ## Version History
 
-- **2026.01.27 (Session 50)**: Initial creation - extracted TODO tracking from history.md pattern
+Full history: `docs/version-history/todo-management.md`.
 
 ---
 

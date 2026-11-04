@@ -79,54 +79,11 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
 **[G] Workflow Execution Audit**
 - Commands: `/plan-workflow-audit`
 - Related files: None
-- Note: Meta-tool for auditing workflow compliance (no dependencies, no cleanup needed)
+- Note: Retired 2026-10-06 and no longer installable. Listed so an older installation can still remove it (no dependencies, no cleanup needed)
 
 ---
 
 ## Uninstallation Flow
-
-### Step 0: Create Uninstall TODO List
-
-**Purpose**: Track uninstallation progress visually using TodoWrite
-
-**Mandate**: ALWAYS create a TodoWrite list at the start of uninstallation
-
-**Template TODO Items**:
-```
-[UNINSTALL] Detect installed workflows
-[UNINSTALL] Present catalog and get user selection
-[UNINSTALL] Validate selection
-[UNINSTALL] Show deletion candidates and get confirmation
-[UNINSTALL] Delete slash command files
-[UNINSTALL] Offer CLAUDE.md cleanup
-[UNINSTALL] Offer .gitignore cleanup
-[UNINSTALL] Handle empty directory cleanup
-[UNINSTALL] Present summary and manual cleanup suggestions
-```
-
-**Instructions**:
-1. Use TodoWrite tool to create uninstallation checklist
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[UNINSTALL]` prefix until finished
-
-**Example**:
-```json
-[
-  {"content": "[UNINSTALL] Detect installed workflows", "status": "in_progress", "activeForm": "[UNINSTALL] Detecting installed workflows"},
-  {"content": "[UNINSTALL] Present catalog", "status": "pending", "activeForm": "[UNINSTALL] Presenting catalog"},
-  {"content": "[UNINSTALL] Validate selection", "status": "pending", "activeForm": "[UNINSTALL] Validating selection"},
-  {"content": "[UNINSTALL] Show deletion candidates", "status": "pending", "activeForm": "[UNINSTALL] Showing deletion candidates"},
-  {"content": "[UNINSTALL] Delete files", "status": "pending", "activeForm": "[UNINSTALL] Deleting files"},
-  {"content": "[UNINSTALL] Offer CLAUDE.md cleanup", "status": "pending", "activeForm": "[UNINSTALL] Offering CLAUDE.md cleanup"},
-  {"content": "[UNINSTALL] Offer .gitignore cleanup", "status": "pending", "activeForm": "[UNINSTALL] Offering .gitignore cleanup"},
-  {"content": "[UNINSTALL] Handle empty directory", "status": "pending", "activeForm": "[UNINSTALL] Handling empty directory cleanup"},
-  {"content": "[UNINSTALL] Present summary", "status": "pending", "activeForm": "[UNINSTALL] Presenting summary"}
-]
-```
-
----
 
 ### Step 1: Detect Installed Workflows
 
@@ -155,36 +112,7 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    Nothing to uninstall. Exiting wizard.
    ```
 
-2. **Scan for installed slash commands**:
-   ```bash
-   # Session Management (A)
-   ls .claude/commands/plan-session-start.md 2>/dev/null && echo "A_installed"
-   ls .claude/commands/plan-session-end.md 2>/dev/null && echo "A_installed"
-
-   # History Management (B)
-   ls .claude/commands/plan-history-management.md 2>/dev/null && echo "B_installed"
-
-   # Planning is Prompting Core (C)
-   ls .claude/commands/p-is-p-00-start-here.md 2>/dev/null && echo "C_installed"
-   ls .claude/commands/p-is-p-01-planning.md 2>/dev/null && echo "C_installed"
-   ls .claude/commands/p-is-p-02-documentation.md 2>/dev/null && echo "C_installed"
-
-   # Backup Infrastructure (D)
-   ls .claude/commands/plan-backup-check.md 2>/dev/null && echo "D_installed"
-   ls .claude/commands/plan-backup.md 2>/dev/null && echo "D_installed"
-   ls .claude/commands/plan-backup-write.md 2>/dev/null && echo "D_installed"
-
-   # Testing Workflows (E)
-   ls .claude/commands/plan-test-baseline.md 2>/dev/null && echo "E_installed"
-   ls .claude/commands/plan-test-remediation.md 2>/dev/null && echo "E_installed"
-   ls .claude/commands/plan-test-harness-update.md 2>/dev/null && echo "E_installed"
-
-   # Installation Wizard (F)
-   ls .claude/commands/plan-install-wizard.md 2>/dev/null && echo "F_installed"
-
-   # Workflow Execution Audit (G)
-   ls .claude/commands/plan-workflow-audit.md 2>/dev/null && echo "G_installed"
-   ```
+2. **Scan for installed slash commands**: for each family in the Workflow Catalog Reference above, `ls .claude/commands/<command>.md` for each of its commands. A family counts as installed if **any** of its commands exists; record its letter.
 
 3. **Build installed workflow list**:
 
@@ -221,8 +149,6 @@ This catalog mirrors the installation wizard options. During uninstallation, wor
    Nothing to uninstall. Exiting wizard.
    ```
 
-**Update TodoWrite**: Mark "Detect installed workflows" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```python
 notify( "Detection complete - found X installed workflows", notification_type="progress", priority="low" )
@@ -256,27 +182,17 @@ Currently Installed Workflows:
     Commands to be removed:
       • /plan-session-start
       • /plan-session-end
-    Manual cleanup needed:
-      • history.md (contains your session history)
-      • history/ (archive directory)
+    Manual cleanup: see Manual Cleanup Reference
 
 [B] History Management ✓ INSTALLED
-    Commands to be removed:
-      • /plan-history-management
-    Manual cleanup needed:
-      • history/ (archive directory, if not using Session Management)
+    (commands and manual cleanup as listed in the catalog)
 
 ┌─────────────────────────────────────────────────────────┐
 │ PLANNING WORKFLOWS                                      │
 └─────────────────────────────────────────────────────────┘
 
 [C] Planning is Prompting Core ✓ INSTALLED
-    Commands to be removed:
-      • /p-is-p-00-start-here
-      • /p-is-p-01-planning
-      • /p-is-p-02-documentation
-    Manual cleanup needed:
-      • src/rnd/ (implementation docs, if any were created)
+    (commands and manual cleanup as listed in the catalog)
 
 ┌─────────────────────────────────────────────────────────┐
 │ BACKUP WORKFLOWS                                        │
@@ -322,8 +238,6 @@ What would you like to do? [1/2/3]
    - Special warning for Installation Wizard removal
 
 3. **Wait for User Selection**
-
-**Update TodoWrite**: Mark "Present catalog" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -392,15 +306,10 @@ You selected to uninstall:
 
 Total slash commands to be removed: 5
 
-Manual cleanup will be suggested for:
-  • history.md (Session Management)
-  • history/ (Session Management)
-  • src/rnd/ (Planning docs, if any)
+Manual cleanup will be suggested for the items listed under these families in the Manual Cleanup Reference.
 
 Ready to proceed with deletion preview.
 ```
-
-**Update TodoWrite**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -499,8 +408,6 @@ Proceed with deletion of these 5 files? [y/n]
    **If user responds 'y'**:
    Proceed to Step 5 (deletion).
 
-**Update TodoWrite**: Mark "Show deletion candidates" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 ask_yes_no( "Proceed with deletion of selected workflows?", default="no", timeout_seconds=300 )
@@ -560,8 +467,6 @@ Deletion Complete: 5 files removed
    You may need to manually delete the failed file:
      rm .claude/commands/plan-session-start.md
    ```
-
-**Update TodoWrite**: Mark "Delete files" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -681,8 +586,6 @@ What would you like to do? [1/2/3]
    Remove these sections? [y/n]
    ```
 
-**Update TodoWrite**: Mark "Offer CLAUDE.md cleanup" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "CLAUDE.md cleanup handled", notification_type="progress", priority="low" )
@@ -767,8 +670,6 @@ What would you like to do? [1/2]
    This is fine - the entries won't cause any issues even if
    the directory is empty.
    ```
-
-**Update TodoWrite**: Mark "Offer .gitignore cleanup" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -859,8 +760,6 @@ What would you like to do? [1/2]
    This is fine - you can install workflows again anytime.
    ```
 
-**Update TodoWrite**: Mark "Handle empty directory" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Directory cleanup handled", notification_type="progress", priority="low" )
@@ -907,19 +806,7 @@ Directory:
 The following files were NOT automatically removed.
 Review and delete manually if no longer needed:
 
-Session Management (A):
-  • history.md - Contains your session history
-    Location: ./history.md
-    Action: Review contents, delete if no longer needed
-
-  • history/ - Archive directory with old session summaries
-    Location: ./history/
-    Action: Review archives, delete directory if no longer needed
-
-Planning is Prompting Core (C):
-  • Implementation docs (if any were created)
-    Location: ./src/rnd/*-implementation.md
-    Action: Check src/rnd/ for planning documents, archive or delete
+[List the Manual Cleanup Reference items (location and action) for the families removed, and only those]
 
 ──────────────────────────────────────────────────────────
 🔄 To Reinstall Workflows Later
@@ -947,8 +834,6 @@ planning-is-prompting workflows!
 3. **Include reinstallation instructions** (always):
 
    Make it clear they can easily reinstall anytime.
-
-**Update TodoWrite**: Mark "Present summary" as completed (all tasks done!)
 
 **Send Notification**:
 ```bash
@@ -1023,4 +908,4 @@ This section provides detailed guidance on cleaning up related files that were n
 
 ## Version History
 
-- **2025.10.21**: Initial creation - uninstall wizard for planning-is-prompting workflows
+Full history: `docs/version-history/uninstall-wizard.md`.

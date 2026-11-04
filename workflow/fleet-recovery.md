@@ -62,7 +62,7 @@ The resumed session comes back **verbatim** — mid-topic, mid-task, with its fu
 **Do not have one session relaunch the entire fleet.** A manager knows its own crew, their lanes, and which of them still had owed work; an outside session is guessing.
 
 1. The user (or the surviving session) resurrects the **managers** — one per repo.
-2. Each manager resurrects **its own workers**, headless, from their uuids.
+2. Each manager resurrects **its own workers**, headless, from their uuids, in either skeleton-crew mode: resuming restores seats that were allocated and adds none.
 
 This keeps the fan-out where the knowledge is, and it scales.
 
@@ -100,11 +100,10 @@ The wipe itself costs nothing. **Acting on stale inherited beliefs is what costs
 
 ## Related workflows
 
-- `memento-management.md` — the fallback when a transcript is genuinely gone
-- `manager-autonomy.md` — the standing authority under which a manager respawns its crew
-- `session-start.md` — Step 4.7, the owed-work reconcile a resumed session still owes
+- `manager-autonomy.md` — the standing authority under which a manager respawns its crew (a resume of a wiped crew is allowed in either skeleton-crew mode)
 
 ---
 
 **Version history**
-- **v1.0** (2026-07-13) — Created after a whole-fleet tmux wipe took 7 sessions simultaneously. All 7 transcripts recovered intact; zero work lost. Procedure verified end-to-end (`--dry-run` confirmed the launcher needs no modification).
+
+Full history: `docs/version-history/fleet-recovery.md`.

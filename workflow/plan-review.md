@@ -10,6 +10,8 @@
 
 > **⚠️ SEQUENTIAL EXECUTION MANDATE (NON-NEGOTIABLE)**: The three passes — REUSE pre-pass (§4), Pass 1 Fitness (§5), Pass 2 Ownership-Language Audit (§8) — MUST run **strictly sequentially in that order**. Each pass must fully close (findings delivered, gate cleared, Resolution Loop converged) before the next pass begins. **Parallel execution is PROHIBITED**: do NOT spawn multiple `Agent` (subagent) tool calls in a single message to run two or three passes concurrently; do NOT split the prompts across simultaneous sessions; do NOT invoke them in any tool-call batch that fires them in parallel. The pass-ordering rationale in §3 is load-bearing — running them in parallel discards every benefit of the ordering and re-introduces the exact failure modes the gate was designed to prevent (wording polish on text fitness-resolution would have deleted; ownership analysis on a structural skeleton that REUSE would have dissolved). If you find yourself about to issue a single message containing multiple `Agent` invocations covering more than one pass, **STOP** — that is the failure mode this mandate names.
 >
+> **Exemption: the cascade (§4a).** The ban above governs an ordinary review (the §4a critique branch) run by one session over one plan. A plan routed to `/plan-review-cascaded` (two or more reviewable sections) is exempt from the "no simultaneous sessions" clause, because that command is built to run several seats at once: an Author, three stage reviewers and a Manager. What the cascade may do: work **different sections** at the same time, so one reviewer is on section A while another is on section B at a different stage. What still holds inside it, per section: the three stages run in order (Usability/Reuse, then Viability/Gap, then Ownership-Language, each carrying the rubric of the corresponding pass here), and a stage does not start on a section until the previous stage has closed on it. Two reviewers never work the same section at different stages at once, and the exemption does not cover fanning out `Agent` subagent calls inside a single session. The user gates at §6 and §9 do not fire per pass in the cascade; the Manager filters findings and escalates to the user only on the documented triggers (`plan-review-cascaded.md`, `plan-review-cascaded-parallelism.md` §4.2).
+>
 > **⚠️ NOT A SECURITY REVIEW**: Pass 2 (Ownership-Language Audit) hunts ownership-language gaps and test-execution hand-offs — places where "done" could be claimed without AI-executed verification, or where work is silently snuck onto the user. It is **NOT** a software-security review, threat model, or OWASP-style attack-surface audit. If you find yourself flagging path-traversal, manifest-tampering, Unicode-bypass, input-sanitization, or attack-surface findings, you are running the wrong pass — software-vulnerability discovery is a separate, out-of-scope concern. The word "adversarial" was retired from this gate's nomenclature on 2026-05-15 precisely because it pulled sessions into OWASP threat-model semantics. See `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the rename rationale.
 >
 > **⚠️ Conversation Mode Awareness**: this gate has **non-negotiable user-decision pauses** at §6 (Gate 1, post-Fitness), §9 (Gate 2, post-Ownership-Audit), and §11 (Layer-3 Design Concerns). When `conversation_mode_active=true`, every pause is a voice gate.
@@ -52,7 +54,7 @@ If any convention is missing, the review is calibrated wrong: stop and amend the
 
 **The order is deliberate**: REUSE pre-pass → Pass 1 (Fitness, design completeness) → Pass 2 (Ownership-Language Audit, executor language).
 
-**Strictly sequential — never parallel**: each pass must fully close before the next begins. "Fully closed" means findings delivered, the user gate cleared, approved fixes applied, and the Resolution Loop's convergence re-grep returns zero new hits. **Spawning multiple `Agent` (subagent) tool calls in a single message to run two or three passes in parallel is PROHIBITED**, as is splitting the prompts across simultaneous sessions or any other concurrent-execution dodge. The user gates at §6 and §9 only function in a serial pipeline; running passes concurrently silently bypasses them. If a competent-but-impatient agent thinks it can save wall-clock time by parallelizing, the answer is no — the pass-ordering argument below explains why (and the user has explicitly observed this failure mode in practice).
+**Strictly sequential — never parallel**: each pass must fully close before the next begins. "Fully closed" means findings delivered, the user gate cleared, approved fixes applied, and the Resolution Loop's convergence re-grep returns zero new hits. **Spawning multiple `Agent` (subagent) tool calls in a single message to run two or three passes in parallel is PROHIBITED**, as is splitting the prompts across simultaneous sessions or any other concurrent-execution dodge. The user gates at §6 and §9 only function in a serial pipeline; running passes concurrently silently bypasses them. If a competent-but-impatient agent thinks it can save wall-clock time by parallelizing, the answer is no — the pass-ordering argument below explains why (and the user has explicitly observed this failure mode in practice). The one exemption is the cascade (§4a), which parallelizes across sections and stays strictly sequential within each; see the exemption note under the mandate at the top of this file.
 
 **Why this order**: structural gaps invalidate ownership analysis. If half the plan is `TBD` or has missing steps, polishing test-ownership wording on the present half is premature — those steps may be deleted, redesigned, or substantively reworked at fitness-resolution time, and the wording analysis is wasted. Pass 1 (Fitness) hardens the structural skeleton; Pass 2 (Ownership-Language Audit) then polishes the executor language on text that is stable.
 
@@ -77,7 +79,7 @@ Every plan document that reaches this gate is routed by **SIZE, not by pattern**
 
 ### The critique branch
 
-**SPAWN ONE CRITIC SEAT.** The branch is not a different procedure you run on yourself — it exists to supply a **SECOND PERSON**. **Self-critique does not satisfy this branch.** A session that reviews its own plan has produced zero other-seat checks, which is the exact gap this dispatch was added to close.
+**SPAWN ONE CRITIC SEAT.** While skeleton crew is on (`manager-autonomy.md` §2) nothing is spawned: a peer manager acts as the critic. While it is off, spawn the seat. The branch is not a different procedure you run on yourself — it exists to supply a **SECOND PERSON**. **Self-critique does not satisfy this branch.** A session that reviews its own plan has produced zero other-seat checks, which is the exact gap this dispatch was added to close.
 
 **The critic receives**: the plan document, and the standing mandates it must honor.
 **The critic's mandate** is the Reviewer charter already in force ([`swe-team-roles.md`](swe-team-roles.md) § Reviewer): *adversarial review — you try to refute, not rubber-stamp.* Nothing new is created here; the charter is applied one phase earlier, to a spec instead of a diff.
@@ -134,20 +136,76 @@ fixture, anything), actively grep {{CODEBASE_ROOTS}} for prior art before
 accepting it as new. Do NOT skip the grep. The most common silent failure
 mode of AI-authored plans is missing existing helpers.
 
-For each new-thing, output one row:
+For each new-thing, run the reuse check (below), then output one row:
 
-| New thing the plan proposes | Existing prior art (file:line) | Verdict |
+| New thing the plan proposes | Need sent | Candidates read (file:line) | Verdict | Outcome line |
 
 Verdicts (pick exactly one):
 - reuse-as-is        — existing code already does what the plan needs
 - extend-existing    — extend the named existing function/class
-- genuinely-new      — no prior art found; explain WHY this is novel
+- genuinely-new      — after reading every candidate, nothing does the
+                       job; name the difference
+
+The reuse check, per new-thing:
+1. Write the need: what the code would do, not what it would be called.
+2. If a reuse tool is installed, call it with the need and keep the
+   receipt id, the verdict and any cause.
+3. Run the tool's plain-text search on that receipt every time, adding
+   three to six identifier words you would expect existing code to use.
+   Keep its search id.
+4. Read the source: the top-rated candidate first, then the rest of the
+   shortlist, then what the search found.
+5. Rule, and write the outcome line in the last column.
+
+Reading the answer:
+- A shortlisted candidate is a lead, not a match. Expect most of the
+  shortlist to be look-alikes. Never rule on a score.
+- "Uncertain, read the source" means the tool does not know. It never
+  means nothing exists.
+- A failed lookup (the tool hit a limit or a call failed) still counts.
+  Cite its receipt, record the cause, run the search, and decide from
+  the source, as for any uncertain answer.
+- Send the need itself where the tool takes one. A lookup on a nearby
+  existing symbol does not send the need, so the row says so.
+- An empty or short shortlist is not "nothing exists" either.
+- genuinely-new needs the candidates read and the search cited. It is
+  never ruled on a shortlist, a score or an uncertain answer alone.
+
+If no reuse tool is installed, or the tool refuses this repository,
+grep {{CODEBASE_ROOTS}}, read what grep finds, and write `unindexed` in
+both id positions of the outcome line.
 
 DO NOT fix anything yet. Deliver the table. Wait for my confirmation.
 After I review, I'll tell you which findings to apply.
 ```
 
-**After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers — this persists past the review and is useful at code-write time.
+**The outcome line**: every check ends in one line that ties the lookup to what the plan decided. A script can read it, so outcomes can be counted later.
+
+```text
+REUSE-OUTCOME <receipt id> :: <search id> :: REUSED <symbol> | EXTENDED <symbol> | WROTE_NEW <difference> :: <plan path>#<step>
+```
+
+- The plan author writes it when the step is planned. The implementer confirms it, or writes a second line, when the code lands, so a plan that said `REUSED` and shipped new code shows both.
+- `WROTE_NEW` takes any text that does not contain ` :: `. There is no fixed list of reasons.
+- Where the tool sends nothing for a definition it refuses, the receipt position holds `excluded`. Where the code is outside the tool's index or repository, both id positions hold `unindexed`, and the reviewer challenges the line.
+- A receipt with no outcome line is a lookup nobody acted on.
+
+**When the check is required**: the outcome lines are required from the day this text lands; an installed checker adds refusal, not the requirement. Where the repository installs a reuse tool and an outcome checker, every planning and coding decision goes through the check. The checker refuses a line that starts with `REUSE-OUTCOME` and does not match the format. It refuses a line whose receipt or search id is not in the tool's call log, with two exceptions. `excluded` passes when the log holds the matching refused call. `unindexed` passes the checker, because the log holds nothing to check it against, and the reviewer challenges it instead. A decision with no outcome line is refused. Where no checker is installed, write the lines anyway.
+
+**Why every rule above exists**: lupin measured its checker on 1 and 2 Nov 2026. On 70 real requests, the median request had 7 wrong candidates rated 0.30 or higher, the shortlist line, and the best-rated wrong candidate's median rating was 0.95. The right answer was the top-rated candidate in 50 of the 60 requests where it was rated (lupin `io/write-ups/2026.11.02-judge-stage-a-reference-chloe.md`). Judged one pair at a time on 97 real labelled pairs, the judge rated 19 of 46 not-same pairs at 0.30 or higher, 41% (lupin `io/write-ups/2026.11.02-stage-c-results-chloe.md`). The index search never found 10 of 70 known answers (lupin revised plan §15.3), and the plain-text search on the request text alone found 1 of those 10 (a replay, 2 Nov). Design and rulings: this repository's `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8.
+
+**Three vocabularies**: the tool, this pre-pass and a code-review skill each name the same outcomes differently. This table maps them, so a receipt cited in a prior-art row needs no translation. The example names are lupin's `check_exists` verdicts and its reuse-reviewer skill.
+
+| `check_exists` verdict | Section 4 prior-art label | Outcome line | Reuse-reviewer ruling |
+| --- | --- | --- | --- |
+| `REUSE` | `reuse-as-is` | `REUSED <symbol>` | `DUPLICATE` |
+| `EXTEND` | `extend-existing` | `EXTENDED <symbol>` | `EXTEND <symbol>` |
+| `UNCERTAIN_READ_SOURCE` | none yet: read the source first | whichever the reading supports | the reviewer rules only after reading the candidates |
+| none: the tool never says it | `genuinely-new`, after reading | `WROTE_NEW <difference>` | `DISTINCT <why>`, after reading |
+
+`check_exists` no longer answers `NEW`. A sweep that found nothing answers `UNCERTAIN_READ_SOURCE` with the cause `NO_MATCH`, and still names the nearest entries to read.
+
+**After review**: apply approved findings as edits to the plan docs. Append a "Prior art referenced" section to `00-index.md` listing all `reuse-as-is` and `extend-existing` verdicts with their file:line pointers and receipt ids — this persists past the review and is useful at code-write time.
 
 **Single-doc plans**: the REUSE pre-pass works on any doc shape, not just multi-doc Pattern A/B/C structures. It runs as part of this gate under the critique branch (§4a) — **there is no separate standalone command.**
 
@@ -222,10 +280,7 @@ DO NOT fix anything yet. Deliver:
 I'll review and decide which findings to resolve before Pass 2 begins.
 ```
 
-**Output**:
-- Findings table (5 columns: File / Line or section / Deficiency type / What's missing / Proposed fix)
-- Explicit proposed answers to every enumerated TBD
-- Raw output from the two greps
+**Output** (the prompt's deliverables: the findings table, the TBD answers and the raw output of the two greps):
 - "Design concerns" section (mandatory in Pass 1, even if empty — say so explicitly)
 
 ---
@@ -329,9 +384,7 @@ separately in a "Design concerns" section below the findings table. The
 frozen anchor; surface challenges to them, don't silently override.
 ```
 
-**Output**:
-- Findings table (4 columns: File / Line / Problem / Proposed fix)
-- Raw output from the three greps
+**Output** (the prompt's deliverables: the findings table and the raw output of the three greps):
 - (Optional) "Design concerns" section if Layer 3 challenges surface
 
 ---
@@ -393,20 +446,11 @@ Use partial re-runs only when the user explicitly asserts the skipped passes are
 
 ## 13. Anti-Patterns
 
-In addition to the gate-violations called out inline:
+The gate violations above are each stated where they apply; one more is listed here:
 
 | Anti-pattern | Why it's prohibited |
 |--------------|---------------------|
-| Applying findings without the user gate | Turns review into rubber-stamping. Gate exists for the user to keep decision authority. |
 | Collapsing Pass 1 + Pass 2 into one prompt | Each pass hunts orthogonal failure modes. Bundling loses signal. |
-| AI volunteering "let me just fix the obvious ones" | Same as above — bypasses the gate. Required response: "No. Findings only." |
-| Silently overriding Layer 3 in either pass | The "Design concerns" lane is the only acceptable override path for Layer 3. In-line fixes that change a decision = silent override. |
-| Skipping the convergence re-grep | Without it, "resolved" is self-reported. The greps are cheap; run them. |
-| Re-reading the docs between Pass 1 and Pass 2 | Pass 2 explicitly says "use the context from the previous pass." Re-reading wastes the bundled-context advantage and risks divergence. |
-| Reading order ignored | "Do not skip. Do not skim." The anchor files (Layer 1/2) MUST be loaded before the docs being reviewed; otherwise either pass loses the anchor to compare against. |
-| Running Ownership-Language Audit before Fitness | Wording polish on text that fitness-resolution is about to delete or restructure is wasted work. See §3 for the full ordering rationale. |
-| Running passes in parallel (concurrent `Agent` calls, simultaneous sessions, batched invocations) | The §3 ordering is load-bearing. Parallel execution discards every benefit of the order and silently bypasses the §6/§9 user gates (which only function in a serial pipeline). REUSE may dissolve components Pass 1 was reviewing; Pass 1 may delete steps Pass 2 was wording-polishing. The user has explicitly observed this failure mode — do not repeat it. |
-| Treating Pass 2 as a security / threat-model review (path traversal, manifest tampering, Unicode bypass, attack surface) | Pass 2's job is the binary `EXECUTOR: AI` vs `EXECUTOR: HUMAN` audit and the no-`Manual E2E` sweep. Software-vulnerability discovery is a SEPARATE concern, out of scope for this gate. The word "adversarial" was retired from Pass 2's name on 2026-05-15 specifically because sessions confabulated it into OWASP attacker-mindset semantics. If you find yourself flagging input-sanitization, path-handling, serialization-safety, or attack-surface concerns, you are running the wrong pass. |
 
 ---
 
@@ -421,9 +465,6 @@ In addition to the gate-violations called out inline:
 **In `~/.claude/CLAUDE.md`**:
 - `TEST OWNERSHIP MANDATE` — Layer 1 anchor for Pass 2 (Ownership-Language Audit; "user is never a tester")
 - `DOCUMENTATION-FIRST PROTOCOL` — the gap plan-review fills (docs before code, but no quality bar on the docs)
-
-**Per-project skill wrappers** (out of scope for this canonical doc; tracked separately):
-- `<project>/.claude/skills/plan-review/SKILL.md` — auto-discovers docs in target dir, injects project-specific tags + decision-anchor format
 
 ---
 
@@ -443,15 +484,19 @@ The prompts in §4, §5, and §8 contain double-brace placeholders that per-proj
 | `{{GREP_TARGETS}}` | Doc directory the greps run against (e.g., `src/rnd/v0.1.7/<milestone>/`) | Pass 1, Pass 2 |
 | `{{TBD_QUESTIONS}}` | Numbered enumeration of currently-flagged TBDs in the docs (per-milestone, fills at invocation time) | Pass 1 |
 
-Per-project skill wrappers at `<project>/.claude/skills/plan-review/SKILL.md` auto-discover most of these (anchor files via well-known paths, plan docs via target-directory enumeration, greps via the directory itself). `{{TBD_QUESTIONS}}` is the only slot that's per-milestone and must be enumerated explicitly at invocation.
+Per-project skill wrappers at `<project>/.claude/skills/plan-review/SKILL.md` (out of scope for this canonical doc; tracked separately) auto-discover most of these (anchor files via well-known paths, plan docs via target-directory enumeration, greps via the directory itself) and inject the project-specific tags and the decision-anchor format. `{{TBD_QUESTIONS}}` is the only slot that's per-milestone and must be enumerated explicitly at invocation.
 
 ---
 
 ## Origin Artifacts
 
-The two source prompts in Lupin (kept as historical artifacts; canonical version is this file):
+The two source prompts in Lupin (kept as historical artifacts; canonical version is this file). Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to one specific milestone; this canonical doc is the abstract version, and per-milestone wrappers fill in the slots:
 
 - `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/05-adversarial-review-prompt.md` — historical Lupin Pass-2 instance (filename preserved for archival fidelity; PIP renamed the equivalent pass to "Ownership-Language Audit" on 2026-05-15)
 - `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/06-fitness-review-prompt.md` — Pass 1 (Fitness) instance
 
-Both files are headed `[DONE, DO NOT REEXECUTE]` and parametrized to that specific milestone. Note: the originating Lupin pass-order was Adversarial→Fitness; PIP's canonical order is Fitness→Ownership-Audit — see §3 for the rationale and `src/rnd/2026.05.15-plan-review-rename-drop-adversarial.md` for the 2026-05-15 rename. This canonical doc is the abstract version; per-milestone wrappers fill in the slots.
+---
+
+## Version History
+
+Full history: `docs/version-history/plan-review.md`.

@@ -1,7 +1,7 @@
 # Backup Command - Dry Run (Safe Default)
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---

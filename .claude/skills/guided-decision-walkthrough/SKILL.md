@@ -22,7 +22,7 @@ Drive a series of informed decisions for the user, one at a time, framed with pr
 4. **For each decision** (state "decision N of M"):
    - **Frame live**: 2–4 options; pros AND cons each; **recommended option first** with `(Recommended)` in its label; one-line rationale. All detail in `abstract`; the spoken `question` is a one-line headline (TTS-brevity).
    - **Ask**: `ask_multiple_choice`, `priority="high"`, a sane `timeout_seconds`, and a `default` keyed by header = the recommended option's exact label (covers a **timeout** — ⚠️ **not** an absent user; see below). `multiSelect=true` when options aren't mutually exclusive.
-   - **Record**: append the ruling to `## Decisions Log` (ADR-lite: `YYYY-MM-DD — decision → ruling. Why: …`) and inline into the relevant doc when one exists; remove the item from `## Pending Decisions`.
+   - **Record**: append the ruling to `## Decisions Log` (ADR-lite: `YYYY-MM-DD — decision → ruling. Why: …`) and inline into the relevant doc when one exists (wording follows `workflow/entry-writing-rules.md` in planning-is-prompting); remove the item from `## Pending Decisions`.
 
 5. **Recap** — brief spoken headline + a rulings table in the `abstract`.
 

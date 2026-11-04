@@ -6,8 +6,6 @@ This document contains the comprehensive start-of-session workflow for initializ
 
 At the start of work sessions, perform the following initialization ritual with **[SHORT_PROJECT_PREFIX]** prefix for all notifications. Send notifications after completing each step to keep me updated on progress.
 
-**Key Principle**: The initialization steps themselves form a TodoWrite checklist for visual progress tracking.
-
 ---
 
 ## ⚠️ Conversation Mode Awareness
@@ -28,26 +26,6 @@ At the start of work sessions, perform the following initialization ritual with 
 
 ## Preliminary -1: Preferred-Persona Env Var (CONDITIONAL — fires at SessionStart hook, not in assistant turn)
 
-**Purpose**: Allow a repo to declare its canonical default persona via environment variable, so cosa-voice's SessionStart hook allocates that persona deterministically instead of choosing randomly. This is what restores cross-day and cross-repo narrative continuity: opening a fresh Claude Code session in `<project>` should consistently land on the same persona, without the user having to type a slash command.
-
-**When this applies**: When `COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>` is set in the user's shell environment AND the project the session is allocated to matches `<PROJECT_UPPER>`. If the env var is unset for the current project, skip this Preliminary entirely — random allocation stands as before, and Preliminary 0.5 (the slash-command swap path) remains the only persona-override mechanism.
-
-**Why this exists**: prior to this feature, the only way to claim a specific persona was the per-session slash-command path (`/plan-session-start María` → Preliminary 0.5 swap). That required the user to remember the command AND the arg on every fresh session — high friction, easy to forget. The env-var path makes the preference **declarative and persistent**: once exported in `~/.bashrc`, every new Claude Code session in that repo claims the preferred persona automatically.
-
-**Important**: this Preliminary describes a step performed by **cosa-voice's SessionStart hook**, not by the assistant. The hook fires before the assistant's first turn. By the time Preliminary 0 (`get_session_info()`) runs, the env-var path has already either succeeded (persona is on the bridge as the preferred one) or failed gracefully (random fallback was allocated and a conflict-notify was queued). The assistant's only obligation is to honor the persona returned by Preliminary 0 — same contract as before.
-
----
-
-### Naming pattern
-
-```
-COSA_VOICE_PREFERRED_PERSONA__<PROJECT_UPPER>
-```
-
-- Prefix `COSA_VOICE_*` — the allocator lives in cosa-voice (the MCP server), not in any consumer project. The env var is read there, not in this workflow's slash command.
-- Suffix `__<PROJECT_UPPER>` — the cosa-voice session bridge already knows the project name from session creation (visible in `get_session_info()` → `project`). Suffixing the env var with the project lets one universal lookup pattern serve every repo.
-- Project name normalization: lowercase → UPPER, hyphens → underscores. So project `plan` → `__PLAN`, project `cosa-voice` → `__COSA_VOICE`.
-
 ### Example shell-rc setup
 
 ⚠️ **Do not hand-export these — as of 2026-08-18 they are DERIVED.** The one
@@ -60,36 +38,7 @@ decides who may WRITE to the task store, and a stale copy-paste puts a retired
 name back on one side only. Lupin's SessionStart hook now compares the two and
 prints a drift block into the session's boot context when they disagree.
 
-```bash
-# ~/.claude/fleet-roster.env — the ONE place a repo's manager is named.
-# Plain KEY="value" (the bash-source ∩ systemd EnvironmentFile intersection).
-COSA_VOICE_MANAGERS__PLAN="María"
-COSA_VOICE_MANAGERS__LUPIN="Mr. Radio, Cheech"
-# Order matters: the roster HEAD is the declared fallback manager.
-# Add a line per repo; the persona chain follows automatically.
-```
-
-### Conflict behavior
-
-When the env var is set but the requested persona cannot be allocated, the SessionStart hook **does NOT block, prompt, or queue-and-wait**. Behavior:
-
-| Situation | Hook action | What the assistant sees |
-|---|---|---|
-| Preferred persona unallocated | Allocate it; no notify | `get_session_info()` returns the preferred persona |
-| Preferred persona held by another live session | Allocate a random unallocated persona; queue a `notify( priority="high" )` describing the conflict ("María is held by session abc12345 — allocated Rio instead. Kill that session to free María, restart this one.") | `get_session_info()` returns the random persona; the notify fires shortly after MCP tools surface |
-| Preferred persona name is invalid (typo, not in pool) | Allocate a random unallocated persona; queue a `notify( priority="high" )` listing the available pool | Same as above |
-| Env var unset for this project | Existing random-allocation behavior; no notify | Same as pre-feature |
-
-**Rationale for notify-only conflict UX**: the SessionStart hook fires before the assistant exists, so it cannot run an interactive prompt (no `ask_multiple_choice` surface yet). The user is expected to resolve the conflict asynchronously: kill the holding session, restart, and the next attempt will succeed cleanly. This is intentionally lower-touch than Preliminary 0.5 (which CAN prompt interactively because the assistant is alive at that point).
-
 ### Relationship to Preliminary 0.5 (slash-command swap)
-
-The two paths are **complementary, not redundant**:
-
-| Mechanism | Surface | When it fires | Conflict UX |
-|---|---|---|---|
-| **Preliminary -1** (env var) | `COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` in shell rc | At SessionStart hook, before assistant turn | Notify-only, async resolution by user |
-| **Preliminary 0.5** (slash command) | `/plan-session-start María` arg | After Preliminary 0, before first ack | Interactive prompt via `ask_multiple_choice` |
 
 **Composition**: Preliminary -1 sets the per-repo declarative default. Preliminary 0.5 overrides per-session when the user wants a different persona for a specific work session (e.g., narrative-continuity reasons across days). The slash-command arg always wins over the env var; if both are absent, random allocation stands.
 
@@ -121,7 +70,7 @@ The env-var path fires **only on fresh allocation** — when no persona is curre
 
 **Purpose**: Resolve session identity (persona) and link-building primitives (doc-scope envelope) BEFORE composing any user-facing text, including the first acknowledgment and the start-notification ping below.
 
-**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before TodoWrite creation, before reading any history/config files.
+**Timing**: Execute as the VERY FIRST action of the session — before the Preliminary start notification, before reading any history/config files.
 
 **Steps (all MANDATORY, in order)**:
 
@@ -299,7 +248,7 @@ Persona name and voice ID are **bound by design** — they are a 5-tuple `(name,
 
 **Purpose**: Immediately notify user that session initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0) — AND AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
+**Timing**: Execute AFTER Preliminary 0 (persona + doc-scope MUST be resolved first) AND AFTER Preliminary 0.5 if it fired (post-swap persona is canonical). The start notification's spoken text MAY name the resolved persona in the first acknowledgment (e.g., "María here, starting session initialization"). If Preliminary 0.5 swapped the persona, this notification names the POST-swap persona — never the pre-swap one.
 
 **Command**:
 ```python
@@ -313,41 +262,6 @@ notify( "Starting session initialization, loading config and history...", notifi
 - Complements the work direction question (which comes in Step 5)
 
 **Note**: This is a low-priority "I'm starting" ping. The high-priority work direction question comes in Step 5, via `ask_multiple_choice()`.
-
----
-
-## Step 0: Create Session Start TODO List
-
-**Purpose**: Track initialization progress visually using TodoWrite
-
-**Mandate**: ALWAYS create a TodoWrite list at the start of session initialization
-
-**Template TODO Items**:
-```
-[SHORT_PROJECT_PREFIX] Load configuration files
-[SHORT_PROJECT_PREFIX] Discover available workflows
-[SHORT_PROJECT_PREFIX] Load session history
-[SHORT_PROJECT_PREFIX] Reconcile owed work on rehydrate (store query + memento)
-[SHORT_PROJECT_PREFIX] Identify active work and outstanding TODOs
-[SHORT_PROJECT_PREFIX] Present session context and await direction
-```
-
-**Instructions**:
-1. Use TodoWrite tool to create initialization checklist
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-
-**Example**:
-```json
-[
-  {"content": "[PLAN] Load configuration files", "status": "in_progress", "activeForm": "[PLAN] Loading configuration"},
-  {"content": "[PLAN] Discover available workflows", "status": "pending", "activeForm": "[PLAN] Discovering workflows"},
-  {"content": "[PLAN] Load session history", "status": "pending", "activeForm": "[PLAN] Loading history"},
-  {"content": "[PLAN] Identify outstanding work", "status": "pending", "activeForm": "[PLAN] Identifying work"},
-  {"content": "[PLAN] Present session context", "status": "pending", "activeForm": "[PLAN] Presenting context"}
-]
-```
 
 ---
 
@@ -365,7 +279,7 @@ notify( "Starting session initialization, loading config and history...", notifi
 - `ask_open_ended_batch()` - Batch open-ended questions (single screen, blocking)
 
 **When to Send Notifications**:
-1. **Start Notification** (Preliminary step, before Step 0):
+1. **Start Notification** (Preliminary step, before Step 1):
    - Low-priority progress notification
    - Signals initialization has begun
    - Command: `notify( "Starting session initialization...", notification_type="progress", priority="low" )`
@@ -418,23 +332,11 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 ## Step 2: Load Configuration
 
-**Purpose**: Load global and project-specific configuration to understand preferences, workflows, and project context
+**Purpose**: Use the global and project-specific configuration (Claude Code has already loaded both `CLAUDE.md` files into context) to understand preferences, workflows, and project context
 
 **Process**:
 
-1. **Read Global Configuration**:
-   ```bash
-   # Read global user preferences
-   cat ~/.claude/CLAUDE.md
-   ```
-
-2. **Read Project Configuration**:
-   ```bash
-   # Read project-specific preferences
-   cat ./CLAUDE.md
-   ```
-
-3. **Extract Key Information**:
+1. **Extract Key Information**:
    - **[SHORT_PROJECT_PREFIX]**: Project identifier for TODOs and notifications
    - **Project name**: Full project name
    - **Notification settings**: Email, API key, priorities
@@ -443,12 +345,12 @@ notify( "Starting session initialization, loading config and history...", notifi
    - **Testing preferences**: Smoke tests, unit tests, integration tests
    - **Code style preferences**: Formatting, naming conventions
 
-4. **Validate Configuration**:
+2. **Validate Configuration**:
    - Confirm [SHORT_PROJECT_PREFIX] is defined
    - Check that history.md path exists
    - Verify notification system is configured
 
-5. **Report Summary**:
+3. **Report Summary**:
    ```
    Configuration Loaded:
    - Project: Planning is Prompting
@@ -458,8 +360,6 @@ notify( "Starting session initialization, loading config and history...", notifi
    - Notifications: Configured (cosa-voice MCP)
    ```
 
-**Update TodoWrite**: Mark "Load configuration files" as completed, mark next item as in_progress
-
 ---
 
 ## Step 3: Discover Available Workflows
@@ -468,14 +368,9 @@ notify( "Starting session initialization, loading config and history...", notifi
 
 **Process**:
 
-1. **List Slash Commands**:
-   ```bash
-   ls -1 .claude/commands/
-   ```
+1. **Categorize Workflows**:
 
-2. **Categorize Workflows**:
-
-   Group discovered slash commands by category:
+   Group the slash commands already listed in your context by category:
 
    **Session Management**:
    - `/plan-session-start` - Initialize new session
@@ -492,7 +387,7 @@ notify( "Starting session initialization, loading config and history...", notifi
    **Other Workflows**:
    - (List any additional project-specific workflows)
 
-3. **Report Summary**:
+2. **Report Summary**:
    ```
    Available Workflows:
 
@@ -508,8 +403,6 @@ notify( "Starting session initialization, loading config and history...", notifi
      • /p-is-p-01-planning
      • /p-is-p-02-documentation
    ```
-
-**Update TodoWrite**: Mark "Discover available workflows" as completed, mark next item as in_progress
 
 ---
 
@@ -993,6 +886,8 @@ else
 fi
 ```
 
+⚠️ **THE SCAN CURRENTLY SHIPS IN LUPIN ONLY.** In every other repo the `NO SCAN INSTALLED` line is the correct output, not a failure to fix on the spot, and it still means "this tree was NOT checked".
+
 **Read the exit code, never the absence of output:**
 
 | exit | meaning | what to do |
@@ -1062,7 +957,7 @@ finding more expensive to act on.
 
 4. **Identify Recent Session**:
 
-   Find the most recent session entry (top of file, reverse chronological):
+   Entries are worded to `workflow/entry-writing-rules.md`. Find the most recent session entry (top of file, reverse chronological):
    ```
    ### YYYY.MM.DD - Session N: [Session Title]
 
@@ -1107,8 +1002,6 @@ finding more expensive to act on.
    ```
 
    **Note**: This is a progress update only. The actual question asking what to work on comes in Step 5, AFTER outstanding work has been identified and options are known.
-
-**Update TodoWrite**: Mark "Load session history" as completed, mark next item as in_progress
 
 ---
 
@@ -1159,7 +1052,7 @@ finding more expensive to act on.
    - history.md TODOs may exist in older repos not yet migrated
    - Display combined list in Step 5
 
-**Key Principle**: TODO.md is the single source of truth for pending work. If it exists, use it. If not, fall back to history.md TODO sections (legacy pattern).
+**Key Principle**: the task store is the single source of truth for owed work (`task_query`); TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). If TODO.md exists, use it for that narrative. If not, fall back to history.md TODO sections (legacy pattern).
 
 ---
 
@@ -1239,7 +1132,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    **Primary Source**: TODO.md (if exists from Step 4.5)
    - Use items from `## Pending` section
-   - These are the authoritative pending items
+   - These are the narrative pending items; owed work comes from the task store (Step 4.7)
 
    **Fallback Source**: history.md (legacy pattern)
    - Only if TODO.md doesn't exist
@@ -1290,7 +1183,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    **CRITICAL**: This is when you ask the user what they want to work on - AFTER you know what the options are.
 
-   **IMPORTANT CONSTRAINT**: `ask_multiple_choice()` supports **2-4 options maximum**. The number of TODOs found determines the presentation strategy.
+   **IMPORTANT CONSTRAINT**: `ask_multiple_choice()` supports **2-4 options maximum**, and this menu never shows more than four (Rick, 2026-10-09): the rest sit under "Other...". The number of TODOs found determines the presentation strategy.
 
    ---
 
@@ -1376,134 +1269,30 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    ---
 
-   ### Case D: 3 TODOs Found (5 options, single call)
+   ### Case D: 3 or More TODOs Found (4 options, single call, the rest under Other)
 
-   Present all 3 TODOs plus fallback options:
-
-   ```python
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 3 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   ---
-
-   ### Case E: 4 TODOs Found (6 options, single call)
-
-   Present all 4 TODOs plus fallback options:
+   **Never show more than four options.** Present the first three TODOs plus one "Other..." option that carries everything else:
 
    ```python
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 4 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   ---
-
-   ### Case F: 5 TODOs Found (6 options, single call)
-
-   Present all 5 TODOs plus unified "Other..." escape hatch:
-
-   ```python
-   # All 5 TODOs + "Other" for custom input (user can type anything)
-   ask_multiple_choice( questions=[
-       {
-           "question": "Session ready! Found 5 outstanding TODOs.",
-           "header": "Direction",
-           "multiSelect": False,
-           "options": [
-               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-               {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-               {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
-               {"label": "Other...", "description": "Start fresh, modify list, or describe what you want"}
-           ]
-       }
-   ], priority="high" )
-   ```
-
-   **Note**: "Other..." serves as a unified escape hatch - user can type "start fresh", "modify list", or any custom direction.
-
-   ---
-
-   ### Case G: 6+ TODOs Found (Progressive Disclosure)
-
-   When there are more TODOs than can fit in 6 options, use a **two-step approach**:
-
-   **Step 5a - Mode Selection** (first question):
-
-   ```python
+   # First 3 TODOs + "Other" for the rest and for custom input (user can type anything)
    ask_multiple_choice( questions=[
        {
            "question": f"Session ready! Found {n} outstanding TODOs.",
            "header": "Direction",
            "multiSelect": False,
            "options": [
-               {"label": f"Continue TODOs ({n})", "description": "Choose which TODO to work on first"},
-               {"label": "Start fresh", "description": "Work on something else"},
-               {"label": "Modify list", "description": "Add/remove items before starting"}
+               {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
+               {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
+               {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
+               {"label": "Other...", "description": f"{n - 3} more TODOs, start fresh, modify list, or describe what you want"}
            ]
        }
    ], priority="high" )
    ```
 
-   **If user selects "Continue TODOs (N)"** → proceed to Step 5b
+   **Note**: with exactly 3 TODOs the "Other..." description reads "Start fresh, modify list, or describe what you want". "Other..." is the unified escape hatch: the user can type "start fresh", "modify list", "more", or any custom direction.
 
-   **Step 5b - TODO Selection** (second question):
-
-   Show the first 5 TODOs as individual options, plus a "See more" option if > 5:
-
-   ```python
-   # Build options from first 5 TODOs
-   options = [
-       {"label": "[TODO 1 truncated]", "description": "[Full TODO 1 text]"},
-       {"label": "[TODO 2 truncated]", "description": "[Full TODO 2 text]"},
-       {"label": "[TODO 3 truncated]", "description": "[Full TODO 3 text]"},
-       {"label": "[TODO 4 truncated]", "description": "[Full TODO 4 text]"},
-       {"label": "[TODO 5 truncated]", "description": "[Full TODO 5 text]"},
-   ]
-
-   # Add 6th option based on remaining count
-   if remaining_todos > 0:
-       options.append( {"label": f"See {remaining_todos} more...", "description": "View remaining TODOs"} )
-   else:
-       options.append( {"label": "Back", "description": "Return to previous menu"} )
-
-   ask_multiple_choice( questions=[
-       {
-           "question": "Which TODO would you like to work on first?",
-           "header": "Select TODO",
-           "multiSelect": False,
-           "options": options
-       }
-   ] )
-   ```
-
-   **If user selects "See N more..."** → repeat Step 5b with next batch of TODOs
+   **Paging**: when the user answers "Other..." by asking for the remaining TODOs ("more", "next", or a TODO's number), repeat the call with the next three TODOs and the same "Other..." option (its count lowered by three). Stop when none remain.
 
    ---
 
@@ -1544,23 +1333,18 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 
    | User Selection | Action |
    |----------------|--------|
-   | [Specific TODO] | Create TodoWrite with that item as `in_progress`, others as `pending` |
+   | [Specific TODO] | File it in the task store (`task_create`, or `task_transition` an existing row to `in_progress`) |
    | "Start fresh" | Clear old TODOs, wait for user to describe today's work |
    | "Modify list" | Show all TODOs, ask what to add/remove/change |
-   | "Other..." | Parse user's custom text: may be "start fresh", "modify list", or custom direction |
-   | "Continue TODOs (N)" | Proceed to Step 5b for individual TODO selection (Case G only) |
-   | "See N more..." | Show next batch of TODOs (repeat Step 5b with offset, Case G only) |
-   | "Back" | Return to Step 5a mode selection (Case G only) |
+   | "Other..." | Parse user's custom text: may be "start fresh", "modify list", a request for the remaining TODOs (page the next three, Case D), or custom direction |
    | "New task" | Wait for user to describe new work (zero-TODO case) |
    | "Browse history" | Show recent session summaries for context |
 
    **After selection is resolved**:
-   - Create new TodoWrite list with selected TODO as `in_progress`
-   - Apply [SHORT_PROJECT_PREFIX] to each item
+   - Put the selected work in the task store as `in_progress`: it is owed work, so it does not live in a harness list
+   - Apply [SHORT_PROJECT_PREFIX] to each item's title
    - Read implementation docs if referenced
    - Proceed to Step 6
-
-**Update TodoWrite**: Mark "Identify outstanding work" as completed, mark next item as in_progress
 
 ---
 
@@ -1619,7 +1403,7 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    **If continuing existing work**:
    ```
    📋 Continuing from last session:
-   → TodoWrite list created with outstanding items
+   → outstanding items filed in the task store
    → First task marked as in_progress
    → Ready to execute
    ```
@@ -1633,8 +1417,6 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
    - New work request ("I need to debug the authentication system")
    - Question about project state ("What's the status of feature X?")
    - Workflow invocation ("/p-is-p-01-planning to plan this work")
-
-**Update TodoWrite**: Mark "Present session context" as completed
 
 ---
 
@@ -1687,24 +1469,23 @@ Pre-cutover, a post-`/clear` harness `TaskCreate` could reuse a correlation key 
 **Typical Session Start Flow**:
 ```mermaid
 flowchart TD
-    P["Preliminary: Send start notification (low)"] --> S0["0. Create TodoWrite checklist"]
-    S0 --> S1["1. Notification System Overview (ref only)"]
+    P["Preliminary: Send start notification (low)"] --> S1["1. Notification System Overview (ref only)"]
     S1 --> S2["2. Load configs → Extract PREFIX"]
-    S2 --> S3["3. Discover workflows → List slash commands"]
+    S2 --> S3["3. Discover workflows → Group slash commands by category"]
     S3 --> S4["4. Load history → Read last 3-7 days<br>Send progress notification (low)"]
     S4 --> S5["5. Find TODOs → ask_multiple_choice()<br>HIGH priority, BLOCKING"]
     S5 -->|WAIT for response| S6["6. Present context → Await work direction"]
 ```
 
 **Notification Timing**:
-- **Preliminary (before Step 0)**: "Starting session initialization..." (low priority, type=progress)
+- **Preliminary (before Step 1)**: "Starting session initialization..." (low priority, type=progress)
 - **Step 4 (after loading history)**: "History loaded, analyzing outstanding work..." (low priority, type=progress)
 - **Step 5 (after identifying work)**: `ask_multiple_choice()` with actual options (HIGH priority, BLOCKING)
   - **Key Insight**: Only ask "what do you want to work on?" AFTER you know what the options are
   - **Rationale**: User receives notification AND question together, with real context
 
 **Key Decision Points**:
-- Step 5: User chooses Continue TODOs / Start fresh / Modify list (via `ask_multiple_choice()`)
+- Step 5: User chooses a TODO or "Other..." (start fresh, modify list, more TODOs), or New task / Browse history when there are none (via `ask_multiple_choice()`)
 - Step 6: User provides work direction or invokes planning workflow
 
 ---
@@ -1963,17 +1744,4 @@ When creating new high-frequency workflows:
 
 ## Version History
 
-- **2026.09.17 (María 🌸)**: **Step 3.5 gains the machine contract for the manifest, the cwd rule, and the reason silence is not proof.** Lupin's `commit_scope_guard.py` parses exactly the two shapes this document already specified — `## Session: <id>` with the id ALONE, and `- <ISO timestamp> | <path>` — but **both live manifests had drifted to a backtick-bullet style**, and a section written by copying its neighbours inherited the drift; three commits were refused before the format was read off this file (Lupin commit `8629857b`). Added: the parses/does-not-parse table, the **fail-open** warning (an unparseable section is indistinguishable from an absent one, so a drifted seat is never refused and its commits go unexamined while the manifest looks diligent), the rule that a seat committing into ANOTHER repo claims that path in **its own** repo's manifest (the guard reads the manifest at the session's cwd, and Lupin's is gitignored), and the pathspec caveat that a peer's uncommitted edit inside a file you claim rides along with your commit. **Nothing about the format changed — the documentation of it did.**
-- **2026.06.17 (María)**: **Step 4.7 store-only transition note added** (not-live-until-cutover). At cutover this step is SUPERSEDED — with the native harness list jettisoned, a rehydrated session queries the store on demand (`task_query(owner=self, open)`, terse projection) and the human-visible list is a fleet-status-style UI card; no native-list rebuild. **Until the lupin build cuts over the rebuild procedure stays MANDATORY** (the Stop-hook oracle still replays the harness transcript). Ratified: Rick GO `42c3e814` + unanimous cascade review; target + 5-step cutover order in `workflow/task-store-discipline.md` §0.
-- **2026.06.16 (María + Mr Radio)**: **Added Step 4.7 — Rebuild the Harness TODO List (MANDATORY on rehydrate)** — the READ side of the memento↔harness-list contract (Rick broadcast `beaaaa2c`: a session with no visible harness to-do list has nothing driving it forward; rebuilding is "an absolute no-no" to skip). Documents the store-authoritative reconciliation algorithm (memento skeleton → verify each vs `task_query(owner=self)` → drop done, add store-missed, store-status wins → deduped union; VERIFY-don't-manufacture; FAIL-LOUD-if-empty only when owed work exists), the env-priority flip (lupin = store-primary, plan/non-lupin = memento-primary until mirror bug `9bf1dc4a` lands), and the `9b23d5bc` caveat (rebuild is VISIBILITY-only until the `/clear` correlation-key collision lands; trust MCP `task_create`/`task_query` for auditable truth). Added the rebuild item to the Step 0 init checklist. Companion WRITE side in `workflow/memento-management.md`. Joint design with Mr Radio 🦉 (lupin).
-- **2026.05.19 (Session 93)**: **Added Preliminary -1 (Preferred-Persona Env Var) + Preliminary 0.5 (Persona-Request Swap)** — two complementary conditional sections for persona selection at session start. Preliminary -1 documents the declarative env-var path (`COSA_VOICE_PREFERRED_PERSONA__<PROJECT>` read by cosa-voice's SessionStart hook); Preliminary 0.5 documents the interactive slash-command swap path (`$ARGS` arg routed to `/api/cosa-voice/voice-persona/{sid}/allocate?requested_persona_name=<name>` with atomic-swap flow + 200/409/422/500 response handling + ask_multiple_choice conflict resolution capped at 3 alternatives). Both paths preserve narrative continuity across days/sessions/`/clear` (Path A locked: allocation is immutable after first claim; only fresh allocation re-reads the env var). Updated the existing "Send Start Notification" Preliminary timing note to reference post-swap persona canonicality. ~220 lines added across both Preliminaries. Paired with cosa-voice's server-side env-var allocator + `requested_persona_name` route handler.
-- **2026.01.31 (Session 55)**: **Major upgrade to v2.0 multi-session manifest format**. Step 3.5 now supports multiple concurrent sessions with independent tracking sections. Added: automatic v1.0→v2.0 migration, session search by ID, context clear recovery, stale session detection, Last Activity timestamps. Each session gets its own `## Session: {ID}` section. Enables true parallel session safety with conflict detection at commit time (~200 lines rewritten).
-- **2026.01.29 (Session 53)**: Added Step 3.5 for parallel session safety with `.claude-session.md` manifest file (v1.0). Creates persistent file-based tracking of all Edit/Write operations. Survives context clears. Documented manifest lifecycle and tracking mandate (~120 lines added).
-- **2026.01.07 (Session 42)**: Expanded to 6-option support (from 4). Cases D/E/F now use single MCP call for 3/4/5 TODOs respectively. Progressive disclosure (Case G) only needed for 6+ TODOs. Updated Lupin notification model to allow 2-6 options. Case F uses "Other..." as unified escape hatch (~70 lines added).
-- **2026.01.07 (Session 41)**: Implemented dynamic TODO option generation in Step 5 - TODOs now presented as individual selectable options instead of bundled into "Continue TODOs". Added 4 cases (0, 1, 2, 3+ TODOs) with progressive disclosure for 3+. Added label formatting rules and response handling table (~150 lines added).
-- **2026.01.06 (Session 40)**: Fixed notification order of operations - removed premature "ready" notification from Step 4, moved work direction question to Step 5 using `ask_multiple_choice()`. Key insight: only ask "what do you want to work on?" AFTER outstanding work is identified.
-- **2025.10.23 (Session 26)**: Implemented Pattern B (example-based generation) for ready notification; added Design Pattern documentation section (~150 lines)
-- **2025.10.23 (Session 25)**: Removed bash random selection, implemented fixed message to eliminate permission prompts (~35 lines simplified)
-- **2025.10.23 (Session 24)**: Moved notification timing from Step 6 to Step 4 for better UX (~80 lines modified)
-- **2025.10.22 (Session 23)**: Added two-notification pattern and message variety with bash random selection (~140 lines)
-- **2025.10.XX**: Initial session-start workflow creation
+Full history: `docs/version-history/session-start.md`.

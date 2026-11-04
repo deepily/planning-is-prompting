@@ -1,7 +1,7 @@
 # Skills Management - Discover Mode
 
 **Project**: Planning is Prompting
-**Prefix**: [PLAN]
+**Prefix**: `[PLAN]`
 **Version**: 1.0
 
 ---
@@ -26,24 +26,24 @@
 
 **On every invocation of this command:**
 
-1. **MUST use the following project-specific configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: [PLAN]
+1. **Must use the following project-specific configuration**:
+   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
    - **Project root**: /mnt/DATA01/include/www.deepily.ai/projects/planning-is-prompting/
    - **Skills location**: .claude/skills/
-   - Do NOT proceed without these parameters
+   - Never proceed without these parameters
 
-2. **MUST read the canonical workflow document**:
+2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/skills-management.md
-   - This is the ONLY authoritative source for ALL skills management steps
-   - Do NOT proceed without reading this document in full
+   - This is the only authoritative source for all skills management steps
+   - Never proceed without reading this document in full
 
-3. **MUST execute DISCOVER mode workflow**:
+3. **Must execute discover mode workflow**:
    - Execute the "Mode: discover" section from the canonical workflow
    - Follow the expanded scan order (global CLAUDE.md, project CLAUDE.md, README.md, linked docs, directories, history.md)
    - Generate the candidate report
    - Offer user-suggested topic analysis
 
-4. **Key Actions for DISCOVER mode**:
+4. **Key Actions for discover mode**:
    - Scan configuration files for conditional knowledge
    - Scan documentation directories
    - Identify rediscovery patterns from history.md

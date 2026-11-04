@@ -82,6 +82,10 @@ io/mementos/
 io/git-loc-delta/
 io/post-games/
 
+# Session scratch (probe output, review drafts, receipts). The finding survives
+# as a store row or post-game; the file does not (rnd-directory-policy.md).
+io/tmp/
+
 # The shared crontab lock (workflow/scripts/crontab_lock.py). A runtime mutex, not an
 # artifact: its CONTENTS never matter, only the fd's flock state. Committing it would
 # put one machine's stale PID in every checkout.

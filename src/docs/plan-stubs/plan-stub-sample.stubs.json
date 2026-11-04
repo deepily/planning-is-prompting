@@ -1,0 +1,49 @@
+{
+    "plan_ref"        : "workflow/plan-stub-sample.md",
+    "project"         : "plan",
+    "prefix"          : "PLAN",
+    "plan_number"     : 1,
+    "plan_name"       : "Sample guide",
+    "correlation_key" : "epic:plan-sample-guide",
+    "owner_persona"   : "cheech",
+    "phases"          : [
+        {
+            "phase" : 1,
+            "name"  : "Draft the guide",
+            "steps" : [
+                {
+                    "key"        : "ph1-s1",
+                    "name"       : "Outline the sections",
+                    "item_class" : "task",
+                    "priority"   : "P3",
+                    "acceptance" : "Outline lists every section with one line each",
+                    "owner_role" : "implementer",
+                    "depends_on" : []
+                },
+                {
+                    "key"        : "ph1-s2",
+                    "name"       : "Rule on the scope",
+                    "item_class" : "decision",
+                    "priority"   : "P3",
+                    "acceptance" : "The operator has said in or out for each section",
+                    "depends_on" : [ "ph1-s1" ]
+                },
+                {
+                    "key"        : "ph1-s3",
+                    "name"       : "Write the first draft",
+                    "item_class" : "task",
+                    "priority"   : "P3",
+                    "acceptance" : "Every in-scope section has a draft paragraph",
+                    "owner_role" : "implementer",
+                    "depends_on" : [ "ph1-s2" ]
+                }
+            ]
+        },
+        {
+            "phase"          : 2,
+            "name"           : "Publish",
+            "steps"          : [],
+            "expand_trigger" : "Phase 1 closes"
+        }
+    ]
+}

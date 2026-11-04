@@ -115,7 +115,7 @@ Before EVERY edit to `.claude-session.md`, mentally verify:
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TodoWrite-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | After each fix cycle complete |
 | **Estimated duration** | Variable (depends on number of bugs) |
 | **Context clear safe** | Yes (recovery via `continue` mode) |
@@ -127,7 +127,7 @@ Before EVERY edit to `.claude-session.md`, mentally verify:
 
 **Purpose**: Immediately notify user that bug fix mode initialization has begun
 
-**Timing**: Execute BEFORE creating TodoWrite list (before Step 0)
+**Timing**: Execute first, before the mode's first step
 
 **Command**:
 ```python
@@ -141,49 +141,6 @@ notify( "Initializing bug fix mode, loading queue and history...", notification_
 - Sets expectation that bug selection menu will appear shortly
 
 **Note**: This is a low-priority "I'm starting" ping. The high-priority bug selection question comes in Step 4 (start mode), Step 14 (continue mode), or Step 18 (wrap mode), via `ask_multiple_choice()`.
-
----
-
-## Step 0: TodoWrite Initialization
-
-**MUST create TodoWrite tracking list immediately on invocation.**
-
-This step is MANDATORY for all executions. Do not skip.
-
-```
-TodoWrite items (adjust based on mode):
-
-For START mode:
-1. [PLAN] Check/create bug-fix-queue.md
-2. [PLAN] Check/create history.md session header
-3. [PLAN] Get session info and stamp ownership
-4. [PLAN] Present bug selection to user
-
-For CONTINUE mode:
-1. [PLAN] Read bug-fix-queue.md for state
-2. [PLAN] Read history.md current session
-3. [PLAN] Present bug selection to user
-
-For CLOSE mode:
-1. [PLAN] Finalize history.md session entry
-2. [PLAN] Archive completed bugs in queue
-3. [PLAN] Send session summary notification
-
-For WRAP mode:
-1. [PLAN] Validate wrap conditions
-2. [PLAN] Document fix in history.md
-3. [PLAN] Update bug-fix-queue.md
-4. [PLAN] Check/update TODO.md
-5. [PLAN] Stage files and commit
-6. [PLAN] Capture hash and update documents
-7. [PLAN] Send completion notification
-8. [PLAN] Present next action options
-```
-
-**Verification**:
-- [ ] TodoWrite tool invoked with items listed above
-- [ ] Items have [PLAN] prefix
-- [ ] First item marked `in_progress`
 
 ---
 
@@ -246,13 +203,10 @@ For WRAP mode:
    - Auto-migrate to v2.0 format (see Migration section)
    - Preserve all existing data
 
-**TodoWrite Update**: Mark Step 1 complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md exists in project root
 - [ ] File has valid v2.0 structure (Active Sessions, Queued, In Progress, Completed)
 - [ ] v1.0 auto-migration performed (if applicable)
-- [ ] TodoWrite updated
 
 ---
 
@@ -274,12 +228,9 @@ For WRAP mode:
 
 **If session EXISTS**, verify it's a bug fix session and continue appending.
 
-**TodoWrite Update**: Mark Step 2 complete.
-
 **Verification**:
 - [ ] history.md has session header for today
 - [ ] Session is marked as Bug Fix Mode
-- [ ] TodoWrite updated
 
 ---
 
@@ -388,8 +339,6 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
    ══════════════════════════════════════════════════════════
    ```
 
-**TodoWrite Update**: Mark Step 3 complete.
-
 **Verification**:
 - [ ] Session ID retrieved via get_session_info()
 - [ ] Session registered in Active Sessions table (bug-fix-queue.md)
@@ -397,7 +346,6 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions for
 - [ ] Parallel sessions noted (if applicable)
 - [ ] Session manifest initialized/resumed (`.claude-session.md`)
 - [ ] Manifest section created or found for this session
-- [ ] TodoWrite updated
 
 ---
 
@@ -442,13 +390,10 @@ ask_multiple_choice(
 
 **If user selects their in-progress bug**: Resume work (skip claiming in Step 5).
 
-**TodoWrite Update**: Mark Step 4 complete, add bug fix cycle items.
-
 **Verification**:
 - [ ] ask_multiple_choice sent with current queue (excluding other sessions' in-progress)
 - [ ] User response received
 - [ ] Next action determined (fix bug / add new bug / close session)
-- [ ] TodoWrite updated
 
 ---
 
@@ -520,15 +465,12 @@ ask_multiple_choice(
 
 **Note**: File tracking continues in your manifest section (`.claude-session.md`). All files modified during bug-fix-mode are tracked continuously - no reset needed between bugs. The manifest section captures all modifications for the entire session.
 
-**TodoWrite Update**: Add items for current bug fix.
-
 **Verification**:
 - [ ] Bug added to Queued (if new)
 - [ ] Bug claimed: moved from Queued to In Progress with Owner tag
 - [ ] No ownership conflict (or conflict resolved)
 - [ ] GitHub issue details fetched (if applicable)
 - [ ] Manifest section active (tracking continues)
-- [ ] TodoWrite updated with bug-specific items
 
 ---
 
@@ -579,15 +521,10 @@ Files to track include:
 - Configuration files changed
 - Any other files touched during fix
 
-**Use TodoWrite for sub-tasks if the fix is complex.**
-
-**TodoWrite Update**: Update progress as you work.
-
 **Verification**:
 - [ ] Fix implemented
 - [ ] All modified files recorded in manifest section
 - [ ] Last Activity timestamp updated
-- [ ] TodoWrite reflects implementation progress
 
 ---
 
@@ -625,38 +562,32 @@ Files to track include:
 
 **Record test results for history entry.**
 
-**TodoWrite Update**: Mark testing complete.
-
 **Verification**:
 - [ ] Smoke test executed
 - [ ] Change-impact classification performed
 - [ ] All applicable tiers executed by Claude (not deferred to human)
 - [ ] Results reported in pass/fail table
 - [ ] Test results recorded (for history entry)
-- [ ] TodoWrite updated
 
 ---
 
 ### Step 8: Document in History
 
-**Add fix entry to history.md under current session:**
+**Add fix entry to history.md under current session** (wording follows `workflow/entry-writing-rules.md`; `bug-fix-queue.md` is outside that policy):
 
 ```markdown
 ### Fix N: [Brief description]
 - **Source**: GitHub #123 / ad-hoc
 - **Files**: file1.py, file2.py, file3.py
-- **Test**: Smoke PASS, Unit PASS
+- **Test**: Smoke pass, unit pass
 - **Commit**: [pending]
 ```
-
-**TodoWrite Update**: Mark documentation complete.
 
 **Verification**:
 - [ ] Fix entry added to history.md
 - [ ] All touched files listed
 - [ ] Test results recorded
 - [ ] Commit marked as pending
-- [ ] TodoWrite updated
 
 ---
 
@@ -687,8 +618,9 @@ git add bug-fix-queue.md
 
 **Step 9c: Create Commit**
 
-```bash
-git commit -m "$(cat <<'EOF'
+Write the message to a file first, **with the Write tool** (the session scratchpad, or the gitignored `io/`):
+
+```
 Fix: [Brief description]
 
 [Optional longer explanation]
@@ -696,9 +628,15 @@ Fix: [Brief description]
 Fixes #123
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
 ```
+
+then commit by pathspec, naming the files you staged in Step 9b:
+
+```bash
+git commit -F <message-file> -- file1.py file2.py file3.py history.md bug-fix-queue.md
+```
+
+A message that rides the commit line (`-m "$(cat <<'EOF' ... EOF)"`) is allowed unreviewed by the commit-scope guard; see `session-end.md` Step 4.3 for why. Name each path exactly as in your `### Touched Files` (repo-relative, no `./`: `./src/x` is refused), and note the review only happens when your session has a manifest section.
 
 **Step 9d: Capture Hash and Update**
 
@@ -719,8 +657,6 @@ git rev-parse --short HEAD
 gh issue close #123 --comment "Fixed in commit abc1234"
 ```
 
-**TodoWrite Update**: Mark commit complete.
-
 **Verification**:
 - [ ] Manifest section read and files extracted
 - [ ] ONLY manifest files staged (no stray files)
@@ -729,7 +665,6 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
 - [ ] GitHub issue closed (if applicable)
-- [ ] TodoWrite updated
 
 ---
 
@@ -759,15 +694,12 @@ Add to Completed with attribution:
 **Update Active Sessions table**:
 Update your row's `Last Activity` timestamp.
 
-**TodoWrite Update**: Mark queue update complete.
-
 **Verification**:
 - [ ] Bug removed from In Progress section
 - [ ] Bug added to Completed with full attribution
 - [ ] Active Sessions Last Activity updated
 - [ ] Commit hash recorded
 - [ ] GitHub issue reference included (if applicable)
-- [ ] TodoWrite updated
 
 ---
 
@@ -792,14 +724,11 @@ ask_yes_no(
 
 **If neither** (`response.startswith("neither")`): Re-frame — typical concerns: "I want to clear but pick a specific next bug", "keep context but pause for a break", "clear and switch to a different repo". Read the `[comment: ...]` qualifier and re-prompt with `ask_multiple_choice()` over the actual options. Do NOT default to either branch. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TodoWrite Update**: Mark cycle complete.
-
 **Verification**:
 - [ ] Manifest persists (no reset needed)
 - [ ] User prompted about context clear
 - [ ] Response received
 - [ ] Next action determined
-- [ ] TodoWrite updated
 
 ---
 
@@ -848,15 +777,12 @@ ask_yes_no(
 
 **Key Benefit**: If you made edits before context cleared, the manifest still has your file list. You can continue where you left off.
 
-**TodoWrite Update**: Mark queue read complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md read
 - [ ] Completed count known
 - [ ] Queued count known
 - [ ] Manifest resumed or created
 - [ ] Session tracking active
-- [ ] TodoWrite updated
 
 ---
 
@@ -868,13 +794,10 @@ ask_yes_no(
 - Note current fix number
 - Identify any pending work
 
-**TodoWrite Update**: Mark history read complete.
-
 **Verification**:
 - [ ] history.md session section read
 - [ ] Fix history understood
 - [ ] Ready to continue
-- [ ] TodoWrite updated
 
 ---
 
@@ -903,13 +826,10 @@ ask_multiple_choice(
 
 **Process response and proceed appropriately.**
 
-**TodoWrite Update**: Mark continuation setup complete.
-
 **Verification**:
 - [ ] ask_multiple_choice sent
 - [ ] User response received
 - [ ] Next action determined
-- [ ] TodoWrite updated
 
 ---
 
@@ -929,13 +849,10 @@ ask_multiple_choice(
 **Status**: Session closed YYYY.MM.DD
 ```
 
-**TodoWrite Update**: Mark history finalization complete.
-
 **Verification**:
 - [ ] Session summary added
 - [ ] All metrics accurate
 - [ ] Session marked as closed
-- [ ] TodoWrite updated
 
 ---
 
@@ -1011,15 +928,12 @@ Mark these as `stale` and optionally release their In Progress bugs:
 
 **User preference determines which options.**
 
-**TodoWrite Update**: Mark archive complete.
-
 **Verification**:
 - [ ] Your session status updated to `closed` in Active Sessions
 - [ ] Unclaimed In Progress bugs handled (if any)
 - [ ] Completed bugs archived (if user chose Option B)
 - [ ] Stale sessions marked (if any)
 - [ ] Remaining bugs preserved if any
-- [ ] TodoWrite updated
 
 ---
 
@@ -1036,11 +950,9 @@ notify(
 )
 ```
 
-**TodoWrite Update**: Mark all items complete.
-
 **Verification**:
 - [ ] Summary notification sent
-- [ ] All TodoWrite items complete
+- [ ] All steps complete
 - [ ] Session properly closed
 
 ---
@@ -1051,19 +963,7 @@ notify(
 
 **Key Behavior**: By invoking wrap mode, the user has already approved the commit. Do NOT ask "Should I commit?" - execute immediately.
 
-> **⚠️ PARALLEL SESSION SAFETY (v2.0)**
->
-> This workflow is designed for environments where **multiple Claude Code sessions may be working on the same repository simultaneously**. Each session works on different bugs/features and MUST NOT interfere with other sessions' work.
->
-> **CRITICAL ISOLATION RULE**: Only files in the current session's manifest section (`.claude-session.md`) may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
->
-> **Before every commit**:
-> 1. Read your session's section from `.claude-session.md`
-> 2. Run `git status` to see all modified files
-> 3. Compare against your manifest section's `### Touched Files`
-> 4. Stage ONLY files that appear in BOTH lists
-> 5. Check for conflicts with other active sessions' files
-> 6. If you see modified files NOT in your manifest section, leave them unstaged - they belong to another session
+> **⚠️ PARALLEL SESSION SAFETY (v2.0)**: only files in this session's manifest section may be staged and committed; see SESSION ISOLATION RULES at the top of this file and Step 22.
 
 ### Step 18: Validate Wrap Conditions
 
@@ -1161,66 +1061,34 @@ ask_multiple_choice(
 )
 ```
 
-**TodoWrite Update**: Mark Step 18 complete.
-
 **Verification**:
 - [ ] bug-fix-queue.md exists
 - [ ] Session ownership verified
 - [ ] Manifest section found and parsed
 - [ ] File list extracted from manifest (or fallback mode chosen)
 - [ ] Current bug identified
-- [ ] TodoWrite updated
 
 ---
 
 ### Step 19: Document in History
 
-**Add fix entry to history.md under current session:**
-
-```markdown
-### Fix N: [Brief description]
-- **Source**: GitHub #123 / ad-hoc
-- **Files**: file1.py, file2.py, file3.py
-- **Test**: Smoke PASS, Unit PASS (or "Not run" if skipped)
-- **Commit**: [pending]
-```
+**Add the fix entry to history.md under the current session, in the format of Step 8**, with the Test line reading "Not run" if tests were skipped and `Commit: [pending]`.
 
 **Note**: Commit hash will be updated in Step 22 after commit succeeds.
-
-**TodoWrite Update**: Mark Step 19 complete.
 
 **Verification**:
 - [ ] Fix entry added to history.md
 - [ ] All touched files listed
 - [ ] Test results recorded (or "Not run")
 - [ ] Commit marked as [pending]
-- [ ] TodoWrite updated
 
 ---
 
 ### Step 20: Update Bug Fix Queue
 
-**Move bug from In Progress to Completed in bug-fix-queue.md:**
-
-Remove from In Progress (your claimed bug):
-```markdown
-### In Progress
-
-(Your bug entry removed)
-```
-
-Add to Completed with attribution:
-```markdown
-### Completed
-
-- [x] [Brief description] -> commit: [pending] | By: [your_session_id] | Closed: #123
-```
-
-**Note**: Commit hash will be updated in Step 22.
+**Move your claimed bug from In Progress to Completed in bug-fix-queue.md, with attribution, as in Step 10**, except that the commit field reads `[pending]` until Step 23 records the hash.
 
 **Also update Active Sessions table**: Update your `Last Activity` timestamp.
-
-**TodoWrite Update**: Mark Step 20 complete.
 
 **Verification**:
 - [ ] Bug removed from In Progress section
@@ -1228,7 +1096,6 @@ Add to Completed with attribution:
 - [ ] Commit hash marked as [pending]
 - [ ] Your session's Last Activity updated
 - [ ] GitHub issue reference included (if applicable)
-- [ ] TodoWrite updated
 
 ---
 
@@ -1249,12 +1116,9 @@ Add to Completed with attribution:
 INFO: Bug not found in TODO.md (no action needed)
 ```
 
-**TodoWrite Update**: Mark Step 21 complete.
-
 **Verification**:
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
-- [ ] TodoWrite updated
 
 ---
 
@@ -1358,20 +1222,7 @@ git diff --cached --name-only
 
 #### Step 22d: Create Commit
 
-**Create commit with issue reference (if applicable):**
-
-```bash
-git commit -m "$(cat <<'EOF'
-Fix: [Brief description]
-
-[Optional longer explanation]
-
-Fixes #123
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
-```
+**Create the commit with the message of Step 9c** (issue reference included if applicable).
 
 **If commit fails**:
 ```python
@@ -1384,8 +1235,6 @@ notify(
 ```
 Present retry option.
 
-**TodoWrite Update**: Mark Step 22 complete.
-
 **Verification**:
 - [ ] Pre-commit verification performed (git status compared to manifest section)
 - [ ] Files NOT in manifest section identified and skipped
@@ -1396,25 +1245,12 @@ Present retry option.
 - [ ] history.md and bug-fix-queue.md staged
 - [ ] TODO.md staged (if modified)
 - [ ] Commit created successfully
-- [ ] TodoWrite updated
 
 ---
 
 ### Step 23: Capture Hash and Update Documents
 
-**Capture commit hash:**
-
-```bash
-git rev-parse --short HEAD
-# Returns: abc1234
-```
-
-**Update history.md with commit hash:**
-
-Replace `[pending]` with actual hash:
-```markdown
-- **Commit**: abc1234
-```
+**Capture the commit hash and update history.md with it, as in Step 9d**, replacing `[pending]`.
 
 **Update bug-fix-queue.md with commit hash:**
 
@@ -1465,8 +1301,6 @@ gh issue close #123 --comment "Fixed in commit abc1234"
 WARN: GitHub issue #123 not found. Continuing without closure.
 ```
 
-**TodoWrite Update**: Mark Step 23 complete.
-
 **Verification**:
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
@@ -1475,7 +1309,6 @@ WARN: GitHub issue #123 not found. Continuing without closure.
 - [ ] Manifest cleaned up (deleted if only section, kept if others active)
 - [ ] Commit amended with final document state
 - [ ] GitHub issue closed (if applicable)
-- [ ] TodoWrite updated
 
 ---
 
@@ -1492,12 +1325,9 @@ notify(
 )
 ```
 
-**TodoWrite Update**: Mark Step 24 complete.
-
 **Verification**:
 - [ ] Completion notification sent
 - [ ] All fix details included in abstract
-- [ ] TodoWrite updated
 
 ---
 
@@ -1535,14 +1365,12 @@ ask_multiple_choice(
 
 **If "Close session"**: Execute Session Closure (Steps 15-17).
 
-**TodoWrite Update**: Mark Step 25 complete.
-
 **Verification**:
 - [ ] Manifest state understood (committed section exists)
 - [ ] Next action options presented
 - [ ] User response received
 - [ ] Appropriate follow-up action initiated
-- [ ] All TodoWrite items complete
+- [ ] All steps complete
 
 ---
 
@@ -1591,23 +1419,7 @@ Bug-fix-mode uses the same `.claude-session.md` manifest as regular sessions:
 - [ISO timestamp] | [relative file path]
 ```
 
-**At commit time**:
-
-1. Read your session's section from `.claude-session.md`
-2. Extract unique file paths from `### Touched Files`
-3. Compare against `git status` output
-4. Check for conflicts with other active sessions
-5. Stage ONLY files from your section:
-   ```bash
-   git add file1.py
-   git add file2.py
-   git add history.md bug-fix-queue.md
-   ```
-
-**NEVER use**:
-- `git add .`
-- `git add -A`
-- `git add --all`
+**At commit time**: follow Steps 22a-22d (read your section, compare with the repo's modified-files list, check other sessions for conflicts, stage only your own files); the prohibitions are in SESSION ISOLATION RULES.
 
 ### Benefits of v2.0 Manifest
 
@@ -1805,50 +1617,4 @@ else:
 
 ## Version History
 
-**v1.5** (2026.06.16, María) - **Commit-gate sweep (D1 guided-walkthrough ruling) — reviewed, already aligned.** Per-bug commits here were already autonomous (Step 9 stages selectively + commits with no approval gate; wrap mode states "Automatic commit without approval — user invocation IS approval"). This matches the 2026-06-16 ruling that committing is standing manager/session authority once green AND reviewed; the user is not the commit gate. No behavioral change required. Bug-fix commits are local + atomic per-bug; pushing remains out of scope here (handled by `branch-pr-and-merge.md` / `session-end.md`, where push stays the user's call).
-
-**v1.4** (2026.02.02) - Parallel-session-friendly bug fix queue (v2.0)
-- **Major**: Redesigned bug-fix-queue.md format for parallel session support
-- New Active Sessions table tracks multiple concurrent sessions
-- Per-bug ownership: bugs are claimed (Queued → In Progress) with Owner tags
-- Attribution on completed bugs: `| By: [session_id]` shows who fixed what
-- Step 1: v2.0 format detection and auto-migration from v1.0
-- Step 3: Renamed to "Register Session" - joins Active Sessions table instead of claiming entire queue
-- Step 5: Added claiming mechanism (Queued → In Progress with ownership conflict detection)
-- Step 10: Updated queue update format with full attribution
-- Step 16: Updated archive logic for Active Sessions status and stale session cleanup
-- New section: v2.0 Queue Format Reference with complete template and migration guide
-- Backward compatible: v1.0 queues auto-migrate to v2.0 preserving all data
-
-**v1.3** (2026.01.31) - Unified file tracking with v2.0 manifest
-- **Major**: Replaced in-memory `touched_files` with `.claude-session.md` manifest
-- Bug-fix-mode now uses the same manifest as regular sessions (unified tracking)
-- Enables context clear survival for file tracking (manifest persists on disk)
-- Enables conflict detection with parallel sessions (other bugs or regular work)
-- Step 3: Initialize/resume manifest section (same as session-start.md Step 3.5)
-- Step 6: MANDATE to append to manifest after every Edit/Write
-- Steps 12-14: Continue mode now recovers file list from manifest
-- Steps 18, 22-23: Wrap mode reads manifest, checks conflicts, updates status to `committed`
-- Removed all `touched_files = []` resets (manifest persists continuously)
-- Updated File Tracking Mechanism section with v2.0 benefits table
-
-**v1.2** (2026.01.30) - Added preliminary notification
-- New "Preliminary" section before Step 0 for immediate user awareness
-- Fire-and-forget notification: "Initializing bug fix mode..."
-- Follows session-start.md pattern for consistency
-
-**v1.1** (2026.01.29) - Added wrap mode
-- New `wrap` mode for wrapping up completed fixes with documentation and commit
-- Steps 18-25 for wrap mode execution
-- Automatic commit without approval (user invocation IS approval)
-- TODO.md integration for marking related items complete
-- Enhanced error handling for commit failures and missing GitHub issues
-
-**v1.0** (2026.01.21) - Initial workflow
-- Session initialization with ownership tracking
-- Per-bug fix cycle with file tracking
-- Selective staging for atomic commits
-- GitHub integration for issue tracking
-- Context clear recovery mechanism
-- Session closure with summary
-- Integration with session-end workflow
+Full history: `docs/version-history/bug-fix-mode.md`.

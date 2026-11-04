@@ -125,7 +125,22 @@ def test_a_kept_pointer_keeps_the_older_record_it_names( tmp_path ):
     assert stale not in kept                                   # a record nobody names still sweeps
 
 
-def test_an_io_pointer_resolves_against_the_io_base( tmp_path ):
+def test_an_io_pointer_as_memento_io_writes_it_keeps_its_record( tmp_path ):
+    # Tiffany, 2026-10-05, lupin-mobile: memento_io writes an io pointer's `current:` line
+    # relative to the REPO ROOT (`io/mementos/<persona>-<sid>.md`). Resolving it against the io
+    # base doubled the folder, the record was never found, and the sweep listed it for trashing.
+    r = str( tmp_path )
+    record  = _write( os.path.join( r, "io", "mementos", "chloe-d9b856bf.md" ), age=500 )
+    stale   = _write( os.path.join( r, "io", "mementos", "chloe-00000000.md" ), age=900 )
+    pointer = _write( os.path.join( r, "io", "mementos", "chloe.md" ),
+                      POINTER_OF.format( rel="io/mementos/chloe-d9b856bf.md" ), age=1 )
+    assert ms.pointer_target( "io", pointer ) == record
+    kept = ms.select_kept( ms.find_mementos( r ), [ "chloe" ] )
+    assert pointer in kept and record in kept
+    assert stale not in kept
+
+
+def test_an_io_pointer_written_against_the_io_base_still_resolves( tmp_path ):
     r = str( tmp_path )
     record  = _write( os.path.join( r, "io", "mementos", "sam", "sam-abcd1234.md" ), age=500 )
     pointer = _write( os.path.join( r, "io", "mementos", "sam.md" ),
@@ -154,3 +169,66 @@ def test_a_relative_repo_path_still_keeps_the_named_record( tmp_path, monkeypatc
     _write( os.path.join( ".", ".claude-memento-maria.md" ), POINTER_OF.format( rel=".claude-memento-maria-2b76a19a.md" ), age=1 )
     kept = { os.path.normpath( p ) for p in ms.select_kept( ms.find_mementos( "." ), [ "maria" ] ) }
     assert ".claude-memento-maria-2b76a19a.md" in kept
+
+
+# ---- row 0214c6eb: the root file self_respin reads must survive a newer suffixed copy ----------
+def test_the_unsuffixed_root_file_is_kept_when_a_suffixed_copy_is_newer( tmp_path ):
+    r        = str( tmp_path )
+    root     = _write( os.path.join( r, ".claude-memento-mr-radio.md" ), age=62 )
+    suffixed = _write( os.path.join( r, ".claude-memento-mr-radio-4afec3b4.md" ), age=60 )
+    kept     = ms.select_kept( ms.find_mementos( r ), [ "mr-radio" ] )
+    assert root in kept and suffixed in kept
+
+
+def test_the_unsuffixed_root_file_is_kept_when_it_is_the_only_root_file_and_old( tmp_path ):
+    r    = str( tmp_path )
+    root = _write( os.path.join( r, ".claude-memento-sam.md" ), age=5 * 86400 )
+    assert root in ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
+
+
+def test_an_unsuffixed_root_file_of_a_persona_not_kept_still_sweeps( tmp_path ):
+    r     = str( tmp_path )
+    mine  = _write( os.path.join( r, ".claude-memento-sam.md" ), age=62 )
+    other = _write( os.path.join( r, ".claude-memento-rio.md" ), age=62 )
+    kept  = ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
+    assert mine in kept and other not in kept
+
+
+def test_the_exact_root_file_rule_does_not_reach_a_longer_persona_name( tmp_path ):
+    r        = str( tmp_path )
+    longer   = _write( os.path.join( r, ".claude-memento-samuel.md" ), age=62 )
+    suffixed = _write( os.path.join( r, ".claude-memento-sam-aaaa0000.md" ), age=60 )
+    kept     = ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
+    assert suffixed in kept and longer not in kept
+
+
+def test_an_older_suffixed_copy_still_sweeps_beside_the_kept_root_file( tmp_path ):
+    r      = str( tmp_path )
+    root   = _write( os.path.join( r, ".claude-memento-sam.md" ), age=300 )
+    older  = _write( os.path.join( r, ".claude-memento-sam-old00000.md" ), age=900 )
+    newest = _write( os.path.join( r, ".claude-memento-sam-new00000.md" ), age=60 )
+    kept   = ms.select_kept( ms.find_mementos( r ), [ "sam" ] )
+    assert root in kept and newest in kept and older not in kept
+
+
+def test_the_exact_root_file_is_matched_without_regard_to_case( tmp_path ):
+    r        = str( tmp_path )
+    root     = _write( os.path.join( r, ".claude-memento-Sam.md" ), age=62 )
+    suffixed = _write( os.path.join( r, ".claude-memento-sam-aaaa0000.md" ), age=60 )
+    kept     = ms.select_kept( ms.find_mementos( r ), [ "SAM" ] )
+    assert root in kept and suffixed in kept
+
+
+def test_an_io_pointer_found_under_an_empty_repo_string_keeps_its_record( tmp_path, monkeypatch ):
+    # Row 8d8f7dbc (Pocholo): with repo "" the glob yields `io/mementos/…` with no leading
+    # separator, so the root could not be found by string search and the folder was doubled
+    # (`io/mementos/io/mementos/chloe-d9b856bf.md`), and the record was listed for trashing.
+    monkeypatch.chdir( tmp_path )
+    record  = _write( os.path.join( "io", "mementos", "chloe-d9b856bf.md" ), age=500 )
+    stale   = _write( os.path.join( "io", "mementos", "chloe-00000000.md" ), age=900 )
+    pointer = _write( os.path.join( "io", "mementos", "chloe.md" ),
+                      POINTER_OF.format( rel="io/mementos/chloe-d9b856bf.md" ), age=1 )
+    assert os.path.normpath( ms.pointer_target( "io", pointer ) ) == record
+    kept = ms.select_kept( ms.find_mementos( "" ), [ "chloe" ] )
+    assert pointer in kept and record in kept
+    assert stale not in kept

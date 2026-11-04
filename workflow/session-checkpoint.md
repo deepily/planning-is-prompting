@@ -53,7 +53,7 @@ word.
 ⚠️ **Found by retracting an absence claim rather than by hitting the bug again** — Rachel 🕊️ had
 called this vocabulary *unwritten*, then searched (56 workflow docs plus Lupin `CLAUDE.md`, positive
 control first), found **this section**, and reported that her own correction made the finding
-**sharper rather than smaller**. Seed: `io/post-games/2026.09.03-seat-and-repo-resolution-post-game.md`.
+**sharper rather than smaller**.
 
 **Why the distinction is load-bearing — an uncommitted green is a rumor:**
 
@@ -80,10 +80,10 @@ Claude Code's aggressive context clearing makes it important to checkpoint work 
 
 ## ⚠️ Conversation Mode Awareness
 
-The checkpoint commit gate (commit-message approval) becomes a voice gate when `conversation_mode_active=true` (check via `get_session_info()`).
+The checkpoint's blocking questions (manifest missing, no files tracked, the description, and a conflict) become voice gates when `conversation_mode_active=true` (check via `get_session_info()`). The commit itself has no approval step: invoking the command is the approval.
 
 **Mandates in conversation mode**:
-- The blocking commit-approval call MUST use `priority="high"`.
+- Each blocking ask above MUST use `priority="high"`.
 - **Brevity mandate**: speak the **1-line commit subject only**; full message body and file list stay in the terminal and the `abstract` parameter. Don't read the diff manifest aloud — say "wrapping up two commits across nine files" not the verbatim file enumeration.
 - Receipt-acknowledge the checkpoint trigger before tool work (1 sentence: "Running the checkpoint commit now.").
 
@@ -97,15 +97,7 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 **Multiple Claude sessions may run on the same repository simultaneously.** This workflow uses the same `.claude-session.md` manifest as regular sessions for file tracking.
 
-**CRITICAL ISOLATION RULE**: Only files in the current session's manifest section may be staged and committed. Files modified by other parallel sessions will appear in `git status` but MUST NOT be staged.
-
-**Before every commit**:
-1. Read your session's section from `.claude-session.md`
-2. Run `git status` to see all modified files
-3. Compare against your manifest section's `### Touched Files`
-4. Stage ONLY files that appear in BOTH lists
-5. Check for conflicts with other active sessions' files
-6. If you see modified files NOT in your manifest section, leave them unstaged - they belong to another session
+**Before every commit**: read your session's section (Step 1), compare `git status` with your `### Touched Files` and stage only the files in both lists, leaving other sessions' files unstaged (Steps 6a-6b), and check for conflicts with other active sessions (Step 5).
 
 ---
 
@@ -113,7 +105,7 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TaskCreate-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | Start and completion only |
 | **Estimated duration** | 15-25 seconds (minimal prompting path) |
 | **Context clear safe** | Yes (manifest persists) |
@@ -125,35 +117,11 @@ The checkpoint commit gate (commit-message approval) becomes a voice gate when `
 
 **Purpose**: Immediate user awareness that checkpoint is executing
 
-**Timing**: Execute BEFORE creating task list (before Step 0)
+**Timing**: Execute BEFORE Step 1
 
 ```python
 notify( "Creating checkpoint commit...", notification_type="progress", priority="low" )
 ```
-
----
-
-## Step 0: TaskCreate Initialization
-
-**MUST create task tracking list immediately on invocation.**
-
-```
-TaskCreate items:
-
-1. [PREFIX] Validate preconditions (manifest, files)
-2. [PREFIX] Get checkpoint description
-3. [PREFIX] Update TODO.md (if applicable)
-4. [PREFIX] Add checkpoint entry to history.md
-5. [PREFIX] Conflict detection
-6. [PREFIX] Stage and commit
-7. [PREFIX] Update manifest (keep active)
-8. [PREFIX] Notify completion
-```
-
-**Verification**:
-- [ ] TaskCreate tool invoked with items listed above
-- [ ] Items have project prefix
-- [ ] First item marked `in_progress`
 
 ---
 
@@ -203,13 +171,10 @@ If no (`response.startswith("no")`): Exit, return to work.
 If yes (`response.startswith("yes")`, may include `[comment: ...]`): Continue with documentation-only commit.
 If neither (`response.startswith("neither")`): Re-frame — typical concern is "are there files I forgot to track?" Re-prompt with options to (a) audit git status before deciding, (b) commit docs-only now, (c) exit and run session-start to repopulate the manifest. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 1 complete.
-
 **Verification**:
 - [ ] Session ID retrieved
 - [ ] Manifest section found and parsed (or fallback mode chosen)
 - [ ] File list extracted from manifest
-- [ ] TaskUpdate updated
 
 ---
 
@@ -251,18 +216,15 @@ converse(
 )
 ```
 
-**TaskUpdate**: Mark Step 2 complete.
-
 **Verification**:
 - [ ] Description obtained (auto or custom)
-- [ ] TaskUpdate updated
 
 ---
 
 ## Step 3: Update TODO.md (if applicable)
 
 **Process**:
-1. Check if any TaskCreate items were marked `completed` since last commit
+1. Check the task store for rows of yours that reached `done` since the last commit
 2. Search TODO.md for related items (by description keywords, file names)
 3. If matching items found, mark as complete with session attribution
 
@@ -276,12 +238,9 @@ converse(
 INFO: No related TODO items found (no action needed)
 ```
 
-**TaskUpdate**: Mark Step 3 complete.
-
 **Verification**:
 - [ ] TODO.md searched for related items
 - [ ] Matching items marked complete (if found)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -291,12 +250,12 @@ INFO: No related TODO items found (no action needed)
 
 | Artifact | HARD CAP |
 |---|---|
-| `history.md` RESUME HERE | headline + **≤5 numbered findings, ≤2 sentences each** |
+| `history.md` `RESUME HERE` | headline + **≤5 numbered findings, ≤2 sentences each** |
 | `history.md` Checkpoint line | **one line**, semicolon-separated |
 | `history.md` Files line | **paths only**, no per-file commentary |
 | Decisions Log bullet | **one ruling, ≤3 sentences** — split multi-ruling sessions into multiple bullets |
 
-**`history.md` is an INDEX, not an archive.** Detail routes to `io/post-games/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
+**`history.md` is an INDEX, not an archive.** Detail routes to `src/docs/post-games/<version>/`, `src/rnd/<date>-<slug>.md`, or the task-store; the entry carries a **pointer**. An entry that reproduces the retro has not preserved it — it has duplicated it into the one file with a hard 25k token ceiling (`history-management.md`), accelerating the next forced archive.
 
 **Self-check**: *could a rehydrating session act correctly on this entry alone?* If yes, **stop — it is long enough.**
 
@@ -322,14 +281,12 @@ INFO: No related TODO items found (no action needed)
 - Include timestamp for multiple checkpoints per day
 - Keep files list compact (show first 2-3, then "+N more" if many)
 - Commit hash will be updated in Step 7 after commit succeeds
-
-**TaskUpdate**: Mark Step 4 complete.
+- Wording follows `workflow/entry-writing-rules.md`
 
 **Verification**:
 - [ ] Checkpoint entry added to history.md
 - [ ] All touched files listed (or summarized)
 - [ ] Commit marked as [pending]
-- [ ] TaskUpdate updated
 
 ---
 
@@ -371,12 +328,9 @@ ask_multiple_choice(
 
 **If no conflicts**: Skip prompt, proceed to staging.
 
-**TaskUpdate**: Mark Step 5 complete.
-
 **Verification**:
 - [ ] Conflict detection performed
 - [ ] Conflicts resolved (if any)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -435,18 +389,23 @@ git diff --cached --name-only
 
 ### Step 6c: Create Commit
 
-**Create commit:**
+**Create commit:** write the message to a file first, **with the Write tool** (the session scratchpad, or the gitignored `io/`):
 
-```bash
-git commit -m "$(cat <<'EOF'
+```
 Checkpoint: [description]
 
 Files modified: [N]
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-)"
 ```
+
+then commit by pathspec, naming the files from Step 6a-6b:
+
+```bash
+git commit -F <message-file> -- <your files, as written in ### Touched Files>
+```
+
+A message that rides the commit line (`-m "$(cat <<'EOF' ... EOF)"`) is allowed unreviewed by the commit-scope guard; see `session-end.md` Step 4.3 for why. Name each path exactly as in your `### Touched Files` (repo-relative, no `./`: `./src/x` is refused), and note the review only happens when your session has a manifest section.
 
 **If commit fails**:
 ```python
@@ -459,15 +418,12 @@ notify(
 ```
 Present retry option.
 
-**TaskUpdate**: Mark Step 6 complete.
-
 **Verification**:
 - [ ] Pre-commit verification performed
 - [ ] Files NOT in manifest section identified and skipped
 - [ ] ONLY manifest files staged
 - [ ] history.md and TODO.md staged (if modified)
 - [ ] Commit created successfully
-- [ ] TaskUpdate updated
 
 ---
 
@@ -491,29 +447,7 @@ Replace `[pending]` with actual hash:
 
 ### Step 7c: Update Manifest Section
 
-**Add checkpoint tracking to your section** (new format for checkpoints):
-
-```markdown
-## Session: [session_id]
-
-**Started**: 2026-01-31T09:00:00
-**Last Activity**: 2026-01-31T11:30:00
-**Status**: active               ← STAYS ACTIVE (session continues)
-**Checkpoints**: 1               ← NEW: Track checkpoint count
-**Project**: planning-is-prompting
-
-### Checkpoint 1 (abc1234) | 2026-01-31T11:30:00
-
-- file1.py
-- file2.py
-- file3.py
-
-### Touched Files
-
-- 2026-01-31T09:15:00 | file1.py
-- 2026-01-31T09:30:00 | file2.py
-- 2026-01-31T10:35:00 | file3.py
-```
+**Add checkpoint tracking to your section**, in the format shown under Manifest Format Enhancement below.
 
 **Key differences from session-end**:
 - Status stays `active` (NOT `committed`)
@@ -530,8 +464,6 @@ git add history.md
 git commit --amend --no-edit
 ```
 
-**TaskUpdate**: Mark Step 7 complete.
-
 **Verification**:
 - [ ] Commit hash captured
 - [ ] history.md updated with hash
@@ -539,7 +471,6 @@ git commit --amend --no-edit
 - [ ] Status remains `active`
 - [ ] Checkpoints counter updated
 - [ ] Commit amended with final state
-- [ ] TaskUpdate updated
 
 ---
 
@@ -556,11 +487,9 @@ notify(
 )
 ```
 
-**TaskUpdate**: Mark Step 8 complete.
-
 **Verification**:
 - [ ] Completion notification sent
-- [ ] All TaskCreate items complete
+- [ ] All steps complete
 - [ ] Session remains active for continued work
 
 ---
@@ -586,13 +515,7 @@ After checkpoint completes:
 
 ## History.md Checkpoint Entry Format
 
-**Standard format**:
-```markdown
-#### Checkpoint | YYYY.MM.DD HH:MM | [Brief description]
-
-**Files**: file1.py, file2.py (+N more)
-**Commit**: abc1234
-```
+**Standard format**: the Step 4 history entry template, with the final hash from Step 7b.
 
 **Multiple checkpoints in one session**:
 ```markdown
@@ -680,9 +603,4 @@ After checkpoint completes:
 
 ## Version History
 
-**v1.0** (2026.02.03) - Initial workflow
-- 8-step checkpoint process
-- Parallel session safety (v2.0 conflict detection)
-- Manifest checkpoint tracking format
-- Auto-generate or custom description
-- Session stays active after checkpoint
+Full history: `docs/version-history/session-checkpoint.md`.

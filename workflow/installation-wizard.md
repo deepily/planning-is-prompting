@@ -508,51 +508,6 @@ This metadata drives the interactive menu generation in Step 2.
 
 ## Installation Flow
 
-### Step 0: Create Installation TODO List
-
-**Purpose**: Track installation progress visually using TodoWrite
-
-**Mandate**: ALWAYS create a TodoWrite list at the start of installation
-
-**Template TODO Items**:
-```
-[INSTALL] Configure permissions (optional)
-[INSTALL] Detect current project state
-[INSTALL] Present workflow catalog and get user selection
-[INSTALL] Validate selection and dependencies
-[INSTALL] Collect project configuration
-[INSTALL] Install selected workflows
-[INSTALL] Validate installation
-[INSTALL] Verify git tracking
-[INSTALL] Present summary and next steps
-[INSTALL] Offer session-end workflow (conditional)
-```
-
-**Instructions**:
-1. Use TodoWrite tool to create installation checklist
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[INSTALL]` prefix until user provides their project prefix
-
-**Example**:
-```json
-[
-  {"content": "[INSTALL] Configure permissions", "status": "in_progress", "activeForm": "[INSTALL] Configuring permissions"},
-  {"content": "[INSTALL] Detect project state", "status": "pending", "activeForm": "[INSTALL] Detecting project state"},
-  {"content": "[INSTALL] Present workflow catalog", "status": "pending", "activeForm": "[INSTALL] Presenting workflow catalog"},
-  {"content": "[INSTALL] Validate selection", "status": "pending", "activeForm": "[INSTALL] Validating selection"},
-  {"content": "[INSTALL] Collect configuration", "status": "pending", "activeForm": "[INSTALL] Collecting configuration"},
-  {"content": "[INSTALL] Install workflows", "status": "pending", "activeForm": "[INSTALL] Installing workflows"},
-  {"content": "[INSTALL] Validate installation", "status": "pending", "activeForm": "[INSTALL] Validating installation"},
-  {"content": "[INSTALL] Verify git tracking", "status": "pending", "activeForm": "[INSTALL] Verifying git tracking"},
-  {"content": "[INSTALL] Present summary", "status": "pending", "activeForm": "[INSTALL] Presenting summary"},
-  {"content": "[INSTALL] Offer session-end workflow", "status": "pending", "activeForm": "[INSTALL] Offering session-end workflow"}
-]
-```
-
----
-
 ### Step 0.5: Permission Setup (Optional but Recommended)
 
 **Purpose**: Configure auto-approval for workflow installation files to avoid repeated permission prompts
@@ -863,8 +818,6 @@ Wait for user response. Proceed to Section 0.5.5.
 
 #### Section 0.5.5: Completion and Error Handling
 
-**Update TodoWrite**: Mark "Configure permissions" as completed
-
 **Send Notification**:
 ```python
 notify( "Permission setup completed", notification_type="progress", priority="low" )
@@ -1009,8 +962,6 @@ Found:
 
 Ready for fresh installation.
 ```
-
-**Update TodoWrite**: Mark "Detect project state" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1198,8 +1149,6 @@ What would you like to do? [1/2/3/4]
    - Show required files (history.md, etc.)
 
 3. **Wait for User Selection**
-
-**Update TodoWrite**: Mark "Present workflow catalog" as completed, mark next item as in_progress
 
 **Send Blocking Notification and Await Selection**:
 ```python
@@ -1424,8 +1373,6 @@ This will create:
 
 Ready to proceed with configuration.
 ```
-
-**Update TodoWrite**: Mark "Validate selection" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1654,8 +1601,6 @@ Is this correct?
 [2] No, let me correct something (which field?)
 [3] Cancel installation
 ```
-
-**Update TodoWrite**: Mark "Collect configuration" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1899,7 +1844,7 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
 
    **Rationale**: The `!.claude/commands/` negation pattern ensures slash commands are tracked by git while excluding user-specific settings like `settings.local.json`.
 
-7. **Track Installation Progress** (update TodoWrite as each file created):
+7. **Track Installation Progress** (update your checklist, if kept, as each file is created):
 
    ```
    ✅ [MYPROJ] Create .claude/commands/ directory
@@ -1910,8 +1855,6 @@ notify( "Configuration collected", notification_type="progress", priority="low" 
    ⏳ [MYPROJ] Create history.md
    ⏳ [MYPROJ] Create archive directory
    ```
-
-**Update TodoWrite**: Mark "Install workflows" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -1999,54 +1942,6 @@ Workflow Test:
 
 Installation validated successfully!
 ```
-
-7. **IMPORTANT: Do NOT Run Workflow Audit After Fresh Installation**:
-
-   **Anti-Pattern Warning**: After fresh installation, DO NOT run `/plan-workflow-audit` or execute workflow compliance audits.
-
-   **Why this is redundant**:
-   - Fresh installations copy directly from canonical source
-   - Canonical source = gold standard (files are compliant by definition)
-   - Workflow audit is designed for **existing/drifted** installations, not **fresh** installations
-   - The validation steps above (1-6) already confirm file integrity and correct configuration
-
-   **Validation vs Audit - Key Difference**:
-   ```
-   ┌─────────────────────────────────────────────────────────┐
-   │ Validation (Step 6)      │ Audit (/plan-workflow-audit) │
-   ├──────────────────────────┼──────────────────────────────┤
-   │ File integrity checking  │ Compliance checking          │
-   │ Files created correctly  │ Follows execution standards  │
-   │ Paths configured right   │ TodoWrite mandates present   │
-   │ No placeholders left     │ Language strength analysis   │
-   │ Fast (1-2 minutes)       │ Slow (10-15 min per file)    │
-   │ Run after installation   │ Skip for fresh installations │
-   └──────────────────────────┴──────────────────────────────┘
-   ```
-
-   **When workflow audit IS appropriate**:
-   - **Update mode**: Checking old → new version for drift detection
-   - **Manual edits**: User customizations may break compliance
-   - **Unknown origin**: Files you didn't install from canonical source
-   - **Development**: Testing new workflows you're creating
-
-   **Fresh installation time savings**:
-   - Skipping audit saves 3-5 hours for full workflow suite installation
-   - 19 workflows × 10-15 min each = 190-285 minutes wasted
-
-   **If you see Claude attempting to run workflow audit after installation**:
-   ```
-   ⚠️ STOP - Fresh installations don't need compliance auditing
-
-   The files were just copied from canonical source and are
-   compliant by definition. Validation (Step 6) already confirmed
-   file integrity and correct configuration.
-
-   Save 3-5 hours by skipping the audit. Use /plan-workflow-audit
-   only when checking existing installations for drift.
-   ```
-
-**Update TodoWrite**: Mark "Validate installation" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -2152,8 +2047,6 @@ notify( "Installation validated - all checks passed", notification_type="progres
    section (not "Untracked files").
    ```
 
-**Update TodoWrite**: Mark "Verify git tracking" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Git tracking verified", notification_type="progress", priority="low" )
@@ -2222,7 +2115,7 @@ Next Steps:
 
 2️⃣ Do some work on your project:
    - Fix bugs, add features, write code
-   - Use TodoWrite to track progress
+   - Put owed work in the task store
    - Reference your [MYPROJ] prefix in all TODOs
 
 3️⃣ Wrap up when you're done:
@@ -2279,7 +2172,7 @@ Planning is Prompting Workflows Installed:
    → Use when: Starting new feature, research, or architecture work
 
 ✅ /p-is-p-01-planning
-   → Work planning: Classify → Pattern → Breakdown → TodoWrite
+   → Work planning: Classify → Pattern → Breakdown → task-store rows
    → Use when: Any new work (always required)
 
 ✅ /p-is-p-02-documentation
@@ -2359,7 +2252,7 @@ Testing Workflow Pattern:
 
 2. Make Your Changes:
    • Implement features, fix bugs, refactor code
-   • Use TodoWrite to track progress
+   • Put owed work in the task store
 
 3. After Changes:
    /plan-test-remediation scope=FULL
@@ -2381,8 +2274,6 @@ For detailed workflow documentation, see:
 • planning-is-prompting → workflow/testing-remediation.md
 • planning-is-prompting → workflow/testing-harness-update.md
 ```
-
-**Update TodoWrite**: Mark "Present summary" as completed
 
 **Send Notification**:
 ```bash
@@ -2497,8 +2388,6 @@ You can always add more workflows later by sharing:
 The wizard works the same way whether you have the slash
 command installed or not.
 ```
-
-**Update TodoWrite**: Add and complete "Install wizard slash command (optional)" item
 
 **Send Notification** (if installed):
 ```bash
@@ -2618,8 +2507,6 @@ What would you like to do? [1/2]
    **Rationale**: Only offer session-end if user installed Session Management
    workflows. Don't confuse users who only installed Planning or Backup workflows.
 
-**Update TodoWrite**: Mark "Offer session-end workflow" as completed
-
 **Send Notification** (if user ran session-end):
 ```bash
 notify( "Installation session recorded via /plan-session-end", notification_type="progress", priority="low" )
@@ -2669,118 +2556,64 @@ notify( "Installation session recorded via /plan-session-end", notification_type
 **History Management**: See planning-is-prompting → workflow/history-management.md
 ```
 
-### Template: Project CLAUDE.md (With Testing Workflows)
+### Variant: Project CLAUDE.md with Testing Workflows
 
-```markdown
-# CLAUDE.md
+Start from the minimal template above and add:
 
-**Short Prefix**: [MYPROJ] - Use this prefix in all TODO items and notifications for this project.
+- Under **Installed Workflows**, before **Configuration**:
 
-## Project Overview
+  ```markdown
+  **Testing Workflows**:
+  - `/plan-test-baseline` - Pre-change baseline collection
+  - `/plan-test-remediation` - Post-change verification
+  - `/plan-test-harness-update` - Test maintenance planning
+  ```
 
-**Project Name**: My Project
+- Under **Configuration**: `- Test results: ./tests/results/`
+- After **Session Workflows**:
 
-## Installed Workflows
+  ```markdown
+  ## Testing Workflows
 
-**Session Management**:
-- `/plan-session-start` - Initialize work session
-- `/plan-session-end` - Wrap up session
+  **Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
 
-**History Management**:
-- `/plan-history-management` - Manage history.md archival
+  **Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
 
-**Testing Workflows**:
-- `/plan-test-baseline` - Pre-change baseline collection
-- `/plan-test-remediation` - Post-change verification
-- `/plan-test-harness-update` - Test maintenance planning
+  **Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
+  ```
 
-**Configuration**:
-- History file: ./history.md
-- Archive directory: ./history/
-- Test results: ./tests/results/
+### Variant: Project CLAUDE.md with Planning Workflows
 
-## Session Workflows
+Start from the minimal template and add the testing additions above only if testing workflows are installed (label them "(if installed)"), plus:
 
-**Session Start**: Use `/plan-session-start` or see planning-is-prompting → workflow/session-start.md
+- Under **Installed Workflows**, after **History Management**:
 
-**Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
+  ```markdown
+  **Planning is Prompting**:
+  - `/p-is-p-00-start-here` - Entry point & decision matrix
+  - `/p-is-p-01-planning` - Work planning workflow
+  - `/p-is-p-02-documentation` - Implementation documentation
+  ```
 
-**History Management**: See planning-is-prompting → workflow/history-management.md
+- Under **Configuration**: `- Planning docs: ./src/rnd/`
+- Before **Session Workflows**:
 
-## Testing Workflows
+  ```markdown
+  ## Planning Workflows
 
-**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
+  **Entry Point**: See planning-is-prompting → workflow/p-is-p-00-start-here.md
 
-**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
+  **Two-Step Process**:
+  1. **Plan the Work** (planning-is-prompting → workflow/p-is-p-01-planning-the-work.md) - Always required
+  2. **Document Implementation** (planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md) - Only for Pattern 1, 2, 5
 
-**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
-```
-
-### Template: Project CLAUDE.md (With Planning Workflows)
-
-```markdown
-# CLAUDE.md
-
-**Short Prefix**: [MYPROJ] - Use this prefix in all TODO items and notifications for this project.
-
-## Project Overview
-
-**Project Name**: My Project
-
-## Installed Workflows
-
-**Session Management**:
-- `/plan-session-start` - Initialize work session
-- `/plan-session-end` - Wrap up session
-
-**History Management**:
-- `/plan-history-management` - Manage history.md archival
-
-**Planning is Prompting**:
-- `/p-is-p-00-start-here` - Entry point & decision matrix
-- `/p-is-p-01-planning` - Work planning workflow
-- `/p-is-p-02-documentation` - Implementation documentation
-
-**Testing Workflows** (if installed):
-- `/plan-test-baseline` - Pre-change baseline collection
-- `/plan-test-remediation` - Post-change verification
-- `/plan-test-harness-update` - Test maintenance planning
-
-**Configuration**:
-- History file: ./history.md
-- Archive directory: ./history/
-- Planning docs: ./src/rnd/
-- Test results: ./tests/results/ (if testing workflows installed)
-
-## Planning Workflows
-
-**Entry Point**: See planning-is-prompting → workflow/p-is-p-00-start-here.md
-
-**Two-Step Process**:
-1. **Plan the Work** (planning-is-prompting → workflow/p-is-p-01-planning-the-work.md) - Always required
-2. **Document Implementation** (planning-is-prompting → workflow/p-is-p-02-documenting-the-implementation.md) - Only for Pattern 1, 2, 5
-
-**Project Configuration**:
-- Use decision matrix to determine if you need Step 2
-
-## Session Workflows
-
-**Session Start**: Use `/plan-session-start` or see planning-is-prompting → workflow/session-start.md
-
-**Session End**: Use `/plan-session-end` or see planning-is-prompting → workflow/session-end.md
-
-**History Management**: See planning-is-prompting → workflow/history-management.md
-
-## Testing Workflows (if installed)
-
-**Baseline Collection**: See planning-is-prompting → workflow/testing-baseline.md
-
-**Post-Change Remediation**: See planning-is-prompting → workflow/testing-remediation.md
-
-**Test Harness Maintenance**: See planning-is-prompting → workflow/testing-harness-update.md
-```
+  **Project Configuration**:
+  - Use decision matrix to determine if you need Step 2
+  ```
 
 ### Template: Initial history.md
+
+The first entry and every later line follow `workflow/entry-writing-rules.md`.
 
 ```markdown
 # [Project Name] - Session History
@@ -2838,47 +2671,6 @@ notify( "Installation session recorded via /plan-session-end", notification_type
 
 ### Update Mode Flow
 
-#### Step 0: Create Update TODO List
-
-**Purpose**: Track update progress visually using TodoWrite
-
-**Mandate**: ALWAYS create a TodoWrite list at the start of update mode
-
-**Template TODO Items**:
-```
-[UPDATE] Scan local installation for workflows
-[UPDATE] Compare local vs canonical versions
-[UPDATE] Present selective update UI
-[UPDATE] Extract configuration from selected files
-[UPDATE] Generate and show diff preview
-[UPDATE] Create backups and apply updates
-[UPDATE] Validate updated files
-[UPDATE] Present update summary
-```
-
-**Instructions**:
-1. Use TodoWrite tool to create update checklist
-2. Mark first item as `in_progress`
-3. Update status after completing each step
-4. Mark as `completed` when step finishes
-5. Use `[UPDATE]` prefix or project's [SHORT_PROJECT_PREFIX]
-
-**Example**:
-```json
-[
-  {"content": "[UPDATE] Scan local installation", "status": "in_progress", "activeForm": "[UPDATE] Scanning local installation"},
-  {"content": "[UPDATE] Compare versions", "status": "pending", "activeForm": "[UPDATE] Comparing versions"},
-  {"content": "[UPDATE] Present update UI", "status": "pending", "activeForm": "[UPDATE] Presenting update UI"},
-  {"content": "[UPDATE] Extract config", "status": "pending", "activeForm": "[UPDATE] Extracting config"},
-  {"content": "[UPDATE] Show diff preview", "status": "pending", "activeForm": "[UPDATE] Showing diff preview"},
-  {"content": "[UPDATE] Apply updates", "status": "pending", "activeForm": "[UPDATE] Applying updates"},
-  {"content": "[UPDATE] Validate updates", "status": "pending", "activeForm": "[UPDATE] Validating updates"},
-  {"content": "[UPDATE] Present summary", "status": "pending", "activeForm": "[UPDATE] Presenting summary"}
-]
-```
-
----
-
 #### Step 1: Scan Local Installation
 
 **Purpose**: Discover installed workflows and extract version numbers
@@ -2906,7 +2698,7 @@ notify( "Installation session recorded via /plan-session-end", notification_type
    - Planning Core: `p-is-p-00-start-here.md`, `p-is-p-01-planning.md`, `p-is-p-02-documentation.md`
    - Testing: `plan-test-baseline.md`, `plan-test-remediation.md`, `plan-test-harness-update.md`
    - Backup: `plan-backup.md`, `plan-backup-check.md`, `plan-backup-write.md`
-   - Utility: `plan-install-wizard.md`, `plan-uninstall-wizard.md`, `plan-workflow-audit.md`
+   - Utility: `plan-install-wizard.md`, `plan-uninstall-wizard.md`
 
 3. **Build Inventory**:
 
@@ -2958,8 +2750,6 @@ Version Summary:
    This might be a corrupted or manually edited file.
    Treating as version 0.0 for comparison purposes.
    ```
-
-**Update TodoWrite**: Mark "Scan local installation" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3060,13 +2850,11 @@ What's New in Version 1.0:
   - No ambiguous phrasing
   - Clear execution commands
 
-Affected Files (6):
+Affected Files (5):
   → plan-session-start.md, plan-session-end.md
-  → plan-history-management.md, plan-workflow-audit.md
+  → plan-history-management.md
   → p-is-p-01-planning.md, p-is-p-02-documentation.md
 ```
-
-**Update TodoWrite**: Mark "Compare versions" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3208,8 +2996,6 @@ What will happen:
 Ready to proceed.
 ```
 
-**Update TodoWrite**: Mark "Present update UI" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```python
 notify( "Update selection presented - awaiting user choice", notification_type="task", priority="high" )
@@ -3331,8 +3117,6 @@ All configurations extracted successfully.
    - Planning workflows: PREFIX (+ argument support preserved)
    - Testing workflows: PREFIX (+ argument support preserved)
 
-**Update TodoWrite**: Mark "Extract config" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Configuration extracted from 6 files", notification_type="progress", priority="low" )
@@ -3441,7 +3225,7 @@ Detailed Diff: plan-session-start.md
 +   - Location: planning-is-prompting → workflow/session-start.md
 +   - This is the ONLY authoritative source for ALL session initialization steps
 +   - Do NOT proceed without reading this document in full
-+   - The canonical workflow contains: Preliminary notification, TodoWrite initialization, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
++   - The canonical workflow contains: Preliminary notification, configuration loading, workflow discovery, history loading, ready notification, outstanding work identification with [1/2/3] options, and context presentation
 
 -4. Execute the following:
 -   - Load configuration files
@@ -3451,7 +3235,7 @@ Detailed Diff: plan-session-start.md
 -   - Present session context and await direction
 +3. **MUST execute the complete session initialization routine**:
 +   - Execute ALL steps exactly as described in the canonical workflow document
-+   - Do NOT skip any steps (including notifications, TodoWrite tracking, or user prompts)
++   - Do NOT skip any steps (including notifications or user prompts)
 +   - Do NOT substitute a shortened or summarized version
 +   - Do NOT bypass the [1/2/3] user choice prompt in Step 5
 +   - Follow the workflow exactly as documented using the configuration parameters from Step 1
@@ -3501,8 +3285,6 @@ This operation is reversible (backups will be available).
 
 What would you like to do? [1/2]
 ```
-
-**Update TodoWrite**: Mark "Show diff preview" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```python
@@ -3563,7 +3345,7 @@ ask_yes_no( "Review diff above - apply updates?", default="no", timeout_seconds=
    fi
    ```
 
-2. **Track Progress** with TodoWrite sub-items:
+2. **Track Progress** (optional checklist sub-items):
 
 ```
 [UPDATE] Apply updates:
@@ -3647,8 +3429,6 @@ Update Application Complete
 
 All files updated. Proceeding to validation...
 ```
-
-**Update TodoWrite**: Mark "Apply updates" as completed, mark next item as in_progress
 
 **Send Notification**:
 ```bash
@@ -3832,8 +3612,6 @@ Update validation complete!
    What would you like to do? [1/2]
    ```
 
-**Update TodoWrite**: Mark "Validate updates" as completed, mark next item as in_progress
-
 **Send Notification**:
 ```bash
 notify( "Validation complete - all 6 workflows verified", notification_type="progress", priority="medium" )
@@ -4014,8 +3792,6 @@ Would you like to run /plan-session-end to:
 
 What would you like to do? [1/2]
 ```
-
-**Update TodoWrite**: Mark "Present summary" as completed
 
 **Send Notification**:
 ```bash
@@ -4586,31 +4362,7 @@ export PLANNING_IS_PROMPTING_ROOT="/path/to/planning-is-prompting"
 
 ## Version History
 
-**v1.1** (2025.10.24) - Update Mode Implementation
-- **NEW**: Complete update mode workflow (Steps 0-8, ~1,728 lines)
-  - Local installation scan with version detection
-  - Canonical version comparison
-  - Selective update UI (checkbox-style menu)
-  - Configuration extraction and preservation (Step 1 parameters)
-  - Diff preview before applying
-  - Backup creation (.old files)
-  - Smart update application with rollback
-  - Validation and comprehensive reporting
-- **NEW**: Five helper algorithms (version extraction, config extraction, config injection, diff generation, backup creation)
-- **NEW**: Comprehensive error handling (canonical repo not found, parse errors, version mismatches, injection failures, write permissions, backup failures)
-- Mode parameter support: `/plan-install-wizard mode=update`
-- Enables propagation of deterministic wrapper pattern fixes (v1.0) to other repos
-- Configuration preservation: automatically extracts and injects project-specific parameters
-- Versioning system: all slash commands now tagged with version numbers for tracking
-
-**v1.0** (2025.10.10) - Initial installation wizard
-- Interactive workflow selection menu
-- Dependency validation
-- Smart configuration collection
-- Automated file creation and customization
-- Installation validation
-- Comprehensive summary and next steps
-- Placeholder for update workflow (existing installations)
+Full history: `docs/version-history/installation-wizard.md`.
 
 ---
 

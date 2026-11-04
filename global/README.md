@@ -33,5 +33,5 @@ This directory shows a **real-world example** of that template in use.
 
 ## Snapshot Date
 
-- **Captured**: 2025.10.04
+- **Captured**: 2026.10.02 (the deployed file as last changed 2026.09.29; first captured 2025.10.04)
 - **From**: Rick's working configuration (includes PATH MANAGEMENT, TESTING sections, etc.)

@@ -5,8 +5,8 @@
 **Purpose**: Verify system health after changes, identify regressions, systematically remediate issues
 **Mode**: Comparison analysis with targeted remediation
 **Principle**: Compare, Analyze, Fix, Validate
-**Version**: 1.1
-**Last Updated**: 2026.02.23
+**Version**: 1.4
+**Last Updated**: 2026.10.10
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for remediation scope decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Regression diff goes to `abstract`; speak the headline only ("two regressions: auth flow and websocket reconnect").
 
@@ -194,71 +194,6 @@ echo "✅ Git diff saved: {logs_directory}/pre_remediation_${BACKUP_TIMESTAMP}.p
 ```bash
 SESSION_TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 echo "Remediation session timestamp: ${SESSION_TIMESTAMP}"
-```
-
----
-
-### Step 1: Initialize TodoWrite Tracking
-
-Create comprehensive task list based on remediation scope:
-
-**For FULL scope**:
-```
-[{PREFIX}] Post-change verification & remediation (FULL) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Identify and categorize regressions (Critical→High→Medium)
-[{PREFIX}] Phase 1: Fix Critical regressions (immediate)
-[{PREFIX}] Phase 2: Fix High priority issues (same session)
-[{PREFIX}] Phase 3: Fix Medium priority issues (time permitting)
-[{PREFIX}] Validate all fixes with targeted re-testing
-[{PREFIX}] Execute final comprehensive test suite
-[{PREFIX}] Generate final remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For CRITICAL_ONLY scope**:
-```
-[{PREFIX}] Post-change verification (CRITICAL_ONLY) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Identify Critical regressions only
-[{PREFIX}] Fix Critical regressions (time-boxed)
-[{PREFIX}] Validate Critical fixes
-[{PREFIX}] Document remaining issues
-[{PREFIX}] Generate remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For SELECTIVE scope**:
-```
-[{PREFIX}] Post-change verification (SELECTIVE) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate baseline comparison analysis
-[{PREFIX}] Derive affected subset via change-impact analysis
-[{PREFIX}] Fix the derived subset (time-boxed)
-[{PREFIX}] Validate fixes
-[{PREFIX}] Generate remediation report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**For ANALYSIS_ONLY scope**:
-```
-[{PREFIX}] Post-change analysis (NO REMEDIATION) - STARTED at [TIMESTAMP]
-[{PREFIX}] Pre-flight validation and baseline detection
-[{PREFIX}] Execute post-change test suites
-[{PREFIX}] Generate comprehensive comparison analysis
-[{PREFIX}] Identify and categorize all regressions
-[{PREFIX}] Document recommended fixes (no implementation)
-[{PREFIX}] Generate analysis report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
 ```
 
 ---
@@ -623,48 +558,9 @@ def calculate_priority(test_name, error_message, category):
 
 {End if}
 
-### High Priority Regressions (Priority 2) ⚠️
+{High priority regressions: the same block as Critical, with the heading "### High Priority Regressions (Priority 2) ⚠️", the impact line "Major functionality affected, fix same session", entry ids `HP-{id}`, and no Likely Cause line. When there are none: "**No high priority regressions detected** ✅"}
 
-{If high priority regressions exist}
-**Count**: {high_count}
-**Impact**: Major functionality affected, fix same session
-
-{For each high priority regression}
-#### HP-{id}: {test_name}
-
-- **Category**: {test_category}
-- **Baseline**: PASS ✅
-- **Current**: FAIL ❌
-- **Error**: `{error_message}`
-- **Impact**: {impact_description}
-- **Time Estimate**: {estimate} minutes
-
-{End for each}
-{Else}
-**No high priority regressions detected** ✅
-
-{End if}
-
-### Medium Priority Regressions (Priority 3) 📝
-
-{If medium priority regressions exist}
-**Count**: {medium_count}
-**Impact**: Minor functionality or edge cases affected
-
-{For each medium priority regression}
-#### MP-{id}: {test_name}
-
-- **Category**: {test_category}
-- **Baseline**: PASS ✅
-- **Current**: FAIL ❌
-- **Error**: `{error_message}`
-- **Time Estimate**: {estimate} minutes
-
-{End for each}
-{Else}
-**No medium priority regressions detected** ✅
-
-{End if}
+{Medium priority regressions: the same block as Critical, with the heading "### Medium Priority Regressions (Priority 3) 📝", the impact line "Minor functionality or edge cases affected", entry ids `MP-{id}`, and neither the Impact nor the Likely Cause line. When there are none: "**No medium priority regressions detected** ✅"}
 
 ## Improvement Analysis
 
@@ -911,7 +807,7 @@ fi
 
 #### 5.4 Progress Tracking Table
 
-**Maintain real-time progress** (update TodoWrite and/or create tracking file):
+**Maintain real-time progress** (update your checklist, if you keep one, and/or create a tracking file):
 
 ```markdown
 ## Remediation Progress Tracker
@@ -1162,12 +1058,12 @@ git reset --hard HEAD~1  # Go back one commit
 
 ### Step 8: Update Session History
 
-**Add remediation entry to history.md**:
+**Add remediation entry to history.md** (wording follows `workflow/entry-writing-rules.md`):
 
 ```markdown
 #### $(date +%Y.%m.%d) - Post-Change Remediation ({REMEDIATION_SCOPE})
 
-**Summary**: Remediated system after [DESCRIBE CHANGES] with {REMEDIATION_SCOPE} scope.
+**Summary**: Remediated system after [describe the changes] with {REMEDIATION_SCOPE} scope.
 
 **Comparison Results**:
 - **Baseline**: {baseline_pass_rate}% pass rate
@@ -1216,9 +1112,9 @@ notify( "Remediation COMPLETE ({scope}) - {final_rate}% final pass rate (baselin
 
 ---
 
-### Step 10: Final TodoWrite Update
+### Step 10: Final Summary
 
-Mark all remediation tasks as completed with detailed summary:
+Provide the detailed summary:
 
 ```
 ✅ [{PREFIX}] Post-change verification & remediation COMPLETE
@@ -1372,19 +1268,7 @@ notify( "URGENT: Remediation requires immediate attention - {description}", noti
 
 ## Version History
 
-**Version 1.1** (2026.02.23)
-- Added Step 3.0: Change-Scoped Test Selection (optional optimization)
-- Integrates Change Impact Analysis taxonomy for targeted test runs
-- References `~/.claude/skills/testing-development/references/change-impact-analysis.md`
-
-**Version 1.0** (2025.10.11)
-- Initial canonical workflow
-- Baseline comparison with regression detection
-- Priority-based remediation (CRITICAL→HIGH→MEDIUM)
-- Scope support (FULL|CRITICAL_ONLY|SELECTIVE|ANALYSIS_ONLY)
-- Time-boxed remediation with progress tracking
-- Comprehensive validation and reporting
-- Git safety and rollback procedures
+Full history: `docs/version-history/testing-remediation.md`.
 
 ---
 

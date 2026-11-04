@@ -2,18 +2,10 @@
 
 **Purpose**: Ongoing Agent Skills lifecycle management - discovery, creation, editing, auditing, and deletion of skills across repositories. Skills live in target repos (`.claude/skills/`), while this workflow provides a reusable pattern for maintaining them.
 
-**When to use**:
-- Discovering documentation that should become skills
-- Creating new skills from existing documentation
-- Updating skills as requirements change
-- Auditing skill health against current documentation
-- Removing obsolete skills
+**When to use**: for any of the five modes below; each mode lists its own conditions.
 
 **Key capabilities**:
 - Five operational modes (discover, create, edit, audit, delete)
-- Progressive disclosure pattern (metadata → instructions → references)
-- Token-aware skill design (<500 lines per SKILL.md)
-- Intent-based activation via trigger-rich descriptions
 - Integration with Planning-is-Prompting workflows
 
 > **⚠️ Conversation Mode**: this workflow uses `ask_multiple_choice()` for skill selection and `notify()` for operations — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Skill catalogs/menus go to `abstract` parameter; speak the short prompt only.
@@ -46,10 +38,7 @@ Documentation evolves with the codebase, but passive docs don't adapt:
 
 ### Overview
 
-Agent Skills (per agentskills.io specification) provide **intent-based activation**:
-- ~100 tokens loaded at startup (name + description only)
-- Full instructions (<5000 tokens) loaded **when skill activates**
-- Progressive disclosure: SKILL.md → references/ → scripts/ → assets/
+Agent Skills (per agentskills.io specification) provide **intent-based activation** with progressive disclosure; the Token Budget table below gives the numbers.
 
 ### Required Frontmatter
 
@@ -143,14 +132,13 @@ description: Helps with testing.
    - README sections describing project capabilities (prime skill candidates)
 
 2. **Scan Documentation Directories**
-   - Check `docs/`, `workflow/`, `src/rnd/` for domain-specific docs
    - Identify documents >200 lines (candidates for extraction)
    - Flag documents frequently referenced in CLAUDE.md or README
-   - **Follow links**: If README links to `docs/architecture.md`, scan that too
 
 3. **Identify Rediscovery Patterns**
    - Review history.md for repeated mistakes or reminders
    - Check for patterns like "Remember to...", "Don't forget..."
+   - Any line this workflow writes to history.md or TODO.md follows `workflow/entry-writing-rules.md`
    - Identify knowledge that's frequently "relearned"
 
 4. **Generate Candidate Report**
@@ -404,10 +392,7 @@ Location: .claude/skills/testing-patterns/
     └── fixtures.md
 
 Trigger description:
-"Testing patterns and caveats for this project. Use when
-writing tests, running pytest, debugging test failures,
-choosing between smoke/unit/integration tests, or fixing
-flaky tests."
+"Testing patterns and caveats for this project. Use when writing tests, running pytest, debugging test failures, choosing between smoke/unit/integration tests, or fixing flaky tests."
 
 To edit: /plan-skills-management edit testing-patterns
 To audit all: /plan-skills-management audit
@@ -624,8 +609,6 @@ Type skill name to confirm deletion: _
 
 **Step 3: Execute Deletion**
 - Remove skill directory recursively
-- Check for references in CLAUDE.md
-- Report any cleanup needed
 
 **Step 4: Update References**
 ```
@@ -669,7 +652,7 @@ To use a template:
 /plan-skills-management create <skill-name>
 
 Select source:
-[4] From template
+[6] From template
 
 Available templates:
 [1] testing-skill-template
@@ -682,28 +665,18 @@ Available templates:
 ## Anti-Patterns
 
 ### Skills Too Long
-**Problem**: SKILL.md >500 lines defeats progressive disclosure
-**Solution**: Extract detailed content to `references/` directory
 
 ### Vague Descriptions
-**Problem**: "Helps with testing" won't trigger on specific intents
-**Solution**: Include explicit trigger keywords: "Use when writing tests, running pytest, debugging failures"
 
 ### Missing Trigger Keywords
-**Problem**: User says "run integration tests" but skill doesn't activate
-**Solution**: Include domain-specific terms in description: pytest, mock, fixture, flaky, etc.
 
 ### Duplicating CLAUDE.md
 **Problem**: Skill copies content verbatim from CLAUDE.md
 **Solution**: Extract and refine; CLAUDE.md should reference skill, not duplicate
 
 ### No References Directory
-**Problem**: Large skill crammed into single SKILL.md
-**Solution**: Split into SKILL.md (quick reference) + references/ (details)
 
 ### Stale Skills
-**Problem**: Documentation evolved but skill didn't
-**Solution**: Regular audits with `/plan-skills-management audit`
 
 ---
 
@@ -720,9 +693,7 @@ Available templates:
 
 ### Complementary Usage
 
-Skills and slash commands work together:
-- **Skill**: Provides domain knowledge (testing patterns, API conventions)
-- **Slash Command**: Executes explicit workflow (session-end, commit, planning)
+Skills and slash commands work together; the table above says which carries what.
 
 ### Session-End Integration
 
@@ -849,29 +820,7 @@ ask_multiple_choice( questions=[{
 
 ## Version History
 
-**v1.1** (2026.01.28) - Enhanced discovery and usability
-- Expanded discover mode scanning scope:
-  - Added README.md scanning
-  - Added project CLAUDE.md scanning (separate from global)
-  - Added link-following from README to other documentation
-- Added user-suggested topic capability:
-  - Users can propose topics not found in automated scan
-  - System analyzes viability and searches for documentation
-- Added mode-specific slash commands for discoverability:
-  - `/plan-skills-management-discover`
-  - `/plan-skills-management-create`
-  - `/plan-skills-management-edit`
-  - `/plan-skills-management-audit`
-  - `/plan-skills-management-delete`
-- Updated create mode source options (7 options instead of 4)
-
-**v1.0** (2026.01.28) - Initial canonical workflow
-- Five operational modes (discover, create, edit, audit, delete)
-- agentskills.io specification compliance
-- Progressive disclosure pattern
-- Token budget guidance
-- Integration with Planning-is-Prompting workflows
-- Skill templates system
+Full history: `docs/version-history/skills-management.md`.
 
 ---
 

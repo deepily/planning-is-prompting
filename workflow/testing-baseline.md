@@ -24,14 +24,14 @@
 
 **REFERENCE SHAPE** (do not re-derive it — port it): lupin `src/tests/smoke/tmux_isolation.py` + its session-scoped autouse guard in `src/tests/smoke/conftest.py` (`tmux_fleet_socket_isolation`), committed `52ceabe0`. It strips `TMUX`/`TMUX_PANE` and pins `TMUX_TMPDIR`; **stripping `$TMUX` is the load-bearing part**, because with `$TMUX` present `TMUX_TMPDIR` is ignored.
 
-**STATE OF THIS REPO — verified by execution 2026-07-16, not inherited. Predicates stated, because they disagree:**
+**STATE OF THIS REPO — verified by execution 2026-10-09 at commit 1c4faf5, not inherited. Predicates stated, because they disagree:**
 
 | Question | Predicate | Answer |
 |---|---|---|
 | Any `conftest.py` **committed to this repo**? | `git ls-files` | **0** |
 | Any `conftest.py` **on disk**? | `find` | **22** — *all* vendored under `.venv/.../site-packages/` |
-| Any `.py` **referencing tmux**? | tracked **and** on-disk | **0** — by both |
-| Any **test file** at all? | `git ls-files` → **0** · `find` (excl `.venv`) → **1** | `workflow/scripts/test_memento_io_postgame.py` — **UNTRACKED** (`??`, not ignored), and does not touch tmux |
+| Any `.py` **referencing tmux**? | tracked (`git grep -l -i tmux -- '*.py'`) | **6** — `workflow/scripts/` `memento_io.py`, `orphaned_head_sweep.py`, `undelivered_column.py` and three test files (`test_orphaned_head_sweep.py`, `test_undelivered_column.py`, `test_memento_io_stamps_the_id_that_survives_the_clear.py`); the only `tmux` binary call found is `orphaned_head_sweep.py:192` (`tmux list-sessions`); whether any test reaches it was **not checked** |
+| Any **test file** at all? | `git ls-files` → **48** · `find` (excl `.venv`) → **48** | `test_*.py` under `workflow/scripts/`; none untracked |
 
 ⇒ the guard has **no home yet**: the first tmux-invoking test must create `conftest.py` **and** the guard together.
 
@@ -39,7 +39,7 @@
 >
 > `find . -name conftest.py` → **22**. `git ls-files | grep conftest.py` → **0**. **Both are correct; they answer different questions.** A prior recon pair split exactly here — one seat reported a conftest, another reported none, same night, same tree. **That was a predicate difference, not a competence gap.**
 >
-> **AND "just use git-tracked" IS THE WRONG LESSON — it is how this very note got its own state wrong on first draft.** ⚠️ **For the tmux hazard the operative predicate is ON DISK, not git-tracked: `pytest` collects from the FILESYSTEM and does not consult git.** An **untracked** tmux test (this repo has an untracked test file *right now*) will be collected and will address the fleet socket exactly as hard as a committed one. A vendored `.venv` conftest will not be — because it is outside the collected path, **not** because it is untracked.
+> **AND "just use git-tracked" IS THE WRONG LESSON — it is how this very note got its own state wrong on first draft.** ⚠️ **For the tmux hazard the operative predicate is ON DISK, not git-tracked: `pytest` collects from the FILESYSTEM and does not consult git.** An **untracked** tmux test (none exists as of 2026-10-09, but one can appear at any time) will be collected and will address the fleet socket exactly as hard as a committed one. A vendored `.venv` conftest will not be — because it is outside the collected path, **not** because it is untracked.
 >
 > **So pick the predicate from the QUESTION, not from habit:**
 > - *"Is it this repo's committed surface?"* → **git-tracked**.
@@ -166,7 +166,7 @@ Before executing this workflow, the thin wrapper slash command must provide:
 ```yaml
 project_config:
   # Identity
-  short_prefix: "[PROJECT]"              # For TodoWrite and notifications
+  short_prefix: "[PROJECT]"              # For task titles and notifications
   project_name: "Project Name"           # Human-readable
 
   # Paths
@@ -218,54 +218,6 @@ project_config:
 ---
 
 ## Workflow Steps
-
-### Step 0: Initialize TodoWrite Tracking
-
-Create a comprehensive todo list to track baseline collection progress:
-
-```
-[{PREFIX}] Establish pre-change baseline - STARTED at [TIMESTAMP]
-[{PREFIX}] Create directories and generate timestamp
-[{PREFIX}] Run health checks
-[{PREFIX}] Execute {test_type_1} tests
-[{PREFIX}] Execute {test_type_2} tests (if applicable)
-[{PREFIX}] Execute {test_type_3} tests (if applicable)
-[{PREFIX}] Generate comprehensive baseline report
-[{PREFIX}] Update session history
-[{PREFIX}] Send completion notification
-```
-
-**Adapt based on**:
-- Number of test types in configuration
-- Scope parameter (if applicable)
-- Health check availability
-
-**Example for multi-suite project**:
-```
-[LUPIN] Establish pre-change baseline (FULL) - STARTED at 2025-10-11 14:30:00
-[LUPIN] Create logs directory and generate timestamp
-[LUPIN] Check FastAPI server health (port 7999)
-[LUPIN] Execute Lupin smoke test suite
-[LUPIN] Execute Lupin unit test suite
-[LUPIN] Execute Lupin integration test suite
-[LUPIN] Execute COSA framework smoke tests (if scope=full)
-[LUPIN] Execute COSA framework unit tests (if scope=full)
-[LUPIN] Generate comprehensive baseline report
-[LUPIN] Document baseline in session history
-[LUPIN] Send baseline completion notification
-```
-
-**Example for simple project**:
-```
-[MYPROJECT] Establish pre-change baseline - STARTED at 2025-10-11 14:30:00
-[MYPROJECT] Create test directories
-[MYPROJECT] Execute smoke tests
-[MYPROJECT] Generate baseline report
-[MYPROJECT] Update history
-[MYPROJECT] Send completion notification
-```
-
----
 
 ### Step 1: Send Start Notification
 
@@ -723,44 +675,6 @@ Any regressions introduced by upcoming changes can be measured against these met
 **Workflow Version**: 1.0 (planning-is-prompting → workflow/testing-baseline.md)
 ```
 
-#### 4.3 Programmatic Report Generation
-
-**Use Write tool to create the report file with interpolated values**:
-
-```python
-# Pseudo-code showing the logic (actual implementation via Write tool)
-
-report_content = f"""
-# Baseline Test Report
-
-**Date**: {current_date}
-**Time**: {current_time}
-**Timestamp**: {timestamp}
-**Purpose**: Pre-change baseline establishment
-**Project**: {project_name}
-**Test Scope**: {scope_value}
-
-## Log Files
-
-- **Smoke Tests**: {smoke_log_file}
-{unit_log_section if unit_tests_configured}
-{integration_log_section if integration_tests_configured}
-
-## Executive Summary
-
-**Test Scope**: {scope_description}
-**Overall System Health**: {health_status}
-**Total Tests Executed**: {total_tests}
-**Overall Pass Rate**: {overall_pass_rate}%
-**Critical Issues Identified**: {critical_issues_count}
-
-... (continue with template above, substituting all values)
-"""
-
-# Write to report file
-Write(file_path=report_file, content=report_content)
-```
-
 ---
 
 ### Step 5: Update Session History
@@ -783,7 +697,7 @@ Write(file_path=report_file, content=report_content)
 {if integration tests configured}
 - **Integration Tests**: {XX.X%} pass rate ({PASSED}/{TOTAL} tests)
 {endif}
-- **Overall Health**: {EXCELLENT/GOOD/FAIR/POOR}
+- **Overall Health**: {excellent/good/fair/poor}
 - **Critical Issues**: {NUMBER} identified
 - **Report**: {relative_path_to_report_file}
 
@@ -800,15 +714,13 @@ Write(file_path=report_file, content=report_content)
 # Typical history.md structure:
 # Line 1: # Project Name - Session History
 # Line 2: (blank)
-# Line 3: **RESUME HERE**: ...
+# Line 3: `RESUME HERE`: ...   (wording: workflow/entry-writing-rules.md)
 # Line 4-6: Status lines
 # Line 7: ---
 # Line 8: (start of entries)
 
 # Insert new entry after line 7 (after the "---" separator)
 ```
-
-**Use Edit tool to insert the history entry at the appropriate location.**
 
 ---
 
@@ -832,9 +744,9 @@ else:
 
 ---
 
-### Step 7: Final TodoWrite Update
+### Step 7: Final Summary
 
-Mark all baseline collection tasks as completed and provide summary:
+Provide the summary:
 
 ```
 ✅ [{PREFIX}] Establish pre-change baseline - COMPLETE
@@ -1055,14 +967,7 @@ fi
 
 ## Version History
 
-**Version 1.0** (2025.10.11)
-- Initial canonical workflow
-- Parameterized configuration system
-- Support for smoke, unit, and integration tests
-- Scope parameter for multi-suite projects
-- Comprehensive reporting with multiple test types
-- TodoWrite and notification integration
-- Health check flexibility
+Full history: `docs/version-history/testing-baseline.md`.
 
 ---
 

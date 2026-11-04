@@ -91,7 +91,6 @@ What would you like to do? [1/2/3/4]
    ```
 
 2. Execute the update flow as described in that document:
-   - Step 0: Create update TODO list
    - Step 1: Scan local installation (detect versions)
    - Step 2: Compare with canonical versions
    - Step 3: Present selective update UI
@@ -101,9 +100,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Validate updates
    - Step 8: Present update summary
 
-3. Use TodoWrite to track update progress
-
-4. Send notifications after each major step (see workflow document for details)
+3. Send notifications after each major step (see workflow document for details)
 
 **If user chooses [2] - Add more workflows:**
 
@@ -113,7 +110,6 @@ What would you like to do? [1/2/3/4]
    ```
 
 2. Execute the installation flow as described in that document:
-   - Step 0: Create installation TODO list
    - Step 1: Detect current state (already done above)
    - Step 2: Present workflow catalog
    - Step 3: Collect user selection and validate
@@ -123,9 +119,7 @@ What would you like to do? [1/2/3/4]
    - Step 7: Present summary and next steps
    - Step 7.5: Remind about future additions
 
-3. Use TodoWrite to track installation progress
-
-4. Send notifications after each major step (see workflow document for details)
+3. Send notifications after each major step (see workflow document for details)
 
 **If user chooses [3] or [4] - Manual instructions or nothing:**
 
@@ -340,7 +334,7 @@ Without this variable, the command will show local versions only (no comparison)
 - Classifies work type through discovery questions
 - Selects optimal pattern (1-5) for your work
 - Breaks down work into manageable tasks
-- Creates TodoWrite list for progress tracking
+- Records the breakdown as task-store rows
 
 **Step 2: Document Implementation** (conditional - only for large/complex work)
 - Creates structured documentation (multiple markdown files)
@@ -439,7 +433,6 @@ cp planning-is-prompting/.claude/commands/p-is-p-02-documentation.md \
 ### What It Does
 
 Comprehensive end-of-session ritual that:
-- Creates TODO list for tracking progress
 - Checks history.md health and archives if needed
 - Updates session history with date/summary/TODOs
 - Updates planning and tracking documents
@@ -649,8 +642,9 @@ Claude will ask you to provide:
 
 **Session-Start**: Step 4.5 reads TODO.md for pending items
 **Session-End**: Step 1.5 updates TODO.md with completions and new items
+**Wording**: every line written to history.md or TODO.md follows `workflow/entry-writing-rules.md`
 
-**Key Principle**: TODO.md is the single source of truth for pending work. History.md documents what happened, TODO.md tracks what's pending.
+**Key Principle**: the task store is the single source of truth for owed work; TODO.md is the durable narrative companion (Decisions Log, Pending-Decisions queue, not-yet-owed backlog). History.md documents what happened.
 
 ### File Format
 
@@ -764,7 +758,7 @@ After installation, you can customize thresholds, retention targets, archive nam
 
 Task planning and TODO management strategies:
 - Breaking down complex tasks into steps
-- Using TodoWrite tool effectively
+- Using the task store effectively
 - Tracking progress with task states
 - Maintaining one in_progress task at a time
 
@@ -1345,81 +1339,14 @@ Claude will ask you to provide:
 5. **Additional exclusions** - Project-specific files/directories to exclude
    - Example: `*.bak`, `local_config/`, `secrets/`
 
-### Usage
+### Usage, Version Checking and Customization
 
-**Via slash command** (recommended):
-```bash
-/plan-backup                     # Dry-run (preview changes)
-/plan-backup --write             # Execute backup
-/plan-backup --check-for-update  # Check for script updates
-```
+Run `/plan-backup` for a dry run and `/plan-backup --write` to execute. The flags, the skip variable (`SKIP_VERSION_CHECK=1`) and the by-hand update steps are described in `.claude/commands/plan-backup.md`, in the header of `src/scripts/backup.sh`, and in `workflow/backup-version-check.md`.
 
-**Via script directly**:
-```bash
-./src/scripts/backup.sh                     # Dry-run
-./src/scripts/backup.sh --write             # Execute
-./src/scripts/backup.sh --check-for-update  # Check version
-```
+Two things are set per project and written nowhere else:
 
-**Skip version check** (for automation):
-```bash
-SKIP_VERSION_CHECK=1 ./src/scripts/backup.sh --write
-```
-
-### Version Checking
-
-**Automatic on every run**:
-- Compares local script vs. canonical reference
-- Notifies if updates available
-- Offers smart update options
-
-**Update options when new version available**:
-- [U] Update script (preserves your config)
-- [E] Update exclusions (merges new patterns)
-- [B] Update both
-- [D] Show diff
-- [S] Skip for now
-- [C] Cancel
-
-**Manual version check**:
-```bash
-/plan-backup --check-for-update
-```
-
-**For complete update workflow**: See planning-is-prompting → workflow/backup-version-check.md
-
-### Customization Options
-
-**Add project-specific exclusions**:
-
-Edit `src/scripts/conf/rsync-exclude.txt`:
-```bash
-# Project-specific exclusions
-my_local_env/
-*.secret
-temp_data/
-```
-
-**Change backup destination**:
-
-Edit `src/scripts/backup.sh` config section:
-```bash
-# === CONFIG START ===
-DEST_DIR="/new/backup/location/"
-# === CONFIG END ===
-```
-
-**Disable version checking**:
-
-Set environment variable:
-```bash
-export SKIP_VERSION_CHECK=1
-```
-
-Or unset PLANNING_IS_PROMPTING_ROOT:
-```bash
-unset PLANNING_IS_PROMPTING_ROOT
-```
+- **Project-specific exclusions**: add patterns to `src/scripts/conf/rsync-exclude.txt`.
+- **Disable version checking for good**: `unset PLANNING_IS_PROMPTING_ROOT` (or set `SKIP_VERSION_CHECK=1` for a single run).
 
 ### Testing the Installation
 
@@ -1599,7 +1526,7 @@ I need you to install the testing workflow commands from the planning-is-prompti
    - Target: .claude/commands/ (keep filenames as-is)
 
 3. **Customize for this project** (ask me for these values):
-   - [SHORT_PROJECT_PREFIX] - For TodoWrite and notifications
+   - [SHORT_PROJECT_PREFIX] - For task titles and notifications
    - Working directory - Full path to project root
    - Test types - Which types exist: smoke, unit, integration
    - Test script paths - Relative paths to test runners
@@ -1654,7 +1581,7 @@ Each template includes a **Customization Guide** at the bottom with examples for
 
 Claude will ask you to provide:
 
-1. **[SHORT_PROJECT_PREFIX]** - For notifications and TodoWrite tracking
+1. **[SHORT_PROJECT_PREFIX]** - For notifications and task titles
    - Examples: `[AUTH]`, `[LUPIN]`, `[API]`
 
 2. **Test Infrastructure Details**:
@@ -1804,7 +1731,6 @@ coverage_requirements:
 ```
 
 Verify:
-- TodoWrite tracking appears
 - Test scripts execute correctly
 - Log files created in correct directory
 - Report generated with metrics
@@ -2399,194 +2325,6 @@ planning-is-prompting → workflow/mermaid-diagrams.md
 
 ---
 
-## Meta-Workflow Tools
-
-### Workflow Execution Audit
-
-**What It Does**:
-
-**Analyzes workflows for execution protocol compliance** - ensures deterministic execution standards:
-
-- **TodoWrite Mandates**: Verifies multi-step workflows require TodoWrite creation
-- **TodoWrite Updates**: Checks each step ends with TodoWrite update instruction
-- **Language Strength**: Identifies weak language (SHOULD/CAN) in critical instructions
-- **Verification Checkpoints**: Ensures each step has verification checklist
-- **Execution Metadata**: Confirms metadata fields present (protocol, duration, etc.)
-- **Compliance Scoring**: Generates 0-100 score with breakdown
-- **Automatic Remediation**: Offers to apply fixes automatically or selectively
-
-**Canonical Workflow**:
-- planning-is-prompting → workflow/workflow-execution-audit.md
-
-**Slash Command**: `/plan-workflow-audit`
-
-### When to Use
-
-**Ad-hoc quality checks**:
-- You notice non-deterministic execution (steps being skipped)
-- Creating new workflow and want to validate compliance
-- Retrofitting existing workflows with execution protocol
-- Regular workflow maintenance and quality assurance
-
-**Problem it solves**:
-LLMs are probabilistic, not deterministic. Without explicit tracking (TodoWrite) and strong language (MUST vs SHOULD), workflows may have steps skipped or executed inconsistently. This audit tool identifies compliance gaps and offers automatic remediation.
-
-### Install as Slash Command
-
-**Copy-paste this prompt into Claude Code:**
-
-```
-I need you to install the workflow-execution-audit command from the planning-is-prompting repository into this project.
-
-**Instructions:**
-
-1. **Read the canonical workflow**:
-   - Audit workflow: planning-is-prompting → workflow/workflow-execution-audit.md
-
-2. **Copy the slash command file** from planning-is-prompting:
-   - Source: planning-is-prompting/.claude/commands/plan-workflow-audit.md
-   - Target: .claude/commands/plan-workflow-audit.md (keep filename as-is)
-
-3. **No customization needed** - This meta-tool works universally across projects
-
-4. **Verify installation**:
-   ```bash
-   # Check file exists
-   ls -l .claude/commands/plan-workflow-audit.md
-
-   # Test command
-   /plan-workflow-audit
-   ```
-
-5. **First use**:
-   ```bash
-   /plan-workflow-audit
-
-   # When prompted, enter path to workflow to audit:
-   workflow/your-workflow-name.md
-   ```
-```
-
-### Usage
-
-**Basic audit**:
-```bash
-/plan-workflow-audit
-
-# When prompted:
-Enter path to workflow file: workflow/session-start.md
-```
-
-**The workflow will**:
-1. Create TodoWrite tracking list (10 steps)
-2. Prompt you for target workflow path
-3. Analyze structure (count steps, substeps)
-4. Check TodoWrite mandate (Step 0 present? MUST language used?)
-5. Check TodoWrite update instructions (all steps have them?)
-6. Analyze language strength (MUST vs SHOULD vs MAY)
-7. Check verification checkpoints (present and meaningful?)
-8. Check execution metadata (5 required fields present?)
-9. Generate compliance report (0-100 score with breakdown)
-10. Suggest specific fixes (numbered, with line numbers and content)
-11. Offer remediation options:
-    - [1] Apply all fixes automatically (creates backup first)
-    - [2] Apply selected fixes (you choose which fix numbers)
-    - [3] Show fixes but don't apply (manual edit)
-    - [4] Save report to file (for later reference)
-    - [5] Audit another workflow
-    - [6] Exit without changes
-
-**Example output**:
-```
-════════════════════════════════════════════════════════
-WORKFLOW EXECUTION AUDIT REPORT
-════════════════════════════════════════════════════════
-
-Target: workflow/example-workflow.md
-Total Steps: 7
-COMPLIANCE SCORE: 65/100
-
-CRITICAL ISSUES (blocking): 0
-WARNINGS (should fix): 5
-⚠️ TodoWrite mandate uses weak language (SHOULD → MUST)
-⚠️ 2 of 7 steps missing TodoWrite update instructions
-⚠️ 4 critical instructions using weak language
-⚠️ 3 of 7 steps missing verification checkpoints
-⚠️ 3 of 5 execution metadata fields missing
-
-SUGGESTIONS (nice to have): 1
-💡 Consider adding examples for complex steps
-
-[Detailed findings and suggested fixes follow...]
-```
-
-### Remediation Options
-
-**Option 1: Apply all fixes automatically**
-- Creates backup (.backup file)
-- Applies all suggested fixes in order
-- Verifies file valid after changes
-- Re-runs audit to show improved score
-
-**Option 2: Apply selected fixes**
-- You choose which fix numbers to apply (e.g., "1, 3, 5")
-- Creates backup
-- Applies only selected fixes
-- Useful when some fixes need manual review
-
-**Option 3: Show fixes only**
-- No changes applied
-- You manually edit the file
-- Report optionally saved for reference
-
-**Option 4: Save report to file**
-- Creates `workflow-audit-report-YYYY-MM-DD.md`
-- No changes to workflow
-- Review and apply fixes later
-
-### Configuration
-
-**No configuration needed** - This is a meta-tool that works universally:
-- No [SHORT_PROJECT_PREFIX] needed (uses target workflow's prefix)
-- No paths to configure (prompts for workflow path each time)
-- No dependencies (pure analysis + edit operations)
-
-### Self-Audit
-
-**This workflow audits itself**:
-- workflow/workflow-execution-audit.md scores 100/100 on its own audit
-- Self-demonstrating: follows all its own standards
-- Meta-validation: can audit the auditor
-
-**Try it:**
-```bash
-/plan-workflow-audit
-
-# When prompted:
-Enter path: workflow/workflow-execution-audit.md
-
-# Expected result: 100/100 score with all checkmarks
-```
-
-### Integration with Other Workflows
-
-**During workflow creation**:
-1. Create new workflow document
-2. Run `/plan-workflow-audit` on it
-3. Fix compliance issues before first use
-4. Ensures deterministic execution from start
-
-**During workflow maintenance**:
-1. Notice execution inconsistency
-2. Run `/plan-workflow-audit` on suspect workflow
-3. Review compliance report
-4. Apply suggested fixes
-5. Verify improved execution reliability
-
-**Best practice**: Audit all workflows achieving <80 compliance score
-
----
-
 ## Configuration Files
 
 ### Global CLAUDE.md Template
@@ -2686,7 +2424,7 @@ If you're creating new workflows and need to create slash command wrappers for t
 
 **Before deterministic pattern**:
 - Claude would read wrapper's Step 4 (short task list) instead of canonical workflow
-- Steps like notifications, TodoWrite tracking, and user prompts were skipped
+- Steps like notifications and user prompts were skipped
 - Inconsistent execution across sessions
 
 **After deterministic pattern**:
@@ -2712,22 +2450,7 @@ If you're creating new workflows and need to create slash command wrappers for t
 
 ## Version History
 
-**v1.1** (2025.10.08) - Updated naming convention
-- Changed slash command naming from target project prefix to source repository prefix
-- All workflow wrappers now use `/plan-*` prefix (identifies source as planning-is-prompting)
-- Simplifies installation (no renaming required)
-- Improves workflow attribution across multiple projects
-- Updated all installation instructions and examples
-
-**v1.0** (2025.10.01) - Initial centralized installation guide
-- Session-end workflow installation
-- History management installation
-- Work planning reference
-- Notification system reference
-- Commit management reference
-- Session-start workflow installation
-- Configuration templates
-- Troubleshooting section
+Full history: `docs/version-history/INSTALLATION-GUIDE.md`.
 
 ---
 

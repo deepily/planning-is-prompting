@@ -38,7 +38,7 @@ This workflow handles the full lifecycle of completing a feature branch:
 
 | Field | Value |
 |-------|-------|
-| **Protocol** | TaskCreate-tracked, step-by-step execution |
+| **Protocol** | Step-by-step execution |
 | **Notification frequency** | After each major step |
 | **Estimated duration** | 5-15 minutes (depending on review wait time) |
 | **Context clear safe** | Partially (can resume from any step) |
@@ -50,41 +50,11 @@ This workflow handles the full lifecycle of completing a feature branch:
 
 **Purpose**: Immediate user awareness that branch completion workflow is executing
 
-**Timing**: Execute BEFORE creating task list (before Step 0)
+**Timing**: Execute as the first action of the workflow, before Step 0.25
 
 ```python
 notify( "Starting branch PR and merge workflow...", notification_type="progress", priority="low" )
 ```
-
----
-
-## Step 0: TaskCreate Initialization
-
-**MUST create task tracking list immediately on invocation.**
-
-```
-TaskCreate items:
-
-1. [PREFIX] Session documentation check
-2. [PREFIX] Documentation surface check
-3. [PREFIX] Branch state audit
-4. [PREFIX] Test suite verification
-5. [PREFIX] Outstanding work review
-6. [PREFIX] Generate PR description
-7. [PREFIX] Create pull request
-8. [PREFIX] Push branch (if needed)
-9. [PREFIX] Wait for PR merge
-10. [PREFIX] Post-merge sync
-11. [PREFIX] Branch cleanup
-12. [PREFIX] Release tagging (optional)
-13. [PREFIX] Create next development branch
-14. [PREFIX] Send completion notification
-```
-
-**Verification**:
-- [ ] TaskCreate tool invoked with items listed above
-- [ ] Items have project prefix
-- [ ] First item marked `in_progress`
 
 ---
 
@@ -181,14 +151,12 @@ notify(
 - Display: "All changes committed ✓"
 - Continue to Step 0.5
 
-**TaskUpdate**: Mark Step 0.25 complete.
 
 **Verification**:
 - [ ] Uncommitted changes checked
 - [ ] History.md checked for today's entry
 - [ ] User prompted if issues found
 - [ ] Issues resolved (committed/checkpointed) or user chose to skip
-- [ ] TaskUpdate updated
 
 ---
 
@@ -291,7 +259,6 @@ Display full list of missing features with source and description, then re-promp
 
 Log decision, send notification, continue to Step 1.
 
-**TaskUpdate**: Mark Step 0.5 complete.
 
 **Verification**:
 - [ ] README.md checked for "What's New" section
@@ -300,7 +267,6 @@ Log decision, send notification, continue to Step 1.
 - [ ] bug-fix-queue.md parsed (if exists)
 - [ ] User decision recorded
 - [ ] README updated (if selected)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -320,10 +286,7 @@ Log decision, send notification, continue to Step 1.
    git branch --show-current | grep -v "^main$\|^master$"
    ```
 
-3. **Check for uncommitted changes**:
-   ```bash
-   git status --porcelain
-   ```
+3. **Check for uncommitted changes** (same probe as Step 0.25)
 
 4. **Count commits ahead of base**:
    ```bash
@@ -390,7 +353,6 @@ notify(
 ```
 FAIL and exit.
 
-**TaskUpdate**: Mark Step 1 complete.
 
 **Verification**:
 - [ ] Branch name retrieved
@@ -398,7 +360,6 @@ FAIL and exit.
 - [ ] Uncommitted changes handled (if any)
 - [ ] Commit count and diff stats captured
 - [ ] Remote tracking status known
-- [ ] TaskUpdate updated
 
 ---
 
@@ -577,7 +538,6 @@ ask_yes_no(
 
 **Response handling** (ternary): `yes` → run integration tests; `no` → continue to PR creation without integration tests; `neither` → re-frame (typical: "which integration suite — db-only, full stack, smoke-integration?"). Re-prompt with `ask_multiple_choice()` over the available suites. Do NOT default to skip. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 1.5 complete.
 
 **Verification**:
 - [ ] Test infrastructure detection completed
@@ -585,7 +545,6 @@ ask_yes_no(
 - [ ] If doc validation: all checks passed
 - [ ] If tests exist: smoke and unit tests passed
 - [ ] Integration tests offered (if applicable)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -597,7 +556,7 @@ ask_yes_no(
 
 1. **Read TODO.md** for pending items
 
-2. **Check history.md header** for "RESUME HERE" indicators
+2. **Check history.md header** for "RESUME HERE" indicators (the marker is written in backticks; see `workflow/entry-writing-rules.md`)
 
 3. **Look for open implementation docs** in src/rnd/
 
@@ -632,14 +591,12 @@ ask_multiple_choice(
 )
 ```
 
-**TaskUpdate**: Mark Step 2 complete.
 
 **Verification**:
 - [ ] TODO.md checked
 - [ ] history.md status verified
 - [ ] Implementation docs checked
 - [ ] User decision recorded (if TODOs exist)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -656,10 +613,7 @@ ask_multiple_choice(
 
 2. **history.md**: Parse session entries for accomplishments
 
-3. **git diff --stat**: Get change statistics
-   ```bash
-   git diff --stat main..HEAD
-   ```
+3. **git diff --stat**: Get change statistics (same probe as Step 1)
 
 4. **Branch name**: Extract version/purpose from naming convention
 
@@ -714,7 +668,6 @@ ask_multiple_choice(
 
 **If "Preview"**: Display full description, then re-prompt.
 
-**TaskUpdate**: Mark Step 3 complete.
 
 **Verification**:
 - [ ] Git log parsed
@@ -722,7 +675,6 @@ ask_multiple_choice(
 - [ ] Statistics calculated
 - [ ] PR description generated
 - [ ] User approval obtained
-- [ ] TaskUpdate updated
 
 ---
 
@@ -782,13 +734,11 @@ Base: main ← [branch-name]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 4 complete.
 
 **Verification**:
 - [ ] PR creation attempted
 - [ ] PR created successfully (or existing PR found)
 - [ ] PR URL captured
-- [ ] TaskUpdate updated
 
 ---
 
@@ -798,9 +748,7 @@ Base: main ← [branch-name]
 
 ### Check
 
-```bash
-git rev-parse --abbrev-ref @{upstream} 2>/dev/null
-```
+Same probe as Step 1 (`git rev-parse --abbrev-ref @{upstream}`).
 
 ### If Not Pushed
 
@@ -821,12 +769,10 @@ Action: [Pushed now / Already tracked]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 5 complete.
 
 **Verification**:
 - [ ] Remote tracking checked
 - [ ] Branch pushed (if needed)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -867,12 +813,10 @@ ask_yes_no(
 - **If NO** (`response.startswith("no")`): Re-prompt or offer to cancel
 - **If NEITHER** (`response.startswith("neither")`): **CRITICAL — do NOT proceed to Step 7.** Merge-confirmation is a load-bearing gate. Typical re-frames: "merged with squash vs merge commit?", "merged into main vs another branch?", "still waiting on CI". Read the `[comment: ...]` qualifier, re-prompt with the narrower question, and only continue once a definite yes is received. See `workflow/cosa-voice-integration.md` → "Handling Neither".
 
-**TaskUpdate**: Mark Step 6 complete.
 
 **Verification**:
 - [ ] User prompted about merge status
 - [ ] Merge confirmed
-- [ ] TaskUpdate updated
 
 ---
 
@@ -909,13 +853,11 @@ Latest: [hash] [message]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 7 complete.
 
 **Verification**:
 - [ ] Switched to main
 - [ ] Pulled latest changes
 - [ ] Merge commit verified
-- [ ] TaskUpdate updated
 
 ---
 
@@ -959,6 +901,8 @@ ask_yes_no(
 ```
 Warn and abort deletion unless user confirms force.
 
+**If the PR was squash-merged**: `git branch -d` refuses the merged branch every time, because a squash merge breaks ancestry. That refusal is not unmerged work. Leave the local branch and go to Step 8.5, which checks it by content and removes it.
+
 **If remote branch already deleted** (GitHub auto-delete):
 Skip remote deletion, log as already deleted.
 
@@ -973,13 +917,80 @@ Remote branch: [Deleted ✓ / Already deleted / Kept]
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 8 complete.
 
 **Verification**:
 - [ ] User confirmation obtained
 - [ ] Local branch deleted (if confirmed)
 - [ ] Remote branch deleted (if exists and confirmed)
-- [ ] TaskUpdate updated
+
+---
+
+## Step 8.5: Retire the Old Line (after a squash merge)
+
+**Purpose**: After a squash merge, remove every local branch that forked from the merged branch, including the merged `wip` branch itself. Skip this step when the PR was merged with a merge commit; Step 8 covers that case.
+
+**Why this step exists**: a squash merge puts the work on `main` as one new commit. The merged branch and everything forked from it are then no longer ancestors of `main`, so `git branch -d` refuses them and every ancestry check reads them as unmerged, forever. Measured 2026-10-02: after one squash merge in lupin, four leftover branches read 2,540 to 2,600 commits ahead while carrying 0 to 3 commits of their own. planning-is-prompting held five merged `wip` branches going back a year, because nothing in this workflow removed them.
+
+**Names used below**: `[old]` is the branch the PR merged. `[base]` is `main` after Step 7.
+
+### Process
+
+1. **Confirm the merged branch landed, by content**:
+   ```bash
+   git diff --quiet [old] [base] && echo "same tree"
+   ```
+   "same tree" means `[old]` holds nothing `[base]` lacks. If it does not print, stop: commits reached `[old]` after the PR merged. Report them and ask.
+
+2. **List the branches forked from the old line**:
+   ```bash
+   git for-each-ref --format='%(refname:short)' --no-merged [base] refs/heads/
+   ```
+   Drop from the list any branch checked out in a worktree (`git worktree list`); a live seat owns it.
+
+3. **Check each one for work of its own**:
+   ```bash
+   git cherry [base] [branch] [old]
+   ```
+   This lists only the commits `[branch]` added beyond `[old]`. A `-` line is already on `[base]` by patch; a `+` line is not.
+
+4. **Act on the result**:
+
+   | Result | Action |
+   |---|---|
+   | No lines, or only `-` lines | Delete: `git branch -D [branch]` |
+   | Any `+` line | Archive, never delete: `git update-ref refs/archive/$(date -u +%F)/[branch] [branch]`, confirm the two shas match, then `git branch -D [branch]`. Open one task-store row for the branch's accountable manager naming the archived ref |
+
+   `[old]` itself, once step 1 printed "same tree": `git branch -D [old]`.
+
+5. **Remote**: delete the remote copy of `[old]` only under the Step 8 confirmation. This step asks no second question for it.
+
+### Rules
+
+- **`-D` is correct here and only here.** `-d` checks ancestry, which a squash merge breaks by design. The content checks in steps 1 and 3 are what make the delete safe; never run `-D` without the check on the line above it.
+- **Archived refs live 14 days** (Rick, 2026-10-02). They are outside `refs/heads`, so `git branch` does not show them and the branch guard does not judge them. `workflow/scripts/worktree_hygiene_report.py` counts them and reports any past retention.
+- **Restore an archived branch** with `git update-ref refs/heads/[branch] [sha]`.
+- **A `wip` name protects nothing in this step.** The old `wip` branch is the first thing it removes.
+
+### Display
+
+```
+══════════════════════════════════════════════════════════
+Old Line Retired
+══════════════════════════════════════════════════════════
+Merged branch: [old] — [Deleted ✓ / Kept: commits after merge]
+Forked branches: [N] found
+  Deleted (no work of their own): [list]
+  Archived (work not on [base]): [list] → refs/archive/[day]/
+  Skipped (checked out in a worktree): [list]
+══════════════════════════════════════════════════════════
+```
+
+**Verification**:
+- [ ] Step 1 printed "same tree" before `[old]` was deleted
+- [ ] Every deleted branch showed no `+` line
+- [ ] Every archived ref's sha matches the branch it replaced
+- [ ] One store row exists per archived branch
+- [ ] `git for-each-ref --no-merged [base] refs/heads/` lists only branches checked out in a worktree
 
 ---
 
@@ -1028,13 +1039,11 @@ Pushed: Yes
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 9 complete.
 
 **Verification**:
 - [ ] Version extracted from branch name
 - [ ] User confirmation obtained
 - [ ] Tag created and pushed (if confirmed)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -1096,13 +1105,11 @@ Ready for: Next session of development
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 10 complete.
 
 **Verification**:
 - [ ] New branch name generated
 - [ ] User decision obtained
 - [ ] Branch created and pushed (if selected)
-- [ ] TaskUpdate updated
 
 ---
 
@@ -1132,19 +1139,15 @@ Summary:
 ✓ Old branch deleted (local + remote)
 ✓ New branch created: [new-branch-name]
 
-Current state:
-  Branch: [new-branch-name]
-  Tracking: origin/[new-branch-name]
-  Ready for: Next session of development
+Current state: branch, tracking and readiness as shown in Step 10.
 
 ══════════════════════════════════════════════════════════
 ```
 
-**TaskUpdate**: Mark Step 11 complete and all items complete.
 
 **Verification**:
 - [ ] Final notification sent
-- [ ] All TaskCreate items complete
+- [ ] All steps complete
 - [ ] User informed of final state
 
 ---
@@ -1182,16 +1185,4 @@ At session start, detect if on main and prompt:
 
 ## Version History
 
-**v1.1** (2026.06.16, María) - **Commit gate removed (D1 guided-walkthrough ruling).** Committing outstanding work is now standing manager/session authority once green AND reviewed — only push / PR / merge-to-main / tag remain user gates. The two "commit before PR" blocking gates now **commit autonomously + post a receipt** (prompting the user only when the changes are ambiguous/unexpected — not on the session's Step 3.5 touched-files list). Conversation-mode gate list updated to match. Test gates, PR-description approval, push, merge confirmation, and tag prompt are unchanged.
-
-**v1.0** (2026.02.04) - Initial workflow
-- 12-step branch completion process
-- Documentation surface check (README validation against history.md, TODO.md, bug-fix-queue.md)
-- Branch state audit with uncommitted changes handling
-- Test suite verification (smoke + unit required, integration optional)
-- PR description auto-generation from git log and history.md
-- GitHub CLI integration for PR creation
-- Post-merge sync and branch cleanup
-- Release tagging with version extraction from branch name
-- Next development branch creation with version increment
-- Full notification integration via cosa-voice MCP tools
+Full history: `docs/version-history/branch-pr-and-merge.md`.

@@ -196,14 +196,14 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 
 | Event | Priority | Requirement |
 |-------|----------|-------------|
-| TodoWrite item completed | low | **MUST** notify after EVERY item |
+| task item completed | low | **MUST** notify after EVERY item |
 | Phase/milestone complete | medium | **MUST** notify at phase boundaries |
 | Error encountered | urgent | **MUST** notify immediately |
 | Test suite finished | medium | **MUST** notify pass or fail |
 | Long process finished (>30s) | low | **MUST** notify completion |
 | Workflow step completed | low | **MUST** notify each step |
 
-**Rule**: After marking ANY TodoWrite item as `completed`, you MUST immediately call `notify()`.
+**Rule**: After marking ANY task item as `completed`, you MUST immediately call `notify()`.
 
 ### Required Blocking Tool Events
 
@@ -224,7 +224,7 @@ The short version of this mandate also lives in `~/.claude/CLAUDE.md` `### CONVE
 2. **NEVER** finish work and "wait" for user to check back
 3. **NEVER** make architectural decisions without `ask_multiple_choice()`
 4. **NEVER** encounter an error and continue without `notify(..., priority="urgent")`
-5. **NEVER** mark >3 TodoWrite items complete without at least one `notify()`
+5. **NEVER** mark >3 task items complete without at least one `notify()`
 6. **NEVER** bury a gate. If an action needs the user's go to proceed, do NOT append "standing by for your approval" / "waiting on your word" to a multi-sentence status `notify()` and then sit. That is **burying the lead** — fire a dedicated targeted ask instead (see below).
 
 ### Gate = a Direct Targeted Ask, Never a Buried "Standing By" (MANDATE, 2026-06-22)
@@ -261,7 +261,7 @@ Effect: the every-turn storm is gone AND the decision is not buried — it is du
 ```
 NOTIFICATION VERIFICATION:
 □ Did I notify when I started significant work?
-□ Did I notify for each TodoWrite item completed?
+□ Did I notify for each task item completed?
 □ Did I use blocking tools when I needed decisions?
 □ Did I notify about any errors encountered?
 □ Will the user know I'm finished?
@@ -269,23 +269,28 @@ NOTIFICATION VERIFICATION:
   per the Recommendation Mandate for Blocking-Tool Asks above?
 □ Is any next step blocked on the user's go? If so, did I fire a DIRECT targeted
   ask_* for it — NOT bury "standing by" in a status notify? (Gate = a Direct Ask)
+□ Am I asking for a held row to be approved? Then the notify MESSAGE itself
+  (not the abstract) carries the helper's line:
+  one row    → task_approve_line( task_id )  [add priority="P0" to raise it]
+  many rows  → ONE line from task_approve_batch_line( task_ids )
+  (task-store-discipline.md §3.2).
 ```
 
 **If ANY checkbox is unchecked**: Send the missing notification(s) NOW, or re-issue the blocking-tool ask with the missing decision-support added.
 
 ---
 
-## Integration with TodoWrite
+## Integration with Task Items
 
-**MANDATE**: Notifications are TIED to TodoWrite status changes.
+**MANDATE**: Notifications are TIED to task-item status changes (rows in the task store; a private step checklist does not count).
 
 **Protocol**:
-1. Mark TodoWrite item `in_progress` → `notify( "Starting: [item]", priority="low" )`
-2. Mark TodoWrite item `completed` → `notify( "[Item] complete", priority="low" )`
+1. Mark task item `in_progress` → `notify( "Starting: [item]", priority="low" )`
+2. Mark task item `completed` → `notify( "[Item] complete", priority="low" )`
 3. ALL items complete → `notify( "All tasks complete", priority="medium" )`
 
 **CRITICAL**: A task is NOT complete until BOTH:
-- TodoWrite status is updated
+- Task item status is updated
 - Notification is sent
 
 ---
@@ -334,7 +339,7 @@ Priority determines **how the user is alerted**, not workflow importance:
 | `urgent` | Alert tone + TTS read aloud | Critical errors, blockers, failures | "Build failed", "Blocked: cannot proceed" |
 | `high` | Prominent ping + TTS read aloud | Decisions requiring response | Blocking tools (ask_yes_no, ask_multiple_choice, converse) |
 | `medium` | Gentle ping | Informational updates user should notice | "Ready to work", "Phase complete", "CLAUDE.md acknowledged" |
-| `low` | Silent (no sound) | Background info, minor completions | "File saved", "TodoWrite item complete" |
+| `low` | Silent (no sound) | Background info, minor completions | "File saved", "task item complete" |
 
 **Key Principle**: If you need user attention, use `high` or `urgent`. If it's FYI, use `medium` or `low`.
 
@@ -514,20 +519,20 @@ The response string can be one of six variants:
 **When checking responses**, use `startswith()` to handle plain and commented variants of all three values. See `#### Handling Neither` below for the canonical ternary parser pattern.
 
 ```python
-response = ask_yes_no( "Proceed with commit?", default="no", priority="high" )
+response = ask_yes_no( "Push to origin?", default="no", priority="high" )
 
 # ✅ CORRECT - ternary parser, handles all three values + commented variants
 if response.startswith( "yes" ):
-    proceed_with_commit()
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # Re-frame — see #### Handling Neither for the full pattern
     handle_neither( response )
 
 # ❌ WRONG - misses neither entirely and misses "yes [comment: only the docs]"
 if response == "yes":
-    proceed_with_commit()
+    proceed_with_push()
 ```
 
 #### Qualified Comments
@@ -550,9 +555,9 @@ Users can attach a qualifying comment to any of the three answers (yes / no / ne
 **Example**:
 
 ```python
-# Commit approval with comment handling
+# Push approval with comment handling
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
     priority="high"  # MANDATORY for blocking tools
@@ -563,10 +568,10 @@ if response.startswith( "yes" ):
     # Extract comment if present
     if "[comment:" in response:
         comment = response.split( "[comment: " )[1].rstrip( "]" )
-        # Use comment for commit message annotation, logging, etc.
-    proceed_with_commit()
+        # Use comment for logging, etc.
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # See #### Handling Neither below for the canonical re-frame pattern
     handle_neither( response )
@@ -580,16 +585,16 @@ elif response.startswith( "neither" ):
 
 ```python
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
     priority="high"  # MANDATORY for blocking tools
 )
 
 if response.startswith( "yes" ):
-    proceed_with_commit()
+    proceed_with_push()
 elif response.startswith( "no" ):
-    skip_commit()
+    skip_push()
 elif response.startswith( "neither" ):
     # Extract the qualifying comment if present — it tells you what was ambiguous.
     comment = ""
@@ -683,27 +688,25 @@ For menu selections with 2-6 options. Uses the same format as Claude Code's `Ask
 }
 ```
 
-**Example - Commit Workflow**:
+**Example - Push Decision**:
 
 ```python
-# Session-end commit decision
+# Session-end push decision (the commit itself is made without asking, session-end Step 4.3)
 response = ask_multiple_choice(
     questions=[
         {
-            "question": "How would you like to proceed with the commit?",
-            "header": "Commit",
+            "question": "Commit made. Push it to the remote?",
+            "header": "Push",
             "multiSelect": False,
             "options": [
-                {"label": "Commit only", "description": "Create commit but keep local (don't push)"},
-                {"label": "Commit and push", "description": "Create commit and push to remote"},
-                {"label": "Modify message", "description": "Edit the commit message before committing"},
-                {"label": "Cancel", "description": "Skip commit for now"}
+                {"label": "Push", "description": "Push the commit to the remote"},
+                {"label": "Keep local", "description": "Leave the commit local for now"}
             ]
         }
     ],
     priority="high"  # MANDATORY for blocking tools
 )
-# Returns: {"answers": {"0": "Commit and push"}}
+# Returns: {"answers": {"0": "Push"}}
 ```
 
 **Example - History Archive Decision**:
@@ -837,10 +840,10 @@ notify( "Starting session...", notification_type="progress", priority="low" )
 **Yes/no decision**:
 ```bash
 # OLD (deprecated)
-notify-claude-sync "[PLAN] Proceed with commit?" --response-type=yes_no --response-default=no --timeout=300 --target-user=EMAIL
+notify-claude-sync "[PLAN] Push to origin?" --response-type=yes_no --response-default=no --timeout=300 --target-user=EMAIL
 
 # NEW (cosa-voice MCP)
-ask_yes_no( "Proceed with commit?", default="no", timeout_seconds=300 )
+ask_yes_no( "Push to origin?", default="no", timeout_seconds=300 )
 ```
 
 **Open-ended question**:
@@ -887,7 +890,7 @@ All blocking tools support timeout with safe defaults:
 | `ask_open_ended_batch()` | 300s (5 min) | 180-600s | Return empty dict or timeout message |
 
 **Safe Default Principle**: When timeout occurs, choose the action that preserves data integrity and user control:
-- Commit decisions → default to "Cancel" (don't auto-commit)
+- Push decisions → default to "Keep local" (never auto-push)
 - Archive decisions → default to "Next session" (don't force archive)
 - Destructive actions → default to "No" (don't proceed)
 
@@ -901,7 +904,7 @@ The `abstract` parameter allows you to include supplementary context that is sho
 
 | Use Case | Spoken Message | Abstract Content |
 |----------|----------------|------------------|
-| Commit approval | "Ready to commit 5 files" | Staged file list, diff summary |
+| Push approval | "Ready to push 2 commits" | Commit list, diff summary |
 | Error notification | "Build failed with 3 errors" | Full error messages, stack traces |
 | Plan approval | "Plan ready for review" | Detailed task breakdown, markdown |
 | Multiple choice | "How should we proceed?" | Options context, URLs, references |
@@ -922,18 +925,15 @@ The `abstract` parameter allows you to include supplementary context that is sho
 
 ### Examples with `abstract`
 
-**Commit Approval with Diff Summary**:
+**Push Approval with Commit Summary**:
 ```python
 response = ask_yes_no(
-    question="Commit these 5 files to the repository?",
+    question="Push these 2 commits to origin?",
     default="no",
     timeout_seconds=300,
-    abstract="""**Staged files**:
-- src/auth/jwt_service.py (+45/-12)
-- src/auth/password.py (+23/-8)
-- tests/test_jwt.py (+67/-0)
-- tests/test_password.py (+34/-0)
-- CHANGELOG.md (+5/-0)
+    abstract="""**Commits to push**:
+- a1b2c3d Add JWT service (+45/-12)
+- e4f5a6b Add password strength validation (+124/-8)
 
 **Summary**: Added password strength validation with tests"""
 )
@@ -1008,25 +1008,14 @@ notify( "All set! Config loaded, history reviewed. Ready to work.", notification
 ### Session End Commit Flow
 
 ```python
-# Draft commit message, then ask for approval
-response = ask_multiple_choice( questions=[
-    {
-        "question": "Commit message drafted. How would you like to proceed?",
-        "header": "Commit",
-        "multiSelect": False,
-        "options": [
-            {"label": "Commit only", "description": "Keep changes local"},
-            {"label": "Commit and push", "description": "Sync to remote"},
-            {"label": "Modify", "description": "Edit commit message"},
-            {"label": "Cancel", "description": "Skip commit"}
-        ]
-    }
-] )
+# Commit without asking (session-end Step 4.3), post the receipt, then ask only about the push
+notify( "Committed 5 files: a1b2c3d", notification_type="task", priority="medium" )
 
-# Execute based on response
-if response["answers"]["0"] == "Commit and push":
-    # git add, commit, push
-    notify( "Changes committed and pushed", notification_type="task", priority="medium" )
+response = ask_yes_no( "Push to origin?", default="no", timeout_seconds=600, priority="high" )
+
+if response.startswith( "yes" ):
+    # git push
+    notify( "Pushed to origin", notification_type="task", priority="medium" )
 ```
 
 ### Error Handling
@@ -1054,6 +1043,8 @@ response = ask_multiple_choice( questions=[
 
 ## Version History
 
+- **2026.11.03 (María 🌸 — Rick's voice ruling, row `bc975ca0`)**: the verification checklist puts the approve line in the notify message, not the abstract, and names the priority and batch helpers.
+- **2026.10.02 (María 🌸)**: notifications are tied to task-item status changes in the task store, not to a TodoWrite list (Rick, row `efa0a4cf`). Wording only; the notify rules are unchanged.
 - **2026.06.29 (María 🌸 — Rick GO)**: §Re-ask-until-answered — replaced the manual `/loop` / `ScheduleWakeup` self-tick timer with the stock Stop-hook (names the due gate on its debounced cadence) + arbiter re-surface; the interim timer crutch is retired (task `d0cffe5c`). HELD for commit.
 - **2026.02.09**: Documented `ask_open_ended_batch()` tool (v0.3.0)
   - Updated version from v0.2.1 to v0.3.0

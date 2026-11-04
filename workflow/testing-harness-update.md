@@ -5,8 +5,8 @@
 **Purpose**: Systematic test harness maintenance after code changes
 **Target**: Claude Code for automated test analysis and planning
 **Principle**: Discover, Analyze, Plan, Template
-**Version**: 1.0
-**Last Updated**: 2025.10.11
+**Version**: 1.4
+**Last Updated**: 2026.10.10
 
 > **⚠️ Conversation Mode**: this workflow uses `notify()` for phase progress and `ask_multiple_choice()` for harness update decisions — see `cosa-voice-integration.md` §Conversation Mode for behavior changes when `conversation_mode_active=true`. **TTS Brevity Mandate**: spoken responses are conversational prose, NOT verbatim copies of the markdown terminal reply. Coverage gap analysis goes to `abstract`; speak the headline only ("3 modules need new tests, biggest gap is in dispatcher").
 
@@ -61,10 +61,10 @@ project_config:
 
   # Component Classification Rules (project-specific)
   component_types:
-    "core/": {type: "critical", requires_unit: true, requires_smoke: true}
-    "api/": {type: "critical", requires_unit: true, requires_smoke: true}
-    "utils/": {type: "support", requires_unit: true, requires_smoke: false}
-    "scripts/": {type: "support", requires_unit: false, requires_smoke: true}
+    "core/": {type: "critical", requires_unit: true, requires_smoke: true, requires_integration: false}
+    "api/": {type: "critical", requires_unit: true, requires_smoke: true, requires_integration: false}
+    "utils/": {type: "support", requires_unit: true, requires_smoke: false, requires_integration: false}
+    "scripts/": {type: "support", requires_unit: false, requires_smoke: true, requires_integration: false}
 
   # Coverage Thresholds (configurable)
   coverage_requirements:
@@ -164,44 +164,18 @@ NEW_FILES=$(git log \
     {source_directories} | \
     grep "^A" | \
     awk '{print $2}' | \
-    grep -E "\.(py|js|ts|java|go)$" | \
+    grep -E "\.(py|js|ts|java|go|rb|cpp|c|h)$" | \
     grep -v -E "test|spec" | \
     sort -u)
 
-MODIFIED_FILES=$(git log \
-    --since="${SINCE_DATE} 00:00:00" \
-    --until="${UNTIL_DATE} 23:59:59" \
-    --name-status \
-    --pretty=format:"" \
-    --diff-filter=M \
-    {source_directories} | \
-    grep "^M" | \
-    awk '{print $2}' | \
-    grep -E "\.(py|js|ts|java|go)$" | \
-    grep -v -E "test|spec" | \
-    sort -u)
+# MODIFIED_FILES: the NEW_FILES pipeline above, with --diff-filter=M and grep "^M"
+MODIFIED_FILES=$( <NEW_FILES pipeline with --diff-filter=M and grep "^M"> )
 
 NEW_COUNT=$(echo "$NEW_FILES" | grep -c . || echo 0)
 MODIFIED_COUNT=$(echo "$MODIFIED_FILES" | grep -c . || echo 0)
 
 echo "New files: ${NEW_COUNT}"
 echo "Modified files: ${MODIFIED_COUNT}"
-```
-
----
-
-### Step 1: Initialize TodoWrite Tracking
-
-```
-[{PREFIX}] Test harness update analysis - STARTED at [TIMESTAMP]
-[{PREFIX}] Discover code changes via git ({CHANGED_COUNT} files)
-[{PREFIX}] Classify components by testing requirements
-[{PREFIX}] Inventory existing test coverage
-[{PREFIX}] Identify test gaps (missing/outdated tests)
-[{PREFIX}] Generate priority-based update plan
-[{PREFIX}] Provide test creation templates
-[{PREFIX}] Document findings in analysis report
-[{PREFIX}] Send completion notification
 ```
 
 ---
@@ -223,31 +197,31 @@ if [[ "$FILE" =~ ^src/core/ ]] || [[ "$FILE" =~ ^src/api/ ]]; then
     COMPONENT_TYPE="critical"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
-    PRIORITY="HIGH"
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
+    PRIORITY="CRITICAL"
 elif [[ "$FILE" =~ ^src/memory/ ]] || [[ "$FILE" =~ ^src/agents/ ]]; then
     COMPONENT_TYPE="standard"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="MEDIUM"
 elif [[ "$FILE" =~ ^src/utils/ ]]; then
     COMPONENT_TYPE="support"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=false
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="LOW"
 elif [[ "$FILE" =~ ^src/scripts/ ]]; then
     COMPONENT_TYPE="support"
     REQUIRES_UNIT=false
     REQUIRES_SMOKE=true
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="LOW"
 else
     COMPONENT_TYPE="standard"
     REQUIRES_UNIT=true
     REQUIRES_SMOKE=false
-    REQUIRES_INTEGRATION=false
+    REQUIRES_INTEGRATION={requires_integration for this component, from the config}
     PRIORITY="MEDIUM"
 fi
 
@@ -424,8 +398,8 @@ for file in changed_files:
     # Check for outdated tests (if file modified, test may need updates)
     if is_modified(file) and has_test(file):
         test_file = find_test(file)
-        test_last_modified = get_last_modified(test_file)
-        code_last_modified = get_last_modified(file)
+        test_last_modified = last_commit_time(test_file)  # git log -1 --format=%at, as in 4.2
+        code_last_modified = last_commit_time(file)
 
         if code_last_modified > test_last_modified:
             gaps["outdated_tests"].append({
@@ -587,10 +561,7 @@ priorities:
 
 ## Recommended Implementation Order
 
-1. **Phase 1 (Today)**: Address all Critical (P1) updates
-2. **Phase 2 (This Week)**: Address High (P2) updates
-3. **Phase 3 (Next Sprint)**: Address Medium (P3) updates
-4. **Phase 4 (Future)**: Address Low (P4) updates as time permits
+Work the priorities in order: P1 today, P2 this week, P3 next sprint, P4 in the future as time permits.
 ```
 
 ---
@@ -708,12 +679,6 @@ The inline smoke test serves a **dual purpose**:
    - Test runner finds all modules with `quick_smoke_test()`
    - Comprehensive suite execution
    - No manual test registration needed
-
-**Benefits**:
-- Co-located with implementation (easier maintenance)
-- Fast developer feedback loop
-- Automatically included in test suite
-- Single source of truth
 
 **Template**:
 
@@ -898,7 +863,9 @@ notify( "Test harness analysis COMPLETE - {changed_count} changes analyzed, {tot
 
 ---
 
-### Step 10: Final TodoWrite Update
+### Step 10: Final Summary
+
+Provide the summary:
 
 ```
 ✅ [{PREFIX}] Test harness update analysis COMPLETE
@@ -980,13 +947,7 @@ source_files:
 
 ## Version History
 
-**Version 1.0** (2025.10.11)
-- Initial canonical workflow
-- Git-based change discovery
-- Component classification framework
-- Test gap analysis
-- Priority-based planning
-- Test creation templates
+Full history: `docs/version-history/testing-harness-update.md`.
 
 ---
 

@@ -379,7 +379,11 @@ ENGAGEMENT_WINDOW_HOURS = 24
 #   real gate teaches people to route around it. `pathlib.glob` treats `**/` as zero-or-more
 #   directories, so each `**/` form SUBSUMES its flat sibling; both are kept anyway, because a
 #   reader scanning this list should not have to know that rule to believe the flat case works.
-POST_GAME_GLOBS         = [ "io/post-games/*.md", "io/post-games/**/*.md",
+# `src/docs/post-games/` is the corpus since 2026-10-03 (post-game.md §5.6), one folder per
+# work-branch version, so only the `**/` form can see a retro there. The older homes stay in
+# the list because a repo that has not moved yet still files its retros in one of them.
+POST_GAME_GLOBS         = [ "src/docs/post-games/*.md", "src/docs/post-games/**/*.md",
+                            "io/post-games/*.md", "io/post-games/**/*.md",
                             "src/rnd/*post-game*.md", "src/rnd/**/*post-game*.md",
                             "src/rnd/*postgame*.md",  "src/rnd/**/*postgame*.md" ]
 
@@ -1861,8 +1865,8 @@ def cmd_write( args ):
 
     Requires:
         - cwd (or --repo) is inside a git working tree
-        - --persona and --session-id are supplied (both are in the session's context
-          from the Phase-A get_session_info() call — zero new information required)
+        - --persona is supplied; --session-id is optional and omitted, so the bridge
+          resolves the session's own id (memento-management.md §3.1)
         - content arrives on stdin or via --content-file
     Ensures:
         - all THREE files exist on success, and record bytes == mirror bytes

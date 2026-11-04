@@ -95,9 +95,12 @@ def pointer_target( slot, path ):
 
     Ensures:
         - returns the absolute path named by a `<!-- current: … -->` line in the first five
-          lines, resolved against the slot's base (memento_io writes it relative to that
-          base: the repo root for "root", io/mementos for "io"), or None when the file
-          names nothing or cannot be read
+          lines, resolved against the REPO ROOT, which is what memento_io writes it relative
+          to in both slots (an io pointer reads `io/mementos/<persona>-<sid>.md`), or None
+          when the file names nothing or cannot be read
+        - an io pointer whose value only resolves against io/mementos still resolves there
+          (Tiffany, 2026-10-05: resolving io pointers against io/mementos first doubled the
+          folder, so no io record was ever kept)
     """
     try:
         with open( path, encoding="utf-8", errors="replace" ) as f:
@@ -108,12 +111,19 @@ def pointer_target( slot, path ):
         match = CURRENT_LINE.search( line )
         if match is None: continue
         rel = match.group( 1 )
-        if slot == "io":
-            marker = os.sep + IO_DIR + os.sep
-            base   = path[ : path.index( marker ) + len( marker ) ] if marker in path else os.path.dirname( path )
-        else:
-            base = os.path.dirname( path )
-        return os.path.normpath( os.path.join( base, rel ) )
+        if slot != "io": return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        # Prefix a separator so a path with no repo part (`--repo ""` yields `io/mementos/…`)
+        # still carries the marker; `start` is then -1 and the repo root is the empty string.
+        marker = os.sep + IO_DIR + os.sep
+        rooted = os.sep + path
+        if marker not in rooted: return os.path.normpath( os.path.join( os.path.dirname( path ), rel ) )
+        start     = rooted.index( marker ) - 1
+        repo_root = path[ : max( start, 0 ) ]
+        io_base   = path[ : start + len( marker ) ]
+        from_root = os.path.normpath( os.path.join( repo_root, rel ) )
+        from_io   = os.path.normpath( os.path.join( io_base, rel ) )
+        if not os.path.isfile( from_root ) and os.path.isfile( from_io ): return from_io
+        return from_root
     return None
 
 
@@ -128,6 +138,9 @@ def select_kept( mementos, keep_personas ):
     Ensures:
         - returns a set of paths: the newest file per ( persona, slot ), plus the
           persona-less pointer when keep_personas is non-empty
+        - 🔴 plus the exact root file .claude-memento-<persona>.md when it exists, whatever its
+          age (row 0214c6eb). self_respin reads that file, and a suffixed copy written seconds
+          later is the newest, so "newest per slot" alone swept the one file the seat reads
         - 🔴 plus every record a kept POINTER names, followed transitively (row cb8f7757).
           A pointer is rewritten on every save, so it is usually the NEWEST file for its
           persona, and "newest per slot" kept it while trashing the older record it names.
@@ -141,6 +154,9 @@ def select_kept( mementos, keep_personas ):
         for want_slot in ( "root", "io" ):
             owned = [ p for s, p in mementos if s == want_slot and persona_matches( s, p, persona ) ]
             if owned: kept.add( max( owned, key=os.path.getmtime ) )
+        exact_root = f"{ROOT_PREFIX}-{persona.lower()}.md"
+        for slot, path in mementos:
+            if slot == "root" and os.path.basename( path ).lower() == exact_root: kept.add( path )
 
     # Compare NORMALIZED paths: with `--repo .` the found paths read `./.claude-memento-…`,
     # while a resolved target reads `.claude-memento-…`, and the two never matched on a live run.

@@ -22,8 +22,6 @@ Cascaded /plan-review-cascaded with N sections:
 
 **The compression**: for an N-section plan with 3 review stages, serial wall-clock is `N × 3 × per-cell-time`. Section-pipelined wall-clock is `(N + 3 − 1) × per-cell-time` — `N+2` cells in the critical path instead of `3N`.
 
-For N=4 sections at 15 min per cell: serial = 180 min; pipelined = 90 min. **2× speedup at the limit.**
-
 ---
 
 ## §2 Worked Example — 4-section notification-sync plan
@@ -235,16 +233,13 @@ This makes the cast size visible at a glance and prevents "wait, are we allocati
 
 ## §6 Cross-References
 
-- **Stage specs (process flow + diagrams)**: `plan-review-cascaded-stage-specs.md`
 - **Canonical workflow**: `plan-review-cascaded.md`
-- **Shared mechanics**: `plan-review-cascaded-common.md`
 - **Cast roles**: `plan-review-cascaded-personas.md`
 - **Configuration knobs**: `plan-review-cascaded-defaults.md`
-- **PG-5 root-cause (serial-vs-parallel lesson)**: `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
-- **Empirical anchor (4-section run with real section-pipelining)**: `io/post-games/2026.05.22-cascade-notif-sync-post-game.md`
+- **Empirical anchor (4-section run with real section-pipelining)**: `io/post-games/2026.05.22-cascade-notif-sync-post-game.md` (deleted 2026-10-03 with the old corpus)
 
 ---
 
 ## Version History
 
-- **v1.0 (2026-05-28)** — Initial codification at Rick's request. Worked example with 4-section notification-sync plan. ASCII timeline showing pipeline ramp-up → steady state → ramp-down. Cast Manifest mandate cross-linked. PG-5 carry-forward documented (intra-section parallelism unbuilt). Authored by María 🌸 (Workflow Steward — planner + facilitator + observer).
+Full history: `docs/version-history/plan-review-cascaded-parallelism.md`.

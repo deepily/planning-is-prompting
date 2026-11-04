@@ -1,8 +1,8 @@
 # Plan File Serialization
 
-**Purpose**: Preserve non-trivial Claude Code plan files with semantic names for cross-session recall.
+**Purpose**: Preserve non-trivial, authorized Claude Code plan files with semantic names for cross-session recall.
 
-**When to Use**: After plan mode produces a substantive plan (>1KB, architectural decisions, multi-step implementation).
+**When to Use**: After plan mode produces a substantive plan (>1KB, architectural decisions, multi-step implementation) that someone other than you authorized (Gate 0, below).
 
 **Entry Point**: Behavioral directive (no slash command — this is a practice, not a procedure).
 
@@ -60,7 +60,7 @@ One plan even had an explicit "Step 0: Archive This Plan to R&D" section. This w
 
 ## The Directive
 
-**MANDATE**: After plan mode produces a non-trivial plan, serialize it to the project's `src/rnd/` directory with a semantic name.
+**MANDATE**: After plan mode produces a non-trivial plan that passes Gate 0 (someone other than you authorized it), serialize it to the project's `src/rnd/` directory with a semantic name. A plan that fails Gate 0 goes to the worktree scratch dir.
 
 ### Naming Format
 
@@ -146,24 +146,6 @@ yyyy.mm.dd-descriptive-slug.md
 | Abandoned/superseded | Plan was replaced by a better approach |
 | Session-specific | Plan is only relevant to the current session |
 
-### Quick Decision Flowchart
-
-```mermaid
-flowchart TD
-    A[Plan created in plan mode] --> G{"GATE 0 — AUTHORIZATION<br/>Does a live authorization<br/>someone ELSE granted<br/>name this work?"}
-    G -->|No| SCR["→ scratch dir that dies<br/>with the worktree.<br/>Finding worth keeping?<br/>Mint a store row."]
-    G -->|Yes| B{Size > 1KB?}
-    B -->|No| SKIP1[SKIP]
-    B -->|Yes| C{Architectural decisions?}
-    C -->|Yes| SER1["SERIALIZE<br/>+ authorized_by frontmatter"]
-    C -->|No| D{Future recall needed?}
-    D -->|Yes| SER2["SERIALIZE<br/>+ authorized_by frontmatter"]
-    D -->|No| SKIP2[SKIP]
-
-    style G fill:#c62828,color:#fff
-    style SCR fill:#455a64,color:#fff
-```
-
 ---
 
 ## Serialization Patterns
@@ -179,16 +161,18 @@ Serialize this plan to:
   <project>/src/rnd/yyyy.mm.dd-descriptive-slug.md
 ```
 
-**When to use**: When you know during planning that the plan is significant.
+**When to use**: When you know during planning that the plan is significant **and someone other than you has authorized it (Gate 0)**; without that authorization, leave the Step 0 out.
 
 ### Pattern B: Reactive (During Session-End)
 
 During the session-end workflow, check if plan mode was used and prompt for serialization:
 
 ```
-Session used plan mode → Was the plan non-trivial?
-  → Yes: Copy to src/rnd/ with semantic name
-  → No: Skip
+Session used plan mode → Gate 0: did someone other than you authorize it?
+  → No: worktree scratch dir, not src/rnd/ (a real finding becomes a store row)
+  → Yes: Was the plan non-trivial?
+      → Yes: Copy to src/rnd/ with semantic name
+      → No: Skip
 ```
 
 **When to use**: Default pattern for most sessions.
@@ -212,15 +196,7 @@ Include the serialization destination in the plan's own Context section:
 
 ### Session-End Workflow
 
-Add a check during session-end (after history.md update, before commit):
-
-```
-Check: Did this session use plan mode?
-  → Yes: Was the plan non-trivial (>1KB, architectural)?
-    → Yes: Prompt to serialize
-    → No: Skip
-  → No: Skip
-```
+Add a check during session-end (after history.md update, before commit): did this session use plan mode? If so, apply Gate 0 and then the Serialize / Skip criteria above before prompting to serialize; a plan that fails Gate 0 goes to the scratch dir, not `src/rnd/`.
 
 ### history.md
 
@@ -276,16 +252,10 @@ yyyy.mm.dd-[subject]-[qualifier].md
 
 - **Don't serialize an unauthorized plan, however good it is.** This is Gate 0 and it outranks every other item in this list. A plan nobody asked for is a working note; its *finding* survives as a store row, the *file* does not.
 - **Don't check in receipts alongside the plan** — logs, probe rigs, `.failset`/`.meta`, screenshots and data dumps never enter `src/rnd/` at any authorization level. Cite the run; put the reference in the store row's `receipt_refs`.
-- **Don't serialize tiny plans** (<1KB) — they clutter the R&D directory
-- **Don't serialize abandoned plans** — they create confusion about current approaches
-- **Don't use the random Claude Code name** as the serialized name
-- **Don't forget the date prefix** — it enables chronological browsing
-- **Don't skip the README link** — R&D documents should be discoverable
 - **Don't duplicate the plan** if it's already been superseded by implementation
 
 ---
 
 ## Version History
 
-- **v1.1** (2026.09.22, María 🌸 under task `3a2f726b`): Added **Gate 0 — Authorization**, ahead of every existing criterion, and folded it into the flowchart and anti-patterns. This document was identified as the largest single manufacturer of unauthorized `src/rnd/` traffic: its four "Serialize (Yes)" criteria are all self-judged by the author and none tested authorization, so it admitted every unrequested deep-dive a worker cared to write. It also governed only plan-mode plans, leaving findings notes — 83 of 108 September documents in the surveyed project — under no rule at all. Canonical: `workflow/rnd-directory-policy.md`.
-- **v1.0** (2026.02.13): Initial recommendation based on 169-file analysis of `~/.claude/plans/`
+Full history: `docs/version-history/plan-serialization.md`.

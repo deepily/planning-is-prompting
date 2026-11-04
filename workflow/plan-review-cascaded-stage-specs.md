@@ -151,14 +151,6 @@
 | 8 | Manager | `cascade_complete` post with tally | Tally complete; per-cast performance notes attached | — |
 | 9 | Manager + Workflow Steward | Revision-handoff doc; light-review gate PASS; post-game synthesis | Light-review PASS; post-game doc landed; implementer notified | **Step 9 light-review = most-impacted-section reviewer** (one of Persona 3/4/5; freshest context). Workflow Steward is escape hatch if no cast member has bandwidth |
 
-**Cross-references**:
-- Canonical workflow: `plan-review-cascaded.md`
-- Shared mechanics: `plan-review-cascaded-common.md`
-- Cast roles: `plan-review-cascaded-personas.md`
-- Configuration: `plan-review-cascaded-defaults.md`
-- Step-0 preparation detail: `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md` (preserved historical name)
-- Step-9 synthesis detail: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (preserved historical name)
-
 ---
 
 ## §2 — Per-Section Sub-Flow (Step 5 detail)
@@ -323,16 +315,16 @@ Expected Manager response:
 - **Configuration knobs**: `plan-review-cascaded-defaults.md` (`discussion_turn_cap`, `step_3_gate`, `reviewer_context_scope`, observability config)
 - **Authoring sibling**: `plan-authoring-cascaded.md` (for cascades that produce a new plan rather than review an existing one)
 - **Parallelism mechanics + worked example**: `plan-review-cascaded-parallelism.md` (explicit 4-section worked example showing pipeline ramp-up → steady state → ramp-down with all three reviewers concurrent at the limit)
+- Step-0 preparation detail: `src/rnd/2026.05.20-step-0-cascade-preparation-doctrine.md` (preserved historical name)
+- Step-9 synthesis detail: `src/rnd/2026.05.19-step-9-synthesis-and-handoff-doctrine.md` (preserved historical name)
 - **Empirical anchors**:
   - Run 1 (2026-05-18): `src/rnd/2026.05.18-cascaded-prototype-postmortem.md`
   - Run 4 (2026-05-20): Workflow Steward role validated; Step 0/9 first application
-  - Run 5 (2026-05-21): `io/post-games/2026.05.22-cascade-run-5-observer-log-post-game.md` + `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
-  - `cascade-notif-sync` Run (2026-05-22): `io/post-games/2026.05.22-cascade-notif-sync-post-game.md` — source of the six roadblock-removal conclusions feeding this doc's user-tap override + Step 3 cast-ratified-conditional gate
+  - Run 5 (2026-05-21): `io/post-games/2026.05.22-cascade-run-5-observer-log-post-game.md` (deleted 2026-10-03 with the old corpus) + `src/rnd/2026.05.22-run-5-serial-vs-parallel-root-cause.md`
+  - `cascade-notif-sync` Run (2026-05-22): `io/post-games/2026.05.22-cascade-notif-sync-post-game.md` (deleted 2026-10-03 with the old corpus) — source of the six roadblock-removal conclusions feeding this doc's user-tap override + Step 3 cast-ratified-conditional gate
 
 ---
 
 ## Version history
 
-- **v1.2 (2026-06-29, María 🌸 — Rick GO)** — Marked the example cast-table "Heartbeat Scheduler / `cascade_heartbeat_scheduler.py`" row RETIRED (the standing arbiter is the waker now; see `plan-review-cascaded-common.md §Heartbeat Handling` banner). Crutch-retirement (task `d0cffe5c`). HELD for commit.
-- **v1.1 (2026-05-28)** — Added §0 Cast Manifest mandate (at the TOP of every planning doc; explicit recycled light-reviewer assignments). Updated Step 0 + Step 9 diagram boxes to flag the recycled personas (no new allocations). Per-step spec table extended with "Recycled personas" column. Cross-ref added to new `plan-review-cascaded-parallelism.md`. Same session as v1.0.
-- **v1.0 (2026-05-28)** — Initial serialization. Three ASCII process flow diagrams (macro + per-section + user-tap override). Per-step spec table. Cross-references. Authored by María 🌸 (Workflow Steward — planner + facilitator + observer) at Rick's voice-msg request; companion to the no-doctrine vocabulary sweep + Persona 6 rename landing in the same session.
+Full history: `docs/version-history/plan-review-cascaded-stage-specs.md`.

@@ -88,7 +88,7 @@ And the **Manager may not reap you through an open harvest window** (`manager-au
 - Section decomposition proposal (sent to user for approval)
 - Stage handoffs (one per `(section, stage)` boundary)
 - User-facing status pushes (per `manager_push_frequency`)
-- User-facing escalations (per the 7 escalation triggers — see §Manager System Prompt in playbook)
+- User-facing escalations (per the 7 escalation triggers — see `plan-review-cascaded.md` Step 7 and §Escalation Taxonomy Template)
 - **Proactive per-batch decision walkthroughs** (added 2026-07-01, Rick post-game — mux cascade): user-destined decisions driven to the user via `/plan-decide` (one at a time, pros/cons/recommendation, descending priority) as each batch firms up — per section-close and at cascade-complete. No "want to review?" permission-ask; distinct from the status push. Manager-resolvable findings stay filtered off the user's desk (Manager System Prompt meta-rule 6).
 - Vote calls and tally results
 - End-of-pipeline summary
@@ -217,29 +217,33 @@ Same anti-pattern, mirrored on two ACs. AC2's `EXECUTOR: AI` depended on OSQ4(a)
 
 ### Usability/Reuse Rubric (maps to `/plan-review` REUSE pre-pass)
 
-**Mandate**: actively grep the codebase for prior art before accepting any "new" thing the section proposes. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep.
+**Mandate**: run the reuse check in `/plan-review` §4 before accepting any "new" thing the section proposes: the tool call where one is installed, the plain-text search every time, and the source read. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep or the search.
 
-For each "new" thing the section proposes (helper, primitive, queue, emitter, rate-limiter, route, schema, fixture, anything), determine prior art and produce one row:
+For each "new" thing the section proposes (helper, primitive, queue, emitter, rate-limiter, route, schema, fixture, anything), the author's draft carries a `REUSE-OUTCOME` line (§4, "The outcome line"). Check every line, and re-run the check yourself, with the need written in your own words, on every line the author marked `WROTE_NEW`. Produce one row per new thing:
 
-| New thing the section proposes | Existing prior art (file:line) | Verdict |
-|--------------------------------|--------------------------------|---------|
-| ... | ... | reuse-as-is / extend-existing / genuinely-new |
+| New thing the section proposes | Author's outcome line | Candidates read (file:line) | Verdict |
+|--------------------------------|-----------------------|-----------------------------|---------|
+| ... | `REUSE-OUTCOME ...` | ... | reuse-as-is / extend-existing / genuinely-new |
 
 **Verdicts** (pick exactly one per row):
 - `reuse-as-is` — existing code already does what the section needs
 - `extend-existing` — extend the named existing function/class
-- `genuinely-new` — no prior art found; explain WHY this is novel
+- `genuinely-new` — after reading every candidate, nothing does the job; name the difference
+
+**Reading the answer** (the rules in `/plan-review` §4 apply in full): a shortlisted candidate is a lead, not a match; "uncertain, read the source" never means nothing exists; and `genuinely-new` is never ruled on a shortlist, a score or an uncertain answer alone.
 
 **Anti-patterns this reviewer must catch**:
 - Author proposes a new utility/helper without grepping the codebase first
+- A new thing with no `REUSE-OUTCOME` line, or one that does not match the §4 format
+- A `WROTE_NEW` line whose candidates were not read, or whose search was not cited
 - Author uses a different name for a pattern that already has a canonical name in the project
 - Section diverges from established CLAUDE.md conventions (e.g., snake_case vs camelCase, path management patterns, explicit-attribute-access rule) without justification
 - Section reinvents an existing skill, workflow, or convention
 
 **Layer awareness**:
-- Layer 1 findings (e.g., section violates a global mandate from `~/.claude/CLAUDE.md`) → flag as foundational
-- Layer 2 findings (e.g., section conflicts with project working contract) → flag as foundational
-- Layer 3 findings (e.g., section reuses a deprecated pattern that an earlier milestone decision flagged) → surface for manager to classify
+- Layer 1 findings (e.g., section violates a global mandate from `~/.claude/CLAUDE.md`) → section revisions under the manager's standard severity classification
+- Layer 2 findings (e.g., section conflicts with project working contract) → section revisions under the standard severity classification
+- Layer 3 findings (e.g., section reuses a deprecated pattern that an earlier milestone decision flagged) → always escalate (foundational severity)
 
 **Output format**:
 
@@ -254,9 +258,9 @@ For each "new" thing the section proposes (helper, primitive, queue, emitter, ra
 
 **Findings (raw, for manager to classify)**:
 
-| New thing | Existing prior art | Verdict | Layer challenged |
-|-----------|--------------------|---------|------------------|
-| ... | ... | ... | Layer 1 / 2 / 3 / none |
+| New thing | Author's outcome line | Candidates read | Verdict | Layer challenged |
+|-----------|-----------------------|-----------------|---------|------------------|
+| ... | ... | ... | ... | Layer 1 / 2 / 3 / none |
 ```
 
 ---
@@ -369,7 +373,7 @@ For each section, ask:
 7. Will the system's behavior be observable during execution (logs, metrics, telemetry) — so Claude can verify, not just "trust the implementation"?
 8. If a step fails partway, how does Claude know which sub-step failed?
 
-**Anti-patterns this reviewer must catch** (verbatim from `/plan-review` Pass 2):
+**Anti-patterns this reviewer must catch** (adapted from the `/plan-review` Pass 2 Ownership-Language Audit rubric):
 - "User verifies X" / "User confirms X" — almost always a Layer 1 violation (user is never a tester)
 - "Manual QA pass" without explicit `EXECUTOR: HUMAN <reason>` — sneaks work onto the user
 - "Run the test suite and check the output" without naming a programmatic pass criterion — Claude can't actually verify
@@ -441,7 +445,7 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 
 ## Persona 2.A: Authoring Author (Stage 0 — for `/plan-authoring-cascaded`)
 
-**Added 2026-05-19** as the authoring-mode counterpart to Persona 2 (Review Author). Inherits Persona 2's 9-point rubric VERBATIM; extends with 4 additional self-check items for authoring-specific concerns.
+**Added 2026-05-19** as the authoring-mode counterpart to Persona 2 (Review Author). Inherits Persona 2's 9-point rubric VERBATIM; extends with 5 additional self-check items for authoring-specific concerns.
 
 **Role**: Produce implementation-plan sections from intent (pure-authoring mode) OR from a ratified design doc + outstanding Q-decisions (hybrid mode). Revise in response to reviewer feedback. Defend design choices when reviewers raise concerns. **In hybrid mode**: bridge between the design doc's intent and the implementation plan's executable shape.
 
@@ -453,16 +457,15 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 - Reviewer feedback (received via DM threads, bundled per Item #5 cluster-bundling default)
 
 **Outputs**:
-- A draft of the assigned section, posted to the section's handoff topic when ready for Stage 1
-- Revisions in response to inconsistency findings (manager pulls Author back via `upstream_dm_scope = manager_picks_subset`)
-- Defense or concession on substantive disagreements during consensus discussions
+- Everything Persona 2 outputs (see Persona 2 above)
 - **For hybrid mode**: explicit acknowledgment when implementation-plan draft diverges from the design doc (see "manager-divergence-check safeguard" below)
+- **A `REUSE-OUTCOME` line for each new thing a section proposes**, from the reuse check in `/plan-review` §4, run before the section decides to write new code
 
 **Boundaries** (same as Persona 2 Review Author).
 
 ### Authoring Author Rubric
 
-Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2 above) PLUS these 4 additional items:
+Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2 above) PLUS these 5 additional items:
 
 10. **Intent satisfaction**: does this section advance the intent statement's user-observable outcome? (Pure-authoring: per Step 0 capture. Hybrid: per design-doc's stated goal.) If yes — name which intent-item this section satisfies. If no — propose to manager that this section is out-of-scope, OR that the intent statement needs revision.
 
@@ -529,7 +532,7 @@ The Steward runs as a separate CC session alongside the Manager when a workflow 
 - `mcp__cosa-voice__notify()` — surface cascade-wide signals to user (rare; informational only)
 
 **Inputs**:
-- Heartbeat ticks from observer-targeted daemon (see `plan-review-cascaded-common.md` §Heartbeat Handling — Daemon kickoff procedure; default policy `dual_independent`)
+- Heartbeat pokes from the standing arbiter (the per-cascade daemon was retired 2026-06-29; see `plan-review-cascaded.md` §6.4)
 - Read-only access to all cascade commons topics (coordination + section topics + DM topics where Observer is CC'd)
 - Cascade telemetry from `commons_who` + `commons_read` probes
 
@@ -540,7 +543,7 @@ The Steward runs as a separate CC session alongside the Manager when a workflow 
 
 **Probe cadence**: M:1 multiplier on heartbeat ticks, per-stage configurable (see `plan-review-cascaded-defaults.md` §Cascade-execution observability):
 
-| Stage | M | Probe interval (on 2.5-min heartbeat) | Rationale |
+| Stage | M | Probe interval (M × the poke interval; the 2.5 min figure is from the retired daemon) | Rationale |
 |-------|---|---------------------------------------|-----------|
 | Step 0 | 8 | ~20 min | Low signal-density; save Observer cycles |
 | Stage 1 | 4 (default) | ~10 min | Baseline density |
@@ -568,7 +571,7 @@ The Steward runs as a separate CC session alongside the Manager when a workflow 
 
 **Dual-channel safety property contribution**:
 
-Observer-probe channel + Manager's own §Manager System Prompt universal-step-zero disk-read together form a dual-channel safety net for failure mode #6 (`signal-density-obscures-needle`):
+Observer-probe channel + Manager's own universal-step-zero disk-read (`plan-review-cascaded.md` §Manager Behavior) together form a dual-channel safety net for failure mode #6 (`signal-density-obscures-needle`):
 
 - **Channel 1** (Manager-internal): Manager disk-reads on every wake event — fixes "Manager forgot to look"
 - **Channel 2** (Observer-external): parallel probe at sparser cadence — fixes "Manager looked but signal was buried under high-density traffic"
@@ -597,7 +600,7 @@ Reviewers should *not* try to coordinate directly across sections — that's the
 
 ## Persona Assignment at Launch (v1)
 
-Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, ownership).
+Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen when the user invokes `/plan-review-cascaded`. The user launches 5 CC sessions (typically in 5 tmux panes; the Manager may instead, when skeleton crew is off, spawn the four peers, `plan-review-cascaded.md` Step 4), designates which one is the manager (by invoking the slash command in that session), and the manager DMs the other four with their role briefs (one of: author, usability/reuse, viability/gap, ownership).
 
 **v2 path**: Dedicated role-specific personas (`AuthorBot`, `UsabilityCritic`, `ViabilityAnalyst`, `OwnershipAuditor`, `PipelineManager`) — assignment becomes automatic by persona name. Defer until v1 dynamics are validated.
 
@@ -605,26 +608,4 @@ Per `persona_casting_strategy = user_assigns_at_launch`, role assignments happen
 
 ## Version History
 
-- **2026.07.13 (PROVENANCE-OF-FINDING — Rick-ratified, M0-build post-game; amends the same day's DEPOSIT AS YOU GO entry below)** — Every seat's deposit + element 9 must now carry **how it came to know each finding, and from what position** (the act — *ran it* vs *read it*; the seat — *alone* vs *in a panel*; and **what would have sufficed**), not merely what it concluded. **Ranked mechanism ② of the new cost-ordered harvest ladder** (`post-game.md` §3.3) — **nearly free, unconditional, and ABOVE the expensive harvest gate**, which is demoted to a **backstop** (a gate protects the harvest only when someone remembers to open it — and the Steward who argued for it **missed the window herself within the hour**). Founding evidence, again from this doc's own cast: a reviewer had recorded **what he concluded** but not that he'd found **two of three defects ALONE, from ONE seat** — the exact counter-example to a false rule the Steward was drafting; he refuted her **alive**, by luck of still being there. **The provenance field is what lets a dead seat refute a bad rule.** Companion: `memento-management.md` v1.6 · `post-game.md` v1.3 · `swe-team-roles.md` v1.9 · `manager-autonomy.md` v2.0. Seed: `io/post-games/2026.07.13-m0-build-post-game.md` (R-A, R-B).
-- **2026.07.13 (DEPOSIT AS YOU GO — Rick-ratified, `cascade-eval-first` post-game)** — New **standing duty binding EVERY seat** (all six personas, reviewers especially): post 1–3 sentence retro deposits to the commons `post-game` topic **as the run happens** — self-correction · near-miss finding · misleading instruction · mechanism lesson · stage passed — so a seat reaped before the retro **has already contributed**. Cheap on purpose (no template, no approval, no Manager relay); self-disclosure tier. At reap, the memento must carry **element 9, the retro deposit** (`memento-management.md` v1.5), and the **Manager may not reap through an open harvest window** (`manager-autonomy.md` v1.9 §6) — but the deposit habit is what makes that gate a formality instead of a last chance. **Founding incident is this doc's own cast**: on 2026-07-13 three cascade reviewers were reaped ~1 min before the Steward's harvest (`dm_send` → `recipient_inactive` ×3); the reap was correct in every respect, the rule simply did not exist, and the run's most durable material (*"check the most invertible instruction hardest"*, *"imports are not inventory"*, *"file the mechanism, not the luck"*) nearly died with them. Canonical: `post-game.md` v1.2 §3.4 (rolling deposits + the testimony ladder) + §3.5.1–2 (harvest WORKERS, not just managers; harvest-before-teardown). Seed: `io/post-games/2026.07.13-cascade-eval-first-post-game.md` (W-1, R-1…R-4).
-
-- **2026.07.01 (Proactive decision-delivery fold — Rick post-game, mux cascade)** — Ratified 2026-07-01 (Rick, via `/plan-decide` cadence choice + explicit redline ratification). New Manager System Prompt **meta-rule 6 (Default to proactive decision-delivery)**: user-destined decisions are driven to the user PROACTIVELY per-batch via a `/plan-decide` walkthrough (no permission-ask, no buried Step-9 batch) as each section closes + at cascade-complete; the attention-filter is preserved (manager-resolvable findings stay off the user's desk). Empirical anchor: 2026-06-30 mux cascade — Rick flagged the Manager "deferentially buried the lead" (parked user-destined decisions behind a "nothing needs you now, async at Step-9" framing + a soft permission-ask). Companion edits across surfaces: `plan-review-cascaded-common.md` (canonical Manager System Prompt meta-rule 6 — binds review AND authoring); `plan-review-cascaded.md` (inline meta-rule 6 + §6.5 status-push amendment + §7 escalation-vs-proactive-delivery note + Step-9 backstop note); this doc (Persona-1 Manager Outputs — new proactive per-batch walkthrough output); `plan-authoring-cascaded.md` (authoring-addendum pointer). Design/rationale + full §4 redline: `src/rnd/2026.07.01-cascade-proactive-decision-delivery.md`.
-
-- **2026.05.20 (Run-4 v1.1 workflow fold)** — Three additions per the María ↔ Tiberius post-Run-4 retrospective (2-round DM thread; final ratification 2026-05-20):
-  1. **Persona 1 (Manager) Outputs extended** — new artifact: `kind: manager_self_audit_sweep` (Step 9 cold-context test rubric Q#6 output enumerating cascade improvisations as workflow-guidance-gap candidates with empirical-anchor citations and failure-mode-catalog cross-links; zero-candidate sweeps still fire so cross-cascade telemetry can track the sweep-firing rate). Procedure + TODO.md filing template in `plan-review-cascaded-common.md` §Step 9 Manager close-out self-audit sweep.
-  2. **Persona 2.A point 14 AC-table sweep extended** — Run-4 added 2 more empirical anchors to the AC-table-sweep-lag pattern (cumulative base now 5 instances across Runs 3+4): Krishna's Q-1..Q-4 catch on Run-4 Stage 2 cap-3 (4 quibbles on one output, all from one missed pre-handoff sweep); Tiberius's Tiffany-rename-pass catch (also the non-adjacent-surface anchor for `plan-review-cascaded-common.md` §Multi-surface Footer-ratification Close Protocol item 5). Strong ratification base for promoting routine pre-handoff sweep into the new common.md §Author-side Discipline Grep-sweep Checklist.
-  3. **NEW Persona 6 (Workflow Steward)** — optional 6th role for cascades with a workflow-steward participant. Role: real-time mitigation channel (probe-as-safety-net during cascade) + post-cascade retrospective partner (co-authors workflow refinements). Probe cadence per-stage M:1 multiplier on heartbeat (M=8 Step 0; M=4 default; M=2 Stage 2). Probe action shape: `commons_who` + `commons_read('coordination')` + informational DM to Manager + post `kind: observer_probe_unblocked` on mitigation events. Boundaries: no findings, no arbitration, no section-topic posts, no votes, no user-escalation. Dual-channel safety property contribution detailed; Step 9 light-review fallback role detailed. Empirical anchor: Run-4 Workflow Steward (María 🌸) caught + cleared Stage-2 minute-13 phantom-lag (failure mode #6) AND partnered with Manager (Tiberius 🌑) on the 2-round retrospective DM thread that surfaced the v1.1 fold.
-  Cross-references: `plan-review-cascaded-common.md` (§Observer-mode Probe Protocol + §Heartbeat Handling Daemon kickoff procedure + §Step 9 Manager close-out self-audit sweep + §Author-side Discipline Grep-sweep Checklist + §Multi-surface Footer-ratification Close Protocol), `plan-review-cascaded-defaults.md` (§Cascade-execution observability config + 3 new kind enum values). Empirical anchors in design-doc §10.18 (Run 4 retrofit row); pre-committed re-evaluation gates in §10.18.12.
-
-- **2026.05.17** — Initial creation. 5 persona briefs and 4 rubrics. Rubric language references the existing `/plan-review` phases (REUSE / Fitness / test-perspective) for workflow continuity; the rubrics will be refined further during Phase B/C as the manager prompt and review formats are tightened.
-- **2026.05.18** — Renamed "Testing Reviewer" → "Ownership Reviewer" (role name now matches the rubric content, which has always been the Ownership-Language Audit from `/plan-review` Pass 2). Persona 5 heading, table row, rubric heading, the persona-assignment summary, and the v2-path persona name (`TestingPedant` → `OwnershipAuditor`) updated. Internal rubric subsection heading "Test-perspective" → "Verification observability" for clarity. Provenance paragraph rewritten to drop the now-moot "conversational shorthand" framing while preserving the rename history.
-- **2026.05.18 (v2 polish bundle post-Run-2)** — Item #4 from postmortem §10.8 v2 roadmap shipped by Mr. Radio 🦉 (Lupin CC session 72e91319) per Mr. Rick's bundled ratification: Persona 2 Author rubric extended with new point 9 — `Convention 3 × Convention 4 interaction (tag-vs-deferred-infrastructure)`. Names the anti-pattern (a bare `EXECUTOR: AI` tag whose mechanism is deferred to an Open sub-question is structurally rubric-compliant but functionally hollow); offers same-line conditionality escape hatch (`EXECUTOR: AI (executability conditional on OSQ-N resolution)`) or AC-split; embeds Pass-2 cross-reference inline. Closing line `all eight` → `all nine`. Worked example appended citing Run 2's 3 instances (Section A AC2/OSQ6, Section B AC2/OSQ4(a), Section B AC4/OSQ4(b)). Stage-0 pre-emption of an anti-pattern Pass 2 was repeatedly catching at re-litigation cost. Full topic record + diff details at commons `v2-improvements-complete-2026-05-18` (Mr. Radio's `kind: v2_improvement_complete` entry 21:56:58 UTC).
-- **2026.05.19 (cascade-as-author extension)** — Two additions per Mr. Rick's ratification of the `/plan-authoring-cascaded` sister workflow: (a) Persona 5 (Rio) rubric gains **Convention 6 — coverage-as-ownership-language** for consuming projects with coverage mandates (Lupin: `c8 --100`); bare `EXECUTOR: AI — tests pass` without coverage assertion is a Pass 2 finding (same anti-pattern shape as Persona 2 point 9, mechanism deferred to coverage tooling rather than OSQ); activates auto when consuming project's CLAUDE.md has `## Coverage` section. (b) NEW **Persona 2.A (Authoring Author)** — inherits Persona 2 (Review Author) rubric verbatim (points 1-9) + 4 additional self-check items: intent satisfaction (10), cross-section contract surface (11), multi-draft revision discipline (12), manager-divergence-check safeguard for hybrid mode (13). Two worked examples (divergence-as-elaboration → cosmetic classification; actual-divergence → Trigger 6 escalation).
-
-- **2026.05.20 (Step 0 — Cascade Preparation workflow)** — Persona 1 (Manager) Outputs section extended with Step 0 cascade-preparation artifacts (4-artifact-type for authoring-cascade: slicing manifest + per-slice design docs + Q-decision matrix + pre-cascade Recon checklist; 1-artifact for review-cascade: pre-cascade Recon checklist). Manager is the default Step 0 authorship surface per Manager-default rule. Cross-links to `plan-authoring-cascaded.md` §Step 0 / `plan-review-cascaded.md` §Step 0 + `plan-review-cascaded-common.md` §Step 0 — Cascade Preparation (Shared Acceptance Criteria).
-
-- **2026.05.19 (Step 9 — Synthesis & Handoff workflow)** — Persona 1 (Manager) Outputs section extended with Step 9 implementation-handoff artifacts (3-artifact for authoring-cascade; 1-artifact for review-cascade). Manager is the default Step 9 authorship surface per Manager-default rule. Cross-link to `plan-authoring-cascaded.md` / `plan-review-cascaded.md` §Step 9 sections for per-artifact required content + `plan-review-cascaded-common.md` §Step 9 — Synthesis & Handoff (Shared Acceptance Criteria) for the cold-context test + light-review gate.
-
-- **2026.05.19 (Run-3 workflow fold)** — Two additions per Run-3 errata items:
-  - **Persona 2.A rubric point 14** — NEW: forward-sweep on ANY revision-mechanism change. Captures three Run-3 sub-patterns (symmetric-application writer + consumer per F-Arnold-D1; context-aware-application not blanket-apply per F-Arnold-B-Stage2-3; AC-table sweep per F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3 = 3 confirmed instances of AC-table-sweep-lag). Pre-empts cascade-learning-loop's backward-asymmetry cost by making Author's forward sweep mechanical. Closing line `all THIRTEEN` → `all FOURTEEN`.
-  - **Persona 5 §Stage-3 Cosmetic-Cluster Recognition** — NEW sub-section. Cluster-as-family recognition cue + handling protocol (single family finding vs. N separate per-section findings; single `manager_classification` post with `kind: cosmetic_cluster_family`; cap-preserving disposition documented once). Anchored in Run-3 cluster of 4 cosmetic findings (F-Rio-1, F-Rio-C1, F-Rio-D1, F-Rio-B1 — all border-cleanup, all cap-preserving). Cross-links to Persona 2.A point 14 for the proactive forward-sweep input.
+Full history: `docs/version-history/plan-review-cascaded-personas.md`.

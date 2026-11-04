@@ -5,7 +5,7 @@
 **Hub-spoke contract**:
 
 - **This doc** = canonical workflow shape (when/how to invoke, discovery policy, surfacing, failure modes)
-- **Sister doc** = `<cosa>/rnd/2026.05.21-cross-repo-loc-delta-aggregator-cli.md` (Rachel-authored — aggregator CLI implementation reference)
+- **Sister doc** = `<lupin>/src/cosa/rnd/2026.05.21-cross-repo-loc-delta-aggregator-cli.md` (Rachel-authored — aggregator CLI implementation reference)
 - **R&D doc** = `<planning-is-prompting>/src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md` (design rationale + open questions)
 - **Slash wrapper** = `.claude/commands/plan-loc-delta-global.md` (reference wrapper invoking this workflow)
 
@@ -18,13 +18,10 @@
 | Ad-hoc curiosity mid-day ("what have I done across repos today?") | `/plan-loc-delta-global` (bare; uses defaults) |
 | End-of-day cross-repo snapshot | `/plan-loc-delta-global --since "YYYY-MM-DD 00:00:00"` |
 | Sprint retrospective spanning multiple days | `/plan-loc-delta-global --since "2026-05-01 00:00:00" --until "2026-05-15 23:59:59"` |
-
-> **⚠️ ALWAYS pass explicit times. A bare `YYYY-MM-DD` does not mean midnight** — see
-> [§0.1 Date windows](#01-date-windows--a-bare-date-is-not-midnight). The bare form silently
-> under-counts by a different amount every time you run it, and a single-day bare window returns a
-> confident **zero**.
 | Specific subset of repos (override discovery) | `/plan-loc-delta-global --repos lupin cosa planning-is-prompting` |
 | With visual plot artifact | `/plan-loc-delta-global --plot` |
+
+> **⚠️ ALWAYS pass explicit times. A bare `YYYY-MM-DD` does not mean midnight** — see [§0.1 Date windows](#01-date-windows--a-bare-date-is-not-midnight).
 
 **Not when**: invoked automatically from every session-end (that's the per-repo §6 workflow's job). This is on-demand only in Phase 1; Phase 2 adds a testing-server scheduled cron — separate workflow doc when that lands.
 
@@ -37,7 +34,6 @@
 **Rule**:
 - **Run it freely** on the user's behalf — ad-hoc, at session-end, or when a manager (hub-spoke) signals their per-repo CSVs are refreshed. No "may I run the roll-up?" gate. Surface the result via `notify()` for visibility (post-hoc, not pre-approval).
 - **The ONE exception that still needs the user's direct word**: when the **user has personally set an explicit one-off hold this session** (e.g. *"hold the globals until Tiberius coordinates"*). That is a *user-authored gate* and, per blast-radius doctrine, is lifted ONLY by the user's direct word — a peer's go-ahead (even the designated coordinator's) cannot lift it. This is by design, not friction: it only applies when the user deliberately set a hold.
-- **Default (no explicit hold)**: standing — just run it.
 
 **Why the gate bit us before** (the empirical anchor): on 2026-06-09 and again 2026-06-10 the user set an explicit session hold (*"hold globals until Tiberius's go"*); when the manager handed off, the agent could not run on the manager's relay (a peer relay never lifts a user-authored gate — classifier-confirmed). Correct for a *user-set* hold, but it made the *routine* roll-up feel gated. This section fixes the routine case: absent an explicit user hold, the roll-up is standing.
 
@@ -47,7 +43,9 @@
 
 > **🔴 FOUND 2026-08-05, reproduced on the live tree.** Every `--since` / `--until` in this document
 > must carry an explicit time. The bare-date form this doc used to prescribe under-counts silently,
-> and in the single-day case returns **zero**.
+> and in the single-day case returns **zero**. That is true of git and of the discovery probe; the
+> aggregator pins bare dates itself (`_normalize_window_bounds`, row `d5bfe470`), so the advice stays
+> for the two places that do not.
 
 **The mechanism.** Git parses `--since` / `--until` with *approxidate*, which resolves a bare
 `YYYY-MM-DD` to **that date at the current wall-clock time**, not to midnight. One mechanism, two
@@ -75,8 +73,9 @@ newest commit EXCLUDED by it                        →  2026-08-01 11:44:19 -04
 
 ```bash
 # Accept a bare date from the caller, but never pass one to git.
-SINCE_TS="${SINCE:+${SINCE} 00:00:00}"   # if SINCE already has a time, use it verbatim
-UNTIL_TS="${UNTIL:+${UNTIL} 23:59:59}"
+# if the bound already has a time, use it verbatim
+[[ "$SINCE" == *" "* ]] && SINCE_TS="$SINCE" || SINCE_TS="${SINCE:+$SINCE 00:00:00}"
+[[ "$UNTIL" == *" "* ]] && UNTIL_TS="$UNTIL" || UNTIL_TS="${UNTIL:+$UNTIL 23:59:59}"
 ```
 
 Applies in **both** places a window is used — the Step 1 discovery probe (`has_commits_in_window`)
@@ -89,8 +88,7 @@ that disagree.
 > defect in *selection*. **A reconciliation guard can only ever prove two things agree, never that
 > either is right.**
 >
-> **What the guard should also assert** — a `0 active repos` result across 40+ git roots is suspect,
-> not a quiet week. See §4.2.
+> **What the guard should also assert** — a `0 active repos` result across 40+ git roots is suspect, not a quiet week (§4.2).
 
 **Correction to the original filing.** The bug row for this defect (`d5bfe470`'s sibling in TODO)
 stated two separate causes — a bare-date/timestamp discrepancy *and* `--until=D` meaning "before
@@ -171,9 +169,6 @@ repo_paths = sorted( str( r ) for r in true_roots if has_commits_in_window( r, s
 | Concern | Resolution |
 |---|---|
 | Discovery policy lives PIP-side, not in the cosa CLI | The wrapper discovers and passes an explicit list; `--repos` stays required by design |
-| New repos auto-included as they appear | **Yes, immediately** — a repo counts the moment it is a git root with commits. It no longer has to run session-end §6 first to "earn" a CSV |
-| Worktrees | **Excluded by GUARD 1** — they would double-count their parent |
-| Vendored / dormant clones | **Excluded by GUARD 2** — no commits in window, no appearance |
 | Override for ad-hoc subsets | `--repos REPO1 REPO2 …` overrides discovery entirely |
 | Lupin INI lookup | **Not used** (per Rick's "defer-INI-indefinitely" direction 2026-05-21) |
 
@@ -187,14 +182,13 @@ distinct from a broken config — **but do not render it as one without checking
 > **🔴 This sentence used to read as an unqualified all-clear, and that is how a broken window ships
 > as a finding.** On 2026-08-01 the documented bare-date form returned *"0 active repos"* on a day
 > with **70 commits**, and the roll-up was one render away from reporting a quiet week. Before
-> reporting zero, confirm both bounds carry explicit times (§0.1) and apply the §4.2 suspicion
-> check. **Zero across 40+ git roots is a claim that has to earn itself.**
+> reporting zero, confirm both bounds carry explicit times (§0.1) and apply the §4.2 suspicion check.
 
 ---
 
 ## Step 1.5) Confirmation gate (default ON, user-visible review of discovered repos)
 
-**Purpose**: discovery is automatic but **lossy** — a repo the user wants in the rollup may not have a CSV yet (fresh repo, repo where session-end §6 hasn't fired, repo with stale mtime > 14 days). The confirmation gate gives the user one click to accept the auto-discovery AND a free-text "Other" surface to add missed repos before the aggregator runs.
+**Purpose**: discovery is automatic but **lossy** — a repo the user wants in the rollup may have no commits in the window yet (a fresh repo, or one that was quiet in the window). The confirmation gate gives the user one click to accept the auto-discovery AND a free-text "Other" surface to add missed repos before the aggregator runs.
 
 **Mechanism**: fire `ask_multiple_choice` after discovery resolves a non-empty list:
 
@@ -203,12 +197,12 @@ discovered_repos = [...]  # from Step 1
 
 ask_multiple_choice(
     questions = [{
-        "question"    : "Confirm repos for the cross-repo LoC roll-up. All discovered repos are pre-checked; uncheck any you want to exclude; use Other to add repos that weren't auto-discovered (e.g. repos without a CSV yet).",
+        "question"    : "Confirm repos for the cross-repo LoC roll-up. All discovered repos are pre-checked; uncheck any you want to exclude; use Other to add repos that weren't auto-discovered (e.g. repos with no commits in the window yet).",
         "header"      : "Repos",
         "multiSelect" : True,
         "options"     : [
-            {"label": repo_name, "description": f"CSV at {csv_path}, mtime {mtime_hint}"}
-            for repo_name, csv_path, mtime_hint in discovered_with_metadata
+            {"label": repo_name, "description": "has commits in the window"}
+            for repo_name in discovered_repos
         ]
     }],
     priority        = "high",
@@ -232,7 +226,7 @@ When the user enters a repo name (or path) in "Other":
 2. Treat as absolute path if the first interpretation fails: if `{other_value}` exists as a directory, use it
 3. If neither: warn in the rendered summary ("Other repo `{other_value}` not found at expected paths; skipped")
 
-The added repo does NOT need to have an existing CSV — Rachel's aggregator CLI's §7.2 report-as-stale handling will mark it as "no data" in the summary if no CSV is present. This is the user-visible signal that the repo should run `/plan-session-end` first to generate the CSV.
+The added repo does NOT need commits in the window — the aggregator marks a repo with none as "no data" in the summary. That is the user-visible signal that nothing landed there in the window.
 
 ### Bypass paths (skip Step 1.5 entirely)
 
@@ -241,11 +235,9 @@ The confirmation gate is bypassed when:
 - **`--no-confirm` flag** is passed on the slash command (explicit fast-path opt-out for routine invocations)
 - **`--repos REPO1 REPO2 ...`** is passed explicitly (user has already specified the list; no discovery + no gate)
 
-In both bypass cases, Step 1.5 is skipped entirely — proceed directly to Step 2.
-
 ### Recommendation Mandate compliance
 
-Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `CSV exists at PATH, mtime N days ago`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
+Per `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`: the `ask_multiple_choice` abstract MUST include reasoning for each option (why this repo was discovered — `has commits in the window`) and a recommendation (the implicit "accept all" via the timeout default IS the recommendation, but state it explicitly in the abstract: "Recommended: accept all auto-discovered (one click). Add missed repos via Other if needed.").
 
 ---
 
@@ -274,8 +266,6 @@ The refresh step existed to prevent exactly the under-reporting bug we shipped a
 
 **Module**: `cosa.repo.run_git_loc_delta_global` (Rachel-implemented; **rewritten 2026-07-13 by Mr Radio 🦉 to compute from git** — lupin `1ccc05b5`).
 
-**What it does now**: for each repo it runs a **date-windowed, branch-agnostic** analysis (`git log --since --until --branches --no-merges`), holds **SHA-level rows in memory**, and aggregates. Git de-dupes the DAG walk, so the union across local refs is exact and `total_commits` = the count of unique SHAs.
-
 **Standard invocation**:
 
 ```bash
@@ -297,30 +287,19 @@ cd "$LUPIN_ROOT/src" && \
 | Flag | Meaning |
 |---|---|
 | `--repos` (**required**) | Absolute repo dirs from Step 1. Do NOT reconstruct from name + `PROJECTS_ROOT` — that breaks for non-flat repos (`google/lookml`, `google/skills-distillation`) |
-| `--since` / `--until` | Inclusive commit-window bounds. **Pass explicit times** (`"YYYY-MM-DD 00:00:00"` / `"YYYY-MM-DD 23:59:59"`) — a bare date resolves to *now-o'clock on that date*, not midnight (§0.1) |
-| `--head-only` | Walk only each repo's current HEAD. **Default is ALL LOCAL BRANCHES** — the roll-up asks *"what work happened in window W"*, and **work on a sibling branch is still work.** Use only to deliberately narrow scope |
+| `--since` / `--until` | Inclusive commit-window bounds. **Pass explicit times** (`"YYYY-MM-DD 00:00:00"` / `"YYYY-MM-DD 23:59:59"`) — a bare date resolves to *now-o'clock on that date*, not midnight (§0.1); the aggregator also pins bare dates, git and the discovery probe do not |
+| `--head-only` | Walk only each repo's current HEAD. **The default is ALL LOCAL BRANCHES**; use only to deliberately narrow scope |
 | `--include-merges` | Merges are excluded by default (they would double-count the commits they merge) |
 | `--plot` | Writes `<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png` |
-| `--output` | `json` for the §3 renderer; also `console` / `csv` / `markdown` |
-| `-v` / `--debug` | Per-repo progress to stderr / full tracebacks |
+| `--output` | `json` for the §3 renderer; also `console` / `csv` |
+
+What each flag does beyond this table, and what the aggregator computes: the module docstring and `--help`.
 
 > **⚠️ `--prefer-branch-csv` was REMOVED** in the rewrite. Any wrapper still passing it will **hard-error at argparse**. Grep the slash wrapper before the next run.
 
-**Branch-agnostic by default is the whole point of the rewrite.** The old code measured `main..<branch>` — so any commit reachable from `main` sat on the **baseline side** and was **structurally uncountable, forever**. That silently ate 1,607 lines of `google/skills-distillation` (a fresh repo whose Phase-1 work went straight to main). `main..<branch>` answers a *different* question — *"how far ahead is this branch"* — which is the right tool for **PR sizing** and the wrong one for a daily roll-up. The two coincide only when all work happens to sit on the WIP branch.
-
 **Bucket on committer date, not author date.** `--since`/`--until` filter on **committer** date, so day-buckets key on `%cd` to match. Bucketing on `%ad` (author date) would let a **rebased or cherry-picked** commit land in a day-bucket *outside the very window that selected it* — and would then make the coverage guard **false-warn**. Filter-basis and bucket-basis must be the same field.
 
-**Failure handling**:
-
-| Failure | Behavior |
-|---|---|
-| `LUPIN_ROOT` unset | Hard error — the aggregator lives only in cosa, no fallback. Suggest `export LUPIN_ROOT=…` |
-| Aggregator CLI module missing | Hard error — surface with a hint about cosa-side commit status |
-| Lupin `.venv` missing | Falls through to system python3 (`.venv` is canonical post-COSA-merge) |
-| Aggregator exits non-zero | Capture stderr; surface in the abstract with any partial output |
-| A `--repos` path is not a git root | Skipped with a **named** warning — never silently dropped |
-| A repo has **no commits in the window** | Reported explicitly (*"Repos with no commits in window: …"*). **Informational, not an error** — and deliberately *visible*, so a repo you expected to see is conspicuous by its absence from the totals |
-| **Coverage reconciliation fails** | ⚠️ **WARN LOUDLY** — see Step 4 |
+**Failure handling**: the full table is Step 4 below.
 
 ---
 
@@ -391,17 +370,14 @@ The `lupin` scope is used because the aggregator's output convention writes to `
 **MUST state added AND deleted, not net alone** (Rick, 2026-07-31 — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only compresses away the churn: a net of +200 reads identically whether it was 210 added / 10 deleted or 40,210 added / 40,010 deleted, and those are very different days. State all three — added, deleted, net — every time, spoken and written alike.
 
 Examples of compliant verdicts:
-- *"Cross-repo wrap: 7 days, 3 repos, 51 thousand added, 4 thousand deleted, net plus 47 thousand."*
 - *"Today's global roll-up: light day, 310 added, 30 deleted, net plus 280, across 2 repos."*
 - *"Sprint summary: 14 days, 5 repos, 60 thousand added, 3 thousand deleted, net plus 12k."*
 
 Anti-patterns:
-- Net-only spoken line (*"net plus 47k lines"* alone) — **now non-compliant**; added/deleted must both be present
 - Recital of per-repo numbers in spoken line (belongs in abstract)
 - File paths in spoken line (TTS-hostile)
 - "No active repos" worded as if it were an error rather than informational — **but see §4.2**: a
-  zero across 40+ git roots is *suspect*, and rendering it as a calm informational result is its own
-  anti-pattern. Informational ≠ unexamined
+  zero across 40+ git roots is *suspect* (§4.2); informational ≠ unexamined
 
 ---
 
@@ -414,9 +390,10 @@ Anti-patterns:
 | `PROJECTS_ROOT` unset AND the fallback path doesn't exist | Hard error: spoken *"Roll-up failed — projects directory not found"*; abstract shows the path tried + the `export PROJECTS_ROOT=…` hint |
 | No git roots found under `PROJECTS_ROOT` | **Configuration error, not "nothing to report"** (Step 1) — a repo-less projects tree is not a real scenario |
 | Aggregator CLI module missing | Hard error: spoken *"Roll-up failed — aggregator CLI not found"*; abstract with a cosa-side status-check hint |
+| Lupin `.venv` missing | Falls through to system python3 (`.venv` is canonical post-COSA-merge) |
+| Aggregator exits non-zero | Capture stderr; surface in the abstract with any partial output |
 | A `--repos` path is not a git root | Skipped with a **named** warning in the summary — never silently dropped |
 | A repo has no commits in the window | Informational; listed explicitly. **Not** an error |
-| Wrapper passes the removed `--prefer-branch-csv` | argparse **hard-errors**. Grep the slash wrapper — the flag was deleted in the 2026-07-13 rewrite |
 | `--plot` fails but data extraction succeeded | Render the summary without the plot doc-link; plot stderr to terminal, not the abstract; **non-fatal** |
 | `notify()` call fails | Terminal output still rendered; **non-fatal** |
 
@@ -431,12 +408,7 @@ In every skip/fallback path: surface the cause + a remediation hint. **Never sil
 > **"Never silently swallow" was already in this document — but it only ever applied to ERRORS. This extends it to COVERAGE.**
 > A pipeline that cannot error is not the same as a pipeline that is correct. An under-count is the failure mode that *looks exactly like success*, which is precisely why it needs a mechanism rather than a resolution to be careful.
 
-**This is the replacement for the retired Step 1.7** — and note the difference in kind. Step 1.7 was a guard whose failure path was *"proceed as if it had passed"*; this guard's failure path is *"say so, loudly, in the output the human reads."* **A guard that degrades into its own failure mode is a comment. A guard that shouts is a guard.**
-
-**⚠️ And note what it structurally cannot catch.** §4.1 reconciles *counting* — it proves the
-aggregator counted what git says is in the window. It cannot notice that the **window itself** was
-wrong (§0.1) or that a counted commit's content was **already counted last week** (§4.3). Both sides
-of a reconciliation can be right about each other and wrong about the world.
+**⚠️ And note what it structurally cannot catch**: the window itself (§0.1) and content already counted (§4.3).
 
 ### 4.2) Zero is a claim, not a default (added 2026-08-05)
 
@@ -489,11 +461,7 @@ The cosa-side aggregator writes the consolidated CSV to:
 
 This is the durable artifact of the global rollup — analogous to the per-branch CSVs the per-repo §6 workflow writes. Persists across sessions; downstream consumers (future Phase 2 cron push routing, executive briefings, Grafana dashboards if added) read it.
 
-If `--plot` was passed, plot PNG lands at:
-
-`<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png`
-
-Both files are included in the closing `notify()` abstract as doc-viewer links.
+`--plot` also writes `<lupin>/io/loc-delta-global/global-<since>_to_<until>-plot.png`; both files are included in the closing `notify()` abstract as doc-viewer links.
 
 ---
 
@@ -503,21 +471,10 @@ Both files are included in the closing `notify()` abstract as doc-viewer links.
 - **Doc-link grammar**: `workflow/doc-viewer-links.md` — canonical URL form for the CSV + plot doc-links
 - **Recommendation Mandate** (applies to any blocking-tool ask within this workflow): `workflow/cosa-voice-integration.md § Recommendation Mandate for Blocking-Tool Asks`
 - **TTS Brevity Mandate** (for the spoken verdict): `workflow/cosa-voice-integration.md § Conversation Mode → TTS Response Brevity Mandate`
-- **Cosa companion R&D doc** (CLI implementation): `<lupin>/src/cosa/rnd/2026.05.21-cross-repo-loc-delta-aggregator-cli.md`
-- **PIP R&D doc** (design rationale, open questions, coordination): `<planning-is-prompting>/src/rnd/2026.05.21-cross-repo-loc-delta-rollup.md`
-- **Slash wrapper**: `.claude/commands/plan-loc-delta-global.md`
+- **Companion docs and the slash wrapper**: listed in the header (hub-spoke contract, lines 8-10)
 
 ---
 
 ## Version History
 
-- **2026-07-31**: **Spoken-verdict mandate now REQUIRES added/deleted alongside net, always** (Rick — *"I always want to not just see the net, I wanna see lines added versus lines deleted in addition to the net"*). Net-only was already banned from the terminal/abstract render (Step 3 has always shown Added/Deleted/Net columns); this closes the one place net-only had survived — the **spoken** line. Updated the compliant-verdict examples and the `notify()` code sample in Step 3, plus the slash wrapper's Step 5 instruction, to always state all three numbers. Net-only spoken line is now an explicit anti-pattern.
-- **2026-07-13**: **THE ROLL-UP NOW COMPUTES FROM GIT.** Three defects, one rewrite (lupin `1ccc05b5`, Mr Radio 🦉; PIP-side doc + slash wrapper by María 🌸; found while investigating Rick's *"the global roll-up discrepancy from yesterday"*).
-  **(A) `bbff93a3` — main-side churn was structurally invisible.** The per-repo analyzer measured rev-range `main..<branch>`, so **any commit reachable from `main` sat on the baseline side and could never be counted, no matter how often the roll-up re-ran.** `google/skills-distillation` — a fresh repo whose Phase-1 work went straight to main as one commit — was under-reported by **exactly 1,607 added lines** (reported +2,826 net; actual +4,433). Reconciled to the line: `git log main --numstat` = added 1,607 = the gap. Generalizes to any fresh repo, main-only repo, or repo whose WIP branch was cut *after* work landed.
-  **(B) `37a8beeb` — commit counts double-counted.** The CSV's `commits` column was a per-`(date, file_type)` unique-SHA count that the aggregator then **summed across file-type rows**; with no SHA column in the CSV this was **un-dedupable post-hoc**. Fixed structurally by holding SHA-level rows in memory.
-  **(C) Step 1.7's refresh command had NEVER been runnable.** `--branch` and `--since` were in an argparse mutually-exclusive group — the documented refresh **hard-errored on every invocation**, and Step 4 degraded that failure to *"proceed with the stale CSV."* **It failed INTO staleness, quietly.**
-  **The fix**: the aggregator runs a **date-windowed, branch-agnostic** analysis per repo (`--since --until --branches --no-merges`, `--head-only` to opt out) and de-dupes by SHA. **CSVs demote from source-of-truth to cache/artifact.** Step 1 discovery now enumerates **git roots**, not CSVs (keying on CSV freshness is what made skills-distillation invisible — a repo had to have already run session-end §6 to be *seen*). **Step 1.7 RETIRED** (epitaph kept — it is the most instructive thing in this doc). **Step 4 gains the coverage-reconciliation guard** (§4.1): counted-commits must equal `git rev-list --count` for the same window/branch-scope/date-basis, **warn LOUDLY on mismatch**. Day-buckets now key on **committer date (`%cd`)** to match the filter basis — `%ad` would let rebased/cherry-picked commits fall outside the window that selected them and **false-warn the new guard**. `--prefer-branch-csv` REMOVED (argparse hard-errors if a wrapper still passes it). Slash wrapper `.claude/commands/plan-loc-delta-global.md` updated to match.
-  **The standing lesson** — *"never silently swallow"* was already in this document, **but it only ever applied to ERRORS.** The original bug was not a crash: it was a set of numbers that were **internally consistent, confidently rendered, and quietly wrong**, because nothing in the pipeline ever asked *"is this everything?"* A guard whose failure path is *"proceed as if it had passed"* is not a guard — it is a comment. **A guard that shouts is a guard.**
-- **2026-05-30**: Accuracy fixes (TODO #23 closed). **(1) Multi-depth discovery** — Step 1 now globs three explicit patterns (`*/io/`, `*/*/io/`, `*/src/*/io/`) to catch grouping-dir repos (`google/lookml`) and nested sub-repos (`lupin/src/lupin-mobile`); both had live CSVs the old one-level glob silently dropped. Discovery now carries each repo's **absolute path** (`Path(csv).parents[2]`) through `--repos` instead of reconstructing `PROJECTS_ROOT/<name>` (which broke for non-flat layouts). A **git-root guard** (`.git` must exist) excludes in-tree dirs carrying a stale CSV (`lupin/src`, `lupin/src/cosa` post-merge) that would double-count their parent repo — caught by a disk dry-run during implementation. **(2) Venv ordering** — Step 2 PYBIN now prefers `$LUPIN_ROOT/.venv` (canonical post-COSA-merge; verified to carry cosa + matplotlib + PyYAML) then falls straight to `python3`; the stale `$LUPIN_ROOT/src/cosa/.venv` reference (a symlink to system python3 post-merge) was removed. Surfaced by María (PIP session `42a02847`), Rick-approved.
-- **2026-05-21 (evening)**: Added Step 1.5 confirmation gate (default ON, fast-path opt-out via `--no-confirm` or explicit `--repos`). Addresses Rick's UX concern: auto-discovery is lossy when a repo the user wants doesn't yet have a CSV (fresh repo, session-end §6 hasn't fired, stale mtime). Gate uses `ask_multiple_choice` with `multiSelect=True`, all discovered repos pre-checked, "Other" free-text for adding missed repos. **Critical default-on-timeout semantics** (Rick's addition): `default={"Repos": discovered_repos}` so timeout returns all-checked → rollup ships even if user is AFK. Timeout = 120 seconds. Added Step 1.5 to failure-handling table with 2 new failure modes.
-- **2026-05-21 (afternoon)**: Initial canonical workflow doc. Implements the converged Phase 1 design (PIP wrapper invoking Rachel's cosa-side aggregator CLI). Discovery: recently-active mtime heuristic (14-day window, narrowed by `--since`), PROJECTS_ROOT env var with hardcoded fallback. No INI lookup per Rick's "defer-INI-indefinitely" direction. Drafted by María (PIP session `d66169f2`); cosa-side aggregator demoed + reviewed by Rick same session.
+Full history: `docs/version-history/loc-delta-global.md`.

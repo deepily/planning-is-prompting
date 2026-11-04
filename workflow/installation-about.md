@@ -4,12 +4,7 @@
 
 **When to use**: Invoked via `/plan-about` slash command to check installation status at any time.
 
-**Key activities**:
-- Scan local .claude/commands/ directory for installed workflows
-- Extract version information from each workflow file
-- Compare local versions against canonical source
-- Generate categorized report with status indicators
-- Provide actionable next steps
+**Key activities**: the six steps below (Step 0 to Step 5); each step's Purpose line is its summary.
 
 ---
 
@@ -47,7 +42,7 @@
 
 **Output**: Project prefix, project name, installation path, canonical source path
 
-**Error handling**: If $PLANNING_IS_PROMPTING_ROOT not set, report error and suggest setting environment variable
+**Error handling**: see Error 1 below.
 
 ---
 
@@ -176,8 +171,19 @@ def compare_versions(local_ver, canonical_ver):
         return "current"
 ```
 
+**Version strings do not track content.** `pip_drift_check.py` measured 27 of 36 installed commands differing from canonical, 23 of them with an identical version string, so a matching version proves nothing about the file. Before reporting any workflow as current, run the content check and let it override the version comparison:
+
+```bash
+python3 $PLANNING_IS_PROMPTING_ROOT/workflow/scripts/pip_drift_check.py --target .claude/commands
+```
+
+Its states: `VERSION_LIES` (content differs, version matches), `STALE` (content and version both differ), `MISSING`, `SHADOW` (deliberate local override), `CURRENT`. Report `VERSION_LIES` and `STALE` as ⚠ Drifted, never as ✓ Current. Exit code 2 means nothing was measured (no `.claude/commands`, a root that is not the tree the script lives in, or a scan that read no files): report Unknown, not Current.
+
+`CURRENT` also covers a project-customized copy: one that differs from canonical only in the values the installer writes per project (the Project and Prefix lines, the directory paths, the heading, and the `src/rnd/` and `workflow/scripts/` path forms). The check renders canonical for the project the install sits in and compares bytes, so a wrong value on those lines still reads `VERSION_LIES`. In user scope (`~/.claude/commands`) there is no project to check the values against, so only the hash is compared there. The same holds for an install in a directory that is not named for its project (a git worktree of the project, or a renamed checkout) and for a path containing a space or `$`: nothing is rendered, so a healthy customized copy reads `VERSION_LIES` there. That is the safe direction, not a defect.
+
 **Status indicators**:
-- ✓ Current - Local and canonical versions match
+- ✓ Current - Local and canonical versions match AND the content check reports `CURRENT` (or `SHADOW`)
+- ⚠ Drifted - Content differs from canonical (`VERSION_LIES` or `STALE`), whatever the version strings say
 - ⚠ Update Available - Canonical version is newer
 - ⚠ Unknown - Canonical version not found
 - ⚡ Ahead - Local version is newer (dev work)
@@ -200,7 +206,6 @@ categories = {
     "Planning is Prompting Core": ["p-is-p-00-start-here", "p-is-p-01-planning", "p-is-p-02-documentation"],
     "Testing Workflows": ["plan-test-baseline", "plan-test-remediation", "plan-test-harness-update"],
     "Backup Management": ["plan-backup", "plan-backup-check", "plan-backup-write"],
-    "Workflow Development": ["plan-workflow-audit"],
     "Other": []  # Catch-all for unrecognized workflows
 }
 
@@ -282,7 +287,7 @@ def generate_status_summary(workflows):
     """Generate overall status line."""
     total = len(workflows)
     current = sum(1 for w in workflows if w.status == "current")
-    updates = sum(1 for w in workflows if w.status == "update_available")
+    updates = sum(1 for w in workflows if w.status in ( "update_available", "drifted" ))
     unknown = sum(1 for w in workflows if w.status == "unknown")
 
     if updates == 0 and unknown == 0:
@@ -365,7 +370,6 @@ To install workflows:
 
 **Handling**:
 - Parse flexible formats: "v1.0", "1.0", "Version 1.0"
-- Normalize to standard format: v1.0
 - If unparseable, display as-is with ⚠ Unknown status
 
 ---
@@ -497,5 +501,4 @@ Next steps:
 
 ## Version History
 
-- **2025.10.24**: Fixed YAML version extraction - improved algorithm to properly extract versions from both YAML frontmatter and markdown headers, added normalization to ensure consistent 'v' prefix
-- **2025.10.24**: Initial creation - installation status reporting with version comparison
+Full history: `docs/version-history/installation-about.md`.
