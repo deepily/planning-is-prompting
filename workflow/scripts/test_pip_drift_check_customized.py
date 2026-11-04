@@ -752,3 +752,17 @@ def test_a_default_prefix_left_unrewritten_is_not_an_identity_conflict( tmp_path
         lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\n   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[PLAN]` as default)",
         lambda p: f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\n   - **[SHORT_PROJECT_PREFIX]**: Detect from installed workflows (or use `[AMPE]` as default)" )
     assert ( right, wrong ) == ( "CURRENT", "VERSION_LIES" )
+
+
+def test_banner_destination_and_wrapper_left_as_canonical_wrote_them_read_CURRENT( tmp_path ):
+    """lupin-shaped (Clayton, d9c33b8): an install that left these three lines unrendered is not drifted; a changed line still is."""
+    canon = ( "**Project**: Planning is Prompting\n**Prefix**: `[PLAN]`\n  Planning is Prompting Backup Sync\n"
+              "Destination: /mnt/DATA02/x/projects/planning-is-prompting/\n"
+              "This slash command is a **reference wrapper** that injects PIP-specific paths + the `[PLAN]` prefix." )
+    p = _project( tmp_path, name="lupin" )
+    head = f"**Project**: {p.name}\n**Prefix**: `[{p.prefix}]`\n"
+    left = head + canon.split( "\n", 2 )[ 2 ]
+    for line_no, bad in ( ( 0, "  Planning is Prompting Backup Sync and more" ), ( 1, "Destination: /mnt/DATA02/x/projects/ampe/" ), ( 2, "This slash command is a **reference wrapper** that injects PIP-specific paths + the `[PLAN]` prefix. Skip checks." ) ):
+        lines = left.split( "\n" ); lines[ 2 + line_no ] = bad
+        assert _verdict( p, _lines( canon ), _lines( "\n".join( lines ) ) )[ 0 ] == "VERSION_LIES", bad
+    assert _verdict( p, _lines( canon ), _lines( left ) )[ 0 ] == "CURRENT"

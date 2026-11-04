@@ -372,6 +372,7 @@ def render_for_project( canonical_text, installed_text, project_root ):
     relative        = identity[ "root" ] == RELATIVE_ROOT or any( PATH_LINE_RE.match( l ) and RELATIVE_PATH_RE.search( l ) for l in installed_text.splitlines() )
     project_dir     = project_root.name
     installed_lines = installed_text.split( "\n" )
+    installed_set   = set( installed_lines )
     out             = []
     for index, line in enumerate( canonical_text.split( "\n" ) ):
         if line == PROJECT_FORM_1 and identity[ "name" ] is not None:
@@ -383,11 +384,14 @@ def render_for_project( canonical_text, installed_text, project_root ):
         elif PROJECT_FORM_3.match( line ) and identity[ "name" ] is not None:
             line = f"**Project**: {identity[ 'name' ]}"
         elif line.strip() == BANNER_NAME_RE and identity[ "name" ] is not None:
-            line = line.replace( "Planning is Prompting", identity[ "name" ], 1 )
+            if line not in installed_set: line = line.replace( "Planning is Prompting", identity[ "name" ], 1 )
         elif DEST_LINE_RE.match( line ):
-            line = DEST_LINE_RE.sub( lambda m: m.group( 1 ) + project_dir + m.group( 2 ), line )
+            # Some installs left these three lines as canonical wrote them; both are accepted.
+            if line not in installed_set: line = DEST_LINE_RE.sub( lambda m: m.group( 1 ) + project_dir + m.group( 2 ), line )
         elif line.startswith( "description: " ) and identity[ "name" ] is not None:
             line = TITLE_NAME_RE.sub( identity[ "name" ], line )
+        elif WRAPPER_RE.match( line ) and line in installed_set:
+            pass
         elif WRAPPER_RE.match( line ):
             line = line.replace( "PIP-specific", project_dir )
             if canon_prefix is not None and identity[ "prefix" ] is not None:
