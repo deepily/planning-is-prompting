@@ -55,7 +55,7 @@
 
 6. **Must honour the filing rule**: the **first-named** manager files and installs; the **second-named** checks at last call and files it if missing.
 
-7. **At the bell**: at last call, reach a safe checkpoint and **ACK in one line** (mandatory — it is the liveness check). At closing time, run each declared deliverable and report one line each with a receipt or a reason — **report and carry, never block**. A deliverable that starts at last call (`duplicate-check`) is started then with `closing_job.py start`, and at closing time the order is: session end → `push` → `deploy` if declared → `closing_job.py wait` → file the triage row → `backup` → summary card (`last-call.md` §5a). File any unmet deliverable as a store row.
+7. **At the bell**: at last call, reach a safe checkpoint and **ACK in one line** (mandatory — it is the liveness check). At closing time, run each declared deliverable and report one line each with a receipt or a reason — **report and carry, never block**. A deliverable that starts at last call (`duplicate-check`) is started then with `closing_job.py start`. At closing time the order is: session end → `push` → `deploy` if declared → `closing_job.py wait`. Then file the triage row → `backup` → summary card (`last-call.md` §5a). File any unmet deliverable as a store row.
 
 ---
 
