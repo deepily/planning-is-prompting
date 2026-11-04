@@ -1037,6 +1037,10 @@ gh release create [version] --target "$MERGE_SHA" --title "[version]" --notes-fi
 
 This creates the tag on the remote too, so no separate `git tag` or push is needed.
 
+### If the Command Is Refused
+
+A Claude Code session in auto mode can have `gh release create` refused (classifier reason "Create Public Surface"). Do not retry it or look for a way around. Write the exact commands into a script in the session scratchpad, ask the user by direct `ask_yes_no()` to run it in their own terminal, then confirm with `gh release list` that the release exists.
+
 ### If No (`response.startswith("no")`)
 
 Offer tag only with a second `ask_yes_no()`; on yes:
@@ -1136,6 +1140,8 @@ ask_multiple_choice(
 git checkout -b [new-branch-name]
 git push -u origin [new-branch-name]
 ```
+
+**If the command is refused**: the branch lock (`branch_guard.py`) or auto mode can refuse branch creation in a Claude Code session. Do not work around it. Write the exact commands into a script in the session scratchpad, ask the user by direct `ask_yes_no()` to run it in their own terminal, then confirm with `git branch --list [new-branch-name]`.
 
 ### Display
 

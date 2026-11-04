@@ -5,7 +5,7 @@ Moved out of `workflow/branch-pr-and-merge.md` (lines 1186-1206 at `d73f36b`) wi
 ---
 
 ## Version History
-**v1.5** (2026.11.04, Maya, store row `27046141`) - **Step 9 is now "Version Tag and Release Package".** It runs on every run and is offered, never skipped: one `ask_yes_no` offers tag + GitHub release with a notes preview, `gh release create --target <merge sha> --notes-file` on yes, tag only on no. Notes come from the README via the new `workflow/scripts/release_notes.py`. Adds a missing-releases check and a note that `gh` 2.4 needs REST calls for `pr edit` and `pr merge`. Rick's ruling, 2026-11-04.
+**v1.5** (2026.11.04, Maya, store row `27046141`) - **Step 9 is now "Version Tag and Release Package".** It runs on every run and is offered, never skipped: one `ask_yes_no` offers tag + GitHub release with a notes preview, `gh release create --target <merge sha> --notes-file` on yes, tag only on no. Notes come from the README via the new `workflow/scripts/release_notes.py`. Adds a missing-releases check and a note that `gh` 2.4 needs REST calls for `pr edit` and `pr merge`. Rick's ruling, 2026-11-04. A refused `gh release create` (auto mode) or branch creation (branch lock) now has a fallback: scratchpad script, user runs it, verify.
 
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The marker check notes the marker is written in backticks and names `workflow/entry-writing-rules.md`.
 
