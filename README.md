@@ -7,7 +7,42 @@ Read the blog post: [Faster, Better, Morer: How to 5–10x Your Code Generation 
   <img src="images/benders.png" alt="Image of Bender, before and after using a planning-first agentic code generation strategy">
 </p>
 
-## What's New in v0.1.9 (in progress)
+## What's New in v0.2.2
+
+510 commits between 2026-09-30 and 2026-11-03. The through-line: the workflows now **check the work before it is built and the record after it is written**, and the documents got shorter to make room.
+
+### 🧭 Plans are checked for reuse and imported as task rows
+
+- **[plan-review.md](workflow/plan-review.md) §4** — before a plan decides to write code, every new thing gets a reuse check and a one-line `REUSE-OUTCOME`. Each prior-art row cites a receipt from the tool; a failed lookup still counts, and there is a no-tool fallback. The same check is carried by Persona 3 (`plan-review-cascaded-personas.md`), `plan-authoring-cascaded.md` and the Implementer charter in `swe-team-roles.md`. Design and Rick's rulings: `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8
+- **[plan-stub-manifest.md](workflow/plan-stub-manifest.md)** · `plan-stub-sample.md` · `workflow/scripts/plan_stub_import.py` — every multi-phase plan ships its task stubs, imported onto the board in one run. `validate`, `import` (dry run by default), `status`, and `reconcile` for phase headings that should read done. Tests: `test_plan_stub_import.py`
+- **p-is-p-00 / 01 / 02** — owed work now lives in task-store rows and the stub manifest, not a TodoWrite list. Step checklists are optional in six workflows and gone from the command wrappers, both wizards, `bug-fix-mode.md` and `INSTALLATION-GUIDE.md`
+
+### 🔔 Last call and one-click approvals
+
+- **[last-call.md](workflow/last-call.md) §5a** — the duplicate check starts at last call and is awaited at closing time
+- **`workflow/scripts/closing_job.py`** — `start` detaches a long job, `wait` prints one receipt line, `status` peeks. The exit code is written by a wrapper after the job exits; a bad one reads `rc=unknown`. It waits on the whole job session and forwards TERM and HUP. Tests: `test_closing_job.py`
+- **[task-store-discipline.md](workflow/task-store-discipline.md) §3.2** — a held row gets a one-click approve link with a 📋 view link, built by the `task_approve_line` helper rather than typed by hand. A priority form (`[⏫ P0]`) and a batch form exist. The link goes in the notify message, not the abstract
+
+### 🧹 Cleaner records
+
+- **[entry-writing-rules.md](workflow/entry-writing-rules.md)** — how to word a `history.md` or `TODO.md` line so it passes the markdown linter. Every document that writes such a line points at it. Tests: `test_entry_writing_rules.py`
+- **[docstring-content.md](workflow/docstring-content.md)** — what a docstring keeps and where history goes instead. Post-games are now tracked in `src/docs/post-games/<version>/`
+- **Command wrappers** — 27 (lots A and B) and 14 (lot C) wrappers in `.claude/commands/` brought to 0 findings under lupin's markdown linter, and their references to files in this repo now read correctly from any repo
+
+### ✂️ Shorter documents
+
+- **`docs/version-history/`** — 60 workflow documents moved their change logs out. Each keeps its history heading and a one-line pointer
+- **Pruning passes** — checklist scaffolding, repetition inside a file and stale references cut from the install and update wizards, `bug-fix-mode.md`, the testing workflows, the cascade documents and `last-call.md`. `backup-version-check.md` was cut down to what the script does
+- **Retired** — `workflow/workflow-execution-audit.md` and the `/plan-workflow-audit` command
+
+### 🔒 Self-checks and policy
+
+- **Skeleton crew is a switch** (`skeleton-crew.md`, `manager-autonomy.md`) — no clock-hour spawn rules. A one-for-one re-spin is allowed in either mode, a bounded Claude Code job is not a spawn, and only the operator raises the fleet cap. The context tick is every 10 minutes everywhere
+- **`pip_drift_check.py`** — compares an install against the canonical copy rendered for that project, so a customized copy reads CURRENT. It refuses a foreign tree unless given `--root`, and fails when a scan reads nothing. Tests: `test_pip_drift_check_customized.py`, `test_pip_drift_check_tree.py`
+- **Smaller fixes** — `rsync-backup.sh --check-for-update` finds the canonical copy; `memento_io.py` keeps the root memento `self_respin` reads; the worktree cleanup retires the old line after a squash merge (`test_branch_pr_merge_retire_old_line.py`)
+- **Rulings now in the text** — session-end commits without asking and leaves the push to the user; the session-start menu shows at most four options
+
+## What's New in v0.1.9 (released 2026-09-30)
 
 Two months and 281 commits since v0.1.3. The through-line: the workflows stopped being only *prose to follow* and grew **mechanisms that enforce themselves**.
 
@@ -319,7 +354,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 - [**plan-review.md**](workflow/plan-review.md) - The single-reviewer plan gate. `/plan-review`
 - [**plan-review-cascaded.md**](workflow/plan-review-cascaded.md) - The multi-persona review pipeline, split into focused specs: [personas](workflow/plan-review-cascaded-personas.md) · [stage specs](workflow/plan-review-cascaded-stage-specs.md) · [input spec](workflow/plan-review-cascaded-input-spec.md) · [parallelism](workflow/plan-review-cascaded-parallelism.md) · [on-demand spawn](workflow/plan-review-cascaded-on-demand-spawn.md) · [defaults](workflow/plan-review-cascaded-defaults.md) · [common material](workflow/plan-review-cascaded-common.md). `/plan-review-cascaded`
 - [**plan-authoring-cascaded.md**](workflow/plan-authoring-cascaded.md) - The authoring counterpart: draft a plan through the same multi-persona shape. `/plan-authoring-cascaded`
-- [**plan-stub-manifest.md**](workflow/plan-stub-manifest.md) - Every multi-phase plan ships a machine-readable list of its task stubs, imported onto the board in one run and bulk-approved by the operator. Titles read `Plan N · Phase X of Y · Step X of Y`. A required handoff artifact, checked by the handoff light-review. Importer: `workflow/scripts/plan_stub_import.py` (`validate` · `import`, dry run by default · `status`).
+- [**plan-stub-manifest.md**](workflow/plan-stub-manifest.md) - Every multi-phase plan ships a machine-readable list of its task stubs, imported onto the board in one run and bulk-approved by the operator. Titles read `Plan N · Phase X of Y · Step X of Y`. A required handoff artifact, checked by the handoff light-review. Importer: `workflow/scripts/plan_stub_import.py` (`validate` · `import`, dry run by default · `status` · `reconcile`). Sample: `workflow/plan-stub-sample.md`.
 - [**post-game.md**](workflow/post-game.md) - The scaled retrospective that turns a finished run into receipt-backed learning and produces *movement* — rulings into the Decisions Log, lessons graduated into `workflow/`, open threads minted as store items. Distinct from `/plan-review` (that reviews the artifact; this reviews the run). `/plan-post-game`
 - [**provisional-mandates.md**](workflow/provisional-mandates.md) - How a directive becomes binding and how it stops being provisional. `/plan-mandate`
 - [**verify-the-subject.md**](workflow/verify-the-subject.md) - Check *what* you are looking at before reporting what it says. A fresh, correct read of the wrong thing is not a stale read — it is a misplaced one
@@ -329,7 +364,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 
 ### Executable Tooling (`workflow/scripts/`)
 
-⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 67 files — Python plus shell — of which **42 are tests** (recounted 2026-09-23; the earlier 51 / 34 had gone stale). They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
+⚠️ **This repository is no longer documentation-only.** `workflow/scripts/` holds 87 files — Python plus shell — of which **55 are tests** (recounted 2026-11-04; the earlier 67 / 42 had gone stale). They exist because of a lesson this fleet kept re-learning: *a rule that depends on remembering is not installed.*
 
 | Script | Purpose |
 |---|---|
@@ -345,6 +380,7 @@ The easiest way to install workflows is with the **interactive installation wiza
 | `worktree_hygiene_report.py` | Weekly worktree and branch census across lupin, lupin-mobile and planning-is-prompting: stale worktrees, dead registrations, merged branches left behind, unmerged branches idle over 7 days, and branches the branch guard never saw. **Report-only, silent when clean**, one card when not. Crontab: Mondays 09:00 (`# worktree-hygiene-report`). P4 of `src/rnd/2026.09.18-worktree-and-branch-cleanup-proposal.md` |
 | `doc_deploy_parity.py` | Does a canonical doc still agree with its **deployed** copy? Reports paragraphs that exist in both in *nearly* the same words — the signature of a fix that landed on one copy and not the other. Never edits either side; deployed copies are allowed to differ, so it reports for a human to rule on. Written after one stale sentence survived **five sightings** because each fix left a byte-identical copy elsewhere still reading as authoritative. 🔴 **Its own first run reported PARITY OK on the live divergence it was built for** — a substantive correction nearly doubled the paragraph and dropped character similarity to **0.50** against a 0.75 threshold, so identity is now anchored on a shared *opening* (39 chars here) rather than on overall similarity; `test_doc_deploy_parity.py` asserts both that the pair is caught **and** that similarity alone would miss it, so the anchor rule cannot be deleted without a red |
 | `doc-parity-tick.sh` | The **unattended** half of the check above — a crontab-installable runner, because `doc_deploy_parity.py` only ever ran when a human remembered to, which is the same failure mode as the rot it detects. **A clean run prints zero bytes and exits 0**; the test asserts the byte count, not "roughly quiet", because a daily tick that says *parity OK* trains its reader to skip the one that does not. Drift fires a cosa-voice `notify` with the drifted pairs in the abstract, and the finding set is fingerprinted so a standing finding awaiting a ruling stops re-alarming every morning (exit 4 = *findings stand, deliberately not re-sent*). Five exit codes, five different facts — "I could not look" (1) never shares a spelling with "nothing drifted" (0). Install line: `doc-parity-tick.sh --print-install`; it is **not** installed for you |
+| `plan_stub_import.py` | Imports a plan's stub manifest onto the board (`validate` · `import` · `status` · `reconcile`); see `workflow/plan-stub-manifest.md`. `test_plan_stub_import.py` |
 | `pip_manifest.py` · `pip_drift_check.py` | Generate the canonical command manifest; report drift between installed and canonical |
 | `mandate_census.py` | Fleet-wide dispatch and census of a mandate |
 | `sweep_verdict_guard.py` | Guards a sweep whose method is quoting the row it is checking |
