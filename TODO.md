@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-11-03 (**Session 230**, María 🌸 stable `b36bd697`). First tomorrow: the duplicate check deferred from tonight (row `30ecf5af`).
+Last updated: 2026-11-04 (**Session 231**, María 🌸 stable `d5ea4997`). First tomorrow: Rick's GPU rule in every workflow doc (row `60936c0e`); the duplicate check rerun (row `30ecf5af`) waits on it.
 
 ## 📍 Resume Here
 
@@ -376,6 +376,12 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-11-04: v0.2.2 released, and no test or job touches a GPU (rows `27046141`, `60936c0e`)
+
+- **No test or job may touch a GPU** (Rick, voice, non-negotiable): "There is no test that can touch the GPUs. They have to accept those services are partitioned and available as a service because they host LLMs and other models that we need for our daily development and testing work." This widens his 2026-11-03 unit-test ruling (lupin row `14cd7040`). Never ask to stop or free a GPU process; a saturated service is a fact the job has to handle. Row `60936c0e` puts the rule into every workflow doc, and Rick follows up on 2026-11-05.
+- **v0.2.2 is merged and released** (PR #8, releases v0.1.9 and v0.2.2). The next working branch is `wip-v0.2.3-2026.11.04-tracking-lupin`. Sessions may not create branches or releases (row `0a9b1d68`), so Rick ran both himself.
+- **The operator-attention explainer stays untracked** until Rick chooses its home (row `8dc7a84a`).
 
 ### 2026-11-03: Cheech's board, the last-call duplicate check and approve links (rows `ccea494c`, `bc975ca0`)
 
