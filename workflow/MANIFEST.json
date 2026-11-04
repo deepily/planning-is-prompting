@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T10:45:50-04:00",
+  "generated_at": "2026-11-04T10:04:40-05:00",
   "generator": "workflow/scripts/pip_manifest.py",
   "command_count": 40,
   "commands": {
@@ -76,7 +76,7 @@
       "version": "1.0"
     },
     "plan-last-call.md": {
-      "sha256": "ba99e96129c2a538971e2371405034c7aadcd134fa5ad7d88a7d3fbe9db74e63",
+      "sha256": "ad4c26c3b07ee69b419dab5027669572ef2e66dc1b98f5b0c0d5f66cce987c8a",
       "version": "1.0"
     },
     "plan-loc-delta-global.md": {
