@@ -5,6 +5,8 @@ Moved out of `workflow/branch-pr-and-merge.md` (lines 1186-1206 at `d73f36b`) wi
 ---
 
 ## Version History
+**v1.6** (2026.11.06, Clayton, store row `a29f9ccb`) - **Squash commit takes the PR title and description.** New Step 5.5 reads `squash_merge_commit_title` / `squash_merge_commit_message` and, if they are not `PR_TITLE` / `PR_BODY`, prints the one-line PATCH for the operator (the session never runs it). The REST squash line in "Older gh Builds" passes `commit_title` and `commit_message`. Step 3 says the PR description becomes the commit message, so keep it short. Motivated by an 82 KB squash message on a 50-line PR.
+
 **v1.5** (2026.11.04, Maya, store row `27046141`) - **Step 9 is now "Version Tag and Release Package".** It runs on every run and is offered, never skipped: one `ask_yes_no` offers tag + GitHub release with a notes preview, `gh release create --target <merge sha> --notes-file` on yes, tag only on no. Notes come from the README via the new `workflow/scripts/release_notes.py`. Adds a missing-releases check and a note that `gh` 2.4 needs REST calls for `pr edit` and `pr merge`. Rick's ruling, 2026-11-04. A refused `gh release create` (auto mode) or branch creation (branch lock) now has a fallback: scratchpad script, user runs it, verify.
 
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The marker check notes the marker is written in backticks and names `workflow/entry-writing-rules.md`.

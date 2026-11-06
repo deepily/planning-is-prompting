@@ -619,6 +619,8 @@ ask_multiple_choice(
 
 ### PR Template
 
+**The PR description becomes the squash commit message** (once the repo's squash setting reads `PR_BODY`, Step 5.5), so keep it short and readable: a summary and a few bullets, not a full changelog.
+
 ```markdown
 ## Summary
 [Auto-generated from branch name and history.md status]
@@ -773,6 +775,31 @@ Action: [Pushed now / Already tracked]
 **Verification**:
 - [ ] Remote tracking checked
 - [ ] Branch pushed (if needed)
+
+---
+
+## Step 5.5: Check the Squash Commit Setting
+
+**Purpose**: Make a squash merge use the PR title and description as its commit message. GitHub's default pastes in every commit message from the branch, which can produce a commit message of a thousand lines.
+
+### Check (read-only)
+
+```bash
+gh api repos/[OWNER]/[REPO] --jq '.squash_merge_commit_title, .squash_merge_commit_message'
+```
+
+- **Reads `PR_TITLE` then `PR_BODY`**: nothing to do; continue to Step 6.
+- **Anything else** (for example `COMMIT_OR_PR_TITLE` / `COMMIT_MESSAGES`): the session does **not** change it. It is a shared GitHub setting, so print this one line for the operator to run, then continue:
+
+```bash
+gh api -X PATCH repos/[OWNER]/[REPO] -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY
+```
+
+If the operator has not run it before the merge, a squash merge from the GitHub page will still paste the branch commit messages; mention that in the Step 6 display.
+
+**Verification**:
+- [ ] Both settings read
+- [ ] Operator given the PATCH line if either was wrong (never run by the session)
 
 ---
 
@@ -1071,8 +1098,12 @@ For each version merge with no release, offer the same tag + release ask above, 
 
 ```bash
 gh api -X PATCH repos/[OWNER]/[REPO]/pulls/[N] -F body=@[file]       # edit a PR body
-gh api -X PUT   repos/[OWNER]/[REPO]/pulls/[N]/merge -f merge_method=merge   # merge
+gh api -X PUT   repos/[OWNER]/[REPO]/pulls/[N]/merge -f merge_method=merge   # merge commit
+gh api -X PUT   repos/[OWNER]/[REPO]/pulls/[N]/merge -f merge_method=squash \
+  -f commit_title="[PR title] (#[N])" -F commit_message=@[PR-body-file]       # squash
 ```
+
+A scripted squash passes `commit_title` and `commit_message` explicitly, so it cannot fall back to the repo's default of pasting every branch commit message (see Step 5.5).
 
 ### Display
 
