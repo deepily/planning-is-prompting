@@ -417,7 +417,7 @@ The five conventions: (1) optional working-contract document, (2) decision-ancho
    - `:8000 (scheduled)` — integration, E2E UI, destructive smoke. Submit via API, never via curl.
    - `Live API probe` — AI-executed against `:7999`.
 3. **User-involvement gate** — exhaustive enumeration of what requires human input. *"The user's involvement is gated to N things and ONLY these N things."* Typical: design decisions, slot confirmation for shared resources, genuine human-judgment calls (visual UX, copy tone). Anything else is a violation.
-4. **Cannot-execute rule** — *"If the AI cannot execute a verification step, it must name the specific blocker (e.g., 'needs GPU') and ASK — not skip, not defer, not declare done."*
+4. **Cannot-execute rule** — *"If the AI cannot execute a verification step, it must name the specific blocker (e.g., 'needs the staging database'; never 'needs a free GPU', because no test or job touches a GPU, see `testing-baseline.md` § no test or job touches a GPU) and ASK — not skip, not defer, not declare done."*
 5. **Phase-complete definition** — two observable conditions: every checkbox `[x]` with executed-and-reported evidence, AND commit hash filed. Anything less = contract violation.
 
 **Example from CJ Flow** (Lupin v0.1.7): see `<lupin>/src/rnd/v0.1.7/2026.04.23-cj-flow-async-multi-lane/00-working-contract.md` — 47 lines, every line load-bearing.

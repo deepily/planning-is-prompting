@@ -1,5 +1,7 @@
 # Testing Remediation Workflow
 
+> **GPU rule**: no test or job touches a GPU; GPU-hosted models are used only through their services, and a saturated service is handled, never freed. See `testing-baseline.md` § no test or job touches a GPU.
+
 > **Test Ownership**: This workflow is invoked by Claude, not requested from the human. Per the TEST OWNERSHIP MANDATE (`~/.claude/CLAUDE.md` → TESTING & INCREMENTAL DEVELOPMENT), testing the pyramid is Claude's responsibility; the human is a designer/user, not a tester. Scope decisions within this workflow are Claude's to make via change-impact analysis.
 
 **Purpose**: Verify system health after changes, identify regressions, systematically remediate issues

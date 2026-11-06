@@ -356,8 +356,10 @@ Specifically flag:
   reframed as an AI assertion or an explicitly justified HUMAN step
 - Any "Expected:" / "Confirm:" clause that reads like a user checklist
   rather than an AI assertion with a specific pass/fail criterion
-- Any verification step the AI couldn't actually execute (requires GPU,
-  requires a UI click, requires privileged access) — flag these even if
+- Any verification step the AI couldn't actually execute (requires a UI click,
+  requires privileged access); also flag any step that needs a free GPU, because no test or
+  job touches a GPU (`testing-baseline.md` § no test or job touches a GPU), so the step must go
+  through the model service instead — flag these even if
   tagged EXECUTOR: AI, because the tag is a lie if execution is impossible
 - Any place where sign-off is punted to the user without first requiring
   the AI to produce and report evidence

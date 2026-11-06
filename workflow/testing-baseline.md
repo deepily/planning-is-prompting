@@ -12,6 +12,24 @@
 
 ---
 
+## ⛔ MANDATE — no test or job touches a GPU (the canonical rule)
+
+> Rick, 2026-11-04: *"There is no test that can touch the GPUs. They have to accept those services are partitioned and available as a service because they host LLMs and other models that we need for our daily development and testing work. That is non-negotiable."*
+
+GPU-hosted models are a **shared service**, not a resource a test or job can claim. Every other document in this repo that mentions a GPU cites this section instead of restating it.
+
+| Do | Never |
+|---|---|
+| Reach GPU-hosted models only through their services (the model server, the vLLM endpoint) | Claim, reserve, or load a model onto a GPU directly |
+| Treat a saturated or out-of-memory service as a **fact** the test or job handles: fail fast with a clear message, or degrade (skip the judged step, use a smaller model, mark the result partial) | Free, re-pin, or restart anything to make room: kill or stop a GPU process, or ask Rick or any peer to |
+| Name the saturation in the failure message: which service, what it reported | Write a failure message or a "blocked" note that suggests freeing a GPU |
+
+**Consequences for plans:** "needs a free GPU" is never an acceptable blocker to name in a plan, a verification step, or a cannot-execute report. A step that cannot run without one is redesigned to go through the service, or recorded as not run with the service's own error.
+
+**Origin:** 2026-11-04, a daily duplicate check ran 80 minutes and failed because the model server was out of CUDA memory; the seat then asked Rick to stop his vLLM server so it could rerun. Row `60936c0e`.
+
+---
+
 ## ⛔ MANDATE — a tmux-invoking test MUST land WITH the tmux-isolation guard
 
 **This repo has no tmux-touching pytest surface today. The first one to land is the hazard — and it must not land alone.**

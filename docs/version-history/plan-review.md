@@ -5,6 +5,7 @@ Moved out of `workflow/plan-review.md` (lines 444-449 at `d73f36b`) without chan
 ---
 
 ## Version History
+**v+** (2026.11.06, Rachel, row `60936c0e`) - Review checklist: flag any step that needs a free GPU; cites `testing-baseline.md`.
 
 - **2026.11.02 (María 🌸, Rick's rulings of 2 Nov via Cheech, design `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8, row `3d11c8b3`)**: Section 4 runs the reuse check before a plan decides to write new code: the tool call, the plain-text search every time with the agent's own terms, and the source read. It teaches reading the answer (a shortlist entry is a lead; "uncertain" never means nothing exists), adds the `REUSE-OUTCOME` line with its `excluded` and `unindexed` tokens, and says the check is required where an outcome checker is installed. The vocabulary table drops `NEW`, which lupin's tool stopped returning on 24 Oct, and gains an outcome-line column.
 - **2026.10.14 (Sam, lupin decision row `1f56717c`, Rick's ruling the same day)**: Section 4's pre-pass requires a receipt for every row. The prompt table gains a Receipt column, a row with no receipt is challenged, and a repo with no reuse tool writes "no receipt: tool not installed". The three-vocabulary table now sits beside the prompt, copied from lupin's reuse-reviewer skill, so a receipt needs no translation. `/plan-review-reuse` stays unbuilt.

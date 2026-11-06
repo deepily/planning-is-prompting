@@ -5,6 +5,7 @@ Moved out of `workflow/p-is-p-02-documenting-the-implementation.md` (lines 1210-
 ---
 
 ## Version History
+**v+** (2026.11.06, Rachel, row `60936c0e`) - Cannot-execute rule: the example blocker is no longer 'needs GPU'; a free GPU is never an acceptable blocker. Cites `testing-baseline.md`.
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
 
 

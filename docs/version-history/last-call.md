@@ -5,6 +5,7 @@ Moved out of `workflow/last-call.md` (lines 261-269 at `d73f36b`) without change
 ---
 
 ## Version history
+**v+** (2026.11.06, Rachel, row `60936c0e`) - Section 5a: a started-at-last-call job never touches a GPU or asks anyone to free one; cites `testing-baseline.md`.
 
 - **1.4 (2026-11-03, Maya for María 🌸 — row `ccea494c`, Rick's rulings of 13:15, 15:30 and 17:20)** — A second kind of deliverable: *started at last call, awaited at closing time* (§5a), with the fixed closing sequence session end → `push` → `deploy` → wait for the check → file the triage row → `backup` → summary card. `wait` keeps waiting past the closing time and reports `overrun`; a failure or overrun goes on the receipt. The `duplicate-check` slot joins the §11 binding table, bound for lupin with a lead of at least 40 minutes. Each run files one P1 triage row (owner and accountable `cheech`, chase 10:00 next morning, key `epic:v022-reuse-remediation`) or none when there are no findings; the triage seat records one `DUPCHECK-VERDICT` line per finding. New helper `workflow/scripts/closing_job.py` with `test_closing_job.py`.
 

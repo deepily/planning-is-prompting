@@ -5,6 +5,7 @@ Moved out of `workflow/testing-harness-update.md` (lines 948-968 at `d73f36b`) w
 ---
 
 ## Version History
+**v+** (2026.11.06, Rachel, row `60936c0e`) - One-line GPU rule pointer to `testing-baseline.md`.
 
 **Version 1.4** (2026.10.10)
 - Stale references (row `735e312f`, C1 to C4): the new-files list matches the changed-files list (`rb`, `cpp`, `c`, `h` included); a critical component maps to priority CRITICAL (the framework's P1); `REQUIRES_INTEGRATION` is set per component from the config instead of fixed `false`, so the integration-gap lines can fire; Step 4.1 decides "outdated" from the commit time, as 4.2 does.

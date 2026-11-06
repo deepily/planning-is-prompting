@@ -492,6 +492,10 @@ The human collaborator is the **designer and user** of the software — NOT the 
 
 **Why**: the designer's time is the scarce resource. A change is "done" when tests pass at every applicable tier, not when it compiles — the py_compile floor is a prerequisite, not a substitute.
 
+### NO TEST OR JOB TOUCHES A GPU
+
+GPU-hosted models are a shared service. Tests and jobs reach them only through their services, and a saturated service is a fact to handle (fail fast or degrade). **Never** claim, free, re-pin or ask anyone to stop a GPU process. Canonical: planning-is-prompting → workflow/testing-baseline.md § no test or job touches a GPU.
+
 ### Quick Reference
 
 | Tier | Purpose | Speed | Location |
