@@ -60,7 +60,7 @@ That second check is the redundancy. A missing schedule looks exactly like a qui
 
 **At closing time** — run each declared deliverable in the declared order. Run it → produce a **receipt** (sha, test-run id, path, exit code — not a claim) → report one line: deliverable · done/not-done · receipt or reason.
 
-**Closing time never waits** (Rick, 2026-11-07, row `daac3b86`). A job still running at closing time is stopped and recorded as an overrun; the closing sequence is session end → `push` → `deploy` if declared → `backup` → the summary card. The duplicate check is not a last-call deliverable: it runs from a weekday-morning cron in the repo that owns it. See `workflow/last-call.md` §5a.
+**Closing time never waits** (Rick, 2026-11-07, row `daac3b86`). A job still running at closing time is stopped and recorded as an overrun; the closing sequence is session end → `push` → `deploy` if declared → `backup` → the summary card. The duplicate check is not a last-call deliverable: it runs from a morning cron, every day the server is on, in the repo that owns it. See `workflow/last-call.md` §5a.
 
 🔴 **Every declared deliverable gets a line, including the ones you could not do.** Report and carry, never block — and file the unmet one as a store row so it is owed work somebody can see tomorrow.
 

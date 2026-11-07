@@ -86,7 +86,7 @@ For each participant, for each declared deliverable, **in the declared order**:
 
 **Closing time never waits** (Rick, 2026-11-07, row `daac3b86`). Lights-out means the server goes off, so nothing may run past the closing time. A job still running when closing time arrives is **stopped and recorded as an overrun** on its receipt, and the unmet deliverable becomes a store row under §8. This replaces the 2026-11-03 ruling that lights-out waits for a run to finish.
 
-**The duplicate check is not a last-call deliverable.** It runs from a weekday-morning cron in the repo that owns it, so it is no longer a slot in §11 and last call starts nothing for it. The closing sequence is only the declared deliverables in declared order: session end → `push` → `deploy`, if declared → `backup` → the summary card, which is Rick's signal that it is safe to power down.
+**The duplicate check is not a last-call deliverable.** It runs from a morning cron, every day the server is on, in the repo that owns it, so it is no longer a slot in §11 and last call starts nothing for it. The closing sequence is only the declared deliverables in declared order: session end → `push` → `deploy`, if declared → `backup` → the summary card, which is Rick's signal that it is safe to power down.
 
 **A job a deliverable runs never touches a GPU directly and never asks anyone to free one** (`testing-baseline.md` § no test or job touches a GPU): when a model service it calls is saturated, the job fails fast or degrades, and its failure message names the service and says nothing about freeing a GPU. The duplicate check's fail-fast on a saturated model server is lupin row `d4fce2bb`, not this document's work.
 
