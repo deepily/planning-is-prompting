@@ -420,6 +420,20 @@ def test_an_orphan_line_with_no_schedule_pokes_nobody_and_removes_itself( isolat
     assert live_lines( isolate ) == []
 
 
+def test_a_line_whose_log_folder_is_gone_still_runs_so_the_orphan_sweep_can_fire( isolate ):
+    """The shell opens `>> log` before python starts; a vanished folder used to kill the line silently."""
+    import subprocess, datetime
+    stub   = isolate[ "tmp" ] / "stub.py"
+    marker = isolate[ "tmp" ] / "ran.marker"
+    stub.write_text( f"open( {str( marker )!r}, 'w' ).write( 'ran' )\n", encoding="utf-8" )
+    log    = isolate[ "tmp" ] / "gone" / "deeper" / "last-call-x.log"
+    line   = lc.build_line( ROW, "wrap", datetime.datetime( 2026, 9, 29, 22, 40 ), stub, log )
+    command = line.split( " * ", 1 )[ 1 ].rsplit( " # last-call-", 1 )[ 0 ]
+    assert not log.parent.exists()
+    subprocess.run( [ "bash", "-c", command ], check=False )
+    assert marker.exists(), "the line never reached python: its log folder was gone"
+
+
 # ── status ───────────────────────────────────────────────────────────────────────────────────────
 
 def test_status_reports_the_schedule_and_the_live_row_state( isolate ):
@@ -676,7 +690,7 @@ def test_the_cron_line_names_its_interpreter():
     """A line that opens with the script path depends on a mode bit. This one does not."""
     line = lc.build_line( ROW, "wrap", datetime.datetime( 2026, 9, 23, 22, 45 ),
                           Path( "/x/last_call.py" ), Path( "/x/t.log" ) )
-    assert line.split( None, 5 )[ 5 ].startswith( "python3 /x/last_call.py fire " )
+    assert line.split( " && ", 1 )[ 1 ].startswith( "python3 /x/last_call.py fire " )
 
 
 def test_the_installed_cron_command_runs_verbatim( isolate, monkeypatch ):
@@ -799,7 +813,7 @@ def test_the_cron_line_quotes_a_value_and_escapes_cron_s_percent():
     line = lc.build_line( ROW, "wrap", datetime.datetime( 2026, 9, 23, 22, 45 ),
                           Path( "/x/last_call.py" ), Path( "/x/t.log" ),
                           [ ( "LUPIN_ROOT", "/a b/lupin" ), ( "LAST_CALL_OPERATOR", "50%@x" ) ] )
-    command = line.split( None, 5 )[ 5 ]
+    command = line.split( " && ", 1 )[ 1 ]
     assert command.startswith( "LUPIN_ROOT='/a b/lupin' LAST_CALL_OPERATOR=50\\%@x python3 /x/last_call.py fire " )
 
 

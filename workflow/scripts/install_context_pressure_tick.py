@@ -17,6 +17,10 @@ read), NOT by the persona of whoever booted. Two consequences, both deliberate:
   - it does not race persona allocation — at SessionStart this session's own persona may not be
     assigned yet, and a hook that reads a half-written bridge would install the wrong seat's line.
 
+ONE SHARED LINE (row 899e9333, 2026-11-07). The tick checks the whole fleet and delivers to each over-budget
+seat and its inferred manager, so it installs ONE line tagged `slot-fleet-<hex>`, not one per manager. Old
+per-persona lines are orphans and are swept one per run.
+
 WHAT IT WILL NOT DO. It never edits or reorders a line: a manager already carrying a tick keeps the
 exact line they have, suffix and all. A line it does not recognize as its own is not touched under
 any circumstances.
@@ -76,6 +80,7 @@ DEFAULT_TICK     = Path( __file__ ).resolve().parent / "context-pressure-tick.sh
 DEFAULT_LOG_DIR  = Path( os.environ.get( "TMPDIR", "/tmp" ) ) / f"claude-{os.getuid()}"
 ROSTER_KEY_RE    = re.compile( r"^\s*(?:export\s+)?COSA_VOICE_MANAGERS__([A-Z0-9_]+)\s*=\s*(.+?)\s*$" )
 SLOT_TAG_PREFIX  = "slot-"
+SHARED_KEY       = "fleet"
 
 # The ONLY shape this script will delete. The tag must be the line's trailing comment and the suffix
 # must be the 8 hex characters slot_for_key issues. Anything else — an unadorned cron line, a job
@@ -533,16 +538,19 @@ def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
     taken   = taken_offsets( current )
     missing = []
 
-    for name, _proj in managers:
-        key = canonical_persona_key( name )
-        if has_line_for( current, key ):
-            report.append( f"context tick: {name} already installed" )
+    # ONE SHARED TICK, NOT ONE PER MANAGER (row 899e9333). The sensor read is fleet-wide and the tick
+    # already DMs each over-budget seat and its inferred manager, with one shared send ledger, so a
+    # line per manager ran the same whole-fleet check five times. A non-empty roster means "the
+    # fleet has managers, so it needs the tick"; the roster no longer decides how many lines exist.
+    if managers:
+        if has_line_for( current, SHARED_KEY ):
+            report.append( "context tick: shared fleet tick already installed" )
         else:
-            offset = pick_offset( key, taken )
+            offset = pick_offset( SHARED_KEY, taken )
             taken.add( offset )
-            missing.append( ( name, key, offset ) )
+            missing.append( ( "the fleet", SHARED_KEY, offset ) )
 
-    rostered = { canonical_persona_key( name ) for name, _proj in managers }
+    rostered = { SHARED_KEY } if managers else set()
     orphans  = find_orphans( current, rostered )
     doomed   = orphans[ :MAX_REMOVALS_PER_RUN ]
     for _index, key in orphans[ MAX_REMOVALS_PER_RUN: ]:

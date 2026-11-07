@@ -254,6 +254,15 @@ for seat in seats:
 if blind:
     print( f"  (not judgeable this tick, null reading: {', '.join( blind )} — printed, not delivered on)" )
 
+# UNRESOLVED IS SAID OUT LOUD, EVERY TICK (row 899e9333). One shared tick watches the whole fleet, so a
+# seat with no inferable manager (a hand-started `cc-tmux-session-<hash>` seat, or a manager's own seat)
+# is not "someone else's worker" — it gets the seat DM and the operator notify, and NO manager DM. Listing
+# them here means the gap is visible on a quiet day, not first discovered on the day one goes over budget.
+unresolved = [ s_[ "label" ] for s_ in seats
+               if resolve_manager( s_[ "row" ].get( "tmux_session" ), personas ) is None ]
+if unresolved:
+    print( f"  (manager unresolved, so an alarm reaches the seat and the operator only: {', '.join( unresolved )})" )
+
 # SAY OUT LOUD HOW MANY SEATS THIS READING DOES NOT COVER, so "all within budget" can never quietly
 # mean "all the ones I could see" (María, 2026-08-17).
 #

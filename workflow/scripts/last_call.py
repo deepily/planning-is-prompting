@@ -363,7 +363,11 @@ def build_line( row_id, stage, when, script, log, env=() ):
     # cron turns an unescaped % into a newline, so it is escaped after the shell quoting
     values = [ ( k, shlex.quote( v ).replace( "%", "\\%" ) ) for k, v in env ]
     prefix = "".join( f"{k}={v} " for k, v in values )
+    # The shell opens the `>> log` redirect BEFORE python starts. If the log folder is gone (a /tmp
+    # sweep, a reboot) the redirect fails, python never runs, and the orphan sweep in fire() never
+    # gets the chance — 2026-09-29 lines survived that way. mkdir -p first keeps the folder alive.
     return ( f"{when.minute} {when.hour} {when.day} {when.month} * "
+             f"mkdir -p {shlex.quote( str( Path( log ).parent ) )} && "
              f"{prefix}{CRON_INTERPRETER} {script} fire --row {row_id} --stage {stage} >> {log} 2>&1 "
              f"# last-call-{slug}-{stage}" )
 

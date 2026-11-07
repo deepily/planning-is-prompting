@@ -149,7 +149,7 @@ never the installation.
 ⇒ **The durable half raises the alarm AND puts it in front of somebody; a live session does the
 work.** Install both.
 
-**Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo; its header says what it prints, who it DMs and when it exits non-zero. One line per manager, on your own slot:
+**Ready to install** — `workflow/scripts/context-pressure-tick.sh` in this repo; its header says what it prints, who it DMs and when it exits non-zero. **One shared line for the whole fleet** (`slot-fleet-<hex>`); the installer writes it, so a manager no longer adds a line of their own. The tick reads the fleet-wide sensor once and DMs each over-budget seat and its inferred manager. A seat with no inferable manager is listed every tick as `manager unresolved` and gets the seat DM and the operator notify only; a null reading is listed as not judgeable:
 
 ```cron
 5,15,25,35,45,55 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh
@@ -172,15 +172,14 @@ run the install by hand on some previous day — which is a rule, and rules get 
 
 **THE OBLIGATION — every manager-role session, at session-start, as a reflex:**
 
-1. **Check for your own entry**: `crontab -l | grep context-pressure-tick`.
-2. **If yours is absent, add it** — one line, your own stagger slot, tagged with a comment naming
-   your persona so the entries stay attributable:
+1. **Check for the shared entry**: `crontab -l | grep context-pressure-tick` should show exactly one `slot-fleet-` line.
+2. **If it is absent, run the installer** (`install_context_pressure_tick.py`), or add the one line by hand:
    ```cron
-   3,13,23,33,43,53 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh >> /tmp/context-pressure-tick-<persona>.log 2>&1 # slot-<persona>-<session8>
+   3,13,23,33,43,53 * * * * /path/to/planning-is-prompting/workflow/scripts/context-pressure-tick.sh >> /tmp/context-pressure-tick-fleet.log 2>&1 # slot-fleet-<hex>
    ```
 3. **Verify it fires** — read the log after the next slot time. An entry that exists and never runs
    is worse than none, because it reads as covered.
-4. **Stagger by persona** so ticks do not collide. A minute apart is enough.
+4. **Per-persona lines are retired**: the installer sweeps a leftover `slot-<persona>-` line, one per run.
 
 **This is not a gate and needs nobody's permission** — it sits inside the standing spawn/harvest
 envelope. It is a *reflex*, like pushing a provisional session topic at boot.

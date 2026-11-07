@@ -86,10 +86,11 @@ def test_missing_roster_is_tolerated_not_fatal( bed, tmp_path ):
 
 # ── the installer's actual job ──────────────────────────────────────────────────────────────────
 
-def test_first_run_installs_one_line_per_manager( bed ):
+def test_first_run_installs_one_shared_line_however_many_managers( bed ):
     code, _ = run( bed )
     assert code == 0
-    assert len( tick_lines( bed ) ) == 3
+    assert len( tick_lines( bed ) ) == 1
+    assert "slot-fleet-" in tick_lines( bed )[ 0 ]
 
 
 def test_second_run_adds_nothing( bed ):
@@ -101,9 +102,9 @@ def test_second_run_adds_nothing( bed ):
     assert all( "already installed" in l or "no managers" in l for l in report )
 
 
-def test_a_hundred_runs_still_leave_one_line_each( bed ):
+def test_a_hundred_runs_still_leave_one_line( bed ):
     for _ in range( 100 ): run( bed )
-    assert len( tick_lines( bed ) ) == 3
+    assert len( tick_lines( bed ) ) == 1
 
 
 def test_an_existing_line_with_a_different_suffix_still_counts_as_installed( bed ):
@@ -113,11 +114,11 @@ def test_an_existing_line_with_a_different_suffix_still_counts_as_installed( bed
     the script exists to prevent. Match on the prefix and her hand-written line is left alone.
     """
     bed[ "crontab" ].write_text(
-        "3,13,23,33,43,53 * * * * /somewhere/context-pressure-tick.sh # slot-maria-76647e20\n",
+        "3,13,23,33,43,53 * * * * /somewhere/context-pressure-tick.sh # slot-fleet-76647e20\n",
         encoding="utf-8" )
 
     run( bed )
-    maria = [ l for l in tick_lines( bed ) if "slot-maria-" in l ]
+    maria = [ l for l in tick_lines( bed ) if "slot-fleet-" in l ]
     assert len( maria ) == 1
     assert "76647e20" in maria[ 0 ], "the hand-written line was replaced instead of respected"
 
@@ -133,22 +134,22 @@ def test_a_crontab_with_no_trailing_newline_does_not_glue_lines_together( bed ):
     run( bed )
     lines = bed[ "crontab" ].read_text( encoding="utf-8" ).splitlines()
     assert lines[ 0 ] == "0 4 * * * /usr/local/bin/backup.sh"
-    assert len( tick_lines( bed ) ) == 3
+    assert len( tick_lines( bed ) ) == 1
 
 
 def test_a_commented_out_line_does_not_count_as_installed( bed ):
     """A commented line is not a monitor — cron never runs it, so the seat is uncovered."""
-    bed[ "crontab" ].write_text( "# 3,13 * * * * /somewhere/tick.sh # slot-maria-76647e20\n",
+    bed[ "crontab" ].write_text( "# 3,13 * * * * /somewhere/tick.sh # slot-fleet-76647e20\n",
                                  encoding="utf-8" )
     run( bed )
-    assert len( [ l for l in tick_lines( bed ) if "slot-maria-" in l ] ) == 1
+    assert len( [ l for l in tick_lines( bed ) if "slot-fleet-" in l ] ) == 1
 
 
 def test_dry_run_writes_nothing( bed ):
     code, report = run( bed, dry_run=True )
     assert code == 0
     assert not bed[ "crontab" ].exists() or tick_lines( bed ) == []
-    assert sum( "WOULD add" in l for l in report ) == 3
+    assert sum( "WOULD add" in l for l in report ) == 1
 
 
 # ── the line itself ─────────────────────────────────────────────────────────────────────────────
@@ -190,20 +191,9 @@ def test_a_persona_keeps_its_slot_when_nothing_contests_it( bed ):
 
 
 def test_offsets_already_in_the_crontab_are_respected( bed ):
-    """
-    An existing tick line at minute 7 must not be collided with by a new install.
-
-    The persona here is ROSTERED on purpose. Since the script started reconciling, a tagged line for
-    someone off the roster is an orphan and gets swept — so "an unrelated tick line that survives"
-    is no longer a thing that exists, and testing offset-avoidance with one would test the sweep.
-    """
-    bed[ "crontab" ].write_text(
-        "7,17,27,37,47,57 * * * * /somewhere/tick.sh # slot-tiberius-11112222\n", encoding="utf-8" )
-    run( bed )
-    minutes = [ first_minute( l ) for l in tick_lines( bed ) ]
-    assert len( set( minutes ) ) == len( minutes )
-    assert 7 in minutes  # the pre-existing one is still there, unmoved
-
+    """The shared line must not land on a minute another tick line already holds."""
+    own = inst.slot_for_key( "fleet" )[ 0 ]
+    assert inst.pick_offset( "fleet", { own } ) != own
 
 def test_all_ten_slots_taken_still_installs( bed ):
     """Doubling up beats going unwatched — the eleventh manager gets a monitor, not silence."""
@@ -217,10 +207,10 @@ def test_the_line_fires_six_times_an_hour( bed ):
     assert all( 0 <= int( m ) < 60 for m in minutes )
 
 
-def test_each_manager_gets_their_own_log_file( bed ):
+def test_the_shared_tick_has_one_log_file( bed ):
     run( bed )
     logs = { l.split( ">>" )[ 1 ].split()[ 0 ] for l in tick_lines( bed ) }
-    assert len( logs ) == 3
+    assert len( logs ) == 1 and "context-pressure-tick-fleet.log" in next( iter( logs ) )
 
 
 # ── failure modes stay distinguishable ──────────────────────────────────────────────────────────
@@ -339,18 +329,16 @@ def test_the_second_orphan_goes_on_the_next_run( bed ):
     assert bed[ "announced" ] == [ "tiberius", "rachel" ]
 
 
-def test_a_newly_rostered_manager_gets_a_line_added( bed ):
-    """The add half still works, and works in the same run as a removal."""
+def test_a_newly_rostered_manager_adds_no_line( bed ):
+    """One shared tick: the roster says whether the fleet needs it, not how many lines exist."""
     bed[ "crontab" ].write_text( ORPHAN_RACHEL + "\n", encoding="utf-8" )
     run( bed )
 
     bed[ "roster" ].write_text( ROSTER + 'COSA_VOICE_MANAGERS__LOOKML="Sam"\n', encoding="utf-8" )
     _code, report = run( bed )
 
-    assert any( "INSTALLED for Sam" in l for l in report )
-    assert len( [ l for l in tick_lines( bed ) if "slot-sam-" in l ] ) == 1
-    assert len( tick_lines( bed ) ) == 4
-
+    assert not any( "INSTALLED" in l for l in report )
+    assert len( tick_lines( bed ) ) == 1
 
 def test_a_commented_out_orphan_is_left_alone( bed ):
     """cron never runs it, so it is not a monitor — deleting it would be churn, not reconciliation."""
