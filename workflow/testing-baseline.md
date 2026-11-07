@@ -26,6 +26,8 @@ GPU-hosted models are a **shared service**, not a resource a test or job can cla
 
 **Consequences for plans:** "needs a free GPU" is never an acceptable blocker to name in a plan, a verification step, or a cannot-execute report. A step that cannot run without one is redesigned to go through the service, or recorded as not run with the service's own error.
 
+**Out of scope:** operator-driven training that Rick runs himself after hours (in lupin, `src/cosa/training/peft_trainer.py`, which starts and stops its own vLLM server) is neither a test nor a job, and a seat never starts it. Ruling recorded on lupin row `d4fce2bb`, 2026-11-07.
+
 **Origin:** 2026-11-04, a daily duplicate check ran 80 minutes and failed because the model server was out of CUDA memory; the seat then asked Rick to stop his vLLM server so it could rerun. Row `60936c0e`.
 
 ---
