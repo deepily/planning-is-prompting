@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-closing_job.py — start a long job at last call, wait for it at closing time (workflow/last-call.md).
+closing_job.py — start a long job, wait for it up to a deadline, stop it at the deadline (workflow/last-call.md).
 
 Generic on purpose: it knows nothing about what the job is. The job's command, its working
 directory, and where it leaves result files are all arguments.
@@ -12,13 +12,16 @@ directory, and where it leaves result files are all arguments.
 start   Detaches the job in its own session, so it outlives the seat's shell. The job runs under a
         small shell wrapper that writes the job's exit code to a file AFTER the job exits, so the
         code on the receipt is read, never guessed.
-wait    Never returns while the job runs. Prints ONE receipt line, appends one JSONL ledger line
-        (so the lead time can be re-measured), and exits with the receipt's status code.
+wait    Waits for the job until the deadline. At the deadline a job still running is STOPPED (TERM to
+        every process in its session, KILL after a short grace) and the receipt says `overrun` with
+        `stopped-at-deadline`: closing time never waits (Rick, 2026-11-07). Without a deadline it waits
+        for the job. Prints ONE receipt line, appends one JSONL ledger line, and exits with the
+        receipt's status code.
 status  Prints the receipt-shaped state without waiting.
 
 Receipt statuses and the wait exit code:
-    ok 0 · failed 1 · guard-refused 3 (job rc 3) · overrun 5 (finished past the deadline, rc 0)
-    · not-started 6.
+    ok 0 · failed 1 · guard-refused 3 (job rc 3) · overrun 5 (stopped at the deadline, or finished
+    past it with rc 0) · not-started 6.
 A job that fails or is refused AND finishes past the deadline keeps its failure status and adds
 the field `past-deadline`.
 
@@ -26,17 +29,19 @@ Job rc mapping: 0 ok, 3 guard-refused, anything else failed. A job killed before
 write its code, or an rc file that is blank or not a number, is `failed` with rc `unknown`, never a guessed number.
 
 The job counts as running while ANY process in its session is alive, so killing the wrapper (even with
-SIGKILL) does not end the wait. TERM and HUP sent to the wrapper are forwarded to the job's whole process group.
+SIGKILL) does not end the wait; stopping at the deadline signals every process in the session. TERM and HUP sent to the wrapper are forwarded to the job's whole process group.
 
 Environment (no __file__ chains):
     LAST_CALL_STATE_DIR   state + ledger root (default ~/.claude/last-call)
     CLOSING_JOB_POLL      seconds between liveness checks in `wait` (default 2)
+    CLOSING_JOB_GRACE     seconds between TERM and KILL when stopping at the deadline (default 5)
 """
 
 import argparse
 import datetime
 import json
 import os
+import signal
 import subprocess
 import sys
 import time
@@ -99,6 +104,43 @@ def session_alive( sid ):
             continue
         if fields[0] != "Z" and fields[3] == str( sid ): return True
     return False
+
+
+def session_pids( sid ):
+    """
+    Ensures:
+        - returns the pids of the live (non-zombie) processes in session `sid`, read from /proc
+    """
+    pids = []
+    for entry in Path( "/proc" ).iterdir():
+        if not entry.name.isdigit(): continue
+        try:
+            fields = ( entry / "stat" ).read_text().rsplit( ")", 1 )[1].split()
+        except ( FileNotFoundError, ProcessLookupError ):
+            continue
+        if fields[0] != "Z" and fields[3] == str( sid ): pids.append( int( entry.name ) )
+    return pids
+
+
+def stop_job( state, grace=5.0, poll=0.05 ):
+    """
+    Requires:
+        - state is the dict returned by start()
+    Ensures:
+        - TERM goes to every process in the job's session; any still alive after `grace` seconds get KILL
+        - returns True if the session is empty on return
+    """
+    for pid in session_pids( state["pid"] ):
+        try: os.kill( pid, signal.SIGTERM )
+        except ProcessLookupError: pass
+    give_up = time.time() + grace
+    while time.time() < give_up and session_alive( state["pid"] ): time.sleep( poll )
+    for pid in session_pids( state["pid"] ):
+        try: os.kill( pid, signal.SIGKILL )
+        except ProcessLookupError: pass
+    give_up = time.time() + 5
+    while time.time() < give_up and session_alive( state["pid"] ): time.sleep( poll )
+    return not session_alive( state["pid"] )
 
 
 def is_running( state ):
@@ -213,19 +255,21 @@ def read_result( path ):
     return summary
 
 
-def build_receipt( name, state, rc, finished_ts, deadline, result ):
+def build_receipt( name, state, rc, finished_ts, deadline, result, stopped=False ):
     """
     Requires:
         - state is None only for a job that was never started
     Ensures:
-        - returns the receipt dict: name, status, rc, elapsed, past_deadline, plus the result summary
+        - returns the receipt dict: name, status, rc, elapsed, past_deadline, stopped, plus the result summary
+        - a job stopped at the deadline (stopped=True) is always `overrun`, whatever rc the signal left
     """
     if state is None:
-        return { "name": name, "status": "not-started", "rc": None, "elapsed": None, "past_deadline": False, "result": None }
+        return { "name": name, "status": "not-started", "rc": None, "elapsed": None, "past_deadline": False, "stopped": False, "result": None }
     status = "failed" if rc is None else classify( rc )
     past   = deadline is not None and finished_ts > deadline.timestamp()
-    if past and status == "ok": status = "overrun"
-    return { "name": name, "status": status, "rc": "unknown" if rc is None else rc, "past_deadline": past,
+    if stopped: status, past = "overrun", True
+    elif past and status == "ok": status = "overrun"
+    return { "name": name, "status": status, "rc": "unknown" if rc is None else rc, "past_deadline": past, "stopped": stopped,
              "elapsed": round( finished_ts - state["started_ts"], 1 ), "result": result }
 
 
@@ -237,7 +281,8 @@ def format_receipt( receipt ):
     parts = [ receipt["name"], receipt["status"] ]
     if receipt["status"] == "not-started": return " · ".join( parts + [ "no job of this name was started" ] )
     parts += [ f"rc={receipt['rc']}", f"elapsed={receipt['elapsed']}s" ]
-    if receipt["past_deadline"] and receipt["status"] != "overrun": parts.append( "past-deadline" )
+    if receipt["stopped"]: parts.append( "stopped-at-deadline" )
+    elif receipt["past_deadline"] and receipt["status"] != "overrun": parts.append( "past-deadline" )
     result = receipt["result"]
     if result is None: parts.append( "result=none-written-after-start" )
     else: parts += [ f"judge_calls={result['judge_calls']}", f"elapsed_seconds={result['elapsed_seconds']}",
@@ -256,30 +301,35 @@ def ledger_append( receipt ):
     with open( path, "a" ) as handle: handle.write( json.dumps( entry ) + "\n" )
 
 
-def wait( name, deadline=None, result_dir=None, result_glob="*.json", poll=None, out=sys.stdout, err=sys.stderr ):
+def wait( name, deadline=None, result_dir=None, result_glob="*.json", poll=None, grace=None, out=sys.stdout, err=sys.stderr ):
     """
     Requires:
         - deadline is a timezone-aware datetime or None
     Ensures:
-        - does not return while the job's process is alive
+        - with no deadline, does not return while the job's process is alive
+        - with a deadline, a job still alive at the deadline is stopped (stop_job) and the receipt is `overrun`
+          with stopped=True; the wait never outlasts the deadline by more than the poll and the grace
         - prints one receipt line, appends one ledger line, returns the receipt dict
     """
     if poll is None: poll = float( os.environ.get( "CLOSING_JOB_POLL", "2" ) )
+    if grace is None: grace = float( os.environ.get( "CLOSING_JOB_GRACE", "5" ) )
     state = read_state( name )
     if state is None:
         receipt = build_receipt( name, None, None, 0, deadline, None )
     else:
         paths  = job_paths( name )
-        warned = False
+        stopped = False
         while is_running( state ):
-            if deadline is not None and not warned and now_utc() > deadline:
-                print( f"closing_job: {name} still running past closing time; waiting for it to exit", file=err )
-                warned = True
+            if deadline is not None and now_utc() > deadline:
+                print( f"closing_job: {name} still running at closing time; stopping it", file=err )
+                if not stop_job( state, grace ): print( f"closing_job: {name} survived KILL", file=err )
+                stopped = True
+                break
             time.sleep( poll )
         rc = read_rc( paths["rc"] )
         finished_ts = paths["rc"].stat().st_mtime if paths["rc"].exists() else now_utc().timestamp()
         found  = newest_result( result_dir, result_glob, paths["marker"].stat().st_mtime )
-        receipt = build_receipt( name, state, rc, finished_ts, deadline, read_result( found ) if found else None )
+        receipt = build_receipt( name, state, rc, finished_ts, deadline, read_result( found ) if found else None, stopped )
     line = format_receipt( receipt )
     print( line, file=out )
     ledger_append( receipt )

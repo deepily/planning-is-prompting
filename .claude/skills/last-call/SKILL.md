@@ -60,7 +60,7 @@ That second check is the redundancy. A missing schedule looks exactly like a qui
 
 **At closing time** — run each declared deliverable in the declared order. Run it → produce a **receipt** (sha, test-run id, path, exit code — not a claim) → report one line: deliverable · done/not-done · receipt or reason.
 
-**A deliverable that is started at last call and awaited at closing time** (the `duplicate-check` slot) changes the order. At last call, start it with `closing_job.py start`. At closing time the sequence is fixed: session end → `push` → `deploy` if declared → `closing_job.py wait` (it never returns while the job runs) → file the one triage row → `backup` → the summary card, which is the operator's signal that it is safe to power down. A failure or an overrun goes on the receipt, never skipped. See `workflow/last-call.md` §5a.
+**Closing time never waits** (Rick, 2026-11-07, row `daac3b86`). A job still running at closing time is stopped and recorded as an overrun; the closing sequence is session end → `push` → `deploy` if declared → `backup` → the summary card. The duplicate check is not a last-call deliverable: it runs from a weekday-morning cron in the repo that owns it. See `workflow/last-call.md` §5a.
 
 🔴 **Every declared deliverable gets a line, including the ones you could not do.** Report and carry, never block — and file the unmet one as a store row so it is owed work somebody can see tomorrow.
 
@@ -86,4 +86,4 @@ That second check is the redundancy. A missing schedule looks exactly like a qui
 
 ## Binding the deliverable names
 
-The names are portable; the procedures are per-repo. In this repo: `push` → the `/plan-session-end` push step · `backup` → `/plan-backup-write` · `post-game` → `/plan-post-game` · `duplicate-check` → bound per repo in `workflow/last-call.md` §11. Each repo binds its own in its `CLAUDE.md` or its copy of the command.
+The names are portable; the procedures are per-repo. In this repo: `push` → the `/plan-session-end` push step · `backup` → `/plan-backup-write` · `post-game` → `/plan-post-game`. Each repo binds its own in its `CLAUDE.md` or its copy of the command.

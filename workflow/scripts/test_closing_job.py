@@ -75,15 +75,86 @@ def test_wait_blocks_until_the_job_ends( tmp_path ):
     assert holder["r"][0]["status"] == "ok"
 
 
-def test_a_deadline_in_the_past_still_waits_for_the_job_to_exit( tmp_path ):
-    cj.start( "j", str( tmp_path ), sh( "sleep 0.8" ) )
-    past = cj.now_utc() - datetime.timedelta( hours=1 )
+# ── closing time never waits: a job still running at the deadline is stopped (Rick, 2026-11-07) ──
+
+def test_a_job_still_running_at_the_deadline_is_stopped_and_recorded_as_an_overrun( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "sleep 60" ) )
+    time.sleep( 0.3 )
+    deadline = cj.now_utc() + datetime.timedelta( seconds=0.5 )
     began = time.time()
-    receipt, out, err = run_wait( "j", deadline=past )
-    assert time.time() - began >= 0.8, "wait gave up at the deadline instead of waiting for the job"
-    assert receipt["status"] == "overrun" and receipt["rc"] == 0
-    assert "still running past closing time" in err
-    assert out.count( "\n" ) == 1 and "overrun" in out
+    receipt, out, err = run_wait( "j", limit=20, deadline=deadline, grace=2 )
+    assert time.time() - began < 15, "wait outlasted the deadline instead of stopping the job"
+    assert receipt["status"] == "overrun" and receipt["stopped"] is True
+    assert "stopped-at-deadline" in out and out.count( "\n" ) == 1
+    assert "stopping it" in err
+    assert not cj.session_alive( state["pid"] ), "the job survived the deadline"
+
+
+def test_a_deadline_already_past_stops_a_running_job_at_once( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "sleep 60" ) )
+    time.sleep( 0.3 )
+    began = time.time()
+    receipt, _, _ = run_wait( "j", limit=20, deadline=cj.now_utc() - datetime.timedelta( hours=1 ), grace=2 )
+    assert time.time() - began < 15
+    assert receipt["status"] == "overrun" and receipt["stopped"] is True
+    assert not cj.session_alive( state["pid"] )
+
+
+def test_stopping_reaches_the_whole_process_group_not_just_the_wrapper( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "sleep 60 & sleep 60 & wait" ) )
+    time.sleep( 0.4 )
+    assert len( cj.session_pids( state["pid"] ) ) >= 3, "the fixture did not leave grandchildren to find"
+    receipt, _, _ = run_wait( "j", limit=20, deadline=cj.now_utc(), grace=2 )
+    assert receipt["status"] == "overrun"
+    assert cj.session_pids( state["pid"] ) == [], "a child of the job outlived the stop"
+
+
+def test_a_job_that_ignores_term_is_killed_after_the_grace( tmp_path ):
+    state = cj.start( "j", str( tmp_path ), sh( "trap '' TERM; while :; do sleep 1; done" ) )
+    time.sleep( 0.4 )
+    began = time.time()
+    receipt, _, _ = run_wait( "j", limit=20, deadline=cj.now_utc(), grace=0.5 )
+    assert time.time() - began < 15
+    assert receipt["status"] == "overrun" and receipt["stopped"] is True
+    assert not cj.session_alive( state["pid"] ), "a job that ignores TERM kept closing time waiting"
+
+
+def test_the_ledger_records_the_stop( tmp_path ):
+    cj.start( "j", str( tmp_path ), sh( "sleep 60" ) )
+    time.sleep( 0.3 )
+    run_wait( "j", limit=20, deadline=cj.now_utc(), grace=2 )
+    entry = ledger( tmp_path )[-1]
+    assert entry["status"] == "overrun" and entry["stopped"] is True and entry["past_deadline"] is True
+
+
+def test_the_cli_returns_exit_5_for_a_stopped_job( tmp_path, monkeypatch ):
+    monkeypatch.setenv( "CLOSING_JOB_GRACE", "1" )
+    cj.start( "j", str( tmp_path ), sh( "sleep 60" ) )
+    time.sleep( 0.3 )
+    past = ( cj.now_utc() - datetime.timedelta( minutes=1 ) ).isoformat()
+    assert cj.main( [ "wait", "--name", "j", "--deadline", past ] ) == 5
+
+
+def test_stop_job_tolerates_a_process_that_exits_before_the_signal_lands( monkeypatch ):
+    gone = subprocess.Popen( [ "true" ] )
+    gone.wait()                                                      # a reaped pid: os.kill on it raises ProcessLookupError
+    monkeypatch.setattr( cj, "session_pids", lambda sid: [ gone.pid ] )
+    assert cj.stop_job( { "pid": gone.pid }, grace=0.1 ) is True
+
+
+def test_without_a_deadline_wait_still_waits_for_the_job( tmp_path ):
+    cj.start( "j", str( tmp_path ), sh( "sleep 0.8" ) )
+    began = time.time()
+    receipt, _, _ = run_wait( "j" )
+    assert time.time() - began >= 0.8 and receipt["status"] == "ok" and receipt["stopped"] is False
+
+
+def test_a_job_that_finishes_just_past_the_deadline_on_its_own_is_an_overrun_not_a_stop( tmp_path ):
+    cj.start( "j", str( tmp_path ), sh( "exit 0" ) )
+    time.sleep( 0.5 )                                                # finished before wait starts: nothing to stop
+    receipt, _, err = run_wait( "j", deadline=cj.now_utc() - datetime.timedelta( hours=1 ) )
+    assert receipt["status"] == "overrun" and receipt["rc"] == 0 and receipt["stopped"] is False
+    assert "stopping it" not in err
 
 
 def test_a_job_that_outlives_the_seats_shell_is_still_waited_for( tmp_path ):
@@ -125,7 +196,8 @@ def test_a_killed_job_has_no_rc_and_says_unknown( tmp_path ):
 
 
 def test_a_failure_past_the_deadline_keeps_its_status_and_says_so( tmp_path ):
-    cj.start( "j", str( tmp_path ), sh( "sleep 0.2; exit 1" ) )
+    cj.start( "j", str( tmp_path ), sh( "exit 1" ) )
+    time.sleep( 0.5 )                                                # already finished: a failure is not turned into an overrun
     receipt, out, _ = run_wait( "j", deadline=cj.now_utc() - datetime.timedelta( hours=1 ) )
     assert receipt["status"] == "failed" and "past-deadline" in out
 
