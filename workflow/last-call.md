@@ -94,12 +94,12 @@ For each participant, for each declared deliverable, **in the declared order**:
 
 | Field | Value |
 |---|---|
-| class · priority | task · P1 |
-| owner · accountable | the repo's triage owner |
-| `correlation_key` | the repo's key for this check |
+| class · priority | task · P1 when a manager files it; a job with no manager session files at P5 in the holding area, and a manager raises it |
+| owner · accountable | the repo's triage owner; a persona on the project's manager roster, never a role label |
+| `correlation_key` | the repo's key for this check; a job that files for itself keys the row on the set of findings it lists, so the same findings never get a second row |
 | body | the receipt line, then every finding in the result file's `findings`: its `id`, file and name, and the candidates it was matched against |
 
-A run with **zero findings files no row** and the receipt says "zero findings, no row". A result file that cannot be read files no row either; the receipt says that instead.
+A run lists at most 200 findings in the body and names the result file for the rest. A finding already on an earlier row is not listed again. A run with **zero findings files no row** and the receipt says "zero findings, no row". A result file that cannot be read files no row either; the receipt says that instead.
 
 **The verdict line.** The triage seat records one line per finding, in this format, which a script can count:
 
