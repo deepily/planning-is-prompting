@@ -18,6 +18,14 @@ TICK="$HERE/context-pressure-tick.sh"
 TMP="$( mktemp -d )"
 trap 'rm -rf "$TMP"' EXIT
 
+# ISOLATION: an over-budget payload makes the tick DM the seat, its manager and the operator through
+# the live API at API_BASE (:7999) and write the resend ledger under $HOME. Those sends are real even
+# when drill-labelled, and when they fail the tick exits 3 -- which is what made three cases here
+# red. Delivery is OFF and the ledger is a throwaway, so this test never DMs or notifies anyone.
+export CONTEXT_TICK_DELIVER=0
+export CONTEXT_TICK_STATE="$TMP/tick-state.json"
+export CONTEXT_TICK_API_BASE="http://127.0.0.1:9"      # discard port: any stray send cannot reach the fleet
+
 pass=0
 fail=0
 
