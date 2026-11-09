@@ -37,6 +37,12 @@
 #   3  findings, and at least one delivery FAILED. Detection worked; the alarm did not arrive.
 #   4  findings, unchanged since the last delivery and inside the quiet window — not re-sent.
 #
+# THE RUN RECEIPT (row `a27402dd`). Silence made "never ran" and "always clean" look identical, so
+# EVERY run — clean, findings, or could-not-look — records `last_run` = { ts (ISO-8601 UTC),
+# exit_code } in the state file (DOC_PARITY_STATE), never on stdout/stderr. The zero-byte guarantee
+# and the exit codes above are unchanged; an unwritable state path is swallowed silently. Read it:
+#     python3 -c "import json,os;print(json.load(open(os.path.expanduser('~/.claude/doc-parity-tick-state.json')))['last_run'])"
+#
 # Run: bash workflow/scripts/doc-parity-tick.sh
 #      bash workflow/scripts/doc-parity-tick.sh --print-install
 #      bash workflow/scripts/doc-parity-tick.sh --install | --uninstall | --status
@@ -165,6 +171,30 @@ PAIRS_ENV  = os.environ[ "DOC_PARITY_PAIRS" ].strip()
 DRILL      = os.environ[ "DOC_PARITY_DRILL" ] == "1"
 THRESH_ENV = os.environ[ "DOC_PARITY_THRESHOLD" ].strip()
 
+def finish( code ):
+    """
+    Exit with `code` after leaving a RUN RECEIPT: `last_run` = { ts (ISO-8601 UTC), exit_code } in the
+    state file. Every exit path goes through here, clean or not, so a reader can tell the tick fired
+    today without the tick ever speaking. Never writes stdout/stderr, never raises, never changes
+    `code` — an unwritable state path is swallowed, because a receipt that could break the tick
+    (or break its silence) would be worse than none.
+    """
+    try:
+        try:
+            with open( STATE_PATH ) as fh: st = json.load( fh )
+            if not isinstance( st, dict ): st = {}
+        except Exception:
+            st = {}
+        st[ "last_run" ] = { "ts"        : datetime.datetime.now( datetime.timezone.utc ).isoformat(),
+                             "exit_code" : code }
+        os.makedirs( os.path.dirname( STATE_PATH ) or ".", exist_ok=True )
+        tmp = STATE_PATH + ".tmp"
+        with open( tmp, "w" ) as fh: json.dump( st, fh, indent=2 )
+        os.replace( tmp, STATE_PATH )
+    except Exception:
+        pass
+    sys.exit( code )
+
 BANNER = ( "[DRILL — test fire of the doc-parity tick, NOT a real reading. "
            "Ignore the findings below.] " ) if DRILL else ""
 
@@ -175,7 +205,7 @@ def die_cannot_look( why ):
     run, and this whole script exists because indistinguishable is how the original defect survived.
     """
     print( f"DOC-PARITY TICK ERROR: the parity check could not be run: {why}", file=sys.stderr )
-    sys.exit( 1 )
+    finish( 1 )
 
 # ── load the checker ────────────────────────────────────────────────────────
 sys.path.insert( 0, os.path.dirname( os.path.abspath( SCRIPT ) ) )
@@ -248,7 +278,7 @@ for label, canonical_path, deployed_path in pairs:
 
 # ── clean: say NOTHING ──────────────────────────────────────────────────────
 if not findings:
-    sys.exit( 0 )
+    finish( 0 )
 
 drift_count = sum( 1 for f in findings if f[ "kind" ] == "drift" )
 stamp       = datetime.datetime.now().astimezone()
@@ -309,11 +339,11 @@ for f in findings:
 
 if not send:
     print( f"  {why}" )
-    sys.exit( 4 )
+    finish( 4 )
 
 if not DELIVER:
     print( "  delivery disabled (DOC_PARITY_DELIVER=0) — printed only" )
-    sys.exit( 2 )
+    finish( 2 )
 
 # ── delivery ────────────────────────────────────────────────────────────────
 sys.path.insert( 0, os.path.join( os.environ.get( "LUPIN_ROOT", "" ), "src" ) )
@@ -443,7 +473,7 @@ if failures == 0:
 if failures:
     print( f"  TICK ERROR: {failures} delivery(ies) failed — the finding was NOT delivered. "
            f"Detection worked; the alarm did not arrive.", file=sys.stderr )
-    sys.exit( 3 )
+    finish( 3 )
 
-sys.exit( 2 )
+finish( 2 )
 PY

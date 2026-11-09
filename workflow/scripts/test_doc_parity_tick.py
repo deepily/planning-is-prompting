@@ -194,6 +194,57 @@ def test_a_clean_run_prints_absolutely_nothing( pair, tmp_path, stub_api ):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# the run receipt — proof the tick fired, kept off stdout/stderr
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _last_run( tmp_path ):
+    return json.loads( ( tmp_path / "state.json" ).read_text() )[ "last_run" ]
+
+
+def test_a_clean_run_writes_a_receipt_and_still_prints_zero_bytes( pair, tmp_path, stub_api ):
+    """The receipt is the ONLY trace of a clean run, so it must exist while stdout/stderr stay empty."""
+    import datetime
+    result = run_tick( pair[ "spec" ], tmp_path, stub_api[ "base" ] )
+    assert result.returncode == 0
+    assert result.stdout == "" and result.stderr == ""
+    receipt = _last_run( tmp_path )
+    assert receipt[ "exit_code" ] == 0
+    ts = datetime.datetime.fromisoformat( receipt[ "ts" ] )
+    assert ts.utcoffset() == datetime.timedelta( 0 ), "receipt time must be UTC"
+    assert abs( ( datetime.datetime.now( datetime.timezone.utc ) - ts ).total_seconds() ) < 120
+
+
+def test_a_findings_run_writes_a_receipt_and_keeps_the_send_ledger( pair, tmp_path, stub_api ):
+    drift_the_deployed_copy( pair )
+    result = run_tick( pair[ "spec" ], tmp_path, stub_api[ "base" ] )
+    assert result.returncode == 2
+    state = json.loads( ( tmp_path / "state.json" ).read_text() )
+    assert state[ "last_run" ][ "exit_code" ] == 2
+    assert "fingerprint" in state and "last_sent_ts" in state, "the receipt must not erase the ledger"
+    # a second run inside the quiet window is exit 4, and its receipt says so
+    again = run_tick( pair[ "spec" ], tmp_path, stub_api[ "base" ] )
+    assert again.returncode == 4
+    assert _last_run( tmp_path )[ "exit_code" ] == 4
+
+
+def test_a_could_not_look_run_writes_a_receipt( pair, tmp_path, stub_api ):
+    result = run_tick( pair[ "spec" ], tmp_path, stub_api[ "base" ],
+                       extra={ "DOC_PARITY_SCRIPT": str( tmp_path / "nope.py" ) } )
+    assert result.returncode == 1
+    assert _last_run( tmp_path )[ "exit_code" ] == 1
+
+
+def test_an_unwritable_state_path_changes_neither_exit_code_nor_silence( pair, tmp_path, stub_api ):
+    """State under a regular FILE cannot be created; the clean run must still be exit 0, zero bytes."""
+    blocker = tmp_path / "blocker"
+    blocker.write_text( "i am a file" )
+    result = run_tick( pair[ "spec" ], tmp_path, stub_api[ "base" ],
+                       extra={ "DOC_PARITY_STATE": str( blocker / "state.json" ) } )
+    assert result.returncode == 0
+    assert result.stdout == "" and result.stderr == ""
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # the exit codes are five different facts
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -236,7 +287,9 @@ def test_a_failed_delivery_is_exit_3_and_does_not_arm_the_quiet_window( pair, tm
     result = run_tick( pair[ "spec" ], tmp_path, api_base="http://127.0.0.1:1" )
     assert result.returncode == 3
     assert "DELIVERY FAILED" in result.stderr
-    assert not ( tmp_path / "state.json" ).exists(), "a failed send must not arm the quiet window"
+    state = json.loads( ( tmp_path / "state.json" ).read_text() )   # the receipt exists...
+    assert state[ "last_run" ][ "exit_code" ] == 3
+    assert "fingerprint" not in state and "last_sent_ts" not in state, "a failed send must not arm the quiet window"
 
 
 def test_delivery_disabled_reports_but_does_not_send( pair, tmp_path, stub_api ):
