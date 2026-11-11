@@ -1273,3 +1273,18 @@ def test_the_close_reason_opens_by_naming_the_phase_whose_steps_are_done( tmp_pa
     for k in ( "a1", "a2", "a3" ): mark( store, k, "done" )
     pi.main( close_args( tmp_path ) )
     assert transitions( store )[ 0 ][ 2 ][ "reason" ].startswith( "Every step of phase 1 is done: a1 (" )
+
+
+@pytest.mark.parametrize( "bad", [ "Plan 3", "plan 3", "Plan3", "  Plan 12 ", "P1", "P2 rollout" ] )
+def test_a_plan_name_that_numbers_the_plan_is_refused( bad ):
+    m = good_manifest()
+    m[ "plan_name" ] = bad
+    errs = pi.validate_manifest( m, PLAN_MD )
+    assert [ e for e in errs if "plan_name must name the plan" in e ], errs
+
+
+@pytest.mark.parametrize( "ok", [ "Planning rewrite", "Plan review gate", "Auth rewrite", "Phase plan" ] )
+def test_a_plan_name_that_merely_starts_with_plan_is_accepted( ok ):
+    m = good_manifest()
+    m[ "plan_name" ] = ok
+    assert pi.validate_manifest( m, PLAN_MD ) == []

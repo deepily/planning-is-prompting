@@ -65,6 +65,7 @@ ACTOR_RE      = re.compile( r"^[a-z][a-z0-9 ._-]* [0-9a-f]{6,}$" )
 # A heading that only mentions a phase ("### R.8 Phase 1 exit-gate audit") is not one.
 PLAN_HEAD_RE  = re.compile( r"^#{1,6}\s+(?:\d+(?:\.\d+)*\.?\s+)?Phase\s+(\d+|[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+)(?![A-Za-z0-9-])", re.IGNORECASE | re.MULTILINE )
 PHASE_LABEL_RE = re.compile( r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+$" )
+PLAN_NUMBER_NAME_RE = re.compile( r"^\s*(?:Plan\s*\d|P\d)", re.IGNORECASE )
 STUB_KEY_RE   = re.compile( r"^stub_key:\s*(\S+)", re.MULTILINE )
 
 TOP_FIELDS    = ( "plan_ref", "project", "prefix", "plan_number", "plan_name", "correlation_key",
@@ -247,6 +248,8 @@ def validate_manifest( m, plan_text=None ):
 
     for f in ( "plan_ref", "project", "prefix", "plan_name" ):
         if f in m and not _is_str( m[ f ] ): errs.append( f"{f} must be a non-empty string" )
+    if _is_str( m.get( "plan_name" ) ) and PLAN_NUMBER_NAME_RE.match( m[ "plan_name" ] ):
+        errs.append( "plan_name must name the plan (e.g. \"Auth rewrite\"), not number it: no \"Plan N\" or \"P<N>\"" )
     if "plan_number" in m and ( not isinstance( m[ "plan_number" ], int ) or isinstance( m[ "plan_number" ], bool )
                                 or m[ "plan_number" ] < 1 ):
         errs.append( "plan_number must be an integer >= 1" )

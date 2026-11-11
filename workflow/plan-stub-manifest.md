@@ -29,7 +29,7 @@ The importer writes every title. Authors supply only the short name.
 | Unexpanded phase | `[PREFIX] <plan name> · Phase 6 of 7 · STUB · <phase name> (expand when Phase 5 closes)` |
 
 - **The plan is named, never numbered.** The head is the manifest's `plan_name` (e.g. `Code-health abstraction`); no title carries "Plan N" or `P1`. A number tells the reader nothing (Rick, 2026-11-11), and the board already uses `P1`–`P5` for priority. `plan_number` is an optional manifest field: it may order plans in a report, and it never reaches a title.
-- **Keep `plan_name` short and unique within the `[PREFIX]`**, since it is what tells two plans apart on the board.
+- **Validation refuses a `plan_name` that is itself "Plan N" or "P<N>".** Keep `plan_name` short and unique within the `[PREFIX]`**, since it is what tells two plans apart on the board.
 - **"of N" comes from the manifest**, so it cannot be mistyped, and the importer re-stamps it when N changes (§5).
 - **Phases keep the plan's own numbers and may start at 0.** "of N" is the highest phase number, so a plan with phases 0 to 7 ends at `Phase 7 of 7`. Steps always start at 1.
 - **A closed row is never re-stamped.** The board refuses a title edit on a done or dropped row, so when N changes the importer re-titles open rows only and reports the closed ones as left unchanged.

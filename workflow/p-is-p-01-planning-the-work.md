@@ -644,7 +644,7 @@ mindmap
 ]
 ```
 
-The importer turns this into rows titled `[SHORT_PROJECT_PREFIX] Plan 1 · Phase 2 of 4 · Step 1 of 3 · Set up infrastructure` and so on. Phase 1 gets no row because its step carries `done_receipt`; Phases 3 and 4 are single `STUB` rows until their trigger fires.
+The importer turns this into rows titled `[SHORT_PROJECT_PREFIX] Auth rewrite · Phase 2 of 4 · Step 1 of 3 · Set up infrastructure` and so on. Phase 1 gets no row because its step carries `done_receipt`; Phases 3 and 4 are single `STUB` rows until their trigger fires.
 
 **Example**: Building JWT authentication system with phases for token generation, validation, OAuth integration, session management, and security hardening.
 
@@ -1497,12 +1497,12 @@ Phase 5: Security Hardening [PLANNED]
 The importer's dry run for this plan lists the Phase 3 row, the three open Phase 3 steps and one `STUB` row per later phase, so the first row on the board reads `Phase 3 of 8`, not `Phase 1 of 8`. The lines for the phases printed in the excerpt above, exactly as the dry run prints them (it goes on to print one more `STUB` line each for Phases 6 to 8):
 
 ```
-  CREATE   ph3            [JWT] Plan 1 · Phase 3 of 8 · OAuth integration
-  CREATE   ph3-s3         [JWT] Plan 1 · Phase 3 of 8 · Step 3 of 5 · Implement OAuth flow for GitHub
-  CREATE   ph3-s4         [JWT] Plan 1 · Phase 3 of 8 · Step 4 of 5 · Add OAuth error handling
-  CREATE   ph3-s5         [JWT] Plan 1 · Phase 3 of 8 · Step 5 of 5 · Write OAuth integration tests
-  CREATE   ph4            [JWT] Plan 1 · Phase 4 of 8 · STUB · Session management (expand when Phase 3 closes)
-  CREATE   ph5            [JWT] Plan 1 · Phase 5 of 8 · STUB · Security hardening (expand when Phase 4 closes)
+  CREATE   ph3            [JWT] Auth rewrite · Phase 3 of 8 · OAuth integration
+  CREATE   ph3-s3         [JWT] Auth rewrite · Phase 3 of 8 · Step 3 of 5 · Implement OAuth flow for GitHub
+  CREATE   ph3-s4         [JWT] Auth rewrite · Phase 3 of 8 · Step 4 of 5 · Add OAuth error handling
+  CREATE   ph3-s5         [JWT] Auth rewrite · Phase 3 of 8 · Step 5 of 5 · Write OAuth integration tests
+  CREATE   ph4            [JWT] Auth rewrite · Phase 4 of 8 · STUB · Session management (expand when Phase 3 closes)
+  CREATE   ph5            [JWT] Auth rewrite · Phase 5 of 8 · STUB · Security hardening (expand when Phase 4 closes)
 ```
 
 These stamped titles run from 47 to 84 characters. That is within the rule: the progress prefix is exempt from the 60-character target for hand-written titles, every step name is under 40 characters, and every whole title is under the cap of 120.
