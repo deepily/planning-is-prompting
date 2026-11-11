@@ -2,7 +2,16 @@
 
 > ✅ **Archived at 19,859 tokens, now 6,268 (2026-10-02, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 192–205 → `history/2026-09-03-to-19-history.md`. Cut at the Sunday 2026-09-21 boundary; the 09-28 boundary failed the 5-day floor. Earlier banners moved to that archive. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 233 (2026-11-09 10:03 to 22:50 EST, María 🌸 stable `d16e2274`, manager; one author seat, Rachel, reaped)**. The single cron script for lupin is installed, and its first scheduled runs are clean: the duplicate check carried 2 at 19:00 and 0 at 20:00. First job tomorrow: watch the Tue 10 Nov 10:17, 10:47 and 11:37 runs (librarian, vector refresh, shadow audit with the Jev key). When row `449bf026` closes, unblock `66b36d26`, `a38bc952` and the abstraction cascade Steps 0 to 2 (`9ff22a7a`, `6349cc15`, `f920520c`, approved by Rick).
+`RESUME HERE`: **Session 234 (2026-11-10 evening to 22:45 EST, María 🌸 stable `61ec3d41`, manager on the lupin board; author Clayton and reviewer Pocholo, both reaped)**. Clayton's verdicts fix is merged, and the first Last Call with three managers ran on time. First job tomorrow: build row `21f59130` (the cross-repo LoC roll-up becomes a standing step of every close). Then close `ba4a3111` once Rick un-parks it, and prove `e411c6dd` with the 11:37 shadow drain.
+
+1. **The verdicts command refuses a fallback session id** (lupin row `5924bc24`, closed): Clayton's `ae7348d82`, rebased past John's `a137d7ad0`. Pocholo approved it: 74 tests pass, 100% lines and branches, and a mutant turned 2 tests red. Merged as lupin `8e7212884`; the reuse gate passed 99 of 99. Only seats call `seat_actor`; cron filing never does.
+2. **Duplicate-check owner fix proven**: the 22:00 run filed triage row `ced8b124` to Cheech (lupin `runs.jsonl` line 22). Row `ba4a3111` is parked, so closing it needs Rick's un-park (cards `c327c6c7` and `ee127676`).
+3. **Last Call** (Rick's broadcast `ca983d21`): rows `f43c2b40` (María and Cheech: push, backup) and `127be358` (Mr. Radio: 📷). Last call 22:35, closing time 22:45, lights out 22:55. All three managers acknowledged.
+4. **Rick, by voice**: the cross-repo roll-up must be part of last call. Measured: no workflow said so, and the last global output was dated 18 Aug. Tonight's run was by hand; the fix is row `21f59130`.
+
+**Files**: `history.md`.
+
+**Previous `RESUME HERE`**: **Session 233 (2026-11-09 10:03 to 22:50 EST, María 🌸 stable `d16e2274`, manager; one author seat, Rachel, reaped)**. The single cron script for lupin is installed, and its first scheduled runs are clean: the duplicate check carried 2 at 19:00 and 0 at 20:00. First job tomorrow: watch the Tue 10 Nov 10:17, 10:47 and 11:37 runs (librarian, vector refresh, shadow audit with the Jev key). When row `449bf026` closes, unblock `66b36d26`, `a38bc952` and the abstraction cascade Steps 0 to 2 (`9ff22a7a`, `6349cc15`, `f920520c`, approved by Rick).
 
 1. **Code-health census** (lupin row `898c93d8`, closed): what is done and what is missing across source docs, duplicate detection, scheduling, remediation and wikis, and how to abstract it for other repos (lupin `6a96891f8`). **Rick's ruling**: the cron jobs must be centralized in one script before the abstraction plan is built.
 2. **One cron script** (lupin row `449bf026`, Mr. Radio): I found that every cron line hand-copied its own environment, and the copies had drifted. Tiberius built `cron-job.sh` and `cron_generate`, Rio approved, merged `9815f1958`. Rick installed it at 17:25 and the `~/.lupin/cron.env` key at 17:28.
@@ -12,7 +21,7 @@
 
 **Files**: `src/rnd/2026.11.07-background-job-reporting-format.md`, `workflow/scripts/` (doc-parity tick, Rachel), `history.md`. Status report: lupin `io/tmp/2026.11.09-status-report-maria.md` (transient).
 
-**Previous `RESUME HERE`**: **Session 232 (2026-11-06 18:01 to 19:50 EST, María 🌸 stable `3a646648`, manager with two author seats, both reaped)**. The GPU rule and the squash-message fix are committed, and tonight's duplicate check ran. First job tomorrow: file Cheech's P1 duplicate-check triage row by 10:00 (the fleet ticket gate refused it tonight; the record is on row `30ecf5af`), then the last-call timing fix (row `daac3b86`, held for Rick).
+**Session 232 (2026-11-06 18:01 to 19:50 EST, María 🌸 stable `3a646648`, manager with two author seats, both reaped)**. The GPU rule and the squash-message fix are committed, and tonight's duplicate check ran. First job tomorrow: file Cheech's P1 duplicate-check triage row by 10:00 (the fleet ticket gate refused it tonight; the record is on row `30ecf5af`), then the last-call timing fix (row `daac3b86`, held for Rick).
 
 1. **No test or job touches a GPU** (row `60936c0e`, closed on Rick's yes): Rachel wrote the canonical rule in `workflow/testing-baseline.md` and the cites in last-call §5a, plan-review, p-is-p-02, testing-remediation, testing-harness-update and global/CLAUDE.md (`03c4e78`, 1374 passed). The lupin side is row `d4fce2bb` for Cheech (held).
 2. **Squash commit uses the PR title and body** (row `a29f9ccb`, closed): Clayton added branch-pr-and-merge Step 5.5 (`4a3e2f4`). Rick ran the PATCH on planning-is-prompting and lupin-mobile, which I read back as PR_TITLE / PR_BODY. cosa-voice has no repo of its own.
