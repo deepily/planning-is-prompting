@@ -1275,7 +1275,7 @@ def test_the_close_reason_opens_by_naming_the_phase_whose_steps_are_done( tmp_pa
     assert transitions( store )[ 0 ][ 2 ][ "reason" ].startswith( "Every step of phase 1 is done: a1 (" )
 
 
-@pytest.mark.parametrize( "bad", [ "Plan 3", "plan 3", "Plan3", "  Plan 12 ", "P1", "P2 rollout" ] )
+@pytest.mark.parametrize( "bad", [ "Plan 3", "plan 3", "Plan3", "  Plan 12 ", "P1", "P12", "P2 rollout" ] )
 def test_a_plan_name_that_numbers_the_plan_is_refused( bad ):
     m = good_manifest()
     m[ "plan_name" ] = bad

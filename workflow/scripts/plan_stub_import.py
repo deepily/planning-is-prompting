@@ -65,7 +65,7 @@ ACTOR_RE      = re.compile( r"^[a-z][a-z0-9 ._-]* [0-9a-f]{6,}$" )
 # A heading that only mentions a phase ("### R.8 Phase 1 exit-gate audit") is not one.
 PLAN_HEAD_RE  = re.compile( r"^#{1,6}\s+(?:\d+(?:\.\d+)*\.?\s+)?Phase\s+(\d+|[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+)(?![A-Za-z0-9-])", re.IGNORECASE | re.MULTILINE )
 PHASE_LABEL_RE = re.compile( r"^[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)+$" )
-PLAN_NUMBER_NAME_RE = re.compile( r"^\s*(?:Plan\s*\d|P\d(?![A-Za-z0-9]))", re.IGNORECASE )
+PLAN_NUMBER_NAME_RE = re.compile( r"^\s*(?:Plan\s*\d|P\d+(?![A-Za-z0-9]))", re.IGNORECASE )
 STUB_KEY_RE   = re.compile( r"^stub_key:\s*(\S+)", re.MULTILINE )
 
 TOP_FIELDS    = ( "plan_ref", "project", "prefix", "plan_number", "plan_name", "correlation_key",
