@@ -23,7 +23,9 @@
 
 > **⚠️ ALWAYS pass explicit times. A bare `YYYY-MM-DD` does not mean midnight** — see [§0.1 Date windows](#01-date-windows--a-bare-date-is-not-midnight).
 
-**Not when**: invoked automatically from every session-end (that's the per-repo §6 workflow's job). This is on-demand only in Phase 1; Phase 2 adds a testing-server scheduled cron — separate workflow doc when that lands.
+**Every last-call close** runs it once, by the filer, with `--no-confirm` and the whole working day as the window (Rick, 2026-11-10, row `21f59130`; `last-call.md` §5a). The closing-time DM carries the exact line.
+
+**Not when**: invoked automatically from every session-end (that's the per-repo §6 workflow's job). Outside last call it is on demand; Phase 2 adds a testing-server scheduled cron — separate workflow doc when that lands.
 
 ---
 

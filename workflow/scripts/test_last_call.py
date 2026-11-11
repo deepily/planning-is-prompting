@@ -327,6 +327,62 @@ def test_the_close_poke_asks_for_a_receipt_per_deliverable( isolate ):
     assert "2. backup" in body
 
 
+# ── the cross-repo LoC roll-up is a standing step of every close (Rick, 2026-11-10, row 21f59130) ─
+
+def _close_at( isolate, **kw ):
+    install( isolate, **kw )
+    spy = Spy()
+    lc.fire( ROW, "close", isolate[ "crontab" ], reader=lambda _r: "in_progress",
+             sender=spy.send, notifier=spy.notify, now=datetime.datetime( 2026, 11, 10, 23, 0 ) )
+    return spy
+
+
+def test_the_close_tells_the_filer_to_run_the_roll_up_over_the_whole_day( isolate ):
+    spy  = _close_at( isolate, date="2026-11-10", filer="María", deliverables=( "push", "backup" ) )
+    body = spy.dms[ 0 ][ 1 ]
+    assert "**María** (the filer)" in body
+    assert ( '`/plan-loc-delta-global --no-confirm --since "2026-11-10 00:00:00" '
+             '--until "2026-11-10 23:59:59"`' ) in body
+    assert "Other seats do not run it" in body
+    # It comes after the declared deliverables, which is where a push reports, and every seat
+    # gets the same body, so every seat knows who owns it.
+    assert body.index( "2. backup" ) < body.index( "/plan-loc-delta-global" )
+    assert all( "/plan-loc-delta-global" in b for _r, b in spy.dms )
+
+
+def test_the_roll_up_runs_whatever_was_declared( isolate ):
+    # Standing, not declared: a backup-only close still carries it.
+    spy = _close_at( isolate, date="2026-11-10", filer="María", deliverables=( "backup", ) )
+    assert "/plan-loc-delta-global --no-confirm" in spy.dms[ 0 ][ 1 ]
+
+
+def test_a_close_after_midnight_still_rolls_up_the_working_day( isolate ):
+    # Last call 23:50 on the 10th, closing time 00:15 on the 11th: the work was done on the 10th.
+    record = { "wrap_at": "2026-11-10T23:50", "close_at": "2026-11-11T00:15", "filer": "María" }
+    assert lc.rollup_day( record ) == "2026-11-10"
+    assert '--since "2026-11-10 00:00:00" --until "2026-11-10 23:59:59"' in lc.rollup_step( record )
+
+
+def test_the_roll_up_day_falls_back_to_the_close_then_says_it_is_unknown():
+    assert lc.rollup_day( { "close_at": "2026-11-11T00:15" } ) == "2026-11-11"
+    assert lc.rollup_day( { "wrap_at": "not a time" } ) is None
+    assert "<the working day, YYYY-MM-DD>" in lc.rollup_step( {} )
+
+
+def test_with_no_filer_the_roll_up_falls_to_the_row_owner( isolate ):
+    spy = _close_at( isolate, date="2026-11-10" )
+    assert "the row's owner runs it once" in spy.dms[ 0 ][ 1 ]
+
+
+def test_the_last_call_poke_does_not_ask_for_the_roll_up( isolate ):
+    # Last call is "stop starting"; the roll-up belongs to the close.
+    install( isolate, date="2026-11-10", filer="María" )
+    spy = Spy()
+    lc.fire( ROW, "wrap", isolate[ "crontab" ], reader=lambda _r: "in_progress",
+             sender=spy.send, notifier=spy.notify, now=datetime.datetime( 2026, 11, 10, 22, 45 ) )
+    assert "/plan-loc-delta-global" not in spy.dms[ 0 ][ 1 ]
+
+
 def test_the_summary_card_reports_a_failed_delivery( isolate ):
     install( isolate )
     spy = Spy( code=503 )

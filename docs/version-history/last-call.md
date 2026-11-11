@@ -5,6 +5,8 @@ Moved out of `workflow/last-call.md` (lines 261-269 at `d73f36b`) without change
 ---
 
 ## Version history
+**v+** (2026.11.11, María, row `21f59130`, Rick by voice 2026-11-10) - Section 5a: the cross-repo LoC roll-up is a standing step of every close, run once by the filer after every push and before the summary card, over the whole working day (the day last call rang), with `--no-confirm`. Not a declared deliverable. Section 11 cites `loc-delta-global.md`. `last_call.py` `rollup_step` puts the exact command in the closing-time DM; six new tests in `test_last_call.py` (106 pass), and a mutant without the line reddens 3 of them. The skill's closing sequence matches.
+
 **v+** (2026.11.07, Rachel for María, row `daac3b86`, Rick's ruling of 2026-11-07) - Section 5a: closing time never waits; a job still running is stopped and recorded as an overrun, replacing the 2026-11-03 "lights-out waits for the run" rule. The duplicate check leaves last call and runs from a morning cron, every day the server is on, in the repo that owns it, so its slot, binding table and closing-sequence steps are removed from sections 4, 5a and 11, and from the skill and README. The one-triage-row-per-run rule and the `DUPCHECK-VERDICT` line stay in 5a. `closing_job.py wait` now stops the job at the deadline (TERM to the whole session, KILL after a grace) and records `overrun` / `stopped-at-deadline` in the receipt and ledger; section 10 and `test_closing_job.py` match. Supersedes an earlier same-day draft that moved the start to closing time minus 45 minutes.
 
 **v+** (2026.11.06, Rachel, row `60936c0e`) - Section 5a: a started-at-last-call job never touches a GPU or asks anyone to free one; cites `testing-baseline.md`.

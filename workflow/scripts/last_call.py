@@ -760,10 +760,51 @@ def wrap_body( record ):
     )
 
 
+def rollup_day( record ):
+    """
+    Ensures:
+        - returns the working day the close's roll-up covers, as "YYYY-MM-DD": the day last call
+          rang (`wrap_at`), so a closing time after midnight still counts the day the work was done
+        - falls back to the day of `close_at`, then to None when neither can be read
+    """
+    for key in ( "wrap_at", "close_at" ):
+        try:
+            return datetime.datetime.fromisoformat( record[ key ] ).date().isoformat()
+        except ( KeyError, TypeError, ValueError ):
+            continue
+    return None
+
+
+def rollup_step( record ):
+    """
+    Ensures:
+        - returns the closing-time paragraph for the STANDING cross-repo LoC roll-up (Rick, by voice,
+          2026-11-10, row 21f59130): run ONCE per close, by the filer, after every push and before
+          the summary card, over the whole working day, with --no-confirm because the operator may
+          already be away
+        - names the filer when the record carries one, otherwise the row's owner
+        - carries the literal command, so the step does not depend on anyone remembering it
+
+    It is not a declared deliverable: it runs on every close whatever was declared, and only the
+    filer runs it, so three managers closing together produce one roll-up, not three.
+    """
+    day     = rollup_day( record ) or "<the working day, YYYY-MM-DD>"
+    who     = f"**{record[ 'filer' ]}** (the filer)" if record.get( "filer" ) else "the row's owner"
+    command = f'/plan-loc-delta-global --no-confirm --since "{day} 00:00:00" --until "{day} 23:59:59"'
+    return (
+        f"📊 **Standing step, filer only: the cross-repo LoC roll-up.** {who} runs it once, after "
+        f"every push has reported and before the summary card:\n"
+        f"`{command}`\n"
+        "Other seats do not run it. Report it like a deliverable: one line with the output path, "
+        "or the reason it did not run."
+    )
+
+
 def close_body( record ):
     """
     Ensures:
         - returns the closing-time DM: run each declared deliverable, one receipted line each
+        - always carries the filer's standing roll-up step (rollup_step), whatever was declared
     """
     items = "\n".join( f"  {i}. {d}" for i, d in enumerate( record[ "deliverables" ], start=1 ) )
     return (
@@ -775,6 +816,7 @@ def close_body( record ):
         "unmet deliverable is reported and carried, never blocked on — but an omission and a "
         "failure look identical from the operator's side, which is the defect this exists to "
         "prevent.\n\n"
+        f"{rollup_step( record )}\n\n"
         f"↳ Report to: {ack_address( record )}\n\n"
         "⚠️ The ritual runs what was **declared** and invents no scope. A deliverable named here "
         "carries its own authorization for that item only — nothing else in the standing gate list "

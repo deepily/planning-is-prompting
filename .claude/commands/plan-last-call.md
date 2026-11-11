@@ -55,7 +55,7 @@
 
 6. **Must honour the filing rule**: the **first-named** manager files and installs; the **second-named** checks at last call and files it if missing.
 
-7. **At the bell**: at last call, reach a safe checkpoint and **ACK in one line** (mandatory — it is the liveness check). At closing time, run each declared deliverable and report one line each with a receipt or a reason — **report and carry, never block**. Closing time never waits: a job still running is stopped and recorded as an overrun. The order is: session end → `push` → `deploy` if declared → `backup` → summary card (`last-call.md` §5a). File any unmet deliverable as a store row.
+7. **At the bell**: at last call, reach a safe checkpoint and **ACK in one line** (mandatory — it is the liveness check). At closing time, run each declared deliverable and report one line each with a receipt or a reason — **report and carry, never block**. Closing time never waits: a job still running is stopped and recorded as an overrun. The order is: session end → `push` → `deploy` if declared → `backup` → the cross-repo roll-up (the filer only, once, with the command the closing-time DM gives) → summary card (`last-call.md` §5a). File any unmet deliverable as a store row.
 
 ---
 
