@@ -5,6 +5,8 @@ Moved out of `workflow/plan-review.md` (lines 444-449 at `d73f36b`) without chan
 ---
 
 ## Version History
+**v+** (2026.11.11, Rachel, row `6fe361d2`) - Section 4 states the exact outcome-line and ruling-line grammar, cites lupin's checker as the authority, and gives one worked pair; the template alone had let five lines fail the gate (step id, extra text after `REUSED`/`EXTENDED`, no `RULING` line).
+
 **v+** (2026.11.06, Rachel, row `60936c0e`) - Review checklist: flag any step that needs a free GPU; cites `testing-baseline.md`.
 
 - **2026.11.02 (María 🌸, Rick's rulings of 2 Nov via Cheech, design `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8, row `3d11c8b3`)**: Section 4 runs the reuse check before a plan decides to write new code: the tool call, the plain-text search every time with the agent's own terms, and the source read. It teaches reading the answer (a shortlist entry is a lead; "uncertain" never means nothing exists), adds the `REUSE-OUTCOME` line with its `excluded` and `unindexed` tokens, and says the check is required where an outcome checker is installed. The vocabulary table drops `NEW`, which lupin's tool stopped returning on 24 Oct, and gains an outcome-line column.
