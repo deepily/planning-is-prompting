@@ -1283,7 +1283,7 @@ def test_a_plan_name_that_numbers_the_plan_is_refused( bad ):
     assert [ e for e in errs if "plan_name must name the plan" in e ], errs
 
 
-@pytest.mark.parametrize( "ok", [ "Planning rewrite", "Plan review gate", "Auth rewrite", "Phase plan" ] )
+@pytest.mark.parametrize( "ok", [ "Planning rewrite", "Plan review gate", "Auth rewrite", "Phase plan", "P2P sync", "P4X rollout" ] )
 def test_a_plan_name_that_merely_starts_with_plan_is_accepted( ok ):
     m = good_manifest()
     m[ "plan_name" ] = ok
