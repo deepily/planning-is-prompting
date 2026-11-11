@@ -356,16 +356,34 @@ def test_invalid_json_exits_3( tmp_path, capsys ):
 
 # ── title stamping ───────────────────────────────────────────────────────────────────────────────
 
+def test_no_title_carries_a_plan_number_whatever_plan_number_says():
+    import re
+    for n in ( 1, 2, 7 ):
+        m = good_manifest()
+        m[ "plan_number" ] = n
+        titles = [ r[ "title" ] for r in pi.build_rows( m ) ]
+        assert len( titles ) == 7
+        assert all( "Test plan" in t for t in titles )
+        assert not [ t for t in titles if re.search( r"Plan\s+\d", t ) ], titles
+
+
+def test_plan_number_is_optional():
+    m = good_manifest()
+    del m[ "plan_number" ]
+    assert pi.validate_manifest( m, PLAN_MD ) == []
+    assert pi.build_rows( m )[ 0 ][ "title" ] == "[TST] Test plan · Phase 1 of 2 · Alpha"
+
+
 def test_titles_follow_the_grammar_in_board_order():
     titles = [ r[ "title" ] for r in pi.build_rows( good_manifest() ) ]
     assert titles == [
-        "[TST] Plan 2 · Phase 1 of 2 · Alpha",
-        "[TST] Plan 2 · Phase 1 of 2 · Step 1 of 3 · First",
-        "[TST] Plan 2 · Phase 1 of 2 · Step 2 of 3 · Second",
-        "[TST] Plan 2 · Phase 1 of 2 · Step 3 of 3 · Third",
-        "[TST] Plan 2 · Phase 2 of 2 · Beta",
-        "[TST] Plan 2 · Phase 2 of 2 · Step 1 of 2 · Fourth",
-        "[TST] Plan 2 · Phase 2 of 2 · Step 2 of 2 · Fifth",
+        "[TST] Test plan · Phase 1 of 2 · Alpha",
+        "[TST] Test plan · Phase 1 of 2 · Step 1 of 3 · First",
+        "[TST] Test plan · Phase 1 of 2 · Step 2 of 3 · Second",
+        "[TST] Test plan · Phase 1 of 2 · Step 3 of 3 · Third",
+        "[TST] Test plan · Phase 2 of 2 · Beta",
+        "[TST] Test plan · Phase 2 of 2 · Step 1 of 2 · Fourth",
+        "[TST] Test plan · Phase 2 of 2 · Step 2 of 2 · Fifth",
     ]
 
 
@@ -378,13 +396,13 @@ def test_an_unexpanded_phase_is_stamped_stub_with_its_trigger():
     m = good_manifest()
     m[ "phases" ][ 1 ].update( steps=[], expand_trigger="Phase 1 closes" )
     titles = [ r[ "title" ] for r in pi.build_rows( m ) ]
-    assert titles[ -1 ] == "[TST] Plan 2 · Phase 2 of 2 · STUB · Beta (expand when Phase 1 closes)"
+    assert titles[ -1 ] == "[TST] Test plan · Phase 2 of 2 · STUB · Beta (expand when Phase 1 closes)"
     assert len( titles ) == 5          # three steps of phase 1, its row, and the one STUB row
 
 
 def test_plan_is_spelled_out_never_p1():
     for r in pi.build_rows( good_manifest() ):
-        assert " Plan 2 " in r[ "title" ]
+        assert "[TST] Test plan " in r[ "title" ]
         assert " P2 " not in r[ "title" ] and " P1 " not in r[ "title" ]
 
 
@@ -412,7 +430,7 @@ def test_a_dry_run_prints_the_titles_and_writes_nothing( store ):
     code, report, text = run( good_manifest(), False, store )
     assert code == 0
     assert writes( store ) == []
-    assert "[TST] Plan 2 · Phase 2 of 2 · Step 2 of 2 · Fifth" in text
+    assert "[TST] Test plan · Phase 2 of 2 · Step 2 of 2 · Fifth" in text
     assert "dry run: nothing written. 7 row(s) would change" in text
 
 
@@ -520,7 +538,7 @@ def test_a_changed_step_count_restamps_only_that_phases_steps( store ):
     assert sorted( report[ "restamped" ] ) == [ "b1", "b2" ]       # "Step S of 2" -> "of 3"
     assert report[ "created" ] == [ "b3" ]
     titles = { r[ "title" ] for r in store.rows }
-    assert "[TST] Plan 2 · Phase 1 of 2 · Step 1 of 3 · First" in titles      # untouched
+    assert "[TST] Test plan · Phase 1 of 2 · Step 1 of 3 · First" in titles      # untouched
 
 
 def test_a_restamp_is_a_patch_and_never_a_delete( store ):
@@ -699,10 +717,10 @@ def test_a_done_receipt_step_is_valid_and_a_blank_one_is_not():
 def test_finished_phases_and_steps_get_no_row_and_the_first_row_reads_phase_3_of_4():
     titles = [ r[ "title" ] for r in pi.build_rows( adopted_manifest() ) ]
     assert titles == [
-        "[TST] Plan 2 · Phase 3 of 4 · Live",
-        "[TST] Plan 2 · Phase 3 of 4 · Step 2 of 3 · Open one",
-        "[TST] Plan 2 · Phase 3 of 4 · Step 3 of 3 · Open two",
-        "[TST] Plan 2 · Phase 4 of 4 · STUB · Later (expand when Phase 3 closes)",
+        "[TST] Test plan · Phase 3 of 4 · Live",
+        "[TST] Test plan · Phase 3 of 4 · Step 2 of 3 · Open one",
+        "[TST] Test plan · Phase 3 of 4 · Step 3 of 3 · Open two",
+        "[TST] Test plan · Phase 4 of 4 · STUB · Later (expand when Phase 3 closes)",
     ]
 
 
@@ -876,12 +894,12 @@ def test_a_plan_numbered_from_zero_validates_against_a_phase_0_heading():
 def test_of_n_is_the_highest_phase_number_so_0_to_2_ends_at_phase_2_of_2():
     titles = [ r[ "title" ] for r in pi.build_rows( zero_based_manifest() ) ]
     assert titles == [
-        "[TST] Plan 2 · Phase 0 of 2 · Setup",
-        "[TST] Plan 2 · Phase 0 of 2 · Step 1 of 2 · Prepare",
-        "[TST] Plan 2 · Phase 0 of 2 · Step 2 of 2 · Check",
-        "[TST] Plan 2 · Phase 1 of 2 · Build",
-        "[TST] Plan 2 · Phase 1 of 2 · Step 1 of 1 · Build it",
-        "[TST] Plan 2 · Phase 2 of 2 · STUB · Ship (expand when Phase 1 closes)",
+        "[TST] Test plan · Phase 0 of 2 · Setup",
+        "[TST] Test plan · Phase 0 of 2 · Step 1 of 2 · Prepare",
+        "[TST] Test plan · Phase 0 of 2 · Step 2 of 2 · Check",
+        "[TST] Test plan · Phase 1 of 2 · Build",
+        "[TST] Test plan · Phase 1 of 2 · Step 1 of 1 · Build it",
+        "[TST] Test plan · Phase 2 of 2 · STUB · Ship (expand when Phase 1 closes)",
     ]
 
 
@@ -962,16 +980,16 @@ def test_two_phases_cannot_share_a_label():
 def test_a_labelled_phase_keeps_its_number_and_shows_its_label_in_every_title():
     rows   = pi.build_rows( labelled_manifest() )
     titles = { r[ "key" ]: r[ "title" ] for r in rows }
-    assert titles[ "ph1" ] == "[TST] Plan 2 · Phase 1 of 2 (W-A) · Alpha"
-    assert titles[ "ph2" ] == "[TST] Plan 2 · Phase 2 of 2 (W-B) · Beta"
-    assert titles[ "a2" ]  == "[TST] Plan 2 · Phase 1 of 2 (W-A) · Step 2 of 3 · Second"
-    assert titles[ "b1" ]  == "[TST] Plan 2 · Phase 2 of 2 (W-B) · Step 1 of 2 · Fourth"
+    assert titles[ "ph1" ] == "[TST] Test plan · Phase 1 of 2 (W-A) · Alpha"
+    assert titles[ "ph2" ] == "[TST] Test plan · Phase 2 of 2 (W-B) · Beta"
+    assert titles[ "a2" ]  == "[TST] Test plan · Phase 1 of 2 (W-A) · Step 2 of 3 · Second"
+    assert titles[ "b1" ]  == "[TST] Test plan · Phase 2 of 2 (W-B) · Step 1 of 2 · Fourth"
 
 
 def test_an_unlabelled_manifest_builds_the_same_titles_as_before():
     titles = { r[ "key" ]: r[ "title" ] for r in pi.build_rows( good_manifest() ) }
-    assert titles[ "ph1" ] == "[TST] Plan 2 · Phase 1 of 2 · Alpha"
-    assert titles[ "a2" ]  == "[TST] Plan 2 · Phase 1 of 2 · Step 2 of 3 · Second"
+    assert titles[ "ph1" ] == "[TST] Test plan · Phase 1 of 2 · Alpha"
+    assert titles[ "a2" ]  == "[TST] Test plan · Phase 1 of 2 · Step 2 of 3 · Second"
 
 
 # ── reconcile: a phase heading follows its steps (row bb92a34a) ──────────────────────────────────

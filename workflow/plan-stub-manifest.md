@@ -24,12 +24,12 @@ The importer writes every title. Authors supply only the short name.
 
 | Row | Title |
 |---|---|
-| Phase | `[PREFIX] Plan 1 · Phase 3 of 7 · <phase name>` |
-| Step | `[PREFIX] Plan 1 · Phase 3 of 7 · Step 2 of 5 · <step name>` |
-| Unexpanded phase | `[PREFIX] Plan 1 · Phase 6 of 7 · STUB · <phase name> (expand when Phase 5 closes)` |
+| Phase | `[PREFIX] <plan name> · Phase 3 of 7 · <phase name>` |
+| Step | `[PREFIX] <plan name> · Phase 3 of 7 · Step 2 of 5 · <step name>` |
+| Unexpanded phase | `[PREFIX] <plan name> · Phase 6 of 7 · STUB · <phase name> (expand when Phase 5 closes)` |
 
-- **"Plan N", spelled out.** Never `P1`: the board already uses `P1`–`P5` for priority, and a title reading `P1 Ph4` was misread as a priority on the first hand-built set.
-- **Plan numbers are per initiative**, assigned in the plan folder's own order. The `[PREFIX]` keeps two repos' "Plan 1" apart.
+- **The plan is named, never numbered.** The head is the manifest's `plan_name` (e.g. `Code-health abstraction`); no title carries "Plan N" or `P1`. A number tells the reader nothing (Rick, 2026-11-11), and the board already uses `P1`–`P5` for priority. `plan_number` is an optional manifest field: it may order plans in a report, and it never reaches a title.
+- **Keep `plan_name` short and unique within the `[PREFIX]`**, since it is what tells two plans apart on the board.
 - **"of N" comes from the manifest**, so it cannot be mistyped, and the importer re-stamps it when N changes (§5).
 - **Phases keep the plan's own numbers and may start at 0.** "of N" is the highest phase number, so a plan with phases 0 to 7 ends at `Phase 7 of 7`. Steps always start at 1.
 - **A closed row is never re-stamped.** The board refuses a title edit on a done or dropped row, so when N changes the importer re-titles open rows only and reports the closed ones as left unchanged.

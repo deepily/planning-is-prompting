@@ -69,6 +69,7 @@ STUB_KEY_RE   = re.compile( r"^stub_key:\s*(\S+)", re.MULTILINE )
 
 TOP_FIELDS    = ( "plan_ref", "project", "prefix", "plan_number", "plan_name", "correlation_key",
                   "owner_persona", "phases" )
+OPTIONAL_TOP  = ( "plan_number", )   # a number never reaches a title; kept only for the report header
 PHASE_FIELDS  = ( "phase", "label", "name", "steps", "expand_trigger", "depends_on" )
 STEP_FIELDS   = ( "key", "name", "item_class", "priority", "acceptance", "owner_role", "depends_on",
                   "gate_class", "done_receipt" )
@@ -240,7 +241,7 @@ def validate_manifest( m, plan_text=None ):
         return [ "manifest must be a JSON object" ]
 
     for f in TOP_FIELDS:
-        if f not in m: errs.append( f"missing field: {f}" )
+        if f not in m and f not in OPTIONAL_TOP: errs.append( f"missing field: {f}" )
     for f in m:
         if f not in TOP_FIELDS: errs.append( f"unknown field: {f}" )
 
@@ -467,10 +468,11 @@ def build_rows( m ):
     Ensures:
         - returns [ row ]; each row is { key, kind, title, body, item_class, priority, gate_class,
           depends_on, stub_key } and the titles follow section 2 of the spec exactly:
-            [PREFIX] Plan N · Phase P of T · <phase name>
-            [PREFIX] Plan N · Phase P of T · Step S of M · <step name>
-            [PREFIX] Plan N · Phase P of T · STUB · <phase name> (expand when <trigger>)
-        - "Plan N" is spelled out, and "of N" is computed here from the manifest, never typed:
+            [PREFIX] <plan name> · Phase P of T · <phase name>
+            [PREFIX] <plan name> · Phase P of T · Step S of M · <step name>
+            [PREFIX] <plan name> · Phase P of T · STUB · <phase name> (expand when <trigger>)
+        - the plan is named by plan_name; no title carries a plan number (Rick, 2026-11-11).
+          "of N" is computed here from the manifest, never typed:
           the highest phase number (phases may start at 0 or 1; steps always start at 1)
         - a row's depends_on holds keys; a phase row depends on the previous phase unless it names
           its own. Keys that carry no row (finished before the import) are left out of it
@@ -478,13 +480,12 @@ def build_rows( m ):
           so the totals stay true. A phase whose steps all carry done_receipt gets no phase row
     """
     prefix  = m[ "prefix" ]
-    plan_n  = m[ "plan_number" ]
     phases  = sorted( m[ "phases" ], key=lambda p: p[ "phase" ] )
     # "of N" is the HIGHEST phase number, so a plan numbered 0 to 7 ends at "Phase 7 of 7"
     total   = max( p[ "phase" ] for p in phases )
     numbers = { p[ "phase" ] for p in phases }
     ck      = m[ "correlation_key" ]
-    head    = f"[{prefix}] Plan {plan_n}"
+    head    = f"[{prefix}] {m[ 'plan_name' ]}"
     rows    = []
     gone    = finished_keys( m )
 
@@ -814,7 +815,7 @@ def run_status( m, out=print ):
         out( f"PLAN STUB STATUS: cannot read the board — {err}" )
         return 1
     s = compute_status( m, existing )
-    out( f"Plan {m[ 'plan_number' ]} · {m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
+    out( f"{m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
     nums  = sorted( p[ "phase" ] for p in m[ "phases" ] )
     span  = f" (numbered {nums[ 0 ]} to {nums[ -1 ]})" if nums[ 0 ] == 0 else ""
     out( f"phases done: {s[ 'phases_done' ]} of {s[ 'phases_total' ]}{span}" )
@@ -932,7 +933,7 @@ def run_reconcile( m, check=False, close=False, actor=None, out=print ):
         out( f"PLAN STUB RECONCILE: cannot read the board — {err}" )
         return 1
     r = compute_reconcile( m, existing )
-    out( f"Plan {m[ 'plan_number' ]} · {m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
+    out( f"{m[ 'plan_name' ]} · {m[ 'correlation_key' ]}" )
     for p in r[ "phases" ]:
         out( f"Phase {p[ 'phase' ]} · {p[ 'name' ]}: {p[ 'verdict' ]} — steps {p[ 'steps' ]}, receipts {p[ 'receipts' ]}, "
              f"done {p[ 'done' ]}, open {p[ 'open' ]}; heading {p[ 'heading_status' ] or 'none'}" )
