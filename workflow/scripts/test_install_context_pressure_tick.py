@@ -898,3 +898,47 @@ def test_a_runner_line_for_another_tick_path_is_not_reported( bed, tmp_path ):
     bed[ "crontab" ].write_text( inst.build_line( "fleet", other, bed[ "log_dir" ], runner=runner ) + "\n", encoding="utf-8" )
     _code, report = run( bed, runner=runner )
     assert not any( "does not run through the job runner" in r for r in report )
+
+
+# ── a session pinned to a seat worktree (Cheech's review of row acb17a2a) ──────────────────────────
+
+def test_a_worktree_lupin_root_resolves_the_runner_in_the_main_checkout( tmp_path ):
+    main, script = make_runner( tmp_path )
+    seat         = main / ".claude" / "worktrees" / "seat-1"
+    seat.mkdir( parents=True )
+    got = inst.default_runner( { "LUPIN_ROOT": str( seat ) }, common_dir=lambda p: main / ".git" )
+    assert got == script
+
+
+def test_a_worktree_lupin_root_that_git_cannot_place_gives_no_runner( tmp_path ):
+    seat   = tmp_path / "lupin" / ".claude" / "worktrees" / "seat-1"
+    script = seat / "src" / "scripts" / "cron-job.sh"
+    script.parent.mkdir( parents=True )
+    script.write_text( "#!/bin/sh\n", encoding="utf-8" )
+    script.chmod( 0o755 )
+    assert inst.default_runner( { "LUPIN_ROOT": str( seat ) }, common_dir=lambda p: None ) is None
+
+
+def test_under_worktree_needs_the_two_components_together( tmp_path ):
+    assert inst.under_worktree( tmp_path / "lupin" / ".claude" / "worktrees" / "x" / "cron-job.sh" )
+    assert not inst.under_worktree( tmp_path / "worktrees" / "cron-job.sh" )
+    assert not inst.under_worktree( tmp_path / ".claude" / "cron-job.sh" )
+
+
+def test_main_refuses_a_runner_inside_a_worktree_and_runs_the_tick_directly( bed, tmp_path, capsys ):
+    runner = tmp_path / "lupin" / ".claude" / "worktrees" / "seat-1" / "src" / "scripts" / "cron-job.sh"
+    assert inst.main( main_args( bed, "--runner", str( runner ) ) ) == 0
+    assert "context-tick cron" not in tick_lines( bed )[ 0 ]
+    assert "refusing the runner" in capsys.readouterr().err
+
+
+def test_git_common_dir_names_the_main_checkouts_git_directory():
+    """Run from this repo, main checkout or worktree alike: the shared .git sits in the main checkout."""
+    common = inst.git_common_dir( Path( __file__ ).resolve().parent )
+    assert common is not None and common.name == ".git"
+    assert ( common.parent / "workflow" / "scripts" / "install_context_pressure_tick.py" ).is_file()
+    assert not inst.under_worktree( common )
+
+
+def test_git_common_dir_outside_a_checkout_is_none( tmp_path ):
+    assert inst.git_common_dir( tmp_path ) is None

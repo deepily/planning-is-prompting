@@ -215,7 +215,33 @@ def pick_offset( key, taken ):
     return start
 
 
-def default_runner( environ ):
+def git_common_dir( path ):
+    """
+    Requires:
+        - path is a Path inside a git checkout, or anywhere else
+    Ensures:
+        - returns the absolute Path of the repository's shared .git directory, the same for the main checkout and
+          every worktree of it, or None when git cannot say (not a checkout, git missing, a timeout)
+    """
+    try:
+        out = subprocess.run( [ "git", "-C", str( path ), "rev-parse", "--path-format=absolute", "--git-common-dir" ],
+                              capture_output=True, text=True, timeout=10 )
+    except ( OSError, subprocess.SubprocessError ):
+        return None
+    return Path( out.stdout.strip() ) if out.returncode == 0 and out.stdout.strip() else None
+
+
+def under_worktree( path ):
+    """
+    Ensures:
+        - True when path has a ".claude/worktrees" pair of components: a seat tree the janitor deletes, so a crontab
+          line pointing into it dies silently on the day the tree goes
+    """
+    parts = Path( path ).parts
+    return any( parts[ i ] == ".claude" and parts[ i + 1 ] == "worktrees" for i in range( len( parts ) - 1 ) )
+
+
+def default_runner( environ, common_dir=git_common_dir ):
     """
     Find the job runner the tick's line should go through, if this host has one.
 
@@ -223,21 +249,32 @@ def default_runner( environ ):
     cron writes no job summary, so the Background Jobs page shows it as "unknown". Lupin's
     cron-job.sh runs a command through job_run, which records every run.
 
+    WHY THE MAIN CHECKOUT (Cheech's review). A session may pin LUPIN_ROOT to a seat worktree. The fleet line
+    outlives the session, and cron-job.sh takes its root from its own location, so a runner inside that tree
+    would stop the tick the day the tree is removed. The runner is therefore looked up in the main checkout.
+
     Requires:
         - environ is a mapping of environment variables
+        - common_dir is a function Path -> Path or None, as git_common_dir (a test seam)
 
     Ensures:
         - returns Path( CONTEXT_TICK_RUNNER ) when that variable is set and non-empty
         - returns None when CONTEXT_TICK_RUNNER is set to an empty string (the opt-out)
-        - otherwise returns $LUPIN_ROOT/src/scripts/cron-job.sh when LUPIN_ROOT is set and that file is executable
+        - otherwise, with LUPIN_ROOT set, returns <main checkout>/src/scripts/cron-job.sh when it is executable,
+          where the main checkout is the parent of LUPIN_ROOT's shared .git directory, or LUPIN_ROOT itself
+          when git cannot say
         - otherwise returns None, and the line runs the tick directly, as before
+        - never returns a path under .claude/worktrees/ from LUPIN_ROOT (main refuses one from the variable or flag)
     """
     if RUNNER_ENV in environ:
         value = environ[ RUNNER_ENV ].strip()
         return Path( value ).expanduser() if value else None
     lupin_root = environ.get( "LUPIN_ROOT", "" ).strip()
     if not lupin_root: return None
-    candidate = Path( lupin_root ) / "src" / "scripts" / "cron-job.sh"
+    shared    = common_dir( Path( lupin_root ) )
+    main_root = shared.parent if shared is not None else Path( lupin_root )
+    candidate = main_root / "src" / "scripts" / "cron-job.sh"
+    if under_worktree( candidate ): return None
     return candidate if os.access( candidate, os.X_OK ) else None
 
 
@@ -717,6 +754,10 @@ def main( argv=None ):
     if args.no_runner:     runner = None
     elif args.runner:      runner = Path( args.runner ).expanduser()
     else:                  runner = default_runner( os.environ )
+    if runner is not None and under_worktree( runner ):
+        print( f"TICK INSTALL ERROR: refusing the runner {runner}: it is inside a seat worktree, which is deleted "
+               f"later and would stop the tick. A new line runs the tick directly instead.", file=sys.stderr )
+        runner = None
 
     try:
         code, report = reconcile(
