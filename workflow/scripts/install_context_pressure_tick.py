@@ -610,7 +610,7 @@ def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
             # The line is never edited (see the module docstring), so a line from before the job
             # runner stays as it is. Say so, and say how to switch, instead of rewriting it.
             installed = line_for( current, SHARED_KEY )
-            if runner is not None and tick_command( tick_path, runner ) not in installed:
+            if runner is not None and f"{runner} {RUNNER_JOB} cron -- " not in installed:
                 report.append( f"context tick: the installed line does not run through the job runner {runner}, so the "
                                f"Background Jobs page cannot see its runs. To switch, delete the line tagged "
                                f"'# {SLOT_TAG_PREFIX}{SHARED_KEY}-'; the next session start adds it back through the runner." )

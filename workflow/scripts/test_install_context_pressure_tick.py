@@ -889,3 +889,12 @@ def test_main_runner_flag_names_the_runner( bed, tmp_path, monkeypatch ):
     runner = tmp_path / "my-runner.sh"
     assert inst.main( main_args( bed, "--runner", str( runner ) ) ) == 0
     assert f"{runner} context-tick cron -- " in tick_lines( bed )[ 0 ]
+
+
+def test_a_runner_line_for_another_tick_path_is_not_reported( bed, tmp_path ):
+    """A line already on the runner counts, even when its tick lives at another path (a worktree copy, say)."""
+    runner = tmp_path / "cron-job.sh"
+    other  = tmp_path / "elsewhere" / "context-pressure-tick.sh"
+    bed[ "crontab" ].write_text( inst.build_line( "fleet", other, bed[ "log_dir" ], runner=runner ) + "\n", encoding="utf-8" )
+    _code, report = run( bed, runner=runner )
+    assert not any( "does not run through the job runner" in r for r in report )
