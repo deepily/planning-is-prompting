@@ -81,6 +81,8 @@ DEFAULT_LOG_DIR  = Path( os.environ.get( "TMPDIR", "/tmp" ) ) / f"claude-{os.get
 ROSTER_KEY_RE    = re.compile( r"^\s*(?:export\s+)?COSA_VOICE_MANAGERS__([A-Z0-9_]+)\s*=\s*(.+?)\s*$" )
 SLOT_TAG_PREFIX  = "slot-"
 SHARED_KEY       = "fleet"
+RUNNER_ENV       = "CONTEXT_TICK_RUNNER"      # a runner path, or empty to run the tick directly
+RUNNER_JOB       = "context-tick"             # the tick's job name in Lupin's src/conf/job-registry.json
 
 # The ONLY shape this script will delete. The tag must be the line's trailing comment and the suffix
 # must be the 8 hex characters slot_for_key issues. Anything else — an unadorned cron line, a job
@@ -213,7 +215,48 @@ def pick_offset( key, taken ):
     return start
 
 
-def build_line( key, tick_path, log_dir, offset=None ):
+def default_runner( environ ):
+    """
+    Find the job runner the tick's line should go through, if this host has one.
+
+    WHY (Rick, 2026-11-14, decision row 317d5101: "Host via job runner"). A tick run straight from
+    cron writes no job summary, so the Background Jobs page shows it as "unknown". Lupin's
+    cron-job.sh runs a command through job_run, which records every run.
+
+    Requires:
+        - environ is a mapping of environment variables
+
+    Ensures:
+        - returns Path( CONTEXT_TICK_RUNNER ) when that variable is set and non-empty
+        - returns None when CONTEXT_TICK_RUNNER is set to an empty string (the opt-out)
+        - otherwise returns $LUPIN_ROOT/src/scripts/cron-job.sh when LUPIN_ROOT is set and that file is executable
+        - otherwise returns None, and the line runs the tick directly, as before
+    """
+    if RUNNER_ENV in environ:
+        value = environ[ RUNNER_ENV ].strip()
+        return Path( value ).expanduser() if value else None
+    lupin_root = environ.get( "LUPIN_ROOT", "" ).strip()
+    if not lupin_root: return None
+    candidate = Path( lupin_root ) / "src" / "scripts" / "cron-job.sh"
+    return candidate if os.access( candidate, os.X_OK ) else None
+
+
+def tick_command( tick_path, runner=None ):
+    """
+    Requires:
+        - tick_path is a Path to context-pressure-tick.sh
+        - runner is a Path to a cron-job.sh style runner, or None
+
+    Ensures:
+        - with no runner, returns the tick path itself
+        - with a runner, returns "<runner> context-tick cron -- <tick>", so job_run runs the tick
+          and writes the context-tick job summary
+    """
+    if runner is None: return str( tick_path )
+    return f"{runner} {RUNNER_JOB} cron -- {tick_path}"
+
+
+def build_line( key, tick_path, log_dir, offset=None, runner=None ):
     """
     Compose the crontab line for one persona.
 
@@ -222,17 +265,35 @@ def build_line( key, tick_path, log_dir, offset=None ):
         - tick_path is a Path to context-pressure-tick.sh
         - log_dir is a Path
         - offset is 0-9, or None to use this key's hashed offset
+        - runner is a Path to the job runner, or None to run the tick directly
 
     Ensures:
         - returns a single crontab line ending in the "# slot-<key>-<suffix>" tag
         - fires six times an hour on the given offset
+        - runs the tick through the runner when one is given (see tick_command)
     """
     hashed, suffix = slot_for_key( key )
     offset         = hashed if offset is None else offset
     minutes        = ",".join( str( offset + step ) for step in range( 0, 60, 10 ) )
     log_path       = log_dir / f"context-pressure-tick-{key}.log"
-    return ( f"{minutes} * * * * {tick_path} >> {log_path} 2>&1 "
+    return ( f"{minutes} * * * * {tick_command( tick_path, runner )} >> {log_path} 2>&1 "
              f"# {SLOT_TAG_PREFIX}{key}-{suffix}" )
+
+
+def line_for( crontab_text, key ):
+    """
+    Requires:
+        - crontab_text is the crontab content
+        - key is a canonical persona key
+
+    Ensures:
+        - returns the first active (not commented-out) line carrying the "# slot-<key>-" tag, or None
+    """
+    tag = f"# {SLOT_TAG_PREFIX}{key}-"
+    for line in crontab_text.splitlines():
+        if line.lstrip().startswith( "#" ): continue
+        if tag in line: return line
+    return None
 
 
 def read_crontab( crontab_file=None ):
@@ -454,7 +515,7 @@ def announce_removal( key, notifier=None ):
 
 
 def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None, dry_run=False,
-               notifier=None, now=None, announce=True ):
+               notifier=None, now=None, announce=True, runner=None ):
     """
     Make the crontab's tick lines match the roster: add for anyone new, remove for anyone gone.
 
@@ -465,6 +526,7 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
         - notifier is the removal-announcement seam, or None for the real one
         - now is a datetime for the backup stamp, or None
         - announce is False to suppress the outbound notification entirely (--no-announce)
+        - runner is the job runner Path for a NEW line, or None to run the tick directly
 
     Ensures:
         - returns ( exit_code, report_lines )
@@ -499,7 +561,7 @@ def reconcile( roster_path, tick_path, log_dir, crontab_file=None, project=None,
     try:
         with _crontab_lock_for( crontab_file, owner="context tick reconcile" ):
             return _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
-                                      dry_run, notifier, now, announce )
+                                      dry_run, notifier, now, announce, runner )
     except CrontabLockTimeout as e:
         report.append( f"TICK INSTALL ERROR: {e}. Changing nothing — another crontab writer is "
                        f"mid-edit, and writing over it would delete its lines silently." )
@@ -517,7 +579,7 @@ def _crontab_lock_for( crontab_file, owner="" ):
 
 
 def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
-                       dry_run, notifier, now, announce ):
+                       dry_run, notifier, now, announce, runner=None ):
     """
     `reconcile`'s body, from the crontab read onward, with the lock already held.
 
@@ -545,6 +607,13 @@ def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
     if managers:
         if has_line_for( current, SHARED_KEY ):
             report.append( "context tick: shared fleet tick already installed" )
+            # The line is never edited (see the module docstring), so a line from before the job
+            # runner stays as it is. Say so, and say how to switch, instead of rewriting it.
+            installed = line_for( current, SHARED_KEY )
+            if runner is not None and tick_command( tick_path, runner ) not in installed:
+                report.append( f"context tick: the installed line does not run through the job runner {runner}, so the "
+                               f"Background Jobs page cannot see its runs. To switch, delete the line tagged "
+                               f"'# {SLOT_TAG_PREFIX}{SHARED_KEY}-'; the next session start adds it back through the runner." )
         else:
             offset = pick_offset( SHARED_KEY, taken )
             taken.add( offset )
@@ -564,7 +633,7 @@ def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
     if dry_run:
         for name, key, offset in missing:
             report.append( f"context tick: WOULD add for {name} -> "
-                           f"{build_line( key, tick_path, log_dir, offset )}" )
+                           f"{build_line( key, tick_path, log_dir, offset, runner )}" )
         for _index, key in doomed:
             report.append( f"context tick: WOULD remove the tick line for {key} — not on the roster" )
         return 0, report
@@ -581,7 +650,7 @@ def _reconcile_locked( report, managers, tick_path, log_dir, crontab_file,
     condemned = { index for index, _key in doomed }
     kept      = [ line for index, line in enumerate( current.splitlines() ) if index not in condemned ]
     body      = "".join( line + "\n" for line in kept )
-    appended  = "".join( build_line( key, tick_path, log_dir, offset ) + "\n"
+    appended  = "".join( build_line( key, tick_path, log_dir, offset, runner ) + "\n"
                          for _name, key, offset in missing )
 
     if not write_crontab( body + appended, crontab_file ):
@@ -640,7 +709,14 @@ def main( argv=None ):
                          help="remove without paging the operator. For driving this script against a "
                               "COPY of the crontab: a rehearsal must not be able to send a real alarm" )
     parser.add_argument( "--strict",       action="store_true", help="exit with the real code instead of 0" )
+    parser.add_argument( "--runner",       default=None,
+                         help=f"run a new tick line through this job runner (default: ${RUNNER_ENV}, else $LUPIN_ROOT/src/scripts/cron-job.sh when executable)" )
+    parser.add_argument( "--no-runner",    action="store_true", help="run a new tick line directly, with no job runner" )
     args = parser.parse_args( argv )
+
+    if args.no_runner:     runner = None
+    elif args.runner:      runner = Path( args.runner ).expanduser()
+    else:                  runner = default_runner( os.environ )
 
     try:
         code, report = reconcile(
@@ -651,6 +727,7 @@ def main( argv=None ):
             project      = args.project,
             dry_run      = args.dry_run,
             announce     = not args.no_announce,
+            runner       = runner,
         )
     except Exception as e:
         print( f"TICK INSTALL ERROR: the reconcile raised and was contained here: {e}", file=sys.stderr )

@@ -781,3 +781,111 @@ def test_the_installer_and_last_call_share_one_lock_function():
     import last_call as lc
     assert inst.crontab_lock is cl.crontab_lock
     assert lc.crontab_lock   is cl.crontab_lock
+
+
+# ── the job runner (Rick, 2026-11-14, decision row 317d5101: "Host via job runner") ───────────────
+
+def make_runner( tmp_path, executable=True ):
+    """A fake Lupin checkout whose src/scripts/cron-job.sh exists, executable or not."""
+    root   = tmp_path / "lupin"
+    script = root / "src" / "scripts" / "cron-job.sh"
+    script.parent.mkdir( parents=True )
+    script.write_text( "#!/bin/sh\n", encoding="utf-8" )
+    script.chmod( 0o755 if executable else 0o644 )
+    return root, script
+
+
+def test_default_runner_is_lupins_cron_job_script_when_it_is_executable( tmp_path ):
+    root, script = make_runner( tmp_path )
+    assert inst.default_runner( { "LUPIN_ROOT": str( root ) } ) == script
+
+
+def test_default_runner_is_none_when_the_script_is_not_executable( tmp_path ):
+    root, _script = make_runner( tmp_path, executable=False )
+    assert inst.default_runner( { "LUPIN_ROOT": str( root ) } ) is None
+
+
+def test_default_runner_is_none_without_lupin_root():
+    assert inst.default_runner( {} ) is None
+
+
+def test_the_runner_variable_wins_over_lupin_root( tmp_path ):
+    root, _script = make_runner( tmp_path )
+    other         = tmp_path / "other-runner.sh"
+    assert inst.default_runner( { "LUPIN_ROOT": str( root ), inst.RUNNER_ENV: str( other ) } ) == other
+
+
+def test_an_empty_runner_variable_opts_out( tmp_path ):
+    root, _script = make_runner( tmp_path )
+    assert inst.default_runner( { "LUPIN_ROOT": str( root ), inst.RUNNER_ENV: "" } ) is None
+
+
+def test_a_line_with_a_runner_runs_the_tick_through_it( bed, tmp_path ):
+    runner = tmp_path / "cron-job.sh"
+    line   = inst.build_line( "fleet", bed[ "tick" ], bed[ "log_dir" ], runner=runner )
+    assert f" * * * * {runner} context-tick cron -- {bed[ 'tick' ]} >> " in line
+    assert line.endswith( "# slot-fleet-" + inst.slot_for_key( "fleet" )[ 1 ] )
+
+
+def test_a_line_without_a_runner_runs_the_tick_directly( bed ):
+    line = inst.build_line( "fleet", bed[ "tick" ], bed[ "log_dir" ] )
+    assert f" * * * * {bed[ 'tick' ]} >> " in line
+    assert "context-tick cron" not in line
+
+
+def test_a_first_install_with_a_runner_writes_the_runner_line( bed, tmp_path ):
+    runner = tmp_path / "cron-job.sh"
+    code, _report = run( bed, runner=runner )
+    lines = tick_lines( bed )
+    assert code == 0 and len( lines ) == 1
+    assert f"{runner} context-tick cron -- {bed[ 'tick' ]}" in lines[ 0 ]
+
+
+def test_an_old_direct_line_is_kept_and_reported_not_rewritten( bed, tmp_path ):
+    old = inst.build_line( "fleet", bed[ "tick" ], bed[ "log_dir" ] ) + "\n"
+    bed[ "crontab" ].write_text( old, encoding="utf-8" )
+    code, report = run( bed, runner=tmp_path / "cron-job.sh" )
+    assert code == 0
+    assert bed[ "crontab" ].read_text( encoding="utf-8" ) == old
+    assert any( "does not run through the job runner" in r and "# slot-fleet-" in r for r in report )
+
+
+def test_a_line_already_on_the_runner_is_not_reported( bed, tmp_path ):
+    runner = tmp_path / "cron-job.sh"
+    bed[ "crontab" ].write_text( inst.build_line( "fleet", bed[ "tick" ], bed[ "log_dir" ], runner=runner ) + "\n",
+                                 encoding="utf-8" )
+    _code, report = run( bed, runner=runner )
+    assert not any( "does not run through the job runner" in r for r in report )
+
+
+def test_no_runner_means_no_report_about_an_old_line( bed ):
+    bed[ "crontab" ].write_text( inst.build_line( "fleet", bed[ "tick" ], bed[ "log_dir" ] ) + "\n", encoding="utf-8" )
+    _code, report = run( bed )
+    assert not any( "does not run through the job runner" in r for r in report )
+
+
+def main_args( bed, *extra ):
+    return [ "--roster", str( bed[ "roster" ] ), "--tick", str( bed[ "tick" ] ), "--log-dir", str( bed[ "log_dir" ] ),
+             "--crontab-file", str( bed[ "crontab" ] ), "--no-announce", "--strict", *extra ]
+
+
+def test_main_uses_lupins_runner_by_default( bed, tmp_path, monkeypatch ):
+    root, script = make_runner( tmp_path )
+    monkeypatch.delenv( inst.RUNNER_ENV, raising=False )
+    monkeypatch.setenv( "LUPIN_ROOT", str( root ) )
+    assert inst.main( main_args( bed ) ) == 0
+    assert f"{script} context-tick cron -- " in tick_lines( bed )[ 0 ]
+
+
+def test_main_no_runner_flag_runs_the_tick_directly( bed, tmp_path, monkeypatch ):
+    root, _script = make_runner( tmp_path )
+    monkeypatch.setenv( "LUPIN_ROOT", str( root ) )
+    assert inst.main( main_args( bed, "--no-runner" ) ) == 0
+    assert "context-tick cron" not in tick_lines( bed )[ 0 ]
+
+
+def test_main_runner_flag_names_the_runner( bed, tmp_path, monkeypatch ):
+    monkeypatch.delenv( "LUPIN_ROOT", raising=False )
+    runner = tmp_path / "my-runner.sh"
+    assert inst.main( main_args( bed, "--runner", str( runner ) ) ) == 0
+    assert f"{runner} context-tick cron -- " in tick_lines( bed )[ 0 ]

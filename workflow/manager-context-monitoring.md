@@ -213,6 +213,8 @@ including after `/clear`. Nobody has to remember anything.
 
 **It is driven by the ROSTER, not by whoever booted** — `~/.claude/fleet-roster.env`, the file the launcher and the arbiter's systemd drop-in already read — and it never edits or reorders a line it did not issue; the installer's docstring gives the reasons.
 
+**Through a job runner, when the host has one.** A tick run straight from cron leaves no record a jobs page can read. When `$LUPIN_ROOT/src/scripts/cron-job.sh` is executable, a new line runs `cron-job.sh context-tick cron -- <tick>`, so every run writes the `context-tick` job summary. `CONTEXT_TICK_RUNNER` names another runner, or turns it off when set to an empty string; `--runner` and `--no-runner` do the same per run. An existing line is never rewritten. The installer reports that the line does not use the runner and says to delete it, so the next session start re-adds it.
+
 ### 🔁 THE ROSTER IS AUTHORITATIVE — reversal ruled by Rick, 2026-08-18
 
 Rick ruled on 2026-08-18 that he edits `~/.claude/fleet-roster.env` and everything follows: the script reconciles the tagged tick lines to the roster, adding for anyone new and removing for anyone no longer rostered, under four guards and the rule that an empty or unreadable roster removes nothing (all in the installer's docstring).
