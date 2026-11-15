@@ -26,7 +26,7 @@
 1. **Must read the canonical workflow**, `planning-is-prompting → workflow/status-report.md`, in full. It is the only authoritative source for the steps, the template and the voice.
 
 2. **Must use project configuration**:
-   - **[SHORT_PROJECT_PREFIX]**: `[PLAN]`
+   - **[SHORT_PROJECT_PREFIX]**: the current repo's prefix, from its `CLAUDE.md` (installed user-wide, so it runs in every repo)
    - **Report location**: the main checkout's `io/tmp/` of the repo the topic lives in, never a worktree and never `src/rnd/`
 
 3. **Must execute every step**: file the row → read and measure → write the template → the voice → place it → `podcast_for_rick( path, script_type="status_report" )` → deliver and close.
