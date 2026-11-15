@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-11-04 (**Session 231**, María 🌸 stable `d5ea4997`). First tomorrow: Rick's GPU rule in every workflow doc (row `60936c0e`); the duplicate check rerun (row `30ecf5af`) waits on it.
+Last updated: 2026-11-14 (**Session 236**, María 🌸 stable `7b694628`). First job: after the next reboot, close row `acb17a2a` on the first boot-run doc-parity job summary.
 
 ## 📍 Resume Here
 
@@ -376,6 +376,14 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-11-14: The two ticks run through Lupin's job runner (rows `acb17a2a`, `317d5101`)
+
+- **The context and doc-parity ticks run through `cron-job.sh`** (Rick's ruling on decision `317d5101`: "Host via job runner"). Each run writes a job summary, so the Background Jobs page shows a real status. The installer writes new lines this way and never rewrites a line already installed.
+- **doc-parity gets a start-up run** (Rick, card: "Add a start-up run"): the host is rarely on at 07:30, so the tick also runs 3 minutes after each boot.
+- **Install scripts do not go in `~/.lupin`** (Rick: "That seems slightly unorthodox"). One-off install scripts go in lupin `io/tmp`, which the 7-day sweep clears.
+- **The mobile Background Jobs pages are parked for a week** (Rick, card; row `204e8100`).
+- **Fable is off until about mid-December** (Rick, voice). The duplicate-check judge uses Opus under Cheech's plan.
 
 ### 2026-11-04: v0.2.2 released, and no test or job touches a GPU (rows `27046141`, `60936c0e`)
 
