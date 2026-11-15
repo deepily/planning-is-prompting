@@ -108,6 +108,7 @@ A multi-persona review pipeline wrapping `/plan-review`, split across focused sp
 
 - **[decision-walkthrough.md](workflow/decision-walkthrough.md)** — walk pending decisions one at a time, each with pros, cons and a recommendation. Command: `/plan-decide`
 - **[doc-viewer-links.md](workflow/doc-viewer-links.md)** — sending a viewable link instead of dumping a file into chat
+- **[status-report.md](workflow/status-report.md)** — "status report on X": a manager-level report with a sense of humor, piped straight into a five-minute status podcast. Command: `/plan-status-report`
 - **[loc-delta-global.md](workflow/loc-delta-global.md)** — cross-repo lines-of-code delta roll-up. Command: `/plan-loc-delta-global`
 
 ---

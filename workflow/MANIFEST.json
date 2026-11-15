@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-11T10:06:53-05:00",
+  "generated_at": "2026-11-14T22:16:56-05:00",
   "generator": "workflow/scripts/pip_manifest.py",
-  "command_count": 40,
+  "command_count": 41,
   "commands": {
     "p-is-p-00-start-here.md": {
       "sha256": "f385f5e173ee1ac92ed1441738bda20fc0ec22a544a064ef03ac66a324e7e90a",
@@ -142,6 +142,10 @@
     "plan-skills-management.md": {
       "sha256": "ecd4d7cfa2aa094c54d82999104da0ef6b526d86a6854056b30e651c152f9b8f",
       "version": "1.1"
+    },
+    "plan-status-report.md": {
+      "sha256": "3734fba5e22aa27ddf09a2223d35eb916faf990fea84a49043ad931686639c12",
+      "version": "1.0"
     },
     "plan-test-baseline.md": {
       "sha256": "656aa930ab81034ddb63c7b9e60cd9cf65ab79d0b51b65815d56c3806f581ac3",
