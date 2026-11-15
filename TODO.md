@@ -377,6 +377,21 @@ whole reason that prefix exists.
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
 
+### 2026-11-14: The reuse judge's AUC is not a reason to hold the code-health abstraction (Rick, voice, about 22:30 EST; rows `66b36d26`, `eeb88bab`)
+
+- **The ruling, in his words**: "from where I sit there's no problem with building out and abstracting the algorithm if you have faith that we will continuously improve the accuracy." He calls the opposite claim, that the judge's AUC argues against abstracting, a false narrative he has heard twice. The 9 Nov plan and my 14 Nov status report both made it.
+- **His reason: the judge's mistakes are the cheap kind.**
+  - It over-accepts look-alikes: at the 0.30 threshold it accepts 41% of different-job pairs. That costs an agent one read.
+  - It rarely rejects a real match: it accepts 94% of same-job pairs, and 9 of 9 plants that reached it. Rejecting a real match is the expensive mistake, because it leads to duplicate code.
+  - Source: lupin `src/rnd/v0.2.2/2026.09.30-wiki-and-jev-for-code-reuse-review/2026.11.01-first-thousand-run-revised-plan.md` §8 and §21.
+- **The measurement agrees on where the losses sit.** End to end, 58 of 70 needs were found. Of the 12 lost, 10 were never retrieved by the search and 2 were retrieved but not shortlisted. So the accuracy work goes to the similarity search (bug row `eeb88bab`, held for Rick's approval).
+- **Figures as spoken, corrected**:
+  - The AUC is 0.68, not 0.65.
+  - The shortlist is 128, not 100.
+  - The index holds about 13,000 to 14,000 definitions, not 12,000.
+  - The "about 85%" he recalled is the end-to-end recall, 58 of 70 (83%).
+- **Unchanged**: the two-week green gate before a third repo (decision 1 of 9 Nov).
+
 ### 2026-11-14: The two ticks run through Lupin's job runner (rows `acb17a2a`, `317d5101`)
 
 - **The context and doc-parity ticks run through `cron-job.sh`** (Rick's ruling on decision `317d5101`: "Host via job runner"). Each run writes a job summary, so the Background Jobs page shows a real status. The installer writes new lines this way and never rewrites a line already installed.
