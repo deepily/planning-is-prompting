@@ -110,8 +110,8 @@ def test_prefix_plus_body_reproduces_the_manifest():
 
 
 def test_a_heading_word_is_not_a_section():
-    # "## Sessions overview" and "## Session" with nothing after must not split
-    _, sections = rsm.parse_sections( HEADER + "## Sessions overview\n\ntext\n" + PERSONA_LIVE )
+    # "## Sessions overview" and "## Session notes" are headings, not sessions (Cheech's review)
+    _, sections = rsm.parse_sections( HEADER + "## Sessions overview\n\ntext\n## Session notes\n\nmore\n" + PERSONA_LIVE )
     assert [ s[ 0 ] for s in sections ] == [ "7b694628" ]
 
 

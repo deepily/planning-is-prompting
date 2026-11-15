@@ -35,7 +35,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 TERMINAL_PREFIXES = ( "committed", "closed", "handed-off" )
-SECTION_HEADING   = re.compile( r'(?m)^(## Session:? )(?=\S)' )
+SECTION_HEADING   = re.compile( r'(?m)^(## Session:? )(?=[0-9a-f]{8}\b)' )     # an 8-hex id, so "## Session notes" is not a section (Cheech's review)
 
 
 def parse_sections( text ):
