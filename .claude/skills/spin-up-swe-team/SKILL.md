@@ -26,7 +26,7 @@ Instantiate the **spin-up crew** (Implementer · Reviewer · Tester) against a t
 
 5. **Notify + hand to Steward.** `notify()` the user who came online and the collection topic; `commons_send_to` the Steward your spin-up plan so they observe live.
 
-6. **Run the gate.** implement → adversarial review → integration/e2e green → **verify BOTH green AND reviewed** → commit only on the user's word (re-loop on fail). Steward runs the scaled post-game every cycle. Teardown on *"stand down the SWE team"* reaps the crew with mementos; the standing pair persists.
+6. **Run the gate.** implement → adversarial review → **verify BOTH green AND reviewed** (green means the unit tier and census guards for the files changed) → the Manager commits and merges to the working branch on its own authority (re-loop on fail). Integration/e2e green comes before a PR to main; push stays the user's word. Steward runs the scaled post-game every cycle. Teardown on *"stand down the SWE team"* reaps the crew with mementos; the standing pair persists.
 
 ## Hard rules
 

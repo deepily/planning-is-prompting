@@ -6,6 +6,8 @@ Moved out of `workflow/swe-team-roles.md` (lines 141-156 at `d73f36b`) without c
 
 ## Version history
 
+**v+** (2026.11.15, María, Rick approved 15 Nov 00:11 via Cheech; Maya's merge-gate wording audit, lupin `be31e7db1`, row 12-13) - The tester's integration/e2e green moves out of the commit gate and under "before a PR to main". Green for the working branch means the unit tier and census guards for the files changed.
+
 - **1.13 (2026-11-02, María 🌸, Rick's rulings of 2 Nov via Cheech, design `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8, row `3d11c8b3`)**: The Implementer runs the reuse check in `plan-review.md` §4 before writing a definition the plan does not list, and confirms or amends the plan's `REUSE-OUTCOME` line for those it does.
 - **1.12 (2026-10-14, Sam, lupin decision row `1f56717c`, Rick's ruling the same day)**: The Counter-reviewer charter matches lupin's reuse-reviewer skill at commit `1432aba5f`. It is spawned for every review that cites receipts, `EXTEND` rulings included, not only `REUSE` or `DISTINCT`. It writes `COUNTER` lines (`HOLDS`, `CHALLENGED`, `UNVERIFIED`, `NOTHING_TO_REPLAY`) instead of ruling with its own receipt, and an `excluded` ruling is nothing to replay. A miss is a manager-bound task-store row, not a ledger entry.
 - **1.11 (2026-10-10, María 🌸, store row `9aadd0ac`, item 2, Rick's rulings)**: The Manager's MANAGE-not-BUILD cardinal rule and the standing spawn/harvest authority line carry "when skeleton crew is off" (`manager-autonomy.md` §2; while it is on, managers build per `skeleton-crew.md`). No other rule changed.

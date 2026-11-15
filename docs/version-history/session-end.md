@@ -5,6 +5,7 @@ Moved out of `workflow/session-end.md` (lines 1873-1882 at `d73f36b`) without ch
 ---
 
 ## Version History
+**v+** (2026.11.15, María, Rick approved 15 Nov 00:11 via Cheech; Maya's merge-gate wording audit, lupin `be31e7db1`, row 16) - The quality gate's "green" is defined in the intro and the commit step: green means the unit tier and census guards for the files changed.
 **v+** (2026.10.14, Extra 1, row `8188ff76`) - The wrong-entry example keeps its fault in lowercase notes, not capitals, so a copy reads 0 caps findings.
 
 **v+** (2026.10.14, Maya, entry policy re-loop, parent row `8b32de78`) - The cap table writes `RESUME HERE` in backticks (reviewer finding F5).

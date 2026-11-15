@@ -6,6 +6,8 @@ Moved out of `workflow/swe-team-spin-up.md` (lines 160-165 at `d73f36b`) without
 
 ## Version history
 
+**v+** (2026.11.15, María, Rick approved 15 Nov 00:11 via Cheech; Maya's merge-gate wording audit, lupin `be31e7db1`, row 14) - "Green" in the commit gate is defined: green means the unit tier and census guards for the files changed.
+
 - **1.3 (2026-10-10, store row `9aadd0ac`, item 2, Rick's rulings)** — Spin-up is a spawn and follows the skeleton-crew switch (`manager-autonomy.md` §2): the autonomy pointer in the relationships list and the activation diagram say "when skeleton crew is off".
 - **1.2 (2026-10-10)** — Pruning pass 6: cut the standing-pair line in §6 (§1 says it), the Location and Shape paragraphs in §7 (§2 says them), and three finished build-queue lines in §8; the one open item is renumbered 1. No rule changed.
 - **1.1 (2026-06-29, María 🌸 — Rick GO)** — §5 standing-pair keep-alive: **retired the interim-poker / `/loop` stopgap language.** The standing arbiter is now the fleet-stall *mechanism* + the per-session Stop-hook is the owed-work self-check (folded debounce, no brute-force tick); the Steward is the human-judgment backstop, not the mechanism. Part of the fleet-wide crutch-retirement (task `d0cffe5c`). HELD for review.

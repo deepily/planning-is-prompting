@@ -57,7 +57,7 @@
 
 7. **Must notify the user** after spawning (`notify`, medium priority): who came online, in which roles, and the collection topic you'll gather reports on. Then **ping the Steward** (`commons_send_to recipient="<steward>"`) the spin-up plan so they can observe live.
 
-8. **Run the lifecycle + gate** per `planning-is-prompting/workflow/swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → tester integration/e2e green → **you verify both green and reviewed**. Commit **only on the user's word**. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`planning-is-prompting/workflow/swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
+8. **Run the lifecycle + gate** per `planning-is-prompting/workflow/swe-team-spin-up.md` §4–§5: implementer builds → adversarial reviewer verdict → **you verify both green and reviewed** (green means the unit tier and census guards for the files changed). You then commit and merge to the working branch on your own authority; the tester's integration/e2e green comes before a PR to main, and push stays the user's word. Re-loop on any fail. The Steward runs the scaled post-game every cycle. Teardown via *"stand down the SWE team"* (`planning-is-prompting/workflow/swe-team-spin-up.md` §6) reaps the crew with mementos; the standing pair persists.
 
 ---
 

@@ -47,7 +47,7 @@ At the end of our work sessions, perform the following wrapup ritual with **[SHO
 
 ## ⚠️ Conversation Mode Awareness
 
-This wrap-up ritual has a few user-decision gates (**push approval**, archive decision, conflict resolution, etc.). **The commit itself is NOT a gate** — committing to the working branch is standing manager/session authority once the quality gate (green AND reviewed) is met; only **push** remains the user's call (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
+This wrap-up ritual has a few user-decision gates (**push approval**, archive decision, conflict resolution, etc.). **The commit itself is NOT a gate** — committing to the working branch is standing manager/session authority once the quality gate (green AND reviewed; green means the unit tier and census guards for the files changed) is met; only **push** remains the user's call (Rick, 2026-06-16, D1 ruling). When `conversation_mode_active=true` (check via `get_session_info()`), **each gate is a voice gate** — the user may not see your terminal previews, so voice descriptions must be self-sufficient.
 
 **Mandates in conversation mode**:
 - All blocking tools (`ask_yes_no()`, `ask_multiple_choice()`, `converse()`) MUST use `priority="high"`. Some legacy calls in this workflow may not — verify before use.
@@ -898,7 +898,7 @@ If a v1.0 manifest is detected (single-session format):
 
 ## 4) Draft, Commit (autonomously), Receipt, then PUSH Decision
 
-This step drafts the commit message, **commits autonomously** (no user approval — commit is standing manager/session authority once the quality gate is met), posts a brief **commit receipt**, and then presents the **one retained user gate: push**.
+This step drafts the commit message, **commits autonomously** (no user approval — commit is standing manager/session authority once the quality gate is met: green AND reviewed, where green means the unit tier and census guards for the files changed), posts a brief **commit receipt**, and then presents the **one retained user gate: push**.
 
 ### 4.1) Analyze Changes and Apply Nested Repo Filtering
 
