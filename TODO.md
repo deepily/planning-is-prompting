@@ -1,6 +1,6 @@
 # TODO
 
-Last updated: 2026-11-14 (**Session 236**, María 🌸 stable `7b694628`). First job: after the next reboot, close row `acb17a2a` on the first boot-run doc-parity job summary.
+Last updated: 2026-11-15 (**Session 236**, María 🌸 stable `7b694628`, spun down for the night). First job: after the next reboot, close row `acb17a2a` on the first boot-run doc-parity job summary. Then close `2cc637ca` when the whole-repo duplicate pass reports left_to_judge 0 (about 3 hourly runs from 10:00).
 
 ## 📍 Resume Here
 
