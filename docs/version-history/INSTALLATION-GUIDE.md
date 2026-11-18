@@ -5,6 +5,8 @@ Moved out of `workflow/INSTALLATION-GUIDE.md` (lines 2450-2479 at `d73f36b`) wit
 ---
 
 ## Version History
+**v+** (2026.11.18, Rachel, row `f12d7aa2`, Rick by voice 18 Nov: the workflow did not tell reviewers to use the reuse tools) - The `/plan-review` description says the REUSE pre-pass uses the reuse tools in the order `plan-review.md` §4 gives, not a plain grep.
+
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - One pointer line to `workflow/entry-writing-rules.md` for the wording of the lines this document seeds or writes (manager ruling).
 
 

@@ -148,11 +148,14 @@ Verdicts (pick exactly one):
 
 The reuse check, per new-thing:
 1. Write the need: what the code would do, not what it would be called.
-2. If a reuse tool is installed, call it with the need and keep the
-   receipt id, the verdict and any cause.
-3. Run the tool's plain-text search on that receipt every time, adding
-   three to six identifier words you would expect existing code to use.
-   Keep its search id.
+2. If the reuse tools are installed (in Lupin: `check_exists`,
+   `record_search`, `fetch_similar`), call the lookup (`check_exists`)
+   with the need, the language, and `root` set to the target repo's
+   tree whenever you are not resident in that repo. Keep the receipt
+   id, the verdict and any cause.
+3. Run the tool's plain-text search (`record_search`) on that receipt
+   every time, adding three to six identifier words you would expect
+   existing code to use. Pass the same `root`. Keep its search id.
 4. Read the source: the top-rated candidate first, then the rest of the
    shortlist, then what the search found.
 5. Rule, and write the outcome line in the last column.
@@ -178,6 +181,15 @@ both id positions of the outcome line.
 DO NOT fix anything yet. Deliver the table. Wait for my confirmation.
 After I review, I'll tell you which findings to apply.
 ```
+
+**The reuse tools and their order**: the tools are Lupin's reuse search, exposed as MCP tools: `check_exists` (the lookup; sends the need, returns a receipt id, a verdict and a shortlist), `record_search` (the plain-text search on that receipt; returns a search id) and `fetch_similar` (what an existing or newly written symbol resembles; use it on each new definition in a diff). Every seat that runs a reuse check follows the same order, and a document that tells a seat to check for reuse names these tools and points here:
+
+1. `check_exists( need, language, root )`: the need in your own words, `language` (`py`, `ts`, `dart` or `all`; there is no default), and `root` set to the target repo's tree **whenever the seat is not resident in that repo**. Without `root` the tool searches the repo your session runs in and answers about the wrong code. Keep the `receipt_id`.
+2. `record_search( receipt_id, extra_terms, root )`: every time, with three to six identifier words you would expect existing code to use. Keep the `search_id`.
+3. Read the source of every shortlisted and nearest candidate. A score is not a reading.
+4. Write the `REUSE-OUTCOME` line below, citing the receipt and the search id. For a definition already written, `fetch_similar( entry, language, root )` is the lookup, and it also returns a receipt.
+
+A seat that skips the tools has not run the check, whatever its grep found: in the cascade-opl-remediation review the Stage 1 seat used them only after the manager told it to, and then cited three receipts and three search ids. Where the tools are not installed, or refuse the repository, the fallback below applies.
 
 **The outcome line**: every check ends in one line that ties the lookup to what the plan decided. A script can read it, so outcomes can be counted later.
 

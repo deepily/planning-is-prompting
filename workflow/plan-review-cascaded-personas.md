@@ -18,7 +18,7 @@
 |------|-------|-------|------------------------------|--------------------|
 | Manager | 1 | — | (orchestrates, doesn't review) | — |
 | Author | 1 | 0 | (produces, doesn't review) | Conv 1-5 self-check |
-| Usability/Reuse Reviewer | 1 | 1 | **REUSE pre-pass** | Reuse grep |
+| Usability/Reuse Reviewer | 1 | 1 | **REUSE pre-pass** | Reuse tools (`check_exists`, `record_search`), then source read |
 | Viability/Gap Reviewer | 1 | 2 | **Pass 1: Fitness** (design completeness) | Conv 4 (TBD / Open sub-question N markers) |
 | Ownership Reviewer | 1 | 3 | **Pass 2: Ownership-Language Audit** ("user is never a tester") | Conv 3 (EXECUTOR tags), Conv 5 (Manual E2E semantics) |
 
@@ -217,7 +217,7 @@ Same anti-pattern, mirrored on two ACs. AC2's `EXECUTOR: AI` depended on OSQ4(a)
 
 ### Usability/Reuse Rubric (maps to `/plan-review` REUSE pre-pass)
 
-**Mandate**: run the reuse check in `/plan-review` §4 before accepting any "new" thing the section proposes: the tool call where one is installed, the plain-text search every time, and the source read. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep or the search.
+**Mandate**: run the reuse check in `/plan-review` §4 before accepting any "new" thing the section proposes. Use the reuse tools (in Lupin: `check_exists`, `record_search`, `fetch_similar`), in the order §4 gives ("The reuse tools and their order"): `check_exists( need, language, root )` with `root` set to the target repo's tree whenever you are not resident in that repo, then `record_search( receipt_id, extra_terms, root )` every time, then read the source of every candidate, then write or check the `REUSE-OUTCOME` line citing the receipt and the search id. Do not wait for the manager to tell you to use the tools; a Stage 1 row with no receipt is a row you have not done. From `/plan-review` §4: *"The most common silent failure mode of AI-authored plans is missing existing helpers."* Do NOT skip the grep or the search.
 
 For each "new" thing the section proposes (helper, primitive, queue, emitter, rate-limiter, route, schema, fixture, anything), the author's draft carries a `REUSE-OUTCOME` line (§4, "The outcome line"). Check every line, and re-run the check yourself, with the need written in your own words, on every line the author marked `WROTE_NEW`. Produce one row per new thing:
 
@@ -233,7 +233,7 @@ For each "new" thing the section proposes (helper, primitive, queue, emitter, ra
 **Reading the answer** (the rules in `/plan-review` §4 apply in full): a shortlisted candidate is a lead, not a match; "uncertain, read the source" never means nothing exists; and `genuinely-new` is never ruled on a shortlist, a score or an uncertain answer alone.
 
 **Anti-patterns this reviewer must catch**:
-- Author proposes a new utility/helper without grepping the codebase first
+- Author proposes a new utility/helper without running the reuse tools (`check_exists` then `record_search`) first, or ran them against the wrong tree (no `root` when the Author is not resident in the target repo)
 - A new thing with no `REUSE-OUTCOME` line, or one that does not match the §4 format
 - A `WROTE_NEW` line whose candidates were not read, or whose search was not cited
 - Author uses a different name for a pattern that already has a canonical name in the project
@@ -459,7 +459,7 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 **Outputs**:
 - Everything Persona 2 outputs (see Persona 2 above)
 - **For hybrid mode**: explicit acknowledgment when implementation-plan draft diverges from the design doc (see "manager-divergence-check safeguard" below)
-- **A `REUSE-OUTCOME` line for each new thing a section proposes**, from the reuse check in `/plan-review` §4, run before the section decides to write new code
+- **A `REUSE-OUTCOME` line for each new thing a section proposes**, from the reuse check in `/plan-review` §4, run before the section decides to write new code: `check_exists( need, language, root )`, then `record_search( receipt_id, extra_terms, root )`, then the candidates' source read, with the line citing the receipt id and the search id. Pass `root` (the target repo's tree) whenever you are not resident in that repo
 
 **Boundaries** (same as Persona 2 Review Author).
 

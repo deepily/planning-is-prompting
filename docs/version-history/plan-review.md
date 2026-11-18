@@ -5,6 +5,8 @@ Moved out of `workflow/plan-review.md` (lines 444-449 at `d73f36b`) without chan
 ---
 
 ## Version History
+**v+** (2026.11.18, Rachel, row `f12d7aa2`, Rick by voice 18 Nov: the workflow did not tell reviewers to use the reuse tools) - Section 4 names the reuse tools (`check_exists`, `record_search`, `fetch_similar` in Lupin) and gives their order: `check_exists( need, language, root )`, `record_search( receipt_id, extra_terms, root )`, read every candidate, write the `REUSE-OUTCOME` line citing both ids. `root` is the target repo's tree whenever the seat is not resident there. The prompt's steps 2 and 3 name the tools.
+
 **v+** (2026.11.11, Rachel, row `6fe361d2`) - Section 4 states the exact outcome-line and ruling-line grammar, cites lupin's checker as the authority, and gives one worked pair; the template alone had let five lines fail the gate (step id, extra text after `REUSED`/`EXTENDED`, no `RULING` line).
 
 **v+** (2026.11.06, Rachel, row `60936c0e`) - Review checklist: flag any step that needs a free GPU; cites `testing-baseline.md`.

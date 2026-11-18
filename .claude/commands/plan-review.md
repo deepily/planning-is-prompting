@@ -24,6 +24,7 @@
 2. **Must read the canonical workflow document**:
    - Location: planning-is-prompting → workflow/plan-review.md
    - This is the only authoritative source for the gate's structure (reuse pre-pass, Pass 1 Fitness, Resolution Loop, Pass 2 Ownership-Language Audit, gates, termination, anti-patterns)
+   - The reuse pre-pass (§4) is run with the reuse tools (in Lupin: `check_exists`, `record_search`, `fetch_similar`), in the order §4 gives: `check_exists( need, language, root )` with `root` set to the target repo's tree when this session is not resident there, then `record_search( receipt_id, extra_terms, root )`, then read every candidate's source, then write the `REUSE-OUTCOME` line citing the receipt and search id
    - Never proceed without reading this document in full
    - Pay particular attention to these sections:
      - §1 of `planning-is-prompting/workflow/plan-review.md` (Hierarchy of Anchors)

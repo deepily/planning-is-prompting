@@ -265,7 +265,7 @@ flowchart TD
     Step1 --> Branch{Pattern type?}
     Branch -->|"Pattern 1, 2, 5, 6<br>(Large/Complex; Pattern 2 only when medium or larger)"| Step2["STEP 2: Documenting<br>p-is-p-02-documenting-the-implementation.md<br>• Create doc structure<br>• Set token budgets<br>• Establish archival"]
     Branch -->|"Pattern 3, 4<br>(Small/Simple)"| Skip["Skip Step 2 docs<br>Use history.md for tracking"]
-    Review["GATE: /plan-review<br>plan-review.md<br>• Dispatch: ≥2 sections → cascade<br>• else → critique (1 critic seat)<br>• REUSE / Fitness / Ownership<br>(non-negotiable gates)"]
+    Review["GATE: /plan-review<br>plan-review.md<br>• Dispatch: ≥2 sections → cascade<br>• else → critique (1 critic seat)<br>• REUSE (reuse tools) / Fitness / Ownership<br>(non-negotiable gates)"]
     Step2 --> Review
     Skip --> HasDoc{Is there a<br>plan document?}
     HasDoc -->|Yes| Review

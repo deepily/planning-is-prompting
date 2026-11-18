@@ -190,6 +190,7 @@ Per `persona_casting_strategy = user_assigns_at_launch`, the user has already ch
 3. Each role DM includes:
    - The persona's role name and stage number
    - A pointer to the persona's brief in `plan-review-cascaded-personas.md`
+   - **For the author and the usability/reuse reviewer: the reuse tools and the target tree.** Name the reuse tools (in Lupin: `check_exists`, `record_search`, `fetch_similar`), point to `plan-review.md` §4 for the order, and give the path to pass as `root` whenever the seat is not resident in the target repo. A seat is not left to find the tools on its own
    - **Explicit ack instruction** (post-Run-1 workflow tightening): "Acknowledge **this DM** specifically (not any prior briefing from the Workflow Steward) by replying with `ready, [role name]`. Wait for this DM as the formal launch signal before posting anything else."
 4. Each persona acknowledges by replying to the role-assignment DM; manager waits for all 4 acks before proceeding
 

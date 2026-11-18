@@ -6,6 +6,8 @@ Moved out of `workflow/swe-team-roles.md` (lines 141-156 at `d73f36b`) without c
 
 ## Version history
 
+**v+** (2026.11.18, Rachel, row `f12d7aa2`, Rick by voice 18 Nov: the workflow did not tell reviewers to use the reuse tools) - Implementer charter names the reuse tools and order, with `root`. Reviewer charter gains a reuse-check duty: run the tools yourself, read every candidate, check the author's `REUSE-OUTCOME` lines, write `RULING` lines citing receipt and search ids. Order is in `plan-review.md` §4.
+
 **v+** (2026.11.15, María, Rick approved 15 Nov 00:11 via Cheech; Maya's merge-gate wording audit, lupin `be31e7db1`, row 12-13) - The tester's integration/e2e green moves out of the commit gate and under "before a PR to main". Green for the working branch means the unit tier and census guards for the files changed.
 
 - **1.13 (2026-11-02, María 🌸, Rick's rulings of 2 Nov via Cheech, design `src/rnd/2026.10.01-cascade-reuse-check-via-code-index.md` §8, row `3d11c8b3`)**: The Implementer runs the reuse check in `plan-review.md` §4 before writing a definition the plan does not list, and confirms or amends the plan's `REUSE-OUTCOME` line for those it does.

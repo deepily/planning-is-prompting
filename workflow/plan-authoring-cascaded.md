@@ -117,7 +117,7 @@ raw_design_received → (Step 0) → cascade_input_ready
 
 **Manager elicits from user** (via `ask_open_ended_batch` or `converse`):
 1. **Intent statement** — one paragraph naming the work's WHY + the user-observable outcome
-2. **Must-reuse list** — components, patterns, conventions the plan MUST build on (vs reinvent). Each code entry carries the `REUSE-OUTCOME` line from the reuse check in `plan-review.md` §4
+2. **Must-reuse list** — components, patterns, conventions the plan MUST build on (vs reinvent). Each code entry carries the `REUSE-OUTCOME` line from the reuse check in `plan-review.md` §4 (the reuse tools: in Lupin, `check_exists` then `record_search`, then read the candidates; pass `root` when the Author is not resident in the target repo)
 3. **Immutable constraints** — non-negotiable (performance, compatibility, deadline, policy)
 4. **Target deliverables** — what counts as "done"
 
@@ -209,7 +209,7 @@ Same cascade structure as `/plan-review-cascaded` Step 5 (Author → Usability �
 **Multi-draft author loop**: in pure-authoring mode, the Author's first draft of each section is typically a strawman. Reviewers tear it up; Author revises. This loop is bounded by `author_revision_turn_cap = 2` (default).
 
 **Per-section flow**:
-1. Author drafts section (Draft 1). Before the section decides to write any new code, the Author runs the reuse check in `plan-review.md` §4 and writes a `REUSE-OUTCOME` line per new thing
+1. Author drafts section (Draft 1). Before the section decides to write any new code, the Author runs the reuse check in `plan-review.md` §4 (the reuse tools in Lupin: `check_exists( need, language, root )`, then `record_search( receipt_id, extra_terms, root )`, then reads every candidate's source; `root` is the target repo's tree whenever the Author is not resident there) and writes a `REUSE-OUTCOME` line citing the receipt and the search id per new thing
 2. Section enters Stage 1 (Usability)
 3. Reviewer findings classified by manager (per shared severity heuristics)
 4. **If foundational** → escalate (Trigger 1)

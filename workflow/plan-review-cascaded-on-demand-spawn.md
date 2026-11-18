@@ -50,6 +50,7 @@ result = spawn_sessions(
     task_prompt        = (
         "You are persona {role} for cascade. "
         "Read the input plan and review your assigned section per your stage rubric. "
+        "Stage 1 seats run the reuse tools per plan-review.md section 4 (in Lupin: check_exists, then record_search, with root set to the target repo's tree when you are not resident there), read every candidate, and cite the receipt and search ids. "
         "Post findings to dm-{manager_persona} via commons_post with "
         "in_reply_to threading. Manager: {manager_session_id}."
     ),

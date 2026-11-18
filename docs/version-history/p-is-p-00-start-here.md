@@ -6,6 +6,7 @@ Moved out of `workflow/p-is-p-00-start-here.md` (lines 860-867 at `d73f36b`) wit
 
 ## Version History
 
+- **2026.11.18 (Rachel, row `f12d7aa2`)** — The gate diagram's REUSE line names the reuse tools.
 - **2026.10.10**: Stale references (row `735e312f`, C1 and C2): the pattern count is six and Pattern 6, Research-Driven Implementation, is listed; the four places that send Pattern 2 to Step 2 say it goes only when medium or larger, as the matrix does.
 - **2026.10.09 (Sam)**: Pruning pilot batch two, shortlist rows 15-18 (store row `681745a9`): the closing list for new work points to Scenario 1, Scenario 2's Pattern 4 stages point to Example 4, and a duplicate time line and three document bullets the example already creates are removed. Net 16 non-blank lines.
 - **2026.10.01**: Replaced TodoWrite tracking wording with task-store rows and the stub manifest (see `p-is-p-01-planning-the-work.md` *Where Owed Work Lives*, `task-store-discipline.md`, `plan-stub-manifest.md`): benefits line, interactive-flow sample, visual flow, Step 1 summary, scenarios, Examples 1-5, integration notes, summary and principles. The decision matrix and pattern routing are unchanged. Review fixes, same day: the numbered groups in the single-phase examples (Examples 1, 3 and 4, and the interactive-flow sample) are now called stages, and the Step 1 summary says that "3+ distinct phases" picks the pattern while "two or more phases" picks the stub manifest.
