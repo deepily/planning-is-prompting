@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 18,886 tokens, now about 6,683 (2026-11-14, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 206–227 → `history/2026-09-22-to-10-31-history.md`. Cut at the Sunday 2026-11-01 boundary. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 237 (2026-11-16 21:28 to about 22:00 EST, María 🌸 stable `6b0511b8`, manager, no seats)**. A short evening shift: two rows closed, Rick dropped the seven archived-branch rows, and the repo is ready for tomorrow's PR. First job tomorrow: after the 11:00 duplicate-check run, close `2cc637ca` once a baseline line reports left_to_judge 0. Then archive TODO.md, which Rick deferred until after the PR.
+`RESUME HERE`: **Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
+
+1. **cascade-opl-remediation closed**: four sections, 0 escalations, handoff and 67 build rows in lupin for Mr. Radio's crew. Post-game `src/docs/post-games/v0.2.3/2026.11.18-cascade-opl-remediation-post-game.md`; TODO candidates 1 to 12 (`56a4514`, `34afde3`); reuse-tools workflow fix `515fb17`.
+2. **Reuse plan, no cascade**: its §0 locks the experiment, so Rick ruled "Skip review, decide now" plus five decisions, recorded on `66b36d26` (closed). Mine, wrong: I minted 8 ledger rows before reading §0 (TODO candidate 13), and filed a duplicate decision row after Cheech had already asked.
+3. **Rick's later card rulings**: judge and code writer both on Opus, "Let the Opus proof decide"; the proof pooled 0.7995 against a 0.80 bar, "Label the 15 flags" (`2315c65c`); widen the shadow audits, "Not yet, fix first".
+4. **Routed to Cheech**: four merges missing REUSE-OUTCOME lines blocked lupin's PR to main (John, `373ce345`). A test run set lupin's shared `core.bare = true`; Cheech reset it, and I confirmed `git status` works (bug `5f4726e3`, P1).
+5. **End of shift**: no live seats; 0 held rows to re-own; orphan check exit 1 with 53 open rows read and 12 findings, all other managers' blocked rows (Mr. Radio 10, Cheech 1, Tiffany 1). Memento sweep: 8 digested (nothing open), 9 trashed, 3 kept.
+
+**Files**: `history.md`, `TODO.md`.
+
+**Previous `RESUME HERE`**: **Session 237 (2026-11-16 21:28 to about 22:00 EST, María 🌸 stable `6b0511b8`, manager, no seats)**. A short evening shift: two rows closed, Rick dropped the seven archived-branch rows, and the repo is ready for tomorrow's PR. First job tomorrow: after the 11:00 duplicate-check run, close `2cc637ca` once a baseline line reports left_to_judge 0. Then archive TODO.md, which Rick deferred until after the PR.
 
 1. **Closed with receipts**: `acb17a2a` (both ticks have a scheduled cron run with a clean job summary; lupin `c0a56cbab` merged) and `9cfd838e` (`5322e54`, Cheech approved).
 2. **Duplicate check** (`2cc637ca`): 11,477 of 12,453 judged, 976 left. Every run after 12:01 skipped because the 2,400-call daily Opus budget was spent, which is the design, not a fault.
@@ -12,7 +22,7 @@
 
 **Files**: `history.md`, `TODO.md`.
 
-**Previous `RESUME HERE`**: **Session 236 (2026-11-14 12:33 to 2026-11-15 00:30 EST, María 🌸 stable `7b694628`, manager, no seats)**. The context tick now runs through Lupin's job runner, and its first scheduled run was clean. The doc-parity tick has a start-up run installed. First job: after the next reboot, read the first boot-run doc-parity job summary and close row `acb17a2a`. Then, on Monday 16 Nov, re-check `66b36d26`, `a38bc952` and `2cc637ca` (chases set for 10:00 EST). Mr. Radio's step 1 for row `c38a49bd` was already approved by Tiberius (`64b6af7fe`), so I owe no review of it.
+**Session 236 (2026-11-14 12:33 to 2026-11-15 00:30 EST, María 🌸 stable `7b694628`, manager, no seats)**. The context tick now runs through Lupin's job runner, and its first scheduled run was clean. The doc-parity tick has a start-up run installed. First job: after the next reboot, read the first boot-run doc-parity job summary and close row `acb17a2a`. Then, on Monday 16 Nov, re-check `66b36d26`, `a38bc952` and `2cc637ca` (chases set for 10:00 EST). Mr. Radio's step 1 for row `c38a49bd` was already approved by Tiberius (`64b6af7fe`), so I owe no review of it.
 
 1. **Status report** (Rick's broadcast `f31b417e`): lupin `io/tmp/2026.11.14-status-report-maria.md` (transient), plus an English podcast.
 2. **Context tick through the job runner** (row `acb17a2a`, Rick's ruling "Host via job runner" on decision `317d5101`): the installer writes the tick line through Lupin's `cron-job.sh` (`cfed316`, `07e606f`). It finds the runner in Lupin's main checkout and refuses one under `.claude/worktrees/` (`1deae6f`, from Cheech's review). Rick swapped the live line at 13:32, and the 13:39 run wrote the `context-tick` job summary, outcome clean. On the lupin side, merged by Cheech (`c0a56cbab`, `63e4df616`): context-tick has no run block, and doc-parity-tick gets `after_boot_seconds 180`. Rick installed the boot line at 19:55, and cron reloaded at 19:56.
