@@ -189,6 +189,20 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
   8. **One finding per classification entry**: a combined `O7+O8` post made post-count ≠ finding-count at the Step 9 tally. Fold: defaults.md.
   Workflow / Cascade | **`horizon: next`** — waits on the next cascade-workflow fold pass
 
+- [ ] **v1.N candidates from `cascade-opl-remediation`** (Manager María 🌸, filed 2026-11-18; source: `kind: manager_self_audit_sweep` on lupin topic `cascade-opl-remediation` at 16:46 UTC). Items 5 and 7 are **second instances** of the 2026-09-30 candidates 3 and 7 above:
+  1. **The store refuses `cascade-<slug>` correlation keys**; use `epic:cascade-<slug>`. Fold: common.md §Stepwise Task-Item Ledger + defaults.md.
+  2. **Pin-ref-only plan commits cannot be `commit` receipts**; close with `manager_attestation` naming the sha. Fold: common.md §Stepwise Task-Item Ledger.
+  3. **Start Stage 3 before the Stage 2 revision** so the author does one combined revision per section; fewer rounds, no rework. Fold: `plan-review-cascaded.md` §Steps 5-6 (complements the 2026-09-30 candidate 6).
+  4. **Stage 1 can run before an author draft exists**; the reviewer's reuse searches feed the draft. Fold: common.md §Stage 1.
+  5. **DM condenser loses content; act on the topic post** (second instance). Fold: common.md §Stage-handoff format.
+  6. **Spawn briefs must name the reuse tools**: fixed in `515fb17` (row `f12d7aa2`). Recorded; closed.
+  7. **Manager self-respin mid-cascade worked** (second instance). Fold: common.md §Manager continuity.
+  8. **Finding ids collided** ("R4" named two reviewers' findings; Manager relabelled R1-R3 as T1-T3). Fold: defaults.md: ids carry reviewer and section, assigned once.
+  9. **Reviewers used off-schema severities** ("moderate", "minor"). Fold: personas.md reviewer brief names the three-value enum.
+  10. **The stub-manifest validator counts only `Phase N` headings**, so the plan's checkpoint and history track had to sit inside phase 4. Fold: `plan-stub-manifest.md` §3 (say where unnumbered parts go, or allow a label like `Phase H-R`). Source: the handoff's §6 candidate 8.
+  11. **The Step 9 handoff cannot sit beside the plan when the initiative already has a `doc_kind: review` document in `src/rnd`**: the rnd guard refused it (one per initiative per kind), and `src/docs/plan-stubs/` refused it too (the doc linter's 1,500-word limit; the handoff is about 5,400 words). It landed beside the plan with `doc_kind: handoff`, which the guard accepts but the policy's kind list does not name. Fold: add `handoff` to the kind list in `workflow/rnd-directory-policy.md`, and have `plan-review-cascaded.md` §9.1 tell the handoff to declare it.
+  Workflow / Cascade | **`horizon: next`** — waits on the next cascade-workflow fold pass
+
 - [ ] **Re-frame the TODO.md archive question** — 🔴 **NOT BEFORE the merge to main and the v0.2.1 branch cut.** (María, S181, 2026-08-28). Asked "archive the old part now?"; Rick answered **neither** — the question was wrong, not declined. The file is **718 lines with zero `horizon:` tags**, so the tag rule has no evidence to work from and an archive pass would be judgment-by-eye. Likely better next question: *tag the horizons first*, or *archive only the Decisions Log older than the window*, or *split by branch version*. Do not archive on a guess. Decisions | **`horizon: next`**
   - ↳ *the tagging half is DELIVERED (2026-08-31, Krishna) — this is the re-frame Rick was owed; the archive call itself still waits on the merge + branch cut*
 
