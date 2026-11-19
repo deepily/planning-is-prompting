@@ -515,6 +515,7 @@ The same session writes plainly to the user and densely to a peer, in the same m
 1. It uses a term **this fleet coined** that you would not put in a work email
 2. It would need a glossary entry for a competent engineer who joined this week
 3. It reads **denser** than how you would say the same thing out loud to the user
+4. It names a thing by its **code** instead of by what it is ("if B1 doesn't beat C0"). Name the thing; a code goes only in brackets after its plain name. Rick's ruling and examples: `brevity-mandate.md` § *Name the thing, never its code* (2026-11-19)
 
 ### ⚠️ WaHH vs KISS — WaHH wins
 

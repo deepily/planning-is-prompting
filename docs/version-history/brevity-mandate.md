@@ -5,6 +5,8 @@ Moved out of `workflow/brevity-mandate.md` (lines 439-448 at `d73f36b`) without 
 ---
 
 ## Version History
+**1.7** (2026.11.19, María with Cheech, row `ba062ead`) - **Name the thing, never its code**, ruled by Rick by voice at about 16:06 EST: *"You're adding a layer of indirection to my understanding because I have to decompress what B and C stand for much less "B1" or "C0"."* A new WaHH subsection carries his words and three examples, and the list of tells gains a fourth (a code used where the thing's name belongs). A code may appear only in brackets after its plain name, as a lookup handle, or as a code identifier. The same line went into the `~/.claude/CLAUDE.md` WaHH row and the `global/CLAUDE.md` snapshot, and the fourth tell into `cross-session-communication.md` §1.6. Seed: the cascade-principle-learner post-game §3 (`src/docs/post-games/v0.2.3/2026.11.19-cascade-principle-learner-post-game.md`).
+
 **v+** (2026.10.14, Maya, entry policy, parent row `8b32de78`) - The cap table writes `RESUME HERE` in backticks and names `workflow/entry-writing-rules.md` for entry wording.
 
 

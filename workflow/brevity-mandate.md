@@ -157,6 +157,23 @@ Each of these is a discrete, greppable habit — not a vague call for concision.
 1. It uses a term **this fleet coined** that you would not put in a work email
 2. It would need a glossary entry for a competent engineer who joined this week
 3. It reads as **denser** than how you would say the same thing out loud to Rick
+4. It names a thing by its **code** instead of by what it is: an arm, a phase, a finding or a row reduced to "B1", "C0", "S9-7" or a hash
+
+### 🔴 Name the thing, never its code (Rick, 2026-11-19)
+
+**Rick, voice, 19 Nov about 16:06 EST, verbatim**: *"Cheech can we stop using this kind of nomenclature: "If B1 doesn't beat C0", You're adding a layer of indirection to my understanding because I have to decompress what B and C stand for much less "B1" or "C0". Can you coordinate with Maria on formulating a workflow global rule about this? This is a new verbal tic that anthropic models are exhibiting now and it's annoying as hell."*
+
+**The rule**: in anything a person reads or hears, say what the thing is. A code may appear only **in brackets after its plain name**, as a lookup handle, or as a literal code identifier.
+
+| ❌ coded | ✅ named |
+|---|---|
+| "If B1 doesn't beat C0, stop before layer 2." | "If the principles forecast doesn't beat the frozen Haiku yardstick, stop before the reranker." |
+| "C0 replaces A1 after phase 6." | "Once phase 6 ships, the background Haiku forecast (C0) replaces today's case-based forecast (A1)." |
+| "S9-7 is carried." | "The missing dependency Pocholo found at the last check (S9-7) goes into the next commit." |
+
+**Why it happens**: a plan's codes are the author's shorthand, and after an afternoon inside the plan they feel like words. To the reader each code is a lookup, and a sentence with two codes is two lookups before it means anything. **The same afternoon**, a decision card that leaned on the arm codes drew *"I'm not certain what you're getting at"* (cascade-principle-learner post-game, `src/docs/post-games/v0.2.3/2026.11.19-cascade-principle-learner-post-game.md` §3).
+
+**Scope**: speech, decision cards, notify abstracts, DMs, status reports, commit bodies. It is the same family as *lead with the title, not the row id* and *bugs by name, not hash*. Drafted with Cheech 🌿.
 
 ### ⚠️ WaHH vs KISS — when they disagree, WaHH wins
 
