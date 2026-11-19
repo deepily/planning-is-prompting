@@ -2,7 +2,16 @@
 
 > ✅ **Archived at 18,886 tokens, now about 6,683 (2026-11-14, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 206–227 → `history/2026-09-22-to-10-31-history.md`. Cut at the Sunday 2026-11-01 boundary. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
+`RESUME HERE`: **Session 239 (2026-11-19 about 14:00 to 15:53 EST, María 🌸 stable `6da03c6d`, manager; cascade seats Maya, Rachel, Pocholo and John, all reaped with verified mementos; one self-respin)**. P0 `8e53fc1b` is done: the principle learner plan went through the full cascade, Rick ruled its six decisions, and Cheech owns the build. My board is empty except `a38bc952`, which is blocked to 30 Nov.
+
+1. **cascade-principle-learner closed**: 69 findings, 0 foundational. Step 9 passed after one revision turn (lupin `f4194bbd2`). Merged to the v0.2.4 wip branch at `05e3f8cb8`, not pushed. All 13 ledger rows closed with receipts.
+2. **Rick's six decisions** (row `41f7f109`; TODO Decisions Log 2026-11-19): accordion display, C0 replaces A1, the stop-rule floor, the record_forecast hook, B3c, and "disabled, never dropped" plus Haiku against Opus. Two of them were corrections to how I had framed the card.
+3. **Build handed to Cheech**: 45 rows of `epic:principle-learner-build`, approved by Rick. Mr. Radio corrected his remediation plan (`3031c865a`) and will name the hook's reviewer.
+4. **Post-game** `src/docs/post-games/v0.2.3/2026.11.19-cascade-principle-learner-post-game.md`: running beats reading; brief with a sha, not a moving pin. Mine, wrong: I reaped without the Steward's ack (Cheech refuted my tool guard and gave a cheaper one) and framed two cards from document text. TODO candidates 12 to 14.
+
+**Files**: `history.md`, `TODO.md`, `src/docs/post-games/README.md`, the post-game.
+
+**Previous `RESUME HERE`**: **Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
 
 1. **cascade-opl-remediation closed**: four sections, 0 escalations, handoff and 67 build rows in lupin for Mr. Radio's crew. Post-game `src/docs/post-games/v0.2.3/2026.11.18-cascade-opl-remediation-post-game.md`; TODO candidates 1 to 12 (`56a4514`, `34afde3`); reuse-tools workflow fix `515fb17`.
 2. **Reuse plan, no cascade**: its §0 locks the experiment, so Rick ruled "Skip review, decide now" plus five decisions, recorded on `66b36d26` (closed). Mine, wrong: I minted 8 ledger rows before reading §0 (TODO candidate 13), and filed a duplicate decision row after Cheech had already asked.
@@ -12,7 +21,7 @@
 
 **Files**: `history.md`, `TODO.md`.
 
-**Previous `RESUME HERE`**: **Session 237 (2026-11-16 21:28 to about 22:00 EST, María 🌸 stable `6b0511b8`, manager, no seats)**. A short evening shift: two rows closed, Rick dropped the seven archived-branch rows, and the repo is ready for tomorrow's PR. First job tomorrow: after the 11:00 duplicate-check run, close `2cc637ca` once a baseline line reports left_to_judge 0. Then archive TODO.md, which Rick deferred until after the PR.
+**Session 237 (2026-11-16 21:28 to about 22:00 EST, María 🌸 stable `6b0511b8`, manager, no seats)**. A short evening shift: two rows closed, Rick dropped the seven archived-branch rows, and the repo is ready for tomorrow's PR. First job tomorrow: after the 11:00 duplicate-check run, close `2cc637ca` once a baseline line reports left_to_judge 0. Then archive TODO.md, which Rick deferred until after the PR.
 
 1. **Closed with receipts**: `acb17a2a` (both ticks have a scheduled cron run with a clean job summary; lupin `c0a56cbab` merged) and `9cfd838e` (`5322e54`, Cheech approved).
 2. **Duplicate check** (`2cc637ca`): 11,477 of 12,453 judged, 976 left. Every run after 12:01 skipped because the 2,400-call daily Opus budget was spent, which is the design, not a fault.

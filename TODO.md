@@ -205,6 +205,23 @@ re-spinning, not seats that are working. Her own timer is durable; María's is n
   13. **Read the input plan's own scope rule before minting the cascade ledger.** On 18 Nov I minted 8 `epic:cascade-reuse-remediation` rows, then found the reuse plan's §0 locks the experiment; Rick ruled "Skip review, decide now", and the held rows needed his drop. Fold: `plan-review-cascaded.md` Step 0, a Recon check on the input's scope or lock section before any ledger row.
   Workflow / Cascade | **`horizon: next`** — waits on the next cascade-workflow fold pass
 
+- [ ] **v1.N candidates from `cascade-principle-learner`** (Manager María 🌸, filed 2026-11-19; source: `kind: manager_self_audit_sweep` on lupin topic `cascade-principle-learner`; handoff §6 in lupin `src/rnd/v0.2.4/2026.11.17-online-preference-learning-upgrades/2026.11.19-principle-learner-cascade-revision-handoff.md`). Items 3 and 4 are **second instances** of the `cascade-opl-remediation` candidates 5 and 3 above, so they are ready to promote:
+  1. **The author seat could not branch** (a branch-guard hook refused `git switch -c`), so the Manager moved a pin ref 16 times by hand. Fold: `plan-review-cascaded-on-demand-spawn.md`: an author seat gets a named branch, or the Manager owns one pin ref with the move procedure written down.
+  2. **Reviewers read from worktrees behind the pin** and one filed a false finding from a tree 17 commits behind (Pocholo-B-5, self-corrected). Fold: `plan-review-cascaded-personas.md` reviewer rubric: read the plan and the code at the pin with `git show <pin>:<path>`.
+  3. **DM condenser loses content; act on the topic post** (second instance; about ten condensed DMs this run). Fold: common.md, next to the universal step zero.
+  4. **Start the next stage before the upstream revision lands** ("don't re-file these") so each stage gets one combined revision (second instance). Fold: `plan-review-cascaded.md` Step 5.
+  5. **A final re-check pass by each reviewer before Step 8** caught two real defects by running code (Rachel-C-1b, a `ValueError` from the plan's own pad method; Rachel-B-1b). Fold: `plan-review-cascaded.md` Step 8.
+  6. **When the fleet cap is short, seat the Stage 2 reviewer first**, so the Step 0 light review starts while the other seats wait. Fold: `plan-review-cascaded.md` Step 4.
+  7. **The steward's verbatim decision record beside the plan** (Cheech: `778b7888e`, `8e4af1108`, `e3d71d9f6`) is what made the relayed rulings citable. Fold: `plan-review-cascaded-personas.md` Persona 6 outputs.
+  8. **With the user away, consolidate timed-out cards into one operator decision row** instead of re-asking (row `41f7f109`, three timeouts). Fold: `plan-review-cascaded.md` Step 7 and meta-rule 6.
+  9. **Ledger rows stayed held all run** because nobody approved them, so the board showed no motion. Fold: common.md §Stepwise Task-Item Ledger: how ledger rows get approved under an approved P0 parent.
+  10. **The adjacent plan's owner has no role**: the Manager DMed Mr. Radio seven times about cross-plan effects (re-plan row `47865511`). Fold: common.md §Step 0 Recon: name the adjacent plan's owner and the route for cross-plan effects.
+  11. **Finding ids `<persona>-<section>-<n>` set in the reviewer brief caused no collisions** across 69 findings; this closes `cascade-opl-remediation` candidate 8. Fold: defaults.md.
+  12. **Check each decision card's premise against the running product and the owner's last ruling, not only against the plan's wording.** Two of Rick's six cards were framed from document text: one left out the accordion that already ships, and one copied the remediation's word "dropped". Goes in: `decision-walkthrough.md` §The ritual, step 3. Source: post-game `src/docs/post-games/v0.2.3/2026.11.19-cascade-principle-learner-post-game.md` §3.
+  13. **Before a reap, the seat's "deposited" reply lists every file it has not committed, and the reap waits until each path exists** (Cheech's form, which replaces my drafted Steward-ack tool guard; he refuted mine in cross-examination). Goes in: `post-game.md` §3.5.2 and `memento-management.md`. Source: same post-game, addendum.
+  14. **A brief names the sha and a heading, never a moving pin or line ranges**, and reviewers read with `git show <sha>:<path>` (three seats this run: Pocholo, Rachel, John). This is a second instance of candidate 2. Goes in: `plan-review-cascaded-personas.md` reviewer rubric.
+  Workflow / Cascade | **`horizon: next`** — waits on the next cascade-workflow fold pass
+
 - [ ] **Re-frame the TODO.md archive question** — 🔴 **NOT BEFORE the merge to main and the v0.2.1 branch cut.** (María, S181, 2026-08-28). Asked "archive the old part now?"; Rick answered **neither** — the question was wrong, not declined. The file is **718 lines with zero `horizon:` tags**, so the tag rule has no evidence to work from and an archive pass would be judgment-by-eye. Likely better next question: *tag the horizons first*, or *archive only the Decisions Log older than the window*, or *split by branch version*. Do not archive on a guess. Decisions | **`horizon: next`**
   - ↳ *the tagging half is DELIVERED (2026-08-31, Krishna) — this is the re-frame Rick was owed; the archive call itself still waits on the merge + branch cut*
 
@@ -393,6 +410,18 @@ whole reason that prefix exists.
 ## Decisions Log
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
+
+### 2026-11-19: Principle learner, Rick's six decisions and who builds it (Rick, decision walkthrough about 20:25 to 20:48 UTC; row `41f7f109`)
+
+His words are recorded verbatim in lupin `src/rnd/v0.2.4/2026.11.17-online-preference-learning-upgrades/2026.11.19-principle-learner-rulings-verbatim.md`. They are written into the plan at lupin `7dfac8905`, which was merged to the v0.2.4 wip branch at `05e3f8cb8`.
+- Learner forecasts sit in the hidden accordion beside the current forecast. Rick opens it after choosing his answer and before submit, and the answer selected then is the unaided draft. Why: hiding removes the bias that showing it early would cause, and he still sees the forecasts from day one.
+- After remediation phase 6, C0 replaces A1 in the accordion. Why: it needs no change to phase 6 and shows the main comparison.
+- The stop rule waits below 10 discordant pairs and fires only on a decisive loss. Why: three text targets cannot show anything.
+- `record_forecast` gets an optional pre-commit hook, built by the learner's crew and reviewed by a remediation reviewer (agreed with Mr. Radio). Why: only one commit keeps the two forecast rows together.
+- B3c is added as a control arm for layer 3. Why: otherwise a win from three draws cannot be told apart from a win by the reranker.
+- Phase 6's model forecaster is disabled, never dropped, and its background call keeps running as the yardstick (remediation `3031c865a`). Haiku and Opus are also compared side by side, because "We are currently assuming that haiku is sufficient It may not be". Its scope and cost cap are Rick's check, row `b8bf9338`.
+- Cheech implements the build: the 45 rows of `epic:principle-learner-build`. Why: Rick's word, because Cheech had nothing workable on his board.
+- No "fold" or "the fold" in prose; name the actual edit. Why: "it's Claude jargon speak, and does not illuminate the contexts in which it is used".
 
 ### 2026-11-14: The reuse judge's AUC is not a reason to hold the code-health abstraction (Rick, voice, about 22:30 EST; rows `66b36d26`, `eeb88bab`)
 
