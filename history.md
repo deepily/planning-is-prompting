@@ -2,14 +2,16 @@
 
 > ✅ **Archived at 18,886 tokens, now about 6,683 (2026-11-14, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 206–227 → `history/2026-09-22-to-10-31-history.md`. Cut at the Sunday 2026-11-01 boundary. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 239 (2026-11-19 about 14:00 to 15:53 EST, María 🌸 stable `6da03c6d`, manager; cascade seats Maya, Rachel, Pocholo and John, all reaped with verified mementos; one self-respin)**. P0 `8e53fc1b` is done: the principle learner plan went through the full cascade, Rick ruled its six decisions, and Cheech owns the build. My board is empty except `a38bc952`, which is blocked to 30 Nov.
+`RESUME HERE`: **Session 239 (2026-11-19 about 14:00 to 22:05 EST, María 🌸 stable `6da03c6d`, manager; cascade seats Maya, Rachel, Pocholo and John, all reaped with verified mementos; one self-respin)**. P0 `8e53fc1b` is done: the principle learner plan went through the full cascade, Rick ruled its six decisions, and Cheech owns the build. My board is empty except `a38bc952`, which is blocked to 30 Nov.
 
 1. **cascade-principle-learner closed**: 69 findings, 0 foundational. Step 9 passed after one revision turn (lupin `f4194bbd2`). Merged to the v0.2.4 wip branch at `05e3f8cb8`, not pushed. All 13 ledger rows closed with receipts.
 2. **Rick's six decisions** (row `41f7f109`; TODO Decisions Log 2026-11-19): accordion display, C0 replaces A1, the stop-rule floor, the record_forecast hook, B3c, and "disabled, never dropped" plus Haiku against Opus. Two of them were corrections to how I had framed the card.
 3. **Build handed to Cheech**: 45 rows of `epic:principle-learner-build`, approved by Rick. Mr. Radio corrected his remediation plan (`3031c865a`) and will name the hook's reviewer.
 4. **Post-game** `src/docs/post-games/v0.2.3/2026.11.19-cascade-principle-learner-post-game.md`: running beats reading; brief with a sha, not a moving pin. Mine, wrong: I reaped without the Steward's ack (Cheech refuted my tool guard and gave a cheaper one) and framed two cards from document text. TODO candidates 12 to 14.
+5. **Name the thing, never its code** (P0 `ba062ead`, Rick by voice via Cheech, about 16:06): brevity mandate 1.7 (`9fabe90`), the global CLAUDE.md WaHH row, and cross-session-communication §1.6.
+6. **End of shift** (about 22:05 EST): no live seats; 0 held rows to re-own; orphan check exit 1, 72 open rows read, 39 findings. One was mine as manager: `2315c65c` (Rick's and Jason's labels for the 15 Opus flags are not on disk yet), new chase 20 Nov 10:00 EST. The other 38 are Cheech's, Mr. Radio's and Tiffany's blocked rows. Memento sweep: 1 digested (nothing open), 1 trashed, 3 kept.
 
-**Files**: `history.md`, `TODO.md`, `src/docs/post-games/README.md`, the post-game.
+**Files**: `history.md`, `TODO.md`, `src/docs/post-games/README.md`, the post-game, `workflow/brevity-mandate.md`, `workflow/cross-session-communication.md`, `global/CLAUDE.md`, `docs/version-history/brevity-mandate.md`.
 
 **Previous `RESUME HERE`**: **Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
 
