@@ -243,6 +243,8 @@ Per `decomposition_review_policy = manager_proposes_user_approves`, the manager 
 
 If the user rejects, ask via `converse()` for redirection, revise, and re-ask.
 
+**Writing the user's ruling into the plan (Rick, 2026-11-23).** The seat that edits the plan copies the ruling from the option text the user picked, as the ask tool returned it. It never works from the manager's relay. The manager passes the ruling on as that option text, quoted, plus the ask's question. Findings travel between seats as a path plus the commit they were read at, and a verdict DM opens with its bare verdict word. Full rule: `cross-session-communication.md` §1.5.1d.
+
 ---
 
 ## §Manager System Prompt [SHARED]

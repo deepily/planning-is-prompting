@@ -111,6 +111,14 @@ After the planner submits a plan to the cascade, the **Step 0 light-review** run
 
 **Cost**: ~15-20 min reviewer-time.
 
+### §4.1 The user rules each data type's scope first (Rick, 2026-11-23)
+
+When the plan handles user answers or other data, Step 0 also lists every kind of answer or data the producing code emits. For answers that means each answer type, each option, and any free text attached to an option. The Manager asks the user to rule each one in or out of scope, with one ask, before Section A is reviewed. The ruling goes into the plan as the option text the user picked.
+
+**Why:** on 23 Nov Rick ruled open-ended answers fully in before any section was reviewed. Made later, that ruling would have reopened four reviewed sections. Both plans had left open-ended answers out because no one listed them (`src/rnd/2026.11.23-answer-signal-lost-between-documents/`).
+
+**Not yet a rule:** the full signal-census and inheritance tables from that trace. Whether they find gaps without the trace's help is untested; a blind test is planned for the next cascade that handles answers or data.
+
 ---
 
 ## §5 Remediation flowchart — what happens when the plan fails the gate

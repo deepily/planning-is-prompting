@@ -411,6 +411,10 @@ whole reason that prefix exists.
 
 → Entries dated before 2026-09-20 archived 2026-10-04 to `todo-archive/2026.10.04-resume-here-and-decisions-log-recut.md`.
 
+### 2026-11-23: Four answer-signal post-game lessons become workflow rules (Rick, graduation card, evening; row `8f21011e`)
+
+Rick chose "All four (Recommended)". He first rejected the card because it used codes for the rules ("go back and redefine... give them meaningful names"), so the rules carry names now. Rulings travel word for word → `workflow/cross-session-communication.md` §1.5.1d and `workflow/plan-review-cascaded-common.md` §Step 3. Re-checks read around every fix, and the viability reviewer reads every plan whole → `workflow/plan-review-cascaded.md` Step 5. Reviewers chosen by seat, not name → `workflow/plan-review-cascaded-on-demand-spawn.md` §2 item 8. The user rules each data type's scope first → `workflow/plan-review-cascaded-input-spec.md` §4.1 and `plan-review-cascaded.md` Step 0.3. The full census tables from the omission trace stay candidates until the blind test (row `b4d4ab5b`). Post-game: `src/docs/post-games/v0.2.3/2026.11.23-answer-signal-cascade-post-game.md`.
+
 ### 2026-11-19: Principle learner, Rick's six decisions and who builds it (Rick, decision walkthrough about 20:25 to 20:48 UTC; row `41f7f109`)
 
 His words are recorded verbatim in lupin `src/rnd/v0.2.4/2026.11.17-online-preference-learning-upgrades/2026.11.19-principle-learner-rulings-verbatim.md`. They are written into the plan at lupin `7dfac8905`, which was merged to the v0.2.4 wip branch at `05e3f8cb8`.

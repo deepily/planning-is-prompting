@@ -455,6 +455,18 @@ repaired, at 15:13 and 15:40, and the published finding named two seats for a st
 store — which is why wall-clock time is the coordinate for mutable local state, as a sha is for a
 tree.
 
+### 1.5.1d Rulings and verdicts travel word for word (Rick, 2026-11-23)
+
+Three rules, each one about a message whose exact words someone else will act on:
+
+| What is travelling | Rule |
+|---|---|
+| **A user's ruling** | Whoever writes it into a plan or a row copies it from the option the user picked, as the ask tool returned it. Never from a peer's summary of it, including the manager's |
+| **Review findings** | Send them as a file path plus the commit they were read at, on a bare line. Never as DM prose |
+| **A verdict** | The DM's first line is the verdict word alone: `MERGE`, `CHANGES` or `PASS`. Detail goes below it |
+
+**Why:** in the 23 Nov answer-signal cascade, an author wrote two of Rick's rulings narrower than the options he chose, working from a one-line relay. A `MERGE` verdict also arrived as "the merge operation has passed all checks", without the word. The message whose first line was the bare word, with a table under it, arrived intact. This is the fourth post-game that recorded DM condensation. Receipts: `src/docs/post-games/v0.2.3/2026.11.23-answer-signal-cascade-post-game.md` §3.
+
 ### 1.5.2 Receiving a DM and replying
 
 An inbound DM arrives as a `<system-reminder>` envelope that carries the sender, the `message_id` and the `thread_id`, and a `Reply via dm_send( recipient, body, reply_to, thread_id )` line.

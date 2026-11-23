@@ -37,6 +37,7 @@ Before invoking `spawn_sessions`:
 5. **Task template ready** — a workflow-side prompt template that uses the supported tokens (`{role}` / `{section}` / `{scope_sentence}` / `{cascade_name}` / `{parent_topic}` / `{manager_session_id}`)
 6. **Workflow Steward attached** (optional but recommended for on-demand spawn scenarios — Steward observes the spawn + handles any decline-attempts per user-tap override rule)
 7. **Skeleton crew is off** — see §10
+8. **Reviewers chosen by seat, not name (Rick, 2026-11-23)**: independence means the reviewer carries no context from writing the work. Exclude every session that wrote or built the artifact under review in this engagement, including fix-round authors, tracked by the actual session and its re-spins, not by persona name. A fresh session with an old name has no memory to be biased by. A seat that reviewed an artifact does not write the fixes to it in the same round. After every spawn, check the persona that was actually allocated (`persona_state`, the returned name) against the exclusion list before briefing it. On 23 Nov a name list let an excluded reviewer into the first pool, ran out of names for the third seat, and said nothing about authors: two people on the reviewer exclusion list wrote the fix rounds. Receipts: `src/docs/post-games/v0.2.3/2026.11.23-answer-signal-cascade-post-game.md` §3.
 
 ---
 

@@ -67,6 +67,8 @@ Manager produces (or verifies inheritance from a prior cascade) the pre-cascade 
 
 Manager runs the **Step 0 light-review gate** with the review-cascade rubric (6-criterion focused pass per common.md §Step 0 light-review gate, narrowed to the input-plan-as-reviewable shape).
 
+Before the gate passes, the user rules the scope of every answer or data type the plan's code produces (`plan-review-cascaded-input-spec.md` §4.1).
+
 On thumbs-up + Recon-checklist-verified: Manager posts `kind: "cascade_input_ready"`; state flips. Cascade Step 1 can fire.
 
 **Step 0.4 — Mint the stepwise task-item ledger (MANDATE; added 2026-07-12)**
@@ -300,6 +302,14 @@ If an author↔reviewer discussion exceeds `discussion_turn_cap = 3` rounds with
 If per-section message count crosses `budget_enforcement_threshold = 25` under `budget_enforcement_mode = soft_cap`:
 - Manager `notify()`s the user with the overrun explanation
 - Continues the workflow but flags the section as over-budget in the end-of-pipeline summary
+
+### Re-checks read around every fix (Rick, 2026-11-23)
+
+When a reviewer re-checks a section after the author's fixes, they diff the plan between the commit they reviewed and the new one. They read the whole paragraph around every changed line, not only the line. A fix often contradicts the sentence next to it or leaves a gap in its own new text. In the 23 Nov answer-signal cascade this happened three times, including fixes the Steward made at Step 0.
+
+### The viability reviewer reads every plan whole (Rick, 2026-11-23)
+
+When the engagement reviews more than one plan, the Stage 2 (viability) reviewer reads every plan start to finish, not only its assigned sections. Gaps between plans are invisible section by section. On 23 Nov this read found a data arm that both plans named and neither built, and baselines measured before the judge that validates them.
 
 ---
 
