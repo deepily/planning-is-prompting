@@ -565,6 +565,9 @@ Shorter working artifacts from the same period — designs awaiting a ruling, au
 - [From Words to Sentences](src/rnd/2026.08.12-words-to-sentences.md) - What changes once the measured evidence says a **word** threshold teaches shorter sentences, not fewer of them
 - [The Third Arm — What the Tutor Arm Is, and What It May Say](src/rnd/2026.08.12-three-arm-tutor-treatment.md) - Planned, explicitly not implemented, on Rick's *"plan for but NOT implement"*
 
+**Answer signal lost between documents**
+- [How Yes/No/Neither With Comments and Multiple-Choice Other Text Were Lost](src/rnd/2026.11.23-answer-signal-lost-between-documents/2026.11.23-answer-signal-omission-trace.md) - Every plan stated the full answer correctly; it was lost where one plan reused another's forecaster and no test carried the requirement, which a section-by-section review cannot see
+
 ## Usage
 
 Each workflow file contains:
