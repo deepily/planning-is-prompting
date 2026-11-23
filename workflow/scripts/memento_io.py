@@ -728,7 +728,7 @@ def bridge_sessions_dir():
     """
     Ensures:
         - returns $LUPIN_HOOK_SESSIONS_DIR as a Path when set and non-empty
-        - else Path( ~/.claude/sessions ) — read at CALL time, so redirecting $HOME or
+        - else Path( ~/.claude/lupin-sessions ) — read at CALL time, so redirecting $HOME or
           the variable inside a test is honoured without an import-order dance
         - never raises
 
@@ -736,13 +736,15 @@ def bridge_sessions_dir():
     The latter is pinned to the REAL directory by `tmux-server.service` and inherited by
     every seat in the fleet, so honouring it would defeat redirection rather than provide
     it. This mirrors lupin's `lupin_cli.claude_code.hooks.lib.sessions_dir`, whose module
-    docstring carries the measurement; it is copied rather than imported because this
+    docstring carries the measurement; the default folder mirrors lupin commit 75d9cda39
+    (22 Nov 2026), which moved the bridges from ~/.claude/sessions to
+    ~/.claude/lupin-sessions; it is copied rather than imported because this
     script is repo-agnostic and runs where that package is not importable.
     """
     override = os.environ.get( "LUPIN_HOOK_SESSIONS_DIR" )
     if override:
         return Path( override )
-    return Path( os.path.expanduser( "~/.claude/sessions" ) )
+    return Path( os.path.expanduser( "~/.claude/lupin-sessions" ) )
 
 
 def parent_pid_of( pid ):

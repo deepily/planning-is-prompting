@@ -166,7 +166,7 @@ def resolve_manager( tmux_session, roster ):
     radio" — but nothing enforces that name after the spawn, a manager can be re-spun while the
     name it stamped lives on, and a renamed or hand-made session can wear any shape it likes. Do
     not read a resolved manager here as authoritative provenance. The spawn manifests
-    (~/.claude/sessions/spawned-<manager-session-id>.json) are the closer thing to a record, and
+    (~/.claude/lupin-sessions/spawned-<manager-session-id>.json) are the closer thing to a record, and
     they key on the manager's SESSION id, which the sensor does not report — that is the gap that
     keeps this function a heuristic.
 

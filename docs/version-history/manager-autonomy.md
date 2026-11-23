@@ -4,6 +4,8 @@ Moved out of `workflow/manager-autonomy.md` (lines 302-342 at `d73f36b`) without
 
 ---
 
+*2026-11-23 (María, row `b7c664d7`, follow-up on lupin `75d9cda39`) — §2: the spawn-manifest path is `~/.claude/lupin-sessions/spawned-<manager-session-id>.json`, where lupin moved the session bridges and manifests on 22 Nov; `~/.claude/sessions` now holds only Claude Code's own `<pid>.json` files. Path correction only, no rule change.*
+
 *2026-11-15 (2026.11.15, María, Rick approved 15 Nov 00:11 via Cheech; Maya's merge-gate wording audit, lupin `be31e7db1`, row 15) — §2: "green" in green AND reviewed is defined: green means the unit tier and census guards for the files changed.*
 
 *2026-11-03 (María, row `bc975ca0`) — §2: a row that needs Rick's go gets the helper's approve line in the notify message, not the abstract; `priority="P0"` raises it in the same click, and several rows go in one line from `task_approve_batch_line` (Rick's voice ruling).*

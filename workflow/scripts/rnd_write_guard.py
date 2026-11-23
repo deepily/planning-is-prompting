@@ -292,7 +292,7 @@ AUTHOR_LOG = os.environ.get(
 
 # A module constant rather than an inline literal, so a test can point it at a seeded bridge.
 # A warning in a docstring that no test can reach is a comment, not a control.
-SESSIONS_GLOB = os.path.expanduser( "~/.claude/sessions/*.json" )
+SESSIONS_GLOB = os.path.expanduser( "~/.claude/lupin-sessions/*.json" )
 
 
 def writing_persona( payload ):

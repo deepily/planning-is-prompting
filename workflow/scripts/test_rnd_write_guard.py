@@ -490,3 +490,16 @@ def test_the_census_records_the_CANONICAL_name_not_the_accented_display_name(
     recorded = _author_rows( author_log )[ 0 ][ 1 ]
     assert recorded == "maria"
     assert recorded != "María", "the accented display name forks the namespace"
+
+
+def test_sessions_glob_points_at_lupin_sessions():
+    """
+    Pins the bridge folder the persona lookup globs.
+
+    Ensures:
+        - SESSIONS_GLOB is <home>/.claude/lupin-sessions/*.json, where lupin commit
+          75d9cda39 (22 Nov 2026) moved the cc-*.json bridges; ~/.claude/sessions now holds
+          only Claude Code's own <pid>.json files, which carry no voice_persona
+        - fails if the constant is pointed back at ~/.claude/sessions
+    """
+    assert guard.SESSIONS_GLOB == os.path.expanduser( "~/.claude/lupin-sessions/*.json" )
