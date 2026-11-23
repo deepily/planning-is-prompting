@@ -157,6 +157,22 @@ reference graph in an assertion's actual position.**
 
 ---
 
+## An experiment freezes its possible answers and its scoring before it runs (Rick, 2026-11-23)
+
+A pre-registration pins more than the settings. Before the first run, it states for each kind of question:
+
+| What | Example |
+|---|---|
+| The answers each arm may give | yes, no, neither; each with or without a comment; a multiple-choice option or Other text |
+| How each answer is scored | how a comment, a neither and an Other text count when compared with the real answer |
+| The best score each arm can reach on this window | an arm that can only say yes or no cannot score above the share of real answers that were yes or no |
+
+Report each answer type with its own accuracy, not only one overall figure.
+
+**Why:** the second preference-learning run froze its settings but not its answers or scoring. A yes-or-no-only arm had a ceiling of about 85 percent on that window, and nobody stated it, so the ceiling could pass for a result (`src/rnd/2026.11.23-answer-signal-lost-between-documents/`).
+
+---
+
 ## When to Use This Workflow
 
 **Use this workflow before**:

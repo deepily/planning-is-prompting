@@ -239,6 +239,7 @@ For each "new" thing the section proposes (helper, primitive, queue, emitter, ra
 - Author uses a different name for a pattern that already has a canonical name in the project
 - Section diverges from established CLAUDE.md conventions (e.g., snake_case vs camelCase, path management patterns, explicit-attribute-access rule) without justification
 - Section reinvents an existing skill, workflow, or convention
+- **A reused part with no list of what it must do (Rick, 2026-11-23).** When the section reuses a component, including one built by another plan, it must list what it needs that component to do (for example, "the forecaster must be able to predict neither and carry the comment"). Each need is either already in the other plan's acceptance tests or pinned by a contract test in this plan. A `reuse-as-is` verdict with no such list is a finding. The ruling card for that reuse says "reusing it means inheriting its limits", and names them. Receipt: the principle learner reused phase 6's forecaster and inherited its yes-or-no-only parser, because nothing listed neither, comments or Other text as needs (`src/rnd/2026.11.23-answer-signal-lost-between-documents/`)
 
 **Layer awareness**:
 - Layer 1 findings (e.g., section violates a global mandate from `~/.claude/CLAUDE.md`) → section revisions under the manager's standard severity classification
@@ -308,10 +309,12 @@ For each section, ask:
 8. Is there a gap between what the section delivers and what the goal requires?
 9. Are there dependencies on work outside this section that aren't named?
 10. Is anything load-bearing left as "to be designed later" without explicit acknowledgment?
+11. **For an experiment**: does its pre-registration freeze the possible answers and the scoring, not only the settings (`testing-baseline.md` § an experiment freezes its possible answers and its scoring)?
 
 **Anti-patterns this reviewer must catch**:
 - Hand-waving phrases ("use a good library", "configure appropriately", "as needed")
 - Hidden decisions (the section reads as complete but contains implicit choices the implementer would have to make)
+- **A scope cut that is really a decision (Rick, 2026-11-23).** When a guard or phase lists a file as out of scope and that file handles the same answers or data, the cut needs its own task or ruling, not a line in a list. Receipt: the trust guard listed `dispatcher.py` as out of scope; that file is where a neither answer moves the proxy's trust, so neither answers were dropped without anyone ruling on it
 - Missing prerequisites (the section assumes infrastructure or access that isn't named)
 - Untestable success criteria ("the system should work well" with no measurable threshold)
 - Time estimates that don't account for known-unknowns flagged elsewhere in the plan
@@ -372,6 +375,9 @@ For each section, ask:
 6. Will Claude (the executor for `EXECUTOR: AI` steps) actually be able to verify completion without ambiguity?
 7. Will the system's behavior be observable during execution (logs, metrics, telemetry) — so Claude can verify, not just "trust the implementation"?
 8. If a step fails partway, how does Claude know which sub-step failed?
+
+**Every stated value has a test (Rick, 2026-11-23)**:
+9. When the section says a component returns or carries a set of values ("returns yes, no or neither", "may carry a comment or Other text"), do its acceptance tests make the component produce each one? A value with no test producing it is a finding. This is a narrow check on stated value sets, not general coverage analysis. Receipt: the principle learner plan stated a three-way forecast, but none of its acceptance tests produced a neither, a comment or an Other text, so a yes-or-no parser passed.
 
 **Anti-patterns this reviewer must catch** (adapted from the `/plan-review` Pass 2 Ownership-Language Audit rubric):
 - "User verifies X" / "User confirms X" — almost always a Layer 1 violation (user is never a tester)
@@ -465,7 +471,7 @@ Cosmetic findings at Stage 3 often **cluster as a systematic pattern-family** ra
 
 ### Authoring Author Rubric
 
-Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2 above) PLUS these 5 additional items:
+Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2 above) PLUS these 6 additional items:
 
 10. **Intent satisfaction**: does this section advance the intent statement's user-observable outcome? (Pure-authoring: per Step 0 capture. Hybrid: per design-doc's stated goal.) If yes — name which intent-item this section satisfies. If no — propose to manager that this section is out-of-scope, OR that the intent statement needs revision.
 
@@ -487,7 +493,9 @@ Self-check against the 9-point Persona 2 (Review Author) rubric (see §Persona 2
     - **Context-aware-application**: a pattern learned in Section X may not apply verbatim in Section Y. Each application must verify the context is materially similar to the one where the pattern was first surfaced. Run-3 evidence: F-Arnold-B-Stage2-3 caught a directory-wide-glob pattern misapplied to a single-purpose file (5th application; 4 prior applications were correct because their targets WERE directory-clusters). Don't blanket-apply.
     - **AC-table sweep**: when revising any AC in your section, sweep ALL ACs in the section for the same pattern. Run-3 surfaced **3 confirmed instances of AC-table-sweep-lag** (F-Arnold-C3 + F-Arnold-D4 + F-Arnold-B-Stage2-3) — each was caught only because a reviewer happened to grep the section after the first instance was closed. Author should pre-empt this with the in-section sweep before re-handoff to Stage 1. **Run-4 added 2 more empirical anchors** (added 2026-05-20 post-Run-4): (i) Krishna's Q-1..Q-4 catch on Stage 2 cap-3 — 4 quibbles on a single Stage-2 output all reflecting the same forward-sweep gap; a routine pre-handoff AC-table sweep would have closed all 4. (ii) Tiberius's Tiffany-rename-pass catch — Author grep-swept after a user-initiated linter pass caught 3 non-adjacent AC reverts the linter had silently produced (also the empirical anchor for the non-adjacent-surface refinement in `plan-review-cascaded-common.md` §Multi-surface Footer-ratification Close Protocol item 5). The cumulative anchor base for the AC-table-sweep practice is now **5 confirmed instances across Runs 3+4** — strong ratification for promoting the routine pre-handoff sweep to the §Author-side Discipline Grep-sweep Checklist (see `plan-review-cascaded-common.md`).
 
-If the author cannot answer "yes" to all FOURTEEN (9 + 5), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, design-doc-divergence needs to be acknowledged, OR the forward-sweep needs to be completed before handoff to Stage 1.
+15. **Reused parts list what they must do (Rick, 2026-11-23)**: when this section reuses a component, including one another plan builds, it lists what it needs the component to do, and each need is either in the other plan's acceptance tests or pinned by a contract test here. Same rule as the Stage 1 reviewer's "reused part" check (Persona 3); item 11 covers sections within one plan, this one covers reuse across plans.
+
+If the author cannot answer "yes" to all FIFTEEN (9 + 6), the section needs to be split, dependencies need to be made explicit, conventions need to be applied, design-doc-divergence needs to be acknowledged, OR the forward-sweep needs to be completed before handoff to Stage 1.
 
 ### Worked example — hybrid-mode divergence-check
 

@@ -70,7 +70,7 @@ Same Manager-blind-spot rationale as Step 9: the Manager-as-preparer is in "cons
 1. **Slice independence check**: each slice's "independence" claim holds; cross-slice dependencies are explicit in both directions (provider AND consumer documented)
 2. **Q-decision completeness check**: every Q has a PROPOSED stance + alternatives + recommendation; no hidden conditionals
 3. **Recon item resolvability check**: every Recon item names where the verification happens (code-write, integration test, manual recon)
-4. **Source citation check**: every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements with no provenance)
+4. **Source and test check**: every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements with no provenance), and has an acceptance test; a requirement that names a set of values has a test producing each one (widened 2026-11-23, Rick)
 5. **Sequencing soundness check**: recommended order respects all stated cross-slice dependencies (no cycles; no out-of-order dependencies)
 6. **Author-onboarding completeness check**: standing memory guidance applicable to the slice are listed in the §6 pre-cascade Recon checklist
 
@@ -244,6 +244,8 @@ Per `decomposition_review_policy = manager_proposes_user_approves`, the manager 
 If the user rejects, ask via `converse()` for redirection, revise, and re-ask.
 
 **Writing the user's ruling into the plan (Rick, 2026-11-23).** The seat that edits the plan copies the ruling from the option text the user picked, as the ask tool returned it. It never works from the manager's relay. The manager passes the ruling on as that option text, quoted, plus the ask's question. Findings travel between seats as a path plus the commit they were read at, and a verdict DM opens with its bare verdict word. Full rule: `cross-session-communication.md` §1.5.1d.
+
+**A card that rules on reusing a component names what comes with it (Rick, 2026-11-23).** When the user is asked to approve reusing a component, the card says "reusing it means inheriting its limits", and lists them, for example "it can only predict yes or no". The reviewer's check is in `plan-review-cascaded-personas.md` Persona 3.
 
 ---
 

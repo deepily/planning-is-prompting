@@ -5,6 +5,7 @@ Moved out of `workflow/testing-baseline.md` (lines 968-986 at `d73f36b`) without
 ---
 
 ## Version History
+**v+** (2026.11.23, María, Rick's methodology session on dropped answer data, row `69821dc6`) - New section: an experiment freezes its possible answers, its scoring and each arm's best reachable score before it runs, and reports each answer type separately. Source: the omission trace §5.
 **v+** (2026.11.06, Rachel, row `60936c0e`) - New mandate section: no test or job touches a GPU. GPU-hosted models are a shared service; the canonical rule, quoting Rick (2026-11-04).
 **v+** (2026.10.14, Maya, entry policy re-loop, parent row `8b32de78`) - The history entry template's health value is lowercase, so a copied entry carries no capitalised word (reviewer finding F3).
 

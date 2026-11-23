@@ -103,7 +103,7 @@ After the planner submits a plan to the cascade, the **Step 0 light-review** run
 | 1 | **Slice independence check** | Each slice's "independence" claim holds; cross-slice dependencies are explicit in both directions | Property 2 |
 | 2 | **Q-decision completeness check** | Every Q has a PROPOSED stance + alternatives + recommendation; no hidden conditionals | (§2b — Manager) |
 | 3 | **Recon item resolvability check** | Every Recon item names where the verification happens (code-write, integration test, manual recon). **PG-5 caveat**: mandates have scope-applicability verified against the design's actual code location | (§2b — Manager, with PG-5 lesson) |
-| 4 | **Source citation check** | Every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements without provenance) | Planner discipline |
+| 4 | **Source and test check** | Every requirement traces back to either the raw design doc or a pre-existing R&D doc (no "magic" requirements without provenance), and has an acceptance test; a requirement that names a set of values has a test producing each one (widened 2026-11-23, Rick) | Planner discipline |
 | 5 | **Sequencing soundness check** | Recommended order respects all stated cross-slice dependencies (no cycles; no out-of-order dependencies) | Property 3 |
 | 6 | **Author-onboarding completeness check** | Standing memory guidance applicable to the slice is listed in the §6 pre-cascade Recon checklist | (§2b — Manager) |
 
