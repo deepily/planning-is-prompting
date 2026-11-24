@@ -2,7 +2,17 @@
 
 > ✅ **Archived at 18,886 tokens, now about 6,683 (2026-11-14, `tiktoken` `cl100k_base`, measured after the cut).** Sessions 206–227 → `history/2026-09-22-to-10-31-history.md`. Cut at the Sunday 2026-11-01 boundary. Measure with a tokenizer, not `get-token-count.sh`.
 
-`RESUME HERE`: **Session 239 (2026-11-19 about 14:00 to 22:05 EST, María 🌸 stable `6da03c6d`, manager; cascade seats Maya, Rachel, Pocholo and John, all reaped with verified mementos; one self-respin)**. P0 `8e53fc1b` is done: the principle learner plan went through the full cascade, Rick ruled its six decisions, and Cheech owns the build. My board is empty except `a38bc952`, which is blocked to 30 Nov.
+`RESUME HERE`: **Session 240 (2026-11-23 11:47 to 22:45 EST, María 🌸 stable `29986b79`, manager and Workflow Steward, no seats of my own)**. Rick's research on dropped answer data is done and nine new workflow rules are committed. My board holds only the P3 blind test of the Step 0 census (`b4d4ab5b`), which waits for the next cascade that handles answers or data, and `a38bc952`, blocked to 30 Nov.
+
+1. **Omission trace** (row `69821dc6`, closed): how yes/no/neither with comments and multiple-choice Other text were lost between the preference-learning remediation and the principle learner. `src/rnd/2026.11.23-answer-signal-lost-between-documents/`; Step 0 readiness for Cheech's plans in §6 (`9b91cc3`, `a3fbd75`); status podcast sent.
+2. **Steward for Cheech's answer-signal cascade**: post-game `src/docs/post-games/v0.2.3/2026.11.23-answer-signal-cascade-post-game.md` with receipts (`bacbb77`). Mine, wrong: I named the four proposed rules G1 to G4; Rick rejected the codes, renamed in `882d90e`, memory rewritten.
+3. **Four post-game rules graduated** (Rick: "All four", row `8f21011e`, `bbd9850`): rulings travel word for word; re-checks read around every fix; reviewers chosen by seat, not name; the user rules each data type's scope first.
+4. **Methodology session, five rules** (`3c7dc5c`): reused parts bring their requirements with a contract test; every answer value has a test; experiments freeze answers and scoring first; leaving a same-data file out of scope is a decision; the code reviewer checks answer values. TODO Decisions Log 2026-11-23.
+5. **Last Call** (broadcast `5bb820ef`, row `e27bf3d8`): filed and installed as first-named manager; all three seats acknowledged at 22:30.
+
+**Files**: `history.md`, `TODO.md`, `README.md`, the trace, the post-game and its receipts, `src/docs/post-games/README.md`, nine `workflow/` docs and their `docs/version-history/` entries.
+
+**Previous `RESUME HERE`**: **Session 239 (2026-11-19 about 14:00 to 22:05 EST, María 🌸 stable `6da03c6d`, manager; cascade seats Maya, Rachel, Pocholo and John, all reaped with verified mementos; one self-respin)**. P0 `8e53fc1b` is done: the principle learner plan went through the full cascade, Rick ruled its six decisions, and Cheech owns the build. My board is empty except `a38bc952`, which is blocked to 30 Nov.
 
 1. **cascade-principle-learner closed**: 69 findings, 0 foundational. Step 9 passed after one revision turn (lupin `f4194bbd2`). Merged to the v0.2.4 wip branch at `05e3f8cb8`, not pushed. All 13 ledger rows closed with receipts.
 2. **Rick's six decisions** (row `41f7f109`; TODO Decisions Log 2026-11-19): accordion display, C0 replaces A1, the stop-rule floor, the record_forecast hook, B3c, and "disabled, never dropped" plus Haiku against Opus. Two of them were corrections to how I had framed the card.
@@ -13,7 +23,7 @@
 
 **Files**: `history.md`, `TODO.md`, `src/docs/post-games/README.md`, the post-game, `workflow/brevity-mandate.md`, `workflow/cross-session-communication.md`, `global/CLAUDE.md`, `docs/version-history/brevity-mandate.md`.
 
-**Previous `RESUME HERE`**: **Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
+**Session 238 (2026-11-18 about 11:00 to 17:40 EST, María 🌸 stable `97bba2c1`, manager; cascade seats Maya, Chloé and Clayton, all reaped)**. Two plan reviews closed: Mr. Radio's preference-learning plan went through the full cascade, and Cheech's reuse plan skipped review on Rick's ruling. My board holds only `a38bc952`, blocked to 30 Nov; first job tomorrow is to confirm Rick dropped the eight held cascade-reuse rows.
 
 1. **cascade-opl-remediation closed**: four sections, 0 escalations, handoff and 67 build rows in lupin for Mr. Radio's crew. Post-game `src/docs/post-games/v0.2.3/2026.11.18-cascade-opl-remediation-post-game.md`; TODO candidates 1 to 12 (`56a4514`, `34afde3`); reuse-tools workflow fix `515fb17`.
 2. **Reuse plan, no cascade**: its §0 locks the experiment, so Rick ruled "Skip review, decide now" plus five decisions, recorded on `66b36d26` (closed). Mine, wrong: I minted 8 ledger rows before reading §0 (TODO candidate 13), and filed a duplicate decision row after Cheech had already asked.
